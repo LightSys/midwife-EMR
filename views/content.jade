@@ -1,0 +1,11 @@
+extends layouts/default_layout
+
+block content
+  h1= title
+  p Hello World again!
+
+  h2 Patient Data
+  if patient && patient.firstname
+    p= patient.firstname
+  else
+    p No first name

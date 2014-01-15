@@ -1,0 +1,22 @@
+{
+  "name": "mercy",
+  "version": "0.0.0",
+  "authors": [
+    "Kurt Symanzik"
+  ],
+  "description": "Maternal care and patient management.",
+  "main": "index.js",
+  "license": "BSD-2-Clause",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.0.3",
+    "bootstrap": "~3.0.3"
+  }
+}
