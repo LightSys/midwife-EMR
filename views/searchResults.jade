@@ -1,0 +1,10 @@
+extends layouts/default_layout
+
+block searchResults
+  h1= title
+  p These are what we found.
+
+  ul
+    each val, inx in results
+      li=inx + ': ' + val
+

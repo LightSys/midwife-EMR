@@ -33,6 +33,9 @@ var checkPassword = function(pw, hash, cb) {
 };
 
 User = Bookshelf.Model.extend({
+  // --------------------------------------------------------
+  // Instance properties.
+  // --------------------------------------------------------
   tableName: 'user'
 
   , permittedAttributes: ['id', 'username','password','email','lang',
@@ -59,6 +62,29 @@ User = Bookshelf.Model.extend({
   // --------------------------------------------------------
   // Relationships
   // --------------------------------------------------------
+}, {
+  // --------------------------------------------------------
+  // Class properties.
+  // --------------------------------------------------------
+  findById: function(id, cb) {
+    this.forge({id: id})
+      .fetch()
+      .then(function(u) {
+        if (! u) return cb(new Error('User id ' + id + ' not found.'));
+        return cb(null, u);
+      });
+  }
+
+  , findByUsername: function(username, cb) {
+    this.forge({username: username})
+      .fetch()
+      .then(function(u) {
+        if (! u) return cb(new Error('User ' + username + ' does not exist.'));
+        // TODO: security issues with password hash, etc.
+        return cb(null, u);
+      });
+  }
+
 });
 
 Users = Bookshelf.Collection.extend({

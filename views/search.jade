@@ -1,0 +1,21 @@
+extends layouts/default_layout
+
+block search
+  h1= title
+
+  div.searchbox
+    p.text-warning
+      = message
+    form(role='form', name='search', action='/search', method='post')
+      div.form-group
+        span First or last name
+        input(class='form-control', type='text', name='name')
+      div.form-group
+        span DOH ID
+        input(class='form-control', type='text', name='doh')
+      div.form-group
+        span Priority #
+        input(class='form-control', type='text', name='priority')
+
+      input(class='btn btn-default', type='submit', value='Search')
+      input(type='hidden', name='_csrf', value=token)

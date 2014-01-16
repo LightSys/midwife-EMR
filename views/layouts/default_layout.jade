@@ -25,11 +25,11 @@ html(lang="en")
         div(class="collapse navbar-collapse navbar-ex1-collapse")
           ul(class="nav navbar-nav side-nav")
             li
-              a(href="/") <i class="fa fa-dashboard"></i> Home
+              a(href="/") <i class="fa fa-home"></i> Home
             li
-              a(href="/login") <i class="fa fa-bar-chart-o"></i> Login
+              a(href="/search") <i class="fa fa-search"></i> Search
             li
-              a(href="/logout") <i class="fa fa-table"></i> Logout
+              a(href="/logout") <i class="fa fa-power-off"></i> Logout
 
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
@@ -52,6 +52,8 @@ html(lang="en")
             div.container
               if user
                 block content
+                block search
+                block searchResults
               else
                 block login
 

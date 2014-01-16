@@ -18,6 +18,9 @@ var express = require('express')
   , loginRoute = '/login'
   , logoutRoute = '/logout'
   , User = require('./models').User
+  , search = require('./routes').search
+  , home = require('./routes').home
+  , common = []
   ;
 
 // --------------------------------------------------------
@@ -29,7 +32,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  findById(id, function (err, user) {
+  User.findById(id, function (err, user) {
     done(err, user);
   });
 });
@@ -40,7 +43,7 @@ passport.use(new LocalStrategy(
     //username, or the password is not correct, set the user to `false` to
     //indicate failure and set a flash message.  Otherwise, return the
     //authenticated `user`.
-    findByUsername(username, function(err, user) {
+    User.findByUsername(username, function(err, user) {
       if (err) { return done(err); }
       if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
       user.checkPassword(password, function(err, same) {
@@ -58,6 +61,9 @@ passport.use(new LocalStrategy(
 // --------------------------------------------------------
 // All configurations.
 // --------------------------------------------------------
+app.engine('jade', cons.jade);
+app.set('view engine', 'jade');
+app.set('views', path.join(__dirname,'views'));
 app.use(express.static('bower_components'));
 app.use(express.static('static'));
 app.use(express.favicon());
@@ -75,138 +81,71 @@ app.use(express.bodyParser());
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.locals.siteTitle = cfg.site.title;
+
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
 // See: http://dailyjs.com/2012/09/13/express-3-csrf-tutorial/
 // --------------------------------------------------------
 app.use(express.csrf());
 function csrf(req, res, next) {
-  console.log('csrf() has been called.');
   res.locals.token = req.csrfToken();
   next();
 }
 
-// --------------------------------------------------------
-// The server presents a login page to establish authenticated
-// sessions with the clients before allowing the client directories
-// to be loaded. Uses CSRF protection.
-// --------------------------------------------------------
-//app.set('view engine', 'ejs');
-app.engine('jade', cons.jade);
-app.set('view engine', 'jade');
-app.set('views', path.join(__dirname,'views'));
-
-
-// --------------------------------------------------------
-// Login
-// --------------------------------------------------------
-app.get(loginRoute, csrf, common, function(req, res) {
-  var data = {
-    title: 'Please log in'
-    , message: req.session.messages
-  };
-  res.render('login', data);
-});
-
-// --------------------------------------------------------
-// Handle a login attempt.
-// --------------------------------------------------------
-app.post(loginRoute, function(req, res, next) {
-  passport.authenticate('local', function(err, user, info) {
-    if (err) {
-      console.log('err: %s', err);
-      return next(err);
-    }
-    if (!user) {
-      if (req.session) {
-        req.session.messages =  [info.message];
-      }
-      return res.redirect(loginRoute);
-    }
-    req.logIn(user, function(err) {
-      if (err) { return next(err); }
-      console.log('logIn() success');
-      req.session.userid = user.id;
-      return res.redirect('/');
-    });
-  })(req, res, next);
-});
-
 app.use(app.router);
 
-// development only
+// --------------------------------------------------------
+// Development configuration
+// --------------------------------------------------------
 app.configure('development', function() {
   console.log('DEVELOPMENT mode');
   app.use(express.errorHandler());
 });
 
+// --------------------------------------------------------
+// Production configuration
+// --------------------------------------------------------
 app.configure('production', function() {
   console.log('PRODUCTION mode');
 });
 
+// ========================================================
+// ========================================================
+// Routes
+// ========================================================
+// ========================================================
+
 // --------------------------------------------------------
-// Logout
+// Group of methods that are commonly needed for 
+// many requests.
 // --------------------------------------------------------
-app.get(logoutRoute, common, function(req, res) {
-  req.session.destroy(function(err) {
-    res.redirect(loginRoute);
-  });
-});
+common.push(auth);
+
+// --------------------------------------------------------
+// Login and logout
+// --------------------------------------------------------
+app.get(loginRoute, csrf, home.login);
+app.post(loginRoute, home.loginPost);
+app.get(logoutRoute, common, home.logout);
 
 // --------------------------------------------------------
 // Home
 // --------------------------------------------------------
-app.get('/', auth, common, function(req, res) {
-  res.render('content', {
-    title: 'Testing'
-    , user: {
-      id: req.session.userid
-      // TODO: hardcode
-      , username: 'kurt'
-    }
-  });
-});
+app.get('/', common, home.home);
 
+// --------------------------------------------------------
+// Search
+// --------------------------------------------------------
+app.get('/search', common, csrf, search.view);
+app.post('/search', common, csrf, search.execute);
+
+
+// --------------------------------------------------------
+// Start the server.
+// --------------------------------------------------------
 app.listen(port);
 console.log('Server listening on port ' + port);
-
-
-/* --------------------------------------------------------
- * findById()
- *
- * param       id
- * param       cb
- * return      undefined
- * -------------------------------------------------------- */
-function findById(id, cb) {
-  console.log('findById()');
-  User.forge({id: id})
-    .fetch()
-    .then(function(u) {
-      if (! u) return cb(new Error('User ' + id + ' does not exist.'));
-      // TODO: security issues with password hash, etc.
-      return cb(null, u.toJSON());
-    });
-}
-
-/* --------------------------------------------------------
- * findByUsername()
- *
- * param       username
- * param       cb
- * return      undefined
- * -------------------------------------------------------- */
-function findByUsername(username, cb) {
-  console.log('findByUsername()');
-  User.forge({username: username})
-    .fetch()
-    .then(function(u) {
-      if (! u) return cb(new Error('User ' + username + ' does not exist.'));
-      // TODO: security issues with password hash, etc.
-      return cb(null, u);
-    });
-}
-
 
 /* --------------------------------------------------------
  * auth()
@@ -222,17 +161,3 @@ function auth(req, res, next) {
   res.redirect(loginRoute);
 }
 
-/* --------------------------------------------------------
- * common()
- *
- * Load common site settings for rendering on all pages.
- *
- * param       req
- * param       res
- * param       next
- * return      undefined
- * -------------------------------------------------------- */
-function common(req, res, next) {
-  app.locals.siteTitle = cfg.site.title;
-  next();
-}
