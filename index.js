@@ -17,7 +17,8 @@ var express = require('express')
   , path = require('path')
   , loginRoute = '/login'
   , logoutRoute = '/logout'
-  , users = []    // mock for testing
+  //, users = []    // mock for testing
+  , User = require('./models').User
   ;
 
 // --------------------------------------------------------
@@ -43,8 +44,14 @@ passport.use(new LocalStrategy(
     findByUsername(username, function(err, user) {
       if (err) { return done(err); }
       if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
-      if (user.password != password) { return done(null, false, { message: 'Invalid password' }); }
-      return done(null, user);
+      user.checkPassword(password, function(err, same) {
+        if (err) return done(err);
+        if (same) {
+          return done(null, user);
+        } else {
+          return done(null, false, {message: 'Invalid password'});
+        }
+      });
     });
   }
 ));
@@ -165,42 +172,45 @@ console.log('Server listening on port ' + port);
 // --------------------------------------------------------
 // Users for testing only.
 // --------------------------------------------------------
-users.push({username: 'user1', password: 'testuser1', id: 1});
-users.push({username: 'user2', password: 'testuser2', id: 2});
-users.push({username: 'user3', password: 'testuser3', id: 3});
-users.push({username: 'user4', password: 'testuser4', id: 4});
+//users.push({username: 'user1', password: 'testuser1', id: 1});
+//users.push({username: 'user2', password: 'testuser2', id: 2});
+//users.push({username: 'user3', password: 'testuser3', id: 3});
+//users.push({username: 'user4', password: 'testuser4', id: 4});
 
 /* --------------------------------------------------------
  * findById()
  *
  * param       id
- * param       fn
+ * param       cb
  * return      undefined
  * -------------------------------------------------------- */
-function findById(id, fn) {
-  var idx = id - 1;
-  if (users[idx]) {
-    fn(null, users[idx]);
-  } else {
-    fn(new Error('User ' + id + ' does not exist'));
-  }
+function findById(id, cb) {
+  console.log('findById()');
+  User.forge({id: id})
+    .fetch()
+    .then(function(u) {
+      if (! u) return cb(new Error('User ' + id + ' does not exist.'));
+      // TODO: security issues with password hash, etc.
+      return cb(null, u.toJSON());
+    });
 }
 
 /* --------------------------------------------------------
  * findByUsername()
  *
  * param       username
- * param       fn
+ * param       cb
  * return      undefined
  * -------------------------------------------------------- */
-function findByUsername(username, fn) {
-  for (var i = 0, len = users.length; i < len; i++) {
-    var user = users[i];
-    if (user.username === username) {
-      return fn(null, user);
-    }
-  }
-  return fn(null, null);
+function findByUsername(username, cb) {
+  console.log('findByUsername()');
+  User.forge({username: username})
+    .fetch()
+    .then(function(u) {
+      if (! u) return cb(new Error('User ' + username + ' does not exist.'));
+      // TODO: security issues with password hash, etc.
+      return cb(null, u);
+    });
 }
 
 

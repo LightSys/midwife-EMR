@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   status BOOLEAN NOT NULL DEFAULT 1,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `role` (
   name VARCHAR(30) NOT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `user_role` (
   role_id INT NOT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (role_id) REFERENCES role (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `patient` (
   ageOfMenarche TINYINT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `vaccinationType` (
   description VARCHAR(250) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `vaccination` (
   comment VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (vaccinationType) REFERENCES vaccinationType (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   wantsUS BOOLEAN NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   patient_id INT NOT NULL,
   address_id INT NULL,
   partner_id INT NULL,
@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS `address` (
   postalCode VARCHAR(20) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS `partner` (
   monthlyIncome INT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS `healthTeaching` (
   teacher INT NOT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   pregnancy_id INT NOT NULL,
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (teacher) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS `medicationType` (
   description VARCHAR(250) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS `medication` (
   comment VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   pregnancy_id INT NOT NULL,
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (medicationType) REFERENCES medicationType (id) ON DELETE NO ACTION ON UPDATE CASCADE,
@@ -241,7 +241,7 @@ CREATE TABLE IF NOT EXISTS `pregnancyExtra` (
   monthlyIncome INT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -288,7 +288,7 @@ CREATE TABLE IF NOT EXISTS `pregnancyQuestionnaire` (
   historyNone BOOLEAN NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -310,7 +310,7 @@ CREATE TABLE IF NOT EXISTS `pregnancyHistory` (
   comment VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   pregnancy_id INT NOT NULL,
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
@@ -338,7 +338,7 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
   returnDate DATE NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   pregnancy_id INT NOT NULL,
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
@@ -354,7 +354,7 @@ CREATE TABLE IF NOT EXISTS `labTest` (
   resultFormat BLOB NOT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -369,7 +369,7 @@ CREATE TABLE IF NOT EXISTS `labResult` (
   warn BOOLEAN NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   pregnancy_id INT NOT NULL,
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
@@ -384,7 +384,7 @@ CREATE TABLE IF NOT EXISTS `referral` (
   reason VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
-  supervisor INT NOT NULL,
+  supervisor INT NULL,
   pregnancy_id INT NOT NULL,
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,

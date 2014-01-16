@@ -57,6 +57,7 @@ var init = function(dbSettings) {
     saving: function() {
       // Only allow attributes that we know about.
       // Adapted from the Ghost project.
+      console.log('BASE: saving()');
       if (this.permittedAttributes) {
         this.attributes = this.pick(this.permittedAttributes);
       }
