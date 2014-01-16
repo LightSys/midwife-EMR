@@ -4,8 +4,7 @@ block content
   h1= title
   p Hello World again!
 
-  h2 Patient Data
-  if patient && patient.firstname
-    p= patient.firstname
-  else
-    p No first name
+  h2 User Information
+  p= 'User id: ' + user.id
+
+  a(href='/logout') Logout

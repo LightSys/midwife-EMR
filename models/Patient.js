@@ -14,57 +14,44 @@ var moment = require('moment')
   ;
 
 /*
-CREATE TABLE `patients` (
-  `firstname` varchar(255) DEFAULT NULL,
-  `lastname` varchar(255) DEFAULT NULL,
-  `nickname` varchar(255) DEFAULT NULL,
-  `mmcID` varchar(255) DEFAULT NULL,
-  `dob` datetime DEFAULT NULL,
-  `bloodType` varchar(255) DEFAULT NULL,
-  `criticalInfo` text,
-  `generalInfo` text,
-  `menarche` int(11) DEFAULT NULL,
-  `mammography` tinyint(1) DEFAULT NULL,
-  `breastSelfExam` tinyint(1) DEFAULT NULL,
-  `papTest` tinyint(1) DEFAULT NULL,
-  `colposcopy` tinyint(1) DEFAULT NULL,
-  `gravida` int(11) DEFAULT NULL,
-  `stillBirths` int(11) DEFAULT NULL,
-  `abortions` int(11) DEFAULT NULL,
-  `living` int(11) DEFAULT NULL,
-  `para` int(11) DEFAULT NULL,
-  `term` int(11) DEFAULT NULL,
-  `preterm` int(11) DEFAULT NULL,
-  `philHealth` tinyint(1) DEFAULT NULL,
-  `philHealthMCP` tinyint(1) DEFAULT NULL,
-  `philHealthNCP` tinyint(1) DEFAULT NULL,
-  `philHealthID` varchar(255) DEFAULT NULL,
-  `gramStain` tinyint(1) DEFAULT NULL,
-  `breastExamTaught` tinyint(1) DEFAULT NULL,
-  `maritalStatus` enum('unspecified','Live-in','Single','Married','Concubinage','Widowed','Divorced','Separated') DEFAULT 'unspecified',
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `createdAt` datetime NOT NULL,
-  `updatedAt` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=862 DEFAULT CHARSET=latin1
+CREATE TABLE IF NOT EXISTS `patient` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  firstname VARCHAR(70) NOT NULL,
+  lastname VARCHAR(70) NOT NULL,
+  nickname VARCHAR(70) NULL,
+  dohID VARCHAR(10) NULL,
+  dob DATE NULL,
+  generalInfo VARCHAR(8192) NULL,
+  gravida TINYINT NULL,
+  stillBirths TINYINT NULL,
+  abortions TINYINT NULL,
+  living TINYINT NULL,
+  para TINYINT NULL,
+  term TINYINT NULL,
+  preterm TINYINT NULL,
+  ageOfMenarche TINYINT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt TIMESTAMP,
+  supervisor INT NOT NULL,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
+  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
+);
 */
 
 Patient = Bookshelf.Model.extend({
-  tableName: 'patients'
+  tableName: 'patient'
 
-  , permittedAttributes: ['firstname','lastname','nickname','mmcID','bloodType',
-         'criticalInfo','generalInfo','menarche','mammography','breastSelfExam',
-         'papTest','colposcopy','gravida','stillBirths','abortions','living',
-         'para','term','preterm','philHealth','philHealthMCP','philHealthNCP',
-         'philHealthID','gramStain','breastExamTaught','maritalStatus','id',
-         'createdAt','updatedAt']
+  , permittedAttributes: ['id', 'firstname','lastname','nickname','dohID',
+         'dob', 'generalInfo', 'gravida','stillBirths','abortions','living',
+         'para','term','preterm','ageOfMenarche', 'updatedBy', 'updatedAt', 
+         'supervisor']
 
   // --------------------------------------------------------
   // Relationships
   // --------------------------------------------------------
-  , vaccination: function() {
-      return this.hasMany(Vaccination);
-    }
+  //, vaccination: function() {
+      //return this.hasMany(Vaccination);
+    //}
 });
 
 Patients = Bookshelf.Collection.extend({

@@ -4,9 +4,13 @@ html(lang="en")
     title= title
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     link(href="/bootstrap/dist/css/bootstrap.css", rel="stylesheet")
+    link(href="/css/mercy.css", rel="stylesheet")
   body
     div.container
-      block content
+      if user
+        block content
+      else
+        block login
 
     script(src='/jquery/jquery.js')
     script(src='/bootstrap/dist/js/bootstrap.js')
