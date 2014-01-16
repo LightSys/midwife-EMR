@@ -4,13 +4,61 @@ html(lang="en")
     title= title
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     link(href="/bootstrap/dist/css/bootstrap.css", rel="stylesheet")
+    link(href="/css/sb-admin.css", rel="stylesheet")
+    link(href="font-awesome/css/font-awesome.min.css", rel="stylesheet")
     link(href="/css/mercy.css", rel="stylesheet")
   body
-    div.container
-      if user
-        block content
-      else
-        block login
+    div.wrapper
+      //- Header
+      nav(class='navbar navbar-inverse navbar-fixed-top')
+        div.navbar-header
+          button(type="button", class="navbar-toggle", data-toggle="collapse", data-target=".navbar-ex1-collapse")
+            span(class="sr-only") Toggle navigation
+            span(class="icon-bar")
+            span(class="icon-bar")
+            span(class="icon-bar")
+          a.navbar-brand(href="/")
+            if title
+              = siteTitle
+
+        //- Left sidebar
+        div(class="collapse navbar-collapse navbar-ex1-collapse")
+          ul(class="nav navbar-nav side-nav")
+            li
+              a(href="/") <i class="fa fa-dashboard"></i> Home
+            li
+              a(href="/login") <i class="fa fa-bar-chart-o"></i> Login
+            li
+              a(href="/logout") <i class="fa fa-table"></i> Logout
+
+          //- Header menu options on the right
+          ul(class="nav navbar-nav navbar-right navbar-user")
+            if user
+              li(class="dropdown user-dropdown")
+                a(href="#", class="dropdown-toggle", data-toggle="dropdown")
+                  <i class="fa fa-user"></i>
+                  = ' ' + user.username + ' '
+                  <b class="caret"></b>
+                ul(class="dropdown-menu")
+                  li
+                    a(href="/profile") <i class="fa fa-user"></i> Profile
+                  li.divider
+                  li
+                    a(href="/logout") <i class="fa fa-power-off"></i> Log Out
+
+      div#page-wrapper
+        div.row
+          div.col-lg-12
+            div.container
+              if user
+                block content
+              else
+                block login
+
+      </div><!-- /#page-wrapper -->
+
+    </div><!-- /#wrapper -->
+
 
     script(src='/jquery/jquery.js')
     script(src='/bootstrap/dist/js/bootstrap.js')

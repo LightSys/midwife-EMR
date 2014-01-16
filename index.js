@@ -17,7 +17,6 @@ var express = require('express')
   , path = require('path')
   , loginRoute = '/login'
   , logoutRoute = '/logout'
-  //, users = []    // mock for testing
   , User = require('./models').User
   ;
 
@@ -101,7 +100,7 @@ app.set('views', path.join(__dirname,'views'));
 // --------------------------------------------------------
 // Login
 // --------------------------------------------------------
-app.get(loginRoute, csrf, function(req, res) {
+app.get(loginRoute, csrf, common, function(req, res) {
   var data = {
     title: 'Please log in'
     , message: req.session.messages
@@ -146,21 +145,24 @@ app.configure('production', function() {
 });
 
 // --------------------------------------------------------
-// Everything below this point requires authentication.
+// Logout
 // --------------------------------------------------------
-app.use(ensureAuthenticated);
-
-app.get(logoutRoute, function(req, res) {
+app.get(logoutRoute, common, function(req, res) {
   req.session.destroy(function(err) {
     res.redirect(loginRoute);
   });
 });
 
-app.get('/', function(req, res) {
+// --------------------------------------------------------
+// Home
+// --------------------------------------------------------
+app.get('/', auth, common, function(req, res) {
   res.render('content', {
     title: 'Testing'
     , user: {
       id: req.session.userid
+      // TODO: hardcode
+      , username: 'kurt'
     }
   });
 });
@@ -168,14 +170,6 @@ app.get('/', function(req, res) {
 app.listen(port);
 console.log('Server listening on port ' + port);
 
-
-// --------------------------------------------------------
-// Users for testing only.
-// --------------------------------------------------------
-//users.push({username: 'user1', password: 'testuser1', id: 1});
-//users.push({username: 'user2', password: 'testuser2', id: 2});
-//users.push({username: 'user3', password: 'testuser3', id: 3});
-//users.push({username: 'user4', password: 'testuser4', id: 4});
 
 /* --------------------------------------------------------
  * findById()
@@ -215,16 +209,30 @@ function findByUsername(username, cb) {
 
 
 /* --------------------------------------------------------
- * ensureAuthenticated()
+ * auth()
  *
  * param       req
  * param       res
  * param       next
  * return      undefined
  * -------------------------------------------------------- */
-function ensureAuthenticated(req, res, next) {
+function auth(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   console.log('Redirecting to login');
   res.redirect(loginRoute);
 }
 
+/* --------------------------------------------------------
+ * common()
+ *
+ * Load common site settings for rendering on all pages.
+ *
+ * param       req
+ * param       res
+ * param       next
+ * return      undefined
+ * -------------------------------------------------------- */
+function common(req, res, next) {
+  app.locals.siteTitle = cfg.site.title;
+  next();
+}
