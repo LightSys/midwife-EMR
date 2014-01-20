@@ -8,17 +8,14 @@
 
 var passport = require('passport')
   , loginRoute = '/login'
+  , _ = require('underscore')
   ;
 
 var home = function(req, res) {
   console.log('home');
   res.render('content', {
     title: 'Testing'
-    , user: {
-      id: req.session.userid
-      // TODO: hardcode
-      , username: 'kurt'
-    }
+    , user: req.session.user
   });
 };
 
@@ -46,8 +43,10 @@ var loginPost = function(req, res, next) {
     }
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      console.log('logIn() success');
-      req.session.userid = user.id;
+      // --------------------------------------------------------
+      // Store user information in the session sans sensitive info.
+      // --------------------------------------------------------
+      req.session.user = _.omit(user.toJSON(), 'password');;
       return res.redirect('/');
     });
   })(req, res, next);

@@ -8,10 +8,13 @@ Create the tables that do not already exist.
 CREATE TABLE IF NOT EXISTS `user` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL,
+  firstname VARCHAR(30) NOT NULL,
+  lastname VARCHAR(30) NOT NULL,
   password VARCHAR(60) NOT NULL,
   email VARCHAR(100) NULL,
   lang VARCHAR(10) NULL,
   status BOOLEAN NOT NULL DEFAULT 1,
+  comment VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,

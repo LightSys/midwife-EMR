@@ -29,6 +29,8 @@ html(lang="en")
             li
               a(href="/search") <i class="fa fa-search"></i> Search
             li
+              a(href="/user") <i class="fa fa-users"></i> Users
+            li
               a(href="/logout") <i class="fa fa-power-off"></i> Logout
 
           //- Header menu options on the right
@@ -54,13 +56,9 @@ html(lang="en")
                 block content
                 block search
                 block searchResults
+                block userList
               else
                 block login
-
-      </div><!-- /#page-wrapper -->
-
-    </div><!-- /#wrapper -->
-
 
     script(src='/jquery/jquery.js')
     script(src='/bootstrap/dist/js/bootstrap.js')

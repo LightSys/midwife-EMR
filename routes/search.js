@@ -9,21 +9,14 @@
 var view = function(req, res) {
   res.render('search', {
     title: 'Search'
-    , user: {
-      id: req.session.userid
-      // TODO: hardcode
-      , username: 'kurt'
-    }
+    , user: req.session.user
   });
 };
 
 var execute = function(req, res) {
   res.render('searchResults', {
     title: 'Search Results'
-    , user: {
-      id: req.session.userid
-      , username: 'kurt'
-    }
+    , user: req.session.user
     , results: [
       'Jane Doe'
       , 'Christy Smith'
@@ -36,9 +29,6 @@ var execute = function(req, res) {
 module.exports = {
   view: view
   , execute: execute
-
-
-
 };
 
 

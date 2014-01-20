@@ -1,0 +1,50 @@
+extends layouts/default_layout
+
+block search
+  h1= title
+
+  div.userEditBox
+    if success
+      p.text-info
+        = messages[0]
+    else
+      p.text-warning User was not updated because:
+      ul
+        for msg in messages
+          li.text-warning= msg
+    - var action = '/user/' + editUser.id + '/update';
+      form(role='form', name='userForm', action=action, method='post')
+
+        div.form-group
+          span= 'Id: ' + editUser.id
+        div.form-group
+          span Username
+          input(class='form-control', type='text', name='username', value=editUser.username)
+        div.form-group
+          span Firstname
+          input(class='form-control', type='text', name='firstname', value=editUser.firstname)
+        div.form-group
+          span Lastname
+          input(class='form-control', type='text', name='lastname', value=editUser.lastname)
+        div.form-group
+          span Password
+          input(class='form-control', type='password', name='password')
+        div.form-group
+          span Password confirmation
+          input(class='form-control', type='password', name='password2')
+        div.form-group
+          span Email
+          input(class='form-control', type='text', name='email', value=editUser.email)
+        div.form-group
+          label.radio-inline Active
+            input(type='radio', name='status', value='1' checked=editUser.status==1)
+          label.radio-inline Inactive
+            input(type='radio', name='status', value='0' checked=editUser.status==0)
+        div.form-group
+          span Comment
+          input(class='form-control', type='text', name='comment', value=editUser.comment)
+
+        input(class='btn btn-default', type='submit', value='Save')
+
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=editUser.id)

@@ -13,13 +13,11 @@ var express = require('express')
   , app = express()
   , SessionStore = require('connect-mysql')(express)
   , cfg = require('./config')
-  , port = 3000
   , path = require('path')
-  , loginRoute = '/login'
-  , logoutRoute = '/logout'
   , User = require('./models').User
   , search = require('./routes').search
   , home = require('./routes').home
+  , users = require('./routes').users
   , common = []
   ;
 
@@ -81,6 +79,9 @@ app.use(express.bodyParser());
 app.use(passport.initialize());
 app.use(passport.session());
 
+// --------------------------------------------------------
+// Application constants used within views.
+// --------------------------------------------------------
 app.locals.siteTitle = cfg.site.title;
 
 // --------------------------------------------------------
@@ -125,27 +126,36 @@ common.push(auth);
 // --------------------------------------------------------
 // Login and logout
 // --------------------------------------------------------
-app.get(loginRoute, csrf, home.login);
-app.post(loginRoute, home.loginPost);
-app.get(logoutRoute, common, home.logout);
+app.get(cfg.path.login, csrf, home.login);
+app.post(cfg.path.login, home.loginPost);
+app.get(cfg.path.logout, common, home.logout);
 
 // --------------------------------------------------------
 // Home
 // --------------------------------------------------------
-app.get('/', common, home.home);
+app.get(cfg.path.home, common, home.home);
 
 // --------------------------------------------------------
 // Search
 // --------------------------------------------------------
-app.get('/search', common, csrf, search.view);
-app.post('/search', common, csrf, search.execute);
+app.get(cfg.path.search, common, csrf, search.view);
+app.post(cfg.path.search, common, csrf, search.execute);
 
+// --------------------------------------------------------
+// Users
+// --------------------------------------------------------
+app.get(cfg.path.userList, common, users.list);
+app.all(cfg.path.userLoad, users.load);  // parameter handling
+app.get(cfg.path.userNewForm, common, csrf, users.addForm);
+app.post(cfg.path.userCreate, common, csrf, users.create);
+app.get(cfg.path.userEditForm, common, csrf, users.editForm);
+app.post(cfg.path.userUpdate, common, csrf, users.update);
 
 // --------------------------------------------------------
 // Start the server.
 // --------------------------------------------------------
-app.listen(port);
-console.log('Server listening on port ' + port);
+app.listen(cfg.host.port);
+console.log('Server listening on port ' + cfg.host.port);
 
 /* --------------------------------------------------------
  * auth()
@@ -158,6 +168,6 @@ console.log('Server listening on port ' + port);
 function auth(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   console.log('Redirecting to login');
-  res.redirect(loginRoute);
+  res.redirect(cfg.path.login);
 }
 

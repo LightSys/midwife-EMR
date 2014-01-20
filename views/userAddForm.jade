@@ -1,0 +1,42 @@
+extends layouts/default_layout
+
+block search
+  h1= title
+
+  div.userEditBox
+    if success
+      p.text-info
+        = messages[0]
+    else
+      p.text-warning User was not created because:
+      ul
+        for msg in messages
+          li.text-warning= msg
+    - var action = '/user';
+      form(role='form', name='userForm', action=action, method='post')
+
+        div.form-group
+          span Username
+          input(class='form-control', type='text', name='username')
+        div.form-group
+          span Firstname
+          input(class='form-control', type='text', name='firstname')
+        div.form-group
+          span Lastname
+          input(class='form-control', type='text', name='lastname')
+        div.form-group
+          span Password
+          input(class='form-control', type='password', name='password')
+        div.form-group
+          span Password confirmation
+          input(class='form-control', type='password', name='password2')
+        div.form-group
+          span Email
+          input(class='form-control', type='text', name='email')
+        div.form-group
+          span Comment
+          input(class='form-control', type='text', name='comment')
+
+        input(class='btn btn-default', type='submit', value='Create User')
+
+        input(type='hidden', name='_csrf', value=token)
