@@ -1,0 +1,28 @@
+extends layouts/default_layout
+
+block roleEditForm
+  h1= title
+
+  div.roleEditBox
+    if success
+      p.text-info
+        = messages[0]
+    else
+      p.text-warning= gettext('Role was not updated because:')
+      ul
+        for msg in messages
+          li.text-warning= msg
+    - var action = '/role/' + editRole.id + '/update';
+      form(role='form', name='roleEditForm', action=action, method='post')
+
+        div.form-group
+          span= gettext('Name')
+          input(class='form-control', type='text', name='name', value=editRole.name)
+        div.form-group
+          span= gettext('Description')
+          input(class='form-control', type='text', name='description', value=editRole.description)
+
+        input(class='btn btn-default', type='submit', value=gettext('Update Role'))
+        input(type='hidden', name='id', value=editRole.id)
+        input(type='hidden', name='_csrf', value=token)
+

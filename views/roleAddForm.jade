@@ -1,0 +1,27 @@
+extends layouts/default_layout
+
+block roleAddForm
+  h1= title
+
+  div.roleEditBox
+    if success
+      p.text-info
+        = messages[0]
+    else
+      p.text-warning= gettext('Role was not created because:')
+      ul
+        for msg in messages
+          li.text-warning= msg
+    - var action = '/role';
+      form(role='form', name='roleAddForm', action=action, method='post')
+
+        div.form-group
+          span= gettext('Name')
+          input(class='form-control', type='text', name='name')
+        div.form-group
+          span= gettext('Description')
+          input(class='form-control', type='text', name='description')
+
+        input(class='btn btn-default', type='submit', value=gettext('Create Role'))
+        input(type='hidden', name='_csrf', value=token)
+

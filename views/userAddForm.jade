@@ -39,4 +39,6 @@ block search
 
         input(class='btn btn-default', type='submit', value=gettext('Create User'))
         input(type='hidden', name='_csrf', value=token)
+        //- Assumes that the user created will be 'active' immediately.
+        input(type='hidden', name='status', value='1')
 

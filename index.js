@@ -20,6 +20,7 @@ var express = require('express')
   , search = require('./routes').search
   , home = require('./routes').home
   , users = require('./routes').users
+  , roles = require('./routes').roles
   , common = []
   ;
 
@@ -172,6 +173,16 @@ app.get(cfg.path.userNewForm, common, csrf, users.addForm);
 app.post(cfg.path.userCreate, common, csrf, users.create);
 app.get(cfg.path.userEditForm, common, csrf, users.editForm);
 app.post(cfg.path.userUpdate, common, csrf, users.update);
+
+// --------------------------------------------------------
+// Roles
+// --------------------------------------------------------
+app.get(cfg.path.roleList, common, roles.list);
+app.all(cfg.path.roleLoad, roles.load);  // parameter handling
+app.get(cfg.path.roleNewForm, common, csrf, roles.addForm);
+app.post(cfg.path.roleCreate, common, csrf, roles.create);
+app.get(cfg.path.roleEditForm, common, csrf, roles.editForm);
+app.post(cfg.path.roleUpdate, common, csrf, roles.update);
 
 // --------------------------------------------------------
 // Start the server.

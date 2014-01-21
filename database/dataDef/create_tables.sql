@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 CREATE TABLE IF NOT EXISTS `role` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30) NOT NULL,
+  description VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
