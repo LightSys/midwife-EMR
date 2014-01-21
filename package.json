@@ -15,7 +15,8 @@
     "connect-mysql": "~2.0.0",
     "passport": "~0.1.18",
     "bcrypt": "~0.7.7",
-    "validator": "~3.1.0"
+    "validator": "~3.1.0",
+    "i18n-abide": "0.0.16"
   },
   "devDependencies": {
     "should": "~2.1.1"

@@ -2,20 +2,20 @@ extends layouts/default_layout
 
 block userList
   h1= title
-  p These are the users in the system.
+  p= gettext('These are the users in the system.')
 
   div.usertable
     table(class='table table-striped table-bordered table-hover')
       thead
         tr
-          th.header ID
-          th.header Username
-          th.header First name
-          th.header Last name
-          th.header Email
-          th.header Language
-          th.header Active
-          th.header Comment
+          th.header= gettext('ID')
+          th.header= gettext('Username')
+          th.header= gettext('First name')
+          th.header= gettext('Last name')
+          th.header= gettext('Email')
+          th.header= gettext('Language')
+          th.header= gettext('Active')
+          th.header= gettext('Comment')
       tbody
         each user in users
           tr
@@ -29,5 +29,5 @@ block userList
             td= user.lang
             td= user.status
             td= user.comment
-    a.pull-right(href='/user/new') Add a new user
+    a.pull-right(href='/user/new')= gettext('Add a new user')
 

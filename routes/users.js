@@ -61,12 +61,12 @@ var list = function(req, res) {
         var r = rec.toJSON()
           , sts = r.status
           ;
-        r.status = 'Yes';
-        if (sts == 0) r.status = 'No';
+        r.status = req.gettext('Yes');
+        if (sts == 0) r.status = req.gettext('No');
         userList.push(_.omit(r, omit));
       });
       res.render('userList', {
-        title: 'List of Users'
+        title: req.gettext('List of Users')
         , user: req.session.user
         , users: userList
       });
@@ -95,7 +95,7 @@ var addForm = function(req, res) {
     }
     ;
   res.render('userAddForm', {
-    title: 'Add User'
+    title: req.gettext('Add User')
     , user: req.session.user
     , success: true
     , messages: []
@@ -115,7 +115,7 @@ var addForm = function(req, res) {
  * -------------------------------------------------------- */
 var getEditFormData = function(req, addData) {
   return _.extend(addData, {
-    title: 'Edit User'
+    title: req.gettext('Edit User')
     , user: req.session.user
     , editUser: _.extend(req.paramUser, {password: '', password2: ''})
   });
@@ -214,9 +214,9 @@ var update = function(req, res) {
  * -------------------------------------------------------- */
 var create = function(req, res) {
   var data = {
-      title: 'Add User'
+      title: req.gettext('Add User')
       , user: req.session.user
-      , messages: ['User was created.']
+      , messages: [req.gettext('User was created.')]
       , success: true
   };
   User.checkFields(req.body, true, true, function(err, result) {

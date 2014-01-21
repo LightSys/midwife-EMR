@@ -8,14 +8,14 @@
 
 var view = function(req, res) {
   res.render('search', {
-    title: 'Search'
+    title: req.gettext('Search')
     , user: req.session.user
   });
 };
 
 var execute = function(req, res) {
   res.render('searchResults', {
-    title: 'Search Results'
+    title: req.gettext('Search Results')
     , user: req.session.user
     , results: [
       'Jane Doe'

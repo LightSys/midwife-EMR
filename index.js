@@ -12,6 +12,8 @@ var express = require('express')
   , cons = require('consolidate')
   , app = express()
   , SessionStore = require('connect-mysql')(express)
+  , i18n = require('i18n-abide')
+  , _ = require('underscore')
   , cfg = require('./config')
   , path = require('path')
   , User = require('./models').User
@@ -80,9 +82,29 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // --------------------------------------------------------
-// Application constants used within views.
+// Localization.
 // --------------------------------------------------------
-app.locals.siteTitle = cfg.site.title;
+app.use(i18n.abide({
+  supported_languages: ['en-US', 'it-CH']
+  , default_lang: 'en-US'
+  , debug_lang: 'it-CH'
+  , translation_directory: 'static/i18n'
+}));
+
+// --------------------------------------------------------
+// This is a hack because i18n-abide does not work natively
+// outside the context of a request. Therefore, we force
+// it into the context of a request in order to localize
+// all of the site wide variables for our templates. See
+// config.js in the site section.
+//
+// Note: any additions to cfg.site in config.js need to be
+// added to this function.
+// --------------------------------------------------------
+var i18nLocals = function(req, res, next) {
+  app.locals.siteTitle = req.gettext(cfg.site.title);
+  next();
+};
 
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
@@ -121,7 +143,7 @@ app.configure('production', function() {
 // Group of methods that are commonly needed for 
 // many requests.
 // --------------------------------------------------------
-common.push(auth);
+common.push(auth, i18nLocals);
 
 // --------------------------------------------------------
 // Login and logout

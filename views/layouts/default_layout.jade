@@ -13,7 +13,7 @@ html(lang="en")
       nav(class='navbar navbar-inverse navbar-fixed-top')
         div.navbar-header
           button(type="button", class="navbar-toggle", data-toggle="collapse", data-target=".navbar-ex1-collapse")
-            span(class="sr-only") Toggle navigation
+            span(class="sr-only")= gettext('Toggle navigation')
             span(class="icon-bar")
             span(class="icon-bar")
             span(class="icon-bar")
@@ -25,13 +25,17 @@ html(lang="en")
         div(class="collapse navbar-collapse navbar-ex1-collapse")
           ul(class="nav navbar-nav side-nav")
             li
-              a(href="/") <i class="fa fa-home"></i> Home
+              a(href="/") <i class="fa fa-home"></i>
+                = gettext('Home')
             li
-              a(href="/search") <i class="fa fa-search"></i> Search
+              a(href="/search") <i class="fa fa-search"></i>
+                = gettext('Search')
             li
-              a(href="/user") <i class="fa fa-users"></i> Users
+              a(href="/user") <i class="fa fa-users"></i>
+                = gettext('Users')
             li
-              a(href="/logout") <i class="fa fa-power-off"></i> Logout
+              a(href="/logout") <i class="fa fa-power-off"></i>
+                = gettext('Logout')
 
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
@@ -43,10 +47,12 @@ html(lang="en")
                   <b class="caret"></b>
                 ul(class="dropdown-menu")
                   li
-                    a(href="/profile") <i class="fa fa-user"></i> Profile
+                    a(href="/profile") <i class="fa fa-user"></i>
+                      = gettext('Profile')
                   li.divider
                   li
-                    a(href="/logout") <i class="fa fa-power-off"></i> Log Out
+                    a(href="/logout") <i class="fa fa-power-off"></i>
+                      = gettext('Log Out')
 
       div#page-wrapper
         div.row

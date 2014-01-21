@@ -1,0 +1,203 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2014-01-21 07:40+0000\n"
+"Content-Type: text/plain;\n"
+
+#: /home/kurt/nodejs/mercy/config.js:22
+msgid "Mercy Maternity"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/search.js:11
+#: /home/kurt/nodejs/mercy/views/layouts/default_layout.jade:32
+#: /home/kurt/nodejs/mercy/views/search.jade:20
+msgid "Search"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/search.js:18
+msgid "Search Results"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/users.js:64
+msgid "Yes"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/users.js:65
+msgid "No"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/users.js:69
+msgid "List of Users"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/users.js:98
+#: /home/kurt/nodejs/mercy/routes/users.js:217
+msgid "Add User"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/users.js:118
+msgid "Edit User"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/users.js:219
+msgid "User was created."
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/home.js:17
+msgid "Testing"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/routes/home.js:25
+msgid "Please log in"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:11
+msgid "User was not updated because:"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:21
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:19
+#: /home/kurt/nodejs/mercy/views/userList.jade:12
+#: /home/kurt/nodejs/mercy/views/login.jade:11
+msgid "Username"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:24
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:22
+msgid "Firstname"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:27
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:25
+msgid "Lastname"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:30
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:28
+#: /home/kurt/nodejs/mercy/views/login.jade:14
+msgid "Password"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:33
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:31
+msgid "Password confirmation"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:36
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:34
+#: /home/kurt/nodejs/mercy/views/userList.jade:15
+msgid "Email"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:39
+#: /home/kurt/nodejs/mercy/views/userList.jade:17
+msgid "Active"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:41
+msgid "Inactive"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:44
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:37
+#: /home/kurt/nodejs/mercy/views/userList.jade:18
+msgid "Comment"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userEditForm.jade:47
+msgid "Save"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/layouts/default_layout.jade:16
+msgid "Toggle navigation"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/layouts/default_layout.jade:29
+msgid "Home"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/layouts/default_layout.jade:35
+msgid "Users"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/layouts/default_layout.jade:38
+#: /home/kurt/nodejs/mercy/views/content.jade:12
+msgid "Logout"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/layouts/default_layout.jade:51
+msgid "Profile"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/layouts/default_layout.jade:55
+msgid "Log Out"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/search.jade:11
+msgid "First or last name"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/search.jade:14
+msgid "DOH ID"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/search.jade:17
+msgid "Priority #"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:11
+msgid "User was not created because:"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userAddForm.jade:40
+msgid "Create User"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/searchResults.jade:5
+msgid "These are what we found."
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userList.jade:5
+msgid "These are the users in the system."
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userList.jade:11
+msgid "ID"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userList.jade:13
+msgid "First name"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userList.jade:14
+msgid "Last name"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userList.jade:16
+msgid "Language"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/userList.jade:32
+msgid "Add a new user"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/content.jade:5
+msgid "Hello World again!"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/content.jade:8
+msgid "User Information"
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/content.jade:10
+msgid "User id: "
+msgstr ""
+
+#: /home/kurt/nodejs/mercy/views/login.jade:16
+msgid "Login"
+msgstr ""

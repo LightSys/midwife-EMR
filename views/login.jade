@@ -8,12 +8,12 @@ block login
       = message
     form(role='form', name='login', action='/login', method='post')
       div.form-group
-        span username
+        span= gettext('Username')
         input(class='form-control', type='text', name='username')
       div.form-group
-        span password
+        span= gettext('Password')
         input(class='form-control', type='password', name='password')
-      input(class='btn btn-default', type='submit', value='login')
+      input(class='btn btn-default', type='submit', value=gettext('Login'))
       input(type='hidden', name='_csrf', value=token)
 
 

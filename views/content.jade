@@ -2,9 +2,11 @@ extends layouts/default_layout
 
 block content
   h1= title
-  p Hello World again!
+  p= gettext('Hello World again!')
 
-  h2 <i class="fa fa-wheelchair"></i> User Information
-  p= 'User id: ' + user.id
+  h2 <i class="fa fa-wheelchair"></i>
+    = gettext('User Information')
 
-  a(href='/logout') Logout
+  p= gettext('User id: ') + user.id
+
+  a(href='/logout')= gettext('Logout')
