@@ -84,7 +84,7 @@ User = Bookshelf.Model.extend({
   // --------------------------------------------------------
   findById: function(id, cb) {
     this.forge({id: id})
-      .fetch()
+      .fetch({withRelated: ['roles']})
       .then(function(u) {
         if (! u) return cb(new Error('User id ' + id + ' not found.'));
         return cb(null, u);
@@ -93,10 +93,9 @@ User = Bookshelf.Model.extend({
 
   , findByUsername: function(username, cb) {
       this.forge({username: username})
-        .fetch()
+        .fetch({withRelated: ['roles']})
         .then(function(u) {
           if (! u) return cb(new Error('User ' + username + ' does not exist.'));
-          // TODO: security issues with password hash, etc.
           return cb(null, u);
         });
   }

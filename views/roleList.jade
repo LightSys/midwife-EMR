@@ -5,6 +5,8 @@ block roleList
   p= gettext('These are the roles in the system.')
     a.pull-right(href='/user')= gettext('Back to the List of users')
 
+  p.text-warning= gettext('Please do not change these roles unless you really know what you are doing.')
+
   div.roletable
     table(class='table table-striped table-bordered table-hover')
       thead

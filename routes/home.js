@@ -13,6 +13,7 @@ var passport = require('passport')
 
 var home = function(req, res) {
   console.log('home');
+  console.dir(req);
   res.render('content', {
     title: req.gettext('Testing')
     , user: req.session.user

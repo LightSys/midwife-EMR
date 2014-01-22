@@ -47,6 +47,11 @@ passport.use(new LocalStrategy(
     User.findByUsername(username, function(err, user) {
       if (err) { return done(err); }
       if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
+      if (user.get('status') != 1) {
+        return done(null, false, {
+          message: username + ' is not an active account.'
+        });
+      }
       user.checkPassword(password, function(err, same) {
         if (err) return done(err);
         if (same) {
@@ -141,7 +146,7 @@ app.configure('production', function() {
 // ========================================================
 
 // --------------------------------------------------------
-// Group of methods that are commonly needed for 
+// Group of methods that are commonly needed for
 // many requests.
 // --------------------------------------------------------
 common.push(auth, i18nLocals);
