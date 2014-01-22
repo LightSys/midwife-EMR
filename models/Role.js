@@ -38,8 +38,8 @@ Role = Bookshelf.Model.extend({
   // Relationships
   // --------------------------------------------------------
 
-  , user: function() {
-    return this.belongsToMany(Role, 'user_role', 'role_id', 'user_id');
+  , users: function() {
+    return this.belongsToMany(User, 'user_role', 'role_id', 'user_id');
   }
 
 

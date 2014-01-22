@@ -185,6 +185,12 @@ app.get(cfg.path.roleEditForm, common, csrf, roles.editForm);
 app.post(cfg.path.roleUpdate, common, csrf, roles.update);
 
 // --------------------------------------------------------
+// Role assignment to users
+// --------------------------------------------------------
+app.all(cfg.path.userLoad2, users.load);
+app.post(cfg.path.changeRoles, common, csrf, users.changeRoles);
+
+// --------------------------------------------------------
 // Start the server.
 // --------------------------------------------------------
 app.listen(cfg.host.port);

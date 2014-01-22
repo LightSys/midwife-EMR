@@ -48,3 +48,25 @@ block search
 
         input(type='hidden', name='_csrf', value=token)
         input(type='hidden', name='id', value=editUser.id)
+
+      h3= gettext('Roles')
+
+      p= gettext('Check the roles that this user should belong to and press Save Role Assignments.')
+
+    - var action = '/user/' + editUser.id + '/role/changeroles';
+      form(role='form', name='userForm', action=action, method='post')
+
+        div.form-group
+          for role in roles
+            - var isChecked = false;
+            for r in editUser.roles
+              - if (r.id == role.id)
+                - isChecked = true
+                - break
+            label.checkbox= role.name
+              input(type='checkbox', name='roles', value=role.id, checked=isChecked)
+
+          input(class='btn btn-default', type='submit', value=gettext('Save Role Assignments'))
+          input(type='hidden', name='_csrf', value=token)
+
+

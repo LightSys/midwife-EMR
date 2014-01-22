@@ -17,6 +17,7 @@ block userList
           th.header= gettext('Language')
           th.header= gettext('Active')
           th.header= gettext('Comment')
+          th.header= gettext('Roles')
       tbody
         each user in users
           tr
@@ -30,5 +31,9 @@ block userList
             td= user.lang
             td= user.status
             td= user.comment
+            td
+              ul(class='list-unstyled')
+                for role in user.roles
+                  li= role.name
     a.pull-right(href='/user/new')= gettext('Add a new user')
 

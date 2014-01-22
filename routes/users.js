@@ -9,6 +9,8 @@
 var _ = require('underscore')
   , User = require('../models').User
   , Users = require('../models').Users
+  , Role = require('../models').Role
+  , Roles = require('../models').Roles
   , cfg = require('../config')
   ;
 
@@ -30,7 +32,7 @@ var load = function(req, res, next) {
     ;
 
   User.forge({id: id})
-    .fetch()
+    .fetch({withRelated: ['roles']})
     .then(function(rec) {
       if (! rec) return next();
       rec = _.omit(rec.toJSON(), ['password']);
@@ -44,7 +46,7 @@ var load = function(req, res, next) {
  * list()
  *
  * Renders a screen that lists the users in the system. Does
- * not render the password, updatedBy, supervisor or 
+ * not render the password, updatedBy, supervisor or
  * password fields. Renders status as Yes or No.
  *
  * param       req
@@ -54,7 +56,7 @@ var load = function(req, res, next) {
 var list = function(req, res) {
   var omit = ['password', 'updatedBy', 'supervisor'];
   Users.forge()
-    .fetch()
+    .fetch({withRelated: ['roles']})
     .then(function(list) {
       var userList = [];
       list.forEach(function(rec) {
@@ -131,8 +133,29 @@ var getEditFormData = function(req, addData) {
  * return      undefined
  * -------------------------------------------------------- */
 var editForm = function(req, res) {
+  var roles = []
+    , formData
+    , additionalData = {
+        success: true
+        , messages: []
+        , roles: null
+    }
+    ;
   if (req.paramUser) {
-    res.render('userEditForm', getEditFormData(req, {success: true, messages: []}));
+    // --------------------------------------------------------
+    // Pass all the roles available for the roles listing
+    // to the template.
+    // --------------------------------------------------------
+    Roles.forge()
+      .fetch()
+      .then(function(list) {
+        for (var i = 0; i < list.length; i++) {
+          roles.push(list.at(i).toJSON());
+        }
+        additionalData.roles = roles;
+        formData = getEditFormData(req, additionalData);
+        res.render('userEditForm', formData);
+      });
   } else {
     res.redirect(cfg.path.userList);
   }
@@ -244,6 +267,69 @@ var create = function(req, res) {
   });
 };
 
+/* --------------------------------------------------------
+ * changeRoles()
+ *
+ * Update the roles that are associated with the user 
+ * through insertions and deletions in the user_role
+ * table.
+ *
+ * param       req
+ * param       res
+ * return      undefined
+ * -------------------------------------------------------- */
+var changeRoles = function(req, res) {
+  var newRoles = []
+    , currRoles = _.pluck(req.paramUser.roles, 'id')
+    , additions = []
+    , deletions = []
+    , rid
+    ;
+
+  // --------------------------------------------------------
+  // Convert roles from the form from string to int.
+  // --------------------------------------------------------
+  _.each(req.body.roles, function(r) {
+    newRoles.push(parseInt(r, 10));
+  });
+
+  Roles.forge()
+    .fetch()
+    .then(function(roles) {
+      // --------------------------------------------------------
+      // Populate the additions and deletions arrays of role ids 
+      // that need to change.
+      // --------------------------------------------------------
+      for (var i = 0; i < roles.length; i++ ) {
+        rid = roles.at(i).get('id');
+        if (_.contains(newRoles, rid)) {
+          if (! _.contains(currRoles, rid)) {
+            additions.push(rid);
+          }
+        } else {
+          if (_.contains(currRoles, rid)) {
+            deletions.push(rid);
+          }
+        }
+      }
+
+      // --------------------------------------------------------
+      // Save the changes to the database.
+      // --------------------------------------------------------
+      User.forge({id: req.paramUser.id})
+        .related('roles')
+        .detach(deletions)
+        .then(function() {
+          User.forge({id: req.paramUser.id})
+            .related('roles')
+            .attach(additions)
+            .then(function() {
+              res.redirect(cfg.path.userList);
+            });
+        });
+    });
+};
+
 module.exports = {
   list: list
   , addForm: addForm
@@ -251,6 +337,7 @@ module.exports = {
   , load: load
   , editForm: editForm
   , update: update
+  , changeRoles: changeRoles
 };
 
 

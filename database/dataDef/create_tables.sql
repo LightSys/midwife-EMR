@@ -34,11 +34,14 @@ CREATE TABLE IF NOT EXISTS `role` (
 );
 
 -- Many-to-many join table for user and role.
+-- Notes:
+-- 2014-01-22: updatedBy field allows NULL because the orm (Bookshelf) 
+-- presently cannot handle updating an extra field in a many-to-many join table.
 CREATE TABLE IF NOT EXISTS `user_role` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   role_id INT NOT NULL,
-  updatedBy INT NOT NULL,
+  updatedBy INT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
   FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE,
