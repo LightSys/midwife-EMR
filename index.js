@@ -10,7 +10,16 @@ var express = require('express')
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
   , cons = require('consolidate')
+  , roz = require('roz')()
+  , grant = roz.grant
+  , revoke = roz.revoke
+  , where = roz.where
+  , anyone = roz.anyone
+  , someone = require('auth').someone
+  , isAdmin = require('auth').isAdmin
+  //, setRoleInfo = require('auth').setRoleInfo
   , app = express()
+  , rozed = roz.wrap(app)
   , SessionStore = require('connect-mysql')(express)
   , i18n = require('i18n-abide')
   , _ = require('underscore')
@@ -112,6 +121,41 @@ var i18nLocals = function(req, res, next) {
   next();
 };
 
+/* --------------------------------------------------------
+ * setRoleInfo()
+ *
+ * Sets the role information in app.locals so that it is
+ * available in all templates rendered.
+ *
+ * param       req
+ * param       res
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
+var setRoleInfo = function(req, res, next) {
+  var roles
+    , roleInfo = {
+      isAuthenticated: req.isAuthenticated()
+      , isAdmin: false
+      , isStudent: false
+      , isSupervisor: false
+      , isClerk: false
+      , isGuard: false
+    }
+    ;
+
+  if (req.user && req.user.related) {
+    roles = req.user.related('roles');
+    roleInfo.isAdmin = roles.findWhere({name: 'administrator'}) ? true: false;
+    roleInfo.isStudent = roles.findWhere({name: 'student'}) ? true: false;
+    roleInfo.isSupervisor = roles.findWhere({name: 'supervisor'}) ? true: false;
+    roleInfo.isClerk = roles.findWhere({name: 'clerk'}) ? true: false;
+    roleInfo.isGuard = roles.findWhere({name: 'guard'}) ? true: false;
+  }
+  app.locals.roleInfo = roleInfo;
+  next();
+};
+
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
 // See: http://dailyjs.com/2012/09/13/express-3-csrf-tutorial/
@@ -149,51 +193,51 @@ app.configure('production', function() {
 // Group of methods that are commonly needed for
 // many requests.
 // --------------------------------------------------------
-common.push(auth, i18nLocals);
+common.push(setRoleInfo, i18nLocals);
 
 // --------------------------------------------------------
 // Login and logout
 // --------------------------------------------------------
-app.get(cfg.path.login, csrf, home.login);
-app.post(cfg.path.login, home.loginPost);
-app.get(cfg.path.logout, common, home.logout);
+rozed.get(cfg.path.login, roz(grant(anyone)), common, csrf, home.login);
+rozed.post(cfg.path.login, roz(grant(anyone)), common, home.loginPost);
+rozed.get(cfg.path.logout, roz(grant(someone)), common, home.logout);
 
 // --------------------------------------------------------
 // Home
 // --------------------------------------------------------
-app.get(cfg.path.home, common, home.home);
+app.get(cfg.path.home, auth, common, home.home);
 
 // --------------------------------------------------------
 // Search
 // --------------------------------------------------------
-app.get(cfg.path.search, common, csrf, search.view);
-app.post(cfg.path.search, common, csrf, search.execute);
+rozed.get(cfg.path.search, roz(grant(someone)), common, csrf, search.view);
+rozed.post(cfg.path.search, roz(grant(someone)), common, csrf, search.execute);
 
 // --------------------------------------------------------
 // Users
 // --------------------------------------------------------
-app.get(cfg.path.userList, common, users.list);
+rozed.get(cfg.path.userList, roz(grant(isAdmin)), common, users.list);
 app.all(cfg.path.userLoad, users.load);  // parameter handling
-app.get(cfg.path.userNewForm, common, csrf, users.addForm);
-app.post(cfg.path.userCreate, common, csrf, users.create);
-app.get(cfg.path.userEditForm, common, csrf, users.editForm);
-app.post(cfg.path.userUpdate, common, csrf, users.update);
+rozed.get(cfg.path.userNewForm, roz(grant(isAdmin)), common, csrf, users.addForm);
+rozed.post(cfg.path.userCreate, roz(grant(isAdmin)), common, csrf, users.create);
+rozed.get(cfg.path.userEditForm, roz(grant(isAdmin)), common, csrf, users.editForm);
+rozed.post(cfg.path.userUpdate, roz(grant(isAdmin)), common, csrf, users.update);
 
 // --------------------------------------------------------
 // Roles
 // --------------------------------------------------------
-app.get(cfg.path.roleList, common, roles.list);
+rozed.get(cfg.path.roleList, roz(grant(isAdmin)), common, roles.list);
 app.all(cfg.path.roleLoad, roles.load);  // parameter handling
-app.get(cfg.path.roleNewForm, common, csrf, roles.addForm);
-app.post(cfg.path.roleCreate, common, csrf, roles.create);
-app.get(cfg.path.roleEditForm, common, csrf, roles.editForm);
-app.post(cfg.path.roleUpdate, common, csrf, roles.update);
+rozed.get(cfg.path.roleNewForm, roz(grant(isAdmin)), common, csrf, roles.addForm);
+rozed.post(cfg.path.roleCreate, roz(grant(isAdmin)), common, csrf, roles.create);
+rozed.get(cfg.path.roleEditForm, roz(grant(isAdmin)), common, csrf, roles.editForm);
+rozed.post(cfg.path.roleUpdate, roz(grant(isAdmin)), common, csrf, roles.update);
 
 // --------------------------------------------------------
 // Role assignment to users
 // --------------------------------------------------------
-app.all(cfg.path.userLoad2, users.load);
-app.post(cfg.path.changeRoles, common, csrf, users.changeRoles);
+app.all(cfg.path.userLoad2, users.load);  // parameter handling
+rozed.post(cfg.path.changeRoles, roz(grant(isAdmin)), common, csrf, users.changeRoles);
 
 // --------------------------------------------------------
 // Start the server.

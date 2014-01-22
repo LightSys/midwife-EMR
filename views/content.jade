@@ -7,6 +7,6 @@ block content
   h2 <i class="fa fa-wheelchair"></i>
     = gettext('User Information')
 
-  p= gettext('User id: ') + user.id
+  p= gettext('User id: ') + user.id + ', ' + gettext('Name: ') + user.username
 
   a(href='/logout')= gettext('Logout')
