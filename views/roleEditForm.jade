@@ -3,6 +3,9 @@ extends layouts/default_layout
 block roleEditForm
   h1= title
 
+  p.clearfix
+    a.pull-right(href='/role')= gettext('Back to the List of roles')
+
   div.roleEditBox
     if success
       p.text-info
@@ -12,12 +15,13 @@ block roleEditForm
       ul
         for msg in messages
           li.text-warning= msg
+
     - var action = '/role/' + editRole.id + '/update';
       form(role='form', name='roleEditForm', action=action, method='post')
 
         div.form-group
           span= gettext('Name')
-          input(class='form-control', type='text', name='name', value=editRole.name)
+          input(class='form-control', type='text', name='name', value=editRole.name, READONLY)
         div.form-group
           span= gettext('Description')
           input(class='form-control', type='text', name='description', value=editRole.description)
