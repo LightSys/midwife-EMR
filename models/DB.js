@@ -13,6 +13,8 @@
  */
 
 var Bookshelf = require('bookshelf')
+  , moment = require('moment')
+  , _ = require('underscore')
   ;
 
 /* --------------------------------------------------------
@@ -58,15 +60,57 @@ var init = function(dbSettings) {
       // Only allow attributes that we know about.
       // Adapted from the Ghost project.
       if (this.permittedAttributes) {
-        console.log('Enforcing permittedAttributes for ' + this.tableName);
         this.attributes = this.pick(this.permittedAttributes);
       }
+      // Set the updatedAt field to the current time whether creating
+      // or updating.
+      this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
+    }
+
+    , logInsert: function(model, knex) {
+        // Insert a record into the log table.
+        var sql = Bookshelf.DB.Model.createSQL(model.tableName, model.get('id'), 'I');
+        Bookshelf.DB.Model.runSQL(knex, sql);
+    }
+
+    , logUpdate: function(model, knex) {
+        // Insert a record into the log table.
+        var sql = Bookshelf.DB.Model.createSQL(model.tableName, model.get('id'), 'U');
+        Bookshelf.DB.Model.runSQL(knex, sql);
+    }
+
+    , logDelete: function(model, knex) {
+        // Insert a record into the log table.
+        var sql = Bookshelf.DB.Model.createSQL(model.tableName, model.get('id'), 'D');
+        Bookshelf.DB.Model.runSQL(knex, sql);
     }
 
   }, {
     // --------------------------------------------------------
     // Class Properties.
     // --------------------------------------------------------
+
+    createSQL: function(tbl, id, op) {
+      // Create the SQL to log changes to the database.
+      var sql;
+      if (op && _.indexOf(['I', 'U', 'D'], op) > -1) {
+        sql = 'INSERT INTO ' + tbl +
+          'Log SELECT ' + tbl + '.*, "' + op + '", NOW() FROM ' +
+          tbl + ' WHERE id = ' + id
+          ;
+        return sql;
+      }
+      return new Error('op must be one of I, U, or D');
+    }
+
+    , runSQL: function(knex, sql) {
+        knex.raw(sql)
+          .then(function(resp) {
+            if (resp[0].affectedRows != 1) {
+              console.error(resp);
+            }
+          });
+    }
 
   });
 

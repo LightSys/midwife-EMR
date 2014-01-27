@@ -22,10 +22,10 @@ do
   echo "-- Creating $lt"
   echo "CREATE TABLE $lt LIKE $t;"
   echo "ALTER TABLE $lt ADD COLUMN op CHAR(1) DEFAULT '';"
-  echo "ALTER TABLE $lt ADD COLUMN replacedAt TIMESTAMP(6) DEFAULT NOW();"
+  echo "ALTER TABLE $lt ADD COLUMN replacedAt DATETIME NOT NULL;"
   echo "ALTER TABLE $lt MODIFY COLUMN id INT DEFAULT 0;"
   echo "ALTER TABLE $lt DROP PRIMARY KEY;"
   echo "ALTER TABLE $lt ADD PRIMARY KEY (id, replacedAt);"
-  echo " "
+  echo "--"
 done
 

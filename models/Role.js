@@ -23,13 +23,36 @@ Role = Bookshelf.Model.extend({
   // --------------------------------------------------------
   tableName: 'role'
 
+  , defaults: {
+    //'updatedAt': moment().format('YYYY-MM-DD HH:mm:ss'));
+  }
+
   , permittedAttributes: permittedAttributes
   , initialize: function() {
     this.on('saving', this.saving, this);
+    this.on('created', this.created, this);
+    this.on('updated', this.updated, this);
+    this.on('destroyed', this.destroyed, this);
   }
 
   , saving: function() {
     console.log('saving');
+  }
+
+  , created: function(model) {
+      // Log the insert into the appropriate log table.
+      Bookshelf.Model.prototype.logInsert.apply(this, [model, Bookshelf.knex]);
+  }
+
+  , updated: function(model) {
+      // Log the insert into the appropriate log table.
+      console.log('update');
+      Bookshelf.Model.prototype.logUpdate.apply(this, [model, Bookshelf.knex]);
+  }
+
+  , destroyed: function(model) {
+      // Log the insert into the appropriate log table.
+      Bookshelf.Model.prototype.logDelete.apply(this, [model, Bookshelf.knex]);
   }
 
 

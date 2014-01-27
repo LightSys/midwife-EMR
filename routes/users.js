@@ -93,7 +93,7 @@ var addForm = function(req, res) {
       , email: ''
       , lang: ''
       , 'status': ''
-      , comment: ''
+      , note: ''
     }
     ;
   res.render('userAddForm', {
@@ -316,6 +316,8 @@ var changeRoles = function(req, res) {
       // --------------------------------------------------------
       // Save the changes to the database.
       // --------------------------------------------------------
+      // TODO: updatedAt, updatedBy, and supervisor fields are
+      // not yet filled in for records in the user_role table.
       User.forge({id: req.paramUser.id})
         .related('roles')
         .detach(deletions)
@@ -324,6 +326,9 @@ var changeRoles = function(req, res) {
             .related('roles')
             .attach(additions)
             .then(function() {
+              // TODO: logDetach() and logAttach() do not do anything yet.
+              User.forge({id: req.paramUser.id}).logDetach(deletions);
+              User.forge({id: req.paramUser.id}).logAttach(additions);
               res.redirect(cfg.path.userList);
             });
         });

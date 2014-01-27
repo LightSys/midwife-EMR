@@ -8,13 +8,14 @@
 
 var moment = require('moment')
   , bcrypt = require('bcrypt')
+  , _ = require('underscore')
   , val = require('validator')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
   , User = {}
   , permittedAttributes = ['id', 'username', 'firstname', 'lastname', 'password',
-      'email', 'lang', 'status', 'comment', 'updatedBy', 'supervisor']
+      'email', 'lang', 'status', 'note', 'updatedBy', 'updatedAt', 'supervisor']
   ;
 
 
@@ -43,37 +44,49 @@ User = Bookshelf.Model.extend({
 
   , permittedAttributes: permittedAttributes
   , initialize: function() {
-    this.on('updating', this.updating, this);
-    this.on('updated', this.updated, this);
-    this.on('changed', this.changed, this);
-
     this.on('saving', this.saving, this);
+    this.on('created', this.created, this);
+    this.on('updated', this.updated, this);
+    this.on('destroyed', this.destroyed, this);
+  }
+
+  , defaults: {
+    // Set the updatedAt field.
+    //'updatedAt': moment().format('YYYY-MM-DD HH:mm:ss')
   }
 
   , saving: function(model) {
-      // Call parent in order to enforce permittedAttributes.
+      // Enforce permittedAttributes.
       Bookshelf.Model.prototype.saving.apply(this, model);
   }
 
-  , changed: function(model) {
-      console.log('----- User on changed -----');
-      console.dir(this.toJSON());
-      console.dir(model.toJSON());
-      console.log('----- User on changed -----');
-  }
-
-  , updating: function(model) {
-      console.log('----- User on updating -----');
-      console.dir(model.previousAttributes());
-      console.dir(model.toJSON());
-      console.log('----- User on updating -----');
+  , created: function(model) {
+      // Log the insert into the appropriate log table.
+      Bookshelf.Model.prototype.logInsert.apply(this, [model, Bookshelf.knex]);
   }
 
   , updated: function(model) {
-      console.log('----- User on updated -----');
-      console.dir(this.previousAttributes());
-      console.dir(model.toJSON());
-      console.log('----- User on updated -----');
+      // Log the insert into the appropriate log table.
+      Bookshelf.Model.prototype.logUpdate.apply(this, [model, Bookshelf.knex]);
+  }
+
+  , destroyed: function(model) {
+      // Log the insert into the appropriate log table.
+      Bookshelf.Model.prototype.logDelete.apply(this, [model, Bookshelf.knex]);
+  }
+
+  , logDetach: function(deletions) {
+      // Note: changes to the user_role table are not yet saved to the
+      // user_roleLog table.
+      //console.log('User.logDetach() for user id: ' + this.get('id'));
+      //console.dir(deletions);
+  }
+
+  , logAttach: function(additions) {
+      // Note: changes to the user_role table are not yet saved to the
+      // user_roleLog table.
+      //console.log('User.logAttach() for user id: ' + this.get('id'));
+      //console.dir(additions);
   }
 
   , checkPassword: function(pw, cb) {
@@ -129,12 +142,12 @@ User = Bookshelf.Model.extend({
     /* --------------------------------------------------------
      * checkFields()
      *
-     * Very basic validity checks. Allows not checking the 
-     * passwords for updates where the password is not being 
+     * Very basic validity checks. Allows not checking the
+     * passwords for updates where the password is not being
      * updated (supposedly).
      *
-     * param       
-     * return      
+     * param
+     * return
      * -------------------------------------------------------- */
   , checkFields: function(rec, isAdd, checkPasswords, cb) {
       var result = {
