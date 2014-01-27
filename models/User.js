@@ -13,8 +13,8 @@ var moment = require('moment')
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
   , User = {}
-  , permittedAttributes =['id', 'username','password','email','lang',
-         'status', 'updatedBy', 'updatedAt', 'supervisor']
+  , permittedAttributes = ['id', 'username', 'firstname', 'lastname', 'password',
+      'email', 'lang', 'status', 'comment', 'updatedBy', 'supervisor']
   ;
 
 
@@ -43,11 +43,37 @@ User = Bookshelf.Model.extend({
 
   , permittedAttributes: permittedAttributes
   , initialize: function() {
+    this.on('updating', this.updating, this);
+    this.on('updated', this.updated, this);
+    this.on('changed', this.changed, this);
+
     this.on('saving', this.saving, this);
   }
 
-  , saving: function() {
-    console.log('saving');
+  , saving: function(model) {
+      // Call parent in order to enforce permittedAttributes.
+      Bookshelf.Model.prototype.saving.apply(this, model);
+  }
+
+  , changed: function(model) {
+      console.log('----- User on changed -----');
+      console.dir(this.toJSON());
+      console.dir(model.toJSON());
+      console.log('----- User on changed -----');
+  }
+
+  , updating: function(model) {
+      console.log('----- User on updating -----');
+      console.dir(model.previousAttributes());
+      console.dir(model.toJSON());
+      console.log('----- User on updating -----');
+  }
+
+  , updated: function(model) {
+      console.log('----- User on updated -----');
+      console.dir(this.previousAttributes());
+      console.dir(model.toJSON());
+      console.log('----- User on updated -----');
   }
 
   , checkPassword: function(pw, cb) {

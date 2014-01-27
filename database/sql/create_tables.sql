@@ -14,13 +14,14 @@ CREATE TABLE IF NOT EXISTS `user` (
   email VARCHAR(100) NULL,
   lang VARCHAR(10) NULL,
   status BOOLEAN NOT NULL DEFAULT 1,
-  comment VARCHAR(300) NULL,
+  note VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `role` (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `role` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 -- Many-to-many join table for user and role.
 -- Notes:
@@ -49,6 +51,7 @@ CREATE TABLE IF NOT EXISTS `user_role` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 -- Definition required by the connect-mysql Nodejs module.
 CREATE TABLE IF NOT EXISTS `session` (
@@ -57,36 +60,20 @@ CREATE TABLE IF NOT EXISTS `session` (
   `expires` INT,
   PRIMARY KEY (`sid`)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `dohSeq` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   year CHAR(4) NOT NULL,
   sequence INT NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS `history` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  updatedAt TIMESTAMP,
-  tablename VARCHAR(50) NOT NULL,
-  op VARCHAR(10) NOT NULL,
-  json BLOB NOT NULL
-);
+SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `patient` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  firstname VARCHAR(70) NOT NULL,
-  lastname VARCHAR(70) NOT NULL,
-  nickname VARCHAR(70) NULL,
   dohID VARCHAR(10) NULL,
   dob DATE NULL,
   generalInfo VARCHAR(8192) NULL,
-  gravida TINYINT NULL,
-  stillBirths TINYINT NULL,
-  abortions TINYINT NULL,
-  living TINYINT NULL,
-  para TINYINT NULL,
-  term TINYINT NULL,
-  preterm TINYINT NULL,
   ageOfMenarche TINYINT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
@@ -94,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `patient` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 -- Look up table for vaccination.
 CREATE TABLE IF NOT EXISTS `vaccinationType` (
@@ -106,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `vaccinationType` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
-
+SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `vaccination` (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -115,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `vaccination` (
   vacMonth TINYINT NULL,
   vacYEAR INT NULL,
   administeredInternally BOOLEAN NOT NULL,
-  comment VARCHAR(300) NULL,
+  note VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
@@ -123,11 +111,12 @@ CREATE TABLE IF NOT EXISTS `vaccination` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 CREATE TABLE IF NOT EXISTS `pregnancy` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  gravida TINYINT NOT NULL,
+  gravidaNumber TINYINT NOT NULL,
   lmp DATE NULL,
   warning BOOLEAN NULL DEFAULT 0,
   edd DATE NULL,
@@ -142,27 +131,43 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   pregnancyEndDate DATE NULL,
   pregnancyEndResult VARCHAR(100) NULL,
   iugr BOOLEAN NULL,
-  comment VARCHAR(2000) NULL,
+  note VARCHAR(2000) NULL,
   numberRequiredTetanus TINYINT NULL,
   invertedNipples BOOLEAN NULL,
   hasUS BOOLEAN NULL,
   wantsUS BOOLEAN NULL,
+  gravida TINYINT NULL,
+  stillBirths TINYINT NULL,
+  abortions TINYINT NULL,
+  living TINYINT NULL,
+  para TINYINT NULL,
+  term TINYINT NULL,
+  preterm TINYINT NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
   patient_id INT NOT NULL,
-  address_id INT NULL,
   partner_id INT NULL,
-  pregnancyExtra_id INT NULL,
   pregnancyQuestionnaire_id INT NULL,
   FOREIGN KEY (patient_id) REFERENCES patient (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
--- One-to-one with pregnancy.
-CREATE TABLE IF NOT EXISTS `address` (
+-- One-to-one with pregnancy. Represents the state of the patient
+-- at the time of the pregnancy.
+CREATE TABLE IF NOT EXISTS `personInfo` (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  firstname VARCHAR(70) NOT NULL,
+  lastname VARCHAR(70) NOT NULL,
+  nickname VARCHAR(70) NULL,
+  religion VARCHAR(50) NULL,
+  maritalStatus VARCHAR(50) NULL,
+  telephone VARCHAR(20) NULL,
+  work VARCHAR(50) NULL,
+  education VARCHAR(70) NULL,
+  monthlyIncome INT NULL,
   address VARCHAR(150) NOT NULL,
   barangay VARCHAR(50) NULL,
   city VARCHAR(100) NULL,
@@ -170,9 +175,12 @@ CREATE TABLE IF NOT EXISTS `address` (
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
+  pregnancy_id INT NOT NULL,
+  FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 -- One-to-one with pregnancy.
@@ -188,6 +196,7 @@ CREATE TABLE IF NOT EXISTS `partner` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 -- One-to-one with pregnancy.
@@ -205,6 +214,7 @@ CREATE TABLE IF NOT EXISTS `healthTeaching` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 -- Lookup table for medication.
@@ -218,6 +228,7 @@ CREATE TABLE IF NOT EXISTS `medicationType` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 CREATE TABLE IF NOT EXISTS `medication` (
@@ -225,7 +236,7 @@ CREATE TABLE IF NOT EXISTS `medication` (
   date DATE NOT NULL,
   medicationType INT NOT NULL,
   numberDispensed INT NULL,
-  comment VARCHAR(300) NULL,
+  note VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
@@ -235,23 +246,7 @@ CREATE TABLE IF NOT EXISTS `medication` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
-
-
--- One-to-one with pregnancy.
-CREATE TABLE IF NOT EXISTS `pregnancyExtra` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  religion VARCHAR(50) NULL,
-  maritalStatus VARCHAR(50) NULL,
-  telephone VARCHAR(20) NULL,
-  work VARCHAR(50) NULL,
-  education VARCHAR(70) NULL,
-  monthlyIncome INT NULL,
-  updatedBy INT NOT NULL,
-  updatedAt TIMESTAMP,
-  supervisor INT NULL,
-  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
-  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
-);
+SHOW WARNINGS;
 
 
 -- One-to-one with pregnancy.
@@ -299,6 +294,7 @@ CREATE TABLE IF NOT EXISTS `pregnancyQuestionnaire` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 
@@ -314,7 +310,7 @@ CREATE TABLE IF NOT EXISTS `pregnancyHistory` (
   episTear BOOLEAN NULL,
   repaired BOOLEAN NULL,
   howLongBFed VARCHAR(20) NULL,
-  comment VARCHAR(300) NULL,
+  note VARCHAR(300) NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
   supervisor INT NULL,
@@ -323,6 +319,7 @@ CREATE TABLE IF NOT EXISTS `pregnancyHistory` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 CREATE TABLE IF NOT EXISTS `prenatalExam` (
@@ -341,7 +338,7 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
   risk BOOLEAN NULL,
   vitamin BOOLEAN NULL,
   pray BOOLEAN NULL,
-  comment VARCHAR(100) NULL,
+  note VARCHAR(100) NULL,
   returnDate DATE NULL,
   updatedBy INT NOT NULL,
   updatedAt TIMESTAMP,
@@ -351,6 +348,7 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 -- Consider storing expected result format as JSON in the blob field.
@@ -365,6 +363,7 @@ CREATE TABLE IF NOT EXISTS `labTest` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 -- Consider storing results as JSON in the blob field.
@@ -382,6 +381,7 @@ CREATE TABLE IF NOT EXISTS `labResult` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 CREATE TABLE IF NOT EXISTS `referral` (
@@ -397,6 +397,7 @@ CREATE TABLE IF NOT EXISTS `referral` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+SHOW WARNINGS;
 
 
 
