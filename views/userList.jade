@@ -6,6 +6,26 @@ block userList
     a.pull-right(href='/role')= gettext('List roles')
 
   div.usertable
+    ul.list-inline
+      li
+        a.pull-left(href='/user')= gettext('Show all users')
+      li
+        a.pull-left(href='/user?status=1')= gettext('Active users')
+      li
+        a.pull-left(href='/user?status=0')= gettext('Inactive users')
+    ul.list-inline
+      li
+        a.pull-right(href='/user')= gettext('Show all roles')
+      li
+        a.pull-right(href='/user?role=1')= gettext('Administrators')
+      li
+        a.pull-right(href='/user?role=2')= gettext('Guards')
+      li
+        a.pull-right(href='/user?role=3')= gettext('Clerks')
+      li
+        a.pull-right(href='/user?role=4')= gettext('Students')
+      li
+        a.pull-right(href='/user?role=5')= gettext('Supervisors')
     table(class='table table-striped table-bordered table-hover')
       thead
         tr

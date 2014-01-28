@@ -49,23 +49,57 @@ var load = function(req, res, next) {
  * not render the password, updatedBy, supervisor or
  * password fields. Renders status as Yes or No.
  *
+ * Accepts query params of status and role. Acceptable values
+ * for status are 0 and 1 and for role 0 through 5 with 0
+ * representing all roles and 1 through 5 the respective
+ * role id. An url without status or role specified is the
+ * same as all statuses and roles.
+ *
  * param       req
  * param       res
  * return      undefined
  * -------------------------------------------------------- */
 var list = function(req, res) {
-  var omit = ['password', 'updatedBy', 'supervisor'];
+  var status = req.query.status
+    , role = req.query.role
+    , omit = ['password', 'updatedBy', 'supervisor']
+    , constraint = {}
+    ;
+
+  // --------------------------------------------------------
+  // Sanity checks, default for status is undefined and for
+  // role it is 0.
+  // --------------------------------------------------------
+  status = parseInt(status, 10);
+  if (isNaN(status)) status = void(0);
+  if (status !== 0 && status !== 1) status = void(0);
+  role = parseInt(role, 10);
+  if (isNaN(role)) role = 0;
+  if (role < 0 || role > 5) role = 0;
+
   Users.forge()
+    .query(function(qb) {
+      if (! isNaN(status)) qb.where('status', '=', status);
+    })
     .fetch({withRelated: ['roles']})
     .then(function(list) {
       var userList = [];
       list.forEach(function(rec) {
         var r = rec.toJSON()
           , sts = r.status
+          , roles
           ;
         r.status = req.gettext('Yes');
         if (sts == 0) r.status = req.gettext('No');
-        userList.push(_.omit(r, omit));
+
+        if (role) {
+          roles = _.pluck(r.roles, 'id');
+          if (_.indexOf(roles, role) !== -1) {
+            userList.push(_.omit(r, omit));
+          }
+        } else {
+          userList.push(_.omit(r, omit));
+        }
       });
       res.render('userList', {
         title: req.gettext('List of Users')
@@ -270,7 +304,7 @@ var create = function(req, res) {
 /* --------------------------------------------------------
  * changeRoles()
  *
- * Update the roles that are associated with the user 
+ * Update the roles that are associated with the user
  * through insertions and deletions in the user_role
  * table.
  *
@@ -297,7 +331,7 @@ var changeRoles = function(req, res) {
     .fetch()
     .then(function(roles) {
       // --------------------------------------------------------
-      // Populate the additions and deletions arrays of role ids 
+      // Populate the additions and deletions arrays of role ids
       // that need to change.
       // --------------------------------------------------------
       for (var i = 0; i < roles.length; i++ ) {
