@@ -4,6 +4,7 @@ create_tables.sql
 Create the tables that do not already exist.
 */
 
+SET foreign_key_checks = 0;
 
 CREATE TABLE IF NOT EXISTS `user` (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
+  UNIQUE (username),
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -30,6 +32,7 @@ CREATE TABLE IF NOT EXISTS `role` (
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
+  UNIQUE (name),
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -91,6 +94,7 @@ CREATE TABLE IF NOT EXISTS `vaccinationType` (
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
+  UNIQUE (name),
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -225,6 +229,7 @@ CREATE TABLE IF NOT EXISTS `medicationType` (
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
+  UNIQUE (name),
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -321,6 +326,33 @@ CREATE TABLE IF NOT EXISTS `pregnancyHistory` (
 );
 SHOW WARNINGS;
 
+CREATE TABLE IF NOT EXISTS `priorityType` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(30) NOT NULL,
+  description VARCHAR(300) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  UNIQUE (name),
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
+  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
+);
+SHOW WARNINGS;
+
+CREATE TABLE IF NOT EXISTS `priority` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  priority INT NOT NULL,
+  ptype INT NOT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  prenatalExam_id INT NOT NULL,
+  UNIQUE (priority, ptype),
+  FOREIGN KEY (prenatalExam_id) REFERENCES prenatalExam (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
+  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
+);
+SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `prenatalExam` (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -340,6 +372,9 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
   pray BOOLEAN NULL,
   note VARCHAR(100) NULL,
   returnDate DATE NULL,
+  checkin DATETIME NULL,
+  checkout DATETIME NULL,
+  chartPulled BOOLEAN NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
@@ -360,6 +395,7 @@ CREATE TABLE IF NOT EXISTS `labTest` (
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
+  UNIQUE (name),
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -400,5 +436,6 @@ CREATE TABLE IF NOT EXISTS `referral` (
 SHOW WARNINGS;
 
 
+SET foreign_key_checks = 1;
 
 

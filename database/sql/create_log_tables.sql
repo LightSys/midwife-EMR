@@ -110,6 +110,22 @@ ALTER TABLE pregnancyHistoryLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnancyHistoryLog DROP PRIMARY KEY;
 ALTER TABLE pregnancyHistoryLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating priorityTypeLog
+CREATE TABLE priorityTypeLog LIKE priorityType;
+ALTER TABLE priorityTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE priorityTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE priorityTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE priorityTypeLog DROP PRIMARY KEY;
+ALTER TABLE priorityTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating priorityLog
+CREATE TABLE priorityLog LIKE priority;
+ALTER TABLE priorityLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE priorityLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE priorityLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE priorityLog DROP PRIMARY KEY;
+ALTER TABLE priorityLog ADD PRIMARY KEY (id, replacedAt);
+--
 -- Creating prenatalExamLog
 CREATE TABLE prenatalExamLog LIKE prenatalExam;
 ALTER TABLE prenatalExamLog ADD COLUMN op CHAR(1) DEFAULT '';
