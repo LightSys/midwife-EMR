@@ -11,6 +11,7 @@ var express = require('express')
   , LocalStrategy = require('passport-local').Strategy
   , cons = require('consolidate')
   , roz = require('roz')()
+  , flash = require('express-flash')
   , grant = roz.grant
   , revoke = roz.revoke
   , where = roz.where
@@ -95,6 +96,7 @@ app.use(express.session({
 app.use(express.bodyParser());
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
 // --------------------------------------------------------
 // Localization.
@@ -238,6 +240,13 @@ rozed.post(cfg.path.roleUpdate, roz(grant(isAdmin)), common, csrf, roles.update)
 // --------------------------------------------------------
 app.all(cfg.path.userLoad2, users.load);  // parameter handling
 rozed.post(cfg.path.changeRoles, roz(grant(isAdmin)), common, csrf, users.changeRoles);
+
+// --------------------------------------------------------
+// Profile
+// --------------------------------------------------------
+app.get(cfg.path.profile, roz(grant(someone)), common, csrf, users.editProfile);
+app.post(cfg.path.profile, roz(grant(someone)), common, csrf, users.saveProfile);
+
 
 // --------------------------------------------------------
 // Start the server.

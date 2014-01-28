@@ -107,6 +107,36 @@ User = Bookshelf.Model.extend({
         });
   }
 
+  , checkProfileFields: function(rec, checkPasswords, cb) {
+      var result = {
+        success: true
+        , messages: []
+      };
+      // --------------------------------------------------------
+      // Required fields.
+      //
+      // TODO: i18n these messages.
+      // --------------------------------------------------------
+      if (! val.isLength(rec.firstname, 1)) result.messages.push('First name must be specified.');
+      if (! val.isLength(rec.lastname, 1)) result.messages.push('Last name must be specified.');
+      if (checkPasswords) {
+        if (! val.isLength(rec.password, 8)) result.messages.push('Password must be at least 8 characters long.');
+        if (! val.equals(rec.password, rec.password2)) result.messages.push('Passwords do not match.');
+      }
+
+      // --------------------------------------------------------
+      // Optional fields.
+      // --------------------------------------------------------
+      if (rec.email.length > 0) {
+        if (! val.isEmail(rec.email)) result.messages.push('Email must be valid.');
+      }
+
+      if (result.messages.length != 0) {
+        result.success = false;
+      }
+      return cb(null, result);
+  }
+
     /* --------------------------------------------------------
      * checkFields()
      *
@@ -124,6 +154,8 @@ User = Bookshelf.Model.extend({
       };
       // --------------------------------------------------------
       // Required fields.
+      //
+      // TODO: i18n these messages.
       // --------------------------------------------------------
       if (! val.isLength(rec.username, 3)) result.messages.push('Username must be at least 3 characters long.');
       if (! val.isLength(rec.firstname, 1)) result.messages.push('First name must be specified.');

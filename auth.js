@@ -18,7 +18,6 @@ var isAdmin = function(req, cb) {
   return cb(null, admin != undefined);
 };
 
-
 module.exports = {
   someone: someone
   , isAdmin: isAdmin

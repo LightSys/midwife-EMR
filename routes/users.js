@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Role = require('../models').Role
   , Roles = require('../models').Roles
   , cfg = require('../config')
+  , auth = require('../auth')
   ;
 
 
@@ -41,6 +42,119 @@ var load = function(req, res, next) {
     });
 };
 
+/* --------------------------------------------------------
+ * getProfileFormData()
+ *
+ * Returns an object representing the data that is rendered
+ * when the profile form is displayed.
+ *
+ * param       req
+ * param       addData  - (Object) additional data
+ * return      Object
+ * -------------------------------------------------------- */
+var getProfileFormData = function(req, addData) {
+  return _.extend(addData, {
+    title: req.gettext('Edit Your Profile')
+    , user: req.session.user
+  });
+};
+
+
+/* --------------------------------------------------------
+ * editProfile()
+ *
+ * Loads the profile form for the user.
+ *
+ * param       req
+ * param       res
+ * param       next - callback
+ * return      undefined
+ * -------------------------------------------------------- */
+var editProfile = function(req, res) {
+  var profile
+    , omit = ['password', 'status', 'note', 'updatedBy', 'updatedAt', 'supervisor']
+    , additionalData = {
+        success: true
+        , messages: req.flash()
+        , profile: {}
+    }
+    , formdata
+    ;
+
+  User.forge({id: req.session.user.id})
+    .fetch()
+    .then(function(rec) {
+      var r = _.omit(rec.toJSON(), omit);
+      additionalData.profile = r;
+      res.render('profileForm', getProfileFormData(req, additionalData));
+    });
+};
+
+/* --------------------------------------------------------
+ * saveProfile()
+ *
+ * Updates the current user in the database after checking
+ * the fields for validity. If password is specified, checks
+ * then hashes the password before saving.
+ *
+ * TODO: update the record stored in req.session.user upon
+ * successful update.
+ *
+ * param       req
+ * param       res
+ * return      undefined
+ * -------------------------------------------------------- */
+var saveProfile = function(req, res) {
+  var processPw = true
+    , fldsToOmit = ['password2','_csrf']
+    ;
+
+  // Insure we only save for ourselves.
+  if (req.body &&
+      req.body.id &&
+      req.body.id == req.session.user.id) {
+    if (req.body.password.length == 0 || req.body.password2.length == 0) {
+      processPw = false;
+    }
+    User.checkProfileFields(req.body, processPw, function(err, result) {
+      var editObj
+        , user
+        ;
+      if (result.success) {
+        if (! processPw) {
+          // If the password is not specified, do not replace it with an
+          // empty string in the database.
+          fldsToOmit.push('password');
+        }
+        editObj = _.extend({
+                      updatedBy: req.session.user.id
+                    }, _.omit(req.body, fldsToOmit));
+        user = new User(editObj);
+        if (processPw) {
+          user.hashPassword(editObj.password, function(er2, success) {
+            if (er2) return console.error(er2);
+            user.save(null, {method: 'update'})
+              .then(function(model) {
+                req.flash('info', req.gettext('Your profile has been saved.'));
+                res.redirect(cfg.path.profile);
+              });
+          });
+        } else {
+          user.save(null, {method: 'update'})
+            .then(function(model) {
+              req.flash('info', req.gettext('Your profile has been saved.'));
+              res.redirect(cfg.path.profile);
+            });
+        }
+      } else {
+        _.each(result.messages, function(msg) {
+          req.flash('error', msg);
+        });
+        res.redirect(cfg.path.profile);
+      }
+    });
+  }
+};
 
 /* --------------------------------------------------------
  * list()
@@ -374,6 +488,8 @@ module.exports = {
   , editForm: editForm
   , update: update
   , changeRoles: changeRoles
+  , editProfile: editProfile
+  , saveProfile: saveProfile
 };
 
 

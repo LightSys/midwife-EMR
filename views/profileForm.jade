@@ -1,0 +1,43 @@
+extends layouts/default_layout
+
+block profileEditForm
+  h1= title
+
+  div.userEditBox
+    if messages.info
+      div.infomessage
+        for msg in messages.info
+          p.text-info= msg
+    if messages.error
+      div.errormessage
+        p.text-muted= gettext('Your profile was not updated because: ')
+        for msg in messages.error
+          p.text-warning= msg
+    - var action = '/profile';
+      form(role='form', name='profileForm', action=action, method='post')
+
+        div.form-group
+          span= gettext('Id: ') + profile.id
+        div.form-group
+          span= gettext('Username: ') + profile.username
+        div.form-group
+          span= gettext('Firstname')
+          input(class='form-control', type='text', name='firstname', value=profile.firstname)
+        div.form-group
+          span= gettext('Lastname')
+          input(class='form-control', type='text', name='lastname', value=profile.lastname)
+        div.form-group
+          span= gettext('Password')
+          input(class='form-control', type='password', name='password')
+        div.form-group
+          span= gettext('Password confirmation')
+          input(class='form-control', type='password', name='password2')
+        div.form-group
+          span= gettext('Email')
+          input(class='form-control', type='text', name='email', value=profile.email)
+
+        input(class='btn btn-default', type='submit', value=gettext('Save'))
+
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=profile.id)
+
