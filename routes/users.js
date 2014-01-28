@@ -326,9 +326,6 @@ var changeRoles = function(req, res) {
             .related('roles')
             .attach(additions)
             .then(function() {
-              // TODO: logDetach() and logAttach() do not do anything yet.
-              User.forge({id: req.paramUser.id}).logDetach(deletions);
-              User.forge({id: req.paramUser.id}).logAttach(additions);
               res.redirect(cfg.path.userList);
             });
         });

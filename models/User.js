@@ -45,9 +45,6 @@ User = Bookshelf.Model.extend({
   , permittedAttributes: permittedAttributes
   , initialize: function() {
     this.on('saving', this.saving, this);
-    this.on('created', this.created, this);
-    this.on('updated', this.updated, this);
-    this.on('destroyed', this.destroyed, this);
   }
 
   , defaults: {
@@ -58,35 +55,6 @@ User = Bookshelf.Model.extend({
   , saving: function(model) {
       // Enforce permittedAttributes.
       Bookshelf.Model.prototype.saving.apply(this, model);
-  }
-
-  , created: function(model) {
-      // Log the insert into the appropriate log table.
-      Bookshelf.Model.prototype.logInsert.apply(this, [model, Bookshelf.knex]);
-  }
-
-  , updated: function(model) {
-      // Log the insert into the appropriate log table.
-      Bookshelf.Model.prototype.logUpdate.apply(this, [model, Bookshelf.knex]);
-  }
-
-  , destroyed: function(model) {
-      // Log the insert into the appropriate log table.
-      Bookshelf.Model.prototype.logDelete.apply(this, [model, Bookshelf.knex]);
-  }
-
-  , logDetach: function(deletions) {
-      // Note: changes to the user_role table are not yet saved to the
-      // user_roleLog table.
-      //console.log('User.logDetach() for user id: ' + this.get('id'));
-      //console.dir(deletions);
-  }
-
-  , logAttach: function(additions) {
-      // Note: changes to the user_role table are not yet saved to the
-      // user_roleLog table.
-      //console.log('User.logAttach() for user id: ' + this.get('id'));
-      //console.dir(additions);
   }
 
   , checkPassword: function(pw, cb) {
