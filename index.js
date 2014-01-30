@@ -55,7 +55,6 @@ passport.use(new LocalStrategy(
     //indicate failure and set a flash message.  Otherwise, return the
     //authenticated `user`.
     User.findByUsername(username, function(err, user) {
-      if (err) { return done(err); }
       if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
       if (user.get('status') != 1) {
         return done(null, false, {

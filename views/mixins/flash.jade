@@ -1,0 +1,16 @@
+mixin flash(msgs)
+  if msgs.info || msgs.success || msgs.warning || msgs.error
+    #flash
+      if msgs.info
+        each m in msgs.info
+          p.text-info= m
+      if msgs.success
+        each m in msgs.success
+          p.text-success= m
+      if msgs.warning
+        each m in msgs.warning
+          p.text-warning= m
+      if msgs.error
+        each m in msgs.error
+          p.text-danger= m
+

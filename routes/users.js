@@ -218,6 +218,7 @@ var list = function(req, res) {
       res.render('userList', {
         title: req.gettext('List of Users')
         , user: req.session.user
+        , messages: req.flash()
         , users: userList
       });
     });
@@ -248,7 +249,7 @@ var addForm = function(req, res) {
     title: req.gettext('Add User')
     , user: req.session.user
     , success: true
-    , messages: []
+    , messages: req.flash()
     , editUser: blankUser
   });
 };
@@ -267,6 +268,7 @@ var getEditFormData = function(req, addData) {
   return _.extend(addData, {
     title: req.gettext('Edit User')
     , user: req.session.user
+    , messages: req.flash()
     , editUser: _.extend(req.paramUser, {password: '', password2: ''})
   });
 };
@@ -285,7 +287,6 @@ var editForm = function(req, res) {
     , formData
     , additionalData = {
         success: true
-        , messages: []
         , roles: null
     }
     ;
@@ -363,8 +364,11 @@ var update = function(req, res) {
         }
       } else {
         data.success = false;
-        data.messages = result.messages;
-        res.render('userEditForm', getEditFormData(req, data));
+        _.each(result.messages, function(msg) {
+          req.flash('warning', msg);
+        });
+        // Redirect allows rebuilding of roles, etc.
+        res.redirect(cfg.path.userList + '/' + req.body.id + '/edit');
       }
     });
   } else {
@@ -387,7 +391,6 @@ var create = function(req, res) {
   var data = {
       title: req.gettext('Add User')
       , user: req.session.user
-      , messages: [req.gettext('User was created.')]
       , success: true
   };
   User.checkFields(req.body, true, true, function(err, result) {
@@ -404,12 +407,16 @@ var create = function(req, res) {
         if (err) return console.error(err);
         user.save()
           .then(function(model) {
+            req.flash('info', req.gettext('User was created.'));
             res.redirect(cfg.path.userList);
           });
       });
     } else {
       data.success = false;
-      data.messages = result.messages;
+      _.each(result.messages, function(msg) {
+        req.flash('warning', msg);
+      });
+      data.messages = req.flash();
       res.render('userAddForm', data);
     }
   });

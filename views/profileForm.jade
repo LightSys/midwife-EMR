@@ -3,16 +3,8 @@ extends layouts/default_layout
 block profileEditForm
   h1= title
 
+  +flash(messages)
   div.userEditBox
-    if messages.info
-      div.infomessage
-        for msg in messages.info
-          p.text-info= msg
-    if messages.error
-      div.errormessage
-        p.text-muted= gettext('Your profile was not updated because: ')
-        for msg in messages.error
-          p.text-warning= msg
     - var action = '/profile';
       form(role='form', name='profileForm', action=action, method='post')
 

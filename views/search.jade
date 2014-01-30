@@ -4,8 +4,7 @@ block search
   h1= title
 
   div.searchbox
-    p.text-warning
-      = message
+    +flash(messages)
     form(role='form', name='search', action='/search', method='post')
       div.form-group
         span= gettext('First or last name')

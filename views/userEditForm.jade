@@ -4,14 +4,7 @@ block search
   h1= title
 
   div.userEditBox
-    if success
-      p.text-info
-        = messages[0]
-    else
-      p.text-warning= gettext('User was not updated because:')
-      ul
-        for msg in messages
-          li.text-warning= msg
+    +flash(messages)
     - var action = '/user/' + editUser.id + '/update';
       form(role='form', name='userForm', action=action, method='post')
 
@@ -57,14 +50,16 @@ block search
       form(role='form', name='userForm', action=action, method='post')
 
         div.form-group
-          for role in roles
-            - var isChecked = false;
-            for r in editUser.roles
-              - if (r.id == role.id)
-                - isChecked = true
-                - break
-            label.checkbox= role.name
-              input(type='checkbox', name='roles', value=role.id, checked=isChecked)
+          if roles
+            for role in roles
+              - var isChecked = false;
+              if editUser.roles
+                for r in editUser.roles
+                  - if (r.id == role.id)
+                    - isChecked = true
+                    - break
+              label.checkbox= role.name
+                input(type='checkbox', name='roles', value=role.id, checked=isChecked)
 
           input(class='btn btn-default', type='submit', value=gettext('Save Role Assignments'))
           input(type='hidden', name='_csrf', value=token)

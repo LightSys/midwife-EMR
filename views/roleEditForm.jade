@@ -7,14 +7,7 @@ block roleEditForm
     a.pull-right(href='/role')= gettext('Back to the List of roles')
 
   div.roleEditBox
-    if success
-      p.text-info
-        = messages[0]
-    else
-      p.text-warning= gettext('Role was not updated because:')
-      ul
-        for msg in messages
-          li.text-warning= msg
+    +flash(messages)
 
     - var action = '/role/' + editRole.id + '/update';
       form(role='form', name='roleEditForm', action=action, method='post')

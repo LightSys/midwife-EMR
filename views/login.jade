@@ -4,6 +4,7 @@ block login
   h1= title
 
   div.loginbox
+    //- index.js in the Passport section does not have access to the req object.
     p.text-warning
       = message
     form(role='form', name='login', action='/login', method='post')

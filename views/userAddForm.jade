@@ -4,14 +4,7 @@ block search
   h1= title
 
   div.userEditBox
-    if success
-      p.text-info
-        = messages[0]
-    else
-      p.text-warning= gettext('User was not created because:')
-      ul
-        for msg in messages
-          li.text-warning= msg
+    +flash(messages)
     - var action = '/user';
       form(role='form', name='userForm', action=action, method='post')
 

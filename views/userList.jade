@@ -2,6 +2,9 @@ extends layouts/default_layout
 
 block userList
   h1= title
+
+  +flash(messages)
+
   p= gettext('These are the users in the system.')
     a.pull-right(href='/role')= gettext('List roles')
 

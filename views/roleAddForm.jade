@@ -4,14 +4,7 @@ block roleAddForm
   h1= title
 
   div.roleEditBox
-    if success
-      p.text-info
-        = messages[0]
-    else
-      p.text-warning= gettext('Role was not created because:')
-      ul
-        for msg in messages
-          li.text-warning= msg
+    +flash(messages)
     - var action = '/role';
       form(role='form', name='roleAddForm', action=action, method='post')
 
