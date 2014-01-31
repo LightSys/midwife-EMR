@@ -12,7 +12,6 @@ var passport = require('passport')
   ;
 
 var home = function(req, res) {
-  console.log('home');
   res.render('content', {
     title: req.gettext('Testing')
     , user: req.session.user
@@ -20,7 +19,6 @@ var home = function(req, res) {
 };
 
 var login = function(req, res) {
-  console.log('login');
   var data = {
     title: req.gettext('Please log in')
     , message: req.session.messages
@@ -29,10 +27,9 @@ var login = function(req, res) {
 };
 
 var loginPost = function(req, res, next) {
-  console.log('loginPost');
   passport.authenticate('local', function(err, user, info) {
     if (err) {
-      console.log('err: %s', err);
+      console.error('err: %s', err);
       return next(err);
     }
     if (!user) {
@@ -53,7 +50,6 @@ var loginPost = function(req, res, next) {
 };
 
 var logout = function(req, res) {
-  console.log('logout');
   req.session.destroy(function(err) {
     res.redirect(loginRoute);
   });

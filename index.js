@@ -82,7 +82,6 @@ app.set('views', path.join(__dirname,'views'));
 app.use(express.static('bower_components'));
 app.use(express.static('static'));
 app.use(express.favicon());
-app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
@@ -174,6 +173,7 @@ app.use(app.router);
 // --------------------------------------------------------
 app.configure('development', function() {
   console.log('DEVELOPMENT mode');
+  app.use(express.logger('dev'));
   app.use(express.errorHandler());
 });
 
@@ -187,6 +187,11 @@ app.configure('production', function() {
 // ========================================================
 // ========================================================
 // Routes
+//
+// Note that the auth method placed before the roz 
+// authentication requirements in many of the routes allows
+// the request to get redirected to the login page rather
+// than just being denied if the user is not yet logged in.
 // ========================================================
 // ========================================================
 
@@ -211,27 +216,27 @@ app.get(cfg.path.home, auth, common, home.home);
 // --------------------------------------------------------
 // Search
 // --------------------------------------------------------
-rozed.get(cfg.path.search, roz(grant(someone)), common, csrf, search.view);
+rozed.get(cfg.path.search, auth, roz(grant(someone)), common, csrf, search.view);
 rozed.post(cfg.path.search, roz(grant(someone)), common, csrf, search.execute);
 
 // --------------------------------------------------------
 // Users
 // --------------------------------------------------------
-rozed.get(cfg.path.userList, roz(grant(isAdmin)), common, users.list);
+rozed.get(cfg.path.userList, auth, roz(grant(isAdmin)), common, users.list);
 app.all(cfg.path.userLoad, users.load);  // parameter handling
-rozed.get(cfg.path.userNewForm, roz(grant(isAdmin)), common, csrf, users.addForm);
+rozed.get(cfg.path.userNewForm, auth, roz(grant(isAdmin)), common, csrf, users.addForm);
 rozed.post(cfg.path.userCreate, roz(grant(isAdmin)), common, csrf, users.create);
-rozed.get(cfg.path.userEditForm, roz(grant(isAdmin)), common, csrf, users.editForm);
+rozed.get(cfg.path.userEditForm, auth, roz(grant(isAdmin)), common, csrf, users.editForm);
 rozed.post(cfg.path.userUpdate, roz(grant(isAdmin)), common, csrf, users.update);
 
 // --------------------------------------------------------
 // Roles
 // --------------------------------------------------------
-rozed.get(cfg.path.roleList, roz(grant(isAdmin)), common, roles.list);
+rozed.get(cfg.path.roleList, auth, roz(grant(isAdmin)), common, roles.list);
 app.all(cfg.path.roleLoad, roles.load);  // parameter handling
-rozed.get(cfg.path.roleNewForm, roz(grant(isAdmin)), common, csrf, roles.addForm);
+rozed.get(cfg.path.roleNewForm, auth, roz(grant(isAdmin)), common, csrf, roles.addForm);
 rozed.post(cfg.path.roleCreate, roz(grant(isAdmin)), common, csrf, roles.create);
-rozed.get(cfg.path.roleEditForm, roz(grant(isAdmin)), common, csrf, roles.editForm);
+rozed.get(cfg.path.roleEditForm, auth, roz(grant(isAdmin)), common, csrf, roles.editForm);
 rozed.post(cfg.path.roleUpdate, roz(grant(isAdmin)), common, csrf, roles.update);
 
 // --------------------------------------------------------
@@ -243,14 +248,19 @@ rozed.post(cfg.path.changeRoles, roz(grant(isAdmin)), common, csrf, users.change
 // --------------------------------------------------------
 // Profile
 // --------------------------------------------------------
-app.get(cfg.path.profile, roz(grant(someone)), common, csrf, users.editProfile);
+app.get(cfg.path.profile, auth, roz(grant(someone)), common, csrf, users.editProfile);
 app.post(cfg.path.profile, roz(grant(someone)), common, csrf, users.saveProfile);
 
 
 // --------------------------------------------------------
 // Start the server.
 // --------------------------------------------------------
-app.listen(cfg.host.port);
+if (process.env.NODE_ENV == 'test') {
+  console.log('TEST mode');
+  app.listen(cfg.host.port);
+} else {
+  app.listen(cfg.host.port);
+}
 console.log('Server listening on port ' + cfg.host.port);
 
 /* --------------------------------------------------------
@@ -263,7 +273,11 @@ console.log('Server listening on port ' + cfg.host.port);
  * -------------------------------------------------------- */
 function auth(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
-  console.log('Redirecting to login');
   res.redirect(cfg.path.login);
 }
+
+// --------------------------------------------------------
+// Exports app for the sake of testing.
+// --------------------------------------------------------
+module.exports = app;
 

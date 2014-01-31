@@ -18,6 +18,21 @@ var cfg = {}
   ;
 
 // --------------------------------------------------------
+// Settings specific to TEST only. This assumes that the
+// test database has these settings.
+//
+// Note: do not run these settings against the production
+// or development databases.
+// --------------------------------------------------------
+cfg.users = {
+  admin: {username: 'admin', password: 'admin'}
+  , guard: {username: 'guard', password: 'guard'}
+  , clerk: {username: 'clerk', password: 'clerk'}
+  , student: {username: 'student', password: 'student'}
+  , supervisor: {username: 'supervisor', password: 'supervisor'}
+};
+
+// --------------------------------------------------------
 // Site settings.
 //
 // Note: any attribute that needs localization with the
@@ -39,9 +54,9 @@ cfg.host.port = 8000
 cfg.database = {};
 cfg.database.host = 'localhost';
 cfg.database.port = 3306;
-cfg.database.db = 'mercy1';
-cfg.database.dbUser = 'mercy1user';
-cfg.database.dbPass = '7JVMeqXAiqTTXdvKCVFfaWmHe';
+cfg.database.db = 'mercy1test';
+cfg.database.dbUser = 'mercy1testuser';
+cfg.database.dbPass = 'mmSsrtF7yTJoUDbx';
 cfg.database.charset = 'utf8';
 
 // --------------------------------------------------------
