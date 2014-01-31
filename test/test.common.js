@@ -24,6 +24,8 @@ var should = require('should')
   , student = supertest.agent(app)
   , supervisor = supertest.agent(app)
   , cheerio = require('cheerio')
+  , _ = require('underscore')
+  , moment = require('moment')
   , cfg = require('../config')
   , utils = require('./utils')
   , allUserNames = ['admin', 'guard', 'clerk', 'student', 'supervisor']
@@ -31,49 +33,49 @@ var should = require('should')
   ;
 
 describe('unauthenticated', function(done) {
-  it('redirect / to logon page', function(done) {
+  it('request to / redirects to logon page', function(done) {
     request
       .get('/')
       .expect('location', '/login')
       .expect(302, done);
   });
 
-  it('redirect /search to logon page', function(done) {
+  it('request to /search redirects to logon page', function(done) {
     request
       .get('/search')
       .expect('location', '/login')
       .expect(302, done);
   });
 
-  it('redirect /user to logon page', function(done) {
+  it('request to /user redirects to logon page', function(done) {
     request
       .get('/user')
       .expect('location', '/login')
       .expect(302, done);
   });
 
-  it('redirect /role to logon page', function(done) {
+  it('request to /role redirects to logon page', function(done) {
     request
       .get('/role')
       .expect('location', '/login')
       .expect(302, done);
   });
 
-  it('redirect /role/1/edit to logon page', function(done) {
+  it('request to /role/1/edit redirects to logon page', function(done) {
     request
       .get('/role/1/edit')
       .expect('location', '/login')
       .expect(302, done);
   });
 
-  it('redirect /profile to logon page', function(done) {
+  it('request to /profile redirects to logon page', function(done) {
     request
       .get('/profile')
       .expect('location', '/login')
       .expect(302, done);
   });
 
-  it('display login page', function(done) {
+  it('anyone can display login page', function(done) {
     request
       .get('/login')
       .expect(200, done);
@@ -155,7 +157,7 @@ describe('authenticated', function(done) {
     });
   });
 
-  describe('post search', function(done) {
+  describe('conduct search', function(done) {
     var config = {}
       , data = {}
       ;
@@ -220,6 +222,161 @@ describe('authenticated', function(done) {
           .expect(200, done);
       });
     });
+  });
+
+  describe('access profile page', function(done) {
+
+    it('by admin', function(done) {
+      var req = request.get('/profile');
+      admin.attachCookies(req);
+      req.expect(200, done);
+    });
+
+    it('by guard', function(done) {
+      var req = request.get('/profile');
+      guard.attachCookies(req);
+      req.expect(200, done);
+    });
+
+    it('by clerk', function(done) {
+      var req = request.get('/profile');
+      clerk.attachCookies(req);
+      req.expect(200, done);
+    });
+
+    it('by student', function(done) {
+      var req = request.get('/profile');
+      student.attachCookies(req);
+      req.expect(200, done);
+    });
+
+    it('by supervisor', function(done) {
+      var req = request.get('/profile');
+      supervisor.attachCookies(req);
+      req.expect(200, done);
+    });
+  });
+
+  describe('change profile', function(done) {
+    var formName = 'form[name="profileForm"]'
+      , elements = ['id','_csrf','firstname','lastname','email']
+      , data = {}
+      , req
+      , postReq
+      , req2
+      ;
+
+    var runTest = function(agent, newId, done) {
+      // --------------------------------------------------------
+      // newId allows tests regarding illegally trying to update
+      // a profile belonging to someone else.
+      // --------------------------------------------------------
+      if (done === undefined && typeof newId === 'function') {
+        done = newId;
+        newId = void(0);
+      }
+      // --------------------------------------------------------
+      // Get the profile form and scrape the data.
+      // --------------------------------------------------------
+      agent.attachCookies(req);
+      req.expect(200)
+        .end(function(err, res) {
+          var $ = cheerio.load(res.text)
+            , origLastname
+            , newLastname
+            ;
+          _.map(elements, function(fld) {
+            var input = 'input[name="' + fld + '"]';
+            data[fld] = $(input, formName).attr('value')
+          });
+
+          // --------------------------------------------------------
+          // Change a field for testing.
+          // --------------------------------------------------------
+          origLastname = data.lastname;
+          newLastname = moment().format();
+          data.lastname = newLastname;
+          if (newId) {
+            data.id = newId;
+          }
+
+          // --------------------------------------------------------
+          // Save to the database then verify the result.
+          // --------------------------------------------------------
+          agent.saveCookies(res);
+          agent.attachCookies(postReq);
+          postReq
+            .send(data)
+            .end(function(err2, res2) {
+              if (err2) return done(err2);
+              if (newId) {
+                res2.status.should.eql(403);
+                return done();
+              } else {
+                res2.status.should.eql(302);
+              }
+              agent.attachCookies(req2);
+              req2.expect(200)
+                .end(function(err3, res3) {
+                  var $$ = cheerio.load(res3.text)
+                    , lastname = $$('input[name="lastname"]', formName).attr('value')
+                    ;
+                  if (err3) return done(err3);
+                  lastname.should.eql(newLastname);
+                  done();
+                });
+            });
+        });
+    };
+
+    beforeEach(function(done) {
+      data = {password: '', password2: ''};
+      req = request.get('/profile');
+      postReq = request.post('/profile');
+      req2 = request.get('/profile');
+      done();
+    });
+
+    it('admin can update profile', function(done) {
+      runTest(admin, done);
+    });
+
+    it('clerk can update profile', function(done) {
+      runTest(clerk, done);
+    });
+
+    it('guard can update profile', function(done) {
+      runTest(guard, done);
+    });
+
+    it('student can update profile', function(done) {
+      runTest(student, done);
+    });
+
+    it('supervisor can update profile', function(done) {
+      runTest(supervisor, done);
+    });
+
+    it('admin cannot update profile for guard', function(done) {
+      runTest(admin, 2, done);
+    });
+
+    it('guard cannot update profile for clerk', function(done) {
+      runTest(guard, 3, done);
+    });
+
+    it('clerk cannot update profile for student', function(done) {
+      runTest(clerk, 4, done);
+    });
+
+    it('student cannot update profile for supervisor', function(done) {
+      runTest(student, 5, done);
+    });
+
+    it('supervisor cannot update profile for admin', function(done) {
+      runTest(supervisor, 1, done);
+    });
+
   });
 });
 

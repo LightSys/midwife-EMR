@@ -153,6 +153,10 @@ var saveProfile = function(req, res) {
         res.redirect(cfg.path.profile);
       }
     });
+  } else {
+    if (req.body && req.body.id && req.body.id != req.session.user.id) {
+      res.send(403, 'Forbidden');
+    }
   }
 };
 

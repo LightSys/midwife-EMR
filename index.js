@@ -248,8 +248,8 @@ rozed.post(cfg.path.changeRoles, roz(grant(isAdmin)), common, csrf, users.change
 // --------------------------------------------------------
 // Profile
 // --------------------------------------------------------
-app.get(cfg.path.profile, auth, roz(grant(someone)), common, csrf, users.editProfile);
-app.post(cfg.path.profile, roz(grant(someone)), common, csrf, users.saveProfile);
+rozed.get(cfg.path.profile, auth, roz(grant(someone)), common, csrf, users.editProfile);
+rozed.post(cfg.path.profile, roz(grant(someone)), common, csrf, users.saveProfile);
 
 
 // --------------------------------------------------------
