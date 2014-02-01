@@ -378,6 +378,43 @@ describe('authenticated', function(done) {
     });
 
   });
+
+  describe('logout destroys session', function(done) {
+    var test = function(agent, done) {
+      var req = request.get('/logout');
+      agent.attachCookies(req);
+      req
+        .expect(302)
+        .end(function(err, res) {
+          var req2 = request.get('/');
+          agent.attachCookies(req2);
+          req2
+            .expect(302)
+            .expect('location', '/login', done);
+        });
+    };
+
+    it('admin', function(done) {
+      test(admin, done);
+    });
+
+    it('guard', function(done) {
+      test(guard, done);
+    });
+
+    it('clerk', function(done) {
+      test(clerk, done);
+    });
+
+    it('student', function(done) {
+      test(student, done);
+    });
+
+    it('supervisor', function(done) {
+      test(supervisor, done);
+    });
+  });
+
 });
 
 
