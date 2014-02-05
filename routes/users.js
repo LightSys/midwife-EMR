@@ -59,6 +59,101 @@ var getProfileFormData = function(req, addData) {
   });
 };
 
+/* --------------------------------------------------------
+ * editSupervisor()
+ *
+ * Display the form to allow the student to choose their
+ * supervisor.
+ *
+ * param       req
+ * param       res
+ * param       next - callback
+ * return      undefined
+ * -------------------------------------------------------- */
+var editSupervisor = function(req, res) {
+  var omit = ['password', 'updatedBy', 'supervisor', 'roles',
+      'updatedAt', 'email', 'lang', 'status', 'note']
+    , users = new Users()
+    , data = {
+        title: req.gettext('Choose your supervisor')
+        , user: req.session.user
+        , messages: req.flash()
+      }
+    , currSuper
+    ;
+
+  if (req.session.supervisor) {
+    currSuper = req.session.supervisor.firstname + ' ' +
+      req.session.supervisor.lastname;
+  }
+
+  users
+    .fetch({withRelated: 'roles'})
+    .then(function(list) {
+      var userList = [];
+      list.forEach(function(rec) {
+        var roles = rec.related('roles').toJSON();
+        if (_.contains(_.pluck(roles, 'name'), 'supervisor')) {
+          userList.push(_.omit(rec.toJSON(), omit));
+        }
+      });
+      data.userList = userList;
+      data.supervisor = currSuper || void(0);
+      res.render('setSuper', data);
+    });
+};
+
+
+/* --------------------------------------------------------
+ * saveSupervisor()
+ *
+ * Save the student's choice of a supervisor.
+ *
+ * param       req
+ * param       res
+ * param       next - callback
+ * return      undefined
+ * -------------------------------------------------------- */
+var saveSupervisor = function(req, res) {
+  var supervisor = req.body.supervisor || -1
+    ;
+  try {
+    supervisor = parseInt(supervisor, 10);
+  } catch (e) {
+    supervisor = -1;
+  }
+
+  if (supervisor !== -1) {
+    User.forge({id: supervisor})
+      .fetch({withRelated: ['roles']})
+      .then(function(rec) {
+        var roles
+          ;
+        if (rec) {
+          roles = rec.related('roles').toJSON();
+          if (_.contains(_.pluck(roles, 'name'), 'supervisor')) {
+            req.session.supervisor = {};
+            req.session.supervisor.id = rec.get('id');
+            req.session.supervisor.username = rec.get('username');
+            req.session.supervisor.firstname = rec.get('firstname');
+            req.session.supervisor.lastname = rec.get('lastname');
+            req.session.save();
+            req.flash('info', req.gettext('Your supervisor has been set.'));
+          } else {
+            console.error('User selected is not a supervisor!');
+            req.flash('warning', req.gettext('An error occurred. Please try again.'));
+          }
+        } else {
+          console.error('User not found!');
+          req.flash('warning', req.gettext('An error occurred. Please try again.'));
+        }
+        res.redirect(cfg.path.setSuper);
+      });
+  } else {
+    req.flash('info', req.gettext('Please choose your supervisor.'));
+    res.redirect(cfg.path.setSuper);
+  }
+};
 
 /* --------------------------------------------------------
  * editProfile()
@@ -501,6 +596,8 @@ module.exports = {
   , changeRoles: changeRoles
   , editProfile: editProfile
   , saveProfile: saveProfile
+  , editSupervisor: editSupervisor
+  , saveSupervisor: saveSupervisor
 };
 
 

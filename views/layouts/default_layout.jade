@@ -42,6 +42,10 @@ html(lang="en")
 
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
+            if roleInfo.isStudent
+              - var superV = (supervisor || gettext('Not yet set'))
+              li
+                a(href='/setsuper')= gettext('Your supervisor is ') + superV
             if roleInfo.isAuthenticated
               li(class="dropdown user-dropdown")
                 a(href="#", class="dropdown-toggle", data-toggle="dropdown")
@@ -72,6 +76,7 @@ html(lang="en")
                 block roleAddForm
                 block roleEditForm
                 block profileEditForm
+                block setSuper
               else
                 block login
 

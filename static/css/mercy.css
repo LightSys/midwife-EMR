@@ -10,6 +10,10 @@ div.userEditBox {
   max-width: 400px;
 }
 
+div.formBox {
+  max-width: 400px;
+}
+
 div#flash {
   padding: 10px;
   margin: 10px 0;

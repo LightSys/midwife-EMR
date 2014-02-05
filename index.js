@@ -18,7 +18,7 @@ var express = require('express')
   , anyone = roz.anyone
   , someone = require('auth').someone
   , isAdmin = require('auth').isAdmin
-  //, setRoleInfo = require('auth').setRoleInfo
+  , isStudent = require('auth').isStudent
   , app = express()
   , rozed = roz.wrap(app)
   , SessionStore = require('connect-mysql')(express)
@@ -32,6 +32,7 @@ var express = require('express')
   , users = require('./routes').users
   , roles = require('./routes').roles
   , common = []
+  , student = []
   ;
 
 // --------------------------------------------------------
@@ -152,8 +153,31 @@ var setRoleInfo = function(req, res, next) {
     roleInfo.isClerk = roles.findWhere({name: 'clerk'}) ? true: false;
     roleInfo.isGuard = roles.findWhere({name: 'guard'}) ? true: false;
   }
+
+  // --------------------------------------------------------
+  // app.locals is for the templates and req.session is for
+  // hasSuper() and other processing.
+  // --------------------------------------------------------
   app.locals.roleInfo = roleInfo;
+  req.session.roleInfo = roleInfo;
   next();
+};
+
+var hasSuper = function(req, res, next) {
+  if (req.session.roleInfo.isStudent) {
+    if (req.session.supervisor) {
+      // --------------------------------------------------------
+      // Store the supervisor in app.locals for the templates.
+      // --------------------------------------------------------
+      app.locals.supervisor = req.session.supervisor.lastname + ', ' +
+        req.session.supervisor.firstname;
+      next();
+    } else {
+      res.redirect(cfg.path.setSuper);
+    }
+  } else {
+    next();
+  }
 };
 
 // --------------------------------------------------------
@@ -188,7 +212,7 @@ app.configure('production', function() {
 // ========================================================
 // Routes
 //
-// Note that the auth method placed before the roz 
+// Note that the auth method placed before the roz
 // authentication requirements in many of the routes allows
 // the request to get redirected to the login page rather
 // than just being denied if the user is not yet logged in.
@@ -199,14 +223,15 @@ app.configure('production', function() {
 // Group of methods that are commonly needed for
 // many requests.
 // --------------------------------------------------------
-common.push(setRoleInfo, i18nLocals);
+common.push(setRoleInfo, hasSuper, i18nLocals);
+student.push(setRoleInfo, i18nLocals);
 
 // --------------------------------------------------------
 // Login and logout
 // --------------------------------------------------------
-rozed.get(cfg.path.login, roz(grant(anyone)), common, csrf, home.login);
-rozed.post(cfg.path.login, roz(grant(anyone)), common, home.loginPost);
-rozed.get(cfg.path.logout, roz(grant(someone)), common, home.logout);
+rozed.get(cfg.path.login, roz(grant(anyone)), student, csrf, home.login);
+rozed.post(cfg.path.login, roz(grant(anyone)), student, home.loginPost);
+rozed.get(cfg.path.logout, roz(grant(someone)), student, home.logout);
 
 // --------------------------------------------------------
 // Home
@@ -248,8 +273,14 @@ rozed.post(cfg.path.changeRoles, roz(grant(isAdmin)), common, csrf, users.change
 // --------------------------------------------------------
 // Profile
 // --------------------------------------------------------
-rozed.get(cfg.path.profile, auth, roz(grant(someone)), common, csrf, users.editProfile);
-rozed.post(cfg.path.profile, roz(grant(someone)), common, csrf, users.saveProfile);
+rozed.get(cfg.path.profile, auth, roz(grant(someone)), student, csrf, users.editProfile);
+rozed.post(cfg.path.profile, roz(grant(someone)), student, csrf, users.saveProfile);
+
+// --------------------------------------------------------
+// Set the supervisor if a student.
+// --------------------------------------------------------
+rozed.get(cfg.path.setSuper, auth, roz(grant(isStudent)), student, csrf, users.editSupervisor);
+rozed.post(cfg.path.setSuper, auth, roz(grant(isStudent)), student, csrf, users.saveSupervisor);
 
 
 // --------------------------------------------------------

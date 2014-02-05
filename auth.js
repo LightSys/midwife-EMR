@@ -40,8 +40,19 @@ var isAdmin = function(req, cb) {
   });
 };
 
+var isStudent = function(req, cb) {
+  someone(req, function(err, isSomeone) {
+    if (! isSomeone) return cb(null, false);
+    var student = req.user.related('roles')
+      .findWhere({name: 'student'});
+    return cb(null, student != undefined);
+  });
+};
+
+
 module.exports = {
   someone: someone
   , isAdmin: isAdmin
+  , isStudent: isStudent
 };
 

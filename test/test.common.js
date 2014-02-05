@@ -114,7 +114,7 @@ describe('authenticated', function(done) {
     it('by student', function(done) {
       var req = request.get('/');
       student.attachCookies(req);
-      req.expect(200, done);
+      req.expect(302, done);    // redirects to set supervisor after login
     });
 
     it('by supervisor', function(done) {
@@ -147,7 +147,7 @@ describe('authenticated', function(done) {
     it('by student', function(done) {
       var req = request.get('/search');
       student.attachCookies(req);
-      req.expect(200, done);
+      req.expect(302, done);    // students have to set their supervisor first
     });
 
     it('by supervisor', function(done) {
@@ -210,7 +210,7 @@ describe('authenticated', function(done) {
       utils.prepPost(config, function(err, postInfo) {
         postInfo.postReq
           .send(postInfo.formData)
-          .expect(200, done);
+          .expect(403, done);     // students have to set their supervisor first
       });
     });
 

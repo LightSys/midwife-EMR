@@ -126,7 +126,7 @@ cfg.path.changeRoles = '/user/:id/role/changeroles';
 
 cfg.path.profile = '/profile';          // GET for form, POST to save
 
-
+cfg.path.setSuper = '/setsuper';        // GET for form, POST to save
 
 module.exports = cfg;
 
