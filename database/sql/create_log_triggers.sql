@@ -210,48 +210,6 @@ END;$$
 DELIMITER ; 
  
 -- ---------------------------------------------------------------
--- Trigger: partner_after_insert
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS partner_after_insert;
-CREATE TRIGGER partner_after_insert AFTER INSERT ON partner
-FOR EACH ROW
-BEGIN
-  INSERT INTO partnerLog
-  (id, firstname, lastname, education, monthlyIncome, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.education, NEW.monthlyIncome, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: partner_after_update
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS partner_after_update;
-CREATE TRIGGER partner_after_update AFTER UPDATE ON partner
-FOR EACH ROW
-BEGIN
-  INSERT INTO partnerLog
-  (id, firstname, lastname, education, monthlyIncome, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.education, NEW.monthlyIncome, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: partner_after_delete
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS partner_after_delete;
-CREATE TRIGGER partner_after_delete AFTER DELETE ON partner
-FOR EACH ROW
-BEGIN
-  INSERT INTO partnerLog
-  (id, firstname, lastname, education, monthlyIncome, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.firstname, OLD.lastname, OLD.education, OLD.monthlyIncome, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
 -- Trigger: patient_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$
@@ -290,48 +248,6 @@ BEGIN
   INSERT INTO patientLog
   (id, dohID, dob, generalInfo, ageOfMenarche, updatedBy, updatedAt, supervisor, op, replacedAt)
   VALUES (OLD.id, OLD.dohID, OLD.dob, OLD.generalInfo, OLD.ageOfMenarche, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: personInfo_after_insert
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS personInfo_after_insert;
-CREATE TRIGGER personInfo_after_insert AFTER INSERT ON personInfo
-FOR EACH ROW
-BEGIN
-  INSERT INTO personInfoLog
-  (id, firstname, lastname, nickname, religion, maritalStatus, telephone, work, education, monthlyIncome, address, barangay, city, postalCode, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.nickname, NEW.religion, NEW.maritalStatus, NEW.telephone, NEW.work, NEW.education, NEW.monthlyIncome, NEW.address, NEW.barangay, NEW.city, NEW.postalCode, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: personInfo_after_update
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS personInfo_after_update;
-CREATE TRIGGER personInfo_after_update AFTER UPDATE ON personInfo
-FOR EACH ROW
-BEGIN
-  INSERT INTO personInfoLog
-  (id, firstname, lastname, nickname, religion, maritalStatus, telephone, work, education, monthlyIncome, address, barangay, city, postalCode, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.nickname, NEW.religion, NEW.maritalStatus, NEW.telephone, NEW.work, NEW.education, NEW.monthlyIncome, NEW.address, NEW.barangay, NEW.city, NEW.postalCode, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: personInfo_after_delete
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS personInfo_after_delete;
-CREATE TRIGGER personInfo_after_delete AFTER DELETE ON personInfo
-FOR EACH ROW
-BEGIN
-  INSERT INTO personInfoLog
-  (id, firstname, lastname, nickname, religion, maritalStatus, telephone, work, education, monthlyIncome, address, barangay, city, postalCode, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (OLD.id, OLD.firstname, OLD.lastname, OLD.nickname, OLD.religion, OLD.maritalStatus, OLD.telephone, OLD.work, OLD.education, OLD.monthlyIncome, OLD.address, OLD.barangay, OLD.city, OLD.postalCode, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ; 
  
@@ -386,8 +302,8 @@ CREATE TRIGGER pregnancy_after_insert AFTER INSERT ON pregnancy
 FOR EACH ROW
 BEGIN
   INSERT INTO pregnancyLog
-  (id, gravidaNumber, lmp, warning, edd, additionalEdd, doctorConsultDate, dentistConsultDate, mbBook, iodizedSalt, whereDeliver, fetuses, monozygotic, pregnancyEndDate, pregnancyEndResult, iugr, note, numberRequiredTetanus, invertedNipples, hasUS, wantsUS, gravida, stillBirths, abortions, living, para, term, preterm, updatedBy, updatedAt, supervisor, patient_id, partner_id, pregnancyQuestionnaire_id, op, replacedAt)
-  VALUES (NEW.id, NEW.gravidaNumber, NEW.lmp, NEW.warning, NEW.edd, NEW.additionalEdd, NEW.doctorConsultDate, NEW.dentistConsultDate, NEW.mbBook, NEW.iodizedSalt, NEW.whereDeliver, NEW.fetuses, NEW.monozygotic, NEW.pregnancyEndDate, NEW.pregnancyEndResult, NEW.iugr, NEW.note, NEW.numberRequiredTetanus, NEW.invertedNipples, NEW.hasUS, NEW.wantsUS, NEW.gravida, NEW.stillBirths, NEW.abortions, NEW.living, NEW.para, NEW.term, NEW.preterm, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.patient_id, NEW.partner_id, NEW.pregnancyQuestionnaire_id, "I", NOW());
+  (id, firstname, lastname, nickname, religion, maritalStatus, telephone, work, education, monthlyIncome, address, barangay, city, postalCode, gravidaNumber, lmp, warning, edd, additionalEdd, doctorConsultDate, dentistConsultDate, mbBook, iodizedSalt, whereDeliver, fetuses, monozygotic, pregnancyEndDate, pregnancyEndResult, iugr, note, numberRequiredTetanus, invertedNipples, hasUS, wantsUS, gravida, stillBirths, abortions, living, para, term, preterm, currentlyVomiting, currentlyDizzy, currentlyFainting, currentlyBleeding, currentlyUrinationPain, currentlyBlurryVision, currentlySwelling, currentlyBirthCanalPain, currentlyNone, useIodizedSalt, canDrinkMedicine, planToBreastFeed, birthCompanion, practiceFamilyPlanning, familyPlanningDetails, familyHistoryTwins, familyHistoryHighBloodPressure, familyHistoryDiabetes, familyHistoryChestPains, familyHistoryTB, familyHistorySmoking, familyHistoryNone, historyFoodAllergy, historyMedicineAllergy, historyAsthma, historyChestPains, historyKidneyProblems, historyHepatitis, historyGoiter, historyHighBloodPressure, historyHospitalOperation, historyBloodTransfusion, historySmoking, historyDrinking, historyNone, partnerFirstname, partnerLastname, partnerEducation, partnerMonthlyIncome, updatedBy, updatedAt, supervisor, patient_id, op, replacedAt)
+  VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.nickname, NEW.religion, NEW.maritalStatus, NEW.telephone, NEW.work, NEW.education, NEW.monthlyIncome, NEW.address, NEW.barangay, NEW.city, NEW.postalCode, NEW.gravidaNumber, NEW.lmp, NEW.warning, NEW.edd, NEW.additionalEdd, NEW.doctorConsultDate, NEW.dentistConsultDate, NEW.mbBook, NEW.iodizedSalt, NEW.whereDeliver, NEW.fetuses, NEW.monozygotic, NEW.pregnancyEndDate, NEW.pregnancyEndResult, NEW.iugr, NEW.note, NEW.numberRequiredTetanus, NEW.invertedNipples, NEW.hasUS, NEW.wantsUS, NEW.gravida, NEW.stillBirths, NEW.abortions, NEW.living, NEW.para, NEW.term, NEW.preterm, NEW.currentlyVomiting, NEW.currentlyDizzy, NEW.currentlyFainting, NEW.currentlyBleeding, NEW.currentlyUrinationPain, NEW.currentlyBlurryVision, NEW.currentlySwelling, NEW.currentlyBirthCanalPain, NEW.currentlyNone, NEW.useIodizedSalt, NEW.canDrinkMedicine, NEW.planToBreastFeed, NEW.birthCompanion, NEW.practiceFamilyPlanning, NEW.familyPlanningDetails, NEW.familyHistoryTwins, NEW.familyHistoryHighBloodPressure, NEW.familyHistoryDiabetes, NEW.familyHistoryChestPains, NEW.familyHistoryTB, NEW.familyHistorySmoking, NEW.familyHistoryNone, NEW.historyFoodAllergy, NEW.historyMedicineAllergy, NEW.historyAsthma, NEW.historyChestPains, NEW.historyKidneyProblems, NEW.historyHepatitis, NEW.historyGoiter, NEW.historyHighBloodPressure, NEW.historyHospitalOperation, NEW.historyBloodTransfusion, NEW.historySmoking, NEW.historyDrinking, NEW.historyNone, NEW.partnerFirstname, NEW.partnerLastname, NEW.partnerEducation, NEW.partnerMonthlyIncome, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.patient_id, "I", NOW());
 END;$$
 DELIMITER ; 
  
@@ -400,8 +316,8 @@ CREATE TRIGGER pregnancy_after_update AFTER UPDATE ON pregnancy
 FOR EACH ROW
 BEGIN
   INSERT INTO pregnancyLog
-  (id, gravidaNumber, lmp, warning, edd, additionalEdd, doctorConsultDate, dentistConsultDate, mbBook, iodizedSalt, whereDeliver, fetuses, monozygotic, pregnancyEndDate, pregnancyEndResult, iugr, note, numberRequiredTetanus, invertedNipples, hasUS, wantsUS, gravida, stillBirths, abortions, living, para, term, preterm, updatedBy, updatedAt, supervisor, patient_id, partner_id, pregnancyQuestionnaire_id, op, replacedAt)
-  VALUES (NEW.id, NEW.gravidaNumber, NEW.lmp, NEW.warning, NEW.edd, NEW.additionalEdd, NEW.doctorConsultDate, NEW.dentistConsultDate, NEW.mbBook, NEW.iodizedSalt, NEW.whereDeliver, NEW.fetuses, NEW.monozygotic, NEW.pregnancyEndDate, NEW.pregnancyEndResult, NEW.iugr, NEW.note, NEW.numberRequiredTetanus, NEW.invertedNipples, NEW.hasUS, NEW.wantsUS, NEW.gravida, NEW.stillBirths, NEW.abortions, NEW.living, NEW.para, NEW.term, NEW.preterm, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.patient_id, NEW.partner_id, NEW.pregnancyQuestionnaire_id, "U", NOW());
+  (id, firstname, lastname, nickname, religion, maritalStatus, telephone, work, education, monthlyIncome, address, barangay, city, postalCode, gravidaNumber, lmp, warning, edd, additionalEdd, doctorConsultDate, dentistConsultDate, mbBook, iodizedSalt, whereDeliver, fetuses, monozygotic, pregnancyEndDate, pregnancyEndResult, iugr, note, numberRequiredTetanus, invertedNipples, hasUS, wantsUS, gravida, stillBirths, abortions, living, para, term, preterm, currentlyVomiting, currentlyDizzy, currentlyFainting, currentlyBleeding, currentlyUrinationPain, currentlyBlurryVision, currentlySwelling, currentlyBirthCanalPain, currentlyNone, useIodizedSalt, canDrinkMedicine, planToBreastFeed, birthCompanion, practiceFamilyPlanning, familyPlanningDetails, familyHistoryTwins, familyHistoryHighBloodPressure, familyHistoryDiabetes, familyHistoryChestPains, familyHistoryTB, familyHistorySmoking, familyHistoryNone, historyFoodAllergy, historyMedicineAllergy, historyAsthma, historyChestPains, historyKidneyProblems, historyHepatitis, historyGoiter, historyHighBloodPressure, historyHospitalOperation, historyBloodTransfusion, historySmoking, historyDrinking, historyNone, partnerFirstname, partnerLastname, partnerEducation, partnerMonthlyIncome, updatedBy, updatedAt, supervisor, patient_id, op, replacedAt)
+  VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.nickname, NEW.religion, NEW.maritalStatus, NEW.telephone, NEW.work, NEW.education, NEW.monthlyIncome, NEW.address, NEW.barangay, NEW.city, NEW.postalCode, NEW.gravidaNumber, NEW.lmp, NEW.warning, NEW.edd, NEW.additionalEdd, NEW.doctorConsultDate, NEW.dentistConsultDate, NEW.mbBook, NEW.iodizedSalt, NEW.whereDeliver, NEW.fetuses, NEW.monozygotic, NEW.pregnancyEndDate, NEW.pregnancyEndResult, NEW.iugr, NEW.note, NEW.numberRequiredTetanus, NEW.invertedNipples, NEW.hasUS, NEW.wantsUS, NEW.gravida, NEW.stillBirths, NEW.abortions, NEW.living, NEW.para, NEW.term, NEW.preterm, NEW.currentlyVomiting, NEW.currentlyDizzy, NEW.currentlyFainting, NEW.currentlyBleeding, NEW.currentlyUrinationPain, NEW.currentlyBlurryVision, NEW.currentlySwelling, NEW.currentlyBirthCanalPain, NEW.currentlyNone, NEW.useIodizedSalt, NEW.canDrinkMedicine, NEW.planToBreastFeed, NEW.birthCompanion, NEW.practiceFamilyPlanning, NEW.familyPlanningDetails, NEW.familyHistoryTwins, NEW.familyHistoryHighBloodPressure, NEW.familyHistoryDiabetes, NEW.familyHistoryChestPains, NEW.familyHistoryTB, NEW.familyHistorySmoking, NEW.familyHistoryNone, NEW.historyFoodAllergy, NEW.historyMedicineAllergy, NEW.historyAsthma, NEW.historyChestPains, NEW.historyKidneyProblems, NEW.historyHepatitis, NEW.historyGoiter, NEW.historyHighBloodPressure, NEW.historyHospitalOperation, NEW.historyBloodTransfusion, NEW.historySmoking, NEW.historyDrinking, NEW.historyNone, NEW.partnerFirstname, NEW.partnerLastname, NEW.partnerEducation, NEW.partnerMonthlyIncome, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.patient_id, "U", NOW());
 END;$$
 DELIMITER ; 
  
@@ -414,50 +330,8 @@ CREATE TRIGGER pregnancy_after_delete AFTER DELETE ON pregnancy
 FOR EACH ROW
 BEGIN
   INSERT INTO pregnancyLog
-  (id, gravidaNumber, lmp, warning, edd, additionalEdd, doctorConsultDate, dentistConsultDate, mbBook, iodizedSalt, whereDeliver, fetuses, monozygotic, pregnancyEndDate, pregnancyEndResult, iugr, note, numberRequiredTetanus, invertedNipples, hasUS, wantsUS, gravida, stillBirths, abortions, living, para, term, preterm, updatedBy, updatedAt, supervisor, patient_id, partner_id, pregnancyQuestionnaire_id, op, replacedAt)
-  VALUES (OLD.id, OLD.gravidaNumber, OLD.lmp, OLD.warning, OLD.edd, OLD.additionalEdd, OLD.doctorConsultDate, OLD.dentistConsultDate, OLD.mbBook, OLD.iodizedSalt, OLD.whereDeliver, OLD.fetuses, OLD.monozygotic, OLD.pregnancyEndDate, OLD.pregnancyEndResult, OLD.iugr, OLD.note, OLD.numberRequiredTetanus, OLD.invertedNipples, OLD.hasUS, OLD.wantsUS, OLD.gravida, OLD.stillBirths, OLD.abortions, OLD.living, OLD.para, OLD.term, OLD.preterm, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.patient_id, OLD.partner_id, OLD.pregnancyQuestionnaire_id, "D", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: pregnancyQuestionnaire_after_insert
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS pregnancyQuestionnaire_after_insert;
-CREATE TRIGGER pregnancyQuestionnaire_after_insert AFTER INSERT ON pregnancyQuestionnaire
-FOR EACH ROW
-BEGIN
-  INSERT INTO pregnancyQuestionnaireLog
-  (id, currentlyVomiting, currentlyDizzy, currentlyFainting, currentlyBleeding, currentlyUrinationPain, currentlyBlurryVision, currentlySwelling, currentlyBirthCanalPain, currentlyNone, useIodizedSalt, canDrinkMedicine, planToBreastFeed, whereDeliver, birthCompanion, practiceFamilyPlanning, familyPlanningDetails, familyHistoryTwins, familyHistoryHighBloodPressure, familyHistoryDiabetes, familyHistoryChestPains, familyHistoryTB, familyHistorySmoking, familyHistoryNone, historyFoodAllergy, historyMedicineAllergy, historyAsthma, historyChestPains, historyKidneyProblems, historyHepatitis, historyGoiter, historyHighBloodPressure, historyHospitalOperation, historyBloodTransfusion, historySmoking, historyDrinking, historyNone, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.currentlyVomiting, NEW.currentlyDizzy, NEW.currentlyFainting, NEW.currentlyBleeding, NEW.currentlyUrinationPain, NEW.currentlyBlurryVision, NEW.currentlySwelling, NEW.currentlyBirthCanalPain, NEW.currentlyNone, NEW.useIodizedSalt, NEW.canDrinkMedicine, NEW.planToBreastFeed, NEW.whereDeliver, NEW.birthCompanion, NEW.practiceFamilyPlanning, NEW.familyPlanningDetails, NEW.familyHistoryTwins, NEW.familyHistoryHighBloodPressure, NEW.familyHistoryDiabetes, NEW.familyHistoryChestPains, NEW.familyHistoryTB, NEW.familyHistorySmoking, NEW.familyHistoryNone, NEW.historyFoodAllergy, NEW.historyMedicineAllergy, NEW.historyAsthma, NEW.historyChestPains, NEW.historyKidneyProblems, NEW.historyHepatitis, NEW.historyGoiter, NEW.historyHighBloodPressure, NEW.historyHospitalOperation, NEW.historyBloodTransfusion, NEW.historySmoking, NEW.historyDrinking, NEW.historyNone, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: pregnancyQuestionnaire_after_update
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS pregnancyQuestionnaire_after_update;
-CREATE TRIGGER pregnancyQuestionnaire_after_update AFTER UPDATE ON pregnancyQuestionnaire
-FOR EACH ROW
-BEGIN
-  INSERT INTO pregnancyQuestionnaireLog
-  (id, currentlyVomiting, currentlyDizzy, currentlyFainting, currentlyBleeding, currentlyUrinationPain, currentlyBlurryVision, currentlySwelling, currentlyBirthCanalPain, currentlyNone, useIodizedSalt, canDrinkMedicine, planToBreastFeed, whereDeliver, birthCompanion, practiceFamilyPlanning, familyPlanningDetails, familyHistoryTwins, familyHistoryHighBloodPressure, familyHistoryDiabetes, familyHistoryChestPains, familyHistoryTB, familyHistorySmoking, familyHistoryNone, historyFoodAllergy, historyMedicineAllergy, historyAsthma, historyChestPains, historyKidneyProblems, historyHepatitis, historyGoiter, historyHighBloodPressure, historyHospitalOperation, historyBloodTransfusion, historySmoking, historyDrinking, historyNone, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.currentlyVomiting, NEW.currentlyDizzy, NEW.currentlyFainting, NEW.currentlyBleeding, NEW.currentlyUrinationPain, NEW.currentlyBlurryVision, NEW.currentlySwelling, NEW.currentlyBirthCanalPain, NEW.currentlyNone, NEW.useIodizedSalt, NEW.canDrinkMedicine, NEW.planToBreastFeed, NEW.whereDeliver, NEW.birthCompanion, NEW.practiceFamilyPlanning, NEW.familyPlanningDetails, NEW.familyHistoryTwins, NEW.familyHistoryHighBloodPressure, NEW.familyHistoryDiabetes, NEW.familyHistoryChestPains, NEW.familyHistoryTB, NEW.familyHistorySmoking, NEW.familyHistoryNone, NEW.historyFoodAllergy, NEW.historyMedicineAllergy, NEW.historyAsthma, NEW.historyChestPains, NEW.historyKidneyProblems, NEW.historyHepatitis, NEW.historyGoiter, NEW.historyHighBloodPressure, NEW.historyHospitalOperation, NEW.historyBloodTransfusion, NEW.historySmoking, NEW.historyDrinking, NEW.historyNone, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: pregnancyQuestionnaire_after_delete
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS pregnancyQuestionnaire_after_delete;
-CREATE TRIGGER pregnancyQuestionnaire_after_delete AFTER DELETE ON pregnancyQuestionnaire
-FOR EACH ROW
-BEGIN
-  INSERT INTO pregnancyQuestionnaireLog
-  (id, currentlyVomiting, currentlyDizzy, currentlyFainting, currentlyBleeding, currentlyUrinationPain, currentlyBlurryVision, currentlySwelling, currentlyBirthCanalPain, currentlyNone, useIodizedSalt, canDrinkMedicine, planToBreastFeed, whereDeliver, birthCompanion, practiceFamilyPlanning, familyPlanningDetails, familyHistoryTwins, familyHistoryHighBloodPressure, familyHistoryDiabetes, familyHistoryChestPains, familyHistoryTB, familyHistorySmoking, familyHistoryNone, historyFoodAllergy, historyMedicineAllergy, historyAsthma, historyChestPains, historyKidneyProblems, historyHepatitis, historyGoiter, historyHighBloodPressure, historyHospitalOperation, historyBloodTransfusion, historySmoking, historyDrinking, historyNone, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.currentlyVomiting, OLD.currentlyDizzy, OLD.currentlyFainting, OLD.currentlyBleeding, OLD.currentlyUrinationPain, OLD.currentlyBlurryVision, OLD.currentlySwelling, OLD.currentlyBirthCanalPain, OLD.currentlyNone, OLD.useIodizedSalt, OLD.canDrinkMedicine, OLD.planToBreastFeed, OLD.whereDeliver, OLD.birthCompanion, OLD.practiceFamilyPlanning, OLD.familyPlanningDetails, OLD.familyHistoryTwins, OLD.familyHistoryHighBloodPressure, OLD.familyHistoryDiabetes, OLD.familyHistoryChestPains, OLD.familyHistoryTB, OLD.familyHistorySmoking, OLD.familyHistoryNone, OLD.historyFoodAllergy, OLD.historyMedicineAllergy, OLD.historyAsthma, OLD.historyChestPains, OLD.historyKidneyProblems, OLD.historyHepatitis, OLD.historyGoiter, OLD.historyHighBloodPressure, OLD.historyHospitalOperation, OLD.historyBloodTransfusion, OLD.historySmoking, OLD.historyDrinking, OLD.historyNone, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, firstname, lastname, nickname, religion, maritalStatus, telephone, work, education, monthlyIncome, address, barangay, city, postalCode, gravidaNumber, lmp, warning, edd, additionalEdd, doctorConsultDate, dentistConsultDate, mbBook, iodizedSalt, whereDeliver, fetuses, monozygotic, pregnancyEndDate, pregnancyEndResult, iugr, note, numberRequiredTetanus, invertedNipples, hasUS, wantsUS, gravida, stillBirths, abortions, living, para, term, preterm, currentlyVomiting, currentlyDizzy, currentlyFainting, currentlyBleeding, currentlyUrinationPain, currentlyBlurryVision, currentlySwelling, currentlyBirthCanalPain, currentlyNone, useIodizedSalt, canDrinkMedicine, planToBreastFeed, birthCompanion, practiceFamilyPlanning, familyPlanningDetails, familyHistoryTwins, familyHistoryHighBloodPressure, familyHistoryDiabetes, familyHistoryChestPains, familyHistoryTB, familyHistorySmoking, familyHistoryNone, historyFoodAllergy, historyMedicineAllergy, historyAsthma, historyChestPains, historyKidneyProblems, historyHepatitis, historyGoiter, historyHighBloodPressure, historyHospitalOperation, historyBloodTransfusion, historySmoking, historyDrinking, historyNone, partnerFirstname, partnerLastname, partnerEducation, partnerMonthlyIncome, updatedBy, updatedAt, supervisor, patient_id, op, replacedAt)
+  VALUES (OLD.id, OLD.firstname, OLD.lastname, OLD.nickname, OLD.religion, OLD.maritalStatus, OLD.telephone, OLD.work, OLD.education, OLD.monthlyIncome, OLD.address, OLD.barangay, OLD.city, OLD.postalCode, OLD.gravidaNumber, OLD.lmp, OLD.warning, OLD.edd, OLD.additionalEdd, OLD.doctorConsultDate, OLD.dentistConsultDate, OLD.mbBook, OLD.iodizedSalt, OLD.whereDeliver, OLD.fetuses, OLD.monozygotic, OLD.pregnancyEndDate, OLD.pregnancyEndResult, OLD.iugr, OLD.note, OLD.numberRequiredTetanus, OLD.invertedNipples, OLD.hasUS, OLD.wantsUS, OLD.gravida, OLD.stillBirths, OLD.abortions, OLD.living, OLD.para, OLD.term, OLD.preterm, OLD.currentlyVomiting, OLD.currentlyDizzy, OLD.currentlyFainting, OLD.currentlyBleeding, OLD.currentlyUrinationPain, OLD.currentlyBlurryVision, OLD.currentlySwelling, OLD.currentlyBirthCanalPain, OLD.currentlyNone, OLD.useIodizedSalt, OLD.canDrinkMedicine, OLD.planToBreastFeed, OLD.birthCompanion, OLD.practiceFamilyPlanning, OLD.familyPlanningDetails, OLD.familyHistoryTwins, OLD.familyHistoryHighBloodPressure, OLD.familyHistoryDiabetes, OLD.familyHistoryChestPains, OLD.familyHistoryTB, OLD.familyHistorySmoking, OLD.familyHistoryNone, OLD.historyFoodAllergy, OLD.historyMedicineAllergy, OLD.historyAsthma, OLD.historyChestPains, OLD.historyKidneyProblems, OLD.historyHepatitis, OLD.historyGoiter, OLD.historyHighBloodPressure, OLD.historyHospitalOperation, OLD.historyBloodTransfusion, OLD.historySmoking, OLD.historyDrinking, OLD.historyNone, OLD.partnerFirstname, OLD.partnerLastname, OLD.partnerEducation, OLD.partnerMonthlyIncome, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.patient_id, "D", NOW());
 END;$$
 DELIMITER ; 
  

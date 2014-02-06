@@ -47,15 +47,10 @@ User = Bookshelf.Model.extend({
     this.on('saving', this.saving, this);
   }
 
-  , defaults: {
-    // Set the updatedAt field.
-    //'updatedAt': moment().format('YYYY-MM-DD HH:mm:ss')
-  }
-
   , saving: function(model) {
       // Enforce permittedAttributes.
       Bookshelf.Model.prototype.saving.apply(this, model);
-  }
+    }
 
   , checkPassword: function(pw, cb) {
       this.fetch()
@@ -65,7 +60,7 @@ User = Bookshelf.Model.extend({
             return cb(null, same);
           });
         });
-  }
+    }
 
   , hashPassword: function(pw, cb) {
       var self = this;
@@ -74,15 +69,15 @@ User = Bookshelf.Model.extend({
         self.set('password', hash);
         return cb(null, true);
       });
-  }
+    }
 
   // --------------------------------------------------------
   // Relationships
   // --------------------------------------------------------
 
   , roles: function() {
-    return this.belongsToMany(Role, 'user_role', 'user_id', 'role_id');
-  }
+      return this.belongsToMany(Role, 'user_role', 'user_id', 'role_id');
+    }
 
 }, {
 
@@ -105,7 +100,7 @@ User = Bookshelf.Model.extend({
           if (! u) return cb(new Error('User ' + username + ' does not exist.'));
           return cb(null, u);
         });
-  }
+    }
 
   , checkProfileFields: function(rec, checkPasswords, cb) {
       var result = {
@@ -135,7 +130,7 @@ User = Bookshelf.Model.extend({
         result.success = false;
       }
       return cb(null, result);
-  }
+    }
 
     /* --------------------------------------------------------
      * checkFields()
@@ -194,7 +189,7 @@ User = Bookshelf.Model.extend({
       } else {
         return cb(null, result);
       }
-  }
+    }
 
 });
 

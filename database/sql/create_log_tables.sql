@@ -64,24 +64,6 @@ ALTER TABLE pregnancyLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnancyLog DROP PRIMARY KEY;
 ALTER TABLE pregnancyLog ADD PRIMARY KEY (id, replacedAt);
 --
--- Creating personInfoLog
-SELECT 'personInfoLog' AS Creating FROM DUAL;
-CREATE TABLE personInfoLog LIKE personInfo;
-ALTER TABLE personInfoLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE personInfoLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE personInfoLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE personInfoLog DROP PRIMARY KEY;
-ALTER TABLE personInfoLog ADD PRIMARY KEY (id, replacedAt);
---
--- Creating partnerLog
-SELECT 'partnerLog' AS Creating FROM DUAL;
-CREATE TABLE partnerLog LIKE partner;
-ALTER TABLE partnerLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE partnerLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE partnerLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE partnerLog DROP PRIMARY KEY;
-ALTER TABLE partnerLog ADD PRIMARY KEY (id, replacedAt);
---
 -- Creating healthTeachingLog
 SELECT 'healthTeachingLog' AS Creating FROM DUAL;
 CREATE TABLE healthTeachingLog LIKE healthTeaching;
@@ -109,15 +91,6 @@ ALTER TABLE medicationLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE medicationLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE medicationLog DROP PRIMARY KEY;
 ALTER TABLE medicationLog ADD PRIMARY KEY (id, replacedAt);
---
--- Creating pregnancyQuestionnaireLog
-SELECT 'pregnancyQuestionnaireLog' AS Creating FROM DUAL;
-CREATE TABLE pregnancyQuestionnaireLog LIKE pregnancyQuestionnaire;
-ALTER TABLE pregnancyQuestionnaireLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE pregnancyQuestionnaireLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE pregnancyQuestionnaireLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE pregnancyQuestionnaireLog DROP PRIMARY KEY;
-ALTER TABLE pregnancyQuestionnaireLog ADD PRIMARY KEY (id, replacedAt);
 --
 -- Creating pregnancyHistoryLog
 SELECT 'pregnancyHistoryLog' AS Creating FROM DUAL;

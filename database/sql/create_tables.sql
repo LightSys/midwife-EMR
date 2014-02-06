@@ -120,6 +120,19 @@ SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `pregnancy` (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  firstname VARCHAR(70) NOT NULL,
+  lastname VARCHAR(70) NOT NULL,
+  nickname VARCHAR(70) NULL,
+  religion VARCHAR(50) NULL,
+  maritalStatus VARCHAR(50) NULL,
+  telephone VARCHAR(20) NULL,
+  work VARCHAR(50) NULL,
+  education VARCHAR(70) NULL,
+  monthlyIncome INT NULL,
+  address VARCHAR(150) NOT NULL,
+  barangay VARCHAR(50) NULL,
+  city VARCHAR(100) NULL,
+  postalCode VARCHAR(20) NULL,
   gravidaNumber TINYINT NULL,
   lmp DATE NULL,
   warning BOOLEAN NULL DEFAULT 0,
@@ -147,63 +160,55 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   para TINYINT NULL,
   term TINYINT NULL,
   preterm TINYINT NULL,
+  currentlyVomiting BOOLEAN NULL,
+  currentlyDizzy BOOLEAN NULL,
+  currentlyFainting BOOLEAN NULL,
+  currentlyBleeding BOOLEAN NULL,
+  currentlyUrinationPain BOOLEAN NULL,
+  currentlyBlurryVision BOOLEAN NULL,
+  currentlySwelling BOOLEAN NULL,
+  currentlyBirthCanalPain BOOLEAN NULL,
+  currentlyNone BOOLEAN NULL,
+  useIodizedSalt BOOLEAN NULL,
+  canDrinkMedicine BOOLEAN NULL,
+  planToBreastFeed BOOLEAN NULL,
+  birthCompanion VARCHAR(30) NULL,
+  practiceFamilyPlanning BOOLEAN NULL,
+  familyPlanningDetails VARCHAR(100) NULL,
+  familyHistoryTwins BOOLEAN NULL,
+  familyHistoryHighBloodPressure BOOLEAN NULL,
+  familyHistoryDiabetes BOOLEAN NULL,
+  familyHistoryChestPains BOOLEAN NULL,
+  familyHistoryTB BOOLEAN NULL,
+  familyHistorySmoking BOOLEAN NULL,
+  familyHistoryNone BOOLEAN NULL,
+  historyFoodAllergy BOOLEAN NULL,
+  historyMedicineAllergy BOOLEAN NULL,
+  historyAsthma BOOLEAN NULL,
+  historyChestPains BOOLEAN NULL,
+  historyKidneyProblems BOOLEAN NULL,
+  historyHepatitis BOOLEAN NULL,
+  historyGoiter BOOLEAN NULL,
+  historyHighBloodPressure BOOLEAN NULL,
+  historyHospitalOperation BOOLEAN NULL,
+  historyBloodTransfusion BOOLEAN NULL,
+  historySmoking BOOLEAN NULL,
+  historyDrinking BOOLEAN NULL,
+  historyNone BOOLEAN NULL,
+  partnerFirstname VARCHAR(70) NOT NULL,
+  partnerLastname VARCHAR(70) NOT NULL,
+  partnerEducation VARCHAR(70) NULL,
+  partnerMonthlyIncome INT NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
   patient_id INT NOT NULL,
-  partner_id INT NULL,
-  pregnancyQuestionnaire_id INT NULL,
   FOREIGN KEY (patient_id) REFERENCES patient (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 SHOW WARNINGS;
 
--- One-to-one with pregnancy. Represents the state of the patient
--- at the time of the pregnancy.
-CREATE TABLE IF NOT EXISTS `personInfo` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  firstname VARCHAR(70) NOT NULL,
-  lastname VARCHAR(70) NOT NULL,
-  nickname VARCHAR(70) NULL,
-  religion VARCHAR(50) NULL,
-  maritalStatus VARCHAR(50) NULL,
-  telephone VARCHAR(20) NULL,
-  work VARCHAR(50) NULL,
-  education VARCHAR(70) NULL,
-  monthlyIncome INT NULL,
-  address VARCHAR(150) NOT NULL,
-  barangay VARCHAR(50) NULL,
-  city VARCHAR(100) NULL,
-  postalCode VARCHAR(20) NULL,
-  updatedBy INT NOT NULL,
-  updatedAt DATETIME NOT NULL,
-  supervisor INT NULL,
-  pregnancy_id INT NOT NULL,
-  FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
-SHOW WARNINGS;
-
-
--- One-to-one with pregnancy.
-CREATE TABLE IF NOT EXISTS `partner` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  firstname VARCHAR(70) NOT NULL,
-  lastname VARCHAR(70) NOT NULL,
-  education VARCHAR(70) NULL,
-  monthlyIncome INT NULL,
-  updatedBy INT NOT NULL,
-  updatedAt DATETIME NOT NULL,
-  supervisor INT NULL,
-  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
-SHOW WARNINGS;
-
-
--- One-to-one with pregnancy.
 CREATE TABLE IF NOT EXISTS `healthTeaching` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   date DATE NOT NULL,
@@ -252,55 +257,6 @@ CREATE TABLE IF NOT EXISTS `medication` (
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 SHOW WARNINGS;
-
-
--- One-to-one with pregnancy.
-CREATE TABLE IF NOT EXISTS `pregnancyQuestionnaire` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  currentlyVomiting BOOLEAN NULL,
-  currentlyDizzy BOOLEAN NULL,
-  currentlyFainting BOOLEAN NULL,
-  currentlyBleeding BOOLEAN NULL,
-  currentlyUrinationPain BOOLEAN NULL,
-  currentlyBlurryVision BOOLEAN NULL,
-  currentlySwelling BOOLEAN NULL,
-  currentlyBirthCanalPain BOOLEAN NULL,
-  currentlyNone BOOLEAN NULL,
-  useIodizedSalt BOOLEAN NULL,
-  canDrinkMedicine BOOLEAN NULL,
-  planToBreastFeed BOOLEAN NULL,
-  whereDeliver VARCHAR(30) NULL,
-  birthCompanion VARCHAR(30) NULL,
-  practiceFamilyPlanning BOOLEAN NULL,
-  familyPlanningDetails VARCHAR(100) NULL,
-  familyHistoryTwins BOOLEAN NULL,
-  familyHistoryHighBloodPressure BOOLEAN NULL,
-  familyHistoryDiabetes BOOLEAN NULL,
-  familyHistoryChestPains BOOLEAN NULL,
-  familyHistoryTB BOOLEAN NULL,
-  familyHistorySmoking BOOLEAN NULL,
-  familyHistoryNone BOOLEAN NULL,
-  historyFoodAllergy BOOLEAN NULL,
-  historyMedicineAllergy BOOLEAN NULL,
-  historyAsthma BOOLEAN NULL,
-  historyChestPains BOOLEAN NULL,
-  historyKidneyProblems BOOLEAN NULL,
-  historyHepatitis BOOLEAN NULL,
-  historyGoiter BOOLEAN NULL,
-  historyHighBloodPressure BOOLEAN NULL,
-  historyHospitalOperation BOOLEAN NULL,
-  historyBloodTransfusion BOOLEAN NULL,
-  historySmoking BOOLEAN NULL,
-  historyDrinking BOOLEAN NULL,
-  historyNone BOOLEAN NULL,
-  updatedBy INT NOT NULL,
-  updatedAt DATETIME NOT NULL,
-  supervisor INT NULL,
-  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
-SHOW WARNINGS;
-
 
 
 CREATE TABLE IF NOT EXISTS `pregnancyHistory` (
