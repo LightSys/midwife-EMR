@@ -123,6 +123,30 @@ describe('Student roles', function(done) {
         });
     });
 
+    it('setSuper() in utils.js should set supervisor', function(done) {
+      var student = supertest.agent(app)
+        , req = request.get('/setsuper')
+        ;
+      utils.login(request, 'student', student, function(err, success) {
+        if (err) return done(err);
+        if (! success) return done(new Error('utils.login() failed'));
+        utils.setSuper(request, student, function(err, success) {
+          var reqTest = request.get('/')
+            ;
+          if (err) return done(err);
+          if (! success) return done(new Error('utils.setSuper() failed'));
+
+          // --------------------------------------------------------
+          // Only a student with a supervisor can get to the main page
+          // without being redirected to choose a supervisor.
+          // --------------------------------------------------------
+          student.attachCookies(reqTest);
+          reqTest
+            .expect(200, done);
+        });
+      });
+    });
+
   });
 
 });

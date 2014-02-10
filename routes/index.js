@@ -4,4 +4,5 @@ module.exports = {
   , search: require('./search')
   , users: require('./users')
   , roles: require('./roles')
+  , pregnancy: require('./pregnancy')
 };

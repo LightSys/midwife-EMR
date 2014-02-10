@@ -36,6 +36,10 @@ html(lang="en")
                 li
                   a(href="/user") <i class="fa fa-users"></i>
                     = gettext('Users')
+              if roleInfo.isClerk || roleInfo.isSupervisor || roleInfo.isStudent
+                li
+                  a(href="/pregnancy/new") <i class="fa fa-user-md"></i>
+                    = gettext('New Pregnancy')
               li
                 a(href="/logout") <i class="fa fa-power-off"></i>
                   = gettext('Logout')
@@ -77,6 +81,7 @@ html(lang="en")
                 block roleEditForm
                 block profileEditForm
                 block setSuper
+                block pregnancyAddEdit
               else
                 block login
 

@@ -10,11 +10,11 @@ block roleAddForm
 
         div.form-group
           span= gettext('Name')
-          input(class='form-control', type='text', name='name')
+          input(class='form-control input-lg', type='text', name='name')
         div.form-group
           span= gettext('Description')
-          input(class='form-control', type='text', name='description')
+          input(class='form-control input-lg', type='text', name='description')
 
-        input(class='btn btn-default', type='submit', value=gettext('Create Role'))
+        input(class='btn btn-default btn-primary', type='submit', value=gettext('Create Role'))
         input(type='hidden', name='_csrf', value=token)
 

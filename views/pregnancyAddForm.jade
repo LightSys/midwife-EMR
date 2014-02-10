@@ -1,0 +1,63 @@
+extends layouts/default_layout
+
+block pregnancyAddEdit
+  h1= title
+
+  div.formBoxLarge
+    +flash(messages)
+    form(role='form', name='pregnancyForm', action='/pregnancy', method='post')
+      div.col-lg-4
+        div.form-group
+          span= gettext('Last name')
+          input(class='form-control input-lg', type='text', tabindex="1", name='lastname')
+        div.form-group
+          span= gettext('Maiden name')
+          input(class='form-control input-lg', type='text', tabindex="4", name='maidenname')
+        div.form-group
+          span= gettext('Marital status')
+          input(class='form-control input-lg', type='text', tabindex="7", name='maritalstatus')
+        div.form-group
+          span= gettext('Telephone')
+          input(class='form-control input-lg', type='tel', tabindex="10", name='telephone')
+        div.form-group
+          span= gettext('Education')
+          input(class='form-control input-lg', type='text', tabindex="13", name='education')
+
+        input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
+        input(type='hidden', name='_csrf', value=token)
+
+      div.col-lg-4
+        div.form-group
+          span= gettext('First name')
+          input(class='form-control input-lg', type='text', tabindex="2", name='firstname')
+        div.form-group
+          span= gettext('Nick name')
+          input(class='form-control input-lg', type='text', tabindex="5", name='nickname')
+        div.form-group
+          span= gettext('Address')
+          input(class='form-control input-lg', type='text', tabindex="8", name='address')
+        div.form-group
+          span= gettext('Work')
+          input(class='form-control input-lg', type='text', tabindex="11", name='work')
+        div.form-group
+          span= gettext('DOH #')
+          input(class='form-control input-lg', type='text', tabindex="14", name='doh')
+
+      div.col-lg-4
+        div.form-group
+          span= gettext('Date of Birth')
+          input(class='form-control input-lg', type='date', tabindex="3", name='dob')
+        div.form-group
+          span= gettext('Religion')
+          input(class='form-control input-lg', type='text', tabindex="6", name='religion')
+        div.form-group
+          span= gettext('Barangay')
+          input(class='form-control input-lg', type='text', tabindex="9", name='barangay')
+        div.form-group
+          span= gettext('Income')
+          input(class='form-control input-lg', type='text', tabindex="12", name='income')
+        div.form-group
+          span= gettext('Priority #')
+          input(class='form-control input-lg', type='text', tabindex="15", name='priority')
+
+

@@ -16,10 +16,10 @@ block setSuper
       div.form-group
         if supervisor
           p= gettext('Choose a different supervisor')
-        select.form-control(name="supervisor")
+        select(class='form-control input-lg', name="supervisor")
           each u in userList
             option(value=u.id)= u.lastname + ', ' + u.firstname + ' (' + u.username + ')'
 
-      input(class='btn btn-default', type='submit', value=gettext('Set Supervisor'))
+      input(class='btn btn-default btn-primary', type='submit', value=gettext('Set Supervisor'))
       input(type='hidden', name='_csrf', value=token)
 

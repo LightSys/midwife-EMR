@@ -128,6 +128,13 @@ cfg.path.profile = '/profile';          // GET for form, POST to save
 
 cfg.path.setSuper = '/setsuper';        // GET for form, POST to save
 
+cfg.path.pregnancyList = '/pregnancy';                // GET
+cfg.path.pregnancyNewForm = '/pregnancy/new';         // GET
+cfg.path.pregnancyCreate = '/pregnancy';              // POST
+cfg.path.pregnancyEditForm = '/pregnancy/:id/edit';   // GET
+cfg.path.pregnancyUpdate = '/pregnancy/:id/update';   // POST
+cfg.path.pregnancyLoad = '/pregnancy/:id/:op?';       // parameter handling
+
 module.exports = cfg;
 
 

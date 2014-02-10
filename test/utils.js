@@ -12,6 +12,70 @@ var cfg = require('../config')
   ;
 
 
+/* --------------------------------------------------------
+ * setSuper()
+ *
+ * Set the supervisor to the first one available for the 
+ * student. Assumes that the student is already logged in.
+ * Calls the callback with true as the second parameter
+ * upon success.
+ *
+ * param       request - supertest request
+ * param       agent - supertest agent representing the student
+ * return      undefined
+ * -------------------------------------------------------- */
+var setSuper = function(request, student, cb) {
+  var req = request.get('/setsuper');
+  student.attachCookies(req);
+  req
+    .end(function(err, res) {
+      var $ = cheerio.load(res.text)
+        , opts = $('option', 'form[name="setSuperForm"]')
+        , csrf = $('input[name="_csrf"]', 'form[name="setSuperForm"]').attr('value')
+        , superId
+        , req2
+        , formData = {}
+        ;
+      if (err) return cb(err);
+
+      // --------------------------------------------------------
+      // Get the id of the first supervisor that is available.
+      // --------------------------------------------------------
+      if (opts && opts['0'] && opts['0'].attribs && opts['0'].attribs.value) {
+        superId = opts['0'].attribs.value;
+
+        // --------------------------------------------------------
+        // Set the supervisor.
+        // --------------------------------------------------------
+        formData.supervisor = superId;
+        formData._csrf = csrf;
+        req2 = request.post('/setsuper');
+        student.attachCookies(req2);
+        req2
+          .send(formData)
+          .end(function(err2, res2) {
+            var req3
+              ;
+            if (err2) return cb(err2);
+
+            // --------------------------------------------------------
+            // Proof of properly setting the supervisor is successfully
+            // going to the search page.
+            // --------------------------------------------------------
+            req3 = request.get('/search');
+            student.attachCookies(req3);
+            req3
+              .end(function(err3, res) {
+                if (err3) return cb(err3);
+                return cb(null, true);
+              });
+          });
+      } else {
+        return cb(new Error('Supervisor not found!'));
+      }
+    });
+};
+
 
 /* --------------------------------------------------------
  * prepPost()
@@ -91,17 +155,14 @@ var login = function(request, user, agent, cb) {
 
 var loginMany = function(request, users, agents, cb) {
   var pairs = _.zip(users, agents)
-    , success = true
     , cnt = 0
     ;
   _.each(pairs, function(pair) {
     login(request, pair[0], pair[1], function(err, success) {
-      if (err) {
-        success = false;
-      }
+      if (err) return cb(new Error('Login did not succeed for ' + pair[0]));
       cnt++;
       if (cnt == pairs.length) {
-        return cb(null, success);
+        return cb(null, true);
       }
     });
   });
@@ -112,6 +173,7 @@ module.exports = {
   login: login
   , loginMany: loginMany
   , prepPost: prepPost
+  , setSuper: setSuper
 };
 
 

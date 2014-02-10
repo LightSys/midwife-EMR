@@ -19,6 +19,9 @@ var express = require('express')
   , someone = require('auth').someone
   , isAdmin = require('auth').isAdmin
   , isStudent = require('auth').isStudent
+  , isGuard = require('auth').isGuard
+  , isSupervisor = require('auth').isSupervisor
+  , isClerk = require('auth').isClerk
   , app = express()
   , rozed = roz.wrap(app)
   , SessionStore = require('connect-mysql')(express)
@@ -31,6 +34,7 @@ var express = require('express')
   , home = require('./routes').home
   , users = require('./routes').users
   , roles = require('./routes').roles
+  , pregnancy = require('./routes').pregnancy
   , common = []
   , student = []
   ;
@@ -222,6 +226,8 @@ app.configure('production', function() {
 // --------------------------------------------------------
 // Group of methods that are commonly needed for
 // many requests.
+// common: standard protected routes.
+// student: routes a student can use without a supervisor set.
 // --------------------------------------------------------
 common.push(setRoleInfo, hasSuper, i18nLocals);
 student.push(setRoleInfo, i18nLocals);
@@ -281,6 +287,16 @@ rozed.post(cfg.path.profile, roz(grant(someone)), student, csrf, users.saveProfi
 // --------------------------------------------------------
 rozed.get(cfg.path.setSuper, auth, roz(grant(isStudent)), student, csrf, users.editSupervisor);
 rozed.post(cfg.path.setSuper, auth, roz(grant(isStudent)), student, csrf, users.saveSupervisor);
+
+// --------------------------------------------------------
+// Pregnancy management
+// --------------------------------------------------------
+rozed.get(cfg.path.pregnancyNewForm, auth,
+    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
+    common, csrf, pregnancy.addForm);
+rozed.post(cfg.path.pregnancyCreate, auth,
+    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
+    common, csrf, pregnancy.create);
 
 
 // --------------------------------------------------------

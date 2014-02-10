@@ -122,6 +122,7 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   firstname VARCHAR(70) NOT NULL,
   lastname VARCHAR(70) NOT NULL,
+  maidenname VARCHAR(70) NULL,
   nickname VARCHAR(70) NULL,
   religion VARCHAR(50) NULL,
   maritalStatus VARCHAR(50) NULL,

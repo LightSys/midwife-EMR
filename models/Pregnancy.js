@@ -18,6 +18,7 @@ CREATE TABLE `pregnancy` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `firstname` varchar(70) NOT NULL,
   `lastname` varchar(70) NOT NULL,
+  `maidenname` VARCHAR(70) DEFAULT NULL,
   `nickname` varchar(70) DEFAULT NULL,
   `religion` varchar(50) DEFAULT NULL,
   `maritalStatus` varchar(50) DEFAULT NULL,

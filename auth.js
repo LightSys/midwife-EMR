@@ -23,6 +23,26 @@ var someone = function(req, cb) {
 };
 
 /* --------------------------------------------------------
+ * isInRole()
+ *
+ * Determines whether the request passed belongs to a user
+ * that is in the role specified.
+ *
+ * param       req
+ * param       roleName
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
+var isInRole = function(req, roleName, cb) {
+  someone(req, function(err, isSomeone) {
+    if (! isSomeone) return cb(null, false);
+    var role = req.user.related('roles')
+      .findWhere({name: roleName});
+    return cb(null, role != undefined);
+  });
+};
+
+/* --------------------------------------------------------
  * isAdmin()
  *
  * Someone who is a member of the admin role.
@@ -32,20 +52,73 @@ var someone = function(req, cb) {
  * return      undefined
  * -------------------------------------------------------- */
 var isAdmin = function(req, cb) {
-  someone(req, function(err, isSomeone) {
-    if (! isSomeone) return cb(null, false);
-    var admin = req.user.related('roles')
-      .findWhere({name: 'administrator'});
-    return cb(null, admin != undefined);
+  isInRole(req, 'administrator', function(err, isInRole) {
+    if (err) return cb(err);
+    return cb(null, isInRole);
   });
 };
 
+/* --------------------------------------------------------
+ * isGuard()
+ *
+ * Someone who is a member of the guard role.
+ *
+ * param       req
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
+var isGuard = function(req, cb) {
+  isInRole(req, 'guard', function(err, isInRole) {
+    if (err) return cb(err);
+    return cb(null, isInRole);
+  });
+};
+
+/* --------------------------------------------------------
+ * isStudent()
+ *
+ * Someone who is a member of the student role.
+ *
+ * param       req
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
 var isStudent = function(req, cb) {
-  someone(req, function(err, isSomeone) {
-    if (! isSomeone) return cb(null, false);
-    var student = req.user.related('roles')
-      .findWhere({name: 'student'});
-    return cb(null, student != undefined);
+  isInRole(req, 'student', function(err, isInRole) {
+    if (err) return cb(err);
+    return cb(null, isInRole);
+  });
+};
+
+/* --------------------------------------------------------
+ * isClerk()
+ *
+ * Someone who is a member of the clerk role.
+ *
+ * param       req
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
+var isClerk = function(req, cb) {
+  isInRole(req, 'clerk', function(err, isInRole) {
+    if (err) return cb(err);
+    return cb(null, isInRole);
+  });
+};
+
+/* --------------------------------------------------------
+ * isSupervisor()
+ *
+ * Someone who is a member of the supervisor role.
+ *
+ * param       req
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
+var isSupervisor = function(req, cb) {
+  isInRole(req, 'supervisor', function(err, isInRole) {
+    if (err) return cb(err);
+    return cb(null, isInRole);
   });
 };
 
@@ -53,6 +126,9 @@ var isStudent = function(req, cb) {
 module.exports = {
   someone: someone
   , isAdmin: isAdmin
+  , isGuard: isGuard
+  , isClerk: isClerk
   , isStudent: isStudent
+  , isSupervisor: isSupervisor
 };
 
