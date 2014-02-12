@@ -12,6 +12,24 @@ var cfg = require('../config')
   ;
 
 
+var getFormFields = function(request, agent, path, formName, cb) {
+  var req = request.get(path)
+    ;
+  agent.attachCookies(req);
+  req.end(function(err, res) {
+    if (err) return cb(err);
+    var $ = cheerio.load(res.text)
+      , inputs
+      , flds = []
+      ;
+    inputs = $('input', 'form[name="' + formName + '"]');
+    _.each(inputs, function(input) {
+      if (input.attribs.type != 'submit') flds.push(input.attribs.name);
+    });
+    return cb(null, flds);
+  });
+};
+
 /* --------------------------------------------------------
  * setSuper()
  *
@@ -86,12 +104,16 @@ var setSuper = function(request, student, cb) {
  * form data, 'formData', to the caller in order to continue
  * processing the post request.
  *
- * param       request - supertest request
- * param       agent - supertest agent
- * param       getPath - path to GET the form
- * param       formName - name of the form on the page gotten 
- * param       postPath - path to POST the form
- * param       postData - data to have the csrf token put into and returned
+ * Config object passed as first parameter must have the
+ * following elements:
+ * request - supertest request
+ * agent - supertest agent
+ * getPath - path to GET the form
+ * formName - name of the form on the page gotten 
+ * postPath - path to POST the form
+ * postData - data to have the csrf token put into and returned
+ *
+ * param       config - object with required params noted above
  * param       cb - callback
  * return      undefined
  * -------------------------------------------------------- */
@@ -102,11 +124,21 @@ var prepPost = function(config, cb) {
     , formName = config.formName
     , postPath = config.postPath
     , postData = config.postData
+    , req
+    , msgs = []
     ;
-  if (!request || !agent || !getPath || !formName || !postPath || !postData) {
-    return new Error('Invalid configuration passed for prepPost()');
+
+  if (!request) msgs.push('config.request not specified.');
+  if (!agent) msgs.push('config.agent not specified.');
+  if (!getPath) msgs.push('config.getPath not specified.');
+  if (!formName) msgs.push('config.formName not specified.');
+  if (!postPath) msgs.push('config.postPath not specified.');
+  if (!postData) msgs.push('config.postData not specified.');
+  if (msgs.length) {
+    return cb(new Error('Invalid configuration: ' + msgs.join(', ')));
   }
-  var req = request.get(getPath);
+
+  req = request.get(getPath);
   agent.attachCookies(req);
   req.end(function(err, res) {
     var $ = cheerio.load(res.text)
@@ -174,6 +206,7 @@ module.exports = {
   , loginMany: loginMany
   , prepPost: prepPost
   , setSuper: setSuper
+  , getFormFields: getFormFields
 };
 
 

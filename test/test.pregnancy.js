@@ -45,7 +45,7 @@ describe('Pregnancy', function(done) {
       .then(function() {
         done();
       })
-      .catch(function(e) {
+      .caught(function(e) {
         done(e);
       });
   });
@@ -100,12 +100,121 @@ describe('Pregnancy', function(done) {
     });
   });
 
-  //describe('create new record', function(done) {
+  describe('create new record', function(done) {
+    it('pregnancy record with empty fields will not save', function(done) {
+      var fldsCfg = {
+          request: request
+          , agent: supervisor
+          , getPath: cfg.path.pregnancyNewForm
+          , formName: 'pregnancyForm'
+          , postPath: cfg.path.pregnancyCreate
+        }
+        ;
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          _.each(flds, function(fld) {
+            postData[fld] = '';
+          });
+          //postData.dob = '1988-12-31';
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect(406, done);
+            })
+            .caught(function(e) {
+              done(e);
+            });
+        })
+        .caught(function(e) {
+          done(e);
+        });
+    });
 
+    it('pregnancy record with patient dob but empty pregnancy fields will not save', function(done) {
+      var fldsCfg = {
+          request: request
+          , agent: supervisor
+          , getPath: cfg.path.pregnancyNewForm
+          , formName: 'pregnancyForm'
+          , postPath: cfg.path.pregnancyCreate
+        }
+        ;
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          _.each(flds, function(fld) {
+            postData[fld] = '';
+          });
+          postData.dob = '1988-12-31';
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect(406, done);
+            })
+            .caught(function(e) {
+              done(e);
+            });
+        })
+        .caught(function(e) {
+          done(e);
+        });
+    });
 
+    it('pregnancy record with proper fields will save', function(done) {
+      var fldsCfg = {
+          request: request
+          , agent: supervisor
+          , getPath: cfg.path.pregnancyNewForm
+          , formName: 'pregnancyForm'
+          , postPath: cfg.path.pregnancyCreate
+        }
+        ;
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          _.each(flds, function(fld) {
+            postData[fld] = '';
+          });
+          postData.dob = '1988-12-31';
+          postData.firstname = 'Sally';
+          postData.lastname = 'Tester';
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect(302, done);
+            })
+            .caught(function(e) {
+              done(e);
+            });
+        })
+        .caught(function(e) {
+          done(e);
+        });
+    });
 
-  //});
-
+  });
 });
 
 

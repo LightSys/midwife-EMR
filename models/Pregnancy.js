@@ -7,6 +7,8 @@
  */
 
 var moment = require('moment')
+  , val = require('validator')
+  , Promise = require('bluebird')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
@@ -156,6 +158,32 @@ Pregnancy = Bookshelf.Model.extend({
   // --------------------------------------------------------
   // Class Properties.
   // --------------------------------------------------------
+
+  /* --------------------------------------------------------
+   * checkFields()
+   *
+   * Check the validity of the passed fields and return a
+   * promise whether they are sufficient or not.
+   *
+   * param       flds - object containing field keys and values
+   * return      undefined
+   * -------------------------------------------------------- */
+  checkFields: function(flds) {
+    return new Promise(function(resolve, reject) {
+      var msgs = []
+        ;
+      if ((! val.isAlpha(flds.firstname)) ||
+          (! val.isLength(flds.firstname, 1))) msgs.push('Firstname must be specified.');
+      if ((! val.isAlpha(flds.lastname)) ||
+          (! val.isLength(flds.lastname, 1))) msgs.push('Lastname must be specified.');
+
+      if (msgs.length != 0) {
+        reject(msgs.join(' '));
+      } else {
+        resolve(flds);
+      }
+    });
+  }
 
 
 });
