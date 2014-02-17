@@ -6,58 +6,72 @@ block pregnancyAddEdit
   div.formBoxLarge
     +flash(messages)
     form(role='form', name='pregnancyForm', action='/pregnancy', method='post')
-      div.col-lg-4
-        div.form-group
+      div.row
+        div(class='form-group col-sm-4')
           span= gettext('Last name')
-          input(class='form-control input-lg', type='text', tabindex="1", name='lastname')
-        div.form-group
-          span= gettext('Maiden name')
-          input(class='form-control input-lg', type='text', tabindex="4", name='maidenname')
-        div.form-group
-          span= gettext('Marital status')
-          input(class='form-control input-lg', type='text', tabindex="7", name='maritalstatus')
-        div.form-group
-          span= gettext('Telephone')
-          input(class='form-control input-lg', type='tel', tabindex="10", name='telephone')
-        div.form-group
-          span= gettext('Education')
-          input(class='form-control input-lg', type='text', tabindex="13", name='education')
-
-        input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
-        input(type='hidden', name='_csrf', value=token)
-
-      div.col-lg-4
-        div.form-group
+          input(class='form-control input-lg', type='text', tabindex="1", autocomplete="off", name='lastname', autofocus)
+        div(class='form-group col-sm-4')
           span= gettext('First name')
-          input(class='form-control input-lg', type='text', tabindex="2", name='firstname')
-        div.form-group
-          span= gettext('Nick name')
-          input(class='form-control input-lg', type='text', tabindex="5", name='nickname')
-        div.form-group
-          span= gettext('Address')
-          input(class='form-control input-lg', type='text', tabindex="8", name='address')
-        div.form-group
-          span= gettext('Work')
-          input(class='form-control input-lg', type='text', tabindex="11", name='work')
-        div.form-group
-          span= gettext('DOH #')
-          input(class='form-control input-lg', type='text', tabindex="14", name='doh')
-
-      div.col-lg-4
-        div.form-group
+          input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname')
+        div(class='form-group col-sm-4')
           span= gettext('Date of Birth')
-          input(class='form-control input-lg', type='date', tabindex="3", name='dob')
-        div.form-group
+          input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob')
+      div.row
+        div(class='form-group col-sm-4')
+          span= gettext('Maiden name')
+          input(class='form-control input-lg', type='text', tabindex="4", autocomplete="off", name='maidenname')
+        div(class='form-group col-sm-4')
+          span= gettext('Nick name')
+          input(class='form-control input-lg', type='text', tabindex="5", autocomplete="off", name='nickname')
+        div(class='form-group col-sm-4')
           span= gettext('Religion')
-          input(class='form-control input-lg', type='text', tabindex="6", name='religion')
-        div.form-group
+          input(class='form-control input-lg', type='text', tabindex="6", autocomplete="off", name='religion', list="religion")
+      div.row
+        div(class='form-group col-sm-4')
+          span= gettext('Marital status')
+          //- input(class='form-control input-lg', type='text', tabindex="7", autocomplete="off", name='maritalstatus')
+          +select('form-control input-lg', marital)
+        div(class='form-group col-sm-4')
+          span= gettext('Address')
+          input(class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='address')
+        div(class='form-group col-sm-4')
           span= gettext('Barangay')
-          input(class='form-control input-lg', type='text', tabindex="9", name='barangay')
-        div.form-group
+          input(class='form-control input-lg', type='text', tabindex="9", autocomplete="off", name='barangay')
+      div.row
+        div(class='form-group col-sm-4')
+          span= gettext('Telephone')
+          input(class='form-control input-lg', type='tel', tabindex="10", autocomplete="off", name='telephone')
+        div(class='form-group col-sm-4')
+          span= gettext('Work')
+          input(class='form-control input-lg', type='text', tabindex="11", autocomplete="off", name='work')
+        div(class='form-group col-sm-4')
           span= gettext('Income')
-          input(class='form-control input-lg', type='text', tabindex="12", name='monthlyIncome')
-        div.form-group
+          input(class='form-control input-lg', type='text', tabindex="12", autocomplete="off", name='monthlyIncome')
+      div.row
+        div(class='form-group col-sm-4')
+          span= gettext('Education')
+          input(class='form-control input-lg', type='text', tabindex="13", autocomplete="off", name='education')
+        div(class='form-group col-sm-4')
+          span= gettext('DOH #')
+          input(class='form-control input-lg', type='text', tabindex="14", autocomplete="off", name='doh')
+        div(class='form-group col-sm-4')
           span= gettext('Priority #')
-          input(class='form-control input-lg', type='text', tabindex="15", name='priority')
+          input(class='form-control input-lg', type='text', tabindex="15", autocomplete="off", name='priority')
 
+        input(class='btn btn-primary center-block', type='submit', value=gettext('Create New Pregnancy Record'))
+          input(type='hidden', name='_csrf', value=token)
+
+  //- Examples of datalist, hard-coded and using mixin.
+    datalist#religion
+      option(value="Christian", label="Christian")
+      option(value="Protestant", label="Protestant")
+      option(value="Catholic", label="Catholic")
+      option(value="Islam", label="Islam")
+      option(value="Buddist", label="Buddist")
+      option(value="Hindu", label="Hindu")
+      option(value="Atheist", label="Atheist")
+      option(value="Other", label="Other")
+      option(value="None", label="None")
+
+    +datalist('marital', [{key: 'single', val: 'Single'}, {key: 'married', val: 'Married'}, {key: 'live-in', val: 'Live-In'}, {key: 'two words', val: 'Two Words'}])
 

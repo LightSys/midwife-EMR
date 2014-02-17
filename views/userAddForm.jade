@@ -10,13 +10,13 @@ block search
 
         div.form-group
           span= gettext('Username')
-          input(class='form-control input-lg', type='text', name='username')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='username')
         div.form-group
           span= gettext('Firstname')
-          input(class='form-control input-lg', type='text', name='firstname')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='firstname')
         div.form-group
           span= gettext('Lastname')
-          input(class='form-control input-lg', type='text', name='lastname')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='lastname')
         div.form-group
           span= gettext('Password')
           input(class='form-control input-lg', type='password', name='password')
@@ -25,10 +25,10 @@ block search
           input(class='form-control input-lg', type='password', name='password2')
         div.form-group
           span= gettext('Email')
-          input(class='form-control input-lg', type='text', name='email')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='email')
         div.form-group
           span= gettext('Comment')
-          input(class='form-control input-lg', type='text', name='note')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='note')
 
         input(class='btn btn-default btn-primary', type='submit', value=gettext('Create User'))
         input(type='hidden', name='_csrf', value=token)

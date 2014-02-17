@@ -12,13 +12,13 @@ block search
           span= 'Id: ' + editUser.id
         div.form-group
           span= gettext('Username')
-          input(class='form-control input-lg', type='text', name='username', value=editUser.username)
+          input(class='form-control input-lg', type='text', autocomplete="off", name='username', value=editUser.username)
         div.form-group
           span= gettext('Firstname')
-          input(class='form-control input-lg', type='text', name='firstname', value=editUser.firstname)
+          input(class='form-control input-lg', type='text', autocomplete="off", name='firstname', value=editUser.firstname)
         div.form-group
           span= gettext('Lastname')
-          input(class='form-control input-lg', type='text', name='lastname', value=editUser.lastname)
+          input(class='form-control input-lg', type='text', autocomplete="off", name='lastname', value=editUser.lastname)
         div.form-group
           span= gettext('Password')
           input(class='form-control input-lg', type='password', name='password')
@@ -27,7 +27,7 @@ block search
           input(class='form-control input-lg', type='password', name='password2')
         div.form-group
           span= gettext('Email')
-          input(class='form-control input-lg', type='text', name='email', value=editUser.email)
+          input(class='form-control input-lg', type='text', autocomplete="off", name='email', value=editUser.email)
         div.form-group
           label.radio-inline= gettext('Active')
             input(type='radio', name='status', value='1' checked=editUser.status==1)
@@ -35,7 +35,7 @@ block search
             input(type='radio', name='status', value='0' checked=editUser.status==0)
         div.form-group
           span= gettext('Comment')
-          input(class='form-control input-lg', type='text', name='note', value=editUser.note)
+          input(class='form-control input-lg', type='text', autocomplete="off", name='note', value=editUser.note)
 
         input(class='btn btn-default btn-primary', type='submit', value=gettext('Save'))
 

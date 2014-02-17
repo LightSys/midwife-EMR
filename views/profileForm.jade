@@ -14,10 +14,10 @@ block profileEditForm
           span= gettext('Username: ') + profile.username
         div.form-group
           span= gettext('Firstname')
-          input(class='form-control', type='text', name='firstname', value=profile.firstname)
+          input(class='form-control', type='text', name='firstname', autocomplete="off", value=profile.firstname)
         div.form-group
           span= gettext('Lastname')
-          input(class='form-control', type='text', name='lastname', value=profile.lastname)
+          input(class='form-control', type='text', name='lastname', autocomplete="off", value=profile.lastname)
         div.form-group
           span= gettext('Password')
           input(class='form-control', type='password', name='password')
@@ -26,7 +26,7 @@ block profileEditForm
           input(class='form-control', type='password', name='password2')
         div.form-group
           span= gettext('Email')
-          input(class='form-control', type='text', name='email', value=profile.email)
+          input(class='form-control', type='text', name='email', autocomplete="off", value=profile.email)
 
         input(class='btn btn-default', type='submit', value=gettext('Save'))
 

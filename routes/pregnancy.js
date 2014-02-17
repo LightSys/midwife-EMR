@@ -16,10 +16,12 @@ var _ = require('underscore')
   ;
 
 var addForm = function(req, res) {
+  // TODO: fix hard-coded marital status.
   var data = {
       title: req.gettext('New Pregnancy Record')
       , user: req.session.user
       , messages: req.flash()
+      , marital: ['', 'Single', 'Live-in', 'Married', 'Widowed', 'Divorced', 'Separated']
     }
     ;
   res.render('pregnancyAddForm', data);
