@@ -1,5 +1,5 @@
-mixin select(classes, data)
-  select(class=classes)
+mixin select(classes, tabindex, data)
+  select(class=classes, tabindex=tabindex)
     each rec in data
       option= rec
 

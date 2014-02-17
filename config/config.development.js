@@ -57,7 +57,7 @@ cfg.session.config = {
 // Cookie settings.
 // --------------------------------------------------------
 cfg.cookie.secret = 'XDK8cZEAu8QEKE8Bu8abXFxaqjCkgG4HB2sJiXppfnHmnCfigf';
-cfg.cookie.maxAge = 60 * 60 * 24 * 1000;    // 1 day
+cfg.cookie.maxAge = 60 * 30 * 1000;    // 30 minutes
 
 
 // --------------------------------------------------------

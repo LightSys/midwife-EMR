@@ -30,7 +30,7 @@ block pregnancyAddEdit
         div(class='form-group col-sm-4')
           span= gettext('Marital status')
           //- input(class='form-control input-lg', type='text', tabindex="7", autocomplete="off", name='maritalstatus')
-          +select('form-control input-lg', marital)
+          +select('form-control input-lg', 7, marital)
         div(class='form-group col-sm-4')
           span= gettext('Address')
           input(class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='address')
@@ -58,6 +58,7 @@ block pregnancyAddEdit
           span= gettext('Priority #')
           input(class='form-control input-lg', type='text', tabindex="15", autocomplete="off", name='priority')
 
+        input(type='hidden', name='_csrf', value=token)
         input(class='btn btn-primary center-block', type='submit', value=gettext('Create New Pregnancy Record'))
           input(type='hidden', name='_csrf', value=token)
 
