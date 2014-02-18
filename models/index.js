@@ -8,5 +8,7 @@ module.exports = {
   , Patients: require('./Patient').Patients
   , Pregnancy: require('./Pregnancy').Pregnancy
   , Pregnancies: require('./Pregnancy').Pregnancies
+  , Event: require('./Event').Event
+  , Events: require('./Event').Events
 };
 

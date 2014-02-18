@@ -25,6 +25,8 @@ var should = require('should')
   , Patients = require('../models').Patients
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
+  , Event = require('../models').Event
+  , Events = require('../models').Events
   ;
 
 describe('Models', function(done) {
@@ -163,6 +165,89 @@ describe('Models', function(done) {
         done(new Error('checkFields() did not allow valid fields.'));
       });
     });
+  });
+
+  describe('Event', function(done) {
+    it('should use loginEvent() to create a login event', function(done) {
+      var note = Math.random()
+        ;
+      Event
+        .loginEvent(1, note)
+        .then(function(evt) {
+          var id = evt.get('id')
+            ;
+          evt.get('note').should.eql(note);
+          Event.forge({id: id}).fetch().then(function(model) {
+            model.should.not.be.null;
+            model.get('id').should.eql(id);
+            done();
+          });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('should use logoutEvent() to create a logout event', function(done) {
+      var note = Math.random()
+        ;
+      Event
+        .logoutEvent(1, note)
+        .then(function(evt) {
+          var id = evt.get('id')
+            ;
+          evt.get('note').should.eql(note);
+          Event.forge({id: id}).fetch().then(function(model) {
+            model.should.not.be.null;
+            model.get('id').should.eql(id);
+            done();
+          });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('should use setSuperEvent() to create a supervisor event', function(done) {
+      var note = Math.random()
+        ;
+      Event
+        .setSuperEvent(1, note)
+        .then(function(evt) {
+          var id = evt.get('id')
+            ;
+          evt.get('note').should.eql(note);
+          Event.forge({id: id}).fetch().then(function(model) {
+            model.should.not.be.null;
+            model.get('id').should.eql(id);
+            done();
+          });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('should use historyEvent() to create a history event', function(done) {
+      var note = Math.random()
+        ;
+      Event
+        .historyEvent(1, note)
+        .then(function(evt) {
+          var id = evt.get('id')
+            ;
+          evt.get('note').should.eql(note);
+          Event.forge({id: id}).fetch().then(function(model) {
+            model.should.not.be.null;
+            model.get('id').should.eql(id);
+            done();
+          });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
   });
 
 });

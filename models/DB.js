@@ -63,8 +63,10 @@ var init = function(dbSettings) {
         this.attributes = this.pick(this.permittedAttributes);
       }
       // Set the updatedAt field to the current time whether creating
-      // or updating.
-      this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
+      // or updating if it exists in the table.
+      if (this.get('updatedAt')) {
+        this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
+      }
     }
 
   }, {
