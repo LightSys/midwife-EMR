@@ -7,10 +7,12 @@
  */
 
 var _ = require('underscore')
+  , Promise = require('bluebird')
   , User = require('../models').User
   , Users = require('../models').Users
   , Role = require('../models').Role
   , Roles = require('../models').Roles
+  , Event = require('../models').Event
   , cfg = require('../config')
   , auth = require('../auth')
   ;
@@ -128,6 +130,7 @@ var saveSupervisor = function(req, res) {
       .fetch({withRelated: ['roles']})
       .then(function(rec) {
         var roles
+          , note = 'sid: ' + req.sessionID
           ;
         if (rec) {
           roles = rec.related('roles').toJSON();
@@ -139,6 +142,9 @@ var saveSupervisor = function(req, res) {
             req.session.supervisor.lastname = rec.get('lastname');
             req.session.save();
             req.flash('info', req.gettext('Your supervisor has been set.'));
+
+            // Returns a promise but we don't handle how it is resolved.
+            Event.setSuperEvent(req.session.user.id, note);
           } else {
             console.error('User selected is not a supervisor!');
             req.flash('warning', req.gettext('An error occurred. Please try again.'));

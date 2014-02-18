@@ -7,8 +7,10 @@
  */
 
 var passport = require('passport')
+  , Promise = require('bluebird')
   , loginRoute = '/login'
   , _ = require('underscore')
+  , Event = require('../models').Event
   ;
 
 var home = function(req, res) {
@@ -39,19 +41,31 @@ var loginPost = function(req, res, next) {
       return res.redirect(loginRoute);
     }
     req.logIn(user, function(err) {
+      var note = 'sid: ' + req.sessionID
+        ;
       if (err) { return next(err); }
       // --------------------------------------------------------
       // Store user information in the session sans sensitive info.
       // --------------------------------------------------------
       req.session.user = _.omit(user.toJSON(), 'password');;
-      return res.redirect('/');
+
+      // --------------------------------------------------------
+      // Record the event and redirect to the home page.
+      // --------------------------------------------------------
+      Event.loginEvent(user.get('id'), note).then(function() {
+        return res.redirect('/');
+      });
     });
   })(req, res, next);
 };
 
 var logout = function(req, res) {
-  req.session.destroy(function(err) {
-    res.redirect(loginRoute);
+  var note = 'sid: ' + req.sessionID
+    ;
+  Event.logoutEvent(req.session.user.id, note).then(function() {
+    req.session.destroy(function(err) {
+      res.redirect(loginRoute);
+    });
   });
 };
 
