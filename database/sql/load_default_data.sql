@@ -14,26 +14,10 @@ VALUES
 INSERT INTO `role`
   (name, description, updatedBy, updatedAt)
 VALUES
-  ('administrator', 'Manages users, vaccination and lab types, and the system.', 1, NOW())
-;
-INSERT INTO `role`
-  (name, description, updatedBy, updatedAt)
-VALUES
-  ('guard', 'Patient check-in and check-out.', 1, NOW())
-;
-INSERT INTO `role`
-  (name, description, updatedBy, updatedAt)
-VALUES
-  ('clerk', 'No patient care with exception of BP and Wgt. Manages priority list.', 1, NOW())
-;
-INSERT INTO `role`
-  (name, description, updatedBy, updatedAt)
-VALUES
-  ('student', 'Patient care but always requires a supervisor.', 1, NOW())
-;
-INSERT INTO `role`
-  (name, description, updatedBy, updatedAt)
-VALUES
+  ('administrator', 'Manages users, vaccination and lab types, and the system.', 1, NOW()),
+  ('guard', 'Patient check-in and check-out.', 1, NOW()),
+  ('clerk', 'No patient care with exception of BP and Wgt. Manages priority list.', 1, NOW()),
+  ('student', 'Patient care but always requires a supervisor.', 1, NOW()),
   ('supervisor', 'Patient care.', 1, NOW())
 ;
 
@@ -44,4 +28,12 @@ VALUES
   (1, 1, 1, NOW())
 ;
 
-
+-- Create some basic events
+INSERT INTO `eventType`
+  (name, description)
+VALUES
+  ('login', 'A user logged in'),
+  ('logout', 'A user logged out'),
+  ('supervisor', 'A user set a supervisor'),
+  ('history', 'A user viewed changes from log tables')
+;

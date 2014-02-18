@@ -12,7 +12,8 @@
 #   source create_log_tables.sql
 # -------------------------------------------
 
-excludepat='doh\|session'
+# Don't create log tables for these tables.
+excludepat='doh\|session\|event\|eventType'
 
 # Certain tables have unique constraints which do not allow proper logging
 # when they exist in the log tables. We have a hard-coded list of the 

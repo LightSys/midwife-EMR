@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS `event`;
+DROP TABLE IF EXISTS `eventType`;
 DROP TABLE IF EXISTS `vaccinationLog`;
 DROP TABLE IF EXISTS `vaccinationTypeLog`;
 DROP TABLE IF EXISTS `healthTeachingLog`;
