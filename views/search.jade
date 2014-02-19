@@ -3,18 +3,30 @@ extends layouts/default_layout
 block search
   h1= title
 
+  p= gettext('Search by one or more fields.')
+
   div.searchbox
     +flash(messages)
     form(role='form', name='search', action='/search', method='post')
       div.form-group
-        span= gettext('First or last name')
-        input(class='form-control', type='text', name='name')
+        span= gettext('First name')
+        input(class='form-control', type='text', name='firstname')
+      div.form-group
+        span= gettext('Last name')
+        input(class='form-control', type='text', name='lastname')
+      div.form-group
+        span= gettext('Date of birth')
+        input(class='form-control', type='date', name='dob')
+      hr
       div.form-group
         span= gettext('DOH ID')
-        input(class='form-control', type='text', name='doh')
+        input(class='form-control', type='number', name='doh')
       div.form-group
         span= gettext('Priority #')
-        input(class='form-control', type='text', name='priority')
+        input(class='form-control', type='number', name='priority', disabled)
+      div.form-group
+        span= gettext('Phil health ID')
+        input(class='form-control', type='number', name='philHealth')
 
       input(class='btn btn-default', type='submit', value=gettext('Search'))
       input(type='hidden', name='_csrf', value=token)

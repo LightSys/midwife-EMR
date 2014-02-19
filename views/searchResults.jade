@@ -4,7 +4,27 @@ block searchResults
   h1= title
   p= gettext('These are what we found.')
 
-  ul
-    each val, inx in results
-      li=inx + ': ' + val
-
+  a.pull-right(href='/search')= gettext('Search again')
+  table(class='table table-striped table-bordered table-hover')
+    thead
+      tr
+        th.header= gettext('ID')
+        th.header= gettext('First name')
+        th.header= gettext('Last name')
+        th.header= gettext('Date of birth')
+        th.header= gettext('Address')
+        th.header= gettext('Barangay')
+        th.header= gettext('DOH ID')
+    tbody
+      each rec in results
+        tr
+          td
+            a(href='/pregnancy/' + rec.id + '/edit')= rec.id
+          td
+            a(href='/pregnancy/' + rec.id + '/edit')= rec.firstname
+          td
+            a(href='/pregnancy/' + rec.id + '/edit')= rec.lastname
+          td= rec.dob
+          td= rec.address
+          td= rec.barangay
+          td= rec.dohID

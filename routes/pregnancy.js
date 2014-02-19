@@ -43,6 +43,7 @@ var create = function(req, res) {
         updatedBy: req.session.user.id
       }
     , dob = req.body.dob.length > 0? req.body.dob: null
+    , doh = req.body.doh.length > 0? req.body.doh: null
     , pregFlds = _.omit(req.body, ['_csrf', 'dob'])
     , patFlds = {}
     ;
@@ -51,7 +52,7 @@ var create = function(req, res) {
     common.supervisor = req.session.supervisor.id;
   }
   pregFlds = _.extend(pregFlds, common);
-  patFlds = _.extend(common, {dob: dob});
+  patFlds = _.extend(common, {dob: dob, dohID: doh});
 
   // --------------------------------------------------------
   // Validate the fields.
