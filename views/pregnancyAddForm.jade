@@ -1,6 +1,6 @@
 extends layouts/default_layout
 
-block pregnancyAddEdit
+block pregnancyAdd
   h1= title
 
   div.formBoxLarge
@@ -29,8 +29,7 @@ block pregnancyAddEdit
       div.row
         div(class='form-group col-sm-4')
           span= gettext('Marital status')
-          //- input(class='form-control input-lg', type='text', tabindex="7", autocomplete="off", name='maritalstatus')
-          +select('form-control input-lg', 7, marital)
+          +select('form-control input-lg', 'maritalStatus', 7, marital)
         div(class='form-group col-sm-4')
           span= gettext('Address')
           input(class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='address')

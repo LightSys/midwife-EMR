@@ -161,11 +161,12 @@ describe('authenticated', function(done) {
     var config = {}
       , data = {}
       ;
+
+    this.timeout(5000);
+
     beforeEach(function(done) {
       data = {
-        name: 'Smith'
-        , doh: ''
-        , priority: ''
+        lastname: 'Tester'
       };
       config = {
         request: request
@@ -181,6 +182,7 @@ describe('authenticated', function(done) {
     it('admin by name', function(done) {
       config.agent = admin;
       utils.prepPost(config, function(err, postInfo) {
+        if (err) done(err);
         postInfo.postReq
           .send(postInfo.formData)
           .expect(200, done);
@@ -190,6 +192,7 @@ describe('authenticated', function(done) {
     it('guard by name', function(done) {
       config.agent = guard;
       utils.prepPost(config, function(err, postInfo) {
+        if (err) done(err);
         postInfo.postReq
           .send(postInfo.formData)
           .expect(200, done);
@@ -199,6 +202,7 @@ describe('authenticated', function(done) {
     it('clerk by name', function(done) {
       config.agent = clerk;
       utils.prepPost(config, function(err, postInfo) {
+        if (err) done(err);
         postInfo.postReq
           .send(postInfo.formData)
           .expect(200, done);
@@ -207,16 +211,21 @@ describe('authenticated', function(done) {
 
     it('student by name', function(done) {
       config.agent = student;
-      utils.prepPost(config, function(err, postInfo) {
-        postInfo.postReq
-          .send(postInfo.formData)
-          .expect(403, done);     // students have to set their supervisor first
+      utils.setSuper(request, config.agent, function(err, success) {
+        if (err) return done(err);
+        utils.prepPost(config, function(err, postInfo) {
+          if (err) done(err);
+          postInfo.postReq
+            .send(postInfo.formData)
+            .expect(200, done);
+        });
       });
     });
 
     it('supervisor by name', function(done) {
       config.agent = supervisor;
       utils.prepPost(config, function(err, postInfo) {
+        if (err) done(err);
         postInfo.postReq
           .send(postInfo.formData)
           .expect(200, done);

@@ -20,7 +20,7 @@ CREATE TABLE `pregnancy` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `firstname` varchar(70) NOT NULL,
   `lastname` varchar(70) NOT NULL,
-  `maidenname` VARCHAR(70) DEFAULT NULL,
+  `maidenname` varchar(70) DEFAULT NULL,
   `nickname` varchar(70) DEFAULT NULL,
   `religion` varchar(50) DEFAULT NULL,
   `maritalStatus` varchar(50) DEFAULT NULL,
@@ -94,8 +94,10 @@ CREATE TABLE `pregnancy` (
   `historySmoking` tinyint(1) DEFAULT NULL,
   `historyDrinking` tinyint(1) DEFAULT NULL,
   `historyNone` tinyint(1) DEFAULT NULL,
-  `partnerFirstname` varchar(70) NOT NULL,
-  `partnerLastname` varchar(70) NOT NULL,
+  `partnerFirstname` varchar(70) DEFAULT NULL,
+  `partnerLastname` varchar(70) DEFAULT NULL,
+  `partnerAge` int(11) DEFAULT NULL,
+  `partnerWork` varchar(70) DEFAULT NULL,
   `partnerEducation` varchar(70) DEFAULT NULL,
   `partnerMonthlyIncome` int(11) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
@@ -109,16 +111,16 @@ CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
   tableName: 'pregnancy'
 
-  , permittedAttributes: ['id', 'firstname', 'lastname', 'nickname', 'religion',
-    'maritalStatus', 'telephone', 'work', 'education', 'monthlyIncome', 'address',
-    'barangay', 'city', 'postalCode', 'gravidaNumber', 'lmp', 'warning', 'edd',
-    'additionalEdd', 'doctorConsultDate', 'dentistConsultDate', 'mbBook',
+  , permittedAttributes: ['id', 'firstname', 'lastname', 'maidenname', 'nickname',
+    'religion', 'maritalStatus', 'telephone', 'work', 'education', 'monthlyIncome',
+    'address', 'barangay', 'city', 'postalCode', 'gravidaNumber', 'lmp', 'warning',
+    'edd', 'additionalEdd', 'doctorConsultDate', 'dentistConsultDate', 'mbBook',
     'iodizedSalt', 'whereDeliver', 'fetuses', 'monozygotic', 'pregnancyEndDate',
     'pregnancyEndResult', 'iugr', 'note', 'numberRequiredTetanus',
     'invertedNipples', 'hasUS', 'wantsUS', 'gravida', 'stillBirths', 'abortions',
@@ -134,8 +136,9 @@ Pregnancy = Bookshelf.Model.extend({
     'historyHepatitis', 'historyGoiter', 'historyHighBloodPressure',
     'historyHospitalOperation', 'historyBloodTransfusion', 'historySmoking',
     'historyDrinking', 'historyNone', 'partnerFirstname', 'partnerLastname',
-    'partnerEducation', 'partnerMonthlyIncome', 'updatedBy', 'updatedAt',
-    'supervisor', 'patient_id', 'partner_id', 'pregnancyQuestionnaire_id']
+    'partnerAge', 'partnerWork', 'partnerEducation', 'partnerMonthlyIncome',
+    'updatedBy', 'updatedAt', 'supervisor', 'patient_id', 'partner_id',
+    'pregnancyQuestionnaire_id']
 
   , initialize: function() {
     this.on('saving', this.saving, this);

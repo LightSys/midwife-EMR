@@ -8,6 +8,7 @@
 
 var _ = require('underscore')
   , Promise = require('bluebird')
+  , moment = require('moment')
   , cfg = require('../config')
   , Patient = require('../models').Patient
   , Patients = require('../models').Patients
@@ -15,16 +16,94 @@ var _ = require('underscore')
   , Pregnancies = require('../models').Pregnancies
   ;
 
-var addForm = function(req, res) {
-  // TODO: fix hard-coded marital status.
-  var data = {
-      title: req.gettext('New Pregnancy Record')
-      , user: req.session.user
-      , messages: req.flash()
-      , marital: ['', 'Single', 'Live-in', 'Married', 'Widowed', 'Divorced', 'Separated']
-    }
+/* --------------------------------------------------------
+ * load()
+ *
+ * Loads the pregnancy record from the database based upon the id
+ * as specified in the path. Places the pregnancy record in the
+ * request as paramPregnancy.
+ *
+ * param       req
+ * param       res
+ * param       next - callback
+ * return      undefined
+ * -------------------------------------------------------- */
+var load = function(req, res, next) {
+  var id = req.params.id
     ;
-  res.render('pregnancyAddForm', data);
+
+  Pregnancy.forge({id: id})
+    .fetch({withRelated: ['patient']})
+    .then(function(rec) {
+      if (! rec) return next();
+      rec = rec.toJSON();
+      rec.patient.dob = moment(rec.patient.dob).format('MM-DD-YYYY');
+      if (rec) req.paramPregnancy = rec;
+      next();
+    });
+};
+
+/* --------------------------------------------------------
+ * addForm()
+ *
+ * Display the form to create a new pregnancy record.
+ *
+ * param       req
+ * param       res
+ * param       next - callback
+ * return      undefined
+ * -------------------------------------------------------- */
+var addForm = function(req, res) {
+  var data = {title: req.gettext('New Pregnancy Record') }
+    ;
+  res.render('pregnancyAddForm', getEditFormData(req, data));
+};
+
+/* --------------------------------------------------------
+ * getEditFormData()
+ *
+ * Returns an object representing the data that is rendered
+ * when the edit form is displayed. Expects the caller to
+ * pass the key/value pair for title in addData.
+ *
+ * param       req
+ * param       addData  - (Object) additional data
+ * return      Object
+ * -------------------------------------------------------- */
+var getEditFormData = function(req, addData) {
+  // TODO: fix hard-coded marital status.
+  var maritalStatus = [
+        {value: '', selected: false}
+        , {value: 'Single', selected: false}
+        , {value: 'Live-in', selected: false}
+        , {value: 'Married', selected: false}
+        , {value: 'Widowed', selected: false}
+        , {value: 'Divorced', selected: false}
+        , {value: 'Separated', selected: false}
+      ]
+      ;
+  // Handle martital status - this is a hack.
+  if (req.paramPregnancy && req.paramPregnancy.maritalStatus) {
+    _.each(maritalStatus, function(rec) {
+      if (rec.value == req.paramPregnancy.maritalStatus) rec.selected = true;
+    });
+  }
+  return _.extend(addData, {
+    user: req.session.user
+    , messages: req.flash()
+    , marital: maritalStatus
+    , rec: req.paramPregnancy
+  });
+};
+
+var editForm = function(req, res) {
+  var data = {title: req.gettext('Edit Pregnancy')};
+  if (req.paramPregnancy) {
+    res.render('pregnancyEditForm', getEditFormData(req, data));
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
 };
 
 /* --------------------------------------------------------
@@ -94,8 +173,56 @@ var create = function(req, res) {
     });
 };
 
+var update = function(req, res) {
+  var pregFlds
+    , patFlds
+    , dob = req.body.dob.length > 0? req.body.dob: null
+    , doh = req.body.doh.length > 0? req.body.doh: null
+    ;
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.id &&
+      req.paramPregnancy.id == req.body.id) {
+
+    pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority']);
+    patFlds = {dohID: doh, dob: moment(dob, 'MM-DD-YYYY').format('YYYY-MM-DD')};
+    patFlds = _.extend(patFlds, {id: req.paramPregnancy.patient_id});
+    Pregnancy.checkFields(pregFlds).then(function(flds) {
+      Pregnancy.forge(flds).save().then(function() {
+        Patient
+          .forge(patFlds)
+          .save()
+          .then(function(patient) {
+            req.flash('info', req.gettext('Pregnancy was updated.'));
+            res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, flds.id));
+          })
+          .caught(function(err) {
+            console.error(err);
+            res.redirect(cfg.path.search);
+          });
+      })
+      .caught(function(err) {
+        console.error(err);
+        res.redirect(cfg.path.search);
+      });
+    })
+    .caught(function(err) {
+      console.error(err);
+      res.redirect(cfg.path.search);
+    });
+
+  } else {
+    console.error('Error in update of pregnancy: pregnancy not found.');
+    res.redirect(cfg.path.search);
+  }
+};
+
 module.exports = {
   addForm: addForm
   , create: create
+  , load: load
+  , editForm: editForm
+  , update: update
 };
 

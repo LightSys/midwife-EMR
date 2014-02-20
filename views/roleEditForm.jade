@@ -17,7 +17,7 @@ block roleEditForm
           input(class='form-control input-lg', type='text', name='name', value=editRole.name, READONLY)
         div.form-group
           span= gettext('Description')
-          input(class='form-control input-lg', type='text', name='description', value=editRole.description)
+          input(class='form-control input-lg', type='text', name='description', autofocus, value=editRole.description)
 
         input(class='btn btn-default btn-primary', type='submit', value=gettext('Update Role'))
         input(type='hidden', name='id', value=editRole.id)

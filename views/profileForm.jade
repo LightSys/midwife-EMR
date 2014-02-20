@@ -14,7 +14,7 @@ block profileEditForm
           span= gettext('Username: ') + profile.username
         div.form-group
           span= gettext('Firstname')
-          input(class='form-control', type='text', name='firstname', autocomplete="off", value=profile.firstname)
+          input(class='form-control', type='text', name='firstname', autocomplete="off", autofocus, value=profile.firstname)
         div.form-group
           span= gettext('Lastname')
           input(class='form-control', type='text', name='lastname', autocomplete="off", value=profile.lastname)

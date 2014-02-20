@@ -61,7 +61,7 @@ html(lang="en")
               - var superV = (supervisor || gettext('Not yet set'))
               li
                 a(href='/setsuper')= gettext('Your supervisor is ') + superV
-            if roleInfo.isAuthenticated
+            if roleInfo.isAuthenticated && user
               li(class="dropdown user-dropdown")
                 a(href="#", class="dropdown-toggle", data-toggle="dropdown")
                   <i class="fa fa-user"></i>
@@ -92,7 +92,8 @@ html(lang="en")
                 block roleEditForm
                 block profileEditForm
                 block setSuper
-                block pregnancyAddEdit
+                block pregnancyAdd
+                block pregnancyEdit
               else
                 block login
 

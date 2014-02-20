@@ -135,12 +135,14 @@ var prepPost = function(config, cb) {
   if (!postPath) msgs.push('config.postPath not specified.');
   if (!postData) msgs.push('config.postData not specified.');
   if (msgs.length) {
+    console.error(msgs.join(', '));
     return cb(new Error('Invalid configuration: ' + msgs.join(', ')));
   }
 
   req = request.get(getPath);
   agent.attachCookies(req);
   req.end(function(err, res) {
+    if (err) return cb(err);
     var $ = cheerio.load(res.text)
       , csrf = $('input[name="_csrf"]', 'form[name="' + formName + '"]').attr('value')
       , data = {}

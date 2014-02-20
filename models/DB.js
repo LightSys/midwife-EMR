@@ -62,10 +62,18 @@ var init = function(dbSettings) {
       if (this.permittedAttributes) {
         this.attributes = this.pick(this.permittedAttributes);
       }
+
+      // Tables known to not set updatedAt so don't log when they don't.
+      var noUpdatedAtTables = ['event'];
+
       // Set the updatedAt field to the current time whether creating
-      // or updating if it exists in the table.
-      if (this.get('updatedAt')) {
+      // or updating unless noUpdatedAt is set.
+      if (! this.noUpdatedAt) {
         this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
+      } else {
+        if (!_.contains(noUpdatedAtTables, this.tableName)) {
+          console.log('updatedAt not set for ' + this.tableName);
+        }
       }
     }
 

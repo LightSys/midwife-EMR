@@ -47,11 +47,11 @@ var execute = function(req, res) {
     ;
   qb = new Pregnancy().query();
   qb.join('patient', 'patient.id', '=', 'pregnancy.patient_id');
-  if (flds.firstname.length > 0) qb.where('firstname', '=', flds.firstname);
-  if (flds.lastname.length > 0) qb.where('lastname', '=', flds.lastname);
-  if (flds.dob.length > 0) qb.where('dob', '=', flds.dob);
-  if (flds.doh.length > 0) qb.orWhere('dohID', '=', flds.doh);
-  if (flds.philHealth.length > 0) qb.orWhere('philHealth', '=', flds.philHealth);
+  if (flds.firstname && flds.firstname.length > 0) qb.where('firstname', '=', flds.firstname);
+  if (flds.lastname && flds.lastname.length > 0) qb.where('lastname', '=', flds.lastname);
+  if (flds.dob && flds.dob.length > 0) qb.where('dob', '=', flds.dob);
+  if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', '=', flds.doh);
+  if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', '=', flds.philHealth);
   qb.select(cols).then(function(list) {
     _.each(list, function(rec) {
       var r = _.pick(rec, 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address', 'barangay');

@@ -1,5 +1,5 @@
-mixin select(classes, tabindex, data)
-  select(class=classes, tabindex=tabindex)
+mixin select(classes, fieldName, tabindex, data)
+  select(class=classes, name=fieldName, tabindex=tabindex)
     each rec in data
-      option= rec
+      option(value=rec.value selected=rec.selected?true:false)= rec.value
 

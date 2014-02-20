@@ -212,6 +212,16 @@ app.configure('production', function() {
   console.log('PRODUCTION mode');
 });
 
+// --------------------------------------------------------
+// Error handling - just log for now.
+// Note: this needs to be the last app.use().
+// Note: this needs to be more robust, etc.
+// --------------------------------------------------------
+app.use(function(err, req, res, next) {
+  console.error(err.stack);
+  next(err);
+});
+
 // ========================================================
 // ========================================================
 // Routes
@@ -291,12 +301,19 @@ rozed.post(cfg.path.setSuper, auth, roz(grant(isStudent)), student, csrf, users.
 // --------------------------------------------------------
 // Pregnancy management
 // --------------------------------------------------------
+app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
 rozed.get(cfg.path.pregnancyNewForm, auth,
     roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
     common, csrf, pregnancy.addForm);
 rozed.post(cfg.path.pregnancyCreate, auth,
     roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
     common, csrf, pregnancy.create);
+rozed.get(cfg.path.pregnancyEditForm, auth,
+    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
+    common, csrf, pregnancy.editForm);
+rozed.post(cfg.path.pregnancyUpdate, auth,
+    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
+    common, csrf, pregnancy.update);
 
 
 // --------------------------------------------------------

@@ -12,7 +12,7 @@ block search
           span= 'Id: ' + editUser.id
         div.form-group
           span= gettext('Username')
-          input(class='form-control input-lg', type='text', autocomplete="off", name='username', value=editUser.username)
+          input(class='form-control input-lg', type='text', autocomplete="off", name='username', autofocus, value=editUser.username)
         div.form-group
           span= gettext('Firstname')
           input(class='form-control input-lg', type='text', autocomplete="off", name='firstname', value=editUser.firstname)
