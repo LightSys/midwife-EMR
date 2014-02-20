@@ -35,6 +35,7 @@ var express = require('express')
   , users = require('./routes').users
   , roles = require('./routes').roles
   , pregnancy = require('./routes').pregnancy
+  , error = require('./routes').error
   , common = []
   , student = []
   ;
@@ -213,14 +214,10 @@ app.configure('production', function() {
 });
 
 // --------------------------------------------------------
-// Error handling - just log for now.
-// Note: this needs to be the last app.use().
-// Note: this needs to be more robust, etc.
+// Error handling - locate this app.use() after the others.
 // --------------------------------------------------------
-app.use(function(err, req, res, next) {
-  console.error(err.stack);
-  next(err);
-});
+app.use(error.logError);
+app.use(error.exitError);
 
 // ========================================================
 // ========================================================

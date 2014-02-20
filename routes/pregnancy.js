@@ -96,6 +96,14 @@ var getEditFormData = function(req, addData) {
   });
 };
 
+/* --------------------------------------------------------
+ * editForm()
+ *
+ * Displays the edit form for the pregnancy.
+ *
+ * param       
+ * return      
+ * -------------------------------------------------------- */
 var editForm = function(req, res) {
   var data = {title: req.gettext('Edit Pregnancy')};
   if (req.paramPregnancy) {
@@ -153,8 +161,8 @@ var create = function(req, res) {
             .forge(pregFields)
             .save()
             .then(function(pregnancy) {
-              // TODO: should redirect to the edit form for the same pregnancy record.
-              res.redirect(cfg.path.pregnancyNewForm);
+              req.flash('info', req.gettext('Pregnancy was created.'));
+              res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, pregnancy.get('id')));
             })
             .caught(function(e) {
               console.error('Error saving pregnancy record. Orphan patient record id: ' + patient.get('id'));
