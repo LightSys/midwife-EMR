@@ -31,6 +31,7 @@ var should = require('should')
 
 
 describe('Student roles', function(done) {
+  this.timeout(5000);
 
   describe('authentication', function(done) {
 

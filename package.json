@@ -17,7 +17,6 @@
     "bcrypt": "~0.7.7",
     "validator": "~3.1.0",
     "i18n-abide": "0.0.16",
-    "roz": "0.0.6",
     "express-flash": "0.0.2",
     "bluebird": "~1.0.3"
   },

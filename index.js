@@ -10,20 +10,11 @@ var express = require('express')
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
   , cons = require('consolidate')
-  , roz = require('roz')()
   , flash = require('express-flash')
-  , grant = roz.grant
-  , revoke = roz.revoke
-  , where = roz.where
-  , anyone = roz.anyone
-  , someone = require('auth').someone
-  , isAdmin = require('auth').isAdmin
-  , isStudent = require('auth').isStudent
-  , isGuard = require('auth').isGuard
-  , isSupervisor = require('auth').isSupervisor
-  , isClerk = require('auth').isClerk
   , app = express()
-  , rozed = roz.wrap(app)
+  , inRoles = require('auth').inRoles
+  , setRoleInfo = require('auth').setRoleInfo(app)    // requires the app object
+  , auth = require('auth').auth
   , SessionStore = require('connect-mysql')(express)
   , i18n = require('i18n-abide')
   , _ = require('underscore')
@@ -127,49 +118,8 @@ var i18nLocals = function(req, res, next) {
   next();
 };
 
-/* --------------------------------------------------------
- * setRoleInfo()
- *
- * Sets the role information in app.locals so that it is
- * available in all templates rendered.
- *
- * param       req
- * param       res
- * param       cb
- * return      undefined
- * -------------------------------------------------------- */
-var setRoleInfo = function(req, res, next) {
-  var roles
-    , roleInfo = {
-      isAuthenticated: req.isAuthenticated()
-      , isAdmin: false
-      , isStudent: false
-      , isSupervisor: false
-      , isClerk: false
-      , isGuard: false
-    }
-    ;
-
-  if (req.user && req.user.related) {
-    roles = req.user.related('roles');
-    roleInfo.isAdmin = roles.findWhere({name: 'administrator'}) ? true: false;
-    roleInfo.isStudent = roles.findWhere({name: 'student'}) ? true: false;
-    roleInfo.isSupervisor = roles.findWhere({name: 'supervisor'}) ? true: false;
-    roleInfo.isClerk = roles.findWhere({name: 'clerk'}) ? true: false;
-    roleInfo.isGuard = roles.findWhere({name: 'guard'}) ? true: false;
-  }
-
-  // --------------------------------------------------------
-  // app.locals is for the templates and req.session is for
-  // hasSuper() and other processing.
-  // --------------------------------------------------------
-  app.locals.roleInfo = roleInfo;
-  req.session.roleInfo = roleInfo;
-  next();
-};
-
 var hasSuper = function(req, res, next) {
-  if (req.session.roleInfo.isStudent) {
+  if (_.contains(req.session.roleInfo.roleNames, 'student')) {
     if (req.session.supervisor) {
       // --------------------------------------------------------
       // Store the supervisor in app.locals for the templates.
@@ -198,6 +148,16 @@ function csrf(req, res, next) {
 app.use(app.router);
 
 // --------------------------------------------------------
+// Error handling.
+// TODO: should these be located here or below the routes?
+// --------------------------------------------------------
+app.use(error.notFoundError);
+app.use(error.logError);
+app.use(error.displayError);
+//app.use(error.exitError);
+
+
+// --------------------------------------------------------
 // Development configuration
 // --------------------------------------------------------
 app.configure('development', function() {
@@ -213,17 +173,11 @@ app.configure('production', function() {
   console.log('PRODUCTION mode');
 });
 
-// --------------------------------------------------------
-// Error handling - locate this app.use() after the others.
-// --------------------------------------------------------
-app.use(error.logError);
-app.use(error.exitError);
-
 // ========================================================
 // ========================================================
 // Routes
 //
-// Note that the auth method placed before the roz
+// Note that the auth method placed before the inRoles()
 // authentication requirements in many of the routes allows
 // the request to get redirected to the login page rather
 // than just being denied if the user is not yet logged in.
@@ -233,84 +187,84 @@ app.use(error.exitError);
 // --------------------------------------------------------
 // Group of methods that are commonly needed for
 // many requests.
-// common: standard protected routes.
+// common: populates the request with info for protected routes.
 // student: routes a student can use without a supervisor set.
 // --------------------------------------------------------
-common.push(setRoleInfo, hasSuper, i18nLocals);
-student.push(setRoleInfo, i18nLocals);
+common.push(auth, setRoleInfo, i18nLocals);
 
 // --------------------------------------------------------
 // Login and logout
 // --------------------------------------------------------
-rozed.get(cfg.path.login, roz(grant(anyone)), student, csrf, home.login);
-rozed.post(cfg.path.login, roz(grant(anyone)), student, home.loginPost);
-rozed.get(cfg.path.logout, roz(grant(someone)), student, home.logout);
+app.get(cfg.path.login, setRoleInfo, csrf, home.login);
+app.post(cfg.path.login, setRoleInfo, csrf, home.loginPost);
+app.get(cfg.path.logout, setRoleInfo, csrf, home.logout);
 
 // --------------------------------------------------------
 // Home
 // --------------------------------------------------------
-app.get(cfg.path.home, auth, common, home.home);
+app.get(cfg.path.home, common, hasSuper, home.home);
 
 // --------------------------------------------------------
 // Search
 // --------------------------------------------------------
-rozed.get(cfg.path.search, auth, roz(grant(someone)), common, csrf, search.view);
-rozed.post(cfg.path.search, roz(grant(someone)), common, csrf, search.execute);
+app.get(cfg.path.search, common, hasSuper, csrf, search.view);
+app.post(cfg.path.search, common, hasSuper, csrf, search.execute);
 
 // --------------------------------------------------------
 // Users
 // --------------------------------------------------------
-rozed.get(cfg.path.userList, auth, roz(grant(isAdmin)), common, users.list);
+app.get(cfg.path.userList, common, inRoles(['administrator']), users.list);
 app.all(cfg.path.userLoad, users.load);  // parameter handling
-rozed.get(cfg.path.userNewForm, auth, roz(grant(isAdmin)), common, csrf, users.addForm);
-rozed.post(cfg.path.userCreate, roz(grant(isAdmin)), common, csrf, users.create);
-rozed.get(cfg.path.userEditForm, auth, roz(grant(isAdmin)), common, csrf, users.editForm);
-rozed.post(cfg.path.userUpdate, roz(grant(isAdmin)), common, csrf, users.update);
+app.get(cfg.path.userNewForm, common, inRoles(['administrator']), csrf, users.addForm);
+app.post(cfg.path.userCreate, common, inRoles(['administrator']), csrf, users.create);
+app.get(cfg.path.userEditForm, common, inRoles(['administrator']), csrf, users.editForm);
+app.post(cfg.path.userUpdate, common, inRoles(['administrator']), csrf, users.update);
 
 // --------------------------------------------------------
 // Roles
 // --------------------------------------------------------
-rozed.get(cfg.path.roleList, auth, roz(grant(isAdmin)), common, roles.list);
+app.get(cfg.path.roleList, common, inRoles(['administrator']), roles.list);
 app.all(cfg.path.roleLoad, roles.load);  // parameter handling
-rozed.get(cfg.path.roleNewForm, auth, roz(grant(isAdmin)), common, csrf, roles.addForm);
-rozed.post(cfg.path.roleCreate, roz(grant(isAdmin)), common, csrf, roles.create);
-rozed.get(cfg.path.roleEditForm, auth, roz(grant(isAdmin)), common, csrf, roles.editForm);
-rozed.post(cfg.path.roleUpdate, roz(grant(isAdmin)), common, csrf, roles.update);
+app.get(cfg.path.roleNewForm, common, inRoles(['administrator']), csrf, roles.addForm);
+app.post(cfg.path.roleCreate, common, inRoles(['administrator']), csrf, roles.create);
+app.get(cfg.path.roleEditForm, common, inRoles(['administrator']), csrf, roles.editForm);
+app.post(cfg.path.roleUpdate, common, inRoles(['administrator']), csrf, roles.update);
 
 // --------------------------------------------------------
 // Role assignment to users
 // --------------------------------------------------------
 app.all(cfg.path.userLoad2, users.load);  // parameter handling
-rozed.post(cfg.path.changeRoles, roz(grant(isAdmin)), common, csrf, users.changeRoles);
+app.post(cfg.path.changeRoles, common, inRoles(['administrator']), csrf, users.changeRoles);
 
 // --------------------------------------------------------
 // Profile
 // --------------------------------------------------------
-rozed.get(cfg.path.profile, auth, roz(grant(someone)), student, csrf, users.editProfile);
-rozed.post(cfg.path.profile, roz(grant(someone)), student, csrf, users.saveProfile);
+app.get(cfg.path.profile, auth, csrf, users.editProfile);
+app.post(cfg.path.profile, auth, csrf, users.saveProfile);
 
 // --------------------------------------------------------
 // Set the supervisor if a student.
 // --------------------------------------------------------
-rozed.get(cfg.path.setSuper, auth, roz(grant(isStudent)), student, csrf, users.editSupervisor);
-rozed.post(cfg.path.setSuper, auth, roz(grant(isStudent)), student, csrf, users.saveSupervisor);
+app.get(cfg.path.setSuper, common, inRoles(['student']), csrf, users.editSupervisor);
+app.post(cfg.path.setSuper, common, inRoles(['student']), csrf, users.saveSupervisor);
 
 // --------------------------------------------------------
 // Pregnancy management
 // --------------------------------------------------------
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
-rozed.get(cfg.path.pregnancyNewForm, auth,
-    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
-    common, csrf, pregnancy.addForm);
-rozed.post(cfg.path.pregnancyCreate, auth,
-    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
-    common, csrf, pregnancy.create);
-rozed.get(cfg.path.pregnancyEditForm, auth,
-    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
-    common, csrf, pregnancy.editForm);
-rozed.post(cfg.path.pregnancyUpdate, auth,
-    roz(grant(isClerk), grant(isStudent), grant(isSupervisor)),
-    common, csrf, pregnancy.update);
+app.get(cfg.path.pregnancyNewForm, common, hasSuper,
+    inRoles(['clerk','student','supervisor']),
+    csrf, pregnancy.addForm);
+app.post(cfg.path.pregnancyCreate, common, hasSuper,
+    inRoles(['clerk','student','supervisor']),
+    csrf, pregnancy.create);
+app.get(cfg.path.pregnancyEditForm, common, hasSuper,
+    inRoles(['clerk','student','supervisor']),
+    csrf, pregnancy.editForm);
+app.post(cfg.path.pregnancyUpdate, common, hasSuper,
+    inRoles(['clerk','student','supervisor']),
+    csrf, pregnancy.update);
+
 
 
 // --------------------------------------------------------
@@ -323,19 +277,6 @@ if (process.env.NODE_ENV == 'test') {
   app.listen(cfg.host.port);
 }
 console.log('Server listening on port ' + cfg.host.port);
-
-/* --------------------------------------------------------
- * auth()
- *
- * param       req
- * param       res
- * param       next
- * return      undefined
- * -------------------------------------------------------- */
-function auth(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect(cfg.path.login);
-}
 
 // --------------------------------------------------------
 // Exports app for the sake of testing.

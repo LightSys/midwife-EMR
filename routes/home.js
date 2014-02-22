@@ -62,11 +62,15 @@ var loginPost = function(req, res, next) {
 var logout = function(req, res) {
   var note = 'sid: ' + req.sessionID
     ;
-  Event.logoutEvent(req.session.user.id, note).then(function() {
-    req.session.destroy(function(err) {
-      res.redirect(loginRoute);
+  if (req.session.user && req.session.user.id) {
+    Event.logoutEvent(req.session.user.id, note).then(function() {
+      req.session.destroy(function(err) {
+        res.redirect(loginRoute);
+      });
     });
-  });
+  } else {
+    res.redirect(loginRoute);
+  }
 };
 
 
