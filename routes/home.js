@@ -9,6 +9,9 @@
 var passport = require('passport')
   , Promise = require('bluebird')
   , loginRoute = '/login'
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   , _ = require('underscore')
   , Event = require('../models').Event
   ;
@@ -31,7 +34,7 @@ var login = function(req, res) {
 var loginPost = function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) {
-      console.error('err: %s', err);
+      logError('err: %s', err);
       return next(err);
     }
     if (!user) {

@@ -1,37 +1,65 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * error.js
  *
  * Application wide error handling.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
+var logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
+  , cfg = require('config')
+  ;
 
+/* --------------------------------------------------------
+ * isClientError()
+ *
+ * Return true if the error status represents a client error
+ * that should not trigger a restart.
+ *
+ * "stolen" from:
+ * https://github.com/dilvie/express-error-handler/blob/master/error-handler.js
+ *
+ * param       status - number
+ * return      boolean - true if a client error
+ * -------------------------------------------------------- */
+isClientError = function isClientError(status) {
+  return (status >= 400 && status <= 499);
+}
+
+/* --------------------------------------------------------
+ * notFoundError()
+ *
+ * Display a not found page. This is not a fatal error.
+ * -------------------------------------------------------- */
 var notFoundError = function(req, res) {
   var title = req.gettext("Oops! Couldn't find that page.")
     , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again.";
     ;
-  console.log('User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method);
+  logInfo('User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method);
   res.render('errorPage', {title: title, text: text});
 };
 
 /* --------------------------------------------------------
- * logError()
+ * logException()
  *
  * Log the error to stderr.
  * -------------------------------------------------------- */
-var logError = function(err, req, res, next) {
+var logException = function(err, req, res, next) {
   if (process.env.NODE_ENV == 'test' && (! process.env.NODE_ENV_VERBOSE)) {
     return next(err);
   }
-  console.error('----------------------------------------');
-  console.error(err.message);
-  if (err.details) console.error(err.details);
-  console.error(err.stack);
-  console.error('----------------------------------------');
+  if (err.details) logError(err.details);
+  logError(err.stack);
   next(err);
 };
 
+/* --------------------------------------------------------
+ * displayError()
+ *
+ * Display an appropriate error page to the user.
+ * -------------------------------------------------------- */
 var displayError = function(err, req, res, next) {
   var title = req.gettext("Oops!")
     , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again.";
@@ -41,22 +69,27 @@ var displayError = function(err, req, res, next) {
     text = 'It seems that you are not authorized for that page. Sorry.';
   }
   res.render('errorPage', {title: title, text: text});
-  //next(err);
+  next(err);
 };
 
 /* --------------------------------------------------------
  * exitError()
  *
- * Exit the process.
+ * Exit the process after waiting for the error page to
+ * be rendered, etc.
  * -------------------------------------------------------- */
 var exitError = function(err, req, res, next) {
-  console.error('Exiting application due to error.');
-  process.exit(1);
+  if (isClientError(res.status)) return next();
+  logError('Aborting process in ' + cfg.error.errorTimeout + ' milliseconds.');
+  setTimeout(function() {
+    logError('Exiting application due to error.');
+    process.exit(1);
+  }, cfg.error.errorTimeout);
 };
 
 
 module.exports = {
-  logError: logError
+  logException: logException
   , notFoundError: notFoundError
   , displayError: displayError
   , exitError: exitError

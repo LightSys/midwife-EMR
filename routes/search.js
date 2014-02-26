@@ -10,6 +10,9 @@ var _ = require('underscore')
   , moment = require('moment')
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   ;
 
 var view = function(req, res) {

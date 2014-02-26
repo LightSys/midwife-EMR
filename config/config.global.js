@@ -1,4 +1,4 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * config.js
  *
@@ -11,12 +11,12 @@
  *    cfg.path = {};
  *
  * then establish default values that are overridden depending upon the environment.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 
 var cfg = {}
-    // Allows i18n-abide's extract-pot script to pick up these 
+    // Allows i18n-abide's extract-pot script to pick up these
     // variables and put them into the pot file.
   , gettext = function(param) {return param;}
   ;
@@ -47,6 +47,14 @@ cfg.database.db = 'yourDBname';
 cfg.database.dbUser = 'yourDBuser';
 cfg.database.dbPass = 'yourDBpassword';
 cfg.database.charset = 'utf8';
+
+// --------------------------------------------------------
+// Error settings.
+// --------------------------------------------------------
+cfg.error = {};
+// Time to wait after fatal error before killing process to
+// allow rendering of the error page to the client.
+cfg.error.errorTimeout = 1500;
 
 // --------------------------------------------------------
 // Session settings.

@@ -13,6 +13,9 @@ var moment = require('moment')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   , User = {}
   , permittedAttributes = ['id', 'username', 'firstname', 'lastname', 'password',
       'email', 'lang', 'status', 'note', 'updatedBy', 'updatedAt', 'supervisor']
@@ -23,7 +26,7 @@ var hashPassword = function(pw, cb) {
   //var start = moment();
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(pw, salt, function(er2, hash) {
-      //console.error('Hash generation time: ' + moment().diff(start));
+      //logError('Hash generation time: ' + moment().diff(start));
       return cb(null, hash);
     });
   });

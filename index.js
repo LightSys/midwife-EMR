@@ -27,6 +27,9 @@ var express = require('express')
   , roles = require('./routes').roles
   , pregnancy = require('./routes').pregnancy
   , error = require('./routes').error
+  , logInfo = require('./util').logInfo
+  , logWarn = require('./util').logWarn
+  , logError = require('./util').logError
   , common = []
   , student = []
   ;
@@ -152,16 +155,15 @@ app.use(app.router);
 // TODO: should these be located here or below the routes?
 // --------------------------------------------------------
 app.use(error.notFoundError);
-app.use(error.logError);
+app.use(error.logException);
 app.use(error.displayError);
-//app.use(error.exitError);
-
+app.use(error.exitError);
 
 // --------------------------------------------------------
 // Development configuration
 // --------------------------------------------------------
 app.configure('development', function() {
-  console.log('DEVELOPMENT mode');
+  logInfo('DEVELOPMENT mode');
   app.use(express.logger('dev'));
   app.use(express.errorHandler());
 });
@@ -170,7 +172,7 @@ app.configure('development', function() {
 // Production configuration
 // --------------------------------------------------------
 app.configure('production', function() {
-  console.log('PRODUCTION mode');
+  logInfo('PRODUCTION mode');
 });
 
 // ========================================================
@@ -267,16 +269,35 @@ app.post(cfg.path.pregnancyUpdate, common, hasSuper,
 
 
 
+
+
+// --------------------------------------------------------
+// The last resort.
+// --------------------------------------------------------
+process.on('uncaughtException', function(err) {
+  logError('uncaughtException: ', err.message);
+  logError(err.stack);
+  process.exit(1);
+});
+
+// --------------------------------------------------------
+// Testing in order to throw an error.
+// --------------------------------------------------------
+app.get('/error', function(req, res, next) {
+  throw new Error('This is an error that I do not know about.');
+});
+
+
 // --------------------------------------------------------
 // Start the server.
 // --------------------------------------------------------
 if (process.env.NODE_ENV == 'test') {
-  console.log('TEST mode');
+  logInfo('TEST mode');
   app.listen(cfg.host.port);
 } else {
   app.listen(cfg.host.port);
 }
-console.log('Server listening on port ' + cfg.host.port);
+logInfo('Server listening on port ' + cfg.host.port);
 
 // --------------------------------------------------------
 // Exports app for the sake of testing.

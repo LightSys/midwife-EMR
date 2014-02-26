@@ -15,6 +15,9 @@ var _ = require('underscore')
   , Event = require('../models').Event
   , cfg = require('../config')
   , auth = require('../auth')
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   ;
 
 
@@ -146,11 +149,11 @@ var saveSupervisor = function(req, res) {
             // Returns a promise but we don't handle how it is resolved.
             Event.setSuperEvent(req.session.user.id, note);
           } else {
-            console.error('User selected is not a supervisor!');
+            logError('User selected is not a supervisor!');
             req.flash('warning', req.gettext('An error occurred. Please try again.'));
           }
         } else {
-          console.error('User not found!');
+          logError('User not found!');
           req.flash('warning', req.gettext('An error occurred. Please try again.'));
         }
         res.redirect(cfg.path.setSuper);
@@ -233,7 +236,7 @@ var saveProfile = function(req, res) {
         user = new User(editObj);
         if (processPw) {
           user.hashPassword(editObj.password, function(er2, success) {
-            if (er2) return console.error(er2);
+            if (er2) return logError(er2);
             user.save(null, {method: 'update'})
               .then(function(model) {
                 req.flash('info', req.gettext('Your profile has been saved.'));
@@ -455,7 +458,7 @@ var update = function(req, res) {
         user = new User(editObj);
         if (processPw) {
           user.hashPassword(editObj.password, function(er2, success) {
-            if (er2) return console.error(er2);
+            if (er2) return logError(er2);
             user.save(null, {method: 'update'})
               .then(function(model) {
                 res.redirect(cfg.path.userList);
@@ -477,7 +480,7 @@ var update = function(req, res) {
       }
     });
   } else {
-    console.error('Error in update of user: user not found.');
+    logError('Error in update of user: user not found.');
     res.redirect(cfg.path.userList);
   }
 };
@@ -509,7 +512,7 @@ var create = function(req, res) {
                   }, _.omit(req.body, ['password2', '_csrf']));
       user = new User(newUserObj);
       user.hashPassword(newUserObj.password, function(err, success) {
-        if (err) return console.error(err);
+        if (err) return logError(err);
         user.save()
           .then(function(model) {
             req.flash('info', req.gettext('User was created.'));

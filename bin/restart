@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -f process.pid ]
+then
+  pid=$(cat process.pid)
+  kill -s SIGUSR2 $pid
+  echo "Restarted"
+fi
+

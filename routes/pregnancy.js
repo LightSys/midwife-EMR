@@ -14,6 +14,9 @@ var _ = require('underscore')
   , Patients = require('../models').Patients
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   ;
 
 /* --------------------------------------------------------
@@ -165,17 +168,17 @@ var create = function(req, res) {
               res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, pregnancy.get('id')));
             })
             .caught(function(e) {
-              console.error('Error saving pregnancy record. Orphan patient record id: ' + patient.get('id'));
+              logError('Error saving pregnancy record. Orphan patient record id: ' + patient.get('id'));
               throw e;
             });
         })
         .caught(function(e) {
-          console.error('Error saving patient record: ' + e);
+          logError('Error saving patient record: ' + e);
           throw e;
         });
     })
     .caught(function(e) {
-      console.error(e);
+      logError(e);
       res.status(406);
       res.end();    // TODO: need a custom 406 page.
     });
@@ -206,22 +209,22 @@ var update = function(req, res) {
             res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, flds.id));
           })
           .caught(function(err) {
-            console.error(err);
+            logError(err);
             res.redirect(cfg.path.search);
           });
       })
       .caught(function(err) {
-        console.error(err);
+        logError(err);
         res.redirect(cfg.path.search);
       });
     })
     .caught(function(err) {
-      console.error(err);
+      logError(err);
       res.redirect(cfg.path.search);
     });
 
   } else {
-    console.error('Error in update of pregnancy: pregnancy not found.');
+    logError('Error in update of pregnancy: pregnancy not found.');
     res.redirect(cfg.path.search);
   }
 };

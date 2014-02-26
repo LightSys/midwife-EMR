@@ -15,6 +15,9 @@
 var Bookshelf = require('bookshelf')
   , moment = require('moment')
   , _ = require('underscore')
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   ;
 
 /* --------------------------------------------------------
@@ -72,7 +75,7 @@ var init = function(dbSettings) {
         this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
       } else {
         if (!_.contains(noUpdatedAtTables, this.tableName)) {
-          console.log('updatedAt not set for ' + this.tableName);
+          logInfo('updatedAt not set for ' + this.tableName);
         }
       }
     }

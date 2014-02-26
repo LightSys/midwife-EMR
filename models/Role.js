@@ -12,6 +12,9 @@ var moment = require('moment')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   , User = {}
   , permittedAttributes =['id', 'name','description', 'updatedBy', 'updatedAt', 'supervisor']
   ;
@@ -33,7 +36,7 @@ Role = Bookshelf.Model.extend({
   }
 
   , saving: function() {
-    console.log('saving');
+    logInfo('saving');
   }
 
   // --------------------------------------------------------

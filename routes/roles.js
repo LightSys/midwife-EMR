@@ -10,6 +10,9 @@ var _ = require('underscore')
   , Role = require('../models').Role
   , Roles = require('../models').Roles
   , cfg = require('../config')
+  , logInfo = require('../util').logInfo
+  , logWarn = require('../util').logWarn
+  , logError = require('../util').logError
   ;
 
 /* --------------------------------------------------------
@@ -162,7 +165,7 @@ var update = function(req, res) {
       }
     });
   } else {
-    console.error('Error in update of role: role not found.');
+    logError('Error in update of role: role not found.');
     res.redirect(cfg.path.roleList);
   }
 };
