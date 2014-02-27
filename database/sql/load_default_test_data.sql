@@ -52,3 +52,16 @@ VALUES
   ('supervisor', 'A user set a supervisor'),
   ('history', 'A user viewed changes from log tables')
 ;
+
+-- Create the data for at least one select option.
+INSERT INTO `selectData`
+  (name, selectKey, label, selected, updatedBy, updatedAt)
+VALUES
+  ('maritalStatus', 'unknown', 'Not Set', 1, 1, NOW()),
+  ('maritalStatus', 'single', 'Single', 0, 1, NOW()),
+  ('maritalStatus', 'live-in', 'Live-In', 0, 1, NOW()),
+  ('maritalStatus', 'married', 'Married', 0, 1, NOW()),
+  ('maritalStatus', 'widowed', 'Widowed', 0, 1, NOW()),
+  ('maritalStatus', 'divorced', 'Divorced', 0, 1, NOW()),
+  ('maritalStatus', 'separated', 'Separated', 0, 1, NOW())
+;

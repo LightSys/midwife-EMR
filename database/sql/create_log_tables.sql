@@ -158,3 +158,13 @@ ALTER TABLE referralLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE referralLog DROP PRIMARY KEY;
 ALTER TABLE referralLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating selectDataLog
+SELECT 'selectDataLog' AS Creating FROM DUAL;
+CREATE TABLE selectDataLog LIKE selectData;
+ALTER TABLE selectDataLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE selectDataLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE selectDataLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE selectDataLog DROP PRIMARY KEY;
+ALTER TABLE selectDataLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE selectDataLog DROP KEY name;
+--

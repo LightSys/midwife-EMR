@@ -10,5 +10,7 @@ module.exports = {
   , Pregnancies: require('./Pregnancy').Pregnancies
   , Event: require('./Event').Event
   , Events: require('./Event').Events
+  , SelectData: require('./SelectData').SelectData
+  , SelectDatas: require('./SelectData').SelectDatas
 };
 

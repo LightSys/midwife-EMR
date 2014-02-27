@@ -546,6 +546,48 @@ END;$$
 DELIMITER ; 
  
 -- ---------------------------------------------------------------
+-- Trigger: selectData_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS selectData_after_insert;
+CREATE TRIGGER selectData_after_insert AFTER INSERT ON selectData
+FOR EACH ROW
+BEGIN
+  INSERT INTO selectDataLog
+  (id, name, selectKey, label, selected, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.selectKey, NEW.label, NEW.selected, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ; 
+ 
+-- ---------------------------------------------------------------
+-- Trigger: selectData_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS selectData_after_update;
+CREATE TRIGGER selectData_after_update AFTER UPDATE ON selectData
+FOR EACH ROW
+BEGIN
+  INSERT INTO selectDataLog
+  (id, name, selectKey, label, selected, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.selectKey, NEW.label, NEW.selected, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ; 
+ 
+-- ---------------------------------------------------------------
+-- Trigger: selectData_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS selectData_after_delete;
+CREATE TRIGGER selectData_after_delete AFTER DELETE ON selectData
+FOR EACH ROW
+BEGIN
+  INSERT INTO selectDataLog
+  (id, name, selectKey, label, selected, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.selectKey, OLD.label, OLD.selected, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ; 
+ 
+-- ---------------------------------------------------------------
 -- Trigger: user_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

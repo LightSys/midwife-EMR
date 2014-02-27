@@ -37,7 +37,7 @@ var notFoundError = function(req, res) {
   var title = req.gettext("Oops! Couldn't find that page.")
     , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again.";
     ;
-  logInfo('User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method);
+  logInfo('Not found - User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method);
   res.render('errorPage', {title: title, text: text});
 };
 
@@ -47,10 +47,14 @@ var notFoundError = function(req, res) {
  * Log the error to stderr.
  * -------------------------------------------------------- */
 var logException = function(err, req, res, next) {
+  var msg = ''
+    ;
   if (process.env.NODE_ENV == 'test' && (! process.env.NODE_ENV_VERBOSE)) {
     return next(err);
   }
-  if (err.details) logError(err.details);
+  if (err.status) msg += 'Status: ' + err.status + ' ';
+  if (err.details) msg += err.details;
+  if (msg.length) logError(msg);
   logError(err.stack);
   next(err);
 };
@@ -79,7 +83,7 @@ var displayError = function(err, req, res, next) {
  * be rendered, etc.
  * -------------------------------------------------------- */
 var exitError = function(err, req, res, next) {
-  if (isClientError(res.status)) return next();
+  if (isClientError(err.status)) return;  // return only since render has already occurred.
   logError('Aborting process in ' + cfg.error.errorTimeout + ' milliseconds.');
   setTimeout(function() {
     logError('Exiting application due to error.');

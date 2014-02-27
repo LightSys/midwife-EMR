@@ -27,6 +27,8 @@ var should = require('should')
   , Pregnancies = require('../models').Pregnancies
   , Event = require('../models').Event
   , Events = require('../models').Events
+  , SelectData = require('../models').SelectData
+  , SelectDatas = require('../models').SelectDatas
   ;
 
 describe('Models', function(done) {
@@ -242,6 +244,43 @@ describe('Models', function(done) {
             model.get('id').should.eql(id);
             done();
           });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+  });
+
+  describe('selectData', function(done) {
+    it('should get maritalStatus as JSON', function(done) {
+      SelectData.getSelect('maritalStatus')
+        .then(function(list) {
+          list.should.be.an.instanceOf(Array);
+          (list.length).should.be.above(5);
+          list[0].should.have.property('selectKey');
+          list[0].should.have.property('label');
+          list[0].should.have.property('selected');
+          list[0].should.not.have.property('id');
+          list[0].should.not.have.property('updatedAt');
+          list[0].should.not.have.property('updatedBy');
+          list[0].should.not.have.property('supervisor');
+          list[0].should.not.have.property('selected', 1);
+          list[0].should.not.have.property('selected', 0);
+          list[0].selected.should.be.type('boolean');
+          done();
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('should return empty array if name not found', function(done) {
+      SelectData.getSelect('NotReallyThereAtAll')
+        .then(function(list) {
+          list.should.be.an.instanceOf(Array);
+          list.should.have.property('length', 0);
+          done();
         })
         .caught(function(err) {
           done(err);

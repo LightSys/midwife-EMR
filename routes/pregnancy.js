@@ -14,10 +14,68 @@ var _ = require('underscore')
   , Patients = require('../models').Patients
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
+  , SelectData = require('../models').SelectData
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , maritalStatus = []
+  , religion = []
   ;
+
+/* --------------------------------------------------------
+ * init()
+ *
+ * Initialize the module.
+ * -------------------------------------------------------- */
+var init = function() {
+  var refresh
+    , maritalName = 'maritalStatus'
+    , religionName = 'religion'
+    , interval = 1 * 30 * 1000    // TODO: fix hard-code.
+  ;
+
+  // --------------------------------------------------------
+  // TODO: move this logic back to the ORM so that each
+  // cluster does not have to do it.
+  // --------------------------------------------------------
+  refresh = function(dataName) {
+    return new Promise(function(resolve, reject) {
+      logInfo('Refreshing ' + dataName);
+      SelectData.getSelect(dataName)
+        .then(function(list) {
+          resolve(list);
+        })
+        .caught(function(err) {
+          err.status = 500;
+          reject(err);
+        });
+    });
+  };
+
+  // --------------------------------------------------------
+  // Keep marital status up to date.
+  // --------------------------------------------------------
+  refresh(maritalName).then(function(list) {
+    maritalStatus = list;
+  });
+  setInterval(function() {
+    refresh(maritalName).then(function(list) {
+      maritalStatus = list;
+    });
+  }, interval);
+
+  // --------------------------------------------------------
+  // Keep religion up to date.
+  // --------------------------------------------------------
+  refresh(religionName).then(function(list) {
+    religion = list;
+  });
+  setInterval(function() {
+    refresh(religionName).then(function(list) {
+      religion = list;
+    });
+  }, interval);
+};
 
 /* --------------------------------------------------------
  * load()
@@ -74,27 +132,32 @@ var addForm = function(req, res) {
  * return      Object
  * -------------------------------------------------------- */
 var getEditFormData = function(req, addData) {
-  // TODO: fix hard-coded marital status.
-  var maritalStatus = [
-        {value: '', selected: false}
-        , {value: 'Single', selected: false}
-        , {value: 'Live-in', selected: false}
-        , {value: 'Married', selected: false}
-        , {value: 'Widowed', selected: false}
-        , {value: 'Divorced', selected: false}
-        , {value: 'Separated', selected: false}
-      ]
-      ;
-  // Handle martital status - this is a hack.
+  var ms = _.map(maritalStatus, function(m) {return _.clone(m);})
+    , rel = _.map(religion, function(r) {return _.clone(r);})
+    ;
   if (req.paramPregnancy && req.paramPregnancy.maritalStatus) {
-    _.each(maritalStatus, function(rec) {
-      if (rec.value == req.paramPregnancy.maritalStatus) rec.selected = true;
+    _.each(ms, function(rec) {
+      if (rec.selectKey == req.paramPregnancy.maritalStatus) {
+        rec.selected = true;
+      } else {
+        rec.selected = false;
+      }
+    });
+  }
+  if (req.paramPregnancy && req.paramPregnancy.religion) {
+    _.each(rel, function(rec) {
+      if (rec.selectKey == req.paramPregnancy.religion) {
+        rec.selected = true;
+      } else {
+        rec.selected = false;
+      }
     });
   }
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
-    , marital: maritalStatus
+    , marital: ms
+    , religion: rel
     , rec: req.paramPregnancy
   });
 };
@@ -228,6 +291,11 @@ var update = function(req, res) {
     res.redirect(cfg.path.search);
   }
 };
+
+// --------------------------------------------------------
+// Initialize the module.
+// --------------------------------------------------------
+init();
 
 module.exports = {
   addForm: addForm

@@ -6,7 +6,8 @@
  * ------------------------------------------------------------------------------- 
  */
 
-var INFO = 1
+var moment = require('moment')
+  , INFO = 1
   , WARN = 2
   , ERROR = 3
   ;
@@ -16,7 +17,7 @@ var writeLog = function(msg, logType) {
     , id = process.env.WORKER_ID? process.env.WORKER_ID: 0
     ;
   if (logType === WARN || logType === ERROR) fn = 'error';
-  console[fn]('%d: %s', id, msg);
+  console[fn]('%d|%s: %s', id, moment().format('YYYY-MM-DD HH:mm:ss.SSS'), msg);
 };
 
 var logInfo = function(msg) {
