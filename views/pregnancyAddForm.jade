@@ -43,7 +43,7 @@ block pregnancyAdd
           input(class='form-control input-lg', type='text', tabindex="10", autocomplete="off", name='work')
         div(class='form-group col-sm-4')
           span= gettext('Education')
-          input(class='form-control input-lg', type='text', tabindex="11", autocomplete="off", name='education')
+          +select('form-control input-lg', 'education', 11, education)
         div(class='form-group col-sm-4')
           span= gettext('Telephone')
           input(class='form-control input-lg', type='tel', tabindex="12", autocomplete="off", name='telephone')
@@ -63,7 +63,7 @@ block pregnancyAdd
           input(class='form-control input-lg', type='text', tabindex="16", autocomplete="off", name='partnerWork')
         div(class='form-group col-sm-4')
           span= gettext('Partner education')
-          input(class='form-control input-lg', type='text', tabindex="17", autocomplete="off", name='partnerEducation')
+          +select('form-control input-lg', 'partnerEducation', 17, education)
         div(class='form-group col-sm-2')
           span= gettext('Client monthly Income')
           input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='monthlyIncome')
@@ -82,18 +82,4 @@ block pregnancyAdd
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
           input(type='hidden', name='_csrf', value=token)
         input(type='hidden', name='_csrf', value=token)
-
-  //- Examples of datalist, hard-coded and using mixin.
-    datalist#religion
-      option(value="Christian", label="Christian")
-      option(value="Protestant", label="Protestant")
-      option(value="Catholic", label="Catholic")
-      option(value="Islam", label="Islam")
-      option(value="Buddist", label="Buddist")
-      option(value="Hindu", label="Hindu")
-      option(value="Atheist", label="Atheist")
-      option(value="Other", label="Other")
-      option(value="None", label="None")
-
-    +datalist('marital', [{key: 'single', val: 'Single'}, {key: 'married', val: 'Married'}, {key: 'live-in', val: 'Live-In'}, {key: 'two words', val: 'Two Words'}])
 

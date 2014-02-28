@@ -20,6 +20,7 @@ var _ = require('underscore')
   , logError = require('../util').logError
   , maritalStatus = []
   , religion = []
+  , education = []
   ;
 
 /* --------------------------------------------------------
@@ -29,14 +30,18 @@ var _ = require('underscore')
  * -------------------------------------------------------- */
 var init = function() {
   var refresh
+    , doRefresh
+    , setMS = function(list) {maritalStatus = list;}
+    , setRel = function(list) {religion = list;}
+    , setEdu = function(list) {education = list;}
     , maritalName = 'maritalStatus'
     , religionName = 'religion'
-    , interval = 1 * 30 * 1000    // TODO: fix hard-code.
+    , educationName = 'education'
+    , interval = cfg.data.selectRefreshInterval
   ;
 
   // --------------------------------------------------------
-  // TODO: move this logic back to the ORM so that each
-  // cluster does not have to do it.
+  // Refresh dataset passed.
   // --------------------------------------------------------
   refresh = function(dataName) {
     return new Promise(function(resolve, reject) {
@@ -53,28 +58,26 @@ var init = function() {
   };
 
   // --------------------------------------------------------
-  // Keep marital status up to date.
+  // Do an initial refresh and at a set interval afterward.
   // --------------------------------------------------------
-  refresh(maritalName).then(function(list) {
-    maritalStatus = list;
-  });
-  setInterval(function() {
-    refresh(maritalName).then(function(list) {
-      maritalStatus = list;
+  doRefresh = function(dataName, fn) {
+    refresh(dataName).then(function(list) {
+      fn(list);
     });
-  }, interval);
+    setInterval(function() {
+      refresh(dataName).then(function(list) {
+        fn(list);
+      });
+    }, interval);
+  };
 
   // --------------------------------------------------------
-  // Keep religion up to date.
+  // Keep the various select lists up to date.
   // --------------------------------------------------------
-  refresh(religionName).then(function(list) {
-    religion = list;
-  });
-  setInterval(function() {
-    refresh(religionName).then(function(list) {
-      religion = list;
-    });
-  }, interval);
+  doRefresh(maritalName, setMS);
+  doRefresh(religionName, setRel);
+  doRefresh(educationName, setEdu);
+
 };
 
 /* --------------------------------------------------------
@@ -134,6 +137,7 @@ var addForm = function(req, res) {
 var getEditFormData = function(req, addData) {
   var ms = _.map(maritalStatus, function(m) {return _.clone(m);})
     , rel = _.map(religion, function(r) {return _.clone(r);})
+    , edu = _.map(education, function(e) {return _.clone(e);})
     ;
   if (req.paramPregnancy && req.paramPregnancy.maritalStatus) {
     _.each(ms, function(rec) {
@@ -153,11 +157,21 @@ var getEditFormData = function(req, addData) {
       }
     });
   }
+  if (req.paramPregnancy && req.paramPregnancy.education) {
+    _.each(edu, function(rec) {
+      if (rec.selectKey == req.paramPregnancy.education) {
+        rec.selected = true;
+      } else {
+        rec.selected = false;
+      }
+    });
+  }
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
     , marital: ms
     , religion: rel
+    , education: edu
     , rec: req.paramPregnancy
   });
 };
