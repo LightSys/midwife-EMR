@@ -108,6 +108,32 @@ var load = function(req, res, next) {
 };
 
 /* --------------------------------------------------------
+ * history()
+ *
+ * Render the history page for the pregnancy.
+ * -------------------------------------------------------- */
+var history = function(req, res) {
+  var data = {
+        title: req.gettext('Pregnancy History')
+        , user: req.session.user
+        , messages: req.flash()
+        , rec: req.paramPregnancy
+      }
+    ;
+  if (req.paramPregnancy) {
+    Pregnancy.forge({id: req.paramPregnancy.id})
+      .historyData(req.paramPregnancy.id)
+      .then(function(list) {
+        data.history = list;
+        res.render('pregnancyHistory', data);
+      });
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
  * addForm()
  *
  * Display the form to create a new pregnancy record.
@@ -317,5 +343,6 @@ module.exports = {
   , load: load
   , editForm: editForm
   , update: update
+  , history: history
 };
 

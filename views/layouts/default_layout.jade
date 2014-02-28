@@ -1,6 +1,7 @@
 include ../mixins/flash
 include ../mixins/datalist
 include ../mixins/select
+include ../mixins/historyData
 
 doctype 5
 html(lang="en")
@@ -96,8 +97,10 @@ html(lang="en")
                 block pregnancyAdd
                 block pregnancyEdit
                 block errorPage
+                block pregnancyHistory
               else
                 block login
 
     script(src='/jquery/jquery.js')
     script(src='/bootstrap/dist/js/bootstrap.js')
+

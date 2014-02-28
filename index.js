@@ -241,8 +241,8 @@ app.post(cfg.path.changeRoles, common, inRoles(['administrator']), csrf, users.c
 // --------------------------------------------------------
 // Profile
 // --------------------------------------------------------
-app.get(cfg.path.profile, auth, csrf, users.editProfile);
-app.post(cfg.path.profile, auth, csrf, users.saveProfile);
+app.get(cfg.path.profile, common, csrf, users.editProfile);
+app.post(cfg.path.profile, common, csrf, users.saveProfile);
 
 // --------------------------------------------------------
 // Set the supervisor if a student.
@@ -266,9 +266,8 @@ app.get(cfg.path.pregnancyEditForm, common, hasSuper,
 app.post(cfg.path.pregnancyUpdate, common, hasSuper,
     inRoles(['clerk','student','supervisor']),
     csrf, pregnancy.update);
-
-
-
+app.get(cfg.path.pregnancyHistory, common,
+    inRoles(['supervisor']), csrf, pregnancy.history);
 
 
 // --------------------------------------------------------

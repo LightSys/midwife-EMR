@@ -15,6 +15,7 @@
 var Bookshelf = require('bookshelf')
   , moment = require('moment')
   , _ = require('underscore')
+  , Promise = require('bluebird')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -57,28 +58,48 @@ var init = function(dbSettings) {
 
     initialize: function() {
       this.on('saving', this.saving, this);
-    },
+    }
 
-    saving: function() {
-      // Only allow attributes that we know about.
-      // Adapted from the Ghost project.
-      if (this.permittedAttributes) {
-        this.attributes = this.pick(this.permittedAttributes);
-      }
+    , saving: function() {
+        // Only allow attributes that we know about.
+        // Adapted from the Ghost project.
+        if (this.permittedAttributes) {
+          this.attributes = this.pick(this.permittedAttributes);
+        }
 
-      // Tables known to not set updatedAt so don't log when they don't.
-      var noUpdatedAtTables = ['event'];
+        // Tables known to not set updatedAt so don't log when they don't.
+        var noUpdatedAtTables = ['event'];
 
-      // Set the updatedAt field to the current time whether creating
-      // or updating unless noUpdatedAt is set.
-      if (! this.noUpdatedAt) {
-        this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
-      } else {
-        if (!_.contains(noUpdatedAtTables, this.tableName)) {
-          logInfo('updatedAt not set for ' + this.tableName);
+        // Set the updatedAt field to the current time whether creating
+        // or updating unless noUpdatedAt is set.
+        if (! this.noUpdatedAt) {
+          this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
+        } else {
+          if (!_.contains(noUpdatedAtTables, this.tableName)) {
+            logInfo('updatedAt not set for ' + this.tableName);
+          }
         }
       }
-    }
+
+    , historyData: function(id) {
+        var tableName = this.tableName
+          ;
+        return new Promise(function(resolve, reject) {
+          var knex = Bookshelf.DB.knex
+            ;
+          knex(tableName + 'Log')
+            .where({id: id})
+            .orderBy('replacedAt', 'desc')
+            .select()
+            .then(function(list) {
+              resolve(list);
+            })
+            .caught(function(err) {
+              logError(err);
+              reject(err);
+            });
+        });
+      }
 
   }, {
     // --------------------------------------------------------

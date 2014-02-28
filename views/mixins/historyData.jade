@@ -1,0 +1,31 @@
+mixin historyData(data)
+  div(class='panel-group' id='historyData')
+    div(class='panel panel-default')
+      - var cnt = 0
+      - var classesNormal = 'panel-collapse collapse'
+      - var classesFirst = classes + ' in'
+      - var classes
+      - var title
+      each rec in data
+        - classes = classesNormal
+        - if (cnt === 0) classes = classesFirst
+        - title = rec['replacedAt']
+        - if (cnt === 0) title += ' [Current record]'
+        div(class='panel-heading')
+          h4(class='panel-title')
+            a(data-toggle='collapse', data-parent='#historyData', href='#historyData-' + cnt)= title
+        div(class=classes, id='historyData-' + cnt)
+          div(class='panel-body')
+            table(class='table table-striped table-bordered table-hover table-condensed')
+              thead
+                tr
+                  th.header Field name
+                  th.header Field value
+                tbody
+                  for key in Object.keys(rec)
+                    - if (key == 'replacedAt') continue;
+                    tr
+                      td= key
+                      td= rec[key]
+        - cnt++
+
