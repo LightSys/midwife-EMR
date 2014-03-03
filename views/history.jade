@@ -1,11 +1,12 @@
 extends layouts/default_layout
 
-block pregnancyHistory
+block history
   h1= title
 
+  p= gettext('Note that the top record is the current record.')
   div.clearfix
     a(class='pull-right', href='edit') Back to edit
   div(class='formBoxLarge')
     +flash(messages)
-    +historyData(history)
+    +historyData(history, users)
 

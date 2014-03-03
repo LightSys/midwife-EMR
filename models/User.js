@@ -8,6 +8,7 @@
 
 var moment = require('moment')
   , bcrypt = require('bcrypt')
+  , Promise = require('bluebird')
   , _ = require('underscore')
   , val = require('validator')
     // Default settings used unless Bookshelf already initialized.
@@ -192,6 +193,38 @@ User = Bookshelf.Model.extend({
       } else {
         return cb(null, result);
       }
+    }
+
+    /* --------------------------------------------------------
+     * getUserIdMap()
+     *
+     * Returns a hash of users with the keys being their user id
+     * and the value being an object with three fields: username,
+     * firstname, and lastname.
+     *
+     * Returns a promise.
+     *
+     * return      a promise
+     * -------------------------------------------------------- */
+  , getUserIdMap: function() {
+      return new Promise(function(resolve, reject) {
+        var knex = Bookshelf.knex
+          ;
+        knex('user')
+          .orderBy('id', 'asc')
+          .select(['id', 'username', 'firstname', 'lastname'])
+          .then(function(list) {
+            var map = {};
+            _.each(list, function(user) {
+              map[user.id] = user;
+            });
+            resolve(map);
+          })
+          .caught(function(err) {
+            logError(err);
+            reject(err);
+          });
+      });
     }
 
 });

@@ -81,6 +81,14 @@ var init = function(dbSettings) {
         }
       }
 
+      /* --------------------------------------------------------
+       * historyData()
+       *
+       * Return historical data for this record.
+       *
+       * param       id
+       * return      a promise
+       * -------------------------------------------------------- */
     , historyData: function(id) {
         var tableName = this.tableName
           ;
@@ -92,6 +100,12 @@ var init = function(dbSettings) {
             .orderBy('replacedAt', 'desc')
             .select()
             .then(function(list) {
+              // --------------------------------------------------------
+              // Fix the date so that it displays shorter.
+              // --------------------------------------------------------
+              _.each(list, function(item) {
+                item.replacedAt = moment(item.replacedAt).format('YYYY-MM-DD HH:mm:ss');
+              });
               resolve(list);
             })
             .caught(function(err) {

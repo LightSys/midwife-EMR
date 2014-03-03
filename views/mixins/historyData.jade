@@ -1,4 +1,4 @@
-mixin historyData(data)
+mixin historyData(history, users)
   div(class='panel-group' id='historyData')
     div(class='panel panel-default')
       - var cnt = 0
@@ -6,11 +6,14 @@ mixin historyData(data)
       - var classesFirst = classes + ' in'
       - var classes
       - var title
-      each rec in data
+      - var op
+      - var user
+      each rec in history
         - classes = classesNormal
         - if (cnt === 0) classes = classesFirst
-        - title = rec['replacedAt']
-        - if (cnt === 0) title += ' [Current record]'
+        - op = (rec['op'] == 'U')? ' Updated by ': ' Inserted by ';
+        - user = users[rec['updatedBy']]['firstname'] + ' ' + users[rec['updatedBy']]['lastname'];
+        - title = rec['replacedAt'] + op + user
         div(class='panel-heading')
           h4(class='panel-title')
             a(data-toggle='collapse', data-parent='#historyData', href='#historyData-' + cnt)= title
@@ -23,7 +26,7 @@ mixin historyData(data)
                   th.header Field value
                 tbody
                   for key in Object.keys(rec)
-                    - if (key == 'replacedAt') continue;
+                    //- - if (['replacedAt','updatedBy','updatedAt'].indexOf(key) !== -1) continue;
                     tr
                       td= key
                       td= rec[key]

@@ -14,6 +14,8 @@ var _ = require('underscore')
   , Patients = require('../models').Patients
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
+  , User = require('../models').User
+  , Users = require('../models').Users
   , SelectData = require('../models').SelectData
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
@@ -121,11 +123,19 @@ var history = function(req, res) {
       }
     ;
   if (req.paramPregnancy) {
-    Pregnancy.forge({id: req.paramPregnancy.id})
-      .historyData(req.paramPregnancy.id)
-      .then(function(list) {
-        data.history = list;
-        res.render('pregnancyHistory', data);
+    User.getUserIdMap()
+      .then(function(users) {
+        Pregnancy.forge({id: req.paramPregnancy.id})
+          .historyData(req.paramPregnancy.id)
+          .then(function(list) {
+            data.history = list;
+            data.users = users;
+            console.dir(data.users);
+            res.render('history', data);
+          });
+      })
+      .caught(function(err) {
+        logError(err);
       });
   } else {
     // Pregnancy not found.
