@@ -25,8 +25,11 @@ var _ = require('underscore')
  *
  *  app.get(somePath, setRoleInfo, otherFunction, handler);
  *
- *  Also provides isAuthenticated() and is('someRoleName')
- *  functions on the req.session.roleInfo object.
+ *  Provides the isAuthenticated boolean on the session object.
+ *
+ *  Also provides hasRole('someRoleName') on the roleInfo
+ *  object that is exposed to the templates. This is not on the
+ *  session object. Instead, use the auth.hasRole() function.
  *
  * param       req
  * param       res
@@ -38,7 +41,10 @@ var setRoleInfo = function(app) {
     var roleInfo = {
         isAuthenticated: req.isAuthenticated()
         , roleNames: []
-        , is: function(roleName) {
+          // Note that hasRole() will not be saved to the session so is available
+          // in app.locals only, which means the templates. Use auth.hasRole()
+          // for other uses.
+        , hasRole: function(roleName) {
             if (! req.session.roleInfo) return false;
             return _.contains(req.session.roleInfo.roleNames, roleName);
         }
@@ -60,6 +66,21 @@ var setRoleInfo = function(app) {
     app.locals.roleInfo = roleInfo;
     next();
   };
+};
+
+/* --------------------------------------------------------
+ * hasRole()
+ *
+ * Returns true if the passed role is found in the list of
+ * roles that the user is a member of in the session.
+ *
+ * param       req
+ * param       role
+ * return      boolean
+ * -------------------------------------------------------- */
+var hasRole = function(req, role) {
+  if (! req.session || ! req.session.roleInfo) return false;
+  return _.contains(req.session.roleInfo.roleNames, role);
 };
 
 /* --------------------------------------------------------
@@ -111,5 +132,6 @@ module.exports = {
   inRoles: inRoles
   , setRoleInfo: setRoleInfo
   , auth: auth
+  , hasRole: hasRole
 };
 

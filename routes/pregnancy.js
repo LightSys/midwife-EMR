@@ -10,6 +10,7 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , moment = require('moment')
   , cfg = require('../config')
+  , hasRole = require('../auth').hasRole
   , Patient = require('../models').Patient
   , Patients = require('../models').Patients
   , Pregnancy = require('../models').Pregnancy
@@ -130,7 +131,6 @@ var history = function(req, res) {
           .then(function(list) {
             data.history = list;
             data.users = users;
-            console.dir(data.users);
             res.render('history', data);
           });
       })
@@ -174,6 +174,7 @@ var getEditFormData = function(req, addData) {
   var ms = _.map(maritalStatus, function(m) {return _.clone(m);})
     , rel = _.map(religion, function(r) {return _.clone(r);})
     , edu = _.map(education, function(e) {return _.clone(e);})
+    , partEdu = _.map(education, function(e) {return _.clone(e);})
     ;
   if (req.paramPregnancy && req.paramPregnancy.maritalStatus) {
     _.each(ms, function(rec) {
@@ -202,12 +203,22 @@ var getEditFormData = function(req, addData) {
       }
     });
   }
+  if (req.paramPregnancy && req.paramPregnancy.partnerEducation) {
+    _.each(partEdu, function(rec) {
+      if (rec.selectKey == req.paramPregnancy.partnerEducation) {
+        rec.selected = true;
+      } else {
+        rec.selected = false;
+      }
+    });
+  }
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
     , marital: ms
     , religion: rel
     , education: edu
+    , partnerEducation: partEdu
     , rec: req.paramPregnancy
   });
 };
@@ -252,7 +263,7 @@ var create = function(req, res) {
     , patFlds = {}
     ;
 
-  if (req.session.roleInfo.isStudent) {
+  if (hasRole(req, 'student')) {
     common.supervisor = req.session.supervisor.id;
   }
   pregFlds = _.extend(pregFlds, common);
@@ -315,7 +326,7 @@ var update = function(req, res) {
       req.body.id &&
       req.paramPregnancy.id == req.body.id) {
 
-    if (req.session.roleInfo.isStudent) {
+    if (hasRole(req, 'student')) {
       supervisor = req.session.supervisor.id;
     }
     pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority']);

@@ -8,6 +8,7 @@
 
 var _ = require('underscore')
   , Promise = require('bluebird')
+  , hasRole = require('../auth').hasRole
   , User = require('../models').User
   , Users = require('../models').Users
   , Role = require('../models').Role
@@ -235,7 +236,7 @@ var saveProfile = function(req, res) {
                       updatedBy: req.session.user.id
                     }, _.omit(req.body, fldsToOmit));
         user = new User(editObj);
-        if (req.session.roleInfo.isStudent) {
+        if (hasRole(req, 'student')) {
           supervisor = req.session.supervisor.id;
         }
         if (processPw) {
@@ -467,7 +468,7 @@ var update = function(req, res) {
                       updatedBy: req.session.user.id
                     }, _.omit(req.body, fldsToOmit));
         user = new User(editObj);
-        if (req.session.roleInfo.isStudent) {
+        if (hasRole(req, 'student')) {
           supervisor = req.session.supervisor.id;
         }
         if (processPw) {
