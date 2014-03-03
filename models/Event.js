@@ -82,9 +82,10 @@ Event = Bookshelf.Model.extend({
 
     // --------------------------------------------------------
     // Flag for the super class to use to determine if the updatedAt
-    // field should not be set automatically.
+    // field should not be set automatically and the updatedBy and
+    // supervisor fields should not be required either.
     // --------------------------------------------------------
-  , noUpdatedAt: true
+  , noLogging: true
 
   , saving: function(model) {
       // Enforce permittedAttributes.

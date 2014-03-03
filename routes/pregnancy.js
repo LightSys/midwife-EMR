@@ -244,6 +244,7 @@ var editForm = function(req, res) {
 var create = function(req, res) {
   var common = {
         updatedBy: req.session.user.id
+        , supervisor: null
       }
     , dob = req.body.dob.length > 0? req.body.dob: null
     , doh = req.body.doh.length > 0? req.body.doh: null
@@ -270,11 +271,15 @@ var create = function(req, res) {
     .then(function(flds) {
       Patient
         .forge(flds.patFlds)
+        .setUpdatedBy(req.session.user.id)
+        .setSupervisor(common.supervisor)
         .save()
         .then(function(patient) {
           var pregFields = _.extend(flds.pregFlds, {patient_id: patient.get('id')});
           Pregnancy
             .forge(pregFields)
+            .setUpdatedBy(req.session.user.id)
+            .setSupervisor(common.supervisor)
             .save()
             .then(function(pregnancy) {
               req.flash('info', req.gettext('Pregnancy was created.'));
@@ -302,6 +307,7 @@ var update = function(req, res) {
     , patFlds
     , dob = req.body.dob.length > 0? req.body.dob: null
     , doh = req.body.doh.length > 0? req.body.doh: null
+    , supervisor = null;
     ;
   if (req.paramPregnancy &&
       req.body &&
@@ -309,22 +315,30 @@ var update = function(req, res) {
       req.body.id &&
       req.paramPregnancy.id == req.body.id) {
 
+    if (req.session.roleInfo.isStudent) {
+      supervisor = req.session.supervisor.id;
+    }
     pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority']);
     patFlds = {dohID: doh, dob: moment(dob, 'MM-DD-YYYY').format('YYYY-MM-DD')};
     patFlds = _.extend(patFlds, {id: req.paramPregnancy.patient_id});
     Pregnancy.checkFields(pregFlds).then(function(flds) {
-      Pregnancy.forge(flds).save().then(function() {
-        Patient
-          .forge(patFlds)
-          .save()
-          .then(function(patient) {
-            req.flash('info', req.gettext('Pregnancy was updated.'));
-            res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, flds.id));
-          })
-          .caught(function(err) {
-            logError(err);
-            res.redirect(cfg.path.search);
-          });
+      Pregnancy.forge(flds)
+        .setUpdatedBy(req.session.user.id)
+        .setSupervisor(supervisor)
+        .save().then(function() {
+          Patient
+            .forge(patFlds)
+            .setUpdatedBy(req.session.user.id)
+            .setSupervisor(supervisor)
+            .save()
+            .then(function(patient) {
+              req.flash('info', req.gettext('Pregnancy was updated.'));
+              res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, flds.id));
+            })
+            .caught(function(err) {
+              logError(err);
+              res.redirect(cfg.path.search);
+            });
       })
       .caught(function(err) {
         logError(err);

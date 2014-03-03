@@ -60,7 +60,32 @@ var init = function(dbSettings) {
       this.on('saving', this.saving, this);
     }
 
+      // Sets updatedBy and flags that field was set.
+    , setUpdatedBy: function(id) {
+        this.set('updatedBy', id);
+        this.set('requiredUpdatedBy', true);
+        return this;
+      }
+
+      // Sets the supervisor field and flags that the field was set.
+    , setSupervisor: function(id) {
+        this.set('supervisor', id);
+        this.set('requiredSupervisor', true);
+        return this;
+      }
+
     , saving: function() {
+        // Check flag fields to confirm that required fields were set. Flag
+        // fields themselves are removed by the permittedAttributes check below.
+        if (! this.noLogging) {
+          if (! this.get('requiredUpdatedBy')) {
+            throw new Error('updatedBy field not set for ' + this.tableName);
+          }
+          if (! this.get('requiredSupervisor')) {
+            throw new Error('supervisor field not set for ' + this.tableName);
+          }
+        }
+
         // Only allow attributes that we know about.
         // Adapted from the Ghost project.
         if (this.permittedAttributes) {
@@ -68,14 +93,14 @@ var init = function(dbSettings) {
         }
 
         // Tables known to not set updatedAt so don't log when they don't.
-        var noUpdatedAtTables = ['event'];
+        var noLoggingTables = ['event'];
 
         // Set the updatedAt field to the current time whether creating
-        // or updating unless noUpdatedAt is set.
-        if (! this.noUpdatedAt) {
+        // or updating unless noLogging is set.
+        if (! this.noLogging) {
           this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
         } else {
-          if (!_.contains(noUpdatedAtTables, this.tableName)) {
+          if (!_.contains(noLoggingTables, this.tableName)) {
             logInfo('updatedAt not set for ' + this.tableName);
           }
         }

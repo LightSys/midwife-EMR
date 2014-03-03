@@ -36,6 +36,8 @@ describe('Models', function(done) {
   describe('Patient', function(done) {
     it('should be able to create', function(done) {
       Patient.forge({updatedBy: 1})
+        .setUpdatedBy(1)
+        .setSupervisor(1)
         .save()
         .then(function(model) {
           model.should.have.property('id');
@@ -73,9 +75,13 @@ describe('Models', function(done) {
   describe('Pregnancy', function(done) {
     it('should be able to create', function(done) {
       Patient.forge({updatedBy: 1})
+        .setUpdatedBy(1)
+        .setSupervisor(1)
         .save()
         .then(function(patient) {
-          Pregnancy.forge({updatedBy: 1, patient_id: patient.get('id')})
+          Pregnancy.forge({patient_id: patient.get('id')})
+            .setUpdatedBy(1)
+            .setSupervisor(1)
             .save()
             .then(function(pregnancy) {
               // --------------------------------------------------------
@@ -92,17 +98,62 @@ describe('Models', function(done) {
         });
     });
 
+    it('should be able to create after calling required set fields', function(done) {
+      Patient.forge({updatedBy: 1})
+        .setUpdatedBy(1)
+        .setSupervisor(1)
+        .save()
+        .then(function(patient) {
+          Pregnancy.forge({generalInfo: 'Testing', patient_id: patient.get('id')})
+            .setUpdatedBy(1)
+            .setSupervisor(1)
+            .save()
+            .then(function(pregnancy) {
+              done();
+            })
+            .caught(function(err) {
+              done(new Error('Did not allow saving with required set fields.'));
+            });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('should not be able to update without updatedBy', function(done) {
+      var pregnancies = new Pregnancies()
+        ;
+      pregnancies.fetch()
+        .then(function(pregs) {
+          var preg = pregs.at(pregs.size() - 2);
+          preg.set('note', 'Testing');
+          preg.save()
+            .then(function(saved) {
+              done(new Error('Improperly allowed saving without updatedBy field in update.'));
+            })
+            .caught(function(err) {
+              done();
+            });
+        });
+    });
+
     it('should be able to retrieve pregnancies for a patient', function(done) {
       Patient.forge({updatedBy: 1})
+        .setUpdatedBy(1)
+        .setSupervisor(null)
         .save()
         .then(function(patient) {
           var preg1 = new Pregnancy({updatedBy: 1, patient_id: patient.get('id')})
             , preg2 = new Pregnancy({updatedBy: 1, patient_id: patient.get('id')})
             ;
           preg1
+            .setUpdatedBy(1)
+            .setSupervisor(null)
             .save()
             .then(function(p1) {
               preg2
+                .setUpdatedBy(1)
+                .setSupervisor(null)
                 .save()
                 .then(function(p2) {
                   Patient.forge({id: patient.get('id')})

@@ -211,6 +211,7 @@ var editProfile = function(req, res) {
 var saveProfile = function(req, res) {
   var processPw = true
     , fldsToOmit = ['password2','_csrf']
+    , supervisor = null   // supervisor should not be needed here but for consistency
     ;
 
   // Insure we only save for ourselves.
@@ -234,17 +235,26 @@ var saveProfile = function(req, res) {
                       updatedBy: req.session.user.id
                     }, _.omit(req.body, fldsToOmit));
         user = new User(editObj);
+        if (req.session.roleInfo.isStudent) {
+          supervisor = req.session.supervisor.id;
+        }
         if (processPw) {
           user.hashPassword(editObj.password, function(er2, success) {
             if (er2) return logError(er2);
-            user.save(null, {method: 'update'})
+            user
+              .setUpdatedBy(req.session.user.id)
+              .setSupervisor(supervisor)
+              .save(null, {method: 'update'})
               .then(function(model) {
                 req.flash('info', req.gettext('Your profile has been saved.'));
                 res.redirect(cfg.path.profile);
               });
           });
         } else {
-          user.save(null, {method: 'update'})
+          user
+            .setUpdatedBy(req.session.user.id)
+            .setSupervisor(req.session.user.id)
+            .save(null, {method: 'update'})
             .then(function(model) {
               req.flash('info', req.gettext('Your profile has been saved.'));
               res.redirect(cfg.path.profile);
@@ -433,6 +443,7 @@ var update = function(req, res) {
   var processPw = true
      , data = {}
     , fldsToOmit = ['password2','_csrf']
+    , supervisor = null
     ;
   if (req.paramUser &&
       req.body &&
@@ -456,10 +467,16 @@ var update = function(req, res) {
                       updatedBy: req.session.user.id
                     }, _.omit(req.body, fldsToOmit));
         user = new User(editObj);
+        if (req.session.roleInfo.isStudent) {
+          supervisor = req.session.supervisor.id;
+        }
         if (processPw) {
           user.hashPassword(editObj.password, function(er2, success) {
             if (er2) return logError(er2);
-            user.save(null, {method: 'update'})
+            user
+              .setUpdatedBy(req.session.user.id)
+              .setSupervisor(supervisor)
+              .save(null, {method: 'update'})
               .then(function(model) {
                 res.redirect(cfg.path.userList);
               });
