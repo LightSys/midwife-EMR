@@ -18,7 +18,7 @@ var passport = require('passport')
 
 var home = function(req, res) {
   res.render('content', {
-    title: req.gettext('Testing')
+    title: req.gettext('Home')
     , user: req.session.user
   });
 };
