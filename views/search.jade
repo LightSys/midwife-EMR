@@ -11,9 +11,11 @@ block search
       div.form-group
         span= gettext('First name')
         input(class='form-control', type='text', name='firstname')
+        span.help-block= gettext('Use the % sign as a wildcard. E.g. Eliza% or %beth')
       div.form-group
         span= gettext('Last name')
         input(class='form-control', type='text', autofocus, name='lastname')
+        span.help-block= gettext('Use the % sign as a wildcard. E.g. Weid% or %maven or Wei%en')
       div.form-group
         span= gettext('Date of birth')
         input(class='form-control', type='date', name='dob')

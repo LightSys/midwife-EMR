@@ -8,6 +8,7 @@
 
 var _ = require('underscore')
   , moment = require('moment')
+  , Promise = require('bluebird')
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
   , logInfo = require('../util').logInfo
@@ -47,14 +48,27 @@ var execute = function(req, res) {
         , 'pregnancy.address'
         , 'pregnancy.barangay'
       ]
+    , fnOp = '='
+    , lnOp = '='
+    , otherOp = '='
     ;
   qb = new Pregnancy().query();
   qb.join('patient', 'patient.id', '=', 'pregnancy.patient_id');
-  if (flds.firstname && flds.firstname.length > 0) qb.where('firstname', '=', flds.firstname);
-  if (flds.lastname && flds.lastname.length > 0) qb.where('lastname', '=', flds.lastname);
-  if (flds.dob && flds.dob.length > 0) qb.where('dob', '=', flds.dob);
-  if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', '=', flds.doh);
-  if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', '=', flds.philHealth);
+  if (flds.firstname && flds.firstname.length > 0) {
+    if (flds.firstname.indexOf('%') !== -1) {
+      fnOp = 'LIKE';
+    }
+    qb.where('firstname', fnOp, flds.firstname);
+  }
+  if (flds.lastname && flds.lastname.length > 0) {
+    if (flds.lastname.indexOf('%') !== -1) {
+      lnOp = 'LIKE';
+    }
+    qb.where('lastname', lnOp, flds.lastname);
+  }
+  if (flds.dob && flds.dob.length > 0) qb.where('dob', otherOp, flds.dob);
+  if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', otherOp, flds.doh);
+  if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', otherOp, flds.philHealth);
   qb.select(cols).then(function(list) {
     _.each(list, function(rec) {
       var r = _.pick(rec, 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address', 'barangay');
