@@ -175,10 +175,8 @@ Pregnancy = Bookshelf.Model.extend({
     return new Promise(function(resolve, reject) {
       var msgs = []
         ;
-      if ((! val.isAlpha(flds.firstname)) ||
-          (! val.isLength(flds.firstname, 1))) msgs.push('Firstname must be specified.');
-      if ((! val.isAlpha(flds.lastname)) ||
-          (! val.isLength(flds.lastname, 1))) msgs.push('Lastname must be specified.');
+      if (! val.isLength(flds.firstname, 1)) msgs.push('Firstname must be specified.');
+      if (! val.isLength(flds.lastname, 1)) msgs.push('Lastname must be specified.');
 
       if (msgs.length != 0) {
         reject(msgs.join(' '));
