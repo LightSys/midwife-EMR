@@ -18,7 +18,7 @@ var _ = require('underscore')
 
 var view = function(req, res) {
   res.render('search', {
-    title: req.gettext('Patient Search')
+    title: req.gettext('Pregnancy Search')
     , user: req.session.user
   });
 };

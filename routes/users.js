@@ -483,7 +483,10 @@ var update = function(req, res) {
               });
           });
         } else {
-          user.save(null, {method: 'update'})
+          user
+            .setUpdatedBy(req.session.user.id)
+            .setSupervisor(supervisor)
+            .save(null, {method: 'update'})
             .then(function(model) {
               res.redirect(cfg.path.userList);
             });
@@ -515,23 +518,31 @@ var update = function(req, res) {
  * -------------------------------------------------------- */
 var create = function(req, res) {
   var data = {
-      title: req.gettext('Add User')
-      , user: req.session.user
-      , success: true
-  };
+        title: req.gettext('Add User')
+        , user: req.session.user
+        , success: true
+      }
+    , supervisor = null
+    ;
   User.checkFields(req.body, true, true, function(err, result) {
     var newUserObj
       , user
       ;
 
     if (result.success) {
+      if (hasRole(req, 'student')) {
+        supervisor = req.session.supervisor.id;
+      }
       newUserObj = _.extend({status: 1
                   , updatedBy: req.session.user.id
                   }, _.omit(req.body, ['password2', '_csrf']));
       user = new User(newUserObj);
       user.hashPassword(newUserObj.password, function(err, success) {
         if (err) return logError(err);
-        user.save()
+        user
+          .setUpdatedBy(req.session.user.id)
+          .setSupervisor(supervisor)
+          .save()
           .then(function(model) {
             req.flash('info', req.gettext('User was created.'));
             res.redirect(cfg.path.userList);
