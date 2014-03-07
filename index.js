@@ -255,19 +255,22 @@ app.post(cfg.path.setSuper, common, inRoles(['student']), csrf, users.saveSuperv
 // --------------------------------------------------------
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
 app.get(cfg.path.pregnancyNewForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']),
-    csrf, pregnancy.addForm);
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.addForm);
 app.post(cfg.path.pregnancyCreate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']),
-    csrf, pregnancy.create);
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.create);
 app.get(cfg.path.pregnancyEditForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']),
-    csrf, pregnancy.editForm);
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.editForm);
 app.post(cfg.path.pregnancyUpdate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']),
-    csrf, pregnancy.update);
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.update);
 app.get(cfg.path.pregnancyHistory, common,
     inRoles(['supervisor']), csrf, pregnancy.history);
+
+// Pregnancy Questionnaire
+app.get(cfg.path.pregnancyQuesEdit, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.quesEdit);
+app.post(cfg.path.pregnancyQuesUpdate, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.quesUpdate);
+
 
 
 // --------------------------------------------------------

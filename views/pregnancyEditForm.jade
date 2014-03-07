@@ -3,6 +3,8 @@ extends layouts/default_layout
 block pregnancyEdit
   h1= title
 
+  +pregnancyTab('edit')
+
   if roleInfo.hasRole('supervisor')
     a(class='pull-right', href='history') history
   div(class='formBoxLarge')

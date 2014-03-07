@@ -2,6 +2,7 @@ include ../mixins/flash
 include ../mixins/datalist
 include ../mixins/select
 include ../mixins/historyData
+include ../mixins/pregnancyTab
 
 doctype 5
 html(lang="en")
@@ -81,7 +82,7 @@ html(lang="en")
       div#page-wrapper
         div.row
           div.col-lg-12
-            div.container
+            div.container-fluid
               if user
                 block content
                 block search
@@ -96,6 +97,7 @@ html(lang="en")
                 block setSuper
                 block pregnancyAdd
                 block pregnancyEdit
+                block pregnancyQuestionnaire
                 block errorPage
                 block history
               else

@@ -1,0 +1,18 @@
+mixin pregnancyTab(activePath)
+  - var noClasses = '';
+  - var activeClasses = 'active';
+  - var classes = noClasses;
+  - var tabs = [];
+  - tabs.push({path: 'prenatal', name: 'Prenatal'});
+  - tabs.push({path: 'labs', name: 'Labs'});
+  - tabs.push({path: 'quesEdit', name: 'Questionnaire'});
+  - tabs.push({path: 'pregnancyhistory', name: 'Midwife Interview'});
+  - tabs.push({path: 'edit', name: 'General'});
+  ul(class='nav nav-tabs')
+    each tab in tabs
+      - classes = noClasses;
+      - if (tab.path == activePath) classes = activeClasses;
+      li(class=classes)
+        a(href=tab.path)= tab.name
+
+

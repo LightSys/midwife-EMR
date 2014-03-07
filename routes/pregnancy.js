@@ -1,9 +1,9 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * pregnancy.js
  *
  * Functionality for management of pregnancies.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 var _ = require('underscore')
@@ -144,6 +144,120 @@ var history = function(req, res) {
 };
 
 /* --------------------------------------------------------
+ * getQuestFormData()
+ *
+ * Return the data necessary to populate the questionnaire
+ * form according to the database record.
+ * -------------------------------------------------------- */
+var getQuesFormData = function(req, addData) {
+  return _.extend(addData, {
+    user: req.session.user
+    , messages: req.flash()
+    , rec: req.paramPregnancy
+  });
+};
+
+/* --------------------------------------------------------
+ * quesEdit()
+ *
+ * Display the pregnancy questionnaire form.
+ * -------------------------------------------------------- */
+var quesEdit = function(req, res) {
+  var data = {title: req.gettext('Pregnancy Questionnaire')};
+  if (req.paramPregnancy) {
+    res.render('pregnancyQuestionnaire', getQuesFormData(req, data));
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * quesUpdate()
+ *
+ * Update the pregnancy record with the questionnaire data.
+ * -------------------------------------------------------- */
+var quesUpdate = function(req, res) {
+  var supervisor = null
+    , pregFlds = {}
+    , defaultFlds = {
+        currentlyVomiting: '0', currentlyDizzy: '0',
+        currentlyFainting: '0', currentlyBleeding: '0',
+        currentlyUrinationPain: '0', currentlyBlurryVision: '0',
+        currentlySwelling: '0', currentlyBirthCanalPain: '0',
+        currentlyNone: '0', useIodizedSalt: '0',
+        canDrinkMedicine: '0', planToBreastFeed: '0',
+        whereDeliver: '', birthCompanion: '',
+        practiceFamilyPlanning: '0', familyPlanningDetails: '',
+        familyHistoryTwins: '0', familyHistoryHighBloodPressure: '0',
+        familyHistoryDiabetes: '0', familyHistoryChestPains: '0',
+        familyHistoryTB: '0', familyHistorySmoking: '0',
+        familyHistoryNone: '0', historyFoodAllergy: '0',
+        historyMedicineAllergy: '0', historyAsthma: '0',
+        historyChestPains: '0', historyKidneyProblems: '0',
+        historyHepatitis: '0', historyGoiter: '0',
+        historyHighBloodPressure: '0', historyHospitalOperation: '0',
+        historyBloodTransfusion: '0', historySmoking: '0',
+        historyDrinking: '0', historyNone: '0'
+      }
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.id &&
+      req.paramPregnancy.id == req.body.id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    // --------------------------------------------------------
+    // Allow 'unchecking' a box by providing a default of off.
+    // --------------------------------------------------------
+    pregFlds = _.extend(defaultFlds, _.omit(req.body, ['_csrf']));
+
+    // --------------------------------------------------------
+    // If none field is checked as well as other fields in each
+    // group, turn the none field off because it does not make 
+    // sense.
+    // --------------------------------------------------------
+    _.each(_.keys(pregFlds), function(key) {
+      if (pregFlds.currentlyNone == '1') {
+        if (key.indexOf('currently') == 0 && key != 'currentlyNone') {
+          if (pregFlds[key] == '1') pregFlds.currentlyNone = '0';
+        }
+      }
+      if (pregFlds.familyHistoryNone == '1') {
+        if (key.indexOf('familyHistory') == 0 && key != 'familyHistoryNone') {
+          if (pregFlds[key] == '1') pregFlds.familyHistoryNone = '0';
+        }
+      }
+      if (pregFlds.historyNone == '1') {
+        if (key.indexOf('history') == 0 && key != 'historyNone') {
+          if (pregFlds[key] == '1') pregFlds.historyNone = '0';
+        }
+      }
+    });
+
+    Pregnancy.forge(pregFlds)
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .save().then(function(pregnancy) {
+        req.flash('info', req.gettext('Pregnancy was updated.'));
+        res.redirect(cfg.path.pregnancyQuesEdit.replace(/:id/, pregnancy.id));
+      })
+      .caught(function(err) {
+        logError(err);
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    logError('Error in update of pregnancy: pregnancy not found.');
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
  * addForm()
  *
  * Display the form to create a new pregnancy record.
@@ -228,8 +342,8 @@ var getEditFormData = function(req, addData) {
  *
  * Displays the edit form for the pregnancy.
  *
- * param       
- * return      
+ * param
+ * return
  * -------------------------------------------------------- */
 var editForm = function(req, res) {
   var data = {title: req.gettext('Edit Pregnancy')};
@@ -379,5 +493,7 @@ module.exports = {
   , editForm: editForm
   , update: update
   , history: history
+  , quesEdit: quesEdit
+  , quesUpdate: quesUpdate
 };
 

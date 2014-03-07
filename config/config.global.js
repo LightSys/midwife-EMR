@@ -149,6 +149,8 @@ cfg.path.pregnancyEditForm = '/pregnancy/:id/edit';   // GET
 cfg.path.pregnancyUpdate = '/pregnancy/:id/update';   // POST
 cfg.path.pregnancyLoad = '/pregnancy/:id/:op?';       // parameter handling
 cfg.path.pregnancyHistory = '/pregnancy/:id/history'; // GET
+cfg.path.pregnancyQuesEdit = '/pregnancy/:id/quesEdit';   // GET
+cfg.path.pregnancyQuesUpdate = '/pregnancy/:id/quesUpdate';   // POST
 
 module.exports = cfg;
 
