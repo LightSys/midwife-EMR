@@ -25,6 +25,9 @@ block profileEditForm
           span= gettext('Password confirmation')
           input(class='form-control', type='password', name='password2')
         div.form-group
+          span= gettext('Language')
+          input(class='form-control', type='text', name='lang', autocomplete="off", value=profile.lang)
+        div.form-group
           span= gettext('Email')
           input(class='form-control', type='text', name='email', autocomplete="off", value=profile.email)
 

@@ -24,6 +24,9 @@ var cfg = require('./config.global')
 // in index.js.
 // --------------------------------------------------------
 cfg.site.title = gettext('Mercy Maternity');
+cfg.site.languages = ['en-US', 'it-CH', 'ceb'];
+cfg.site.defaultLanguage = 'en-US';
+cfg.site.debugLanguage = 'it-CH';
 
 // --------------------------------------------------------
 // Host settings.

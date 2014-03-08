@@ -2,7 +2,7 @@
 
 # Run these two in this order in order to have a full PO file.
 # Reverse order will cause the JS run to overwrite the Jade run.
-./node_modules/.bin/extract-pot --locale locale . -t JavaScript -f js --exclude bower_components/ --exclude database/ --exclude lib/ --exclude static/ --exclude test/
-./node_modules/.bin/extract-pot --locale locale . -t Jade -f jade --exclude bower_components/ --exclude database/ --exclude lib/ --exclude static/ --exclude test/
+./node_modules/.bin/extract-pot --locale locale . -t JavaScript -f js --exclude bower_components/ --exclude i18n/ --exclude database/ --exclude static/ --exclude test/
+./node_modules/.bin/extract-pot --locale locale . -t Jade -f jade --exclude bower_components/ --exclude i18n/ --exclude database/ --exclude static/ --exclude test/
 
 

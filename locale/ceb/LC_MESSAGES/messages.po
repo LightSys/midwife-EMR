@@ -1,145 +1,146 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Language: \n"
+"Language-Team: Cebuano\n"
+"PO-Revision-Date: 2014-03-07 16:17+0800\n"
+"Language: ceb\n"
 "MIME-Version: 1.0\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2014-03-07 07:36+0000\n"
-"Content-Type: text/plain;\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Last-Translator: Kurt <kurt.symanzik@lightsys.org>\n"
 
 #: /home/kurt/code/mercy/routes/users.js:63
 msgid "Edit Your Profile"
-msgstr ""
+msgstr "Magkambyo ang imong profile"
 
 #: /home/kurt/code/mercy/routes/users.js:84
 msgid "Choose your supervisor"
-msgstr ""
+msgstr "Magpili sa imong superbaysor"
 
 #: /home/kurt/code/mercy/routes/users.js:148
 msgid "Your supervisor has been set."
-msgstr ""
+msgstr "Naa ang imong superbaysor"
 
 #: /home/kurt/code/mercy/routes/users.js:154
 #: /home/kurt/code/mercy/routes/users.js:158
 msgid "An error occurred. Please try again."
-msgstr ""
+msgstr "Nay sayop. Palihog magsulay."
 
 #: /home/kurt/code/mercy/routes/users.js:163
 msgid "Please choose your supervisor."
-msgstr ""
+msgstr "Palihog magpili sa imong superbaysor."
 
 #: /home/kurt/code/mercy/routes/users.js:250
 #: /home/kurt/code/mercy/routes/users.js:260
 msgid "Your profile has been saved."
-msgstr ""
+msgstr "Ang imong profile nagpreserba."
 
 #: /home/kurt/code/mercy/routes/users.js:325
 msgid "Yes"
-msgstr ""
+msgstr "Oo"
 
 #: /home/kurt/code/mercy/routes/users.js:326
 msgid "No"
-msgstr ""
+msgstr "Dili"
 
 #: /home/kurt/code/mercy/routes/users.js:338
 msgid "List of Users"
-msgstr ""
+msgstr "Lista sa Mga Users"
 
 #: /home/kurt/code/mercy/routes/users.js:368
 #: /home/kurt/code/mercy/routes/users.js:521
 msgid "Add User"
-msgstr ""
+msgstr "Pun-an ug user"
 
 #: /home/kurt/code/mercy/routes/users.js:388
 msgid "Edit User"
-msgstr ""
+msgstr "Magkambyo ug User"
 
 #: /home/kurt/code/mercy/routes/users.js:547
 msgid "User was created."
-msgstr ""
+msgstr "Gibuhat ang user"
 
 #: /home/kurt/code/mercy/routes/error.js:37
 msgid "Oops! Couldn't find that page."
-msgstr ""
+msgstr "Sori kaayo. Dili pagpangita sa pahina."
 
 #: /home/kurt/code/mercy/routes/error.js:68
 msgid "Oops!"
-msgstr ""
+msgstr "Sori kaayo!"
 
 #: /home/kurt/code/mercy/routes/home.js:21
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:44
 #: /home/kurt/code/mercy/views/layouts/error_layout.jade:37
 msgid "Home"
-msgstr ""
+msgstr "Balay"
 
 #: /home/kurt/code/mercy/routes/home.js:28
 msgid "Please log in"
-msgstr ""
+msgstr "Palihog log in"
 
 #: /home/kurt/code/mercy/routes/pregnancy.js:120
 msgid "Pregnancy History"
-msgstr ""
+msgstr "Pagbuntis Historia"
 
 #: /home/kurt/code/mercy/routes/pregnancy.js:166
 msgid "Pregnancy Questionnaire"
-msgstr ""
+msgstr "Pagbuntis mga Pangutana"
 
 #: /home/kurt/code/mercy/routes/pregnancy.js:247
 #: /home/kurt/code/mercy/routes/pregnancy.js:460
 msgid "Pregnancy was updated."
-msgstr ""
+msgstr "Pagbuntis nagpreserba."
 
 #: /home/kurt/code/mercy/routes/pregnancy.js:271
 msgid "New Pregnancy Record"
-msgstr ""
+msgstr "Bag-o Pagbuntis Rekord"
 
 #: /home/kurt/code/mercy/routes/pregnancy.js:349
 msgid "Edit Pregnancy"
-msgstr ""
+msgstr "Magkambyo Pagbuntis"
 
 #: /home/kurt/code/mercy/routes/pregnancy.js:410
 msgid "Pregnancy was created."
-msgstr ""
+msgstr "Nagbuhat ang pagbuntis"
 
 #: /home/kurt/code/mercy/routes/search.js:21
 msgid "Pregnancy Search"
-msgstr ""
+msgstr "Pagbuntis Pagpangita"
 
 #: /home/kurt/code/mercy/routes/search.js:79
 msgid "Search Results"
-msgstr ""
+msgstr "Ang Mga Resulta"
 
 #: /home/kurt/code/mercy/routes/roles.js:64
 msgid "List of Roles"
-msgstr ""
+msgstr "Ang Lista sa Mga Katuyoan"
 
 #: /home/kurt/code/mercy/routes/roles.js:87
 #: /home/kurt/code/mercy/routes/roles.js:186
 msgid "Add Role"
-msgstr ""
+msgstr "Magdugangan ug Katuyoan"
 
 #: /home/kurt/code/mercy/routes/roles.js:107
 msgid "Edit Role"
-msgstr ""
+msgstr "Magkambyo sa Katuyoan"
 
 #: /home/kurt/code/mercy/routes/roles.js:188
 msgid "Role was created."
-msgstr ""
+msgstr "Gibuhat ang katuyoan"
 
 #: /home/kurt/code/mercy/auth.js:108
 msgid "You are not authorized for this page."
-msgstr ""
+msgstr "Dili pagawtorisar ka para nining pahina."
 
 #: /home/kurt/code/mercy/config/config.global.js:32
 msgid "Your Site Name"
-msgstr ""
+msgstr "Ang Pangalangin sa Imong Site"
 
 #: /home/kurt/code/mercy/config/config.development.js:26
 #: /home/kurt/code/mercy/config/config.test.js:43
 msgid "Mercy Maternity"
-msgstr ""
+msgstr "Mercy Maternity"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:11
 #: /home/kurt/code/mercy/views/searchResults.jade:13
@@ -147,7 +148,7 @@ msgstr ""
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:15
 #: /home/kurt/code/mercy/views/userList.jade:38
 msgid "Last name"
-msgstr ""
+msgstr "Apelyedo"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:14
 #: /home/kurt/code/mercy/views/searchResults.jade:12
@@ -155,557 +156,557 @@ msgstr ""
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:18
 #: /home/kurt/code/mercy/views/userList.jade:37
 msgid "First name"
-msgstr ""
+msgstr "Pangalan"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:17
 msgid "Date of Birth"
-msgstr ""
+msgstr "Natawhat"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:21
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:25
 msgid "Religion"
-msgstr ""
+msgstr "Religion"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:25
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:29
 msgid "Maiden name"
-msgstr ""
+msgstr "Apelyedo sa dalaga pa"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:28
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:32
 msgid "Nick name"
-msgstr ""
+msgstr "Angga"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:32
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:36
 msgid "Marital status"
-msgstr ""
+msgstr "Minyo kahimtang"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:35
 #: /home/kurt/code/mercy/views/searchResults.jade:15
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:39
 msgid "Address"
-msgstr ""
+msgstr "Address"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:38
 #: /home/kurt/code/mercy/views/searchResults.jade:16
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:42
 msgid "Barangay"
-msgstr ""
+msgstr "Barangay"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:42
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:46
 msgid "Work"
-msgstr ""
+msgstr "Trabaho"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:45
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:49
 msgid "Education"
-msgstr ""
+msgstr "Edukasyon"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:48
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:52
 msgid "Telephone"
-msgstr ""
+msgstr "Telepono"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:52
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:56
 msgid "Partner last name"
-msgstr ""
+msgstr "Apelyedo sa bana"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:55
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:59
 msgid "Partner first name"
-msgstr ""
+msgstr "Pangalan sa bana"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:58
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:62
 msgid "Partner age"
-msgstr ""
+msgstr "Edad sa bana"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:62
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:66
 msgid "Partner work"
-msgstr ""
+msgstr "Trabaho sa bana"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:65
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:69
 msgid "Partner education"
-msgstr ""
+msgstr "Edukasyon sa bana"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:68
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:72
 msgid "Client monthly Income"
-msgstr ""
+msgstr "Imong sweldo"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:71
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:75
 msgid "Partner monthly income"
-msgstr ""
+msgstr "Sweldo sa bana"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:75
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:79
 msgid "DOH #"
-msgstr ""
+msgstr "DOH #"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:78
 #: /home/kurt/code/mercy/views/search.jade:27
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:82
 msgid "Priority #"
-msgstr ""
+msgstr "Prayoridad numero"
 
 #: /home/kurt/code/mercy/views/pregnancyAddForm.jade:82
 msgid "Create New Pregnancy Record"
-msgstr ""
+msgstr "Magbuhat ug bag-ong pagbuntis Rekord"
 
 #: /home/kurt/code/mercy/views/setSuper.jade:9
 msgid "Your current supervisor is: "
-msgstr ""
+msgstr "Ang imong superbaysor"
 
 #: /home/kurt/code/mercy/views/setSuper.jade:12
 msgid "Please choose your supervisor from the dropdown menu before proceeding."
-msgstr ""
+msgstr "Palihog pagpili sa imong superbaysor gikan sa dropdown menu unya pagpadayon."
 
 #: /home/kurt/code/mercy/views/setSuper.jade:18
 msgid "Choose a different supervisor"
-msgstr ""
+msgstr "Pagpili sa laing superbaysor"
 
 #: /home/kurt/code/mercy/views/setSuper.jade:23
 msgid "Set Supervisor"
-msgstr ""
+msgstr "Pagpili Superbaysor"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:15
 msgid "Birthdate: "
-msgstr ""
+msgstr "Kaadlawan: "
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:17
 msgid "DOH: "
-msgstr ""
+msgstr "DOH: "
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:23
 msgid "How do you feel now?"
-msgstr ""
+msgstr "Unsay imong gibati karon?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:25
 msgid "Been vomiting?"
-msgstr ""
+msgstr "Nagsuka?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:28
 msgid "Feeling dizzy?"
-msgstr ""
+msgstr "Nalipong?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:31
 msgid "Have fainted?"
-msgstr ""
+msgstr "Nakuyapan?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:34
 msgid "Bleeding?"
-msgstr ""
+msgstr "Nagdugo?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:37
 msgid "Pain in urinating?"
-msgstr ""
+msgstr "Sakit mangihi?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:40
 msgid "Blurry vision?"
-msgstr ""
+msgstr "Nagahanap ang panan-aw?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:43
 msgid "Swelling?"
-msgstr ""
+msgstr "Hupong?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:46
 msgid "Pain in birth canal?"
-msgstr ""
+msgstr "Katol/Sakit sa pwerta?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:49
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:93
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:135
 msgid "None of the above?"
-msgstr ""
+msgstr "Wala"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:54
 msgid "Have been using iodized salt"
-msgstr ""
+msgstr "Nag-gamit ug iodized salt?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:57
 msgid "Can drink medicine"
-msgstr ""
+msgstr "Naginum ub tambal?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:60
 msgid "Do plan to breast feed"
-msgstr ""
+msgstr "Nagplano ka nga magpatutoy?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:62
 msgid "Where do you plan to give birth?"
-msgstr ""
+msgstr "Asa ka makplano kong manganak?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:64
 msgid "Companion during childbirth?"
-msgstr ""
+msgstr "Kauban sa pagpanganak?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:67
 msgid "Did you practice family planning?"
-msgstr ""
+msgstr "Migamit ka ba ug family planning?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:69
 msgid "What did you use?"
-msgstr ""
+msgstr "Unsa imong gigamit?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:73
 msgid "Do you have a family history of?"
-msgstr ""
+msgstr "Imong mga kaliway, naa'y?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:75
 msgid "Twins?"
-msgstr ""
+msgstr "Kambal?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:78
 msgid "High Blood Pressure?"
-msgstr ""
+msgstr "Taas and pressure sa dugo?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:81
 msgid "Diabetes?"
-msgstr ""
+msgstr "Diabetes?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:84
 msgid "Chest Pains?"
-msgstr ""
+msgstr "Sakit sa kasing-kasing?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:87
 msgid "TB?"
-msgstr ""
+msgstr "TB?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:90
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:129
 msgid "Smoking?"
-msgstr ""
+msgstr "Nanigarilyo?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:97
 msgid "Do you have a history of?"
-msgstr ""
+msgstr "Unsa'y imong kaagi?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:99
 msgid "Food allergy?"
-msgstr ""
+msgstr "Allergy sa pagkaon?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:102
 msgid "Medicine allergy?"
-msgstr ""
+msgstr "Allergy sa tambal?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:105
 msgid "Asthma?"
-msgstr ""
+msgstr "Hubak?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:108
 msgid "Chest pains?"
-msgstr ""
+msgstr "Sakit sa kasing-kasing?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:111
 msgid "Kidney problems?"
-msgstr ""
+msgstr "Problema sa kidney?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:114
 msgid "Hepatitis?"
-msgstr ""
+msgstr "Hepatitis?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:117
 msgid "Goiter?"
-msgstr ""
+msgstr "Goiter?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:120
 msgid "High blood pressure?"
-msgstr ""
+msgstr "Taas and pressure sa dugo?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:123
 msgid "Operation in the hospital?"
-msgstr ""
+msgstr "Naoperahan sa ospital?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:126
 msgid "Blood transfusion?"
-msgstr ""
+msgstr "Giabunohan ug dugo?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:132
 msgid "Drinking?"
-msgstr ""
+msgstr "Nagainum?"
 
 #: /home/kurt/code/mercy/views/pregnancyQuestionnaire.jade:141
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:86
 msgid "Save Changes"
-msgstr ""
+msgstr "Magtipig Pagpabaylo"
 
 #: /home/kurt/code/mercy/views/content.jade:7
 msgid "User Information"
-msgstr ""
+msgstr "Inpormasyon sa User"
 
 #: /home/kurt/code/mercy/views/content.jade:9
 msgid "User id: "
-msgstr ""
+msgstr "User id: "
 
 #: /home/kurt/code/mercy/views/content.jade:9
 msgid "Name: "
-msgstr ""
+msgstr "Pangalan: "
 
 #: /home/kurt/code/mercy/views/searchResults.jade:5
 msgid "These are what we found."
-msgstr ""
+msgstr "kining mga resulta."
 
 #: /home/kurt/code/mercy/views/searchResults.jade:7
 msgid "Search again"
-msgstr ""
+msgstr "Pagpangita upod"
 
 #: /home/kurt/code/mercy/views/searchResults.jade:11
 #: /home/kurt/code/mercy/views/roleList.jade:15
 #: /home/kurt/code/mercy/views/userList.jade:35
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: /home/kurt/code/mercy/views/searchResults.jade:14
 #: /home/kurt/code/mercy/views/search.jade:20
 msgid "Date of birth"
-msgstr ""
+msgstr "Natawhan"
 
 #: /home/kurt/code/mercy/views/searchResults.jade:17
 #: /home/kurt/code/mercy/views/search.jade:24
 msgid "DOH ID"
-msgstr ""
+msgstr "DOH ID"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:30
 #: /home/kurt/code/mercy/views/layouts/error_layout.jade:24
 msgid "Toggle navigation"
-msgstr ""
+msgstr "Magkambyo nabigasyon"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:48
 #: /home/kurt/code/mercy/views/search.jade:33
 msgid "Search"
-msgstr ""
+msgstr "Pagpangita"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:52
 msgid "Users"
-msgstr ""
+msgstr "Users"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:56
 msgid "New Pregnancy"
-msgstr ""
+msgstr "Bag-ong Pagbuntis"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:59
 msgid "Logout"
-msgstr ""
+msgstr "Logout"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:64
 msgid "Not yet set"
-msgstr ""
+msgstr "Dili pa set"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:66
 msgid "Your supervisor is "
-msgstr ""
+msgstr "Ang imong superbaysor"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:76
 msgid "Profile"
-msgstr ""
+msgstr "Profile"
 
 #: /home/kurt/code/mercy/views/layouts/default_layout.jade:80
 msgid "Log Out"
-msgstr ""
+msgstr "Log out"
 
 #: /home/kurt/code/mercy/views/roleList.jade:6
 msgid "These are the roles in the system."
-msgstr ""
+msgstr "Niinging katuyoan sa sistema"
 
 #: /home/kurt/code/mercy/views/roleList.jade:7
 msgid "Back to the List of users"
-msgstr ""
+msgstr "Likod sa lista sa mga users"
 
 #: /home/kurt/code/mercy/views/roleList.jade:9
 msgid "You can change the role descriptions but the role names cannot change."
-msgstr ""
+msgstr "Magkambyo ka sa mga deskripsiyon pero dili sa pangalan sa mga katuyoan."
 
 #: /home/kurt/code/mercy/views/roleList.jade:16
 #: /home/kurt/code/mercy/views/roleEditForm.jade:16
 #: /home/kurt/code/mercy/views/roleAddForm.jade:12
 msgid "Name"
-msgstr ""
+msgstr "Pangalan"
 
 #: /home/kurt/code/mercy/views/roleList.jade:17
 #: /home/kurt/code/mercy/views/roleEditForm.jade:19
 #: /home/kurt/code/mercy/views/roleAddForm.jade:15
 msgid "Description"
-msgstr ""
+msgstr "Deskripsiyon"
 
 #: /home/kurt/code/mercy/views/search.jade:6
 msgid "Search by one or more fields."
-msgstr ""
+msgstr "Pagpangita sa uno o mga fields."
 
 #: /home/kurt/code/mercy/views/search.jade:14
 msgid "Use the % sign as a wildcard. E.g. Eliza% or %beth"
-msgstr ""
+msgstr "Paggamit sa % letra para sa wildcard. Ehemplo Eliza% o %beth"
 
 #: /home/kurt/code/mercy/views/search.jade:18
 msgid "Use the % sign as a wildcard. E.g. Weid% or %maven or Wei%en"
-msgstr ""
+msgstr "Paggamit sa % letra para sa wildcard. Ehemplo Weid% o %maven o Wei%en"
 
 #: /home/kurt/code/mercy/views/search.jade:30
 msgid "Phil health ID"
-msgstr ""
+msgstr "Phil health ID"
 
 #: /home/kurt/code/mercy/views/pregnancyEditForm.jade:21
 msgid "Date of Birth (mm/dd/yyyy)"
-msgstr ""
+msgstr "Natawhen (mm/dd/yyyy)"
 
 #: /home/kurt/code/mercy/views/roleEditForm.jade:7
 msgid "Back to the List of roles"
-msgstr ""
+msgstr "Likud sa lista sa mga katuyoan"
 
 #: /home/kurt/code/mercy/views/roleEditForm.jade:22
 msgid "Update Role"
-msgstr ""
+msgstr "Magkambyo sa katuyoan"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:14
 #: /home/kurt/code/mercy/views/userAddForm.jade:12
 #: /home/kurt/code/mercy/views/userList.jade:36
 #: /home/kurt/code/mercy/views/login.jade:12
 msgid "Username"
-msgstr ""
+msgstr "Username"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:17
 #: /home/kurt/code/mercy/views/profileForm.jade:16
 #: /home/kurt/code/mercy/views/userAddForm.jade:15
 msgid "Firstname"
-msgstr ""
+msgstr "Pangalan"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:20
 #: /home/kurt/code/mercy/views/profileForm.jade:19
 #: /home/kurt/code/mercy/views/userAddForm.jade:18
 msgid "Lastname"
-msgstr ""
+msgstr "Apelyedo"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:23
 #: /home/kurt/code/mercy/views/profileForm.jade:22
 #: /home/kurt/code/mercy/views/userAddForm.jade:21
 #: /home/kurt/code/mercy/views/login.jade:15
 msgid "Password"
-msgstr ""
+msgstr "Password"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:26
 #: /home/kurt/code/mercy/views/profileForm.jade:25
 #: /home/kurt/code/mercy/views/userAddForm.jade:24
 msgid "Password confirmation"
-msgstr ""
+msgstr "Password usab"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:29
 #: /home/kurt/code/mercy/views/profileForm.jade:28
 #: /home/kurt/code/mercy/views/userAddForm.jade:27
 #: /home/kurt/code/mercy/views/userList.jade:39
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:32
 #: /home/kurt/code/mercy/views/userList.jade:41
 msgid "Active"
-msgstr ""
+msgstr "Actibo"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:34
 msgid "Inactive"
-msgstr ""
+msgstr "Dili actibo"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:37
 #: /home/kurt/code/mercy/views/userAddForm.jade:30
 #: /home/kurt/code/mercy/views/userList.jade:42
 msgid "Comment"
-msgstr ""
+msgstr "Komentaryo"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:40
 #: /home/kurt/code/mercy/views/profileForm.jade:31
 msgid "Save"
-msgstr ""
+msgstr "Pagpreserba"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:45
 #: /home/kurt/code/mercy/views/userList.jade:43
 msgid "Roles"
-msgstr ""
+msgstr "Ang Mga Katuyoan"
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:47
 msgid ""
 "Check the roles that this user should belong to and press Save Role "
 "Assignments."
-msgstr ""
+msgstr "Magtsek sa mga katuyoan sa niinging user ug pagpili Pagperserva sa Mga Katuyoan."
 
 #: /home/kurt/code/mercy/views/userEditForm.jade:64
 msgid "Save Role Assignments"
-msgstr ""
+msgstr "Pagpreserba sa Mga Katuyoan"
 
 #: /home/kurt/code/mercy/views/roleAddForm.jade:18
 msgid "Create Role"
-msgstr ""
+msgstr "Magbuhat ug Katuyoan"
 
 #: /home/kurt/code/mercy/views/profileForm.jade:12
 msgid "Id: "
-msgstr ""
+msgstr "Id: "
 
 #: /home/kurt/code/mercy/views/profileForm.jade:14
 msgid "Username: "
-msgstr ""
+msgstr "Username: "
 
 #: /home/kurt/code/mercy/views/userAddForm.jade:33
 msgid "Create User"
-msgstr ""
+msgstr "magbuhat ug User"
 
 #: /home/kurt/code/mercy/views/userList.jade:8
 msgid "These are the users in the system."
-msgstr ""
+msgstr "Kining mga users sa sistema."
 
 #: /home/kurt/code/mercy/views/userList.jade:9
 msgid "List roles"
-msgstr ""
+msgstr "Ang Lista sa Mga Katuyoan"
 
 #: /home/kurt/code/mercy/views/userList.jade:14
 msgid "Show all users"
-msgstr ""
+msgstr "Pagpangita sa tanan users"
 
 #: /home/kurt/code/mercy/views/userList.jade:16
 msgid "Active users"
-msgstr ""
+msgstr "Actibo nga users"
 
 #: /home/kurt/code/mercy/views/userList.jade:18
 msgid "Inactive users"
-msgstr ""
+msgstr "Dili actibo nga users"
 
 #: /home/kurt/code/mercy/views/userList.jade:21
 msgid "Show all roles"
-msgstr ""
+msgstr "Pagpangita sa tanan katuyoan"
 
 #: /home/kurt/code/mercy/views/userList.jade:23
 msgid "Administrators"
-msgstr ""
+msgstr "Ang Mga Administrador"
 
 #: /home/kurt/code/mercy/views/userList.jade:25
 msgid "Guards"
-msgstr ""
+msgstr "Ang Mga Guwardiya"
 
 #: /home/kurt/code/mercy/views/userList.jade:27
 msgid "Clerks"
-msgstr ""
+msgstr "Ang Mga Eskribyente"
 
 #: /home/kurt/code/mercy/views/userList.jade:29
 msgid "Students"
-msgstr ""
+msgstr "Ang Mga Estudyante"
 
 #: /home/kurt/code/mercy/views/userList.jade:31
 msgid "Supervisors"
-msgstr ""
+msgstr "Ang Mga Superbaysor"
 
 #: /home/kurt/code/mercy/views/userList.jade:40
 msgid "Language"
-msgstr ""
+msgstr "Pinulongan"
 
 #: /home/kurt/code/mercy/views/userList.jade:61
 msgid "Add a new user"
-msgstr ""
+msgstr "Pun-an ug bag-ong user"
 
 #: /home/kurt/code/mercy/views/login.jade:17
 msgid "Login"
-msgstr ""
+msgstr "Login"
 
 #: /home/kurt/code/mercy/views/history.jade:6
 msgid "Note that the top record is the current record."
-msgstr ""
+msgstr "Ang rekord sa taas naay pagkakuron rekord."

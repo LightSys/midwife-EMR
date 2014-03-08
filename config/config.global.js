@@ -30,6 +30,9 @@ var cfg = {}
 // --------------------------------------------------------
 cfg.site = {};
 cfg.site.title = gettext('Your Site Name');
+cfg.site.languages = ['en-US', 'it-CH'];
+cfg.site.defaultLanguage = 'en-US';
+cfg.site.debugLanguage = 'it-CH';
 
 // --------------------------------------------------------
 // Host settings.

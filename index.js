@@ -99,11 +99,19 @@ app.use(flash());
 // --------------------------------------------------------
 // Localization.
 // --------------------------------------------------------
+app.use(function(req, res, next) {
+  if (req.session && req.session.user) {
+    var lang = req.session.user.lang || cfg.site.defaultLanguage;
+    req.headers['accept-language'] = lang;
+  }
+  next();
+});
+
 app.use(i18n.abide({
-  supported_languages: ['en-US', 'it-CH']
-  , default_lang: 'en-US'
-  , debug_lang: 'it-CH'
-  , translation_directory: 'static/i18n'
+  supported_languages: cfg.site.languages
+  , default_lang: cfg.site.defaultLanguage
+  , debug_lang: cfg.site.debugLanguage
+  , translation_directory: 'i18n'
 }));
 
 // --------------------------------------------------------
@@ -137,6 +145,7 @@ var hasSuper = function(req, res, next) {
     next();
   }
 };
+
 
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
