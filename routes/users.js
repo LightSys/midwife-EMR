@@ -19,8 +19,27 @@ var _ = require('underscore')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , languageList = []
   ;
 
+/* --------------------------------------------------------
+ * init()
+ *
+ * Initialize the module.
+ * -------------------------------------------------------- */
+var init = function() {
+  // --------------------------------------------------------
+  // Initialize the languages available for the profile page.
+  // --------------------------------------------------------
+  _.each(cfg.site.languagesMap, function(val, key) {
+    var lang = {}
+      ;
+    lang.selectKey = key;
+    lang.label = val;
+    lang.selected = false;
+    languageList.push(lang);
+  });
+};
 
 /* --------------------------------------------------------
  * load()
@@ -184,6 +203,7 @@ var editProfile = function(req, res) {
         , profile: {}
     }
     , formdata
+    , languages = _.map(languageList, function(l) {return _.clone(l);})
     ;
 
   User.forge({id: req.session.user.id})
@@ -191,6 +211,17 @@ var editProfile = function(req, res) {
     .then(function(rec) {
       var r = _.omit(rec.toJSON(), omit);
       additionalData.profile = r;
+
+      // --------------------------------------------------------
+      // Properly populate the language selection.
+      // --------------------------------------------------------
+      if (r.lang && r.lang.length > 0) {
+        _.each(languages, function(rec) {
+          if (r.lang == rec.selectKey) rec.selected = true;
+        });
+      }
+      additionalData.profile.lang = languages;
+
       res.render('profileForm', getProfileFormData(req, additionalData));
     });
 };
@@ -247,6 +278,12 @@ var saveProfile = function(req, res) {
               .setSupervisor(supervisor)
               .save(null, {method: 'update'})
               .then(function(model) {
+                // --------------------------------------------------------
+                // Update the user's session with the language preference.
+                // --------------------------------------------------------
+                req.session.user.lang = model.get('lang');
+                req.session.save();
+
                 req.flash('info', req.gettext('Your profile has been saved.'));
                 res.redirect(cfg.path.profile);
               });
@@ -257,6 +294,12 @@ var saveProfile = function(req, res) {
             .setSupervisor(req.session.user.id)
             .save(null, {method: 'update'})
             .then(function(model) {
+              // --------------------------------------------------------
+              // Update the user's session with the language preference.
+              // --------------------------------------------------------
+              req.session.user.lang = model.get('lang');
+              req.session.save();
+
               req.flash('info', req.gettext('Your profile has been saved.'));
               res.redirect(cfg.path.profile);
             });
@@ -623,6 +666,11 @@ var changeRoles = function(req, res) {
         });
     });
 };
+
+// --------------------------------------------------------
+// Initialize the module.
+// --------------------------------------------------------
+init();
 
 module.exports = {
   list: list

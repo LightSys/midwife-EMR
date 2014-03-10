@@ -14,22 +14,22 @@ block profileEditForm
           span= gettext('Username: ') + profile.username
         div.form-group
           span= gettext('Firstname')
-          input(class='form-control', type='text', name='firstname', autocomplete="off", autofocus, value=profile.firstname)
+          input(class='form-control', type='text', name='firstname', autocomplete="off", tabindex="1", autofocus, value=profile.firstname)
         div.form-group
           span= gettext('Lastname')
-          input(class='form-control', type='text', name='lastname', autocomplete="off", value=profile.lastname)
+          input(class='form-control', type='text', name='lastname', autocomplete="off", tabindex="2", value=profile.lastname)
         div.form-group
           span= gettext('Password')
-          input(class='form-control', type='password', name='password')
+          input(class='form-control', type='password', tabindex="3", name='password')
         div.form-group
           span= gettext('Password confirmation')
-          input(class='form-control', type='password', name='password2')
+          input(class='form-control', type='password', tabindex="4", name='password2')
         div.form-group
           span= gettext('Language')
-          input(class='form-control', type='text', name='lang', autocomplete="off", value=profile.lang)
+          +select('form-control input-lg', 'lang', 5, profile.lang)
         div.form-group
           span= gettext('Email')
-          input(class='form-control', type='text', name='email', autocomplete="off", value=profile.email)
+          input(class='form-control', type='text', name='email', autocomplete="off", tabindex="6", value=profile.email)
 
         input(class='btn btn-default', type='submit', value=gettext('Save'))
 

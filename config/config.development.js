@@ -1,17 +1,20 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * config.js
  *
  * Configuration for the development environment.
  *
  * Usage:
- * 
+ *
  * NODE_ENV=development node index.js
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
+var _ = require('underscore')
+  ;
+
 var cfg = require('./config.global')
-    // Allows i18n-abide's extract-pot script to pick up these 
+    // Allows i18n-abide's extract-pot script to pick up these
     // variables and put them into the pot file.
   , gettext = function(param) {return param;}
   ;
@@ -24,7 +27,12 @@ var cfg = require('./config.global')
 // in index.js.
 // --------------------------------------------------------
 cfg.site.title = gettext('Mercy Maternity');
-cfg.site.languages = ['en-US', 'it-CH', 'ceb'];
+cfg.site.languagesMap = {
+  'en-US': 'English - Unites States'
+  , 'it-CH': 'Debugging language'
+  , 'ceb': 'Cebuano'
+};
+cfg.site.languages = _.keys(cfg.site.languagesMap);
 cfg.site.defaultLanguage = 'en-US';
 cfg.site.debugLanguage = 'it-CH';
 
@@ -64,7 +72,7 @@ cfg.cookie.maxAge = 60 * 30 * 1000;    // 30 minutes
 
 
 // --------------------------------------------------------
-// Path settings: note that these should be set 
+// Path settings: note that these should be set
 // in config.global.js because they do not change depending
 // upon the environment.
 // --------------------------------------------------------

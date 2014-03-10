@@ -14,6 +14,8 @@
  * -------------------------------------------------------------------------------
  */
 
+var _ = require('underscore')
+  ;
 
 var cfg = {}
     // Allows i18n-abide's extract-pot script to pick up these
@@ -30,7 +32,8 @@ var cfg = {}
 // --------------------------------------------------------
 cfg.site = {};
 cfg.site.title = gettext('Your Site Name');
-cfg.site.languages = ['en-US', 'it-CH'];
+cfg.site.languagesMap = {'en-US': 'English - Unites States', 'it-CH': 'Debugging language'};
+cfg.site.languages = _.keys(cfg.site.languagesMap);
 cfg.site.defaultLanguage = 'en-US';
 cfg.site.debugLanguage = 'it-CH';
 
