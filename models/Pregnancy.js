@@ -186,6 +186,23 @@ Pregnancy = Bookshelf.Model.extend({
     });
   }
 
+  , checkMidwifeInterviewFields: function(flds) {
+      return new Promise(function(resolve, reject) {
+        var msgs = []
+          ;
+        if (flds.invertedNipples == '0' &&
+            flds.hasUS == '0' &&
+            flds.wantsUS == '0' &&
+            flds.noneOfAbove == '0') msgs.push('Choose at least one checkbox.');
+
+        if (msgs.length != 0) {
+          reject(msgs.join(' '));
+        } else {
+          resolve(flds);
+        }
+      });
+    }
+
 
 });
 

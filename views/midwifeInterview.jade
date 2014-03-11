@@ -1,0 +1,75 @@
+extends layouts/default_layout
+
+block midwifeInterview
+  h1= title
+
+  +pregnancyTab('midwifeinterview')
+
+  - var name = rec.lastname + ', ' + rec.firstname;
+  - var dob = rec.patient.dob;
+  - var doh = rec.patient.dohID;
+  - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): 'NOT SET';
+  div(class='pregName well well-sm')
+    h3(class='')= name
+      span &nbsp;&nbsp;&nbsp;
+      small= gettext('Birthdate: ') + dob
+      span &nbsp;&nbsp;&nbsp;
+      small= gettext('DOH: ') + dohFormatted
+
+  +flash(messages)
+  form(role='form', name='pregnancyHistory', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
+    div.row
+      div(class='form-group col-sm-2')
+        label= gettext('Choose at least one:')
+        div.checkbox
+          label= gettext('Inverted nipples?')
+            input(type='checkbox', name='invertedNipples', tabindex="1", value=1, checked=rec.invertedNipples==true)
+        div.checkbox
+          label= gettext('Patient has U/S?')
+            input(type='checkbox', name='hasUS', tabindex="2", value=1, checked=rec.hasUS==true)
+        div.checkbox
+          label= gettext('Patient wants U/S?')
+            input(type='checkbox', name='wantsUS', tabindex="3", value=1, checked=rec.wantsUS==true)
+        div.checkbox
+          //- Note that this field has no representation in the database.
+          label= gettext('None of the above')
+            input(type='checkbox', name='noneOfAbove', tabindex="4", value=1, checked=rec.noneOfAbove==true)
+
+      div(class='form-group col-sm-1')
+        span= gettext('Age of menarche?')
+        input(class='form-control', type='number', tabindex="5", autocomplete="off", name='ageOfMenarche', value=rec.patient.ageOfMenarche)
+
+      div(class='form-group col-sm-9')
+        span= gettext('Comments')
+        textarea(class='form-control', rows='6', tabindex="6", wrap='soft', name='note')= rec.note
+
+    div.row
+      div(class='form-group col-sm-1')
+        label= gettext('Grav')
+          input(type='number', tabindex="7", autocomplete="off", name='gravida', value=rec.gravida)
+      div(class='form-group col-sm-1 col-sm-offset-1')
+        label= gettext('Para')
+          input(type='number', tabindex="8", autocomplete="off", name='para', value=rec.para)
+      div(class='form-group col-sm-1 col-sm-offset-2')
+        label= gettext('A/M')
+          input(type='number', tabindex="11", autocomplete="off", name='abortions', value=rec.abortions)
+      div(class='form-group col-sm-1 col-sm-offset-1')
+        label= gettext('Living')
+          input(type='number', tabindex="12", autocomplete="off", name='living', value=rec.living)
+      div(class='form-group col-sm-1 col-sm-offset-1')
+        label= gettext('StillBirth')
+          input(type='number', tabindex="13", autocomplete="off", name='stillBirths', value=rec.stillBirths)
+
+    div.row
+      div(class='form-group col-sm-1 col-sm-offset-2')
+        label= gettext('Term')
+          input(type='number', tabindex="9", autocomplete="off", name='term', value=rec.term)
+      div(class='form-group col-sm-1')
+        label= gettext('PreTerm')
+          input(type='number', tabindex="10", autocomplete="off", name='preterm', value=rec.preterm)
+    div.row
+      input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+      input(type='hidden', name='_csrf', value=token)
+      input(type='hidden', name='id', value=rec.id)
+
+

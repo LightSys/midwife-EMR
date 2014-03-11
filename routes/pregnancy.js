@@ -149,7 +149,7 @@ var history = function(req, res) {
  * Return the data necessary to populate the questionnaire
  * form according to the database record.
  * -------------------------------------------------------- */
-var getQuesFormData = function(req, addData) {
+var getCommonFormData = function(req, addData) {
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
@@ -165,7 +165,7 @@ var getQuesFormData = function(req, addData) {
 var quesEdit = function(req, res) {
   var data = {title: req.gettext('Pregnancy Questionnaire')};
   if (req.paramPregnancy) {
-    res.render('pregnancyQuestionnaire', getQuesFormData(req, data));
+    res.render('pregnancyQuestionnaire', getCommonFormData(req, data));
   } else {
     // Pregnancy not found.
     res.redirect(cfg.path.search);
@@ -481,6 +481,104 @@ var update = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * midwifeEdit()
+ *
+ * Display the midwife interview screen.
+ * -------------------------------------------------------- */
+var midwifeEdit = function(req, res) {
+  var data = getCommonFormData(req, {title: req.gettext('Midwife Interview')})
+    ;
+  // --------------------------------------------------------
+  // Properly set the noneOfAbove field which does not have
+  // representation in the database.
+  // --------------------------------------------------------
+  if (data.rec.invertedNipples == 0 && data.rec.hasUS == 0 && data.rec.wantsUS == 0) {
+    data.rec.noneOfAbove = 1;
+  }
+  if (req.paramPregnancy) {
+    res.render('midwifeInterview', data);
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * midwifeUpdate()
+ *
+ * Update the patient, pregnancy and pregnancyHistory records
+ * with changes from the midwife interview screen.
+ * -------------------------------------------------------- */
+var midwifeUpdate = function(req, res) {
+  var supervisor = null
+    , pregFlds = {}
+    , defaultFlds = {
+        invertedNipples: '0'
+        , hasUS: '0'
+        , wantsUS: '0'
+        , noneOfAbove: '0'        // Field does not exist in database.
+        , ageOfMenarche: null     // Patient field, not pregnancy.
+        , note: ''
+      }
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.id &&
+      req.paramPregnancy.id == req.body.id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    // --------------------------------------------------------
+    // Allow 'unchecking' a box by providing a default of off.
+    // --------------------------------------------------------
+    pregFlds = _.extend(defaultFlds, _.omit(req.body, ['_csrf']));
+
+    Pregnancy.checkMidwifeInterviewFields(pregFlds).then(function(flds) {
+      Pregnancy.forge({id: pregFlds.id})
+        .fetch().then(function(pregnancy) {
+          pregnancy
+            .setUpdatedBy(req.session.user.id)
+            .setSupervisor(supervisor)
+            .save(pregFlds).then(function(pregnancy) {
+              Patient.forge({id: pregnancy.get('patient_id')})
+                .fetch().then(function(patient) {
+                  patient
+                    .setUpdatedBy(req.session.user.id)
+                    .setSupervisor(supervisor)
+                    .save({ageOfMenarche: pregFlds.ageOfMenarche}).then(function(patient) {
+                      req.flash('info', req.gettext('Pregnancy was updated.'));
+                      res.redirect(cfg.path.pregnancyMidwifeEdit.replace(/:id/, pregnancy.id));
+                    })
+                    .caught(function(err) {
+                      logError(err);
+                      res.redirect(cfg.path.search);
+                    });
+                })
+            })
+            .caught(function(err) {
+              logError(err);
+              res.redirect(cfg.path.search);
+            });
+      });
+    })
+    .caught(function(err) {
+      logError(err);
+      req.flash('warning', req.gettext(err));
+      res.redirect(cfg.path.pregnancyMidwifeEdit.replace(/:id/, pregFlds.id));
+    });
+  } else {
+    logError('Error in update of pregnancy: pregnancy not found.');
+    res.redirect(cfg.path.search);
+  }
+
+};
+
+
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -495,5 +593,7 @@ module.exports = {
   , history: history
   , quesEdit: quesEdit
   , quesUpdate: quesUpdate
+  , midwifeEdit: midwifeEdit
+  , midwifeUpdate: midwifeUpdate
 };
 

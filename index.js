@@ -296,6 +296,12 @@ app.get(cfg.path.pregnancyQuesEdit, common, hasSuper,
 app.post(cfg.path.pregnancyQuesUpdate, common, hasSuper,
     inRoles(['clerk','student','supervisor']), csrf, pregnancy.quesUpdate);
 
+// Pregnancy midwife interview
+app.get(cfg.path.pregnancyMidwifeEdit, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.midwifeEdit);
+app.post(cfg.path.pregnancyMidwifeUpdate, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), csrf, pregnancy.midwifeUpdate);
+
 
 
 // --------------------------------------------------------
