@@ -18,6 +18,7 @@ var express = require('express')
   , SessionStore = require('connect-mysql')(express)
   , i18n = require('i18n-abide')
   , _ = require('underscore')
+  , gitHistory = require('git-history')
   , cfg = require('./config')
   , path = require('path')
   , User = require('./models').User
@@ -32,6 +33,7 @@ var express = require('express')
   , logError = require('./util').logError
   , common = []
   , student = []
+  , revisions = 0
   ;
 
 // --------------------------------------------------------
@@ -157,6 +159,21 @@ function csrf(req, res, next) {
   next();
 }
 
+// --------------------------------------------------------
+// Get the git revision as the number of commits then save 
+// to the session for usage on certain screens, etc.
+// --------------------------------------------------------
+gitHistory().on('data', function(commit) {
+  revisions++;
+});
+app.use(function(req, res, next) {
+  if (req.session && ! req.session.appRevisions) {
+    req.session.appRevisions = revisions;
+    req.session.save();
+  }
+  next();
+});
+
 app.use(app.router);
 
 // --------------------------------------------------------
@@ -176,7 +193,6 @@ app.configure('development', function() {
   app.use(express.logger('dev'));
   app.use(express.errorHandler());
 });
-
 // --------------------------------------------------------
 // Production configuration
 // --------------------------------------------------------

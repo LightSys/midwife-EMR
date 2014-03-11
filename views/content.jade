@@ -8,5 +8,8 @@ block content
 
   p= gettext('User id: ') + user.id + ', ' + gettext('Name: ') + user.username
 
+  - if (revision)
+    p= gettext('Application revision: ') + revision
+
   hr
 
