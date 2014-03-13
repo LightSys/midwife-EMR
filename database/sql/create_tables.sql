@@ -264,13 +264,15 @@ SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `pregnancyHistory` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  monthYear VARCHAR(6) NOT NULL,
+  month VARCHAR(2) NULL,
+  year VARCHAR(4) NOT NULL,
+  weeksGA INT NULL,
   sexOfBaby CHAR(1) NULL,
   placeOfBirth VARCHAR(30) NULL,
   attendant VARCHAR(30) NULL,
   typeOfDelivery VARCHAR(30) NULL,
   lengthOfLabor TINYINT NULL,
-  birthWeight FLOAT(2,2) NULL,
+  birthWeight DECIMAL(4,2) NULL,
   episTear BOOLEAN NULL,
   repaired BOOLEAN NULL,
   howLongBFed VARCHAR(20) NULL,
