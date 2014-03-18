@@ -15,6 +15,8 @@ var _ = require('underscore')
   , Patients = require('../models').Patients
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
+  , PregnancyHistory = require('../models').PregnancyHistory
+  , PregnancyHistories = require('../models').PregnancyHistories
   , User = require('../models').User
   , Users = require('../models').Users
   , SelectData = require('../models').SelectData
@@ -100,7 +102,7 @@ var load = function(req, res, next) {
     ;
 
   Pregnancy.forge({id: id})
-    .fetch({withRelated: ['patient']})
+    .fetch({withRelated: ['patient', 'pregnancyHistory']})
     .then(function(rec) {
       if (! rec) return next();
       rec = rec.toJSON();
@@ -533,6 +535,8 @@ var midwifeUpdate = function(req, res) {
       supervisor = req.session.supervisor.id;
     }
 
+    console.dir(req.body);
+
     // --------------------------------------------------------
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
@@ -578,6 +582,58 @@ var midwifeUpdate = function(req, res) {
 
 };
 
+var pregnancyHistoryAddForm = function(req, res) {
+  var data = {title: req.gettext('Add Historical Pregnancy')};
+  if (req.paramPregnancy) {
+    res.render('midwifeInterviewAddPreg', getCommonFormData(req, data));
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * pregnancyHistoryAdd()
+ *
+ * Adds a new historical pregnancy record. Called from the
+ * midwife interview screen.
+ * -------------------------------------------------------- */
+var pregnancyHistoryAdd = function(req, res) {
+  var supervisor = null
+    , flds = req.body
+    , pregHistRec
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+    console.dir(flds);
+
+    pregHistRec = new PregnancyHistory(flds);
+    pregHistRec
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .save().then(function(model) {
+        res.redirect(cfg.path.pregnancyHistoryAddForm.replace(/:id/, model.get('pregnancy_id')));
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+
+  } else {
+    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
 
 // --------------------------------------------------------
 // Initialize the module.
@@ -595,5 +651,7 @@ module.exports = {
   , quesUpdate: quesUpdate
   , midwifeEdit: midwifeEdit
   , midwifeUpdate: midwifeUpdate
+  , pregnancyHistoryAddForm: pregnancyHistoryAddForm
+  , pregnancyHistoryAdd: pregnancyHistoryAdd
 };
 

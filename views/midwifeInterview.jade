@@ -9,6 +9,7 @@ block midwifeInterview
   - var dob = rec.patient.dob;
   - var doh = rec.patient.dohID;
   - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): 'NOT SET';
+  - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistoryaddform';
   div(class='pregName well well-sm')
     h3(class='')= name
       span &nbsp;&nbsp;&nbsp;
@@ -17,7 +18,7 @@ block midwifeInterview
       small= gettext('DOH: ') + dohFormatted
 
   +flash(messages)
-  form(role='form', name='pregnancyHistory', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
+  form(id='midwifeForm', role='form', name='midwifeInterview', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
     div.row
       div(class='form-group col-sm-2')
         label= gettext('Choose at least one:')
@@ -67,9 +68,53 @@ block midwifeInterview
       div(class='form-group col-sm-1')
         label= gettext('PreTerm')
           input(type='number', tabindex="10", autocomplete="off", name='preterm', value=rec.preterm)
-    div.row
-      input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
-      input(type='hidden', name='_csrf', value=token)
-      input(type='hidden', name='id', value=rec.id)
 
+    div.row
+      div(class='col-sm-12')
+        table(id='pregnancyHistoryTable', class='table table-striped table-bordered table-hover table-condensed')
+          thead
+            tr
+              td= gettext('Month')
+              td= gettext('Year')
+              td= gettext('Weeks GA')
+              td= gettext('Sex of baby')
+              td= gettext('Place of birth')
+              td= gettext('Attendant')
+              td= gettext('Del type')
+              td= gettext('Labor hours')
+              td= gettext('Birth wgt (kg)')
+              td= gettext('Epis tear')
+              td= gettext('Repaired?')
+              td= gettext('Weeks Bfed')
+              td= gettext('Comments')
+          tbody
+            each ph in rec.pregnancyHistory
+              -var pregHistId = 'pregnancyHistoryId-' + ph.id;
+              tr(id=pregHistId)
+                - var epis = 'N', repaired = 'N';
+                - if (ph.episTear) epis = 'Y';
+                - if (ph.repaired) repaired = 'Y';
+                td(data-bind='month')= ph.month
+                td(data-bind='year')= ph.year
+                td(data-bind='weeksGA')= ph.weeksGA
+                td(data-bind='sexOfBaby')= ph.sexOfBaby
+                td(data-bind='placeOfBirth')= ph.placeOfBirth
+                td(data-bind='attendant')= ph.attendant
+                td(data-bind='typeOfDelivery')= ph.typeOfDelivery
+                td(data-bind='lengthOfLabor')= ph.lengthOfLabor
+                td(data-bind='birthWeight')= ph.birthWeight
+                td(data-bind='episTear')= epis
+                td(data-bind='repaired')= repaired
+                td(data-bind='howLongBFed')= ph.howLongBFed
+                td(data-bind='note')= ph.note
+    div.row
+      div(class='col-sm-2 col-sm-offset-10')
+        a(href=pregHistAddFormPath, role="button", class='btn btn-primary disable-on-change')= gettext('Add historical pregnancy')
+        p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding historical pregnancies.')
+
+    div.row
+      div(class='col-sm-1')
+        input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=rec.id)
 

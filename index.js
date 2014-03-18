@@ -151,13 +151,12 @@ var hasSuper = function(req, res, next) {
 
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
-// See: http://dailyjs.com/2012/09/13/express-3-csrf-tutorial/
 // --------------------------------------------------------
 app.use(express.csrf());
-function csrf(req, res, next) {
-  res.locals.token = req.csrfToken();
+app.use(function(req, res, next) {
+  app.locals.token = req.csrfToken();
   next();
-}
+});
 
 // --------------------------------------------------------
 // Get the git revision as the number of commits then save 
@@ -222,9 +221,9 @@ common.push(auth, setRoleInfo, i18nLocals);
 // --------------------------------------------------------
 // Login and logout
 // --------------------------------------------------------
-app.get(cfg.path.login, setRoleInfo, csrf, home.login);
-app.post(cfg.path.login, setRoleInfo, csrf, home.loginPost);
-app.get(cfg.path.logout, setRoleInfo, csrf, home.logout);
+app.get(cfg.path.login, setRoleInfo, home.login);
+app.post(cfg.path.login, setRoleInfo, home.loginPost);
+app.get(cfg.path.logout, setRoleInfo, home.logout);
 
 // --------------------------------------------------------
 // Home
@@ -234,75 +233,77 @@ app.get(cfg.path.home, common, hasSuper, home.home);
 // --------------------------------------------------------
 // Search
 // --------------------------------------------------------
-app.get(cfg.path.search, common, hasSuper, csrf, search.view);
-app.post(cfg.path.search, common, hasSuper, csrf, search.execute);
+app.get(cfg.path.search, common, hasSuper, search.view);
+app.post(cfg.path.search, common, hasSuper, search.execute);
 
 // --------------------------------------------------------
 // Users
 // --------------------------------------------------------
 app.get(cfg.path.userList, common, inRoles(['administrator']), users.list);
 app.all(cfg.path.userLoad, users.load);  // parameter handling
-app.get(cfg.path.userNewForm, common, inRoles(['administrator']), csrf, users.addForm);
-app.post(cfg.path.userCreate, common, inRoles(['administrator']), csrf, users.create);
-app.get(cfg.path.userEditForm, common, inRoles(['administrator']), csrf, users.editForm);
-app.post(cfg.path.userUpdate, common, inRoles(['administrator']), csrf, users.update);
+app.get(cfg.path.userNewForm, common, inRoles(['administrator']), users.addForm);
+app.post(cfg.path.userCreate, common, inRoles(['administrator']), users.create);
+app.get(cfg.path.userEditForm, common, inRoles(['administrator']), users.editForm);
+app.post(cfg.path.userUpdate, common, inRoles(['administrator']), users.update);
 
 // --------------------------------------------------------
 // Roles
 // --------------------------------------------------------
 app.get(cfg.path.roleList, common, inRoles(['administrator']), roles.list);
 app.all(cfg.path.roleLoad, roles.load);  // parameter handling
-app.get(cfg.path.roleNewForm, common, inRoles(['administrator']), csrf, roles.addForm);
-app.post(cfg.path.roleCreate, common, inRoles(['administrator']), csrf, roles.create);
-app.get(cfg.path.roleEditForm, common, inRoles(['administrator']), csrf, roles.editForm);
-app.post(cfg.path.roleUpdate, common, inRoles(['administrator']), csrf, roles.update);
+app.get(cfg.path.roleNewForm, common, inRoles(['administrator']), roles.addForm);
+app.post(cfg.path.roleCreate, common, inRoles(['administrator']), roles.create);
+app.get(cfg.path.roleEditForm, common, inRoles(['administrator']), roles.editForm);
+app.post(cfg.path.roleUpdate, common, inRoles(['administrator']), roles.update);
 
 // --------------------------------------------------------
 // Role assignment to users
 // --------------------------------------------------------
 app.all(cfg.path.userLoad2, users.load);  // parameter handling
-app.post(cfg.path.changeRoles, common, inRoles(['administrator']), csrf, users.changeRoles);
+app.post(cfg.path.changeRoles, common, inRoles(['administrator']), users.changeRoles);
 
 // --------------------------------------------------------
 // Profile
 // --------------------------------------------------------
-app.get(cfg.path.profile, common, csrf, users.editProfile);
-app.post(cfg.path.profile, common, csrf, users.saveProfile);
+app.get(cfg.path.profile, common, users.editProfile);
+app.post(cfg.path.profile, common, users.saveProfile);
 
 // --------------------------------------------------------
 // Set the supervisor if a student.
 // --------------------------------------------------------
-app.get(cfg.path.setSuper, common, inRoles(['student']), csrf, users.editSupervisor);
-app.post(cfg.path.setSuper, common, inRoles(['student']), csrf, users.saveSupervisor);
+app.get(cfg.path.setSuper, common, inRoles(['student']), users.editSupervisor);
+app.post(cfg.path.setSuper, common, inRoles(['student']), users.saveSupervisor);
 
 // --------------------------------------------------------
 // Pregnancy management
 // --------------------------------------------------------
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
 app.get(cfg.path.pregnancyNewForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.addForm);
+    inRoles(['clerk','student','supervisor']), pregnancy.addForm);
 app.post(cfg.path.pregnancyCreate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.create);
+    inRoles(['clerk','student','supervisor']), pregnancy.create);
 app.get(cfg.path.pregnancyEditForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.editForm);
+    inRoles(['clerk','student','supervisor']), pregnancy.editForm);
 app.post(cfg.path.pregnancyUpdate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.update);
+    inRoles(['clerk','student','supervisor']), pregnancy.update);
 app.get(cfg.path.pregnancyHistory, common,
-    inRoles(['supervisor']), csrf, pregnancy.history);
+    inRoles(['supervisor']), pregnancy.history);
 
 // Pregnancy Questionnaire
 app.get(cfg.path.pregnancyQuesEdit, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.quesEdit);
+    inRoles(['clerk','student','supervisor']), pregnancy.quesEdit);
 app.post(cfg.path.pregnancyQuesUpdate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.quesUpdate);
+    inRoles(['clerk','student','supervisor']), pregnancy.quesUpdate);
 
 // Pregnancy midwife interview
 app.get(cfg.path.pregnancyMidwifeEdit, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.midwifeEdit);
+    inRoles(['clerk','student','supervisor']), pregnancy.midwifeEdit);
 app.post(cfg.path.pregnancyMidwifeUpdate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), csrf, pregnancy.midwifeUpdate);
-
-
+    inRoles(['clerk','student','supervisor']), pregnancy.midwifeUpdate);
+app.get(cfg.path.pregnancyHistoryAddForm, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryAddForm);
+app.post(cfg.path.pregnancyHistoryAdd, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryAdd);
 
 // --------------------------------------------------------
 // The last resort.

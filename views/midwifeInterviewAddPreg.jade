@@ -1,0 +1,63 @@
+extends layouts/default_layout
+
+block midwifeInterviewAddPreg
+  h1= title
+
+  - var pregHistAddPath = '/pregnancy/' + rec.id + '/preghistoryadd';
+  - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
+
+  div.clearfix
+    a(class='pull-right', href=midwifeInterviewPath)= gettext('Back to the Midwife Interview page')
+
+  div
+    form(id='addPregForm', role='form', name='pregnancyHistoryAddPreg', action=pregHistAddPath, method='post')
+      div.row
+        div(class='form-group col-sm-3')
+          span= gettext('Month')
+          input(id='month', class='form-control', type='number', tabindex="100", autocomplete="off", name='month', autofocus)
+        div(class='form-group col-sm-3')
+          span= gettext('Year')
+          input(id='year', class='form-control', type='number', tabindex="101", autocomplete="off", name='year')
+        div(class='form-group col-sm-3')
+          span= gettext('Weeks GA')
+          input(id='weeksGA', class='form-control', type='number', tabindex="102", autocomplete="off", name='weeksGA')
+        div(class='form-group col-sm-3')
+          span= gettext('Sex of baby')
+          +select('form-control', 'sexOfBaby', 103, [{selectKey: 'M', label: 'Male', selected: false},{selectKey: 'F', label: 'Female', selected: false}])
+      div.row
+        div(class='form-group col-sm-3')
+          span= gettext('Place of birth')
+          input(id='placeOfBirth', class='form-control', type='text', tabindex="104", autocomplete="off", name='placeOfBirth')
+        div(class='form-group col-sm-3')
+          span= gettext('Attendant')
+          input(id='attendant', class='form-control', type='text', tabindex="105", autocomplete="off", name='attendant')
+        div(class='form-group col-sm-3')
+          span= gettext('Type of Delivery')
+          input(id='typeOfDelivery', class='form-control', type='text', tabindex="106", autocomplete="off", name='typeOfDelivery')
+        div(class='form-group col-sm-3')
+          span= gettext('Length of Labor (hours)')
+          input(id='lengthOfLabor', class='form-control', type='text', tabindex="107", autocomplete="off", name='lengthOfLabor')
+      div.row
+        div(class='form-group col-sm-3')
+          span= gettext('Birth Weight (kg)')
+          input(id='birthWeight', class='form-control', type='text', tabindex="108", autocomplete="off", name='birthWeight')
+        div(class='form-group col-sm-3')
+          span= gettext('Epis Tear?')
+          +select('form-control', 'episTear', 109, [{selectKey: 'N', label: 'No', selected: false},{selectKey: 'Y', label: 'Yes', selected: false}])
+        div(class='form-group col-sm-3')
+          span= gettext('Repaired?')
+          +select('form-control', 'repaired', 110, [{selectKey: 'N', label: 'No', selected: false},{selectKey: 'Y', label: 'Yes', selected: false}])
+        div(class='form-group col-sm-3')
+          span= gettext('Weeks Breast Fed')
+          input(id='howLongBFed', class='form-control', type='number', tabindex="111", autocomplete="off", name='howLongBFed')
+      div.row
+        div(class='form-group col-sm-6')
+          span= gettext('Comment')
+          input(id='note', class='form-control', type='text', tabindex="112", autocomplete="off", name='note')
+
+        div(class='form-group col-sm-1 col-sm-offset-4')
+          a(href=midwifeInterviewPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to Midwife Interview')
+        div(class='form-group col-sm-1')
+          button(class='btn btn-primary pull-right', type='submit')= gettext('Save')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)

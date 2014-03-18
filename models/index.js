@@ -8,6 +8,8 @@ module.exports = {
   , Patients: require('./Patient').Patients
   , Pregnancy: require('./Pregnancy').Pregnancy
   , Pregnancies: require('./Pregnancy').Pregnancies
+  , PregnancyHistory: require('./PregnancyHistory').PregnancyHistory
+  , PregnancyHistories: require('./PregnancyHistory').PregnancyHistories
   , Event: require('./Event').Event
   , Events: require('./Event').Events
   , SelectData: require('./SelectData').SelectData
