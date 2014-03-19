@@ -10,7 +10,7 @@
 // Load the module when the document is ready.
 // --------------------------------------------------------
 $(function() {
-  (function($, _) {
+  (function(window, $, _) {
     "use strict";
 
     // --------------------------------------------------------
@@ -66,5 +66,19 @@ $(function() {
     visibleOnChange('#midwifeForm');  // Midwife Interview explanation text
 
 
-  })(jQuery, _);
+    // --------------------------------------------------------
+    // Allow editing of a row in the pregnancy history table 
+    // on the midwife interview screen by clicking.
+    // --------------------------------------------------------
+    $('.pregHistoryRow').click(function(evt) {
+      evt.preventDefault();
+      var histId = evt.currentTarget.id.split('-')[1]
+        , pregId = evt.currentTarget.parentElement.id.split('-')[1]
+        , path = '/pregnancy/' + pregId + '/preghistoryedit/' + histId
+        ;
+      window.location = path;
+      return false;
+    });
+
+  })(window, jQuery, _);
 });

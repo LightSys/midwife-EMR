@@ -159,8 +159,11 @@ cfg.path.pregnancyQuesEdit = '/pregnancy/:id/quesEdit';   // GET
 cfg.path.pregnancyQuesUpdate = '/pregnancy/:id/quesUpdate';   // POST
 cfg.path.pregnancyMidwifeEdit = '/pregnancy/:id/midwifeinterview'; // GET
 cfg.path.pregnancyMidwifeUpdate = '/pregnancy/:id/midwifeinterview'; // POST
+cfg.path.pregnancyLoadHist = '/pregnancy/:id/:op?/preghistoryedit/:hid';       // parameter handling
 cfg.path.pregnancyHistoryAddForm = '/pregnancy/:id/preghistoryaddform'; // GET
 cfg.path.pregnancyHistoryAdd = '/pregnancy/:id/preghistoryadd'; // POST
+cfg.path.pregnancyHistoryEditForm = '/pregnancy/:id/preghistoryedit/:hid'; // GET
+cfg.path.pregnancyHistoryEdit = '/pregnancy/:id/preghistoryedit/:hid'; // POST
 
 module.exports = cfg;
 

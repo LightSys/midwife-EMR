@@ -4,20 +4,10 @@ block midwifeInterview
   h1= title
 
   +pregnancyTab('midwifeinterview')
-
-  - var name = rec.lastname + ', ' + rec.firstname;
-  - var dob = rec.patient.dob;
-  - var doh = rec.patient.dohID;
-  - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): 'NOT SET';
-  - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistoryaddform';
-  div(class='pregName well well-sm')
-    h3(class='')= name
-      span &nbsp;&nbsp;&nbsp;
-      small= gettext('Birthdate: ') + dob
-      span &nbsp;&nbsp;&nbsp;
-      small= gettext('DOH: ') + dohFormatted
-
+  +patientWell(rec)
   +flash(messages)
+
+  - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistoryaddform';
   form(id='midwifeForm', role='form', name='midwifeInterview', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
     div.row
       div(class='form-group col-sm-2')
@@ -87,10 +77,11 @@ block midwifeInterview
               td= gettext('Repaired?')
               td= gettext('Weeks Bfed')
               td= gettext('Comments')
-          tbody
+          -var pregId = 'pregnancyId-' + rec.id;
+          tbody(id=pregId)
             each ph in rec.pregnancyHistory
               -var pregHistId = 'pregnancyHistoryId-' + ph.id;
-              tr(id=pregHistId)
+              tr(class='pregHistoryRow', id=pregHistId)
                 - var epis = 'N', repaired = 'N';
                 - if (ph.episTear) epis = 'Y';
                 - if (ph.repaired) repaired = 'Y';

@@ -4,19 +4,9 @@ block pregnancyQuestionnaire
   h1= title
 
   +pregnancyTab('quesEdit')
-
-  - var name = rec.lastname + ', ' + rec.firstname;
-  - var dob = rec.patient.dob;
-  - var doh = rec.patient.dohID;
-  - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): 'NOT SET';
-  div(class='pregName well well-sm')
-    h3(class='')= name
-      span &nbsp;&nbsp;&nbsp;
-      small= gettext('Birthdate: ') + dob
-      span &nbsp;&nbsp;&nbsp;
-      small= gettext('DOH: ') + dohFormatted
-
+  +patientWell(rec)
   +flash(messages)
+
   form(role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
       div(class='form-group col-sm-3')

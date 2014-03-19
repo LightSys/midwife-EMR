@@ -278,6 +278,7 @@ app.post(cfg.path.setSuper, common, inRoles(['student']), users.saveSupervisor);
 // Pregnancy management
 // --------------------------------------------------------
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
+app.all(cfg.path.pregnancyLoadHist, pregnancy.load);  // parameter handling
 app.get(cfg.path.pregnancyNewForm, common, hasSuper,
     inRoles(['clerk','student','supervisor']), pregnancy.addForm);
 app.post(cfg.path.pregnancyCreate, common, hasSuper,
@@ -304,6 +305,10 @@ app.get(cfg.path.pregnancyHistoryAddForm, common, hasSuper,
     inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryAddForm);
 app.post(cfg.path.pregnancyHistoryAdd, common, hasSuper,
     inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryAdd);
+app.get(cfg.path.pregnancyHistoryEditForm, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryEditForm);
+app.post(cfg.path.pregnancyHistoryEdit, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryEdit);
 
 // --------------------------------------------------------
 // The last resort.

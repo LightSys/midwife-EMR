@@ -99,6 +99,7 @@ var init = function() {
  * -------------------------------------------------------- */
 var load = function(req, res, next) {
   var id = req.params.id
+    , hid = parseInt(req.params.hid, 10)
     ;
 
   Pregnancy.forge({id: id})
@@ -108,6 +109,14 @@ var load = function(req, res, next) {
       rec = rec.toJSON();
       rec.patient.dob = moment(rec.patient.dob).format('MM-DD-YYYY');
       if (rec) req.paramPregnancy = rec;
+      if (! isNaN(hid)) {
+        // --------------------------------------------------------
+        // Assign appropriate historical pregnancy for convenience.
+        // --------------------------------------------------------
+        req.paramPregHist = _.find(rec.pregnancyHistory, function(r) {
+          return r.id === hid;
+        });
+      }
       next();
     });
 };
@@ -156,6 +165,7 @@ var getCommonFormData = function(req, addData) {
     user: req.session.user
     , messages: req.flash()
     , rec: req.paramPregnancy
+    , pregHist: req.paramPregHist || void(0)
   });
 };
 
@@ -535,8 +545,6 @@ var midwifeUpdate = function(req, res) {
       supervisor = req.session.supervisor.id;
     }
 
-    console.dir(req.body);
-
     // --------------------------------------------------------
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
@@ -593,6 +601,79 @@ var pregnancyHistoryAddForm = function(req, res) {
 };
 
 /* --------------------------------------------------------
+ * pregnancyHistoryEditForm()
+ *
+ * Displays the historical pregnancy form for editing.
+ * -------------------------------------------------------- */
+var pregnancyHistoryEditForm = function(req, res) {
+  var data = {title: req.gettext('Edit Historical Pregnancy')};
+  if (req.paramPregnancy) {
+    res.render('midwifeInterviewEditPreg', getCommonFormData(req, data));
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * pregnancyHistoryEdit()
+ *
+ * Updates the historical pregnancy record.
+ * -------------------------------------------------------- */
+var pregnancyHistoryEdit = function(req, res) {
+  var supervisor = null
+    , flds = req.body
+    , pregHistRec
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    // --------------------------------------------------------
+    // Convert values from Y/N to boolean for the database.
+    // --------------------------------------------------------
+    if (flds.episTear === 'Y') {
+      flds.episTear = 1;
+    } else {
+      flds.episTear = 0;
+    }
+    if (flds.repaired === 'Y') {
+      flds.repaired = 1;
+    } else {
+      flds.repaired = 0;
+    }
+
+    pregHistRec = new PregnancyHistory(flds);
+    pregHistRec
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .save(flds, {method: 'update'}).then(function(model) {
+        var path = cfg.path.pregnancyHistoryEditForm
+          ;
+        path = path.replace(/:id/, flds.pregnancy_id);
+        path = path.replace(/:hid/, flds.id);
+        res.redirect(path);
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
  * pregnancyHistoryAdd()
  *
  * Adds a new historical pregnancy record. Called from the
@@ -613,8 +694,6 @@ var pregnancyHistoryAdd = function(req, res) {
     if (hasRole(req, 'student')) {
       supervisor = req.session.supervisor.id;
     }
-    console.dir(flds);
-
     pregHistRec = new PregnancyHistory(flds);
     pregHistRec
       .setUpdatedBy(req.session.user.id)
@@ -653,5 +732,7 @@ module.exports = {
   , midwifeUpdate: midwifeUpdate
   , pregnancyHistoryAddForm: pregnancyHistoryAddForm
   , pregnancyHistoryAdd: pregnancyHistoryAdd
+  , pregnancyHistoryEditForm: pregnancyHistoryEditForm
+  , pregnancyHistoryEdit: pregnancyHistoryEdit
 };
 

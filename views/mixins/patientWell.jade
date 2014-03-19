@@ -1,0 +1,11 @@
+mixin patientWell(record)
+  - var name = record.lastname + ', ' + record.firstname;
+  - var dob = record.patient.dob;
+  - var doh = record.patient.dohID;
+  - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): 'NOT SET';
+  div(class='pregName well well-sm')
+    h3(class='')= name
+      span &nbsp;&nbsp;&nbsp;
+      small= gettext('Birthdate: ') + dob
+      span &nbsp;&nbsp;&nbsp;
+      small= gettext('DOH: ') + dohFormatted
