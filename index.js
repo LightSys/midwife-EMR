@@ -278,7 +278,6 @@ app.post(cfg.path.setSuper, common, inRoles(['student']), users.saveSupervisor);
 // Pregnancy management
 // --------------------------------------------------------
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
-app.all(cfg.path.pregnancyLoadHist, pregnancy.load);  // parameter handling
 app.get(cfg.path.pregnancyNewForm, common, hasSuper,
     inRoles(['clerk','student','supervisor']), pregnancy.addForm);
 app.post(cfg.path.pregnancyCreate, common, hasSuper,
@@ -319,13 +318,6 @@ process.on('uncaughtException', function(err) {
   logError('uncaughtException: ', err.message);
   logError(err.stack);
   process.exit(1);
-});
-
-// --------------------------------------------------------
-// Testing in order to throw an error.
-// --------------------------------------------------------
-app.get('/error', function(req, res, next) {
-  throw new Error('This is an error that I do not know about.');
 });
 
 

@@ -439,6 +439,11 @@ var create = function(req, res) {
     });
 };
 
+/* --------------------------------------------------------
+ * update()
+ *
+ * Update the main patient record (general information).
+ * -------------------------------------------------------- */
 var update = function(req, res) {
   var pregFlds
     , patFlds
@@ -590,6 +595,11 @@ var midwifeUpdate = function(req, res) {
 
 };
 
+/* --------------------------------------------------------
+ * pregnancyHistoryAddForm()
+ *
+ * Displays the historical pregnancy form for adding.
+ * -------------------------------------------------------- */
 var pregnancyHistoryAddForm = function(req, res) {
   var data = {title: req.gettext('Add Historical Pregnancy')};
   if (req.paramPregnancy) {
@@ -714,6 +724,12 @@ var pregnancyHistoryAdd = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * pregnancyHistoryDelete()
+ *
+ * Deletes a new historical pregnancy record. Called from the
+ * midwife interview screen.
+ * -------------------------------------------------------- */
 var pregnancyHistoryDelete = function(req, res) {
   var supervisor = null
     , flds = req.body
