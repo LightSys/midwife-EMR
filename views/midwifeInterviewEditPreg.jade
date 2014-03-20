@@ -6,6 +6,7 @@ block midwifeInterviewEditPreg
   +patientWell(rec)
 
   - var pregHistEditPath = '/pregnancy/' + rec.id + '/preghistoryedit/' + pregHist.id;
+  - var pregHistDeletePath = '/pregnancy/' + rec.id + '/preghistorydelete/' + pregHist.id;
   - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
 
   div.clearfix
@@ -56,14 +57,32 @@ block midwifeInterviewEditPreg
           span= gettext('Weeks Breast Fed')
           input(id='howLongBFed', class='form-control', type='number', tabindex="111", autocomplete="off", name='howLongBFed', value=pregHist.howLongBFed)
       div.row
-        div(class='form-group col-sm-6')
+        div(class='form-group col-sm-12')
           span= gettext('Comment')
           input(id='note', class='form-control', type='text', tabindex="112", autocomplete="off", name='note', value=pregHist.note)
 
-        div(class='form-group col-sm-1 col-sm-offset-4')
+      div.row
+        div(class='form-group col-sm-1 col-sm-offset-9')
           a(href=midwifeInterviewPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to Midwife Interview')
         div(class='form-group col-sm-1')
-          button(class='btn btn-primary pull-right', type='submit')= gettext('Save')
+          button(class='btn btn-primary btn-block pull-right', type='submit')= gettext('Save')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
           input(type='hidden', name='id', value=pregHist.id)
+        div(class='form-group col-sm-1')
+          button(class='btn pull-right disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deletePregForm', role='form', name='pregnancyHistoryDeletePreg', action=pregHistDeletePath, method='post')
+        div(class='modal-dialog')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='id', value=pregHist.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')

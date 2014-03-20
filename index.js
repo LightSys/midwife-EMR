@@ -292,23 +292,25 @@ app.get(cfg.path.pregnancyHistory, common,
 
 // Pregnancy Questionnaire
 app.get(cfg.path.pregnancyQuesEdit, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.quesEdit);
+    inRoles(['student','supervisor']), pregnancy.quesEdit);
 app.post(cfg.path.pregnancyQuesUpdate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.quesUpdate);
+    inRoles(['student','supervisor']), pregnancy.quesUpdate);
 
 // Pregnancy midwife interview
 app.get(cfg.path.pregnancyMidwifeEdit, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.midwifeEdit);
+    inRoles(['student','supervisor']), pregnancy.midwifeEdit);
 app.post(cfg.path.pregnancyMidwifeUpdate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.midwifeUpdate);
+    inRoles(['student','supervisor']), pregnancy.midwifeUpdate);
 app.get(cfg.path.pregnancyHistoryAddForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryAddForm);
+    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryAddForm);
 app.post(cfg.path.pregnancyHistoryAdd, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryAdd);
+    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryAdd);
 app.get(cfg.path.pregnancyHistoryEditForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryEditForm);
+    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryEditForm);
 app.post(cfg.path.pregnancyHistoryEdit, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.pregnancyHistoryEdit);
+    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryEdit);
+app.post(cfg.path.pregnancyHistoryDelete, common, hasSuper,
+    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryDelete);
 
 // --------------------------------------------------------
 // The last resort.

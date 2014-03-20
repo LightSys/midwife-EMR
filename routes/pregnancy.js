@@ -714,6 +714,46 @@ var pregnancyHistoryAdd = function(req, res) {
   }
 };
 
+var pregnancyHistoryDelete = function(req, res) {
+  var supervisor = null
+    , flds = req.body
+    , pregHistRec
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+    flds.id = parseInt(flds.id, 10);
+    flds.pregnancy_id = parseInt(flds.pregnancy_id, 10);
+
+    pregHistRec = new PregnancyHistory({id: flds.id, pregnancy_id: flds.pregnancy_id});
+    pregHistRec
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .destroy().then(function() {
+        var path = cfg.path.pregnancyMidwifeEdit
+          ;
+        path = path.replace(/:id/, flds.pregnancy_id);
+        res.redirect(path);
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
+
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -734,5 +774,6 @@ module.exports = {
   , pregnancyHistoryAdd: pregnancyHistoryAdd
   , pregnancyHistoryEditForm: pregnancyHistoryEditForm
   , pregnancyHistoryEdit: pregnancyHistoryEdit
+  , pregnancyHistoryDelete: pregnancyHistoryDelete
 };
 
