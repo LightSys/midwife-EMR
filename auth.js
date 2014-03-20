@@ -124,6 +124,10 @@ var inRoles = function(roles) {
  * -------------------------------------------------------- */
 function auth(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
+  if (req.session) {
+    req.session.pendingUrl = req.url;
+    req.session.save();
+  }
   res.redirect(cfg.path.login);
 }
 

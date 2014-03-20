@@ -57,7 +57,15 @@ var loginPost = function(req, res, next) {
       // Record the event and redirect to the home page.
       // --------------------------------------------------------
       Event.loginEvent(user.get('id'), note).then(function() {
-        return res.redirect('/');
+        var pendingUrl = req.session.pendingUrl
+          ;
+        if (pendingUrl) {
+          delete req.session.pendingUrl;
+          req.session.save();
+          res.redirect(pendingUrl);
+        } else {
+          return res.redirect('/');
+        }
       });
     });
   })(req, res, next);
