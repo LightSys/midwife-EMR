@@ -2,27 +2,40 @@ extends layouts/default_layout
 
 block searchResults
   h1= title
-  p= gettext('These are what we found.')
 
-  a.pull-right(href='/search')= gettext('Search again')
-  table(class='table table-striped table-bordered table-hover')
-    thead
-      tr
-        th.header= gettext('ID')
-        th.header= gettext('First name')
-        th.header= gettext('Last name')
-        th.header= gettext('Date of birth')
-        th.header= gettext('Address')
-        th.header= gettext('Barangay')
-        th.header= gettext('DOH ID')
-    tbody
-      each rec in results
-        -var searchResultsId = 'searchResultsId-' + rec.id;
-        tr(class='searchResultsRow', id=searchResultsId)
-          td= rec.id
-          td= rec.firstname
-          td= rec.lastname
-          td= rec.dob
-          td= rec.address
-          td= rec.barangay
-          td= rec.dohID
+  div.row
+    div(class='form-group col-sm-1')
+      a(class='btn btn-default pull-right', href='/search')= gettext('New Search')
+
+  div.row
+    div(class='form-group col-sm-12')
+      div(class='table-responsive')
+        table(class='table table-striped table-bordered table-hover')
+          thead
+            tr
+              th.header= gettext('ID')
+              th.header= gettext('First name')
+              th.header= gettext('Last name')
+              th.header= gettext('Date of birth')
+              th.header= gettext('Address')
+              th.header= gettext('Barangay')
+              th.header= gettext('DOH ID')
+          tbody
+            each rec in results
+              -var searchResultsId = 'searchResultsId-' + rec.id;
+              tr(class='searchResultsRow', id=searchResultsId)
+                td= rec.id
+                td= rec.firstname
+                td= rec.lastname
+                td= rec.dob
+                td= rec.address
+                td= rec.barangay
+                td= rec.dohID
+
+  div.row
+    div(class='form-group col-sm-12')
+      form(role='form', name='search', action='/search', method='post')
+        input(class='btn btn-primary', type='submit', value=gettext('Next Page'), autofocus)
+        input(type='hidden', name='page', value=parseInt(pageNum, 10)+1)
+        input(type='hidden', name='searchType', value='continued')
+        input(type='hidden', name='_csrf', value=token)
