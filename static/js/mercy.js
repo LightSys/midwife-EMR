@@ -62,19 +62,59 @@ $(function() {
     // Respond to changes in these forms.
     // --------------------------------------------------------
     disableOnChange('#addPregForm');  // Midwife Interview Add Pregnancy Back button
+    disableOnChange('#editPregForm');  // Midwife Interview Edit Pregnancy Back button
     disableOnChange('#midwifeForm');  // Midwife Interview Add Pregnancies button
     visibleOnChange('#midwifeForm');  // Midwife Interview explanation text
 
 
     // --------------------------------------------------------
-    // Allow editing of a row in the pregnancy history table 
-    // on the midwife interview screen by clicking.
+    // Midwife Interview: allow clicking on a row in the
+    // pregnancy history table to go to that record.
     // --------------------------------------------------------
     $('.pregHistoryRow').click(function(evt) {
       evt.preventDefault();
       var histId = evt.currentTarget.id.split('-')[1]
         , pregId = evt.currentTarget.parentElement.id.split('-')[1]
         , path = '/pregnancy/' + pregId + '/preghistoryedit/' + histId
+        ;
+      window.location = path;
+      return false;
+    });
+
+    // --------------------------------------------------------
+    // Search Results: allow clicking on a row in the search
+    // results screen to go to that record.
+    // --------------------------------------------------------
+    $('.searchResultsRow').click(function(evt) {
+      evt.preventDefault();
+      var recId = evt.currentTarget.id.split('-')[1]
+        , path = '/pregnancy/' + recId + '/edit'
+        ;
+      window.location = path;
+      return false;
+    });
+
+    // --------------------------------------------------------
+    // User List: allow clicking on a row in the user list
+    // screen to go to that record.
+    // --------------------------------------------------------
+    $('.userListRow').click(function(evt) {
+      evt.preventDefault();
+      var userId = evt.currentTarget.id.split('-')[1]
+        , path = '/user/' + userId + '/edit'
+        ;
+      window.location = path;
+      return false;
+    });
+
+    // --------------------------------------------------------
+    // Role List: allow clicking on a row in the role list
+    // screen to go to that record.
+    // --------------------------------------------------------
+    $('.roleListRow').click(function(evt) {
+      evt.preventDefault();
+      var roleId = evt.currentTarget.id.split('-')[1]
+        , path = '/role/' + roleId + '/edit'
         ;
       window.location = path;
       return false;

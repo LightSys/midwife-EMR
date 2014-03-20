@@ -9,9 +9,6 @@ block midwifeInterviewEditPreg
   - var pregHistDeletePath = '/pregnancy/' + rec.id + '/preghistorydelete/' + pregHist.id;
   - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
 
-  div.clearfix
-    a(class='pull-right', href=midwifeInterviewPath)= gettext('Back to the Midwife Interview page')
-
   div
     form(id='editPregForm', role='form', name='pregnancyHistoryEditPreg', action=pregHistEditPath, method='post')
       div.row

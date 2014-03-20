@@ -17,13 +17,11 @@ block searchResults
         th.header= gettext('DOH ID')
     tbody
       each rec in results
-        tr
-          td
-            a(href='/pregnancy/' + rec.id + '/edit')= rec.id
-          td
-            a(href='/pregnancy/' + rec.id + '/edit')= rec.firstname
-          td
-            a(href='/pregnancy/' + rec.id + '/edit')= rec.lastname
+        -var searchResultsId = 'searchResultsId-' + rec.id;
+        tr(class='searchResultsRow', id=searchResultsId)
+          td= rec.id
+          td= rec.firstname
+          td= rec.lastname
           td= rec.dob
           td= rec.address
           td= rec.barangay

@@ -4,7 +4,7 @@ block roleList
   h1= title
   +flash(messages)
   p= gettext('These are the roles in the system.')
-    a.pull-right(href='/user')= gettext('Back to the List of users')
+    a(class='btn btn-default pull-right', href='/user')= gettext('Back to the List of users')
 
   p.text-info= gettext('You can change the role descriptions but the role names cannot change.')
 
@@ -17,11 +17,9 @@ block roleList
           th.header= gettext('Description')
       tbody
         each role in roles
-          tr
+          - var roleId = 'roleList-' + role.id;
+          tr(class='roleListRow', id=roleId)
             td= role.id
-            td
-              a(href='/role/' + role.id + '/edit')
-                = role.name
+            td= role.name
             td= role.description
-    //- a.pull-right(href='/role/new')= gettext('Add a new role')
 
