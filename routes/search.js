@@ -37,7 +37,7 @@ var view = function(req, res) {
  * return
  * -------------------------------------------------------- */
 var execute = function(req, res) {
-  var flds = _.omit(req.body, ['_csrf', 'searchType'])
+  var flds = _.omit(req.body, ['_csrf', 'searchType', 'next', 'previous'])
     , pageNum = 1
     , rowsPerPage = parseInt(cfg.search.rowsPerPage, 10)
     , qb
@@ -65,7 +65,11 @@ var execute = function(req, res) {
     req.session.searchPage = pageNum;
     req.session.save();
   } else {
-    pageNum = req.session.searchPage = req.session.searchPage + 1;
+    if (req.body.next) {
+      pageNum = req.session.searchPage = req.session.searchPage + 1;
+    } else if (req.body.previous) {
+      pageNum = req.session.searchPage = req.session.searchPage - 1;
+    }
     flds = req.session.searchFlds;
     req.session.save();
   }

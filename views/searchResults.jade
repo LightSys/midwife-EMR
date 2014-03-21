@@ -34,8 +34,11 @@ block searchResults
 
   div.row
     div(class='form-group col-sm-12')
+      - var isPreviousDisabled = parseInt(pageNum, 10) === 1;
+      - var isNextDisabled = results.length === 0;
       form(role='form', name='search', action='/search', method='post')
-        input(class='btn btn-primary', type='submit', value=gettext('Next Page'), autofocus)
-        input(type='hidden', name='page', value=parseInt(pageNum, 10)+1)
+        input(class='btn btn-primary', name='previous', type='submit', value=gettext('Previous Page'), disabled=isPreviousDisabled)
+        input(class='btn btn-primary', name='next', type='submit', value=gettext('Next Page'), autofocus, disabled=isNextDisabled)
+        input(type='hidden', name='page', value=parseInt(pageNum, 10))
         input(type='hidden', name='searchType', value='continued')
         input(type='hidden', name='_csrf', value=token)
