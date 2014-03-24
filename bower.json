@@ -16,9 +16,13 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "~2.0.3",
-    "bootstrap": "~3.0.3",
+    "jquery": "2.1.0",
+    "bootstrap": "3.1.1",
     "underscore": "~1.6.0",
     "transparency": "~0.9.14"
+  },
+  "resolutions": {
+    "jquery": "2.1.0",
+    "bootstrap": "3.1.1"
   }
 }
