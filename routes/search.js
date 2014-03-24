@@ -70,7 +70,7 @@ var execute = function(req, res) {
     } else if (req.body.previous) {
       pageNum = req.session.searchPage = req.session.searchPage - 1;
     }
-    flds = req.session.searchFlds;
+    flds = req.session.searchFlds || flds;
     req.session.save();
   }
 
