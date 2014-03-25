@@ -18,6 +18,7 @@ var express = require('express')
   , SessionStore = require('connect-mysql')(express)
   , i18n = require('i18n-abide')
   , _ = require('underscore')
+  , moment = require('moment')
   , gitHistory = require('git-history')
   , cfg = require('./config')
   , path = require('path')
@@ -97,6 +98,15 @@ app.use(express.bodyParser());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
+
+// --------------------------------------------------------
+// Deliver these JS libraries to the templating system.
+// --------------------------------------------------------
+app.locals({
+  libs: {
+    mmt: moment     // Moment's global reference is deprecated.
+  }
+});
 
 // --------------------------------------------------------
 // Localization.

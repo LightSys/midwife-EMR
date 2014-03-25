@@ -1,7 +1,14 @@
+//- ---------------------------------------------------------
+//- patientWell(record)
+//-
+//- Displays information about the pregnancy and patient.
+//-
+//- @param    record - the pregnancy record
+//- ---------------------------------------------------------
 mixin patientWell(record)
   - var name = record.lastname + ', ' + record.firstname;
   - var dob = record.patient.dob;
-  - var age = moment().diff(dob, 'years');
+  - var age = libs.mmt().diff(dob, 'years');
   - var doh = record.patient.dohID;
   - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): '';
   - var gravida = record.gravida || '0';
