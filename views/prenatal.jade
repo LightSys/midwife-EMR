@@ -1,0 +1,122 @@
+extends layouts/default_layout
+
+block prenatal
+  h1= title
+
+  +pregnancyTab('prenatal')
+  +patientWell(rec)
+  +flash(messages)
+
+  - var prenatalExamAddFormPath = '/pregnancy/' + rec.id + '/prenatalexamaddform';
+  form(id='prenatalForm', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')
+    div.row
+      div(class='form-group col-sm-3 box')
+        p(class='text-primary lead')= gettext('Phil Health')
+        div.checkbox
+          label= gettext('Phil Health MCP')
+            input(type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
+        div.checkbox
+          label= gettext('Phil Health NCP')
+            input(type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
+        div.checkbox
+          label= gettext('Phil Health Approved')
+            input(type='checkbox', name='philHealthApproved', tabindex="3", value=1, checked=rec.philHealthApproved==true)
+        div
+          span= gettext('Phil Health ID')
+          input(class='form-control input-lg', type='text', size=12, tabindex="4", autocomplete="off", name='philHealthID', value=rec.philHealthID)
+
+      div(class='form-group col-sm-4 box')
+        p(class='text-primary lead')= gettext('EDD')
+        div.row
+          div(class='col-sm-6')
+            div
+              span= gettext('LMP')
+              input(class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', value=rec.lmp)
+          div(class='col-sm-6')
+            div
+              span= gettext('EDD')
+              input(class='form-control', type='date', name='edd', tabindex="6", value=rec.edd)
+        div.row
+          div(class='col-sm-6')
+            div.checkbox
+              label= gettext('Use Alternate EDD')
+                input(type='checkbox', name='useAlternateEdd', tabindex="8", value=1, checked=rec.useAlternateEdd==true)
+          div(class='col-sm-6')
+            div
+              span= gettext('Alternate EDD')
+              input(class='form-control', type='date', name='alternateEdd', tabindex="7", value=rec.alternateEdd)
+
+      div(class='form-group col-sm-5 box')
+        //- TODO: create database fields for these fields.
+        p(class='text-primary lead')= gettext('Risk')
+        div.row
+          div(class='col-sm-3')
+            div.checkbox
+              label= gettext('Risk Present')
+                input(type='checkbox', name='riskPresent', tabindex="9", value=1, checked=rec.riskPresent==true)
+            div.checkbox
+              label= gettext('OB Hx')
+                input(type='checkbox', name='riskOBHx', tabindex="10", value=1, checked=rec.riskOBHx==true)
+            div.checkbox
+              label= gettext('Med Hx')
+                input(type='checkbox', name='riskMedHx', tabindex="11", value=1, checked=rec.riskMedHx==true)
+          div(class='col-sm-9')
+            div
+              span= gettext('Risk Factors')
+              textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=3, name='riskOther', value=rec.riskOther)
+
+    div.row
+      div(class='col-sm-12')
+        table(id='prenatalExaminations', class='table table-striped table-bordered table-hover table-condensed')
+          thead
+            tr
+              td= gettext('Date')
+              td= gettext('Weight')
+              td= gettext('Systolic')
+              td= gettext('Diastolic')
+              td= gettext('CR')
+              td= gettext('GA')
+              td= gettext('FH')
+              td= gettext('FHT')
+              td= gettext('Pos')
+              td= gettext('Mvmt')
+              td= gettext('Edma')
+              td= gettext('Risk')
+              td= gettext('Vit')
+              td= gettext('Pray')
+              td= gettext('Examiner')
+              td= gettext('Return')
+          -var pregId = 'pregnancyId-' + rec.id;
+          tbody(id=pregId)
+            each pe in rec.prenatalExam
+              - var prenatalExamId = 'prenatalExamId-' + pe.id;
+              //- TODO: convert user id to name.
+              - var examiner = pe.updatedBy
+              tr(class='prenatalExamRow', id=prenatalExamId)
+                td= pe.date
+                td= pe.weight
+                td= pe.systolic
+                td= pe.diastolic
+                td= pe.cr
+                td= pe.fh
+                td= pe.fht
+                td= pe.pos
+                td= pe.mvmt
+                td= pe.edma
+                td= pe.risk
+                td= pe.vitamin
+                td= pe.pray
+                td= examiner
+                td= pe.returnDate
+    div.row
+      div(class='col-sm-2 col-sm-offset-9')
+        p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding a prenatal exam.')
+      div(class='col-sm-1')
+        a(href=prenatalExamAddFormPath, role="button", class='btn btn-primary disable-on-change pull-right')= gettext('Add Prenatal Exam')
+
+    div.row
+      div(class='col-sm-1')
+        input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=rec.id)
+

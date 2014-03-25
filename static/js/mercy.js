@@ -65,6 +65,8 @@ $(function() {
     disableOnChange('#editPregForm');  // Midwife Interview Edit Pregnancy Back button
     disableOnChange('#midwifeForm');  // Midwife Interview Add Pregnancies button
     visibleOnChange('#midwifeForm');  // Midwife Interview explanation text
+    disableOnChange('#prenatalForm');  // Prenatal Add prenatal exam button
+    visibleOnChange('#prenatalForm');  // Prenatal Add explanation text
 
 
     // --------------------------------------------------------
@@ -88,7 +90,7 @@ $(function() {
     $('.searchResultsRow').click(function(evt) {
       evt.preventDefault();
       var recId = evt.currentTarget.id.split('-')[1]
-        , path = '/pregnancy/' + recId + '/edit'
+        , path = '/pregnancy/' + recId + '/prenatal'
         ;
       window.location = path;
       return false;

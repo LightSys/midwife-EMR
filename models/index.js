@@ -10,6 +10,8 @@ module.exports = {
   , Pregnancies: require('./Pregnancy').Pregnancies
   , PregnancyHistory: require('./PregnancyHistory').PregnancyHistory
   , PregnancyHistories: require('./PregnancyHistory').PregnancyHistories
+  , PrenatalExam: require('./PrenatalExam').PrenatalExam
+  , PrenatalExams: require('./PrenatalExam').PrenatalExams
   , Event: require('./Event').Event
   , Events: require('./Event').Events
   , SelectData: require('./SelectData').SelectData

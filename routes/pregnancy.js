@@ -100,14 +100,26 @@ var init = function() {
 var load = function(req, res, next) {
   var id = req.params.id
     , hid = parseInt(req.params.hid, 10)
+    , formatDate = function(val) {
+        return val === '0000-00-00'? '': moment(val).format('YYYY-MM-DD');
+      }
     ;
 
   Pregnancy.forge({id: id})
-    .fetch({withRelated: ['patient', 'pregnancyHistory']})
+    .fetch({withRelated: ['patient', 'pregnancyHistory', 'prenatalExam']})
     .then(function(rec) {
       if (! rec) return next();
       rec = rec.toJSON();
-      rec.patient.dob = moment(rec.patient.dob).format('MM-DD-YYYY');
+
+      // --------------------------------------------------------
+      // Fix the dates for the screen in the format that the
+      // input[type='date'] expects.
+      // --------------------------------------------------------
+      rec.patient.dob = formatDate(rec.patient.dob);
+      rec.lmp = formatDate(rec.lmp);
+      rec.edd = formatDate(rec.edd);
+      rec.alternateEdd = formatDate(rec.alternateEdd);
+
       if (rec) req.paramPregnancy = rec;
       if (! isNaN(hid)) {
         // --------------------------------------------------------
@@ -231,7 +243,7 @@ var quesUpdate = function(req, res) {
 
     // --------------------------------------------------------
     // If none field is checked as well as other fields in each
-    // group, turn the none field off because it does not make 
+    // group, turn the none field off because it does not make
     // sense.
     // --------------------------------------------------------
     _.each(_.keys(pregFlds), function(key) {
@@ -461,7 +473,7 @@ var update = function(req, res) {
       supervisor = req.session.supervisor.id;
     }
     pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority']);
-    patFlds = {dohID: doh, dob: moment(dob, 'MM-DD-YYYY').format('YYYY-MM-DD')};
+    patFlds = {dohID: doh, dob: dob};
     patFlds = _.extend(patFlds, {id: req.paramPregnancy.patient_id});
     Pregnancy.checkFields(pregFlds).then(function(flds) {
       Pregnancy.forge(flds)
@@ -770,6 +782,79 @@ var pregnancyHistoryDelete = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * prenatalEdit()
+ *
+ * Display the edit form for the prenatal information.
+ * -------------------------------------------------------- */
+var prenatalEdit = function(req, res) {
+  var data = getCommonFormData(req, {title: req.gettext('Prenatal')})
+    ;
+  if (req.paramPregnancy) {
+    res.render('prenatal', data);
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * prenatalUpdate()
+ *
+ * Update the high-level prenatal information about the
+ * pregnancy.
+ * -------------------------------------------------------- */
+var prenatalUpdate = function(req, res) {
+  var supervisor = null
+    , pnFlds = {}
+    , defaultFlds = {
+        philHealthMCP: '0'
+        , philHealthNCP: '0'
+        , philHealthApproved: '0'
+        , useAlternateEdd: '0'
+      }
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.id &&
+      req.paramPregnancy.id == req.body.id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    // --------------------------------------------------------
+    // Allow 'unchecking' a box by providing a default of off.
+    // --------------------------------------------------------
+    pnFlds = _.extend(defaultFlds, _.omit(req.body, ['_csrf']));
+
+    Pregnancy.forge({id: pnFlds.id})
+      .fetch().then(function(pregnancy) {
+        pregnancy
+          .setUpdatedBy(req.session.user.id)
+          .setSupervisor(supervisor)
+          .save(pnFlds).then(function(pregnancy) {
+            req.flash('info', req.gettext('Pregnancy was updated.'));
+            res.redirect(cfg.path.pregnancyPrenatalEdit.replace(/:id/, pregnancy.id));
+          })
+          .caught(function(err) {
+            logError(err);
+            res.redirect(cfg.path.search);
+          });
+
+      })
+      .caught(function(err) {
+        logError(err);
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    logError('Error in update of prenatal information: pregnancy not found.');
+    res.redirect(cfg.path.search);
+  }
+};
+
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -791,5 +876,7 @@ module.exports = {
   , pregnancyHistoryEditForm: pregnancyHistoryEditForm
   , pregnancyHistoryEdit: pregnancyHistoryEdit
   , pregnancyHistoryDelete: pregnancyHistoryDelete
+  , prenatalEdit: prenatalEdit
+  , prenatalUpdate: prenatalUpdate
 };
 

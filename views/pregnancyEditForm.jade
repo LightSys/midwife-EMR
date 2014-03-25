@@ -19,7 +19,7 @@ block pregnancyEdit
           input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname', value=rec.firstname)
         div(class='form-group col-sm-4')
           span= gettext('Date of Birth (mm/dd/yyyy)')
-          input(class='form-control input-lg', type='text', tabindex="3", autocomplete="off", name='dob', value=rec.patient.dob)
+          input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob', value=rec.patient.dob)
       div.row
         div(class='form-group col-sm-4')
           span= gettext('Religion')

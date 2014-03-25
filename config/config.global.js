@@ -170,6 +170,12 @@ cfg.path.pregnancyHistoryAdd = '/pregnancy/:id/preghistoryadd'; // POST
 cfg.path.pregnancyHistoryEditForm = '/pregnancy/:id/preghistoryedit/:hid'; // GET
 cfg.path.pregnancyHistoryEdit = '/pregnancy/:id/preghistoryedit/:hid'; // POST
 cfg.path.pregnancyHistoryDelete = '/pregnancy/:id/preghistorydelete/:hid'; // POST
+cfg.path.pregnancyPrenatalEdit = '/pregnancy/:id/prenatal'; // GET
+cfg.path.pregnancyPrenatalUpdate = '/pregnancy/:id/prenatal'; // POST
+cfg.path.pregnancyPrenatalExamAddForm = '/pregnancy/:id/prenatalexamaddform'; // GET
+cfg.path.pregnancyPrenatalExamAdd = '/pregnancy/:id/prenatalexamadd'; // POST
+
+
 
 module.exports = cfg;
 

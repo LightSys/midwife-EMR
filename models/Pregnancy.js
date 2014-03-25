@@ -36,7 +36,8 @@ CREATE TABLE `pregnancy` (
   `lmp` date DEFAULT NULL,
   `warning` tinyint(1) DEFAULT '0',
   `edd` date DEFAULT NULL,
-  `additionalEdd` date DEFAULT NULL,
+  `alternateEdd` date DEFAULT NULL,
+  `useAlternateEdd` tinyint(1) DEFAULT '0',
   `doctorConsultDate` date DEFAULT NULL,
   `dentistConsultDate` date DEFAULT NULL,
   `mbBook` tinyint(1) DEFAULT NULL,
@@ -59,6 +60,10 @@ CREATE TABLE `pregnancy` (
   `para` tinyint(4) DEFAULT NULL,
   `term` tinyint(4) DEFAULT NULL,
   `preterm` tinyint(4) DEFAULT NULL,
+  `philHealthMCP` tinyint(1) DEFAULT '0',
+  `philHealthNCP` tinyint(1) DEFAULT '0',
+  `philHealthID` varchar(12) DEFAULT NULL,
+  `philHealthApproved` tinyint(1) DEFAULT '0',
   `currentlyVomiting` tinyint(1) DEFAULT NULL,
   `currentlyDizzy` tinyint(1) DEFAULT NULL,
   `currentlyFainting` tinyint(1) DEFAULT NULL,
@@ -111,34 +116,36 @@ CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
   tableName: 'pregnancy'
 
   , permittedAttributes: ['id', 'firstname', 'lastname', 'maidenname', 'nickname',
-    'religion', 'maritalStatus', 'telephone', 'work', 'education', 'monthlyIncome',
-    'address', 'barangay', 'city', 'postalCode', 'gravidaNumber', 'lmp', 'warning',
-    'edd', 'additionalEdd', 'doctorConsultDate', 'dentistConsultDate', 'mbBook',
-    'iodizedSalt', 'whereDeliver', 'fetuses', 'monozygotic', 'pregnancyEndDate',
-    'pregnancyEndResult', 'iugr', 'note', 'numberRequiredTetanus',
-    'invertedNipples', 'hasUS', 'wantsUS', 'gravida', 'stillBirths', 'abortions',
-    'living', 'para', 'term', 'preterm', 'currentlyVomiting', 'currentlyDizzy',
-    'currentlyFainting', 'currentlyBleeding', 'currentlyUrinationPain',
-    'currentlyBlurryVision', 'currentlySwelling', 'currentlyBirthCanalPain',
-    'currentlyNone', 'useIodizedSalt', 'canDrinkMedicine', 'planToBreastFeed',
-    'birthCompanion', 'practiceFamilyPlanning', 'familyPlanningDetails',
-    'familyHistoryTwins', 'familyHistoryHighBloodPressure', 'familyHistoryDiabetes',
-    'familyHistoryChestPains', 'familyHistoryTB', 'familyHistorySmoking',
-    'familyHistoryNone', 'historyFoodAllergy', 'historyMedicineAllergy',
-    'historyAsthma', 'historyChestPains', 'historyKidneyProblems',
-    'historyHepatitis', 'historyGoiter', 'historyHighBloodPressure',
-    'historyHospitalOperation', 'historyBloodTransfusion', 'historySmoking',
-    'historyDrinking', 'historyNone', 'partnerFirstname', 'partnerLastname',
-    'partnerAge', 'partnerWork', 'partnerEducation', 'partnerMonthlyIncome',
-    'updatedBy', 'updatedAt', 'supervisor', 'patient_id', 'partner_id',
-    'pregnancyQuestionnaire_id']
+      'religion', 'maritalStatus', 'telephone', 'work', 'education',
+      'monthlyIncome', 'address', 'barangay', 'city', 'postalCode',
+      'gravidaNumber', 'lmp', 'warning', 'edd', 'alternateEdd', 'useAlternateEdd',
+      'doctorConsultDate', 'dentistConsultDate', 'mbBook', 'iodizedSalt',
+      'whereDeliver', 'fetuses', 'monozygotic', 'pregnancyEndDate',
+      'pregnancyEndResult', 'iugr', 'note', 'numberRequiredTetanus',
+      'invertedNipples', 'hasUS', 'wantsUS', 'gravida', 'stillBirths',
+      'abortions', 'living', 'para', 'term', 'preterm', 'philHealthMCP',
+      'philHealthNCP', 'philHealthID', 'philHealthApproved', 'currentlyVomiting',
+      'currentlyDizzy', 'currentlyFainting', 'currentlyBleeding',
+      'currentlyUrinationPain', 'currentlyBlurryVision', 'currentlySwelling',
+      'currentlyBirthCanalPain', 'currentlyNone', 'useIodizedSalt',
+      'canDrinkMedicine', 'planToBreastFeed', 'birthCompanion',
+      'practiceFamilyPlanning', 'familyPlanningDetails', 'familyHistoryTwins',
+      'familyHistoryHighBloodPressure', 'familyHistoryDiabetes',
+      'familyHistoryChestPains', 'familyHistoryTB', 'familyHistorySmoking',
+      'familyHistoryNone', 'historyFoodAllergy', 'historyMedicineAllergy',
+      'historyAsthma', 'historyChestPains', 'historyKidneyProblems',
+      'historyHepatitis', 'historyGoiter', 'historyHighBloodPressure',
+      'historyHospitalOperation', 'historyBloodTransfusion', 'historySmoking',
+      'historyDrinking', 'historyNone', 'partnerFirstname', 'partnerLastname',
+      'partnerAge', 'partnerWork', 'partnerEducation', 'partnerMonthlyIncome',
+      'updatedBy', 'updatedAt', 'supervisor', 'patient_id']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
@@ -159,6 +166,10 @@ Pregnancy = Bookshelf.Model.extend({
 
   , pregnancyHistory: function() {
       return this.hasMany(require('./PregnancyHistory').PregnancyHistory, 'pregnancy_id');
+    }
+
+  , prenatalExam: function() {
+      return this.hasMany(require('./PrenatalExam').PrenatalExam, 'pregnancy_id');
     }
 
 }, {

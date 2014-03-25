@@ -321,6 +321,13 @@ app.post(cfg.path.pregnancyHistoryEdit, common, hasSuper,
 app.post(cfg.path.pregnancyHistoryDelete, common, hasSuper,
     inRoles(['student','supervisor']), pregnancy.pregnancyHistoryDelete);
 
+// Prenatal
+app.get(cfg.path.pregnancyPrenatalEdit, common, hasSuper,
+    inRoles(['student','supervisor']), pregnancy.prenatalEdit);
+app.post(cfg.path.pregnancyPrenatalUpdate, common, hasSuper,
+    inRoles(['student','supervisor']), pregnancy.prenatalUpdate);
+
+
 // --------------------------------------------------------
 // The last resort.
 // --------------------------------------------------------
