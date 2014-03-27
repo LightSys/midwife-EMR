@@ -99,9 +99,10 @@ block midwifeInterview
                 td(data-bind='howLongBFed')= ph.howLongBFed
                 td(data-bind='note')= ph.note
     div.row
-      div(class='col-sm-2 col-sm-offset-10')
-        a(href=pregHistAddFormPath, role="button", class='btn btn-primary disable-on-change pull-right')= gettext('Add historical pregnancy')
+      div(class='col-sm-2 col-sm-offset-9')
         p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding historical pregnancies.')
+      div(class='col-sm-1')
+        a(href=pregHistAddFormPath, role="button", class='btn btn-primary disable-on-change pull-right')= gettext('Add historical pregnancy')
 
     div.row
       div(class='col-sm-1')

@@ -39,6 +39,9 @@ block prenatal
         div.row
           div(class='col-sm-6')
             div.checkbox
+              label= gettext('Sure of LMP')
+                input(type='checkbox', name='sureLMP', tabindex="7", value=1, checked=rec.sureLMP==true)
+            div.checkbox
               label= gettext('Use Alternate EDD')
                 input(type='checkbox', name='useAlternateEdd', tabindex="7", value=1, checked=rec.useAlternateEdd==true)
           div(class='col-sm-6')
@@ -47,7 +50,6 @@ block prenatal
               input(class='form-control', type='date', name='alternateEdd', tabindex="8", value=rec.alternateEdd)
 
       div(class='form-group col-sm-5 box')
-        //- TODO: create database fields for these fields.
         p(class='text-primary lead')= gettext('Risk')
         div.row
           div(class='col-sm-3')
@@ -56,14 +58,14 @@ block prenatal
                 input(type='checkbox', name='riskPresent', tabindex="9", value=1, checked=rec.riskPresent==true)
             div.checkbox
               label= gettext('OB Hx')
-                input(type='checkbox', name='riskOBHx', tabindex="10", value=1, checked=rec.riskOBHx==true)
+                input(type='checkbox', name='riskObHx', tabindex="10", value=1, checked=rec.riskObHx==true)
             div.checkbox
               label= gettext('Med Hx')
                 input(type='checkbox', name='riskMedHx', tabindex="11", value=1, checked=rec.riskMedHx==true)
           div(class='col-sm-9')
             div
-              span= gettext('Risk Factors')
-              textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=3, name='riskOther', value=rec.riskOther)
+              span= gettext('Risk Notes')
+              textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=3, name='riskNote')= rec.riskNote
 
     div.row
       div(class='col-sm-12')

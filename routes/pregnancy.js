@@ -131,8 +131,6 @@ var load = function(req, res, next) {
       }
     ;
 
-  console.log('id: ' + id + ', op: ' + op + ', id2: ' + id2);
-
   Pregnancy.forge({id: id})
     .fetch({withRelated: ['patient', 'pregnancyHistory', 'prenatalExam']})
     .then(function(rec) {
@@ -857,6 +855,10 @@ var prenatalUpdate = function(req, res) {
         , philHealthNCP: '0'
         , philHealthApproved: '0'
         , useAlternateEdd: '0'
+        , riskPresent: '0'
+        , riskObHx: '0'
+        , riskMedHx: '0'
+        , sureLMP: '0'
       }
     ;
 
@@ -873,7 +875,7 @@ var prenatalUpdate = function(req, res) {
     // --------------------------------------------------------
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
-    pnFlds = _.extend(defaultFlds, _.omit(req.body, ['_csrf']));
+    pnFlds = _.defaults(_.omit(req.body, ['_csrf']), defaultFlds);
 
     Pregnancy.forge({id: pnFlds.id})
       .fetch().then(function(pregnancy) {
@@ -915,9 +917,6 @@ var prenatalExamAdd = function(req, res) {
     , flds = req.body
     , preRec
     ;
-
-  console.log('prenatalExamAdd()');
-  console.dir(flds);
 
   if (req.paramPregnancy &&
       req.body &&
