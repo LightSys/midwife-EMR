@@ -159,7 +159,7 @@ cfg.path.pregnancyNewForm = '/pregnancy/new';         // GET
 cfg.path.pregnancyCreate = '/pregnancy';              // POST
 cfg.path.pregnancyEditForm = '/pregnancy/:id/edit';   // GET
 cfg.path.pregnancyUpdate = '/pregnancy/:id/update';   // POST
-cfg.path.pregnancyLoad = '/pregnancy/:id/:op?/:hid?';       // parameter handling
+cfg.path.pregnancyLoad = '/pregnancy/:id/:op?/:id2?';       // parameter handling
 cfg.path.pregnancyHistory = '/pregnancy/:id/history'; // GET
 cfg.path.pregnancyQuesEdit = '/pregnancy/:id/quesEdit';   // GET
 cfg.path.pregnancyQuesUpdate = '/pregnancy/:id/quesUpdate';   // POST
@@ -167,13 +167,16 @@ cfg.path.pregnancyMidwifeEdit = '/pregnancy/:id/midwifeinterview'; // GET
 cfg.path.pregnancyMidwifeUpdate = '/pregnancy/:id/midwifeinterview'; // POST
 cfg.path.pregnancyHistoryAddForm = '/pregnancy/:id/preghistoryaddform'; // GET
 cfg.path.pregnancyHistoryAdd = '/pregnancy/:id/preghistoryadd'; // POST
-cfg.path.pregnancyHistoryEditForm = '/pregnancy/:id/preghistoryedit/:hid'; // GET
-cfg.path.pregnancyHistoryEdit = '/pregnancy/:id/preghistoryedit/:hid'; // POST
-cfg.path.pregnancyHistoryDelete = '/pregnancy/:id/preghistorydelete/:hid'; // POST
+cfg.path.pregnancyHistoryEditForm = '/pregnancy/:id/preghistoryedit/:id2'; // GET
+cfg.path.pregnancyHistoryEdit = '/pregnancy/:id/preghistoryedit/:id2'; // POST
+cfg.path.pregnancyHistoryDelete = '/pregnancy/:id/preghistorydelete/:id2'; // POST
 cfg.path.pregnancyPrenatalEdit = '/pregnancy/:id/prenatal'; // GET
 cfg.path.pregnancyPrenatalUpdate = '/pregnancy/:id/prenatal'; // POST
 cfg.path.pregnancyPrenatalExamAddForm = '/pregnancy/:id/prenatalexamaddform'; // GET
 cfg.path.pregnancyPrenatalExamAdd = '/pregnancy/:id/prenatalexamadd'; // POST
+cfg.path.pregnancyPrenatalExamEditForm = '/pregnancy/:id/prenatalexamedit/:id2'; // GET
+cfg.path.pregnancyPrenatalExamEdit = '/pregnancy/:id/prenatalexamedit/:id2'; // POST
+cfg.path.pregnancyPrenatalExamDelete = '/pregnancy/:id/prenatalexamdelete/:id2'; // POST
 
 
 

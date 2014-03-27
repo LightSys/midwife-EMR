@@ -326,7 +326,16 @@ app.get(cfg.path.pregnancyPrenatalEdit, common, hasSuper,
     inRoles(['student','supervisor']), pregnancy.prenatalEdit);
 app.post(cfg.path.pregnancyPrenatalUpdate, common, hasSuper,
     inRoles(['student','supervisor']), pregnancy.prenatalUpdate);
-
+app.get(cfg.path.pregnancyPrenatalExamAddForm, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), pregnancy.prenatalExamAddForm);
+app.post(cfg.path.pregnancyPrenatalExamAdd, common, hasSuper,
+    inRoles(['clerk','student','supervisor']), pregnancy.prenatalExamAdd);
+app.get(cfg.path.pregnancyPrenatalExamEditForm, common, hasSuper,
+    inRoles(['student','supervisor']), pregnancy.prenatalExamEditForm);
+app.post(cfg.path.pregnancyPrenatalExamEdit, common, hasSuper,
+    inRoles(['student','supervisor']), pregnancy.prenatalExamEdit);
+app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
+    inRoles(['student','supervisor']), pregnancy.prenatalExamDelete);
 
 // --------------------------------------------------------
 // The last resort.

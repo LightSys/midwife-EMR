@@ -40,11 +40,11 @@ block prenatal
           div(class='col-sm-6')
             div.checkbox
               label= gettext('Use Alternate EDD')
-                input(type='checkbox', name='useAlternateEdd', tabindex="8", value=1, checked=rec.useAlternateEdd==true)
+                input(type='checkbox', name='useAlternateEdd', tabindex="7", value=1, checked=rec.useAlternateEdd==true)
           div(class='col-sm-6')
             div
               span= gettext('Alternate EDD')
-              input(class='form-control', type='date', name='alternateEdd', tabindex="7", value=rec.alternateEdd)
+              input(class='form-control', type='date', name='alternateEdd', tabindex="8", value=rec.alternateEdd)
 
       div(class='form-group col-sm-5 box')
         //- TODO: create database fields for these fields.
@@ -72,8 +72,7 @@ block prenatal
             tr
               td= gettext('Date')
               td= gettext('Weight')
-              td= gettext('Systolic')
-              td= gettext('Diastolic')
+              td= gettext('B/P')
               td= gettext('CR')
               td= gettext('GA')
               td= gettext('FH')
@@ -92,22 +91,30 @@ block prenatal
               - var prenatalExamId = 'prenatalExamId-' + pe.id;
               //- TODO: convert user id to name.
               - var examiner = pe.updatedBy
+              - peDate = pe.date? libs.mmt(pe.date).format('MM-DD-YYYY'): '';
+              - returnDate = pe.returnDate? libs.mmt(pe.returnDate).format('MM-DD-YYYY'): '';
+              - var bp = pe.systolic + ' / ' + pe.diastolic;
+              - mvmt = pe.mvmt === 1? 'Y': 'N';
+              - edma = pe.edma === 1? 'Y': 'N';
+              - risk = pe.risk === 1? 'Y': 'N';
+              - vitamin = pe.vitamin === 1? 'Y': 'N';
+              - pray = pe.pray === 1? 'Y': 'N';
               tr(class='prenatalExamRow', id=prenatalExamId)
-                td= pe.date
+                td= peDate
                 td= pe.weight
-                td= pe.systolic
-                td= pe.diastolic
+                td= bp
                 td= pe.cr
+                td= pe.ga
                 td= pe.fh
                 td= pe.fht
                 td= pe.pos
-                td= pe.mvmt
-                td= pe.edma
-                td= pe.risk
-                td= pe.vitamin
-                td= pe.pray
+                td= mvmt
+                td= edma
+                td= risk
+                td= vitamin
+                td= pray
                 td= examiner
-                td= pe.returnDate
+                td= returnDate
     div.row
       div(class='col-sm-2 col-sm-offset-9')
         p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding a prenatal exam.')

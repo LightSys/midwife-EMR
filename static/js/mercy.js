@@ -58,6 +58,39 @@ $(function() {
       });
     };
 
+    /* --------------------------------------------------------
+     * handleRowClick()
+     *
+     * Curry function that handles a click event on a row in a
+     * table. Expects the id attribute in the row to be in the
+     * format of something-ID where ID is a number. Expects the
+     * path passed to be in the format 'prefix/:id/postfix'.
+     * It will replace :id in the path with the id derived from
+     * the id of the row when the click event occurs.
+     *
+     * Will handle the id of the parent element in the same format
+     * and place the id in the ':pid' placeholder if found. E.g.
+     * '/somepath/:id/morepath/:pid' evaluates to 
+     * '/somepath/23/morepath/1'.
+     *
+     * param       path - 'something/:id/somethingElse'
+     * return      function - handles the click event
+     * -------------------------------------------------------- */
+    var handleRowClick = function(path) {
+      return function(evt) {
+        var id = evt.currentTarget.id.split('-')[1]
+          , pid = evt.currentTarget.parentElement.id.split('-')[1]
+          , url = path.replace(':id', id)
+          ;
+        if (pid && path.indexOf(':pid') !== -1) {
+          url = url.replace(':pid', pid);
+        }
+        evt.preventDefault();
+        window.location = url;
+        return false;
+      };
+    };
+
     // --------------------------------------------------------
     // Respond to changes in these forms.
     // --------------------------------------------------------
@@ -70,57 +103,23 @@ $(function() {
 
 
     // --------------------------------------------------------
-    // Midwife Interview: allow clicking on a row in the
-    // pregnancy history table to go to that record.
+    // Handle clicks in tables by retrieving a child page.
     // --------------------------------------------------------
-    $('.pregHistoryRow').click(function(evt) {
-      evt.preventDefault();
-      var histId = evt.currentTarget.id.split('-')[1]
-        , pregId = evt.currentTarget.parentElement.id.split('-')[1]
-        , path = '/pregnancy/' + pregId + '/preghistoryedit/' + histId
-        ;
-      window.location = path;
-      return false;
-    });
+    // Search results.
+    $('.searchResultsRow').click(handleRowClick('/pregnancy/:id/prenatal'));
 
-    // --------------------------------------------------------
-    // Search Results: allow clicking on a row in the search
-    // results screen to go to that record.
-    // --------------------------------------------------------
-    $('.searchResultsRow').click(function(evt) {
-      evt.preventDefault();
-      var recId = evt.currentTarget.id.split('-')[1]
-        , path = '/pregnancy/' + recId + '/prenatal'
-        ;
-      window.location = path;
-      return false;
-    });
+    // Midwife Interview screen, pregnancy history.
+    $('.pregHistoryRow').click(handleRowClick('/pregnancy/:pid/preghistoryedit/:id'));
 
-    // --------------------------------------------------------
-    // User List: allow clicking on a row in the user list
-    // screen to go to that record.
-    // --------------------------------------------------------
-    $('.userListRow').click(function(evt) {
-      evt.preventDefault();
-      var userId = evt.currentTarget.id.split('-')[1]
-        , path = '/user/' + userId + '/edit'
-        ;
-      window.location = path;
-      return false;
-    });
+    // Prenatal screen, prenatal exams.
+    $('.prenatalExamRow').click(handleRowClick('/pregnancy/:pid/prenatalexamedit/:id'));
 
-    // --------------------------------------------------------
-    // Role List: allow clicking on a row in the role list
-    // screen to go to that record.
-    // --------------------------------------------------------
-    $('.roleListRow').click(function(evt) {
-      evt.preventDefault();
-      var roleId = evt.currentTarget.id.split('-')[1]
-        , path = '/role/' + roleId + '/edit'
-        ;
-      window.location = path;
-      return false;
-    });
+    // List of users.
+    $('.userListRow').click(handleRowClick('/user/:id/edit'));
+
+    // List of roles.
+    $('.roleListRow').click(handleRowClick('/role/:id/edit'));
+
 
   })(window, jQuery, _);
 });

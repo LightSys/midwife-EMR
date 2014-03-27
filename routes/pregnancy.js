@@ -17,6 +17,8 @@ var _ = require('underscore')
   , Pregnancies = require('../models').Pregnancies
   , PregnancyHistory = require('../models').PregnancyHistory
   , PregnancyHistories = require('../models').PregnancyHistories
+  , PrenatalExam = require('../models').PrenatalExam
+  , PrenatalExams = require('../models').PrenatalExams
   , User = require('../models').User
   , Users = require('../models').Users
   , SelectData = require('../models').SelectData
@@ -86,6 +88,29 @@ var init = function() {
 };
 
 /* --------------------------------------------------------
+ * getGA()
+ *
+ * Returns the gestational age as a string in the format
+ * 'ww d/7' where ww is the week and d is the day of the
+ * current week, e.g. 38 2/7 or 32 5/7.
+ *
+ * Calculation assumes a 40 week pregnancy and subtracts
+ * today's date from the estimated due date, which is passed
+ * as a parameter.
+ *
+ * param      edd - estimated due date as JS Date or Moment obj
+ * return     GA - as a string in ww d/7 format 
+ * -------------------------------------------------------- */
+var getGA = function(edd) {
+  var estDue = moment(edd)
+    , today = moment()
+    , weeks = 40 - estDue.diff(today, 'weeks') - 1
+    , days = Math.abs(estDue.diff(today.add('weeks', 40 - weeks), 'days'))
+    ;
+  return weeks + ' ' + days + '/7';
+};
+
+/* --------------------------------------------------------
  * load()
  *
  * Loads the pregnancy record from the database based upon the id
@@ -99,11 +124,14 @@ var init = function() {
  * -------------------------------------------------------- */
 var load = function(req, res, next) {
   var id = req.params.id
-    , hid = parseInt(req.params.hid, 10)
+    , id2 = parseInt(req.params.id2, 10)
+    , op = req.params.op
     , formatDate = function(val) {
         return val === '0000-00-00'? '': moment(val).format('YYYY-MM-DD');
       }
     ;
+
+  console.log('id: ' + id + ', op: ' + op + ', id2: ' + id2);
 
   Pregnancy.forge({id: id})
     .fetch({withRelated: ['patient', 'pregnancyHistory', 'prenatalExam']})
@@ -119,15 +147,31 @@ var load = function(req, res, next) {
       rec.lmp = formatDate(rec.lmp);
       rec.edd = formatDate(rec.edd);
       rec.alternateEdd = formatDate(rec.alternateEdd);
+      rec.ga = getGA(rec.edd);
 
       if (rec) req.paramPregnancy = rec;
-      if (! isNaN(hid)) {
+
+      // --------------------------------------------------------
+      // Assign detail record in the master-detail relationship
+      // to a convenient location on the request object.
+      // --------------------------------------------------------
+      if (! isNaN(id2)) {
         // --------------------------------------------------------
-        // Assign appropriate historical pregnancy for convenience.
+        // Historical pregnancies.
         // --------------------------------------------------------
-        req.paramPregHist = _.find(rec.pregnancyHistory, function(r) {
-          return r.id === hid;
-        });
+        if (op === 'preghistoryedit' || op === 'preghistorydelete') {
+          req.paramPregHist = _.find(rec.pregnancyHistory, function(r) {
+            return r.id === id2;
+          });
+        }
+        // --------------------------------------------------------
+        // Prenatal exams.
+        // --------------------------------------------------------
+        if (op === 'prenatalexamedit' || op === 'prenatalexamdelete') {
+          req.paramPrenatalExam = _.find(rec.prenatalExam, function(p) {
+            return p.id === id2;
+          });
+        }
       }
       next();
     });
@@ -178,6 +222,7 @@ var getCommonFormData = function(req, addData) {
     , messages: req.flash()
     , rec: req.paramPregnancy
     , pregHist: req.paramPregHist || void(0)
+    , prenatalExam: req.paramPrenatalExam || void(0)
   });
 };
 
@@ -855,6 +900,158 @@ var prenatalUpdate = function(req, res) {
   }
 };
 
+var prenatalExamAddForm = function(req, res) {
+  var data = {title: req.gettext('Add Prenatal Exam')};
+  if (req.paramPregnancy) {
+    res.render('prenatalAddEditExam', getCommonFormData(req, data));
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+var prenatalExamAdd = function(req, res) {
+  var supervisor = null
+    , flds = req.body
+    , preRec
+    ;
+
+  console.log('prenatalExamAdd()');
+  console.dir(flds);
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    preRec = new PrenatalExam(flds);
+    preRec
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .save(flds, {method: 'insert'}).then(function(model) {
+        var pregId = model.get('pregnancy_id');
+        req.flash('info', req.gettext('Prenatal Exam was saved.'));
+        res.redirect(cfg.path.pregnancyPrenatalEdit.replace(/:id/, pregId));
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+
+  } else {
+    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
+
+var prenatalExamEditForm = function(req, res) {
+  var data = {title: req.gettext('Edit Prenatal Exam')};
+  if (req.paramPregnancy) {
+    res.render('prenatalAddEditExam', getCommonFormData(req, data));
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+var prenatalExamEdit = function(req, res) {
+  var supervisor = null
+    , flds = _.omit(req.body, ['_csrf'])
+    , preRec
+    , defaultFlds = {
+        mvmt: '0'
+        , edma: '0'
+        , risk: '0'
+        , vitamin: '0'
+        , pray: '0'
+      }
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    // --------------------------------------------------------
+    // Allow 'unchecking' a box by providing a default of off.
+    // --------------------------------------------------------
+    flds = _.defaults(flds, defaultFlds);
+
+    preRec = new PrenatalExam(flds);
+    preRec
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .save(flds, {method: 'update'}).then(function(model) {
+        var path = cfg.path.pregnancyPrenatalEdit
+          ;
+        path = path.replace(/:id/, flds.pregnancy_id);
+        res.redirect(path);
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+
+  } else {
+    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
+
+var prenatalExamDelete = function(req, res) {
+  var supervisor = null
+    , flds = req.body
+    , peRec
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    if (hasRole(req, 'student')) {
+      supervisor = req.session.supervisor.id;
+    }
+    flds.id = parseInt(flds.id, 10);
+    flds.pregnancy_id = parseInt(flds.pregnancy_id, 10);
+
+    peRec = new PrenatalExam({id: flds.id, pregnancy_id: flds.pregnancy_id});
+    peRec
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .destroy().then(function() {
+        var path = cfg.path.pregnancyPrenatalEdit
+          ;
+        path = path.replace(/:id/, flds.pregnancy_id);
+        res.redirect(path);
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
+
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -878,5 +1075,10 @@ module.exports = {
   , pregnancyHistoryDelete: pregnancyHistoryDelete
   , prenatalEdit: prenatalEdit
   , prenatalUpdate: prenatalUpdate
+  , prenatalExamAddForm: prenatalExamAddForm
+  , prenatalExamAdd: prenatalExamAdd
+  , prenatalExamEditForm: prenatalExamEditForm
+  , prenatalExamEdit: prenatalExamEdit
+  , prenatalExamDelete: prenatalExamDelete
 };
 
