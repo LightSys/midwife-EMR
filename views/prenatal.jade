@@ -12,21 +12,27 @@ block prenatal
     div.row
       div(class='form-group col-sm-3 box')
         p(class='text-primary lead')= gettext('Phil Health')
-        div.checkbox
-          label= gettext('Phil Health MCP')
-            input(type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
-        div.checkbox
-          label= gettext('Phil Health NCP')
-            input(type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
-        div.checkbox
-          label= gettext('Phil Health Approved')
-            input(type='checkbox', name='philHealthApproved', tabindex="3", value=1, checked=rec.philHealthApproved==true)
-        div
-          span= gettext('Phil Health ID')
-          input(class='form-control input-lg', type='text', size=12, tabindex="4", autocomplete="off", name='philHealthID', value=rec.philHealthID)
+        div.row
+          div(class='form-group col-sm-6 box')
+            div.checkbox
+              label= gettext('Phil Health MCP')
+                input(type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
+          div(class='form-group col-sm-6 box')
+            div
+              span= gettext('PHIC #')
+              input(class='form-control', type='text', size=12, tabindex="4", autocomplete="off", name='philHealthID', value=rec.philHealthID)
+        div.row
+          div(class='form-group col-sm-6 box')
+            div.checkbox
+              label= gettext('Phil Health NCP')
+                input(type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
+          div(class='form-group col-sm-6 box')
+            div.checkbox
+              label= gettext('PHIC Approved')
+                input(type='checkbox', name='philHealthApproved', tabindex="3", value=1, checked=rec.philHealthApproved==true)
 
       div(class='form-group col-sm-4 box')
-        p(class='text-primary lead')= gettext('EDD')
+        p(class='text-primary lead')= gettext('Estimated Due Dates')
         div.row
           div(class='col-sm-6')
             div
@@ -50,7 +56,7 @@ block prenatal
               input(class='form-control', type='date', name='alternateEdd', tabindex="8", value=rec.alternateEdd)
 
       div(class='form-group col-sm-5 box')
-        p(class='text-primary lead')= gettext('Risk')
+        p(class='text-primary lead')= gettext('Risk Factors')
         div.row
           div(class='col-sm-3')
             div.checkbox

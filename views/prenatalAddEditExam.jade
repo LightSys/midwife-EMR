@@ -56,34 +56,34 @@ block prenatalAddEditExam
           div= gettext('GA')
           input(id='ga', class='form-control', type='text', autocomplete="off", name='ga', disabled=true, value=rec.ga)
           span= gettext('Position')
-          input(id='pos', class='form-control', type='text', tabindex="7", autocomplete="off", name='pos', value=prenatalExam.pos)
+          input(id='pos', class='form-control', type='text', tabindex="6", autocomplete="off", name='pos', value=prenatalExam.pos)
           span= gettext('FH')
-          input(id='fh', class='form-control', type='number', tabindex="8", autocomplete="off", name='fh', value=prenatalExam.fh)
+          input(id='fh', class='form-control', type='number', tabindex="7", autocomplete="off", name='fh', value=prenatalExam.fh)
           span= gettext('FHT')
-          input(id='fht', class='form-control', type='number', tabindex="9", autocomplete="off", name='fht', value=prenatalExam.fht)
+          input(id='fht', class='form-control', type='number', tabindex="8", autocomplete="off", name='fht', value=prenatalExam.fht)
 
         div(class='form-group col-sm-2 col-sm-offset-1')
           label(class='')= gettext('Other Information')
           div.checkbox
             label= gettext('Mvmt')
-              input(type='checkbox', name='mvmt', tabindex="10", value=1, checked=prenatalExam.mvmt==true)
+              input(type='checkbox', name='mvmt', tabindex="9", value=1, checked=prenatalExam.mvmt==true)
           div.checkbox
             label= gettext('Edma')
-              input(type='checkbox', name='edma', tabindex="11", value=1, checked=prenatalExam.edma==true)
+              input(type='checkbox', name='edma', tabindex="10", value=1, checked=prenatalExam.edma==true)
           div.checkbox
             label= gettext('Risk')
-              input(type='checkbox', name='risk', tabindex="12", value=1, checked=prenatalExam.risk==true)
+              input(type='checkbox', name='risk', tabindex="11", value=1, checked=prenatalExam.risk==true)
           div.checkbox
             label= gettext('Vitamin')
-              input(type='checkbox', name='vitamin', tabindex="13", value=1, checked=prenatalExam.vitamin==true)
+              input(type='checkbox', name='vitamin', tabindex="12", value=1, checked=prenatalExam.vitamin==true)
           div.checkbox
             label= gettext('Pray')
-              input(type='checkbox', name='pray', tabindex="14", value=1, checked=prenatalExam.pray==true)
+              input(type='checkbox', name='pray', tabindex="13", value=1, checked=prenatalExam.pray==true)
 
         div(class='form-group col-sm-2')
           label(class='')= gettext('Return Date')
           div= gettext('Return Date')
-          input(id='returnDate', class='form-control', type='date', tabindex="15", autocomplete="off", name='returnDate', value=returnDate)
+          input(id='returnDate', class='form-control', type='date', tabindex="14", autocomplete="off", name='returnDate', value=returnDate)
 
 
       div.row
