@@ -305,6 +305,69 @@ describe('Models', function(done) {
         });
     });
 
+    it('should use prenatalCheckInEvent() to create a prenatal checkin event', function(done) {
+      var options = {}
+        ;
+      options.note = Math.random();
+      Event
+        .prenatalCheckInEvent(options)
+        .then(function(evt) {
+          var id = evt.get('id')
+            ;
+          evt.get('note').should.eql(options.note);
+          Event.forge({id: id}).fetch().then(function(model) {
+            model.should.not.be.null;
+            model.get('id').should.eql(id);
+            done();
+          });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('should use prenatalCheckOutEvent() to create a prenatal checkout event', function(done) {
+      var options = {}
+        ;
+      options.note = Math.random();
+      Event
+        .prenatalCheckOutEvent(options)
+        .then(function(evt) {
+          var id = evt.get('id')
+            ;
+          evt.get('note').should.eql(options.note);
+          Event.forge({id: id}).fetch().then(function(model) {
+            model.should.not.be.null;
+            model.get('id').should.eql(id);
+            done();
+          });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('should use prenatalChartEvent() to create a prenatal chart event', function(done) {
+      var options = {}
+        ;
+      options.note = Math.random();
+      Event
+        .prenatalChartEvent(options)
+        .then(function(evt) {
+          var id = evt.get('id')
+            ;
+          evt.get('note').should.eql(options.note);
+          Event.forge({id: id}).fetch().then(function(model) {
+            model.should.not.be.null;
+            model.get('id').should.eql(id);
+            done();
+          });
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
   });
 
   describe('selectData', function(done) {

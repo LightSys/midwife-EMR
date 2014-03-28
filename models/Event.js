@@ -46,7 +46,7 @@ var LOGIN = 1
   , HISTORY = 4
   , PRENATAL_CHECKIN = 5
   , PRENATAL_CHECKOUT = 6
-  , PRENATAL_CHART_PULLED = 7
+  , PRENATAL_CHART = 7
   ;
 
 /* --------------------------------------------------------
@@ -110,6 +110,9 @@ Event = Bookshelf.Model.extend({
    * logoutEvent()
    * setSuperEvent()
    * historyEvent()
+   * prenatalCheckInEvent()
+   * prenatalCheckInEvent()
+   * prenatalChartEvent()
    *
    * Records the appropriate event in the event table. Option
    * field names are:
@@ -125,6 +128,15 @@ Event = Bookshelf.Model.extend({
   , logoutEvent: function(options) {return recordEvent(LOGOUT, options);}
   , setSuperEvent: function(options) {return recordEvent(SUPER, options);}
   , historyEvent: function(options) {return recordEvent(HISTORY, options);}
+  , prenatalCheckInEvent: function(options) {
+      return recordEvent(PRENATAL_CHECKIN, options);
+    }
+  , prenatalCheckOutEvent: function(options) {
+      return recordEvent(PRENATAL_CHECKOUT, options);
+    }
+  , prenatalChartEvent: function(options) {
+      return recordEvent(PRENATAL_CHART, options);
+    }
 
 });
 
