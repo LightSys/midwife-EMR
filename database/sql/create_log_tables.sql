@@ -101,16 +101,6 @@ ALTER TABLE pregnancyHistoryLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnancyHistoryLog DROP PRIMARY KEY;
 ALTER TABLE pregnancyHistoryLog ADD PRIMARY KEY (id, replacedAt);
 --
--- Creating priorityTypeLog
-SELECT 'priorityTypeLog' AS Creating FROM DUAL;
-CREATE TABLE priorityTypeLog LIKE priorityType;
-ALTER TABLE priorityTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE priorityTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE priorityTypeLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE priorityTypeLog DROP PRIMARY KEY;
-ALTER TABLE priorityTypeLog ADD PRIMARY KEY (id, replacedAt);
-ALTER TABLE priorityTypeLog DROP KEY name;
---
 -- Creating priorityLog
 SELECT 'priorityLog' AS Creating FROM DUAL;
 CREATE TABLE priorityLog LIKE priority;

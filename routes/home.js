@@ -45,7 +45,7 @@ var loginPost = function(req, res, next) {
       return res.redirect(loginRoute);
     }
     req.logIn(user, function(err) {
-      var note = 'sid: ' + req.sessionID
+      var options = {}
         ;
       if (err) { return next(err); }
       // --------------------------------------------------------
@@ -56,7 +56,9 @@ var loginPost = function(req, res, next) {
       // --------------------------------------------------------
       // Record the event and redirect to the home page.
       // --------------------------------------------------------
-      Event.loginEvent(user.get('id'), note).then(function() {
+      options.sid = req.sessionID;
+      options.user_id = user.get('id');
+      Event.loginEvent(options).then(function() {
         var pendingUrl = req.session.pendingUrl
           ;
         if (pendingUrl) {
@@ -72,10 +74,12 @@ var loginPost = function(req, res, next) {
 };
 
 var logout = function(req, res) {
-  var note = 'sid: ' + req.sessionID
+  var options = {}
     ;
   if (req.session.user && req.session.user.id) {
-    Event.logoutEvent(req.session.user.id, note).then(function() {
+    options.sid = req.sessionID;
+    options.user_id = req.session.user.id;
+    Event.logoutEvent(options).then(function() {
       req.session.destroy(function(err) {
         res.redirect(loginRoute);
       });

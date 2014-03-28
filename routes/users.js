@@ -153,7 +153,7 @@ var saveSupervisor = function(req, res) {
       .fetch({withRelated: ['roles']})
       .then(function(rec) {
         var roles
-          , note = 'sid: ' + req.sessionID
+          , options = {}
           ;
         if (rec) {
           roles = rec.related('roles').toJSON();
@@ -167,7 +167,9 @@ var saveSupervisor = function(req, res) {
             req.flash('info', req.gettext('Your supervisor has been set.'));
 
             // Returns a promise but we don't handle how it is resolved.
-            Event.setSuperEvent(req.session.user.id, note);
+            options.sid = req.sessionID;
+            options.user_id = req.session.user.id;
+            Event.setSuperEvent(options);
           } else {
             logError('User selected is not a supervisor!');
             req.flash('warning', req.gettext('An error occurred. Please try again.'));

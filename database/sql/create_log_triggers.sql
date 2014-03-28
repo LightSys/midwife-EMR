@@ -344,8 +344,8 @@ CREATE TRIGGER prenatalExam_after_insert AFTER INSERT ON prenatalExam
 FOR EACH ROW
 BEGIN
   INSERT INTO prenatalExamLog
-  (id, date, weight, systolic, diastolic, cr, fh, fht, fhtNote, pos, mvmt, edma, risk, vitamin, pray, note, returnDate, checkin, checkout, chartPulled, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (NEW.id, NEW.date, NEW.weight, NEW.systolic, NEW.diastolic, NEW.cr, NEW.fh, NEW.fht, NEW.fhtNote, NEW.pos, NEW.mvmt, NEW.edma, NEW.risk, NEW.vitamin, NEW.pray, NEW.note, NEW.returnDate, NEW.checkin, NEW.checkout, NEW.chartPulled, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
+  (id, date, weight, systolic, diastolic, cr, fh, fht, fhtNote, pos, mvmt, edma, risk, vitamin, pray, note, returnDate, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.date, NEW.weight, NEW.systolic, NEW.diastolic, NEW.cr, NEW.fh, NEW.fht, NEW.fhtNote, NEW.pos, NEW.mvmt, NEW.edma, NEW.risk, NEW.vitamin, NEW.pray, NEW.note, NEW.returnDate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ; 
  
@@ -358,8 +358,8 @@ CREATE TRIGGER prenatalExam_after_update AFTER UPDATE ON prenatalExam
 FOR EACH ROW
 BEGIN
   INSERT INTO prenatalExamLog
-  (id, date, weight, systolic, diastolic, cr, fh, fht, fhtNote, pos, mvmt, edma, risk, vitamin, pray, note, returnDate, checkin, checkout, chartPulled, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (NEW.id, NEW.date, NEW.weight, NEW.systolic, NEW.diastolic, NEW.cr, NEW.fh, NEW.fht, NEW.fhtNote, NEW.pos, NEW.mvmt, NEW.edma, NEW.risk, NEW.vitamin, NEW.pray, NEW.note, NEW.returnDate, NEW.checkin, NEW.checkout, NEW.chartPulled, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
+  (id, date, weight, systolic, diastolic, cr, fh, fht, fhtNote, pos, mvmt, edma, risk, vitamin, pray, note, returnDate, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.date, NEW.weight, NEW.systolic, NEW.diastolic, NEW.cr, NEW.fh, NEW.fht, NEW.fhtNote, NEW.pos, NEW.mvmt, NEW.edma, NEW.risk, NEW.vitamin, NEW.pray, NEW.note, NEW.returnDate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ; 
  
@@ -372,8 +372,8 @@ CREATE TRIGGER prenatalExam_after_delete AFTER DELETE ON prenatalExam
 FOR EACH ROW
 BEGIN
   INSERT INTO prenatalExamLog
-  (id, date, weight, systolic, diastolic, cr, fh, fht, fhtNote, pos, mvmt, edma, risk, vitamin, pray, note, returnDate, checkin, checkout, chartPulled, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (OLD.id, OLD.date, OLD.weight, OLD.systolic, OLD.diastolic, OLD.cr, OLD.fh, OLD.fht, OLD.fhtNote, OLD.pos, OLD.mvmt, OLD.edma, OLD.risk, OLD.vitamin, OLD.pray, OLD.note, OLD.returnDate, OLD.checkin, OLD.checkout, OLD.chartPulled, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
+  (id, date, weight, systolic, diastolic, cr, fh, fht, fhtNote, pos, mvmt, edma, risk, vitamin, pray, note, returnDate, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (OLD.id, OLD.date, OLD.weight, OLD.systolic, OLD.diastolic, OLD.cr, OLD.fh, OLD.fht, OLD.fhtNote, OLD.pos, OLD.mvmt, OLD.edma, OLD.risk, OLD.vitamin, OLD.pray, OLD.note, OLD.returnDate, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ; 
  
@@ -386,8 +386,8 @@ CREATE TRIGGER priority_after_insert AFTER INSERT ON priority
 FOR EACH ROW
 BEGIN
   INSERT INTO priorityLog
-  (id, priority, ptype, updatedBy, updatedAt, supervisor, prenatalExam_id, op, replacedAt)
-  VALUES (NEW.id, NEW.priority, NEW.ptype, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.prenatalExam_id, "I", NOW());
+  (id, eType, priority, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.eType, NEW.priority, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ; 
  
@@ -400,8 +400,8 @@ CREATE TRIGGER priority_after_update AFTER UPDATE ON priority
 FOR EACH ROW
 BEGIN
   INSERT INTO priorityLog
-  (id, priority, ptype, updatedBy, updatedAt, supervisor, prenatalExam_id, op, replacedAt)
-  VALUES (NEW.id, NEW.priority, NEW.ptype, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.prenatalExam_id, "U", NOW());
+  (id, eType, priority, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.eType, NEW.priority, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ; 
  
@@ -414,50 +414,8 @@ CREATE TRIGGER priority_after_delete AFTER DELETE ON priority
 FOR EACH ROW
 BEGIN
   INSERT INTO priorityLog
-  (id, priority, ptype, updatedBy, updatedAt, supervisor, prenatalExam_id, op, replacedAt)
-  VALUES (OLD.id, OLD.priority, OLD.ptype, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.prenatalExam_id, "D", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: priorityType_after_insert
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS priorityType_after_insert;
-CREATE TRIGGER priorityType_after_insert AFTER INSERT ON priorityType
-FOR EACH ROW
-BEGIN
-  INSERT INTO priorityTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: priorityType_after_update
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS priorityType_after_update;
-CREATE TRIGGER priorityType_after_update AFTER UPDATE ON priorityType
-FOR EACH ROW
-BEGIN
-  INSERT INTO priorityTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
-END;$$
-DELIMITER ; 
- 
--- ---------------------------------------------------------------
--- Trigger: priorityType_after_delete
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS priorityType_after_delete;
-CREATE TRIGGER priorityType_after_delete AFTER DELETE ON priorityType
-FOR EACH ROW
-BEGIN
-  INSERT INTO priorityTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.name, OLD.description, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, eType, priority, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.eType, OLD.priority, OLD.assigned, OLD.pregnancy_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ; 
  

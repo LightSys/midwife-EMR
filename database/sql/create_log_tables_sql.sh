@@ -18,7 +18,7 @@ excludepat='doh\|session\|event\|eventType'
 # Certain tables have unique constraints which do not allow proper logging
 # when they exist in the log tables. We have a hard-coded list of the 
 # constraints that need to be removed.
-uniq_name_tbls='roleLog vaccinationTypeLog medicationTypeLog priorityTypeLog labTestLog selectDataLog'
+uniq_name_tbls='roleLog vaccinationTypeLog medicationTypeLog labTestLog selectDataLog'
 uniq_username_tbls='userLog'
 uniq_priority_tbls='priorityLog'
 

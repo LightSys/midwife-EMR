@@ -222,14 +222,15 @@ describe('Models', function(done) {
 
   describe('Event', function(done) {
     it('should use loginEvent() to create a login event', function(done) {
-      var note = Math.random()
+      var options = {}
         ;
+      options.note = Math.random();
       Event
-        .loginEvent(1, note)
+        .loginEvent(options)
         .then(function(evt) {
           var id = evt.get('id')
             ;
-          evt.get('note').should.eql(note);
+          evt.get('note').should.eql(options.note);
           Event.forge({id: id}).fetch().then(function(model) {
             model.should.not.be.null;
             model.get('id').should.eql(id);
@@ -242,14 +243,15 @@ describe('Models', function(done) {
     });
 
     it('should use logoutEvent() to create a logout event', function(done) {
-      var note = Math.random()
+      var options = {}
         ;
+      options.note = Math.random();
       Event
-        .logoutEvent(1, note)
+        .logoutEvent(options)
         .then(function(evt) {
           var id = evt.get('id')
             ;
-          evt.get('note').should.eql(note);
+          evt.get('note').should.eql(options.note);
           Event.forge({id: id}).fetch().then(function(model) {
             model.should.not.be.null;
             model.get('id').should.eql(id);
@@ -262,14 +264,15 @@ describe('Models', function(done) {
     });
 
     it('should use setSuperEvent() to create a supervisor event', function(done) {
-      var note = Math.random()
+      var options = {}
         ;
+      options.note = Math.random();
       Event
-        .setSuperEvent(1, note)
+        .setSuperEvent(options)
         .then(function(evt) {
           var id = evt.get('id')
             ;
-          evt.get('note').should.eql(note);
+          evt.get('note').should.eql(options.note);
           Event.forge({id: id}).fetch().then(function(model) {
             model.should.not.be.null;
             model.get('id').should.eql(id);
@@ -282,14 +285,15 @@ describe('Models', function(done) {
     });
 
     it('should use historyEvent() to create a history event', function(done) {
-      var note = Math.random()
+      var options = {}
         ;
+      options.note = Math.random();
       Event
-        .historyEvent(1, note)
+        .historyEvent(options)
         .then(function(evt) {
           var id = evt.get('id')
             ;
-          evt.get('note').should.eql(note);
+          evt.get('note').should.eql(options.note);
           Event.forge({id: id}).fetch().then(function(model) {
             model.should.not.be.null;
             model.get('id').should.eql(id);

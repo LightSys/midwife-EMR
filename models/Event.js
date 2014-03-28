@@ -8,6 +8,7 @@
 
 var moment = require('moment')
   , val = require('validator')
+  , _ = require('underscore')
   , Promise = require('bluebird')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
@@ -19,14 +20,14 @@ var moment = require('moment')
 CREATE TABLE `event` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `eventType` int(11) NOT NULL,
-  `at` datetime NOT NULL,
+  `eDateTime` datetime NOT NULL,
   `note` varchar(255) DEFAULT NULL,
-  `user_id` int(11) NOT NULL,
+  `sid` varchar(30) DEFAULT NULL,
+  `pregnancy_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
   KEY `eventType` (`eventType`),
-  CONSTRAINT `event_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `event_ibfk_2` FOREIGN KEY (`eventType`) REFERENCES `eventType` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `event_ibfk_1` FOREIGN KEY (`eventType`) REFERENCES `eventType` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 */
 
@@ -43,6 +44,9 @@ var LOGIN = 1
   , LOGOUT = 2
   , SUPER = 3
   , HISTORY = 4
+  , PRENATAL_CHECKIN = 5
+  , PRENATAL_CHECKOUT = 6
+  , PRENATAL_CHART_PULLED = 7
   ;
 
 /* --------------------------------------------------------
@@ -51,16 +55,14 @@ var LOGIN = 1
  * Record the passed eventType in the event table and return
  * a promise.
  *
- * param       userId - integer id of the user the event concerns
- * param       note - optional String
+ * param       eventType - required event type
+ * param       options - optional parameters
  * return      promise
  * -------------------------------------------------------- */
-var recordEvent = function(userId, note, eventType) {
+var recordEvent = function(eventType, options) {
   return new Promise(function(resolve, reject) {
-    var n = note || ''
-      , at = moment().format('YYYY-MM-DD HH:mm:ss')
-      ;
-    Event.forge({eventType: eventType, user_id: userId, at: at, note: n})
+    options.eDateTime = moment().format('YYYY-MM-DD HH:mm:ss')
+    Event.forge(_.extend({eventType: eventType}, options))
       .save()
       .then(function(evt) {
         resolve(evt);
@@ -74,7 +76,8 @@ var recordEvent = function(userId, note, eventType) {
 Event = Bookshelf.Model.extend({
   tableName: 'event'
 
-  , permittedAttributes: ['id', 'eventType', 'at', 'note', 'user_id']
+  , permittedAttributes: ['id', 'eventType', 'eDateTime', 'note', 'sid',
+      'pregnancy_id', 'user_id']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
@@ -108,16 +111,20 @@ Event = Bookshelf.Model.extend({
    * setSuperEvent()
    * historyEvent()
    *
-   * Records the appropriate event in the event table.
+   * Records the appropriate event in the event table. Option
+   * field names are:
+   *  note
+   *  sid
+   *  pregnancyId
+   *  userId
    *
-   * param       userId - integer id of the user the event concerns
-   * param       note - optional String
+   * param       options - an options object
    * return      promise
    * -------------------------------------------------------- */
-  loginEvent: function(userId, note) {return recordEvent(userId, note, LOGIN);}
-  , logoutEvent: function(userId, note) {return recordEvent(userId, note, LOGOUT);}
-  , setSuperEvent: function(userId, note) {return recordEvent(userId, note, SUPER);}
-  , historyEvent: function(userId, note) {return recordEvent(userId, note, HISTORY);}
+  loginEvent: function(options) {return recordEvent(LOGIN, options);}
+  , logoutEvent: function(options) {return recordEvent(LOGOUT, options);}
+  , setSuperEvent: function(options) {return recordEvent(SUPER, options);}
+  , historyEvent: function(options) {return recordEvent(HISTORY, options);}
 
 });
 
