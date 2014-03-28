@@ -5,11 +5,11 @@ Custom software for a charity maternity clinic in the Philippines. This software
 ## Features
 
 - New patient setup
-- Prenatal history (to be completed)
-- Prenatal questionnaire (to be completed)
-- Prenatal examinations (to be completed)
-  - Lab results
-  - Vaccinations
+- Prenatal history
+- Prenatal questionnaire
+- Prenatal examinations
+  - Lab results (to be completed)
+  - Vaccinations (to be completed)
   - Prenatal measurements/notes
 - Search
   - exact and wildcard
@@ -25,9 +25,10 @@ Custom software for a charity maternity clinic in the Philippines. This software
   - Permissions and ACL based upon roles
 - Web browser and mobile browser compatible
 - Full logging of all changes to the database
-  - All historical changes reviewable by supervisor role
+  - All historical changes reviewable by supervisor role or admin role as
+    appropriate
 - HTTPS (to be completed)
-- Tests
+- Tests (94 to date)
 - MIT license
 
 ## Status
