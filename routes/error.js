@@ -9,7 +9,7 @@
 var logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
-  , cfg = require('config')
+  , cfg = require('../config')
   ;
 
 /* --------------------------------------------------------
