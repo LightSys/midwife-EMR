@@ -99,7 +99,7 @@ var init = function() {
  * as a parameter.
  *
  * param      edd - estimated due date as JS Date or Moment obj
- * return     GA - as a string in ww d/7 format 
+ * return     GA - as a string in ww d/7 format
  * -------------------------------------------------------- */
 var getGA = function(edd) {
   var estDue = moment(edd)
@@ -912,10 +912,33 @@ var prenatalExamAddForm = function(req, res) {
   }
 };
 
-var prenatalExamAdd = function(req, res) {
+/* --------------------------------------------------------
+ * clerkPermittedFields()()
+ *
+ * Clerks have restrictions on which fields they can change
+ * on prenatal exams. Clerks can only change these fields:
+ *    weight, systolic, diastolic, date
+ *
+ * These fields necessarily need to have values:
+ *    id, pregnancy_id, _csrf
+ *
+ * Therefore, only the allowed fields are returned.
+ *
+ * param    flds - the flds fron req.body
+ * return   flds - the flds that are allowed
+ * -------------------------------------------------------- */
+var clerkPermittedFields = function(flds) {
+  return _.pick(flds,
+      'weight','systolic','diastolic','date','_csrf','pregnancy_id', 'id');
+};
+
+var prenatalExamAdd = function(req, res, next) {
   var supervisor = null
     , flds = req.body
+    , disAllowed
+    , pass
     , preRec
+    , unauth
     ;
 
   if (req.paramPregnancy &&
@@ -926,6 +949,15 @@ var prenatalExamAdd = function(req, res) {
 
     if (hasRole(req, 'student')) {
       supervisor = req.session.supervisor.id;
+    }
+
+    // --------------------------------------------------------
+    // The form should disable the fields that clerks should
+    // not change but should that fail, this check will
+    // eliminate any fields that are disallowed.
+    // --------------------------------------------------------
+    if (hasRole(req, 'clerk')) {
+      flds = clerkPermittedFields(flds);
     }
 
     preRec = new PrenatalExam(flds);
@@ -944,7 +976,7 @@ var prenatalExamAdd = function(req, res) {
       });
 
   } else {
-    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    logError('Error in add of prenatal exam: pregnancy not found.');
     // TODO: handle this better.
     res.redirect(cfg.path.search);
   }
@@ -984,6 +1016,15 @@ var prenatalExamEdit = function(req, res) {
     }
 
     // --------------------------------------------------------
+    // The form should disable the fields that clerks should
+    // not change but should that fail, this check will
+    // eliminate any fields that are disallowed.
+    // --------------------------------------------------------
+    if (hasRole(req, 'clerk')) {
+      flds = clerkPermittedFields(flds);
+    }
+
+    // --------------------------------------------------------
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
     flds = _.defaults(flds, defaultFlds);
@@ -992,7 +1033,7 @@ var prenatalExamEdit = function(req, res) {
     preRec
       .setUpdatedBy(req.session.user.id)
       .setSupervisor(supervisor)
-      .save(flds, {method: 'update'}).then(function(model) {
+      .save(flds, {patch: true, method: 'update'}).then(function(model) {
         var path = cfg.path.pregnancyPrenatalEdit
           ;
         path = path.replace(/:id/, flds.pregnancy_id);

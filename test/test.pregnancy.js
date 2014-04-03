@@ -32,6 +32,11 @@ var should = require('should')
   , utils = Promise.promisifyAll(require('./utils'))
   , allUserNames = ['admin', 'guard', 'clerk', 'student', 'student', 'supervisor']
   , allUserAgents = [admin, guard, clerk, studentWithoutSuper, studentWithSuper, supervisor]
+  , Pregnancy = require('../models/Pregnancy').Pregnancy
+  , Pregnancies = require('../models/Pregnancy').Pregnancies
+  , PrenatalExam = require('../models/PrenatalExam').PrenatalExam
+  , PrenatalExams = require('../models/PrenatalExam').PrenatalExams
+  , getRandom = function(limit) {return Math.round(Math.random() * limit);}
   ;
 
 describe('Pregnancy', function(done) {
@@ -255,6 +260,353 @@ describe('Pregnancy', function(done) {
       supervisor.attachCookies(req);
       req
         .expect(200, done);
+    });
+
+  });
+
+  describe('can display the prenatal page', function(done) {
+    var pregId
+      ;
+    before(function(done) {
+      new Pregnancies().fetchOne().then(function(model) {
+        pregId = model.get('id');
+        done();
+      });
+    });
+
+    it('admin should not', function(done) {
+      var reqUrl = cfg.path.pregnancyPrenatalEdit.replace(':id', pregId)
+        , req = request.get(reqUrl)
+        ;
+      admin.attachCookies(req);
+      req
+        .expect(403, done);
+    });
+
+    it('guard should not', function(done) {
+      var reqUrl = cfg.path.pregnancyPrenatalEdit.replace(':id', pregId)
+        , req = request.get(reqUrl)
+        ;
+      guard.attachCookies(req);
+      req
+        .expect(403, done);
+    });
+
+    it('student should', function(done) {
+      var reqUrl = cfg.path.pregnancyPrenatalEdit.replace(':id', pregId)
+        , req = request.get(reqUrl)
+        ;
+      studentWithSuper.attachCookies(req);
+      req
+        .expect(200, done);
+    });
+
+    it('clerk should', function(done) {
+      var reqUrl = cfg.path.pregnancyPrenatalEdit.replace(':id', pregId)
+        , req = request.get(reqUrl)
+        ;
+      clerk.attachCookies(req);
+      req
+        .expect(200, done);
+    });
+
+    it('supervisor should', function(done) {
+      var reqUrl = cfg.path.pregnancyPrenatalEdit.replace(':id', pregId)
+        , req = request.get(reqUrl)
+        ;
+      supervisor.attachCookies(req);
+      req
+        .expect(200, done);
+    });
+
+  });
+
+  describe('clerk restriction on prenatal exam fields', function(done) {
+    var pregId
+      , peId
+      , pregId2
+      , peId2
+      ;
+    before(function(done) {
+      new PrenatalExams().fetch().then(function(list) {
+        var idx = getRandom(list.length)
+          , idx2 = getRandom(list.length)
+          ;
+        peId = list.get(idx).get('id');
+        pregId = list.get(idx).get('pregnancy_id');
+        peId2 = list.get(idx2).get('id');
+        pregId2 = list.get(idx2).get('pregnancy_id');
+        done();
+      });
+    });
+
+    it('clerk can display add form', function(done) {
+      var reqUrl = cfg.path.pregnancyPrenatalExamAddForm.replace(':id', pregId)
+        , req = request.get(reqUrl)
+        ;
+      clerk.attachCookies(req);
+      req
+        .expect(200, done);
+    });
+
+    it('clerk can add exam with weight and BP fields', function(done) {
+      var fldsCfg = {
+          request: request
+          , agent: clerk
+          , getPath: cfg.path.pregnancyPrenatalExamAddForm.replace(':id', pregId)
+          , formName: 'prenatalAddExam'
+          , postPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
+        }
+        ;
+
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          postData.pregnancy_id = pregId;
+          postData.weight = 50;
+          postData.systolic = 110;
+          postData.diastolic = 60;
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
+                .expect(302, done);
+            })
+            .caught(function(e) {
+              done(e);
+            });
+        })
+        .caught(function(e) {
+          done(e);
+        });
+    });
+
+    it('clerk can not save disallowed fields on exam add', function(done) {
+      var fldsCfg = {
+          request: request
+          , agent: clerk
+          , getPath: cfg.path.pregnancyPrenatalExamAddForm.replace(':id', pregId)
+          , formName: 'prenatalAddExam'
+          , postPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
+        }
+        , crazyWgt = Math.round(Math.random() * 500)
+        , testCR = 288
+        ;
+
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          postData.pregnancy_id = pregId;
+          postData.weight = crazyWgt;
+          postData.cr = testCR;
+          postData.fh = 22;
+          postData.fht = 155;
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
+                .expect(302, function() {
+                  // Now access the prenatal record to verify that the cr
+                  // field was not actually set.
+                  new PrenatalExam({pregnancy_id: pregId, weight: crazyWgt})
+                    .fetch({require: true})
+                    .then(function(model) {
+                      model.get('pregnancy_id').should.equal(pregId);
+                      model.get('weight').should.equal(crazyWgt);
+                      testCR.should.not.equal(model.get('cr'));
+                      done();
+                    })
+                    .caught(function(err) {
+                      done(err);
+                    });
+                });
+              })
+        })
+        .caught(function(e) {
+          done(e);
+        });
+    });
+
+    it('clerk can display edit form', function(done) {
+      var url = cfg.path.pregnancyPrenatalExamEditForm
+        , reqUrl = url.replace(':id', pregId).replace(':id2', peId)
+        , req = request.get(reqUrl)
+        ;
+      clerk.attachCookies(req);
+      req
+        .expect(200, done);
+    });
+
+    it('clerk can update exam for bp and weight fields', function(done) {
+      var getUrl = cfg.path.pregnancyPrenatalExamEditForm
+        , postUrl = cfg.path.pregnancyPrenatalExamEdit
+        , fldsCfg = {
+            request: request
+            , agent: clerk
+            , getPath: getUrl.replace(':id', pregId).replace(':id2', peId)
+            , formName: 'prenatalEditExam'
+            , postPath: postUrl.replace(':id', pregId).replace(':id2', peId)
+          }
+        , weight = Math.round(Math.random() * 100)
+        , syst = Math.round(Math.random() * 200)
+        , dias = Math.round(Math.random() * 100)
+        ;
+
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          postData.id = peId;
+          postData.pregnancy_id = pregId;
+          postData.weight = weight;
+          postData.systolic = syst;
+          postData.diastolic = dias;
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
+                .expect(302, function() {
+                  // Now access the prenatal record to verify that the
+                  // fields were actually set.
+                  new PrenatalExam({pregnancy_id: pregId, id: peId})
+                    .fetch({require: true})
+                    .then(function(model) {
+                      model.get('pregnancy_id').should.equal(pregId);
+                      model.get('weight').should.equal(weight);
+                      model.get('systolic').should.equal(syst);
+                      model.get('diastolic').should.equal(dias);
+                      done();
+                    })
+                    .caught(function(err) {
+                      done(err);
+                    });
+                });
+            })
+            .caught(function(e) {
+              done(e);
+            });
+        })
+        .caught(function(e) {
+          done(e);
+        });
+
+    });
+
+    it('clerk cannot update exam for other fields', function(done) {
+      var getUrl = cfg.path.pregnancyPrenatalExamEditForm
+        , postUrl = cfg.path.pregnancyPrenatalExamEdit
+        , fldsCfg = {
+            request: request
+            , agent: clerk
+            , getPath: getUrl.replace(':id', pregId2).replace(':id2', peId2)
+            , formName: 'prenatalEditExam'
+            , postPath: postUrl.replace(':id', pregId2).replace(':id2', peId2)
+          }
+        , cr = Math.round(Math.random() * 100)
+        , fh = Math.round(Math.random() * 75)
+        ;
+
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          postData.id = peId2;
+          postData.pregnancy_id = pregId2;
+          postData.cr = cr;
+          postData.fh = fh;
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
+                .expect(302, function() {
+                  // Now access the prenatal record to verify that the
+                  // fields were not actually set.
+                  new PrenatalExam({pregnancy_id: pregId2, id: peId2})
+                    .fetch({require: true})
+                    .then(function(model) {
+                      model.get('pregnancy_id').should.equal(pregId);
+                      cr.should.not.equal(model.get('cr'));
+                      fh.should.not.equal(model.get('fh'));
+                      done();
+                    })
+                    .caught(function(err) {
+                      done(err);
+                    });
+                });
+            })
+            .caught(function(e) {
+              done(e);
+            });
+        })
+        .caught(function(e) {
+          done(e);
+        });
+    });
+
+    it('clerk cannot delete prenatal records', function(done) {
+      var getUrl = cfg.path.pregnancyPrenatalExamEditForm
+        , postUrl = cfg.path.pregnancyPrenatalExamDelete
+        , fldsCfg = {
+            request: request
+            , agent: clerk
+            , getPath: getUrl.replace(':id', pregId2).replace(':id2', peId2)
+            , formName: 'prenatalEditExam'
+            , postPath: postUrl.replace(':id', pregId2).replace(':id2', peId2)
+          }
+        ;
+
+      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
+        fldsCfg.getPath, fldsCfg.formName)
+        .then(function(flds) {
+          var postData = {}
+            ;
+          postData.id = peId2;
+          postData.pregnancy_id = pregId2;
+          return postData;
+        })
+        .then(function(postData) {
+          fldsCfg = _.extend(fldsCfg, {postData: postData});
+          utils.prepPostAsync(fldsCfg)
+            .then(function(postInfo) {
+              postInfo.postReq
+                .send(postInfo.formData)
+                .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
+                .expect(403, done());
+            })
+            .caught(function(e) {
+              done(e);
+            });
+        })
+        .caught(function(e) {
+          done(e);
+        });
+
     });
 
   });
