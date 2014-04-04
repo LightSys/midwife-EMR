@@ -97,10 +97,11 @@ block prenatal
           tbody(id=pregId)
             each pe in rec.prenatalExam
               - var prenatalExamId = 'prenatalExamId-' + pe.id;
-              //- TODO: convert user id to name.
-              - var examiner = pe.updatedBy
+              - var examiner = pe.examiner
               - peDate = pe.date? libs.mmt(pe.date).format('MM-DD-YYYY'): '';
               - returnDate = pe.returnDate? libs.mmt(pe.returnDate).format('MM-DD-YYYY'): '';
+              //- If database has all zeros, will be invalid date.
+              - if (returnDate == 'Invalid date') returnDate = '';
               - var bp = pe.systolic + ' / ' + pe.diastolic;
               - mvmt = pe.mvmt === 1? 'Y': 'N';
               - edma = pe.edma === 1? 'Y': 'N';

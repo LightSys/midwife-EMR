@@ -15,6 +15,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 var should = require('should')
+  , Promise = require('bluebird')
   , supertest = require('supertest')
   , app = require('../index.js')
   , request = supertest(app)
@@ -28,6 +29,7 @@ var should = require('should')
   , moment = require('moment')
   , cfg = require('../config')
   , utils = require('./utils')
+  , User = require('../models').User
   , allUserNames = ['admin', 'guard', 'clerk', 'student', 'supervisor']
   , allUserAgents = [admin, guard, clerk, student, supervisor]
   ;
@@ -201,10 +203,112 @@ describe('User and Role Management', function(done) {
         });
     });
 
-
-
   });
 
+  describe('getUserIdMap()', function(done) {
+    var users
+      ;
+    before(function(done) {
+      new Users().fetch().then(function(list) {
+        users = list.toJSON();
+        done();
+      })
+      .caught(function(err) {
+        done(err);
+      });
+    });
+
+    it('match size', function(done) {
+      User.getUserIdMap().then(function(map) {
+        _.size(map).should.equal(_.size(users));
+        done();
+      })
+      .caught(function(err) {
+        done(err);
+      });
+    });
+
+    it('match contents', function(done) {
+      User.getUserIdMap().then(function(map) {
+        _.every(map, function(rec) {
+          var userRec = _.findWhere(users, {id: rec.id})
+            , success = true
+            ;
+          if (userRec.username !== rec.username) success = false;
+          if (userRec.firstname !== rec.firstname) success = false;
+          if (userRec.lastname !== rec.lastname) success = false;
+          return success;
+        }).should.be.true;
+        done();
+      })
+      .caught(function(err) {
+        done(err);
+      });
+    });
+  });
+
+  describe('getFieldById()', function(done) {
+    var userMap
+      ;
+    before(function(done) {
+      User.getUserIdMap().then(function(map) {
+        userMap = map;
+        done();
+      })
+      .caught(function(err) {
+        done(err);
+      });
+    });
+
+    it('can get username of user', function(done) {
+      var id = _.keys(userMap)[0]
+        , id2 = _.keys(userMap)[1]
+        ;
+      User.getFieldById(id, 'username').then(function(username) {
+        userMap[id].username.should.equal(username);
+        User.getFieldById(id2, 'username').then(function(username) {
+          userMap[id2].username.should.equal(username);
+          done();
+        });
+      })
+      .caught(function(err) {
+        done(err);
+      });
+    });
+
+    it('can get firstname of user', function(done) {
+      var id = _.keys(userMap)[0]
+        , id2 = _.keys(userMap)[1]
+        ;
+      User.getFieldById(id, 'firstname').then(function(firstname) {
+        userMap[id].firstname.should.equal(firstname);
+        User.getFieldById(id2, 'firstname').then(function(firstname) {
+          userMap[id2].firstname.should.equal(firstname);
+          done();
+        });
+      })
+      .caught(function(err) {
+        done(err);
+      });
+    });
+
+    it('can get lastname of user', function(done) {
+      var id = _.keys(userMap)[0]
+        , id2 = _.keys(userMap)[1]
+        ;
+      User.getFieldById(id, 'lastname').then(function(lastname) {
+        userMap[id].lastname.should.equal(lastname);
+        User.getFieldById(id2, 'lastname').then(function(lastname) {
+          userMap[id2].lastname.should.equal(lastname);
+          done();
+        });
+      })
+      .caught(function(err) {
+        done(err);
+      });
+    });
+
+  });
 
 });
 

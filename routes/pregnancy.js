@@ -109,66 +109,74 @@ var load = function(req, res, next) {
       }
     ;
 
-  Pregnancy.forge({id: id})
-    .fetch({withRelated: ['patient', 'pregnancyHistory', 'prenatalExam']})
-    .then(function(rec) {
-      if (! rec) return next();
-      rec = rec.toJSON();
+  User.getUserIdMap().then(function(userMap) {
+    Pregnancy.forge({id: id})
+      .fetch({withRelated: ['patient', 'pregnancyHistory', 'prenatalExam']})
+      .then(function(rec) {
+        if (! rec) return next();
+        rec = rec.toJSON();
 
-      // --------------------------------------------------------
-      // Fix the dates for the screen in the format that the
-      // input[type='date'] expects.
-      // --------------------------------------------------------
-      rec.patient.dob = formatDate(rec.patient.dob);
-      rec.lmp = formatDate(rec.lmp);
-      rec.edd = formatDate(rec.edd);
-      rec.alternateEdd = formatDate(rec.alternateEdd);
-
-      // --------------------------------------------------------
-      // Calculate the gestational age at this point or at the
-      // point of delivery.
-      // --------------------------------------------------------
-      rec.ga = getGA(rec.edd, rec.pregnancyEndDate || moment());
-
-      // --------------------------------------------------------
-      // Calculate the gestational age for each prenatal exam.
-      // --------------------------------------------------------
-      if (rec.prenatalExam) {
-        _.each(rec.prenatalExam, function(peRec) {
-          peRec.ga = getGA(rec.edd, moment(peRec.date).format('YYYY-MM-DD'));
-        });
-      }
-
-
-      if (rec) req.paramPregnancy = rec;
-
-      // --------------------------------------------------------
-      // Assign detail record in the master-detail relationship
-      // to a convenient location on the request object.
-      // --------------------------------------------------------
-      if (! isNaN(id2)) {
         // --------------------------------------------------------
-        // Historical pregnancies.
+        // Fix the dates for the screen in the format that the
+        // input[type='date'] expects.
         // --------------------------------------------------------
-        if (op === 'preghistoryedit' || op === 'preghistorydelete') {
-          req.paramPregHist = _.find(rec.pregnancyHistory, function(r) {
-            return r.id === id2;
+        rec.patient.dob = formatDate(rec.patient.dob);
+        rec.lmp = formatDate(rec.lmp);
+        rec.edd = formatDate(rec.edd);
+        rec.alternateEdd = formatDate(rec.alternateEdd);
+
+        // --------------------------------------------------------
+        // Calculate the gestational age at this point or at the
+        // point of delivery.
+        // --------------------------------------------------------
+        rec.ga = getGA(rec.edd, rec.pregnancyEndDate || moment());
+
+        // --------------------------------------------------------
+        // Calculate the gestational age for each prenatal exam and
+        // get a user friendly name for the examiner.
+        // --------------------------------------------------------
+        if (rec.prenatalExam) {
+          _.each(rec.prenatalExam, function(peRec) {
+            peRec.ga = getGA(rec.edd, moment(peRec.date).format('YYYY-MM-DD'));
+            peRec.examiner = userMap[""+peRec.updatedBy]['username'];
+            if (peRec.supervisor) peRec.examiner += '/' + userMap[""+peRec.supervisor]['username'];
           });
         }
+
+        if (rec) req.paramPregnancy = rec;
+
         // --------------------------------------------------------
-        // Prenatal exams.
+        // Assign detail record in the master-detail relationship
+        // to a convenient location on the request object.
         // --------------------------------------------------------
-        if (op === 'prenatalexamedit' || op === 'prenatalexamdelete') {
-          req.paramPrenatalExam = _.find(rec.prenatalExam, function(p) {
-            return p.id === id2;
-          });
-          if (req.paramPrenatalExam) {
-            req.paramPrenatalExam.ga = getGA(rec.edd, req.paramPrenatalExam.date);
+        if (! isNaN(id2)) {
+          // --------------------------------------------------------
+          // Historical pregnancies.
+          // --------------------------------------------------------
+          if (op === 'preghistoryedit' || op === 'preghistorydelete') {
+            req.paramPregHist = _.find(rec.pregnancyHistory, function(r) {
+              return r.id === id2;
+            });
+          }
+          // --------------------------------------------------------
+          // Prenatal exams.
+          // --------------------------------------------------------
+          if (op === 'prenatalexamedit' || op === 'prenatalexamdelete') {
+            req.paramPrenatalExam = _.find(rec.prenatalExam, function(p) {
+              return p.id === id2;
+            });
+            if (req.paramPrenatalExam) {
+              req.paramPrenatalExam.ga = getGA(rec.edd, req.paramPrenatalExam.date);
+            }
           }
         }
-      }
-      next();
-    });
+        next();
+      });
+  })
+  .caught(function(err) {
+    logError(err);
+  });
+
 };
 
 /* --------------------------------------------------------

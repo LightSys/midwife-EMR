@@ -14,6 +14,9 @@ var moment = require('moment')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
+  , cfg = require('../config')
+  , NodeCache = require('node-cache')
+  , userIdMapCache = new NodeCache({stdTTL: cfg.cache.userTTL, checkperiod: Math.round(cfg.cache.userTTL/10)})
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -198,11 +201,13 @@ User = Bookshelf.Model.extend({
     /* --------------------------------------------------------
      * getUserIdMap()
      *
-     * Returns a hash of users with the keys being their user id
-     * and the value being an object with three fields: username,
+     * Returns a promise that returns a hash of users with
+     * the keys being their user id as a string and the
+     * value being an object with three fields: username,
      * firstname, and lastname.
      *
-     * Returns a promise.
+     * Note: if the application is run as a cluster, each
+     * instance will retain it's own copy of the cache.
      *
      * return      a promise
      * -------------------------------------------------------- */
@@ -210,20 +215,55 @@ User = Bookshelf.Model.extend({
       return new Promise(function(resolve, reject) {
         var knex = Bookshelf.knex
           ;
-        knex('user')
-          .orderBy('id', 'asc')
-          .select(['id', 'username', 'firstname', 'lastname'])
-          .then(function(list) {
-            var map = {};
-            _.each(list, function(user) {
-              map[user.id] = user;
+        userIdMapCache.get('usermap', function(err, map) {
+          if (err) return reject(err);
+          if (map && _.size(map) > 0) {
+            return resolve(map['usermap']);
+          }
+
+          logInfo('User.getUserIdMap() - Refreshing user id map cache.');
+          knex('user')
+            .orderBy('id', 'asc')
+            .select(['id', 'username', 'firstname', 'lastname'])
+            .then(function(list) {
+              var map = {};
+              _.each(list, function(user) {
+                map[user.id] = user;
+              });
+              userIdMapCache.set('usermap', map);
+              resolve(map);
+            })
+            .caught(function(err) {
+              logError(err);
+              reject(err);
             });
-            resolve(map);
-          })
-          .caught(function(err) {
-            logError(err);
-            reject(err);
-          });
+        });
+      });
+    }
+
+    /* --------------------------------------------------------
+     * getFieldById()
+     *
+     * Returns a promise that returns the specified field of
+     * the user with the given  passed id. If the id or
+     * the fld are not found, returns undefined.
+     *
+     * Fields available are dependent upon getUserIdMap().
+     * Currently they are username, firstname, and lastname.
+     *
+     * param       id - the user id
+     * param       fld - the field to retrieve
+     * return      a promise
+     * -------------------------------------------------------- */
+  , getFieldById: function(id, fld) {
+      return new Promise(function(resolve, reject) {
+        User.getUserIdMap().then(function(map) {
+          if (map[id][fld]) return resolve(map[id][fld]);
+          reject('Not found.');
+        })
+        .caught(function(err) {
+          reject(err);
+        });
       });
     }
 

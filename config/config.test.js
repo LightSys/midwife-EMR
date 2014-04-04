@@ -60,6 +60,12 @@ cfg.database.dbPass = 'mmSsrtF7yTJoUDbx';
 cfg.database.charset = 'utf8';
 
 // --------------------------------------------------------
+// Cache settings.
+// --------------------------------------------------------
+cfg.cache = {};
+cfg.cache.userTTL = 1200;   // TTL is in seconds
+
+// --------------------------------------------------------
 // Session settings.
 // --------------------------------------------------------
 cfg.session = {};

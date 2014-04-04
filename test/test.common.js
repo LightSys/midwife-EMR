@@ -267,6 +267,7 @@ describe('authenticated', function(done) {
   });
 
   describe('change profile', function(done) {
+    this.timeout(5000);
     var formName = 'form[name="profileForm"]'
       , elements = ['id','_csrf','firstname','lastname','email']
       , data = {}
