@@ -25,6 +25,7 @@ var _ = require('underscore')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , getGA = require('../util').getGA
   , maritalStatus = []
   , religion = []
   , education = []
@@ -88,29 +89,6 @@ var init = function() {
 };
 
 /* --------------------------------------------------------
- * getGA()
- *
- * Returns the gestational age as a string in the format
- * 'ww d/7' where ww is the week and d is the day of the
- * current week, e.g. 38 2/7 or 32 5/7.
- *
- * Calculation assumes a 40 week pregnancy and subtracts
- * today's date from the estimated due date, which is passed
- * as a parameter.
- *
- * param      edd - estimated due date as JS Date or Moment obj
- * return     GA - as a string in ww d/7 format
- * -------------------------------------------------------- */
-var getGA = function(edd) {
-  var estDue = moment(edd)
-    , today = moment()
-    , weeks = 40 - estDue.diff(today, 'weeks') - 1
-    , days = Math.abs(estDue.diff(today.add('weeks', 40 - weeks), 'days'))
-    ;
-  return weeks + ' ' + days + '/7';
-};
-
-/* --------------------------------------------------------
  * load()
  *
  * Loads the pregnancy record from the database based upon the id
@@ -145,7 +123,22 @@ var load = function(req, res, next) {
       rec.lmp = formatDate(rec.lmp);
       rec.edd = formatDate(rec.edd);
       rec.alternateEdd = formatDate(rec.alternateEdd);
-      rec.ga = getGA(rec.edd);
+
+      // --------------------------------------------------------
+      // Calculate the gestational age at this point or at the
+      // point of delivery.
+      // --------------------------------------------------------
+      rec.ga = getGA(rec.edd, rec.pregnancyEndDate || moment());
+
+      // --------------------------------------------------------
+      // Calculate the gestational age for each prenatal exam.
+      // --------------------------------------------------------
+      if (rec.prenatalExam) {
+        _.each(rec.prenatalExam, function(peRec) {
+          peRec.ga = getGA(rec.edd, moment(peRec.date).format('YYYY-MM-DD'));
+        });
+      }
+
 
       if (rec) req.paramPregnancy = rec;
 
@@ -169,6 +162,9 @@ var load = function(req, res, next) {
           req.paramPrenatalExam = _.find(rec.prenatalExam, function(p) {
             return p.id === id2;
           });
+          if (req.paramPrenatalExam) {
+            req.paramPrenatalExam.ga = getGA(rec.edd, req.paramPrenatalExam.date);
+          }
         }
       }
       next();

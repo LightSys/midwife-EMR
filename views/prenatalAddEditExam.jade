@@ -15,6 +15,7 @@ block prenatalAddEditExam
   - var formName = 'prenatalAddExam';
   - var formAction = '/pregnancy/' + rec.id + '/prenatalexamadd';
   - var returnDate;
+  - var ga = rec.ga;
 
   //- Adjust for editing an existing prenatal exam.
   - if (prenatalExam) {
@@ -24,6 +25,7 @@ block prenatalAddEditExam
   -   defaultDate = libs.mmt(prenatalExam.date).format('YYYY-MM-DD');
   -   returnDate = libs.mmt(prenatalExam.returnDate).format('YYYY-MM-DD');
   -   prenatalExamDeletePath = '/pregnancy/' + rec.id + '/prenatalexamdelete/' + prenatalExam.id;
+  -   ga = prenatalExam.ga;
   - } else {
   -   // So that exceptions are not thrown in value attributes below.
   -   prenatalExam = {};
@@ -54,7 +56,7 @@ block prenatalAddEditExam
         div(class='form-group col-sm-2 col-sm-offset-1')
           label(class='')= gettext('Fetus Information')
           div= gettext('GA')
-          input(id='ga', class='form-control', type='text', autocomplete="off", name='ga', disabled=true, value=rec.ga)
+          input(id='ga', class='form-control', type='text', autocomplete="off", name='ga', disabled=true, value=ga)
           span= gettext('Position')
           input(id='pos', class='form-control', type='text', tabindex="6", autocomplete="off", name='pos', value=prenatalExam.pos)
           span= gettext('FH')
