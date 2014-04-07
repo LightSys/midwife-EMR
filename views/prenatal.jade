@@ -18,7 +18,7 @@ block prenatal
           div(class='form-group col-sm-6 box')
             div
               span= gettext('PHIC #')
-              input(class='form-control', type='text', size=12, tabindex="4", autocomplete="off", name='philHealthID', value=rec.philHealthID)
+              input(class='form-control', type='text', size=12, tabindex="3", autocomplete="off", name='philHealthID', value=rec.philHealthID)
         div.row
           div(class='form-group col-sm-6 box')
             div.checkbox
@@ -27,7 +27,7 @@ block prenatal
           div(class='form-group col-sm-6 box')
             div.checkbox
               label= gettext('PHIC Approved')
-                input(type='checkbox', name='philHealthApproved', tabindex="3", value=1, checked=rec.philHealthApproved==true)
+                input(type='checkbox', name='philHealthApproved', tabindex="4", value=1, checked=rec.philHealthApproved==true)
 
       div(class='form-group col-sm-3 box')
         p(class='text-primary lead')= gettext('Estimated Due Dates')

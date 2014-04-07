@@ -105,7 +105,14 @@ var load = function(req, res, next) {
     , id2 = parseInt(req.params.id2, 10)
     , op = req.params.op
     , formatDate = function(val) {
-        return val === '0000-00-00'? '': moment(val).format('YYYY-MM-DD');
+        var d
+          , formatted
+          ;
+        if (val === null) return '';
+        if (val === '0000-00-00') return '';
+        d = moment(val);
+        if (! d.isValid()) return '';
+        return d.format('YYYY-MM-DD');
       }
     ;
 
@@ -125,12 +132,17 @@ var load = function(req, res, next) {
         rec.edd = formatDate(rec.edd);
         rec.alternateEdd = formatDate(rec.alternateEdd);
         rec.pregnancyEndDate = formatDate(rec.pregnancyEndDate);
+        console.log(rec.pregnancyEndDate);
 
         // --------------------------------------------------------
         // Calculate the gestational age at this point or at the
         // point of delivery.
         // --------------------------------------------------------
-        rec.ga = getGA(rec.edd || rec.alternateEdd, rec.pregnancyEndDate || moment());
+        if (rec.edd || rec.alternateEdd) {
+          rec.ga = getGA(rec.edd || rec.alternateEdd, rec.pregnancyEndDate || moment());
+        } else {
+          rec.ga = '';
+        }
 
         // --------------------------------------------------------
         // Calculate the gestational age for each prenatal exam and
