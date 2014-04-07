@@ -132,7 +132,6 @@ var load = function(req, res, next) {
         rec.edd = formatDate(rec.edd);
         rec.alternateEdd = formatDate(rec.alternateEdd);
         rec.pregnancyEndDate = formatDate(rec.pregnancyEndDate);
-        console.log(rec.pregnancyEndDate);
 
         // --------------------------------------------------------
         // Calculate the gestational age at this point or at the
@@ -1109,6 +1108,17 @@ var prenatalExamDelete = function(req, res) {
   }
 };
 
+var labsEdit = function(req, res) {
+  var data = getCommonFormData(req, {title: req.gettext('Labs')})
+    ;
+  if (req.paramPregnancy) {
+    res.render('labs', data);
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -1137,5 +1147,6 @@ module.exports = {
   , prenatalExamEditForm: prenatalExamEditForm
   , prenatalExamEdit: prenatalExamEdit
   , prenatalExamDelete: prenatalExamDelete
+  , labsEdit: labsEdit
 };
 

@@ -183,7 +183,8 @@ cfg.path.pregnancyPrenatalExamAdd = '/pregnancy/:id/prenatalexamadd'; // POST
 cfg.path.pregnancyPrenatalExamEditForm = '/pregnancy/:id/prenatalexamedit/:id2'; // GET
 cfg.path.pregnancyPrenatalExamEdit = '/pregnancy/:id/prenatalexamedit/:id2'; // POST
 cfg.path.pregnancyPrenatalExamDelete = '/pregnancy/:id/prenatalexamdelete/:id2'; // POST
-
+cfg.path.pregnancyLabsEditForm = '/pregnancy/:id/labs';     // GET
+cfg.path.pregnancyLabsEdit = '/pregnancy/:id/labs';         // POST
 
 
 module.exports = cfg;

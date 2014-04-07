@@ -337,6 +337,11 @@ app.post(cfg.path.pregnancyPrenatalExamEdit, common, hasSuper,
 app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
     inRoles(['student','supervisor']), pregnancy.prenatalExamDelete);
 
+// Labs
+app.get(cfg.path.pregnancyLabsEditForm , common, hasSuper,
+    inRoles(['student','supervisor']), pregnancy.labsEdit);
+
+
 // --------------------------------------------------------
 // The last resort.
 // --------------------------------------------------------
