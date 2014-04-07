@@ -7,6 +7,7 @@
  */
 
 var moment = require('moment')
+  , _ = require('underscore')
   , INFO = 1
   , WARN = 2
   , ERROR = 3
@@ -62,6 +63,8 @@ var getGA = function(edd, rDate) {
     , weeks = Math.abs(40 - estDue.diff(refDate, 'weeks') - 1)
     , days = Math.abs(estDue.diff(refDate.add('weeks', 40 - weeks), 'days'))
     ;
+  if (_.isNaN(weeks) || ! _.isNumber(weeks)) return '';
+  if (_.isNaN(days) || ! _.isNumber(days)) return '';
   if (days >= 7) {
     weeks++;
     days = days - 7;

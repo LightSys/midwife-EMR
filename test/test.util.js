@@ -119,6 +119,28 @@ describe('Util', function(done) {
       done();
     });
 
+    it('should return empty string if first param is not date-like', function(done) {
+      var edd = 'something else'
+        , rDate = new Date()
+        , result
+        ;
+      result = util.getGA(edd, rDate);
+      result.should.have.length(0);
+      result.should.equal('');
+      done();
+    });
+
+    it('should return empty string if second param is not date-like', function(done) {
+      var edd = '2013-10-01'
+        , rDate = 'bad input'
+        , result
+        ;
+      result = util.getGA(edd, rDate);
+      result.should.have.length(0);
+      result.should.equal('');
+      done();
+    });
+
   });
 });
 
