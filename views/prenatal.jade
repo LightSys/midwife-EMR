@@ -29,7 +29,7 @@ block prenatal
               label= gettext('PHIC Approved')
                 input(type='checkbox', name='philHealthApproved', tabindex="3", value=1, checked=rec.philHealthApproved==true)
 
-      div(class='form-group col-sm-4 box')
+      div(class='form-group col-sm-3 box')
         p(class='text-primary lead')= gettext('Estimated Due Dates')
         div.row
           div(class='col-sm-6')
@@ -53,7 +53,7 @@ block prenatal
               span= gettext('Alternate EDD')
               input(class='form-control', type='date', name='alternateEdd', tabindex="8", value=rec.alternateEdd)
 
-      div(class='form-group col-sm-5 box')
+      div(class='form-group col-sm-4 box')
         p(class='text-primary lead')= gettext('Risk Factors')
         div.row
           div(class='col-sm-3')
@@ -70,6 +70,19 @@ block prenatal
             div
               span= gettext('Risk Notes')
               textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=3, name='riskNote')= rec.riskNote
+
+      div(class='form-group col-sm-2 box')
+        p(class='text-primary lead')= gettext('Pregnancy End Result')
+        div.row
+          div(class='col-sm-12')
+            div
+              span= gettext('End Date')
+              input(class='form-control', type='date', name='pregnancyEndDate', tabindex="13", value=rec.pregnancyEndDate)
+        div.row
+          div(class='col-sm-12')
+            div
+              span= gettext('End Result')
+              input(class='form-control', type='text', size=20, tabindex="14", autocomplete="off", name='pregnancyEndResult', value=rec.pregnancyEndResult)
 
     div.row
       div(class='col-sm-12')

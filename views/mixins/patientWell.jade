@@ -16,6 +16,10 @@ mixin patientWell(record)
   - var abortions = record.abortions || '0';
   - var stillBirths = record.stillBirths || '0';
   - var living = record.living || '0';
+  - var gaText = gettext('Current GA: ') 
+  - if (record.pregnancyEndDate && record.pregnancyEndDate !== '0000-00-00') {
+  -   gaText = gettext('Final GA: ');
+  - }
   div(class='pregName well well-sm')
     div.row
       div(class='col-sm-3')
@@ -27,7 +31,7 @@ mixin patientWell(record)
           span(class='lead text-primary')= dob
           span(class='lead text-primary') )
       div(class='col-sm-3')
-        div(class='lead')= gettext('Current GA: ')
+        div(class='lead')= gaText
           span(class='lead text-primary')= record.ga
     div.row
       div(class='col-sm-3')

@@ -124,12 +124,13 @@ var load = function(req, res, next) {
         rec.lmp = formatDate(rec.lmp);
         rec.edd = formatDate(rec.edd);
         rec.alternateEdd = formatDate(rec.alternateEdd);
+        rec.pregnancyEndDate = formatDate(rec.pregnancyEndDate);
 
         // --------------------------------------------------------
         // Calculate the gestational age at this point or at the
         // point of delivery.
         // --------------------------------------------------------
-        rec.ga = getGA(rec.edd, rec.pregnancyEndDate || moment());
+        rec.ga = getGA(rec.edd || rec.alternateEdd, rec.pregnancyEndDate || moment());
 
         // --------------------------------------------------------
         // Calculate the gestational age for each prenatal exam and
@@ -137,7 +138,7 @@ var load = function(req, res, next) {
         // --------------------------------------------------------
         if (rec.prenatalExam) {
           _.each(rec.prenatalExam, function(peRec) {
-            peRec.ga = getGA(rec.edd, moment(peRec.date).format('YYYY-MM-DD'));
+            peRec.ga = getGA(rec.edd || rec.alternateEdd, moment(peRec.date).format('YYYY-MM-DD'));
             peRec.examiner = userMap[""+peRec.updatedBy]['username'];
             if (peRec.supervisor) peRec.examiner += '/' + userMap[""+peRec.supervisor]['username'];
           });
@@ -166,7 +167,7 @@ var load = function(req, res, next) {
               return p.id === id2;
             });
             if (req.paramPrenatalExam) {
-              req.paramPrenatalExam.ga = getGA(rec.edd, req.paramPrenatalExam.date);
+              req.paramPrenatalExam.ga = getGA(rec.edd || rec.alternateEdd, req.paramPrenatalExam.date);
             }
           }
         }
