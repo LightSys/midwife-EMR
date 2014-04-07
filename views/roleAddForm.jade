@@ -1,10 +1,9 @@
 extends layouts/default_layout
 
 block roleAddForm
-  h1= title
+  +titleMsg(title)
 
   div.roleEditBox
-    +flash(messages)
     - var action = '/role';
       form(role='form', name='roleAddForm', action=action, method='post')
 

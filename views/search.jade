@@ -1,12 +1,11 @@
 extends layouts/default_layout
 
 block search
-  h1= title
+  +titleMsg(title)
 
   p= gettext('Search by one or more fields.')
 
   div.searchbox
-    +flash(messages)
     form(role='form', name='search', action='/search', method='post')
       div.form-group
         span= gettext('First name')

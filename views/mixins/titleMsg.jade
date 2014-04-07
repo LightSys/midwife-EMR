@@ -1,0 +1,6 @@
+mixin titleMsg(title)
+  div.row
+    div(class='col-sm-8')
+      h1= title
+    div(class='col-sm-4')
+      +flash(messages)

@@ -1,11 +1,9 @@
 extends layouts/default_layout
 
 block prenatal
-  h1= title
-
+  +titleMsg(title)
   +pregnancyTab('prenatal')
   +patientWell(rec)
-  +flash(messages)
 
   - var prenatalExamAddFormPath = '/pregnancy/' + rec.id + '/prenatalexamaddform';
   form(id='prenatalForm', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')

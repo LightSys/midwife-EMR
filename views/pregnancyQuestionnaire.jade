@@ -1,11 +1,9 @@
 extends layouts/default_layout
 
 block pregnancyQuestionnaire
-  h1= title
-
+  +titleMsg(title)
   +pregnancyTab('quesEdit')
   +patientWell(rec)
-  +flash(messages)
 
   form(role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row

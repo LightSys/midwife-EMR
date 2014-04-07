@@ -1,10 +1,9 @@
 extends layouts/default_layout
 
 block search
-  h1= title
+  +titleMsg(title)
 
   div.userEditBox
-    +flash(messages)
     - var action = '/user/' + editUser.id + '/update';
       form(role='form', name='userForm', action=action, method='post')
 

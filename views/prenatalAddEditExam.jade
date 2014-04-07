@@ -1,10 +1,8 @@
 extends layouts/default_layout
 
 block prenatalAddEditExam
-  h1= title
-
+  +titleMsg(title)
   +patientWell(rec)
-  +flash(messages)
 
   - var prenatalPath = '/pregnancy/' + rec.id + '/prenatal';
   - var prenatalExamDeletePath;

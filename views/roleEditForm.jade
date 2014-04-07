@@ -1,13 +1,12 @@
 extends layouts/default_layout
 
 block roleEditForm
-  h1= title
+  +titleMsg(title)
 
   p.clearfix
     a.pull-right(href='/role')= gettext('Back to the List of roles')
 
   div.roleEditBox
-    +flash(messages)
 
     - var action = '/role/' + editRole.id + '/update';
       form(role='form', name='roleEditForm', action=action, method='post')

@@ -1,10 +1,9 @@
 extends layouts/default_layout
 
 block pregnancyAdd
-  h1= title
+  +titleMsg(title)
 
   div.formBoxLarge
-    +flash(messages)
     form(role='form', name='pregnancyForm', action='/pregnancy', method='post')
       div.row
         div(class='form-group col-sm-4')

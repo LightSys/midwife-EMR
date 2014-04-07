@@ -1,8 +1,7 @@
 extends layouts/default_layout
 
 block midwifeInterviewEditPreg
-  h1= title
-
+  +titleMsg(title)
   +patientWell(rec)
 
   - var pregHistEditPath = '/pregnancy/' + rec.id + '/preghistoryedit/' + pregHist.id;

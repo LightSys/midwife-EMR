@@ -1,9 +1,7 @@
 extends layouts/default_layout
 
 block setSuper
-  h1= title
-
-  +flash(messages)
+  +titleMsg(title)
 
   if supervisor
     p= gettext('Your current supervisor is: ')

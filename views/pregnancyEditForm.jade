@@ -1,14 +1,12 @@
 extends layouts/default_layout
 
 block pregnancyEdit
-  h1= title
-
+  +titleMsg(title)
   +pregnancyTab('edit')
 
   if roleInfo.hasRole('supervisor')
     a(class='pull-right', href='history') history
   div(class='formBoxLarge')
-    +flash(messages)
     form(role='form', name='pregnancyForm', action='/pregnancy/' + rec.id + '/update', method='post')
       div.row
         div(class='form-group col-sm-4')

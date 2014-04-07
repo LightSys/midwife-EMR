@@ -1,9 +1,7 @@
 extends layouts/default_layout
 
 block profileEditForm
-  h1= title
-
-  +flash(messages)
+  +titleMsg(title)
   div.userEditBox
     - var action = '/profile';
       form(role='form', name='profileForm', action=action, method='post')

@@ -1,8 +1,7 @@
 extends layouts/default_layout
 
 block roleList
-  h1= title
-  +flash(messages)
+  +titleMsg(title)
   p= gettext('These are the roles in the system.')
     a(class='btn btn-default pull-right', href='/user')= gettext('Back to the List of users')
 

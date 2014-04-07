@@ -1,11 +1,9 @@
 extends layouts/default_layout
 
 block midwifeInterview
-  h1= title
-
+  +titleMsg(title)
   +pregnancyTab('midwifeinterview')
   +patientWell(rec)
-  +flash(messages)
 
   - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistoryaddform';
   form(id='midwifeForm', role='form', name='midwifeInterview', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
