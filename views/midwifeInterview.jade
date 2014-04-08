@@ -59,11 +59,10 @@ block midwifeInterview
 
     div.row
       div(class='col-sm-12')
-        table(id='pregnancyHistoryTable', class='table table-striped table-bordered table-hover table-condensed')
+        table(id='pregnancyHistoryTable', class='table table-striped table-bordered table-hover table-condensed responsive')
           thead
             tr
-              td= gettext('Month')
-              td= gettext('Year')
+              td= gettext('Month/Year')
               td= gettext('Weeks GA')
               td= gettext('Sex of baby')
               td= gettext('Place of birth')
@@ -83,19 +82,18 @@ block midwifeInterview
                 - var epis = 'N', repaired = 'N';
                 - if (ph.episTear) epis = 'Y';
                 - if (ph.repaired) repaired = 'Y';
-                td(data-bind='month')= ph.month
-                td(data-bind='year')= ph.year
-                td(data-bind='weeksGA')= ph.weeksGA
-                td(data-bind='sexOfBaby')= ph.sexOfBaby
-                td(data-bind='placeOfBirth')= ph.placeOfBirth
-                td(data-bind='attendant')= ph.attendant
-                td(data-bind='typeOfDelivery')= ph.typeOfDelivery
-                td(data-bind='lengthOfLabor')= ph.lengthOfLabor
-                td(data-bind='birthWeight')= ph.birthWeight
-                td(data-bind='episTear')= epis
-                td(data-bind='repaired')= repaired
-                td(data-bind='howLongBFed')= ph.howLongBFed
-                td(data-bind='note')= ph.note
+                td= ph.month + ' / ' + ph.year
+                td= ph.weeksGA
+                td= ph.sexOfBaby
+                td= ph.placeOfBirth
+                td= ph.attendant
+                td= ph.typeOfDelivery
+                td= ph.lengthOfLabor
+                td= ph.birthWeight
+                td= epis
+                td= repaired
+                td= ph.howLongBFed
+                td= ph.note
     div.row
       div(class='col-sm-2 col-sm-offset-9')
         p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding historical pregnancies.')

@@ -27,10 +27,9 @@ block userList
         a(class='btn btn-default pull-right', href='/user?role=4')= gettext('Students')
       li
         a(class='btn btn-default pull-right', href='/user?role=5')= gettext('Supervisors')
-    table(class='table table-striped table-bordered table-hover')
+    table(class='table table-striped table-bordered table-hover responsive')
       thead
         tr
-          th.header= gettext('ID')
           th.header= gettext('Username')
           th.header= gettext('First name')
           th.header= gettext('Last name')
@@ -39,11 +38,11 @@ block userList
           th.header= gettext('Active')
           th.header= gettext('Comment')
           th.header= gettext('Roles')
+          th.header= gettext('ID')
       tbody
         each user in users
           - var userId = 'userList-' + user.id;
           tr(class='userListRow', id=userId)
-            td= user.id
             td= user.username
             td= user.firstname
             td= user.lastname
@@ -55,5 +54,6 @@ block userList
               ul(class='list-unstyled')
                 for role in user.roles
                   li= role.name
+            td= user.id
     a(class='btn btn-primary pull-right', href='/user/new')= gettext('Add a new user')
 

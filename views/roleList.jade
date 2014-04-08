@@ -8,17 +8,17 @@ block roleList
   p.text-info= gettext('You can change the role descriptions but the role names cannot change.')
 
   div.roletable
-    table(class='table table-striped table-bordered table-hover')
+    table(class='table table-striped table-bordered table-hover responsive')
       thead
         tr
-          th.header= gettext('ID')
           th.header= gettext('Name')
           th.header= gettext('Description')
+          th.header= gettext('ID')
       tbody
         each role in roles
           - var roleId = 'roleList-' + role.id;
           tr(class='roleListRow', id=roleId)
-            td= role.id
             td= role.name
             td= role.description
+            td= role.id
 

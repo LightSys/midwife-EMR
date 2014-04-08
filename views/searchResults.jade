@@ -10,27 +10,27 @@ block searchResults
   div.row
     div(class='form-group col-sm-12')
       div(class='table-responsive')
-        table(class='table table-striped table-bordered table-hover')
+        table(class='table table-striped table-bordered table-hover responsive')
           thead
             tr
-              th.header= gettext('ID')
-              th.header= gettext('First name')
               th.header= gettext('Last name')
+              th.header= gettext('First name')
               th.header= gettext('Date of birth')
               th.header= gettext('Address')
               th.header= gettext('Barangay')
               th.header= gettext('DOH ID')
+              th.header= gettext('ID')
           tbody
             each rec in results
               -var searchResultsId = 'searchResultsId-' + rec.id;
               tr(class='searchResultsRow', id=searchResultsId)
-                td= rec.id
-                td= rec.firstname
                 td= rec.lastname
+                td= rec.firstname
                 td= rec.dob
                 td= rec.address
                 td= rec.barangay
                 td= rec.dohID
+                td= rec.id
 
   div.row
     div(class='form-group col-sm-12')
