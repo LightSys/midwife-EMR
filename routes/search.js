@@ -97,7 +97,7 @@ var execute = function(req, res) {
     .select(cols).then(function(list) {
     _.each(list, function(rec) {
       var r = _.pick(rec, 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address', 'barangay');
-      r.dob = moment(r.dob).format('MMM D, YYYY');
+      r.dob = moment(r.dob).format('MM-DD-YYYY');
       results.push(r);
     });
     res.render('searchResults', {
