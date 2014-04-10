@@ -1,4 +1,4 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * DB.js
  *
@@ -9,7 +9,7 @@
  * // This is called once in the application.
  * var Bookshelf = require('bookshelf').init();
  *
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 var Bookshelf = require('bookshelf')
@@ -25,7 +25,7 @@ var Bookshelf = require('bookshelf')
  * init()
  *
  * Exposes Bookshelf.DB as the Bookshelf interface for all
- * other modules. This is called whenever a Bookshelf 
+ * other modules. This is called whenever a Bookshelf
  * object is needed.
  *
  * Usage:
@@ -119,12 +119,48 @@ var init = function(dbSettings) {
           ;
         return new Promise(function(resolve, reject) {
           var knex = Bookshelf.DB.knex
+            , flds = []       // all fields for this table
+            , priorRec
+            , changed = []    // list of flds that have changed for curr record
+            , skip = false
             ;
           knex(tableName + 'Log')
             .where({id: id})
-            .orderBy('replacedAt', 'desc')
+            .orderBy('replacedAt', 'asc')
             .select()
             .then(function(list) {
+              // --------------------------------------------------------
+              // Attach a list of the changed fields since the earlier
+              // record to each record. The first record has all fields
+              // in the list. We exclude a couple fields that will
+              // always change such as updatedAt and replacedAt.
+              // --------------------------------------------------------
+              flds = _.keys(_.omit(list[0], ['updatedAt', 'replacedAt']));
+              _.each(list, function(rec) {
+                changed = [];
+                if (! priorRec) {
+                  // First loop so assign priorRec and all flds are "changed".
+                  priorRec = rec;
+                  rec.changed = flds;
+                } else {
+                  if (! _.isEqual(_.pick(priorRec, flds), _.pick(rec, flds))) {
+                    _.each(flds, function(fld) {
+                      skip = false;
+                      if (priorRec[fld] !== rec[fld]) {
+                        if (_.isNull(priorRec[fld]) && rec[fld] == 0) skip = true;
+                        if (_.isDate(rec[fld]) && _.isDate(priorRec[fld]) &&
+                          moment(priorRec[fld]).unix() === moment(rec[fld]).unix()) skip = true;
+                        if (! skip) {
+                          changed.push(fld);
+                        }
+                      }
+                    });
+                  }
+                  rec.changed = changed;
+                  priorRec = rec;
+                }
+              });
+
               // --------------------------------------------------------
               // Fix the date so that it displays shorter.
               // --------------------------------------------------------

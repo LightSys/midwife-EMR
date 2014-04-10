@@ -3,7 +3,6 @@ mixin historyData(history, users)
     div(class='panel panel-default')
       - var cnt = 0
       - var classesNormal = 'panel-collapse collapse'
-      - var classesFirst = classes + ' in'
       - var classes
       - var title
       - var op
@@ -11,7 +10,6 @@ mixin historyData(history, users)
       - var supervisor = ''
       each rec in history
         - classes = classesNormal
-        - if (cnt === 0) classes = classesFirst
         - op = (rec['op'] == 'U')? ' Updated by ': ' Inserted by ';
         - user = users[rec['updatedBy']]['firstname'] + ' ' + users[rec['updatedBy']]['lastname'];
         - supervisor = ''
@@ -28,7 +26,7 @@ mixin historyData(history, users)
                   th.header Field name
                   th.header Field value
                 tbody
-                  for key in Object.keys(rec)
+                  for key in rec.changed
                     - if (['op','replacedAt','updatedBy','updatedAt','supervisor'].indexOf(key) !== -1) continue;
                     tr
                       td= key
