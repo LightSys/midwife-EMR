@@ -8,85 +8,98 @@ block prenatal
   - var prenatalExamAddFormPath = '/pregnancy/' + rec.id + '/prenatalexamaddform';
   form(id='prenatalForm', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')
     div.row
-      div(class='form-group col-md-4 box')
+      div(class='form-group col-xs-4')
         p(class='text-primary lead')= gettext('Phil Health')
         div.row
-          div(class='form-group col-md-6 col-xs-6 box')
+          div(class='col-xs-6')
             div.checkbox
-              label= gettext('Phil Health MCP')
-                input(type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
-          div(class='form-group col-md-6 col-xs-6 box')
-            div
-              span= gettext('PHIC #')
-              input(class='form-control', type='text', size=12, tabindex="3", autocomplete="off", name='philHealthID', value=rec.philHealthID)
+              label= gettext('MCP')
+                input(class='form-control input-sm', type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
+          div(class='col-xs-6')
+            div.checkbox
+              label= gettext('NCP')
+                input(class='form-control input-sm', type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
         div.row
-          div(class='form-group col-md-6 col-xs-6 box')
-            div.checkbox
-              label= gettext('Phil Health NCP')
-                input(type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
-          div(class='form-group col-md-6 col-xs-6 box')
+          div(class='col-xs-12')
             div.checkbox
               label= gettext('PHIC Approved')
-                input(type='checkbox', name='philHealthApproved', tabindex="4", value=1, checked=rec.philHealthApproved==true)
+                input(class='form-control input-sm', type='checkbox', name='philHealthApproved', tabindex="4", value=1, checked=rec.philHealthApproved==true)
+        div.row
+          div(class='col-xs-12')
+            span= gettext('PHIC #')
+            input(class='form-control', type='text', size=12, tabindex="3", autocomplete="off", name='philHealthID', value=rec.philHealthID)
 
-      div(class='form-group col-md-4 box')
+      div(class='form-group col-xs-4 box')
         p(class='text-primary lead')= gettext('Estimated Due Dates')
         div.row
-          div(class='col-md-6 col-xs-6')
+          div(class='col-xs-12')
             div
               span= gettext('LMP')
               input(class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', value=rec.lmp)
-          div(class='col-md-6 col-xs-6')
+        div.row
+          div(class='col-xs-12')
             div
               span= gettext('EDD')
               input(class='form-control', type='date', name='edd', tabindex="6", value=rec.edd)
+
+      div(class='col-xs-4')
+        p(class='text-primary lead') &nbsp;
+        div(class='form-group')
+          div.checkbox
+            label= gettext('Sure of LMP')
+              input(class='form-control input-sm', type='checkbox', name='sureLMP', tabindex="7", value=1, checked=rec.sureLMP==true)
+          div.checkbox
+            label= gettext('Use Alternate EDD')
+              input(class='form-control input-sm', type='checkbox', name='useAlternateEdd', tabindex="7", value=1, checked=rec.useAlternateEdd==true)
         div.row
-          div(class='col-md-6 col-xs-6')
-            div.checkbox
-              label= gettext('Sure of LMP')
-                input(type='checkbox', name='sureLMP', tabindex="7", value=1, checked=rec.sureLMP==true)
-            div.checkbox
-              label= gettext('Use Alternate EDD')
-                input(type='checkbox', name='useAlternateEdd', tabindex="7", value=1, checked=rec.useAlternateEdd==true)
-          div(class='col-md-6 col-xs-6')
+          div(class='col-xs-12')
             div
               span= gettext('Alternate EDD')
               input(class='form-control', type='date', name='alternateEdd', tabindex="8", value=rec.alternateEdd)
 
-      div(class='form-group col-md-4 box')
-        p(class='text-primary lead')= gettext('Risk Factors')
-        div.row
-          div(class='col-md-3 col-xs-3')
-            div.checkbox
-              label= gettext('Risk Present')
-                input(type='checkbox', name='riskPresent', tabindex="9", value=1, checked=rec.riskPresent==true)
-            div.checkbox
-              label= gettext('OB Hx')
-                input(type='checkbox', name='riskObHx', tabindex="10", value=1, checked=rec.riskObHx==true)
-            div.checkbox
-              label= gettext('Med Hx')
-                input(type='checkbox', name='riskMedHx', tabindex="11", value=1, checked=rec.riskMedHx==true)
-          div(class='col-md-9 col-xs-9')
-            div
-              span= gettext('Risk Notes')
-              textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=3, name='riskNote')= rec.riskNote
 
     div.row
-      div(class='form-group col-md-2 box')
+      div(class='form-group col-xs-8 box')
+        p(class='text-primary lead')= gettext('Risk Factors')
+        div.row
+          div(class='form-group col-xs-6')
+            div.row
+              div(class='col-xs-6')
+                div.checkbox
+                  label= gettext('Risk?')
+                    input(class='form-control input-sm', type='checkbox', name='riskPresent', tabindex="9", value=1, checked=rec.riskPresent==true)
+              div(class='col-xs-6')
+                div.checkbox
+                  label= gettext('OB Hx')
+                    input(class='form-control input-sm', type='checkbox', name='riskObHx', tabindex="10", value=1, checked=rec.riskObHx==true)
+            div.row
+              div(class='col-xs-12')
+                div.checkbox
+                  label(class='text-center')= gettext('Med Hx')
+                    input(class='form-control input-sm', type='checkbox', name='riskMedHx', tabindex="11", value=1, checked=rec.riskMedHx==true)
+          div(class='col-xs-6')
+            div
+              span= gettext('Risk Notes')
+              textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=4, name='riskNote')= rec.riskNote
+
+      div(class='form-group col-xs-4 box')
         p(class='text-primary lead')= gettext('Pregnancy End Result')
         div(class='row')
-          div(class='col-md-12 col-xs-6')
+          div(class='col-xs-12')
             div
               span= gettext('End Date')
               input(class='form-control', type='date', name='pregnancyEndDate', tabindex="13", value=rec.pregnancyEndDate)
         div(class='row')
-          div(class='col-md-12 col-xs-6')
+          div(class='col-xs-12')
             div
               span= gettext('End Result')
               input(class='form-control', type='text', size=20, tabindex="14", autocomplete="off", name='pregnancyEndResult', value=rec.pregnancyEndResult)
 
+    hr
+    p(class='text-primary lead')= gettext('Prenatal Exams')
+
     div.row
-      div(class='col-md-12')
+      div(class='col-xs-12')
         table(id='prenatalExaminations', class='table table-striped table-bordered table-hover table-condensed responsive')
           thead
             tr
@@ -137,13 +150,13 @@ block prenatal
                 td= examiner
                 td= returnDate
     div.row
-      div(class='col-md-2 col-md-offset-9')
+      div(class='col-xs-4 col-xs-offset-4')
         p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding a prenatal exam.')
-      div(class='col-md-1')
+      div(class='col-xs-2 pull-right')
         a(href=prenatalExamAddFormPath, role="button", class='btn btn-primary disable-on-change pull-right')= gettext('Add Prenatal Exam')
 
     div.row
-      div(class='col-md-1')
+      div(class='col-xs-2')
         input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
         input(type='hidden', name='_csrf', value=token)
         input(type='hidden', name='id', value=rec.id)

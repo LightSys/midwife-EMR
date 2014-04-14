@@ -21,7 +21,8 @@
     "bluebird": "~1.0.3",
     "recluster": "^0.3.6",
     "git-history": "0.0.2",
-    "node-cache": "^0.4.1"
+    "node-cache": "^0.4.1",
+    "express-device": "^0.3.7"
   },
   "devDependencies": {
     "should": "~2.1.1",

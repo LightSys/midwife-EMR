@@ -4,11 +4,11 @@ block searchResults
   +titleMsg(title)
 
   div.row
-    div(class='form-group col-sm-2')
+    div(class='form-group col-xs-2')
       a(class='btn btn-default', href='/search')= gettext('New Search')
 
   div.row
-    div(class='form-group col-sm-12')
+    div(class='form-group col-xs-12')
       div(class='table-responsive')
         table(class='table table-striped table-bordered table-hover responsive')
           thead
@@ -33,7 +33,7 @@ block searchResults
                 td= rec.id
 
   div.row
-    div(class='form-group col-sm-12')
+    div(class='form-group col-xs-12')
       - var isPreviousDisabled = parseInt(pageNum, 10) === 1;
       - var isNextDisabled = results.length === 0;
       form(role='form', name='search', action='/search', method='post')

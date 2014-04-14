@@ -84,7 +84,9 @@ table.tablesorter thead tr th:hover {
 }
 
 /* Edit Below to Customize Widths > 768px */
-@media (min-width:768px) {
+/* Customized for Mercy project.
+ * @media (min-width:768px) {*/
+@media (min-width:992px) {
 
   /* Wrappers */
 

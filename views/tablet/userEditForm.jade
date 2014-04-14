@@ -1,0 +1,66 @@
+extends layouts/default_layout
+
+block search
+  +titleMsg(title)
+
+  div.userEditBox
+    - var action = '/user/' + editUser.id + '/update';
+      form(role='form', name='userForm', action=action, method='post')
+
+        div.form-group
+          span= 'Id: ' + editUser.id
+        div.form-group
+          span= gettext('Username')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='username', autofocus, value=editUser.username)
+        div.form-group
+          span= gettext('Firstname')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='firstname', value=editUser.firstname)
+        div.form-group
+          span= gettext('Lastname')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='lastname', value=editUser.lastname)
+        div.form-group
+          span= gettext('Password')
+          input(class='form-control input-lg', type='password', name='password')
+        div.form-group
+          span= gettext('Password confirmation')
+          input(class='form-control input-lg', type='password', name='password2')
+        div.form-group
+          span= gettext('Email')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='email', value=editUser.email)
+        div.form-group
+          label.radio-inline= gettext('Active')
+            input(type='radio', name='status', value='1' checked=editUser.status==1)
+          label.radio-inline= gettext('Inactive')
+            input(type='radio', name='status', value='0' checked=editUser.status==0)
+        div.form-group
+          span= gettext('Comment')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='note', value=editUser.note)
+
+        input(class='btn btn-default btn-primary', type='submit', value=gettext('Save'))
+
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=editUser.id)
+
+      h3= gettext('Roles')
+
+      p= gettext('Check the roles that this user should belong to and press Save Role Assignments.')
+
+    - var action = '/user/' + editUser.id + '/role/changeroles';
+      form(role='form', name='userForm', action=action, method='post')
+
+        div.form-group
+          if roles
+            for role in roles
+              - var isChecked = false;
+              if editUser.roles
+                for r in editUser.roles
+                  - if (r.id == role.id)
+                    - isChecked = true
+                    - break
+              label.checkbox= role.name
+                input(type='checkbox', name='roles', value=role.id, checked=isChecked)
+
+          input(class='btn btn-default btn-primary', type='submit', value=gettext('Save Role Assignments'))
+          input(type='hidden', name='_csrf', value=token)
+
+

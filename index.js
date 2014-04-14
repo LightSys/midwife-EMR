@@ -7,6 +7,7 @@
  */
 
 var express = require('express')
+  , device = require('express-device')
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
   , cons = require('consolidate')
@@ -95,6 +96,7 @@ app.use(express.session({
   , store: new SessionStore(cfg.session)
 }));
 app.use(express.bodyParser());
+app.use(device.capture());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
@@ -158,6 +160,10 @@ var hasSuper = function(req, res, next) {
   }
 };
 
+var logDevice = function(req, res, next) {
+  //console.dir(req.device);
+  next();
+};
 
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
@@ -182,6 +188,12 @@ app.use(function(req, res, next) {
   }
   next();
 });
+
+// --------------------------------------------------------
+// express-device functionality: render different views
+// according to device type.
+// --------------------------------------------------------
+app.enableViewRouting();
 
 app.use(app.router);
 
@@ -226,7 +238,7 @@ app.configure('production', function() {
 // common: populates the request with info for protected routes.
 // student: routes a student can use without a supervisor set.
 // --------------------------------------------------------
-common.push(auth, setRoleInfo, i18nLocals);
+common.push(logDevice, auth, setRoleInfo, i18nLocals);
 
 // --------------------------------------------------------
 // Login and logout

@@ -1,0 +1,108 @@
+extends layouts/default_layout
+
+block midwifeInterview
+  +titleMsg(title)
+  +pregnancyTab('midwifeinterview')
+  +patientWell(rec)
+
+  - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistoryaddform';
+  form(id='midwifeForm', role='form', name='midwifeInterview', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
+    div.row
+      div(class='form-group col-xs-4')
+        label= gettext('Choose at least one:')
+        div.checkbox
+          label= gettext('Inverted nipples?')
+            input(class='form-control input-sm', type='checkbox', name='invertedNipples', tabindex="1", value=1, checked=rec.invertedNipples==true)
+        div.checkbox
+          label= gettext('Patient has U/S?')
+            input(class='form-control input-sm', type='checkbox', name='hasUS', tabindex="2", value=1, checked=rec.hasUS==true)
+        div.checkbox
+          label= gettext('Patient wants U/S?')
+            input(class='form-control input-sm', type='checkbox', name='wantsUS', tabindex="3", value=1, checked=rec.wantsUS==true)
+        div.checkbox
+          //- Note that this field has no representation in the database.
+          label= gettext('None of the above')
+            input(class='form-control input-sm', type='checkbox', name='noneOfAbove', tabindex="4", value=1, checked=rec.noneOfAbove==true)
+
+      div(class='form-group col-xs-2')
+        span= gettext('Age of menarche?')
+        input(class='form-control input-lg', type='number', tabindex="5", autocomplete="off", name='ageOfMenarche', value=rec.patient.ageOfMenarche)
+
+      div(class='form-group col-xs-6')
+        span= gettext('Comments')
+        textarea(class='form-control input-lg', rows='6', tabindex="6", wrap='soft', name='note')= rec.note
+
+    div.row
+      div(class='form-group col-xs-2')
+        label= gettext('Grav')
+          input(class='form-control input-lg', type='number', tabindex="7", autocomplete="off", name='gravida', value=rec.gravida)
+      div(class='form-group col-xs-2 col-xs-offset-1')
+        label= gettext('Para')
+          input(class='form-control input-lg', type='number', tabindex="8", autocomplete="off", name='para', value=rec.para)
+      div(class='form-group col-xs-2 col-xs-offset-1')
+        label= gettext('A/M')
+          input(class='form-control input-lg', type='number', tabindex="11", autocomplete="off", name='abortions', value=rec.abortions)
+      div(class='form-group col-xs-2')
+        label= gettext('Living')
+          input(class='form-control input-lg', type='number', tabindex="12", autocomplete="off", name='living', value=rec.living)
+      div(class='form-group col-xs-2')
+        label= gettext('StillBirth')
+          input(class='form-control input-lg', type='number', tabindex="13", autocomplete="off", name='stillBirths', value=rec.stillBirths)
+
+    div.row
+      div(class='form-group col-xs-2 col-xs-offset-2')
+        label= gettext('Term')
+          input(class='form-control input-lg', type='number', tabindex="9", autocomplete="off", name='term', value=rec.term)
+      div(class='form-group col-xs-2')
+        label= gettext('PreTerm')
+          input(class='form-control input-lg', type='number', tabindex="10", autocomplete="off", name='preterm', value=rec.preterm)
+
+    div.row
+      div(class='col-xs-12')
+        table(id='pregnancyHistoryTable', class='table table-striped table-bordered table-hover table-condensed responsive')
+          thead
+            tr
+              td= gettext('Month/Year')
+              td= gettext('Weeks GA')
+              td= gettext('Sex of baby')
+              td= gettext('Place of birth')
+              td= gettext('Attendant')
+              td= gettext('Del type')
+              td= gettext('Labor hours')
+              td= gettext('Birth wgt (kg)')
+              td= gettext('Epis tear')
+              td= gettext('Repaired?')
+              td= gettext('Weeks Bfed')
+              td= gettext('Comments')
+          -var pregId = 'pregnancyId-' + rec.id;
+          tbody(id=pregId)
+            each ph in rec.pregnancyHistory
+              -var pregHistId = 'pregnancyHistoryId-' + ph.id;
+              tr(class='pregHistoryRow', id=pregHistId)
+                - var epis = 'N', repaired = 'N';
+                - if (ph.episTear) epis = 'Y';
+                - if (ph.repaired) repaired = 'Y';
+                td= ph.month + ' / ' + ph.year
+                td= ph.weeksGA
+                td= ph.sexOfBaby
+                td= ph.placeOfBirth
+                td= ph.attendant
+                td= ph.typeOfDelivery
+                td= ph.lengthOfLabor
+                td= ph.birthWeight
+                td= epis
+                td= repaired
+                td= ph.howLongBFed
+                td= ph.note
+    div.row
+      div(class='col-xs-2 col-xs-offset-9')
+        p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding historical pregnancies.')
+      div(class='col-xs-1')
+        a(href=pregHistAddFormPath, role="button", class='btn btn-primary disable-on-change pull-right')= gettext('Add historical pregnancy')
+
+    div.row
+      div(class='col-xs-1')
+        input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=rec.id)
+
