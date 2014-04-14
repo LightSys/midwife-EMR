@@ -22,20 +22,19 @@ mixin patientWell(record)
   - }
   div(class='pregName well well-sm')
     div(class='row')
-      div(class='col-lg-3 col-xs-12')
+      div(class='col-lg-5 col-md-5')
         h2(class='patient-well')= name
-    div(class='row visible-xs visible-sm')
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-lg-4 col-md-4')
         div(class='lead')= gettext('Age: ')
           span(class='lead text-primary')= age
           span(class='lead text-primary') &nbsp;&nbsp;(
           span(class='lead text-primary')= dob
           span(class='lead text-primary') )
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-lg-3 col-md-3')
         div(class='lead')= gaText
           span(class='lead text-primary')= record.ga
     div(class='row')
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-lg-5 col-md-5')
         span= gettext('G: ')
         strong(class='lead text-primary')= gravida
         span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -50,5 +49,5 @@ mixin patientWell(record)
         span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         span= gettext('L: ')
         strong(class='lead text-primary')= living
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-lg-7 col-md-7')
         div(class='lead')= gettext('MMC: ') + dohFormatted
