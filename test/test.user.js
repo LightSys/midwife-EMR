@@ -22,7 +22,7 @@ var should = require('should')
   , admin = supertest.agent(app)
   , guard = supertest.agent(app)
   , clerk = supertest.agent(app)
-  , student = supertest.agent(app)
+  , attending = supertest.agent(app)
   , supervisor = supertest.agent(app)
   , cheerio = require('cheerio')
   , _ = require('underscore')
@@ -30,8 +30,8 @@ var should = require('should')
   , cfg = require('../config')
   , utils = require('./utils')
   , User = require('../models').User
-  , allUserNames = ['admin', 'guard', 'clerk', 'student', 'supervisor']
-  , allUserAgents = [admin, guard, clerk, student, supervisor]
+  , allUserNames = ['admin', 'guard', 'clerk', 'attending', 'supervisor']
+  , allUserAgents = [admin, guard, clerk, attending, supervisor]
   ;
 
 describe('User and Role Management', function(done) {
@@ -62,9 +62,9 @@ describe('User and Role Management', function(done) {
       req.expect(403, done);
     });
 
-    it('disallowed to student', function(done) {
+    it('disallowed to attending', function(done) {
       var req = request.get('/user');
-      student.attachCookies(req);
+      attending.attachCookies(req);
       req.expect(403, done);
     });
 
@@ -94,9 +94,9 @@ describe('User and Role Management', function(done) {
       req.expect(403, done);
     });
 
-    it('disallowed to student', function(done) {
+    it('disallowed to attending', function(done) {
       var req = request.get('/role');
-      student.attachCookies(req);
+      attending.attachCookies(req);
       req.expect(403, done);
     });
 
@@ -165,9 +165,9 @@ describe('User and Role Management', function(done) {
         });
     });
 
-    it('not shown to student', function(done) {
+    it('not shown to attending', function(done) {
       var req = request.get('/');
-      student.attachCookies(req);
+      attending.attachCookies(req);
       req.expect(200)
         .end(function(err, res) {
           var $ = cheerio.load(res.text)

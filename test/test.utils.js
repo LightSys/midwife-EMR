@@ -22,16 +22,16 @@ var should = require('should')
   , admin = supertest.agent(app)
   , guard = supertest.agent(app)
   , clerk = supertest.agent(app)
-  , studentWithoutSuper = supertest.agent(app)
-  , studentWithSuper = supertest.agent(app)
+  , attendingWithoutSuper = supertest.agent(app)
+  , attendingWithSuper = supertest.agent(app)
   , supervisor = supertest.agent(app)
   , cheerio = require('cheerio')
   , _ = require('underscore')
   , moment = require('moment')
   , cfg = require('../config')
   , utils = Promise.promisifyAll(require('./utils'))
-  , allUserNames = ['admin', 'guard', 'clerk', 'student', 'student', 'supervisor']
-  , allUserAgents = [admin, guard, clerk, studentWithoutSuper, studentWithSuper, supervisor]
+  , allUserNames = ['admin', 'guard', 'clerk', 'attending', 'attending', 'supervisor']
+  , allUserAgents = [admin, guard, clerk, attendingWithoutSuper, attendingWithSuper, supervisor]
   ;
 
 
@@ -42,7 +42,7 @@ describe('Utils', function(done) {
     before(function(done) {
       utils.loginManyAsync(request, allUserNames, allUserAgents)
         .then(function(success) {
-          utils.setSuperAsync(request, studentWithSuper);
+          utils.setSuperAsync(request, attendingWithSuper);
         })
         .then(function() {
           done();

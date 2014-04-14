@@ -17,7 +17,7 @@ VALUES
   ('administrator', 'Manages users, vaccination and lab types, and the system.', 1, NOW()),
   ('guard', 'Patient check-in and check-out.', 1, NOW()),
   ('clerk', 'No patient care with exception of BP and Wgt. Manages priority list.', 1, NOW()),
-  ('student', 'Patient care but always requires a supervisor.', 1, NOW()),
+  ('attending', 'Patient care but always requires a supervisor.', 1, NOW()),
   ('supervisor', 'Patient care.', 1, NOW())
 ;
 

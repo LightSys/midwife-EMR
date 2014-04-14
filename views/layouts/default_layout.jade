@@ -45,7 +45,7 @@ html(lang="en")
               li
                 a(href="/") <i class="fa fa-home"></i>
                   = gettext('Home')
-              if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('student') || roleInfo.hasRole('guard')
+              if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending') || roleInfo.hasRole('guard')
                 li
                   a(href="/search") <i class="fa fa-search"></i>
                     = gettext('Search')
@@ -53,7 +53,7 @@ html(lang="en")
                 li
                   a(href="/user") <i class="fa fa-users"></i>
                     = gettext('Users')
-              if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('student')
+              if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')
                 li
                   a(href="/pregnancy/new") <i class="fa fa-user-md"></i>
                     = gettext('New Pregnancy')
@@ -63,7 +63,7 @@ html(lang="en")
 
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
-            if roleInfo.hasRole('student')
+            if roleInfo.hasRole('attending')
               - var superV = (supervisor || gettext('Not yet set'))
               li
                 a(href='/setsuper')= gettext('Your supervisor is ') + superV

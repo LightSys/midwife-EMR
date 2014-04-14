@@ -1,8 +1,8 @@
 /*
  * -------------------------------------------------------------------------------
- * test.student.js
+ * test.attending.js
  *
- * BDD testing of the routes pertaining to students.
+ * BDD testing of the routes pertaining to attending.
  * -------------------------------------------------------------------------------
  */
 
@@ -18,29 +18,29 @@ var should = require('should')
   , supertest = require('supertest')
   , app = require('../index.js')
   , request = supertest(app)
-  , student = supertest.agent(app)
+  , attending = supertest.agent(app)
   , supervisor = supertest.agent(app)
   , cheerio = require('cheerio')
   , _ = require('underscore')
   , moment = require('moment')
   , cfg = require('../config')
   , utils = require('./utils')
-  , allUserNames = ['student', 'supervisor']
-  , allUserAgents = [student, supervisor]
+  , allUserNames = ['attending', 'supervisor']
+  , allUserAgents = [attending, supervisor]
   ;
 
 
-describe('Student roles', function(done) {
+describe('attending roles', function(done) {
   this.timeout(5000);
 
   describe('authentication', function(done) {
 
     it('should redirect to set supervisor after login', function(done) {
-      var userInfo = cfg.users['student']
+      var userInfo = cfg.users['attending']
         , config = {}
         ;
       config.request = request;
-      config.agent = student;
+      config.agent = attending;
       config.getPath = '/login';
       config.formName = 'login';
       config.postPath = '/login';
@@ -53,7 +53,7 @@ describe('Student roles', function(done) {
           .end(function(err2, res2) {
             if (err2) return done(err2);
             var req2 = request.get('/');
-            student.attachCookies(req2);
+            attending.attachCookies(req2);
             req2
               .expect(302)
               .expect('location', '/setsuper', done);
@@ -74,7 +74,7 @@ describe('Student roles', function(done) {
 
     it('should be able to set a supervisor', function(done) {
       var req = request.get('/setsuper');
-      student.attachCookies(req);
+      attending.attachCookies(req);
       req
         .expect(200)
         .end(function(err, res) {
@@ -99,7 +99,7 @@ describe('Student roles', function(done) {
             formData.supervisor = superId;
             formData._csrf = csrf;
             req2 = request.post('/setsuper');
-            student.attachCookies(req2);
+            attending.attachCookies(req2);
             req2
               .send(formData)
               .expect(302)
@@ -114,7 +114,7 @@ describe('Student roles', function(done) {
                 // going to the search page.
                 // --------------------------------------------------------
                 req3 = request.get('/search');
-                student.attachCookies(req3);
+                attending.attachCookies(req3);
                 req3
                   .expect(200, done);
               });
@@ -125,23 +125,23 @@ describe('Student roles', function(done) {
     });
 
     it('setSuper() in utils.js should set supervisor', function(done) {
-      var student = supertest.agent(app)
+      var attending = supertest.agent(app)
         , req = request.get('/setsuper')
         ;
-      utils.login(request, 'student', student, function(err, success) {
+      utils.login(request, 'attending', attending, function(err, success) {
         if (err) return done(err);
         if (! success) return done(new Error('utils.login() failed'));
-        utils.setSuper(request, student, function(err, success) {
+        utils.setSuper(request, attending, function(err, success) {
           var reqTest = request.get('/')
             ;
           if (err) return done(err);
           if (! success) return done(new Error('utils.setSuper() failed'));
 
           // --------------------------------------------------------
-          // Only a student with a supervisor can get to the main page
+          // Only a attending with a supervisor can get to the main page
           // without being redirected to choose a supervisor.
           // --------------------------------------------------------
-          student.attachCookies(reqTest);
+          attending.attachCookies(reqTest);
           reqTest
             .expect(200, done);
         });

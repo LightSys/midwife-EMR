@@ -21,15 +21,15 @@ var should = require('should')
   , admin = supertest.agent(app)
   , guard = supertest.agent(app)
   , clerk = supertest.agent(app)
-  , student = supertest.agent(app)
+  , attending = supertest.agent(app)
   , supervisor = supertest.agent(app)
   , cheerio = require('cheerio')
   , _ = require('underscore')
   , moment = require('moment')
   , cfg = require('../config')
   , utils = require('./utils')
-  , allUserNames = ['admin', 'guard', 'clerk', 'student', 'supervisor']
-  , allUserAgents = [admin, guard, clerk, student, supervisor]
+  , allUserNames = ['admin', 'guard', 'clerk', 'attending', 'supervisor']
+  , allUserAgents = [admin, guard, clerk, attending, supervisor]
   ;
 
 describe('unauthenticated', function(done) {
@@ -111,9 +111,9 @@ describe('authenticated', function(done) {
       req.expect(200, done);
     });
 
-    it('by student', function(done) {
+    it('by attending', function(done) {
       var req = request.get('/');
-      student.attachCookies(req);
+      attending.attachCookies(req);
       req.expect(302, done);    // redirects to set supervisor after login
     });
 
@@ -144,10 +144,10 @@ describe('authenticated', function(done) {
       req.expect(200, done);
     });
 
-    it('by student', function(done) {
+    it('by attending', function(done) {
       var req = request.get('/search');
-      student.attachCookies(req);
-      req.expect(302, done);    // students have to set their supervisor first
+      attending.attachCookies(req);
+      req.expect(302, done);    // attending have to set their supervisor first
     });
 
     it('by supervisor', function(done) {
@@ -209,8 +209,8 @@ describe('authenticated', function(done) {
       });
     });
 
-    it('student by name', function(done) {
-      config.agent = student;
+    it('attending by name', function(done) {
+      config.agent = attending;
       utils.setSuper(request, config.agent, function(err, success) {
         if (err) return done(err);
         utils.prepPost(config, function(err, postInfo) {
@@ -253,9 +253,9 @@ describe('authenticated', function(done) {
       req.expect(200, done);
     });
 
-    it('by student', function(done) {
+    it('by attending', function(done) {
       var req = request.get('/profile');
-      student.attachCookies(req);
+      attending.attachCookies(req);
       req.expect(200, done);
     });
 
@@ -359,8 +359,8 @@ describe('authenticated', function(done) {
       runTest(guard, done);
     });
 
-    it('student can update profile', function(done) {
-      runTest(student, done);
+    it('attending can update profile', function(done) {
+      runTest(attending, done);
     });
 
     it('supervisor can update profile', function(done) {
@@ -375,12 +375,12 @@ describe('authenticated', function(done) {
       runTest(guard, 3, done);
     });
 
-    it('clerk cannot update profile for student', function(done) {
+    it('clerk cannot update profile for attending', function(done) {
       runTest(clerk, 4, done);
     });
 
-    it('student cannot update profile for supervisor', function(done) {
-      runTest(student, 5, done);
+    it('attending cannot update profile for supervisor', function(done) {
+      runTest(attending, 5, done);
     });
 
     it('supervisor cannot update profile for admin', function(done) {
@@ -416,8 +416,8 @@ describe('authenticated', function(done) {
       test(clerk, done);
     });
 
-    it('student', function(done) {
-      test(student, done);
+    it('attending', function(done) {
+      test(attending, done);
     });
 
     it('supervisor', function(done) {

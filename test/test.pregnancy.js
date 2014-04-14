@@ -22,16 +22,16 @@ var should = require('should')
   , admin = supertest.agent(app)
   , guard = supertest.agent(app)
   , clerk = supertest.agent(app)
-  , studentWithoutSuper = supertest.agent(app)
-  , studentWithSuper = supertest.agent(app)
+  , attendingWithoutSuper = supertest.agent(app)
+  , attendingWithSuper = supertest.agent(app)
   , supervisor = supertest.agent(app)
   , cheerio = require('cheerio')
   , _ = require('underscore')
   , moment = require('moment')
   , cfg = require('../config')
   , utils = Promise.promisifyAll(require('./utils'))
-  , allUserNames = ['admin', 'guard', 'clerk', 'student', 'student', 'supervisor']
-  , allUserAgents = [admin, guard, clerk, studentWithoutSuper, studentWithSuper, supervisor]
+  , allUserNames = ['admin', 'guard', 'clerk', 'attending', 'attending', 'supervisor']
+  , allUserAgents = [admin, guard, clerk, attendingWithoutSuper, attendingWithSuper, supervisor]
   , Pregnancy = require('../models/Pregnancy').Pregnancy
   , Pregnancies = require('../models/Pregnancy').Pregnancies
   , PrenatalExam = require('../models/PrenatalExam').PrenatalExam
@@ -45,7 +45,7 @@ describe('Pregnancy', function(done) {
   before(function(done) {
     utils.loginManyAsync(request, allUserNames, allUserAgents)
       .then(function(success) {
-        utils.setSuperAsync(request, studentWithSuper);
+        utils.setSuperAsync(request, attendingWithSuper);
       })
       .then(function() {
         done();
@@ -88,19 +88,19 @@ describe('Pregnancy', function(done) {
         .expect(200, done);
     });
 
-    it('student should not without supervisor', function(done) {
+    it('attending should not without supervisor', function(done) {
       var req = request.get('/pregnancy/new')
         ;
-      studentWithoutSuper.attachCookies(req);
+      attendingWithoutSuper.attachCookies(req);
       req
         .expect(302)
         .expect('location', '/setsuper', done);
     });
 
-    it('student should with supervisor', function(done) {
+    it('attending should with supervisor', function(done) {
       var req = request.get('/pregnancy/new')
         ;
-      studentWithSuper.attachCookies(req);
+      attendingWithSuper.attachCookies(req);
       req.expect(200, done);
     });
   });
@@ -238,10 +238,10 @@ describe('Pregnancy', function(done) {
         .expect(403, done);
     });
 
-    it('student should not', function(done) {
+    it('attending should not', function(done) {
       var req = request.get('/pregnancy/1/history')
         ;
-      studentWithSuper.attachCookies(req);
+      attendingWithSuper.attachCookies(req);
       req
         .expect(403, done);
     });
@@ -292,11 +292,11 @@ describe('Pregnancy', function(done) {
         .expect(403, done);
     });
 
-    it('student should', function(done) {
+    it('attending should', function(done) {
       var reqUrl = cfg.path.pregnancyPrenatalEdit.replace(':id', pregId)
         , req = request.get(reqUrl)
         ;
-      studentWithSuper.attachCookies(req);
+      attendingWithSuper.attachCookies(req);
       req
         .expect(200, done);
     });

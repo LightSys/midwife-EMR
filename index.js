@@ -34,7 +34,7 @@ var express = require('express')
   , logWarn = require('./util').logWarn
   , logError = require('./util').logError
   , common = []
-  , student = []
+  , attending = []
   , revisions = 0
   ;
 
@@ -144,7 +144,7 @@ var i18nLocals = function(req, res, next) {
 };
 
 var hasSuper = function(req, res, next) {
-  if (_.contains(req.session.roleInfo.roleNames, 'student')) {
+  if (_.contains(req.session.roleInfo.roleNames, 'attending')) {
     if (req.session.supervisor) {
       // --------------------------------------------------------
       // Store the supervisor in app.locals for the templates.
@@ -236,7 +236,7 @@ app.configure('production', function() {
 // Group of methods that are commonly needed for
 // many requests.
 // common: populates the request with info for protected routes.
-// student: routes a student can use without a supervisor set.
+// attending: routes a attending can use without a supervisor set.
 // --------------------------------------------------------
 common.push(logDevice, auth, setRoleInfo, i18nLocals);
 
@@ -291,67 +291,67 @@ app.get(cfg.path.profile, common, users.editProfile);
 app.post(cfg.path.profile, common, users.saveProfile);
 
 // --------------------------------------------------------
-// Set the supervisor if a student.
+// Set the supervisor if a attending.
 // --------------------------------------------------------
-app.get(cfg.path.setSuper, common, inRoles(['student']), users.editSupervisor);
-app.post(cfg.path.setSuper, common, inRoles(['student']), users.saveSupervisor);
+app.get(cfg.path.setSuper, common, inRoles(['attending']), users.editSupervisor);
+app.post(cfg.path.setSuper, common, inRoles(['attending']), users.saveSupervisor);
 
 // --------------------------------------------------------
 // Pregnancy management
 // --------------------------------------------------------
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
 app.get(cfg.path.pregnancyNewForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.addForm);
+    inRoles(['clerk','attending','supervisor']), pregnancy.addForm);
 app.post(cfg.path.pregnancyCreate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.create);
+    inRoles(['clerk','attending','supervisor']), pregnancy.create);
 app.get(cfg.path.pregnancyEditForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.editForm);
+    inRoles(['clerk','attending','supervisor']), pregnancy.editForm);
 app.post(cfg.path.pregnancyUpdate, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.update);
+    inRoles(['clerk','attending','supervisor']), pregnancy.update);
 app.get(cfg.path.pregnancyHistory, common,
     inRoles(['supervisor']), pregnancy.history);
 
 // Pregnancy Questionnaire
 app.get(cfg.path.pregnancyQuesEdit, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.quesEdit);
+    inRoles(['attending','supervisor']), pregnancy.quesEdit);
 app.post(cfg.path.pregnancyQuesUpdate, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.quesUpdate);
+    inRoles(['attending','supervisor']), pregnancy.quesUpdate);
 
 // Pregnancy midwife interview
 app.get(cfg.path.pregnancyMidwifeEdit, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.midwifeEdit);
+    inRoles(['attending','supervisor']), pregnancy.midwifeEdit);
 app.post(cfg.path.pregnancyMidwifeUpdate, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.midwifeUpdate);
+    inRoles(['attending','supervisor']), pregnancy.midwifeUpdate);
 app.get(cfg.path.pregnancyHistoryAddForm, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryAddForm);
+    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryAddForm);
 app.post(cfg.path.pregnancyHistoryAdd, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryAdd);
+    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryAdd);
 app.get(cfg.path.pregnancyHistoryEditForm, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryEditForm);
+    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryEditForm);
 app.post(cfg.path.pregnancyHistoryEdit, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryEdit);
+    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryEdit);
 app.post(cfg.path.pregnancyHistoryDelete, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.pregnancyHistoryDelete);
+    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryDelete);
 
 // Prenatal
 app.get(cfg.path.pregnancyPrenatalEdit, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.prenatalEdit);
+    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalEdit);
 app.post(cfg.path.pregnancyPrenatalUpdate, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.prenatalUpdate);
+    inRoles(['attending','supervisor']), pregnancy.prenatalUpdate);
 app.get(cfg.path.pregnancyPrenatalExamAddForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.prenatalExamAddForm);
+    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamAddForm);
 app.post(cfg.path.pregnancyPrenatalExamAdd, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.prenatalExamAdd);
+    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamAdd);
 app.get(cfg.path.pregnancyPrenatalExamEditForm, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.prenatalExamEditForm);
+    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamEditForm);
 app.post(cfg.path.pregnancyPrenatalExamEdit, common, hasSuper,
-    inRoles(['clerk','student','supervisor']), pregnancy.prenatalExamEdit);
+    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamEdit);
 app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.prenatalExamDelete);
+    inRoles(['attending','supervisor']), pregnancy.prenatalExamDelete);
 
 // Labs
 app.get(cfg.path.pregnancyLabsEditForm , common, hasSuper,
-    inRoles(['student','supervisor']), pregnancy.labsEdit);
+    inRoles(['attending','supervisor']), pregnancy.labsEdit);
 
 
 // --------------------------------------------------------

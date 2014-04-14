@@ -87,7 +87,7 @@ var getProfileFormData = function(req, addData) {
 /* --------------------------------------------------------
  * editSupervisor()
  *
- * Display the form to allow the student to choose their
+ * Display the form to allow the attending to choose their
  * supervisor.
  *
  * param       req
@@ -132,7 +132,7 @@ var editSupervisor = function(req, res) {
 /* --------------------------------------------------------
  * saveSupervisor()
  *
- * Save the student's choice of a supervisor.
+ * Save the attending's choice of a supervisor.
  *
  * param       req
  * param       res
@@ -269,7 +269,7 @@ var saveProfile = function(req, res) {
                       updatedBy: req.session.user.id
                     }, _.omit(req.body, fldsToOmit));
         user = new User(editObj);
-        if (hasRole(req, 'student')) {
+        if (hasRole(req, 'attending')) {
           supervisor = req.session.supervisor.id;
         }
         if (processPw) {
@@ -513,7 +513,7 @@ var update = function(req, res) {
                       updatedBy: req.session.user.id
                     }, _.omit(req.body, fldsToOmit));
         user = new User(editObj);
-        if (hasRole(req, 'student')) {
+        if (hasRole(req, 'attending')) {
           supervisor = req.session.supervisor.id;
         }
         if (processPw) {
@@ -575,7 +575,7 @@ var create = function(req, res) {
       ;
 
     if (result.success) {
-      if (hasRole(req, 'student')) {
+      if (hasRole(req, 'attending')) {
         supervisor = req.session.supervisor.id;
       }
       newUserObj = _.extend({status: 1

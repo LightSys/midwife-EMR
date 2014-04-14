@@ -34,17 +34,17 @@ var getFormFields = function(request, agent, path, formName, cb) {
  * setSuper()
  *
  * Set the supervisor to the first one available for the 
- * student. Assumes that the student is already logged in.
+ * attending. Assumes that the attending is already logged in.
  * Calls the callback with true as the second parameter
  * upon success.
  *
  * param       request - supertest request
- * param       agent - supertest agent representing the student
+ * param       agent - supertest agent representing the attending
  * return      undefined
  * -------------------------------------------------------- */
-var setSuper = function(request, student, cb) {
+var setSuper = function(request, attending, cb) {
   var req = request.get('/setsuper');
-  student.attachCookies(req);
+  attending.attachCookies(req);
   req
     .end(function(err, res) {
       var $ = cheerio.load(res.text)
@@ -68,7 +68,7 @@ var setSuper = function(request, student, cb) {
         formData.supervisor = superId;
         formData._csrf = csrf;
         req2 = request.post('/setsuper');
-        student.attachCookies(req2);
+        attending.attachCookies(req2);
         req2
           .send(formData)
           .end(function(err2, res2) {
@@ -81,7 +81,7 @@ var setSuper = function(request, student, cb) {
             // going to the search page.
             // --------------------------------------------------------
             req3 = request.get('/search');
-            student.attachCookies(req3);
+            attending.attachCookies(req3);
             req3
               .end(function(err3, res) {
                 if (err3) return cb(err3);

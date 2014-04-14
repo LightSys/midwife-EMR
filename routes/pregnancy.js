@@ -149,7 +149,11 @@ var load = function(req, res, next) {
         // --------------------------------------------------------
         if (rec.prenatalExam) {
           _.each(rec.prenatalExam, function(peRec) {
-            peRec.ga = getGA(rec.edd || rec.alternateEdd, moment(peRec.date).format('YYYY-MM-DD'));
+            if (rec.edd || rec.alternateEdd) {
+              peRec.ga = getGA(rec.edd || rec.alternateEdd, moment(peRec.date).format('YYYY-MM-DD'));
+            } else {
+              peRec.ga = '';
+            }
             peRec.examiner = userMap[""+peRec.updatedBy]['username'];
             if (peRec.supervisor) peRec.examiner += '/' + userMap[""+peRec.supervisor]['username'];
           });
@@ -178,7 +182,11 @@ var load = function(req, res, next) {
               return p.id === id2;
             });
             if (req.paramPrenatalExam) {
-              req.paramPrenatalExam.ga = getGA(rec.edd || rec.alternateEdd, req.paramPrenatalExam.date);
+              if (rec.edd || rec.alternateEdd) {
+                req.paramPrenatalExam.ga = getGA(rec.edd || rec.alternateEdd, req.paramPrenatalExam.date);
+              } else {
+                req.paramPrenatalExam.ga = '';
+              }
             }
           }
         }
@@ -291,7 +299,7 @@ var quesUpdate = function(req, res) {
       req.body.id &&
       req.paramPregnancy.id == req.body.id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
 
@@ -460,7 +468,7 @@ var create = function(req, res) {
     , patFlds = {}
     ;
 
-  if (hasRole(req, 'student')) {
+  if (hasRole(req, 'attending')) {
     common.supervisor = req.session.supervisor.id;
   }
   pregFlds = _.extend(pregFlds, common);
@@ -528,7 +536,7 @@ var update = function(req, res) {
       req.body.id &&
       req.paramPregnancy.id == req.body.id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
     pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority']);
@@ -617,7 +625,7 @@ var midwifeUpdate = function(req, res) {
       req.body.id &&
       req.paramPregnancy.id == req.body.id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
 
@@ -713,7 +721,7 @@ var pregnancyHistoryEdit = function(req, res) {
       req.body.pregnancy_id &&
       req.paramPregnancy.id == req.body.pregnancy_id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
 
@@ -772,7 +780,7 @@ var pregnancyHistoryAdd = function(req, res) {
       req.body.pregnancy_id &&
       req.paramPregnancy.id == req.body.pregnancy_id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
     pregHistRec = new PregnancyHistory(flds);
@@ -813,7 +821,7 @@ var pregnancyHistoryDelete = function(req, res) {
       req.body.pregnancy_id &&
       req.paramPregnancy.id == req.body.pregnancy_id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
     flds.id = parseInt(flds.id, 10);
@@ -884,7 +892,7 @@ var prenatalUpdate = function(req, res) {
       req.body.id &&
       req.paramPregnancy.id == req.body.id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
 
@@ -963,7 +971,7 @@ var prenatalExamAdd = function(req, res, next) {
       req.body.pregnancy_id &&
       req.paramPregnancy.id == req.body.pregnancy_id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
 
@@ -1027,7 +1035,7 @@ var prenatalExamEdit = function(req, res) {
       req.body.pregnancy_id &&
       req.paramPregnancy.id == req.body.pregnancy_id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
 
@@ -1080,7 +1088,7 @@ var prenatalExamDelete = function(req, res) {
       req.body.pregnancy_id &&
       req.paramPregnancy.id == req.body.pregnancy_id) {
 
-    if (hasRole(req, 'student')) {
+    if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
     flds.id = parseInt(flds.id, 10);

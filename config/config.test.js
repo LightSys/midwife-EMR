@@ -28,7 +28,7 @@ cfg.users = {
   admin: {username: 'admin', password: 'admin'}
   , guard: {username: 'guard', password: 'guard'}
   , clerk: {username: 'clerk', password: 'clerk'}
-  , student: {username: 'student', password: 'student'}
+  , attending: {username: 'attending', password: 'attending'}
   , supervisor: {username: 'supervisor', password: 'supervisor'}
 };
 

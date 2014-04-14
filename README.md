@@ -18,7 +18,7 @@ Custom software for a charity maternity clinic in the Philippines. This software
 - User management (staff, etc.)
   - Roles
      - Supervisor
-     - Student
+     - Attending
      - Clerk
      - Guard
      - Administrator

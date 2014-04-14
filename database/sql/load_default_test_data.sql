@@ -12,8 +12,8 @@ VALUES
   ('clerk', 'clerk', 'clerk', '$2a$10$0NNM2m/uylWV03qvvSVpXu2YwKBV0JWTTKjgLg2W2lUukgNRsM4ni',
   'This is the default clerk account with password of "clerk".',
   1, NOW()),
-  ('student', 'student', 'student', '$2a$10$1zobFaHaHxpGcxyyt82pSexQuth7KKiMNh6fUCJHN3A50A2Cs85Ky',
-  'This is the default student account with password of "student".',
+  ('attending', 'attending', 'attending', '$2a$10$B1gNzN65TBK2qIFweq1Q2.5B2oSV2tx/7WrerWapxYUswwzD2WpuK',
+  'This is the default attending account with password of "attending".',
   1, NOW()),
   ('supervisor', 'supervisor', 'supervisor', '$2a$10$Q5oHzUPxwPJHzM/0qTWwbuP3Ir7NLZgrdbXKxPwP4eo8A.8yb45s2',
   'This is the default supervisor account with password of "supervisor".',
@@ -27,7 +27,7 @@ VALUES
   ('administrator', 'Manages users, vaccination and lab types, and the system.', 1, NOW()),
   ('guard', 'Patient check-in and check-out.', 1, NOW()),
   ('clerk', 'No patient care with exception of BP and Wgt. Manages priority list.', 1, NOW()),
-  ('student', 'Patient care but always requires a supervisor.', 1, NOW()),
+  ('attending', 'Patient care but always requires a supervisor.', 1, NOW()),
   ('supervisor', 'Patient care.', 1, NOW())
 ;
 
