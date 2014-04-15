@@ -6,9 +6,6 @@ block midwifeInterviewAddPreg
   - var pregHistAddPath = '/pregnancy/' + rec.id + '/preghistoryadd';
   - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
 
-  div.clearfix
-    a(class='pull-right', href=midwifeInterviewPath)= gettext('Back to the Midwife Interview page')
-
   div
     form(id='addPregForm', role='form', name='pregnancyHistoryAddPreg', action=pregHistAddPath, method='post')
       div.row

@@ -29,7 +29,7 @@ block profileEditForm
           span= gettext('Email')
           input(class='form-control', type='text', name='email', autocomplete="off", tabindex="6", value=profile.email)
 
-        input(class='btn btn-default', type='submit', value=gettext('Save'))
+        input(class='btn btn-default btn-primary', type='submit', value=gettext('Save'))
 
         input(type='hidden', name='_csrf', value=token)
         input(type='hidden', name='id', value=profile.id)

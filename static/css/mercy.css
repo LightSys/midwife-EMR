@@ -39,10 +39,25 @@ div.errormessage {
   margin-top: 5px;
 }
 
-.box {
-}
-
 h2.patient-well {
   margin-top: 0;
 }
 
+/* Colors */
+.navbar, .side-nav {
+  background-color: #428BCA;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  color: #E7E7E7;
+}
+
+.navbar-inverse .navbar-brand {
+  color: #E7E7E7;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover,
+.navbar-inverse .navbar-nav>li>a:focus {
+  background-color: #3276B1;
+  color: #FFFFFF;
+}
