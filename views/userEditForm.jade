@@ -57,8 +57,8 @@ block search
                   - if (r.id == role.id)
                     - isChecked = true
                     - break
-              label.checkbox= role.name
-                input(type='checkbox', name='roles', value=role.id, checked=isChecked)
+              label.radio= role.name
+                input(type='radio', name='roles', value=role.id, checked=isChecked)
 
           input(class='btn btn-default btn-primary', type='submit', value=gettext('Save Role Assignments'))
           input(type='hidden', name='_csrf', value=token)
