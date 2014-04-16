@@ -22,6 +22,7 @@ var _ = require('underscore')
   , User = require('../models').User
   , Users = require('../models').Users
   , SelectData = require('../models').SelectData
+  , Event = require('../models').Event
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -218,9 +219,15 @@ var history = function(req, res) {
         Pregnancy.forge({id: req.paramPregnancy.id})
           .historyData(req.paramPregnancy.id)
           .then(function(list) {
-            data.history = list;
-            data.users = users;
-            res.render('history', data);
+            var options = {};
+            options.sid = req.sessionID;
+            options.user_id = req.session.user.id;
+            options.pregnancy_id = req.paramPregnancy.id;
+            Event.historyEvent(options).then(function() {
+              data.history = list;
+              data.users = users;
+              res.render('history', data);
+            });
           });
       })
       .caught(function(err) {

@@ -1,11 +1,16 @@
 extends layouts/default_layout
 
 block pregnancyEdit
-  +titleMsg(title)
-  +pregnancyTab('edit')
+  div.row
+    div(class='col-xs-10')
+      +titleMsg(title)
+    div(class='col-xs-2')
+      if roleInfo.hasRole('supervisor')
+        a(class='pull-right btn btn-default', href='history')= gettext('View history of changes')
+  div.row
+    div(class='col-xs-12')
+      +pregnancyTab('edit')
 
-  if roleInfo.hasRole('supervisor')
-    a(class='pull-right', href='history') history
   div(class='formBoxLarge')
     form(role='form', name='pregnancyForm', action='/pregnancy/' + rec.id + '/update', method='post')
       div.row
