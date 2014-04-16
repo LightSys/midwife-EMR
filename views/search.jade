@@ -7,28 +7,38 @@ block search
 
   div.searchbox
     form(role='form', name='search', action='/search', method='post')
-      div.form-group
-        span= gettext('First name')
-        input(class='form-control', type='text', name='firstname')
-        span.help-block= gettext('Use the % sign as a wildcard. E.g. Eliza% or %beth')
-      div.form-group
-        span= gettext('Last name')
-        input(class='form-control', type='text', autofocus, name='lastname')
-        span.help-block= gettext('Use the % sign as a wildcard. E.g. Weid% or %maven or Wei%en')
-      div.form-group
-        span= gettext('Date of birth')
-        input(class='form-control', type='date', name='dob')
-      hr
-      div.form-group
-        span= gettext('MMC #')
-        input(class='form-control', type='number', name='doh')
-      div.form-group
-        span= gettext('Priority #')
-        input(class='form-control', type='number', name='priority', disabled)
-      div.form-group
-        span= gettext('Phil health ID')
-        input(class='form-control', type='number', name='philHealth')
+      div.row
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('First name')
+            input(class='form-control', type='text', name='firstname')
+            span.help-block= gettext('Use the % sign as a wildcard. E.g. Eliza% or %beth')
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('Last name')
+            input(class='form-control', type='text', autofocus, name='lastname')
+            span.help-block= gettext('Use the % sign as a wildcard. E.g. Weid% or %maven or Wei%en')
+      div.row
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('Date of birth')
+            input(class='form-control', type='date', name='dob')
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('MMC #')
+            input(class='form-control', type='number', name='doh')
+      div.row
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('Priority #')
+            input(class='form-control', type='number', name='priority', disabled)
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('Phil health ID')
+            input(class='form-control', type='number', name='philHealth')
 
-      input(class='btn btn-default', type='submit', value=gettext('Search'))
-      input(type='hidden', name='searchType', value='new')
-      input(type='hidden', name='_csrf', value=token)
+      div.row
+        div(class='col-md-12')
+          input(class='btn btn-default', type='submit', value=gettext('Search'))
+          input(type='hidden', name='searchType', value='new')
+          input(type='hidden', name='_csrf', value=token)
