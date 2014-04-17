@@ -21,7 +21,7 @@ block pregnancyEdit
           span= gettext('First name')
           input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname', value=rec.firstname)
         div(class='form-group col-xs-4')
-          span= gettext('Date of Birth (mm/dd/yyyy)')
+          span= gettext('DOB (mm/dd/yyyy)')
           input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob', value=rec.patient.dob)
       div.row
         div(class='form-group col-xs-4')
@@ -71,12 +71,9 @@ block pregnancyEdit
         div(class='form-group col-xs-4')
           span= gettext('Partner education')
           +select('form-control input-lg', 'partnerEducation', 17, partnerEducation)
-        div(class='form-group col-xs-2')
+        div(class='form-group col-xs-4')
           span= gettext('Client monthly Income')
           input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='monthlyIncome', value=rec.monthlyIncome)
-        div(class='form-group col-xs-2')
-          span= gettext('Partner monthly income')
-          input(class='form-control input-lg', type='number', tabindex="19", autocomplete="off", name='partnerMonthlyIncome', value=rec.partnerMonthlyIncome)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('MMC #')
@@ -84,6 +81,9 @@ block pregnancyEdit
         div(class='form-group col-xs-4')
           span= gettext('Priority #')
           input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='priority', value=rec.priority)
+        div(class='form-group col-xs-4')
+          span= gettext('Partner monthly income')
+          input(class='form-control input-lg', type='number', tabindex="19", autocomplete="off", name='partnerMonthlyIncome', value=rec.partnerMonthlyIncome)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
