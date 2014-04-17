@@ -139,7 +139,12 @@ var load = function(req, res, next) {
         // point of delivery.
         // --------------------------------------------------------
         if (rec.edd || rec.alternateEdd) {
-          rec.ga = getGA(rec.edd || rec.alternateEdd, rec.pregnancyEndDate || moment());
+          // Favor the alternateEdd if the useAlternateEdd is specified.
+          if (rec.useAlternateEdd && rec.alternateEdd) {
+            rec.ga = getGA(rec.alternateEdd, rec.pregnancyEndDate || moment());
+          } else {
+            rec.ga = getGA(rec.edd || rec.alternateEdd, rec.pregnancyEndDate || moment());
+          }
         } else {
           rec.ga = '';
         }
@@ -150,7 +155,10 @@ var load = function(req, res, next) {
         // --------------------------------------------------------
         if (rec.prenatalExam) {
           _.each(rec.prenatalExam, function(peRec) {
-            if (rec.edd || rec.alternateEdd) {
+            // Favor the alternateEdd if the useAlternateEdd is specified.
+            if (rec.useAlternateEdd && rec.alternateEdd) {
+              peRec.ga = getGA(rec.alternateEdd, moment(peRec.date).format('YYYY-MM-DD'));
+            } else if (rec.edd || rec.alternateEdd) {
               peRec.ga = getGA(rec.edd || rec.alternateEdd, moment(peRec.date).format('YYYY-MM-DD'));
             } else {
               peRec.ga = '';
@@ -183,7 +191,10 @@ var load = function(req, res, next) {
               return p.id === id2;
             });
             if (req.paramPrenatalExam) {
-              if (rec.edd || rec.alternateEdd) {
+              // Favor the alternateEdd if the useAlternateEdd is specified.
+              if (rec.useAlternateEdd && rec.alternateEdd) {
+                req.paramPrenatalExam.ga = getGA(rec.alternateEdd, req.paramPrenatalExam.date);
+              } else if (rec.edd || rec.alternateEdd) {
                 req.paramPrenatalExam.ga = getGA(rec.edd || rec.alternateEdd, req.paramPrenatalExam.date);
               } else {
                 req.paramPrenatalExam.ga = '';
