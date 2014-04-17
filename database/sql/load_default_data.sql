@@ -61,6 +61,11 @@ VALUES
   ('education', '', 'Unknown', 1, 1, NOW()),
   ('education', 'elementary', 'Elementary', 0, 1, NOW()),
   ('education', 'high school', 'High School', 0, 1, NOW()),
-  ('education', 'college', 'College', 0, 1, NOW())
+  ('education', 'college', 'College', 0, 1, NOW()),
+  ('edema', 'none', 'None', 1, 1, NOW()),
+  ('edema', '+1', '+1', 0, 1, NOW()),
+  ('edema', '+2', '+2', 0, 1, NOW()),
+  ('edema', '+3', '+3', 0, 1, NOW()),
+  ('edema', '+4', '+4', 0, 1, NOW())
 ;
 

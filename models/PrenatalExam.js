@@ -19,7 +19,7 @@ var moment = require('moment')
 CREATE TABLE `prenatalExam` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
-  `weight` float(3,1) DEFAULT NULL,
+  `weight` decimal(4,1) DEFAULT NULL,
   `systolic` int(11) DEFAULT NULL,
   `diastolic` int(11) DEFAULT NULL,
   `cr` int(11) DEFAULT NULL,
@@ -28,15 +28,12 @@ CREATE TABLE `prenatalExam` (
   `fhtNote` varchar(20) DEFAULT NULL,
   `pos` varchar(10) DEFAULT NULL,
   `mvmt` tinyint(1) DEFAULT NULL,
-  `edma` tinyint(1) DEFAULT NULL,
+  `edema` varchar(4) DEFAULT NULL,
   `risk` tinyint(1) DEFAULT NULL,
   `vitamin` tinyint(1) DEFAULT NULL,
   `pray` tinyint(1) DEFAULT NULL,
   `note` varchar(100) DEFAULT NULL,
   `returnDate` date DEFAULT NULL,
-  `checkin` datetime DEFAULT NULL,
-  `checkout` datetime DEFAULT NULL,
-  `chartPulled` tinyint(1) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
   `supervisor` int(11) DEFAULT NULL,
@@ -55,7 +52,7 @@ PrenatalExam = Bookshelf.Model.extend({
   tableName: 'prenatalExam'
 
   , permittedAttributes: ['id', 'date', 'weight', 'systolic', 'diastolic', 'cr',
-      'fh', 'fht', 'fhtNote', 'pos', 'mvmt', 'edma', 'risk', 'vitamin', 'pray',
+      'fh', 'fht', 'fhtNote', 'pos', 'mvmt', 'edema', 'risk', 'vitamin', 'pray',
       'note', 'returnDate', 'checkin', 'checkout', 'chartPulled', 'updatedBy',
       'updatedAt', 'supervisor', 'pregnancy_id']
 

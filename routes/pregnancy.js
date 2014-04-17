@@ -30,6 +30,7 @@ var _ = require('underscore')
   , maritalStatus = []
   , religion = []
   , education = []
+  , edema = []
   ;
 
 /* --------------------------------------------------------
@@ -43,9 +44,11 @@ var init = function() {
     , setMS = function(list) {maritalStatus = list;}
     , setRel = function(list) {religion = list;}
     , setEdu = function(list) {education = list;}
+    , setEdema = function(list) {edema = list;}
     , maritalName = 'maritalStatus'
     , religionName = 'religion'
     , educationName = 'education'
+    , edemaName = 'edema'
     , interval = cfg.data.selectRefreshInterval
   ;
 
@@ -73,11 +76,13 @@ var init = function() {
     refresh(dataName).then(function(list) {
       fn(list);
     });
-    setInterval(function() {
-      refresh(dataName).then(function(list) {
-        fn(list);
-      });
-    }, interval);
+    // Turned off interval refresh for now because there are not yet any
+    // administrative screeens to update these lists in real-time.
+    //setInterval(function() {
+      //refresh(dataName).then(function(list) {
+        //fn(list);
+      //});
+    //}, interval);
   };
 
   // --------------------------------------------------------
@@ -86,6 +91,7 @@ var init = function() {
   doRefresh(maritalName, setMS);
   doRefresh(religionName, setRel);
   doRefresh(educationName, setEdu);
+  doRefresh(edemaName, setEdema);
 
 };
 
@@ -257,12 +263,24 @@ var history = function(req, res) {
  * form according to the database record.
  * -------------------------------------------------------- */
 var getCommonFormData = function(req, addData) {
+ var ed = _.map(edema, function(r) {return _.clone(r);})
+   ;
+  if (req.paramPrenatalExam && req.paramPrenatalExam.edema) {
+    _.each(ed, function(rec) {
+      if (rec.selectKey == req.paramPrenatalExam.edema) {
+        rec.selected = true;
+      } else {
+        rec.selected = false;
+      }
+    });
+  }
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
     , rec: req.paramPregnancy
     , pregHist: req.paramPregHist || void(0)
     , prenatalExam: req.paramPrenatalExam || void(0)
+    , edema: ed
   });
 };
 
@@ -1040,7 +1058,7 @@ var prenatalExamEdit = function(req, res) {
     , preRec
     , defaultFlds = {
         mvmt: '0'
-        , edma: '0'
+        , edema: '0'
         , risk: '0'
         , vitamin: '0'
         , pray: '0'

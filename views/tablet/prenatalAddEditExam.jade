@@ -67,11 +67,11 @@ block prenatalAddEditExam
           div.checkbox
             label= gettext('Mvmt')
               input(class='form-control input-sm', type='checkbox', name='mvmt', tabindex="9", value=1, checked=prenatalExam.mvmt==true)
-        div(class='form-group col-xs-2')
+        div(class='form-group col-xs-3')
           div.checkbox
-            label= gettext('Edma')
-              input(class='form-control input-sm', type='checkbox', name='edma', tabindex="10", value=1, checked=prenatalExam.edma==true)
-        div(class='form-group col-xs-2 col-xs-offset-1')
+            label= gettext('Edema')
+              +select('form-control', 'edema', 7, edema)
+        div(class='form-group col-xs-2')
           div.checkbox
             label= gettext('Risk')
               input(class='form-control input-sm', type='checkbox', name='risk', tabindex="11", value=1, checked=prenatalExam.risk==true)

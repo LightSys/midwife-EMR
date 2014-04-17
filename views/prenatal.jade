@@ -99,7 +99,7 @@ block prenatal
               td= gettext('FHT')
               td= gettext('Pos')
               td= gettext('Mvmt')
-              td= gettext('Edma')
+              td= gettext('Edema')
               td= gettext('Risk')
               td= gettext('Vit')
               td= gettext('Pray')
@@ -115,11 +115,11 @@ block prenatal
               //- If database has all zeros, will be invalid date.
               - if (returnDate == 'Invalid date') returnDate = '';
               - var bp = pe.systolic + ' / ' + pe.diastolic;
-              - mvmt = pe.mvmt === 1? 'Y': 'N';
-              - edma = pe.edma === 1? 'Y': 'N';
-              - risk = pe.risk === 1? 'Y': 'N';
-              - vitamin = pe.vitamin === 1? 'Y': 'N';
-              - pray = pe.pray === 1? 'Y': 'N';
+              - var mvmt = pe.mvmt === 1? 'Y': 'N';
+              - var edema = pe.edema === 'none'? 'None': pe.edema;
+              - var risk = pe.risk === 1? 'Y': 'N';
+              - var vitamin = pe.vitamin === 1? 'Y': 'N';
+              - var pray = pe.pray === 1? 'Y': 'N';
               tr(class='prenatalExamRow', id=prenatalExamId)
                 td= peDate
                 td= pe.weight
@@ -130,7 +130,7 @@ block prenatal
                 td= pe.fht
                 td= pe.pos
                 td= mvmt
-                td= edma
+                td= edema
                 td= risk
                 td= vitamin
                 td= pray
