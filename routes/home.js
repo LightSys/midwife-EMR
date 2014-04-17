@@ -20,7 +20,6 @@ var home = function(req, res) {
   res.render('content', {
     title: req.gettext('Home')
     , user: req.session.user
-    , revision: req.session.appRevisions
   });
 };
 

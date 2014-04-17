@@ -8,8 +8,8 @@ block content
 
   p= gettext('User id: ') + user.id + ', ' + gettext('Name: ') + user.username
 
-  - if (revision)
-    p= gettext('Application revision: ') + revision
+  - if (applicationRevision)
+    p= gettext('Application revision: ') + applicationRevision
 
   p= gettext('Designed for a desktop/laptop.')
   hr

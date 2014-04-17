@@ -35,7 +35,8 @@ var express = require('express')
   , logError = require('./util').logError
   , common = []
   , attending = []
-  , revisions = 0
+  , revision = 0
+  , tmpRevision = 0
   ;
 
 // --------------------------------------------------------
@@ -176,16 +177,16 @@ app.use(function(req, res, next) {
 
 // --------------------------------------------------------
 // Get the git revision as the number of commits then save 
-// to the session for usage on certain screens, etc.
+// to app locals for use in the templates.
 // --------------------------------------------------------
 gitHistory().on('data', function(commit) {
-  revisions++;
+  tmpRevision++;
+});
+gitHistory().on('end', function() {
+  revision = tmpRevision;
 });
 app.use(function(req, res, next) {
-  if (req.session && ! req.session.appRevisions) {
-    req.session.appRevisions = revisions;
-    req.session.save();
-  }
+  if (revision != 0) app.locals.applicationRevision = revision;
   next();
 });
 
