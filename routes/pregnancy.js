@@ -366,7 +366,7 @@ var quesUpdate = function(req, res) {
  * return      undefined
  * -------------------------------------------------------- */
 var addForm = function(req, res) {
-  var data = {title: req.gettext('New Pregnancy Record') }
+  var data = {title: req.gettext('New Client Record') }
     ;
   res.render('pregnancyAddForm', getEditFormData(req, data));
 };
@@ -444,7 +444,7 @@ var getEditFormData = function(req, addData) {
  * return
  * -------------------------------------------------------- */
 var editForm = function(req, res) {
-  var data = {title: req.gettext('Edit Pregnancy')};
+  var data = {title: req.gettext('Edit Client')};
   if (req.paramPregnancy) {
     res.render('pregnancyEditForm', getEditFormData(req, data));
   } else {
