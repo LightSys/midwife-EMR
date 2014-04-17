@@ -46,14 +46,14 @@ block pregnancyQuestionnaire
           label= gettext('drink medicine')
             input(class='form-control input-sm', type='checkbox', name='canDrinkMedicine', tabindex="11", value=1, checked=rec.canDrinkMedicine==true)
         div.checkbox
-          label= gettext('plan to breast feed')
+          label= gettext('plan to breastfeed')
             input(class='form-control input-sm', type='checkbox', name='planToBreastFeed', tabindex="12", value=1, checked=rec.planToBreastFeed==true)
         span= gettext('Where do you plan to give birth?')
         input(class='form-control', type='text', tabindex="13", autocomplete="off", name='whereDeliver', value=rec.whereDeliver)
         span= gettext('Companion during childbirth?')
         input(class='form-control', type='text', tabindex="14", autocomplete="off", name='birthCompanion', value=rec.birthCompanion)
         div.checkbox
-          label= gettext('Did you practice family planning?')
+          label= gettext('Have you ever practiced family planning?')
             input(class='form-control input-sm', type='checkbox', name='practiceFamilyPlanning', tabindex="15", value=1, checked=rec.practiceFamilyPlanning==true)
         span= gettext('What did you use?')
         input(class='form-control', type='text', tabindex="16", autocomplete="off", name='familyPlanningDetails', value=rec.familyPlanningDetails)
@@ -95,7 +95,7 @@ block pregnancyQuestionnaire
           label= gettext('Asthma?')
             input(class='form-control input-sm', type='checkbox', name='historyAsthma', tabindex="26", value=1, checked=rec.historyAsthma==true)
         div.checkbox
-          label= gettext('Chest pains?')
+          label= gettext('Heart problems?')
             input(class='form-control input-sm', type='checkbox', name='historyChestPains', tabindex="27", value=1, checked=rec.historyChestPains==true)
         div.checkbox
           label= gettext('Kidney problems?')
