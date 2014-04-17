@@ -55,12 +55,12 @@ block prenatalAddEditExam
           label(class='')= gettext('Fetus Information')
           div= gettext('GA')
           input(id='ga', class='form-control input-lg', type='text', autocomplete="off", name='ga', disabled=true, value=ga)
-          span= gettext('Position')
-          input(id='pos', class='form-control input-lg', type='text', tabindex="6", autocomplete="off", name='pos', value=prenatalExam.pos)
           span= gettext('FH')
-          input(id='fh', class='form-control input-lg', type='number', tabindex="7", autocomplete="off", name='fh', value=prenatalExam.fh)
+          input(id='fh', class='form-control input-lg', type='number', tabindex="6", autocomplete="off", name='fh', value=prenatalExam.fh)
           span= gettext('FHT')
-          input(id='fht', class='form-control input-lg', type='number', tabindex="8", autocomplete="off", name='fht', value=prenatalExam.fht)
+          input(id='fht', class='form-control input-lg', type='number', tabindex="7", autocomplete="off", name='fht', value=prenatalExam.fht)
+          span= gettext('Position')
+          input(id='pos', class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='pos', value=prenatalExam.pos)
 
       div.row
         div(class='form-group col-xs-2')

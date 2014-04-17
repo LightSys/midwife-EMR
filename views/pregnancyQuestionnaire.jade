@@ -39,13 +39,13 @@ block pregnancyQuestionnaire
 
       div(class='form-group col-sm-3')
         div.checkbox
-          label= gettext('Have been using iodized salt')
+          label= gettext('Using iodized salt?')
             input(type='checkbox', name='useIodizedSalt', tabindex="10", value=1, checked=rec.useIodizedSalt==true)
         div.checkbox
-          label= gettext('Can drink medicine')
+          label= gettext('Taking medication?')
             input(type='checkbox', name='canDrinkMedicine', tabindex="11", value=1, checked=rec.canDrinkMedicine==true)
         div.checkbox
-          label= gettext('Do plan to breastfeed')
+          label= gettext('Plan to breastfeed?')
             input(type='checkbox', name='planToBreastFeed', tabindex="12", value=1, checked=rec.planToBreastFeed==true)
         span= gettext('Where do you plan to give birth?')
         input(class='form-control', type='text', tabindex="13", autocomplete="off", name='whereDeliver', value=rec.whereDeliver)
