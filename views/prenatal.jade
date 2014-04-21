@@ -55,35 +55,35 @@ block prenatal
                 input(type='checkbox', name='useAlternateEdd', tabindex="9", value=1, checked=rec.useAlternateEdd==true)
 
     div.row
-      div(class='form-group col-md-6 box')
+      div(class='form-group col-md-7 box')
         p(class='text-primary lead')= gettext('Risk Factors')
         div.row
-          div(class='col-md-4 ')
-            div.checkbox
-              label= gettext('Risk Present')
-                input(type='checkbox', name='riskPresent', tabindex="9", value=1, checked=rec.riskPresent==true)
-            div.checkbox
-              label= gettext('OB Hx')
-                input(type='checkbox', name='riskObHx', tabindex="10", value=1, checked=rec.riskObHx==true)
-            div.checkbox
-              label= gettext('Med Hx')
-                input(type='checkbox', name='riskMedHx', tabindex="11", value=1, checked=rec.riskMedHx==true)
-          div(class='col-md-8')
+          div(class='col-md-3 ')
+            span= gettext('Risk Present')
+              +select('form-control input-lg', 'riskPresent', 9, riskPresent)
+            span= gettext('Risk OB Hx')
+              +select('form-control input-lg', 'riskObHx', 10, riskObHx)
+          div(class='col-md-3 ')
+            span= gettext('Risk Med Hx')
+              +select('form-control input-lg', 'riskMedHx', 11, riskMedHx)
+            span= gettext('Risk Lifestyle')
+              +select('form-control input-lg', 'riskLifestyle', 12, riskLifestyle)
+          div(class='col-md-6')
             div
               span= gettext('Risk Notes')
-              textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=2, name='riskNote')= rec.riskNote
+              textarea(class='form-control input-lg', tabindex="13", autocomplete="off", rows=4, name='riskNote')= rec.riskNote
 
-      div(class='form-group col-md-6 box')
+      div(class='form-group col-md-5 box')
         p(class='text-primary lead')= gettext('Pregnancy End Result')
         div(class='row')
           div(class='col-md-6 ')
             div
               span= gettext('End Date')
-              input(class='form-control', type='date', name='pregnancyEndDate', tabindex="13", value=rec.pregnancyEndDate)
+              input(class='form-control', type='date', name='pregnancyEndDate', tabindex="14", value=rec.pregnancyEndDate)
           div(class='col-md-6 ')
             div
               span= gettext('End Result')
-              input(class='form-control', type='text', size=20, tabindex="14", autocomplete="off", name='pregnancyEndResult', value=rec.pregnancyEndResult)
+              input(class='form-control', type='text', size=20, tabindex="15", autocomplete="off", name='pregnancyEndResult', value=rec.pregnancyEndResult)
 
     div.row
       div(class='col-md-12')

@@ -26,7 +26,6 @@ block pregnancyEdit
       div.row
         div(class='form-group col-sm-4')
           span= gettext('Religion')
-          //-input(class='form-control input-lg', type='text', tabindex="4", autocomplete="off", name='religion', list="religion", value=rec.religion)
           +select('form-control input-lg', 'religion', 4, religion)
         div(class='form-group col-sm-4')
           span= gettext('Maiden name')

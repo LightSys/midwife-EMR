@@ -31,6 +31,10 @@ var _ = require('underscore')
   , religion = []
   , education = []
   , edema = []
+  , riskPresent = []
+  , riskObHx = []
+  , riskMedHx = []
+  , riskLifestyle = []
   ;
 
 /* --------------------------------------------------------
@@ -45,10 +49,18 @@ var init = function() {
     , setRel = function(list) {religion = list;}
     , setEdu = function(list) {education = list;}
     , setEdema = function(list) {edema = list;}
+    , setRiskPresent = function(list) {riskPresent = list;}
+    , setRiskObHx = function(list) {riskObHx = list;}
+    , setRiskMedHx = function(list) {riskMedHx = list;}
+    , setRiskLifestyle = function(list) {riskLifestyle = list;}
     , maritalName = 'maritalStatus'
     , religionName = 'religion'
     , educationName = 'education'
     , edemaName = 'edema'
+    , riskPresentName = 'riskPresent'
+    , riskObHxName = 'riskObHx'
+    , riskMedHxName = 'riskMedHx'
+    , riskLifestyleName = 'riskLifestyle'
     , interval = cfg.data.selectRefreshInterval
   ;
 
@@ -92,7 +104,10 @@ var init = function() {
   doRefresh(religionName, setRel);
   doRefresh(educationName, setEdu);
   doRefresh(edemaName, setEdema);
-
+  doRefresh(riskPresentName, setRiskPresent);
+  doRefresh(riskObHxName, setRiskObHx);
+  doRefresh(riskMedHxName, setRiskMedHx);
+  doRefresh(riskLifestyleName, setRiskLifestyle);
 };
 
 /* --------------------------------------------------------
@@ -264,15 +279,67 @@ var history = function(req, res) {
  * -------------------------------------------------------- */
 var getCommonFormData = function(req, addData) {
  var ed = _.map(edema, function(r) {return _.clone(r);})
+   , rp = _.map(riskPresent, function(r) {return _.clone(r);})
+   , ro = _.map(riskObHx, function(r) {return _.clone(r);})
+   , rm = _.map(riskMedHx, function(r) {return _.clone(r);})
+   , rl = _.map(riskLifestyle, function(r) {return _.clone(r);})
    ;
-  if (req.paramPrenatalExam && req.paramPrenatalExam.edema) {
-    _.each(ed, function(rec) {
-      if (rec.selectKey == req.paramPrenatalExam.edema) {
-        rec.selected = true;
-      } else {
-        rec.selected = false;
-      }
-    });
+
+  // --------------------------------------------------------
+  // Load select data for the prenatal page.
+  // --------------------------------------------------------
+  if (req.paramPregnancy) {
+    if (req.paramPregnancy.riskPresent) {
+      _.each(rp, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.riskPresent) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    } else {req.paramPregnancy.riskPresent = '';}
+    if (req.paramPregnancy.riskObHx) {
+      _.each(ro, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.riskObHx) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    } else {req.paramPregnancy.riskObHx = '';}
+    if (req.paramPregnancy.riskMedHx) {
+      _.each(rm, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.riskMedHx) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    } else {req.paramPregnancy.riskMedHx = '';}
+    if (req.paramPregnancy.riskLifestyle) {
+      _.each(rl, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.riskLifestyle) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    } else {req.paramPregnancy.riskLifestyle = '';}
+  }
+
+  // --------------------------------------------------------
+  // Load select data for the prenatal exam page.
+  // --------------------------------------------------------
+  if (req.paramPrenatalExam) {
+    if (req.paramPrenatalExam.edema) {
+      _.each(ed, function(rec) {
+        if (rec.selectKey == req.paramPrenatalExam.edema) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    }
   }
   return _.extend(addData, {
     user: req.session.user
@@ -281,6 +348,10 @@ var getCommonFormData = function(req, addData) {
     , pregHist: req.paramPregHist || void(0)
     , prenatalExam: req.paramPrenatalExam || void(0)
     , edema: ed
+    , riskPresent: rp
+    , riskObHx: ro
+    , riskMedHx: rm
+    , riskLifestyle: rl
   });
 };
 
@@ -915,9 +986,6 @@ var prenatalUpdate = function(req, res) {
         , philHealthNCP: '0'
         , philHealthApproved: '0'
         , useAlternateEdd: '0'
-        , riskPresent: '0'
-        , riskObHx: '0'
-        , riskMedHx: '0'
         , sureLMP: '0'
       }
     ;

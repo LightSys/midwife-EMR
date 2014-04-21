@@ -83,6 +83,7 @@ describe('unauthenticated', function(done) {
 });
 
 describe('authenticated', function(done) {
+  this.timeout(5000);
   before(function(done) {
     utils.loginMany(request, allUserNames, allUserAgents, function(err, success) {
       if (err) return done(err);

@@ -50,37 +50,37 @@ block prenatal
               input(class='form-control input-sm', type='checkbox', name='sureLMP', tabindex="7", value=1, checked=rec.sureLMP==true)
           div.checkbox
             label= gettext('Use Alternate EDD')
-              input(class='form-control input-sm', type='checkbox', name='useAlternateEdd', tabindex="7", value=1, checked=rec.useAlternateEdd==true)
+              input(class='form-control input-sm', type='checkbox', name='useAlternateEdd', tabindex="8", value=1, checked=rec.useAlternateEdd==true)
         div.row
           div(class='col-xs-12')
             div
               span= gettext('Alternate EDD')
-              input(class='form-control', type='date', name='alternateEdd', tabindex="8", value=rec.alternateEdd)
+              input(class='form-control', type='date', name='alternateEdd', tabindex="9", value=rec.alternateEdd)
 
 
     div.row
       div(class='form-group col-xs-8 box')
         p(class='text-primary lead')= gettext('Risk Factors')
         div.row
-          div(class='form-group col-xs-6')
+          div(class='form-group col-xs-12')
             div.row
-              div(class='col-xs-6')
-                div.checkbox
-                  label= gettext('Risk?')
-                    input(class='form-control input-sm', type='checkbox', name='riskPresent', tabindex="9", value=1, checked=rec.riskPresent==true)
-              div(class='col-xs-6')
-                div.checkbox
-                  label= gettext('OB Hx')
-                    input(class='form-control input-sm', type='checkbox', name='riskObHx', tabindex="10", value=1, checked=rec.riskObHx==true)
+              div(class='col-xs-4')
+                  span= gettext('Risk Present')
+                    +select('form-control input-lg', 'riskPresent', 10, riskPresent)
+              div(class='col-xs-4')
+                  span= gettext('OB Hx')
+                    +select('form-control input-lg', 'riskObHx', 11, riskObHx)
+              div(class='col-xs-4')
+                  span= gettext('Med Hx')
+                    +select('form-control input-lg', 'riskMedHx', 12, riskMedHx)
             div.row
-              div(class='col-xs-12')
-                div.checkbox
-                  label(class='text-center')= gettext('Med Hx')
-                    input(class='form-control input-sm', type='checkbox', name='riskMedHx', tabindex="11", value=1, checked=rec.riskMedHx==true)
-          div(class='col-xs-6')
-            div
-              span= gettext('Risk Notes')
-              textarea(class='form-control input-lg', tabindex="12", autocomplete="off", rows=4, name='riskNote')= rec.riskNote
+              div(class='col-xs-4')
+                  span= gettext('Risk Lifestyle')
+                  +select('form-control input-lg', 'riskLifestyle', 13, riskLifestyle)
+              div(class='col-xs-8')
+                div
+                  span= gettext('Risk Notes')
+                  textarea(class='form-control', tabindex="14", autocomplete="off", rows=2, name='riskNote')= rec.riskNote
 
       div(class='form-group col-xs-4 box')
         p(class='text-primary lead')= gettext('Pregnancy End Result')
@@ -88,12 +88,12 @@ block prenatal
           div(class='col-xs-12')
             div
               span= gettext('End Date')
-              input(class='form-control', type='date', name='pregnancyEndDate', tabindex="13", value=rec.pregnancyEndDate)
+              input(class='form-control', type='date', name='pregnancyEndDate', tabindex="15", value=rec.pregnancyEndDate)
         div(class='row')
           div(class='col-xs-12')
             div
               span= gettext('End Result')
-              input(class='form-control', type='text', size=20, tabindex="14", autocomplete="off", name='pregnancyEndResult', value=rec.pregnancyEndResult)
+              input(class='form-control', type='text', size=20, tabindex="16", autocomplete="off", name='pregnancyEndResult', value=rec.pregnancyEndResult)
 
     hr
     p(class='text-primary lead')= gettext('Prenatal Exams')
