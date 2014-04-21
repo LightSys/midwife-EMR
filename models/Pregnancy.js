@@ -46,7 +46,6 @@ CREATE TABLE `pregnancy` (
   `doctorConsultDate` date DEFAULT NULL,
   `dentistConsultDate` date DEFAULT NULL,
   `mbBook` tinyint(1) DEFAULT NULL,
-  `iodizedSalt` tinyint(1) DEFAULT NULL,
   `whereDeliver` varchar(100) DEFAULT NULL,
   `fetuses` tinyint(4) DEFAULT NULL,
   `monozygotic` tinyint(4) DEFAULT NULL,
@@ -79,11 +78,11 @@ CREATE TABLE `pregnancy` (
   `currentlyBirthCanalPain` tinyint(1) DEFAULT NULL,
   `currentlyNone` tinyint(1) DEFAULT NULL,
   `useIodizedSalt` tinyint(1) DEFAULT NULL,
-  `canDrinkMedicine` tinyint(1) DEFAULT NULL,
+  `takingMedication` tinyint(1) DEFAULT NULL,
   `planToBreastFeed` tinyint(1) DEFAULT NULL,
   `birthCompanion` varchar(30) DEFAULT NULL,
   `practiceFamilyPlanning` tinyint(1) DEFAULT NULL,
-  `familyPlanningDetails` varchar(100) DEFAULT NULL,
+  `practiceFamilyPlanningDetails` varchar(100) DEFAULT NULL,
   `familyHistoryTwins` tinyint(1) DEFAULT NULL,
   `familyHistoryHighBloodPressure` tinyint(1) DEFAULT NULL,
   `familyHistoryDiabetes` tinyint(1) DEFAULT NULL,
@@ -121,7 +120,7 @@ CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
@@ -132,7 +131,7 @@ Pregnancy = Bookshelf.Model.extend({
       'monthlyIncome', 'address', 'barangay', 'city', 'postalCode', 'gravidaNumber',
       'lmp', 'sureLMP', 'warning', 'riskPresent', 'riskObHx', 'riskMedHx',
       'riskNote', 'edd', 'alternateEdd', 'useAlternateEdd',
-      'doctorConsultDate', 'dentistConsultDate', 'mbBook', 'iodizedSalt',
+      'doctorConsultDate', 'dentistConsultDate', 'mbBook',
       'whereDeliver', 'fetuses', 'monozygotic', 'pregnancyEndDate',
       'pregnancyEndResult', 'iugr', 'note', 'numberRequiredTetanus',
       'invertedNipples', 'hasUS', 'wantsUS', 'gravida', 'stillBirths',
@@ -141,8 +140,8 @@ Pregnancy = Bookshelf.Model.extend({
       'currentlyDizzy', 'currentlyFainting', 'currentlyBleeding',
       'currentlyUrinationPain', 'currentlyBlurryVision', 'currentlySwelling',
       'currentlyBirthCanalPain', 'currentlyNone', 'useIodizedSalt',
-      'canDrinkMedicine', 'planToBreastFeed', 'birthCompanion',
-      'practiceFamilyPlanning', 'familyPlanningDetails', 'familyHistoryTwins',
+      'takingMedication', 'planToBreastFeed', 'birthCompanion',
+      'practiceFamilyPlanning', 'practiceFamilyPlanningDetails', 'familyHistoryTwins',
       'familyHistoryHighBloodPressure', 'familyHistoryDiabetes',
       'familyHistoryChestPains', 'familyHistoryTB', 'familyHistorySmoking',
       'familyHistoryNone', 'historyFoodAllergy', 'historyMedicineAllergy',

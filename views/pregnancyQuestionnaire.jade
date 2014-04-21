@@ -43,7 +43,7 @@ block pregnancyQuestionnaire
             input(type='checkbox', name='useIodizedSalt', tabindex="10", value=1, checked=rec.useIodizedSalt==true)
         div.checkbox
           label= gettext('Taking medication?')
-            input(type='checkbox', name='canDrinkMedicine', tabindex="11", value=1, checked=rec.canDrinkMedicine==true)
+            input(type='checkbox', name='takingMedication', tabindex="11", value=1, checked=rec.takingMedication==true)
         div.checkbox
           label= gettext('Plan to breastfeed?')
             input(type='checkbox', name='planToBreastFeed', tabindex="12", value=1, checked=rec.planToBreastFeed==true)
@@ -55,7 +55,7 @@ block pregnancyQuestionnaire
           label= gettext('Have you ever practiced family planning?')
             input(type='checkbox', name='practiceFamilyPlanning', tabindex="15", value=1, checked=rec.practiceFamilyPlanning==true)
         span= gettext('Family planning comments')
-        input(class='form-control', type='text', tabindex="16", autocomplete="off", name='familyPlanningDetails', value=rec.familyPlanningDetails)
+        input(class='form-control', type='text', tabindex="16", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
 
       div(class='form-group col-sm-3')
         p.text-primary= gettext('Do you have a family history of?')

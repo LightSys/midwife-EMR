@@ -40,7 +40,7 @@ var should = require('should')
   ;
 
 describe('Pregnancy', function(done) {
-  this.timeout(5000);
+  this.timeout(7000);
 
   before(function(done) {
     utils.loginManyAsync(request, allUserNames, allUserAgents)
@@ -328,15 +328,25 @@ describe('Pregnancy', function(done) {
       , peId2
       ;
     before(function(done) {
-      new PrenatalExams().fetch().then(function(list) {
+      new Pregnancies().fetch().then(function(list) {
         var idx = getRandom(list.length)
           , idx2 = getRandom(list.length)
           ;
-        peId = list.get(idx).get('id');
-        pregId = list.get(idx).get('pregnancy_id');
-        peId2 = list.get(idx2).get('id');
-        pregId2 = list.get(idx2).get('pregnancy_id');
-        done();
+        pregId = list.get(idx).get('id');
+        pregId2 = list.get(idx2).get('id');
+        new PrenatalExam({'pregnancy_id': pregId})
+          .setUpdatedBy(1)
+          .setSupervisor(1)
+          .save().then(function(m1) {
+            peId = m1.get('id');
+            new PrenatalExam({'pregnancy_id': pregId2})
+              .setUpdatedBy(1)
+              .setSupervisor(1)
+              .save().then(function(m2) {
+                peId2 = m2.get('id');
+                done();
+            });
+        });
       });
     });
 
@@ -550,7 +560,7 @@ describe('Pregnancy', function(done) {
                   new PrenatalExam({pregnancy_id: pregId2, id: peId2})
                     .fetch({require: true})
                     .then(function(model) {
-                      model.get('pregnancy_id').should.equal(pregId);
+                      model.get('pregnancy_id').should.equal(pregId2);
                       cr.should.not.equal(model.get('cr'));
                       fh.should.not.equal(model.get('fh'));
                       done();
