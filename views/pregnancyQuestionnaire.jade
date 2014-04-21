@@ -80,6 +80,8 @@ block pregnancyQuestionnaire
         div.checkbox
           label= gettext('None of the above?')
             input(type='checkbox', name='familyHistoryNone', tabindex="23", value=1, checked=rec.familyHistoryNone==true)
+        span= gettext('Notes')
+        textarea(id='questionnaireNote', class='form-control', tabindex="37", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
 
       div(class='form-group col-sm-3')
         p.text-primary= gettext('Do you have a history of?')
@@ -122,8 +124,6 @@ block pregnancyQuestionnaire
         div.checkbox
           label= gettext('None of the above?')
             input(type='checkbox', name='historyNone', tabindex="36", value=1, checked=rec.historyNone==true)
-
-
 
     div.row
       input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))

@@ -35,6 +35,7 @@ var _ = require('underscore')
   , riskObHx = []
   , riskMedHx = []
   , riskLifestyle = []
+  , incomePeriod = []
   ;
 
 /* --------------------------------------------------------
@@ -53,6 +54,7 @@ var init = function() {
     , setRiskObHx = function(list) {riskObHx = list;}
     , setRiskMedHx = function(list) {riskMedHx = list;}
     , setRiskLifestyle = function(list) {riskLifestyle = list;}
+    , setIncomePeriod = function(list) {incomePeriod = list;}
     , maritalName = 'maritalStatus'
     , religionName = 'religion'
     , educationName = 'education'
@@ -61,6 +63,7 @@ var init = function() {
     , riskObHxName = 'riskObHx'
     , riskMedHxName = 'riskMedHx'
     , riskLifestyleName = 'riskLifestyle'
+    , incomePeriodName = 'incomePeriod'
     , interval = cfg.data.selectRefreshInterval
   ;
 
@@ -108,6 +111,7 @@ var init = function() {
   doRefresh(riskObHxName, setRiskObHx);
   doRefresh(riskMedHxName, setRiskMedHx);
   doRefresh(riskLifestyleName, setRiskLifestyle);
+  doRefresh(incomePeriodName, setIncomePeriod);
 };
 
 /* --------------------------------------------------------
@@ -272,10 +276,10 @@ var history = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * getQuestFormData()
+ * getCommonFormData()
  *
- * Return the data necessary to populate the questionnaire
- * form according to the database record.
+ * Return the data necessary to populate several of the forms
+ * according to the database record.
  * -------------------------------------------------------- */
 var getCommonFormData = function(req, addData) {
  var ed = _.map(edema, function(r) {return _.clone(r);})
@@ -487,42 +491,64 @@ var getEditFormData = function(req, addData) {
     , rel = _.map(religion, function(r) {return _.clone(r);})
     , edu = _.map(education, function(e) {return _.clone(e);})
     , partEdu = _.map(education, function(e) {return _.clone(e);})
+    , clientInc = _.map(incomePeriod, function(e) {return _.clone(e);})
+    , partnerInc = _.map(incomePeriod, function(e) {return _.clone(e);})
     ;
-  if (req.paramPregnancy && req.paramPregnancy.maritalStatus) {
-    _.each(ms, function(rec) {
-      if (rec.selectKey == req.paramPregnancy.maritalStatus) {
-        rec.selected = true;
-      } else {
-        rec.selected = false;
-      }
-    });
-  }
-  if (req.paramPregnancy && req.paramPregnancy.religion) {
-    _.each(rel, function(rec) {
-      if (rec.selectKey == req.paramPregnancy.religion) {
-        rec.selected = true;
-      } else {
-        rec.selected = false;
-      }
-    });
-  }
-  if (req.paramPregnancy && req.paramPregnancy.education) {
-    _.each(edu, function(rec) {
-      if (rec.selectKey == req.paramPregnancy.education) {
-        rec.selected = true;
-      } else {
-        rec.selected = false;
-      }
-    });
-  }
-  if (req.paramPregnancy && req.paramPregnancy.partnerEducation) {
-    _.each(partEdu, function(rec) {
-      if (rec.selectKey == req.paramPregnancy.partnerEducation) {
-        rec.selected = true;
-      } else {
-        rec.selected = false;
-      }
-    });
+  if (req.paramPregnancy) {
+      if (req.paramPregnancy.maritalStatus) {
+      _.each(ms, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.maritalStatus) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    }
+    if (req.paramPregnancy.religion) {
+      _.each(rel, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.religion) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    }
+    if (req.paramPregnancy.education) {
+      _.each(edu, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.education) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    }
+    if (req.paramPregnancy.partnerEducation) {
+      _.each(partEdu, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.partnerEducation) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    }
+    if (req.paramPregnancy.clientIncomePeriod) {
+      _.each(clientInc, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.clientIncomePeriod) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    }
+    if (req.paramPregnancy.partnerIncomePeriod) {
+      _.each(partnerInc, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.partnerIncomePeriod) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    }
   }
   return _.extend(addData, {
     user: req.session.user
@@ -531,6 +557,8 @@ var getEditFormData = function(req, addData) {
     , religion: rel
     , education: edu
     , partnerEducation: partEdu
+    , clientIncomePeriod: clientInc
+    , partnerIncomePeriod: partnerInc
     , rec: req.paramPregnancy
   });
 };

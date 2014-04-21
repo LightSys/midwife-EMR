@@ -98,6 +98,13 @@ VALUES
   ('riskLifestyle', 'G3', 'G3', 0, 1, NOW()),
   ('riskLifestyle', 'G4', 'G4', 0, 1, NOW()),
   ('riskLifestyle', 'G5', 'G5', 0, 1, NOW()),
-  ('riskLifestyle', 'G6', 'G6', 0, 1, NOW())
+  ('riskLifestyle', 'G6', 'G6', 0, 1, NOW()),
+  ('incomePeriod', 'Day', 'Day', 0, 1, NOW()),
+  ('incomePeriod', 'Week', 'Week', 0, 1, NOW()),
+  ('incomePeriod', 'Two Weeks', 'Two Weeks', 0, 1, NOW()),
+  ('incomePeriod', 'Twice Monthly', 'Twice Monthly', 0, 1, NOW()),
+  ('incomePeriod', 'Month', 'Month', 1, 1, NOW()),
+  ('incomePeriod', 'Quarter', 'Quarter', 0, 1, NOW()),
+  ('incomePeriod', 'Year', 'Year', 0, 1, NOW())
 ;
 

@@ -18,7 +18,6 @@ block pregnancyAdd
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Religion')
-          //-input(class='form-control input-lg', type='text', tabindex="4", autocomplete="off", name='religion', list="religion")
           +select('form-control input-lg', 'religion', 4, religion)
         div(class='form-group col-xs-4')
           span= gettext('Maiden name')
@@ -63,19 +62,27 @@ block pregnancyAdd
         div(class='form-group col-xs-4')
           span= gettext('Partner education')
           +select('form-control input-lg', 'partnerEducation', 17, education)
-        div(class='form-group col-xs-2')
-          span= gettext('Client monthly Income')
-          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='monthlyIncome')
-        div(class='form-group col-xs-2')
-          span= gettext('Partner monthly income')
-          input(class='form-control input-lg', type='number', tabindex="19", autocomplete="off", name='partnerMonthlyIncome')
+      div.row
+        div(class='form-group col-xs-3')
+          span= gettext('Client income')
+          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='clientIncome')
+        div(class='form-group col-xs-5')
+          span= gettext('Income period')
+          +select('form-control input-lg', 'clientIncomePeriod', 19, clientIncomePeriod)
+      div.row
+        div(class='form-group col-xs-3')
+          span= gettext('Partner income')
+          input(class='form-control input-lg', type='number', tabindex="20", autocomplete="off", name='partnerIncome')
+        div(class='form-group col-xs-5')
+          span= gettext('Income period')
+          +select('form-control input-lg', 'partnerIncomePeriod', 21, partnerIncomePeriod)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('MMC #')
-          input(class='form-control input-lg', type='number', tabindex="20", autocomplete="off", name='doh')
+          input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='doh')
         div(class='form-group col-xs-4')
           span= gettext('Priority #')
-          input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='priority')
+          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='priority')
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
