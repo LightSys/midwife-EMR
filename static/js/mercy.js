@@ -10,7 +10,7 @@
 // Load the module when the document is ready.
 // --------------------------------------------------------
 $(function() {
-  (function(window, $, _) {
+  (function(window, $, _, moment) {
     "use strict";
 
     // --------------------------------------------------------
@@ -20,6 +20,30 @@ $(function() {
       log: function() {}
       , error: function() {}
       , warn: function() {}
+    };
+
+    /* --------------------------------------------------------
+    * calcEdd()
+    *
+    * Calculate the estimated due date based upon the date of
+    * the last mentral period passed. The returned date is a
+    * String in YYYY-MM-DD format.
+    *
+    * NOTE: this function is also included in util.js on the
+    * server side. Changes made here should also be made there.
+    *
+    * param       lmp - date of the last mentral period
+    * return      edd - due date as a String
+    * -------------------------------------------------------- */
+    var calcEdd = function(lmp) {
+      if (! lmp) throw new Error('calcEdd() must be called with the lmp date.');
+      var edd
+        ;
+      if (! (moment(lmp)).isValid()) {
+        throw new Error('calcEdd() must be called with a valid date.');
+      }
+      edd = moment(lmp).add('days', 280);
+      return edd.format('YYYY-MM-DD');
     };
 
     /* --------------------------------------------------------
@@ -70,7 +94,7 @@ $(function() {
      *
      * Will handle the id of the parent element in the same format
      * and place the id in the ':pid' placeholder if found. E.g.
-     * '/somepath/:id/morepath/:pid' evaluates to 
+     * '/somepath/:id/morepath/:pid' evaluates to
      * '/somepath/23/morepath/1'.
      *
      * param       path - 'something/:id/somethingElse'
@@ -120,6 +144,25 @@ $(function() {
     // List of roles.
     $('.roleListRow').click(handleRowClick('/role/:id/edit'));
 
+    // --------------------------------------------------------
+    // Prenatal screen: automatically pre-fill the estimated
+    // due date based upon the lmp date if the edd is not
+    // already filled in.
+    // --------------------------------------------------------
+    $('#prenatal-lmp').on('blur', function(evt) {
+      var lmp = moment(evt.target.value)
+        , eddFld = $('#prenatal-edd')
+        ;
+      if (eddFld.val().length == 0) {
+        try {
+          eddFld.val(calcEdd(lmp));
+        } catch (e) {
+          // Must not have contained a valid date.
+          console.log(e);
+        }
+      }
+    });
 
-  })(window, jQuery, _);
+
+  })(window, jQuery, _, moment);
 });

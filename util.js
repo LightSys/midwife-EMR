@@ -72,12 +72,36 @@ var getGA = function(edd, rDate) {
   return weeks + ' ' + days + '/7';
 };
 
+/* --------------------------------------------------------
+ * calcEdd()
+ *
+ * Calculate the estimated due date based upon the date of
+ * the last mentral period passed. The returned date is a
+ * String in YYYY-MM-DD format.
+ *
+ * NOTE: this function is also included in mercy.js on the
+ * client side. Changes made here should also be made there.
+ *
+ * param       lmp - date of the last mentral period
+ * return      edd - due date as a String
+ * -------------------------------------------------------- */
+var calcEdd = function(lmp) {
+  if (! lmp) throw new Error('calcEdd() must be called with the lmp date.');
+  var edd
+    ;
+  if (! (moment(lmp)).isValid()) {
+    throw new Error('calcEdd() must be called with a valid date.');
+  }
+  edd = moment(lmp).add('days', 280);
+  return edd.format('YYYY-MM-DD');
+};
 
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
   , logError: logError
   , getGA: getGA
+  , calcEdd: calcEdd
 };
 
 

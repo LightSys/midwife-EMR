@@ -35,12 +35,12 @@ block prenatal
           div(class='col-xs-12')
             div
               span= gettext('LMP')
-              input(class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', value=rec.lmp)
+              input(id='prenatal-lmp', class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', value=rec.lmp)
         div.row
           div(class='col-xs-12')
             div
               span= gettext('EDD')
-              input(class='form-control', type='date', name='edd', tabindex="6", value=rec.edd)
+              input(id='prenatal-edd', class='form-control', type='date', name='edd', tabindex="6", value=rec.edd)
 
       div(class='col-xs-4')
         p(class='text-primary lead') &nbsp;

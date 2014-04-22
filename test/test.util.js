@@ -142,6 +142,79 @@ describe('Util', function(done) {
     });
 
   });
+
+  describe('calcEdd', function(done) {
+    it('should throw an exception if called with no parameters', function(done) {
+      (function() {
+        util.calcEdd();
+      }).should.throw();
+      done();
+    });
+
+    it('should throw an exception if called with a param that is not Date-like', function(done) {
+      var lmp = 'Somewhere over the rainbow ...'
+        ;
+      (function() {
+        util.calcEdd(lmp);
+      }).should.throw();
+      done();
+    });
+
+    it('if passed a Moment instance, should return a String', function(done) {
+      var lmp = moment()
+        , edd
+        , isValid
+        ;
+      edd = util.calcEdd(lmp);
+      if (! edd) return done(new Error('Result was undefined'));
+      moment.isMoment(edd).should.be.false;
+      moment(edd).isValid().should.be.true;
+      edd.should.be.a.String;
+      /....-..-../.test(edd).should.be.true;
+      done();
+    });
+
+    it('if passed a Date instance, should return a String', function(done) {
+      var lmp = new Date()
+        , edd
+        , isValid
+        ;
+      edd = util.calcEdd(lmp);
+      if (! edd) return done(new Error('Result was undefined'));
+      moment.isMoment(edd).should.be.false;
+      moment(edd).isValid().should.be.true;
+      edd.should.be.a.String;
+      /....-..-../.test(edd).should.be.true;
+      done();
+    });
+
+    it('should estimate based on historical lmp', function(done) {
+      var lmp = moment().subtract('days', 55)
+        , edd
+        , validEdd = moment(lmp)
+        ;
+      validEdd.add('years', 1).subtract('months', 3).add('days', 7);
+      edd = moment(util.calcEdd(lmp));
+      edd.year().should.equal(validEdd.year());
+      edd.month().should.equal(validEdd.month());
+      edd.day().should.equal(validEdd.day());
+      done();
+    });
+
+    it('should estimate based on future lmp', function(done) {
+      var lmp = moment().add('days', 55)
+        , edd
+        , validEdd = moment(lmp)
+        ;
+      validEdd.add('years', 1).subtract('months', 3).add('days', 7);
+      edd = moment(util.calcEdd(lmp));
+      edd.year().should.equal(validEdd.year());
+      edd.month().should.equal(validEdd.month());
+      edd.day().should.equal(validEdd.day());
+      done();
+    });
+
+  });
 });
 
 

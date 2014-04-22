@@ -27,6 +27,7 @@ var _ = require('underscore')
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , getGA = require('../util').getGA
+  , calcEdd = require('../util').calcEdd
   , maritalStatus = []
   , religion = []
   , education = []
@@ -1032,6 +1033,19 @@ var prenatalUpdate = function(req, res) {
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
     pnFlds = _.defaults(_.omit(req.body, ['_csrf']), defaultFlds);
+
+    // --------------------------------------------------------
+    // If the edd is not filled in and the lmp is, calculate
+    // the edd if the useAlternateEdd is not selected. Note
+    // that the client side does the same thing when the user
+    // leaves the lmp field, but if <Enter> is pressed while
+    // in the lmp field, this will pick it up.
+    // --------------------------------------------------------
+    if (pnFlds.edd.length === 0 &&
+        pnFlds.lmp.length !== 0 &&
+        pnFlds.useAlternateEdd === '0') {
+      pnFlds.edd = calcEdd(pnFlds.lmp);
+    }
 
     Pregnancy.forge({id: pnFlds.id})
       .fetch().then(function(pregnancy) {
