@@ -8,7 +8,7 @@ block pregnancyQuestionnaire
   form(role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
       div(class='form-group col-xs-6')
-        p(class='text-primary lead')= gettext('How do you feel now?')
+        p(class='text-primary lead')= gettext('Present complaints')
         div.checkbox
           label= gettext('Been vomiting?')
             input(class='form-control input-sm', type='checkbox', name='currentlyVomiting', tabindex="1", value=1, checked=rec.currentlyVomiting==true)
@@ -71,8 +71,8 @@ block pregnancyQuestionnaire
           label= gettext('Diabetes?')
             input(class='form-control input-sm', type='checkbox', name='familyHistoryDiabetes', tabindex="19", value=1, checked=rec.familyHistoryDiabetes==true)
         div.checkbox
-          label= gettext('Chest Pains?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistoryChestPains', tabindex="20", value=1, checked=rec.familyHistoryChestPains==true)
+          label= gettext('Heart problems?')
+            input(class='form-control input-sm', type='checkbox', name='familyHistoryHeartProblems', tabindex="20", value=1, checked=rec.familyHistoryHeartProblems==true)
         div.checkbox
           label= gettext('TB?')
             input(class='form-control input-sm', type='checkbox', name='familyHistoryTB', tabindex="21", value=1, checked=rec.familyHistoryTB==true)
@@ -98,7 +98,7 @@ block pregnancyQuestionnaire
             input(class='form-control input-sm', type='checkbox', name='historyAsthma', tabindex="26", value=1, checked=rec.historyAsthma==true)
         div.checkbox
           label= gettext('Heart problems?')
-            input(class='form-control input-sm', type='checkbox', name='historyChestPains', tabindex="27", value=1, checked=rec.historyChestPains==true)
+            input(class='form-control input-sm', type='checkbox', name='historyHeartProblems', tabindex="27", value=1, checked=rec.historyHeartProblems==true)
         div.checkbox
           label= gettext('Kidney problems?')
             input(class='form-control input-sm', type='checkbox', name='historyKidneyProblems', tabindex="28", value=1, checked=rec.historyKidneyProblems==true)

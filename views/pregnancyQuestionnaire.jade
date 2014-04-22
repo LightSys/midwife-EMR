@@ -8,7 +8,7 @@ block pregnancyQuestionnaire
   form(role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
       div(class='form-group col-sm-3')
-        p.text-primary= gettext('How do you feel now?')
+        p.text-primary= gettext('Present complaints')
         div.checkbox
           label= gettext('Been vomiting?')
             input(type='checkbox', name='currentlyVomiting', tabindex="1", value=1, checked=rec.currentlyVomiting==true)
@@ -69,8 +69,8 @@ block pregnancyQuestionnaire
           label= gettext('Diabetes?')
             input(type='checkbox', name='familyHistoryDiabetes', tabindex="19", value=1, checked=rec.familyHistoryDiabetes==true)
         div.checkbox
-          label= gettext('Chest Pains?')
-            input(type='checkbox', name='familyHistoryChestPains', tabindex="20", value=1, checked=rec.familyHistoryChestPains==true)
+          label= gettext('Heart problems?')
+            input(type='checkbox', name='familyHistoryHeartProblems', tabindex="20", value=1, checked=rec.familyHistoryHeartProblems==true)
         div.checkbox
           label= gettext('TB?')
             input(type='checkbox', name='familyHistoryTB', tabindex="21", value=1, checked=rec.familyHistoryTB==true)
@@ -96,7 +96,7 @@ block pregnancyQuestionnaire
             input(type='checkbox', name='historyAsthma', tabindex="26", value=1, checked=rec.historyAsthma==true)
         div.checkbox
           label= gettext('Heart problems?')
-            input(type='checkbox', name='historyChestPains', tabindex="27", value=1, checked=rec.historyChestPains==true)
+            input(type='checkbox', name='historyHeartProblems', tabindex="27", value=1, checked=rec.historyHeartProblems==true)
         div.checkbox
           label= gettext('Kidney problems?')
             input(type='checkbox', name='historyKidneyProblems', tabindex="28", value=1, checked=rec.historyKidneyProblems==true)
