@@ -31,101 +31,103 @@ block pregnancyQuestionnaire
           label= gettext('Swelling?')
             input(class='form-control input-sm', type='checkbox', name='currentlySwelling', tabindex="7", value=1, checked=rec.currentlySwelling==true)
         div.checkbox
-          label= gettext('Pain in birth canal?')
-            input(class='form-control input-sm', type='checkbox', name='currentlyBirthCanalPain', tabindex="8", value=1, checked=rec.currentlyBirthCanalPain==true)
+          label= gettext('Vaginal pain?')
+            input(class='form-control input-sm', type='checkbox', name='currentlyVaginalPain', tabindex="8", value=1, checked=rec.currentlyVaginalPain==true)
+        div.checkbox
+          label= gettext('Vaginal itching?')
+            input(class='form-control input-sm', type='checkbox', name='currentlyVaginalItching', tabindex="9", value=1, checked=rec.currentlyVaginalItching==true)
         div.checkbox
           label= gettext('None of the above?')
-            input(class='form-control input-sm', type='checkbox', name='currentlyNone', tabindex="9", value=1, checked=rec.currentlyNone==true)
+            input(class='form-control input-sm', type='checkbox', name='currentlyNone', tabindex="10", value=1, checked=rec.currentlyNone==true)
 
       div(class='form-group col-xs-6')
         p(class='text-primary lead')= gettext('Can you/plan to/do you?')
-        div.checkbox
-          label= gettext('Using iodized salt?')
-            input(class='form-control input-sm', type='checkbox', name='useIodizedSalt', tabindex="10", value=1, checked=rec.useIodizedSalt==true)
+          p= gettext('Use iodized salt?')
+          +select('form-control', 'useIodizedSalt', 11, useIodizedSalt)
         div.checkbox
           label= gettext('Taking medication?')
-            input(class='form-control input-sm', type='checkbox', name='takingMedication', tabindex="11", value=1, checked=rec.takingMedication==true)
+            input(class='form-control input-sm', type='checkbox', name='takingMedication', tabindex="12", value=1, checked=rec.takingMedication==true)
         div.checkbox
           label= gettext('Plan to breastfeed?')
-            input(class='form-control input-sm', type='checkbox', name='planToBreastFeed', tabindex="12", value=1, checked=rec.planToBreastFeed==true)
+            input(class='form-control input-sm', type='checkbox', name='planToBreastFeed', tabindex="13", value=1, checked=rec.planToBreastFeed==true)
         span= gettext('Where do you plan to give birth?')
-        input(class='form-control', type='text', tabindex="13", autocomplete="off", name='whereDeliver', value=rec.whereDeliver)
+        input(class='form-control', type='text', tabindex="14", autocomplete="off", name='whereDeliver', value=rec.whereDeliver)
         span= gettext('Companion during childbirth?')
-        input(class='form-control', type='text', tabindex="14", autocomplete="off", name='birthCompanion', value=rec.birthCompanion)
+        input(class='form-control', type='text', tabindex="15", autocomplete="off", name='birthCompanion', value=rec.birthCompanion)
         div.checkbox
           label= gettext('Have you ever practiced family planning?')
-            input(class='form-control input-sm', type='checkbox', name='practiceFamilyPlanning', tabindex="15", value=1, checked=rec.practiceFamilyPlanning==true)
+            input(class='form-control input-sm', type='checkbox', name='practiceFamilyPlanning', tabindex="16", value=1, checked=rec.practiceFamilyPlanning==true)
         span= gettext('Family planning comments')
-        input(class='form-control', type='text', tabindex="16", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
+        input(class='form-control', type='text', tabindex="17", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
 
     div.row
       div(class='form-group col-xs-6')
         p.text-primary= gettext('Do you have a family history of?')
         div.checkbox
           label= gettext('Twins?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistoryTwins', tabindex="17", value=1, checked=rec.familyHistoryTwins==true)
+            input(class='form-control input-sm', type='checkbox', name='familyHistoryTwins', tabindex="18", value=1, checked=rec.familyHistoryTwins==true)
         div.checkbox
           label= gettext('High Blood Pressure?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistoryHighBloodPressure', tabindex="18", value=1, checked=rec.familyHistoryHighBloodPressure==true)
+            input(class='form-control input-sm', type='checkbox', name='familyHistoryHighBloodPressure', tabindex="19", value=1, checked=rec.familyHistoryHighBloodPressure==true)
         div.checkbox
           label= gettext('Diabetes?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistoryDiabetes', tabindex="19", value=1, checked=rec.familyHistoryDiabetes==true)
+            input(class='form-control input-sm', type='checkbox', name='familyHistoryDiabetes', tabindex="20", value=1, checked=rec.familyHistoryDiabetes==true)
         div.checkbox
           label= gettext('Heart problems?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistoryHeartProblems', tabindex="20", value=1, checked=rec.familyHistoryHeartProblems==true)
+            input(class='form-control input-sm', type='checkbox', name='familyHistoryHeartProblems', tabindex="21", value=1, checked=rec.familyHistoryHeartProblems==true)
         div.checkbox
           label= gettext('TB?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistoryTB', tabindex="21", value=1, checked=rec.familyHistoryTB==true)
+            input(class='form-control input-sm', type='checkbox', name='familyHistoryTB', tabindex="22", value=1, checked=rec.familyHistoryTB==true)
         div.checkbox
           label= gettext('Smoking?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistorySmoking', tabindex="22", value=1, checked=rec.familyHistorySmoking==true)
+            input(class='form-control input-sm', type='checkbox', name='familyHistorySmoking', tabindex="23", value=1, checked=rec.familyHistorySmoking==true)
         div.checkbox
           label= gettext('None of the above?')
-            input(class='form-control input-sm', type='checkbox', name='familyHistoryNone', tabindex="23", value=1, checked=rec.familyHistoryNone==true)
+            input(class='form-control input-sm', type='checkbox', name='familyHistoryNone', tabindex="24", value=1, checked=rec.familyHistoryNone==true)
         span= gettext('Notes')
-        textarea(id='questionnaireNote', class='form-control imput-sm', tabindex="37", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
+        textarea(id='questionnaireNote', class='form-control imput-sm', tabindex="38", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
 
       div(class='form-group col-xs-6')
         p.text-primary= gettext('Do you have a history of?')
         div.checkbox
           label= gettext('Food allergy?')
-            input(class='form-control input-sm', type='checkbox', name='historyFoodAllergy', tabindex="24", value=1, checked=rec.historyFoodAllergy==true)
+            input(class='form-control input-sm', type='checkbox', name='historyFoodAllergy', tabindex="25", value=1, checked=rec.historyFoodAllergy==true)
         div.checkbox
           label= gettext('Medicine allergy?')
-            input(class='form-control input-sm', type='checkbox', name='historyMedicineAllergy', tabindex="25", value=1, checked=rec.historyMedicineAllergy==true)
+            input(class='form-control input-sm', type='checkbox', name='historyMedicineAllergy', tabindex="26", value=1, checked=rec.historyMedicineAllergy==true)
         div.checkbox
           label= gettext('Asthma?')
-            input(class='form-control input-sm', type='checkbox', name='historyAsthma', tabindex="26", value=1, checked=rec.historyAsthma==true)
+            input(class='form-control input-sm', type='checkbox', name='historyAsthma', tabindex="27", value=1, checked=rec.historyAsthma==true)
         div.checkbox
           label= gettext('Heart problems?')
-            input(class='form-control input-sm', type='checkbox', name='historyHeartProblems', tabindex="27", value=1, checked=rec.historyHeartProblems==true)
+            input(class='form-control input-sm', type='checkbox', name='historyHeartProblems', tabindex="28", value=1, checked=rec.historyHeartProblems==true)
         div.checkbox
           label= gettext('Kidney problems?')
-            input(class='form-control input-sm', type='checkbox', name='historyKidneyProblems', tabindex="28", value=1, checked=rec.historyKidneyProblems==true)
+            input(class='form-control input-sm', type='checkbox', name='historyKidneyProblems', tabindex="29", value=1, checked=rec.historyKidneyProblems==true)
         div.checkbox
           label= gettext('Hepatitis?')
-            input(class='form-control input-sm', type='checkbox', name='historyHepatitis', tabindex="29", value=1, checked=rec.historyHepatitis==true)
+            input(class='form-control input-sm', type='checkbox', name='historyHepatitis', tabindex="30", value=1, checked=rec.historyHepatitis==true)
         div.checkbox
           label= gettext('Goiter?')
-            input(class='form-control input-sm', type='checkbox', name='historyGoiter', tabindex="30", value=1, checked=rec.historyGoiter==true)
+            input(class='form-control input-sm', type='checkbox', name='historyGoiter', tabindex="31", value=1, checked=rec.historyGoiter==true)
         div.checkbox
           label= gettext('High blood pressure?')
-            input(class='form-control input-sm', type='checkbox', name='historyHighBloodPressure', tabindex="31", value=1, checked=rec.historyHighBloodPressure==true)
+            input(class='form-control input-sm', type='checkbox', name='historyHighBloodPressure', tabindex="32", value=1, checked=rec.historyHighBloodPressure==true)
         div.checkbox
           label= gettext('Operation in the hospital?')
-            input(class='form-control input-sm', type='checkbox', name='historyHospitalOperation', tabindex="32", value=1, checked=rec.historyHospitalOperation==true)
+            input(class='form-control input-sm', type='checkbox', name='historyHospitalOperation', tabindex="33", value=1, checked=rec.historyHospitalOperation==true)
         div.checkbox
           label= gettext('Blood transfusion?')
-            input(class='form-control input-sm', type='checkbox', name='historyBloodTransfusion', tabindex="33", value=1, checked=rec.historyBloodTransfusion==true)
+            input(class='form-control input-sm', type='checkbox', name='historyBloodTransfusion', tabindex="34", value=1, checked=rec.historyBloodTransfusion==true)
         div.checkbox
           label= gettext('Smoking?')
-            input(class='form-control input-sm', type='checkbox', name='historySmoking', tabindex="34", value=1, checked=rec.historySmoking==true)
+            input(class='form-control input-sm', type='checkbox', name='historySmoking', tabindex="35", value=1, checked=rec.historySmoking==true)
         div.checkbox
           label= gettext('Drinking?')
-            input(class='form-control input-sm', type='checkbox', name='historyDrinking', tabindex="35", value=1, checked=rec.historyDrinking==true)
+            input(class='form-control input-sm', type='checkbox', name='historyDrinking', tabindex="36", value=1, checked=rec.historyDrinking==true)
         div.checkbox
           label= gettext('None of the above?')
-            input(class='form-control input-sm', type='checkbox', name='historyNone', tabindex="36", value=1, checked=rec.historyNone==true)
+            input(class='form-control input-sm', type='checkbox', name='historyNone', tabindex="37", value=1, checked=rec.historyNone==true)
 
 
 

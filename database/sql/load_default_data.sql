@@ -105,6 +105,9 @@ VALUES
   ('incomePeriod', 'Twice Monthly', 'Twice Monthly', 0, 1, NOW()),
   ('incomePeriod', 'Month', 'Month', 1, 1, NOW()),
   ('incomePeriod', 'Quarter', 'Quarter', 0, 1, NOW()),
-  ('incomePeriod', 'Year', 'Year', 0, 1, NOW())
+  ('incomePeriod', 'Year', 'Year', 0, 1, NOW()),
+  ('yesNoUnanswered', '', '', 1, 1, NOW()),
+  ('yesNoUnanswered', 'Y', 'Yes', 0, 1, NOW()),
+  ('yesNoUnanswered', 'N', 'No', 0, 1, NOW())
 ;
 

@@ -37,6 +37,7 @@ var _ = require('underscore')
   , riskMedHx = []
   , riskLifestyle = []
   , incomePeriod = []
+  , yesNoUnanswered = []
   ;
 
 /* --------------------------------------------------------
@@ -56,6 +57,7 @@ var init = function() {
     , setRiskMedHx = function(list) {riskMedHx = list;}
     , setRiskLifestyle = function(list) {riskLifestyle = list;}
     , setIncomePeriod = function(list) {incomePeriod = list;}
+    , setYesNoUnanswered = function(list) {yesNoUnanswered = list;}
     , maritalName = 'maritalStatus'
     , religionName = 'religion'
     , educationName = 'education'
@@ -65,6 +67,7 @@ var init = function() {
     , riskMedHxName = 'riskMedHx'
     , riskLifestyleName = 'riskLifestyle'
     , incomePeriodName = 'incomePeriod'
+    , yesNoUnansweredName = 'yesNoUnanswered'
     , interval = cfg.data.selectRefreshInterval
   ;
 
@@ -113,6 +116,7 @@ var init = function() {
   doRefresh(riskMedHxName, setRiskMedHx);
   doRefresh(riskLifestyleName, setRiskLifestyle);
   doRefresh(incomePeriodName, setIncomePeriod);
+  doRefresh(yesNoUnansweredName, setYesNoUnanswered);
 };
 
 /* --------------------------------------------------------
@@ -288,10 +292,11 @@ var getCommonFormData = function(req, addData) {
    , ro = _.map(riskObHx, function(r) {return _.clone(r);})
    , rm = _.map(riskMedHx, function(r) {return _.clone(r);})
    , rl = _.map(riskLifestyle, function(r) {return _.clone(r);})
+   , us = _.map(yesNoUnanswered, function(r) {return _.clone(r);})
    ;
 
   // --------------------------------------------------------
-  // Load select data for the prenatal page.
+  // Load select data for the prenatal and questionnaire pages.
   // --------------------------------------------------------
   if (req.paramPregnancy) {
     if (req.paramPregnancy.riskPresent) {
@@ -330,6 +335,15 @@ var getCommonFormData = function(req, addData) {
         }
       });
     } else {req.paramPregnancy.riskLifestyle = '';}
+    if (req.paramPregnancy.useIodizedSalt) {
+      _.each(us, function(rec) {
+        if (rec.selectKey == req.paramPregnancy.useIodizedSalt) {
+          rec.selected = true;
+        } else {
+          rec.selected = false;
+        }
+      });
+    } else {req.paramPregnancy.useIodizedSalt = '';}
   }
 
   // --------------------------------------------------------
@@ -357,6 +371,7 @@ var getCommonFormData = function(req, addData) {
     , riskObHx: ro
     , riskMedHx: rm
     , riskLifestyle: rl
+    , useIodizedSalt: us
   });
 };
 
@@ -387,8 +402,9 @@ var quesUpdate = function(req, res) {
         currentlyVomiting: '0', currentlyDizzy: '0',
         currentlyFainting: '0', currentlyBleeding: '0',
         currentlyUrinationPain: '0', currentlyBlurryVision: '0',
-        currentlySwelling: '0', currentlyBirthCanalPain: '0',
-        currentlyNone: '0', useIodizedSalt: '0',
+        currentlySwelling: '0', currentlyVaginalPain: '0',
+        currentlyVaginalItching: '0',
+        currentlyNone: '0', useIodizedSalt: '',
         takingMedication: '0', planToBreastFeed: '0',
         whereDeliver: '', birthCompanion: '',
         practiceFamilyPlanning: '0', practiceFamilyPlanningDetails: '',

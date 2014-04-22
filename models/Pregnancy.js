@@ -77,9 +77,10 @@ CREATE TABLE `pregnancy` (
   `currentlyUrinationPain` tinyint(1) DEFAULT NULL,
   `currentlyBlurryVision` tinyint(1) DEFAULT NULL,
   `currentlySwelling` tinyint(1) DEFAULT NULL,
-  `currentlyBirthCanalPain` tinyint(1) DEFAULT NULL,
+  `currentlyVaginalPain` tinyint(1) DEFAULT NULL,
+  `currentlyVaginalItching` tinyint(1) DEFAULT NULL,
   `currentlyNone` tinyint(1) DEFAULT NULL,
-  `useIodizedSalt` tinyint(1) DEFAULT NULL,
+  `useIodizedSalt` char(1) DEFAULT '',
   `takingMedication` tinyint(1) DEFAULT NULL,
   `planToBreastFeed` tinyint(1) DEFAULT NULL,
   `birthCompanion` varchar(30) DEFAULT NULL,
@@ -124,7 +125,7 @@ CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
@@ -143,8 +144,8 @@ Pregnancy = Bookshelf.Model.extend({
       'philHealthNCP', 'philHealthID', 'philHealthApproved', 'currentlyVomiting',
       'currentlyDizzy', 'currentlyFainting', 'currentlyBleeding',
       'currentlyUrinationPain', 'currentlyBlurryVision', 'currentlySwelling',
-      'currentlyBirthCanalPain', 'currentlyNone', 'useIodizedSalt',
-      'takingMedication', 'planToBreastFeed', 'birthCompanion',
+      'currentlyVaginalPain', 'currentlyVaginalItching', 'currentlyNone',
+      'useIodizedSalt', 'takingMedication', 'planToBreastFeed', 'birthCompanion',
       'practiceFamilyPlanning', 'practiceFamilyPlanningDetails',
       'familyHistoryTwins', 'familyHistoryHighBloodPressure',
       'familyHistoryDiabetes', 'familyHistoryHeartProblems', 'familyHistoryTB',
