@@ -41,18 +41,34 @@ module.exports = function(grunt) {
             }
           }
       }
+
+    , cssmin: {
+        combine: {
+          // Note: we are not doing the font-awesome stuff because the css uses
+          // relative urls to the images, etc. in the font-awesome package.
+          files: {
+            'static/css/mercy-combined.css': [
+              'bower_components/bootstrap/dist/css/bootstrap.css'
+              , 'client/css/sb-admin.css'
+              , 'client/css/responsive-tables.css'
+              , 'client/css/mercy.css'
+            ]
+          }
+        }
+      }
   });
 
   // --------------------------------------------------------
   // Load plugins.
   // --------------------------------------------------------
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
 
 
   // --------------------------------------------------------
   // Define tasks.
   // --------------------------------------------------------
-  grunt.registerTask('default', ['uglify']);
+  grunt.registerTask('default', ['uglify', 'cssmin']);
 
 };
 
