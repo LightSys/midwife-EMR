@@ -375,7 +375,7 @@ describe('Models', function(done) {
       SelectData.getSelect('maritalStatus')
         .then(function(list) {
           list.should.be.an.instanceOf(Array);
-          (list.length).should.be.above(5);
+          (list.length).should.be.above(4);
           list[0].should.have.property('selectKey');
           list[0].should.have.property('label');
           list[0].should.have.property('selected');

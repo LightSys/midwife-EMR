@@ -311,15 +311,17 @@ var getCommonFormData = function(req, addData) {
     if (_.isUndefined(req.paramPregnancy.riskMedHx)) req.paramPregnancy.riskMedHx = '';
     if (_.isUndefined(req.paramPregnancy.riskLifestyle)) req.paramPregnancy.riskLifestyle = '';
     if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
+
+    // Prenatal exams
+    if (req.paramPrenatalExam) {
+      ed = adjustSelectData(edema, req.paramPrenatalExam.edema);
+      if (_.isUndefined(req.paramPrenatalExam.edema)) req.paramPrenatalExam.edema = '';
+    } else {
+      // For adding the first prenatalExam
+      ed = adjustSelectData(edema, void(0));
+    }
   }
 
-  // --------------------------------------------------------
-  // Load select data for the prenatal exam page.
-  // --------------------------------------------------------
-  if (req.paramPrenatalExam) {
-    ed = adjustSelectData(edema, req.paramPrenatalExam.edema);
-    if (! req.paramPrenatalExam.edema) req.paramPrenatalExam.edema = '';
-  }
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
@@ -464,12 +466,18 @@ var addForm = function(req, res) {
  * return      Object
  * -------------------------------------------------------- */
 var getEditFormData = function(req, addData) {
-  var ms = adjustSelectData(maritalStatus, req.paramPregnancy.maritalStatus)
-    , rel = adjustSelectData(religion, req.paramPregnancy.religion)
-    , edu = adjustSelectData(education, req.paramPregnancy.education)
-    , partEdu = adjustSelectData(education, req.paramPregnancy.partnerEducation)
-    , clientInc = adjustSelectData(incomePeriod, req.paramPregnancy.clientIncomePeriod)
-    , partnerInc = adjustSelectData(incomePeriod, req.paramPregnancy.partnerIncomePeriod)
+  var ms = adjustSelectData(maritalStatus,
+        req.paramPregnancy? req.paramPregnancy.maritalStatus: void(0))
+    , rel = adjustSelectData(religion,
+        req.paramPregnancy? req.paramPregnancy.religion: void(0))
+    , edu = adjustSelectData(education,
+        req.paramPregnancy? req.paramPregnancy.education: void(0))
+    , partEdu = adjustSelectData(education,
+        req.paramPregnancy? req.paramPregnancy.partnerEducation: void(0))
+    , clientInc = adjustSelectData(incomePeriod,
+        req.paramPregnancy? req.paramPregnancy.clientIncomePeriod: void(0))
+    , partnerInc = adjustSelectData(incomePeriod,
+        req.paramPregnancy? req.paramPregnancy.partnerIncomePeriod: void(0))
     ;
   return _.extend(addData, {
     user: req.session.user

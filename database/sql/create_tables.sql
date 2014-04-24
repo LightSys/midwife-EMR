@@ -350,7 +350,7 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
   pos VARCHAR(10) NULL,
   mvmt BOOLEAN NULL,
   edema VARCHAR(4) NULL,
-  risk BOOLEAN NULL,
+  risk VARCHAR(100) NULL,
   vitamin BOOLEAN NULL,
   pray BOOLEAN NULL,
   note VARCHAR(100) NULL,

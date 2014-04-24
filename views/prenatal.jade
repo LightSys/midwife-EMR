@@ -117,7 +117,6 @@ block prenatal
               - var bp = pe.systolic + ' / ' + pe.diastolic;
               - var mvmt = pe.mvmt === 1? 'Y': 'N';
               - var edema = pe.edema === 'none'? 'None': pe.edema;
-              - var risk = pe.risk === 1? 'Y': 'N';
               - var vitamin = pe.vitamin === 1? 'Y': 'N';
               - var pray = pe.pray === 1? 'Y': 'N';
               tr(class='prenatalExamRow', id=prenatalExamId)
@@ -131,7 +130,7 @@ block prenatal
                 td= pe.pos
                 td= mvmt
                 td= edema
-                td= risk
+                td= pe.risk
                 td= vitamin
                 td= pray
                 td= examiner
