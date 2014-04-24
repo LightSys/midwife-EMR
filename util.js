@@ -96,12 +96,39 @@ var calcEdd = function(lmp) {
   return edd.format('YYYY-MM-DD');
 };
 
+/* --------------------------------------------------------
+ * adjustSelectData()
+ *
+ * "Adjusts" the selectData list for the passed selectData
+ * list to have a selected element that matches key, if key
+ * is passed.
+ *
+ * param       list - the selectData list
+ * param       key - the key that matches selectKey
+ * return      the new list
+ * -------------------------------------------------------- */
+var adjustSelectData = function(list, key) {
+  var clone = _.clone(list)
+    ;
+  if (! _.isUndefined(key)) {
+    _.each(clone, function(rec) {
+      if (rec.selectKey === key) {
+        rec.selected = true;
+      } else {
+        rec.selected = false;
+      }
+    });
+  }
+  return clone;
+};
+
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
   , logError: logError
   , getGA: getGA
   , calcEdd: calcEdd
+  , adjustSelectData: adjustSelectData
 };
 
 

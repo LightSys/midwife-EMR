@@ -28,6 +28,7 @@ var _ = require('underscore')
   , logError = require('../util').logError
   , getGA = require('../util').getGA
   , calcEdd = require('../util').calcEdd
+  , adjustSelectData = require('../util').adjustSelectData
   , maritalStatus = []
   , religion = []
   , education = []
@@ -287,78 +288,37 @@ var history = function(req, res) {
  * according to the database record.
  * -------------------------------------------------------- */
 var getCommonFormData = function(req, addData) {
- var ed = _.map(edema, function(r) {return _.clone(r);})
-   , rp = _.map(riskPresent, function(r) {return _.clone(r);})
-   , ro = _.map(riskObHx, function(r) {return _.clone(r);})
-   , rm = _.map(riskMedHx, function(r) {return _.clone(r);})
-   , rl = _.map(riskLifestyle, function(r) {return _.clone(r);})
-   , us = _.map(yesNoUnanswered, function(r) {return _.clone(r);})
+ var ed
+   , rp
+   , ro
+   , rm
+   , rl
+   , us
    ;
 
   // --------------------------------------------------------
   // Load select data for the prenatal and questionnaire pages.
   // --------------------------------------------------------
   if (req.paramPregnancy) {
-    if (req.paramPregnancy.riskPresent) {
-      _.each(rp, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.riskPresent) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    } else {req.paramPregnancy.riskPresent = '';}
-    if (req.paramPregnancy.riskObHx) {
-      _.each(ro, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.riskObHx) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    } else {req.paramPregnancy.riskObHx = '';}
-    if (req.paramPregnancy.riskMedHx) {
-      _.each(rm, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.riskMedHx) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    } else {req.paramPregnancy.riskMedHx = '';}
-    if (req.paramPregnancy.riskLifestyle) {
-      _.each(rl, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.riskLifestyle) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    } else {req.paramPregnancy.riskLifestyle = '';}
-    if (req.paramPregnancy.useIodizedSalt) {
-      _.each(us, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.useIodizedSalt) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    } else {req.paramPregnancy.useIodizedSalt = '';}
+    rp = adjustSelectData(riskPresent, req.paramPregnancy.riskPresent);
+    ro = adjustSelectData(riskObHx, req.paramPregnancy.riskObHx);
+    rm = adjustSelectData(riskMedHx, req.paramPregnancy.riskMedHx);
+    rl = adjustSelectData(riskLifestyle, req.paramPregnancy.riskLifestyle);
+    us = adjustSelectData(yesNoUnanswered, req.paramPregnancy.useIodizedSalt);
+
+    if (_.isUndefined(req.paramPregnancy.riskPresent)) req.paramPregnancy.riskPresent = '';
+    if (_.isUndefined(req.paramPregnancy.riskObHx)) req.paramPregnancy.riskObHx = '';
+    if (_.isUndefined(req.paramPregnancy.riskMedHx)) req.paramPregnancy.riskMedHx = '';
+    if (_.isUndefined(req.paramPregnancy.riskLifestyle)) req.paramPregnancy.riskLifestyle = '';
+    if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
   }
 
   // --------------------------------------------------------
   // Load select data for the prenatal exam page.
   // --------------------------------------------------------
   if (req.paramPrenatalExam) {
-    if (req.paramPrenatalExam.edema) {
-      _.each(ed, function(rec) {
-        if (rec.selectKey == req.paramPrenatalExam.edema) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    }
+    ed = adjustSelectData(edema, req.paramPrenatalExam.edema);
+    if (! req.paramPrenatalExam.edema) req.paramPrenatalExam.edema = '';
   }
   return _.extend(addData, {
     user: req.session.user
@@ -504,69 +464,13 @@ var addForm = function(req, res) {
  * return      Object
  * -------------------------------------------------------- */
 var getEditFormData = function(req, addData) {
-  var ms = _.map(maritalStatus, function(m) {return _.clone(m);})
-    , rel = _.map(religion, function(r) {return _.clone(r);})
-    , edu = _.map(education, function(e) {return _.clone(e);})
-    , partEdu = _.map(education, function(e) {return _.clone(e);})
-    , clientInc = _.map(incomePeriod, function(e) {return _.clone(e);})
-    , partnerInc = _.map(incomePeriod, function(e) {return _.clone(e);})
+  var ms = adjustSelectData(maritalStatus, req.paramPregnancy.maritalStatus)
+    , rel = adjustSelectData(religion, req.paramPregnancy.religion)
+    , edu = adjustSelectData(education, req.paramPregnancy.education)
+    , partEdu = adjustSelectData(education, req.paramPregnancy.partnerEducation)
+    , clientInc = adjustSelectData(incomePeriod, req.paramPregnancy.clientIncomePeriod)
+    , partnerInc = adjustSelectData(incomePeriod, req.paramPregnancy.partnerIncomePeriod)
     ;
-  if (req.paramPregnancy) {
-      if (req.paramPregnancy.maritalStatus) {
-      _.each(ms, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.maritalStatus) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    }
-    if (req.paramPregnancy.religion) {
-      _.each(rel, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.religion) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    }
-    if (req.paramPregnancy.education) {
-      _.each(edu, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.education) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    }
-    if (req.paramPregnancy.partnerEducation) {
-      _.each(partEdu, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.partnerEducation) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    }
-    if (req.paramPregnancy.clientIncomePeriod) {
-      _.each(clientInc, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.clientIncomePeriod) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    }
-    if (req.paramPregnancy.partnerIncomePeriod) {
-      _.each(partnerInc, function(rec) {
-        if (rec.selectKey == req.paramPregnancy.partnerIncomePeriod) {
-          rec.selected = true;
-        } else {
-          rec.selected = false;
-        }
-      });
-    }
-  }
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
