@@ -111,6 +111,24 @@ VALUES
   ('incomePeriod', 'Year', 'Year', 0, 1, NOW()),
   ('yesNoUnanswered', '', '', 1, 1, NOW()),
   ('yesNoUnanswered', 'Y', 'Yes', 0, 1, NOW()),
-  ('yesNoUnanswered', 'N', 'No', 0, 1, NOW())
+  ('yesNoUnanswered', 'N', 'No', 0, 1, NOW()),
+  ('yesNoUnknown', '', '', 1, 1, NOW()),
+  ('yesNoUnknown', 'Y', 'Yes', 0, 1, NOW()),
+  ('yesNoUnknown', 'N', 'No', 0, 1, NOW()),
+  ('yesNoUnknown', '?', 'Unknown', 0, 1, NOW()),
+  ('attendant', 'Midwife', 'Midwife', 1, 1, NOW()),
+  ('attendant', 'Doctor', 'Doctor', 0, 1, NOW()),
+  ('attendant', 'Hilot', 'Hilot', 0, 1, NOW()),
+  ('attendant', 'Other', 'Other', 0, 1, NOW()),
+  ('wksMthsYrs', '', '', 1, 1, NOW()),
+  ('wksMthsYrs', 'Weeks', 'Weeks', 0, 1, NOW()),
+  ('wksMthsYrs', 'Months', 'Months', 0, 1, NOW()),
+  ('wksMthsYrs', 'Years', 'Years', 0, 1, NOW()),
+  ('wksMths', '', '', 1, 1, NOW()),
+  ('wksMths', 'Weeks', 'Weeks', 0, 1, NOW()),
+  ('wksMths', 'Months', 'Months', 0, 1, NOW()),
+  ('maleFemale', '', '', 1, 1, NOW()),
+  ('maleFemale', 'F', 'Female', 0, 1, NOW()),
+  ('maleFemale', 'M', 'Male', 0, 1, NOW())
 ;
 

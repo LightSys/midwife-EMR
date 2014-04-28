@@ -213,7 +213,43 @@ describe('Util', function(done) {
       edd.day().should.equal(validEdd.day());
       done();
     });
+  });
 
+  describe('adjustSelectData()', function(done) {
+    var sel1 = []
+      , sel2 = []
+      ;
+
+    before(function(done) {
+      sel1.push({selectKey: '', label: '', selected: true});
+      sel1.push({selectKey: '?', label: 'Unknown', selected: false});
+      sel1.push({selectKey: 'N', label: 'No', selected: false});
+      sel1.push({selectKey: 'Y', label: 'Yes', selected: false});
+      sel2.push({selectKey: '', label: '', selected: true});
+      sel2.push({selectKey: '?', label: 'Unknown', selected: false});
+      sel2.push({selectKey: 'N', label: 'No', selected: false});
+      sel2.push({selectKey: 'Y', label: 'Yes', selected: false});
+      done();
+    });
+
+    it('adjust selection by key', function(done) {
+      var newSel1 = util.adjustSelectData(sel1, 'N')
+        ;
+      newSel1[0].selected.should.be.false;
+      newSel1[2].selected.should.be.true;
+      done();
+    });
+
+    it('adjust two selections independently', function(done) {
+      var newSel1 = util.adjustSelectData(sel1, 'N')
+        , newSel2 = util.adjustSelectData(sel1, 'Y')
+        ;
+      newSel1[0].selected.should.be.false;
+      newSel1[2].selected.should.be.true;
+      newSel2[0].selected.should.be.false;
+      newSel2[3].selected.should.be.true;
+      done();
+    });
   });
 });
 

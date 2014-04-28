@@ -108,18 +108,21 @@ var calcEdd = function(lmp) {
  * return      the new list
  * -------------------------------------------------------- */
 var adjustSelectData = function(list, key) {
-  var clone = _.clone(list)
-    ;
-  if (! _.isUndefined(key)) {
-    _.each(clone, function(rec) {
-      if (rec.selectKey === key) {
-        rec.selected = true;
+    var newList = []
+      ;
+    _.each(list, function(obj) {
+      var newObj = {}
+        ;
+      newObj.selectKey = obj.selectKey;
+      newObj.label = obj.label;
+      if (obj.selectKey === key) {
+        newObj.selected = true;
       } else {
-        rec.selected = false;
+        newObj.selected = false;
       }
+      newList.push(newObj);
     });
-  }
-  return clone;
+  return newList;
 };
 
 module.exports = {

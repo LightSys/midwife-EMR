@@ -351,7 +351,7 @@ app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.prenatalExamDelete);
 
 // Labs
-app.get(cfg.path.pregnancyLabsEditForm , common, hasSuper,
+app.get(cfg.path.pregnancyLabsEditForm, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.labsEdit);
 
 

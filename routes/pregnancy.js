@@ -39,6 +39,11 @@ var _ = require('underscore')
   , riskLifestyle = []
   , incomePeriod = []
   , yesNoUnanswered = []
+  , yesNoUnknown = []
+  , attendant = []
+  , wksMthsYrs = []
+  , wksMths = []
+  , maleFemale = []
   ;
 
 /* --------------------------------------------------------
@@ -49,16 +54,6 @@ var _ = require('underscore')
 var init = function() {
   var refresh
     , doRefresh
-    , setMS = function(list) {maritalStatus = list;}
-    , setRel = function(list) {religion = list;}
-    , setEdu = function(list) {education = list;}
-    , setEdema = function(list) {edema = list;}
-    , setRiskPresent = function(list) {riskPresent = list;}
-    , setRiskObHx = function(list) {riskObHx = list;}
-    , setRiskMedHx = function(list) {riskMedHx = list;}
-    , setRiskLifestyle = function(list) {riskLifestyle = list;}
-    , setIncomePeriod = function(list) {incomePeriod = list;}
-    , setYesNoUnanswered = function(list) {yesNoUnanswered = list;}
     , maritalName = 'maritalStatus'
     , religionName = 'religion'
     , educationName = 'education'
@@ -69,6 +64,11 @@ var init = function() {
     , riskLifestyleName = 'riskLifestyle'
     , incomePeriodName = 'incomePeriod'
     , yesNoUnansweredName = 'yesNoUnanswered'
+    , yesNoUnknownName = 'yesNoUnknown'
+    , attendantName = 'attendant'
+    , wksMthsYrsName = 'wksMthsYrs'
+    , wksMthsName = 'wksMths'
+    , maleFemaleName = 'maleFemale'
     , interval = cfg.data.selectRefreshInterval
   ;
 
@@ -108,16 +108,21 @@ var init = function() {
   // --------------------------------------------------------
   // Keep the various select lists up to date.
   // --------------------------------------------------------
-  doRefresh(maritalName, setMS);
-  doRefresh(religionName, setRel);
-  doRefresh(educationName, setEdu);
-  doRefresh(edemaName, setEdema);
-  doRefresh(riskPresentName, setRiskPresent);
-  doRefresh(riskObHxName, setRiskObHx);
-  doRefresh(riskMedHxName, setRiskMedHx);
-  doRefresh(riskLifestyleName, setRiskLifestyle);
-  doRefresh(incomePeriodName, setIncomePeriod);
-  doRefresh(yesNoUnansweredName, setYesNoUnanswered);
+  doRefresh(maritalName, function(l) {maritalStatus = l;});
+  doRefresh(religionName, function(l) {religion = l;});
+  doRefresh(educationName, function(l) {education = l;});
+  doRefresh(edemaName, function(l) {edema = l;});
+  doRefresh(riskPresentName, function(l) {riskPresent = l;});
+  doRefresh(riskObHxName, function(l) {riskObHx = l;});
+  doRefresh(riskMedHxName, function(l) {riskMedHx = l;});
+  doRefresh(riskLifestyleName, function(l) {riskLifestyle = l;});
+  doRefresh(incomePeriodName, function(l) {incomePeriod = l;});
+  doRefresh(yesNoUnansweredName, function(l) {yesNoUnanswered = l;});
+  doRefresh(yesNoUnknownName, function(l) {yesNoUnknown = l;});
+  doRefresh(attendantName, function(l) {attendant = l;});
+  doRefresh(wksMthsYrsName, function(l) {wksMthsYrs = l;});
+  doRefresh(wksMthsName, function(l) {wksMths = l;});
+  doRefresh(maleFemaleName, function(l) {maleFemale = l;});
 };
 
 /* --------------------------------------------------------
@@ -150,7 +155,16 @@ var load = function(req, res, next) {
 
   User.getUserIdMap().then(function(userMap) {
     Pregnancy.forge({id: id})
-      .fetch({withRelated: ['patient', 'pregnancyHistory', 'prenatalExam']})
+      .fetch({withRelated: [
+        'patient'
+        , 'pregnancyHistory'
+        , {
+            pregnancyHistory: function(qb) {
+              qb.orderBy('year', 'asc');
+              qb.orderBy('month', 'asc');
+            }
+          }
+        , 'prenatalExam']})
       .then(function(rec) {
         if (! rec) return next();
         rec = rec.toJSON();
@@ -208,6 +222,7 @@ var load = function(req, res, next) {
         if (! isNaN(id2)) {
           // --------------------------------------------------------
           // Historical pregnancies.
+          // TODO: use req.route instead for this test.
           // --------------------------------------------------------
           if (op === 'preghistoryedit' || op === 'preghistorydelete') {
             req.paramPregHist = _.find(rec.pregnancyHistory, function(r) {
@@ -288,38 +303,84 @@ var history = function(req, res) {
  * according to the database record.
  * -------------------------------------------------------- */
 var getCommonFormData = function(req, addData) {
- var ed
-   , rp
-   , ro
-   , rm
-   , rl
-   , us
+ var path = req.route.path
+   , ed   // edema
+   , rp   // riskPresent
+   , ro   // riskObHx
+   , rm   // riskMedHx
+   , rl   // riskLifestyle
+   , us   // useIodizedSalt
+   , fg   // finalGAPeriod
+   , et   // episTear
+   , er   // repaired (referring to the epis)
+   , bf   // BFedPeriod
+   , tod = 'NSD' // type of delivery - defaults to NSD
+   , mf   // male or female
+   , at   // attendant
    ;
 
   // --------------------------------------------------------
-  // Load select data for the prenatal and questionnaire pages.
+  // Load select data for the various pages as per the route.
   // --------------------------------------------------------
   if (req.paramPregnancy) {
-    rp = adjustSelectData(riskPresent, req.paramPregnancy.riskPresent);
-    ro = adjustSelectData(riskObHx, req.paramPregnancy.riskObHx);
-    rm = adjustSelectData(riskMedHx, req.paramPregnancy.riskMedHx);
-    rl = adjustSelectData(riskLifestyle, req.paramPregnancy.riskLifestyle);
-    us = adjustSelectData(yesNoUnanswered, req.paramPregnancy.useIodizedSalt);
 
-    if (_.isUndefined(req.paramPregnancy.riskPresent)) req.paramPregnancy.riskPresent = '';
-    if (_.isUndefined(req.paramPregnancy.riskObHx)) req.paramPregnancy.riskObHx = '';
-    if (_.isUndefined(req.paramPregnancy.riskMedHx)) req.paramPregnancy.riskMedHx = '';
-    if (_.isUndefined(req.paramPregnancy.riskLifestyle)) req.paramPregnancy.riskLifestyle = '';
-    if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
+    // Prenatal page.
+    if (path === cfg.path.pregnancyPrenatalEdit) {
+      rp = adjustSelectData(riskPresent, req.paramPregnancy.riskPresent);
+      ro = adjustSelectData(riskObHx, req.paramPregnancy.riskObHx);
+      rm = adjustSelectData(riskMedHx, req.paramPregnancy.riskMedHx);
+      rl = adjustSelectData(riskLifestyle, req.paramPregnancy.riskLifestyle);
 
-    // Prenatal exams
-    if (req.paramPrenatalExam) {
-      ed = adjustSelectData(edema, req.paramPrenatalExam.edema);
-      if (_.isUndefined(req.paramPrenatalExam.edema)) req.paramPrenatalExam.edema = '';
-    } else {
-      // For adding the first prenatalExam
+      if (_.isUndefined(req.paramPregnancy.riskPresent)) req.paramPregnancy.riskPresent = '';
+      if (_.isUndefined(req.paramPregnancy.riskObHx)) req.paramPregnancy.riskObHx = '';
+      if (_.isUndefined(req.paramPregnancy.riskMedHx)) req.paramPregnancy.riskMedHx = '';
+      if (_.isUndefined(req.paramPregnancy.riskLifestyle)) req.paramPregnancy.riskLifestyle = '';
+    }
+
+    // Add or edit prenatal examinations.
+    if (path === cfg.path.pregnancyPrenatalExamAddForm) {
       ed = adjustSelectData(edema, void(0));
     }
+    if (path === cfg.path.pregnancyPrenatalExamEditForm) {
+      ed = adjustSelectData(edema, req.paramPrenatalExam.edema);
+      if (_.isUndefined(req.paramPrenatalExam.edema)) req.paramPrenatalExam.edema = '';
+    }
+
+    // Labs page.
+    if (path === cfg.path.pregnancyLabsEditForm) {
+
+    }
+
+    // Questionnaire page.
+    if (path === cfg.path.pregnancyQuesEdit) {
+      us = adjustSelectData(yesNoUnanswered, req.paramPregnancy.useIodizedSalt);
+      if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
+    }
+
+    // Midwife interview page.
+    if (path === cfg.path.pregnancyMidwifeEdit) {
+
+    }
+
+    // Add or edit pregnancy histories.
+    if (path === cfg.path.pregnancyHistoryAddForm) {
+      fg = adjustSelectData(wksMths, void(0));
+      et = adjustSelectData(yesNoUnknown, void(0));
+      er = adjustSelectData(yesNoUnknown, void(0));
+      bf = adjustSelectData(wksMthsYrs, void(0));
+      mf = adjustSelectData(maleFemale, void(0));
+      at = adjustSelectData(attendant, void(0));
+    }
+    if (path === cfg.path.pregnancyHistoryEditForm) {
+      fg = adjustSelectData(wksMths, req.paramPregHist.finalGAPeriod);
+      et = adjustSelectData(yesNoUnknown, req.paramPregHist.episTear);
+      er = adjustSelectData(yesNoUnknown, req.paramPregHist.repaired);
+      bf = adjustSelectData(wksMthsYrs, req.paramPregHist.howLongBFedPeriod);
+      mf = adjustSelectData(maleFemale, req.paramPregHist.sexOfBaby);
+      at = adjustSelectData(attendant, req.paramPregHist.attendant);
+      tod = req.paramPregHist.typeOfDelivery;
+    }
+
   }
 
   return _.extend(addData, {
@@ -334,6 +395,13 @@ var getCommonFormData = function(req, addData) {
     , riskMedHx: rm
     , riskLifestyle: rl
     , useIodizedSalt: us
+    , finalGAPeriod: fg
+    , episTear: et
+    , repaired: er
+    , howLongBFedPeriod: bf
+    , defaultTypeOfDelivery: tod
+    , sexOfBaby: mf
+    , attendant: at
   });
 };
 
@@ -777,6 +845,9 @@ var pregnancyHistoryEdit = function(req, res) {
   var supervisor = null
     , flds = req.body
     , pregHistRec
+    , defaultFlds = {
+        FT: '0'
+      }
     ;
 
   if (req.paramPregnancy &&
@@ -790,18 +861,9 @@ var pregnancyHistoryEdit = function(req, res) {
     }
 
     // --------------------------------------------------------
-    // Convert values from Y/N to boolean for the database.
+    // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
-    if (flds.episTear === 'Y') {
-      flds.episTear = 1;
-    } else {
-      flds.episTear = 0;
-    }
-    if (flds.repaired === 'Y') {
-      flds.repaired = 1;
-    } else {
-      flds.repaired = 0;
-    }
+    flds = _.extend(defaultFlds, _.omit(flds, ['_csrf']));
 
     pregHistRec = new PregnancyHistory(flds);
     pregHistRec
@@ -811,7 +873,7 @@ var pregnancyHistoryEdit = function(req, res) {
         var path = cfg.path.pregnancyHistoryEditForm
           ;
         path = path.replace(/:id/, flds.pregnancy_id);
-        path = path.replace(/:hid/, flds.id);
+        path = path.replace(/:id2/, flds.id);
         res.redirect(path);
       })
       .caught(function(err) {
