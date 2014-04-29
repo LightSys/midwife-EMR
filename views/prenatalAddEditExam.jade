@@ -52,34 +52,41 @@ block prenatalAddEditExam
           label(class='')= gettext('Fetus Information')
           div= gettext('GA')
           input(id='ga', class='form-control', type='text', autocomplete="off", name='ga', disabled=true, value=ga)
-          span= gettext('FH')
-          input(id='fh', class='form-control', type='number', tabindex="6", autocomplete="off", name='fh', value=prenatalExam.fh)
-          span= gettext('FHT')
-          input(id='fht', class='form-control', type='number', tabindex="7", autocomplete="off", name='fht', value=prenatalExam.fht)
+          div.row
+            div.col-md-6
+              span= gettext('FH')
+              input(id='fh', class='form-control', type='number', tabindex="6", autocomplete="off", name='fh', value=prenatalExam.fh)
+            div.col-md-6
+              span= gettext('FHT')
+              input(id='fht', class='form-control', type='number', tabindex="7", autocomplete="off", name='fht', value=prenatalExam.fht)
+          span= gettext('FHT Note')
+          input(id='fhtNote', class='form-control', type='text', tabindex='8', autocomplete='off', name='fhtNote', value=prenatalExam.fhtNote)
           span= gettext('Position')
-          input(id='pos', class='form-control', type='text', tabindex="8", autocomplete="off", name='pos', value=prenatalExam.pos)
+          input(id='pos', class='form-control', type='text', tabindex="9", autocomplete="off", name='pos', value=prenatalExam.pos)
 
         div(class='form-group col-md-3')
           label(class='')= gettext('Other Information')
           div.checkbox
             label= gettext('Mvmt')
-              input(type='checkbox', name='mvmt', tabindex="9", value=1, checked=prenatalExam.mvmt==true)
+              input(type='checkbox', name='mvmt', tabindex="10", value=1, checked=prenatalExam.mvmt==true)
           div.checkbox
             label= gettext('Edema')
-              +select('form-control', 'edema', 10, edema)
+              +select('form-control', 'edema', 11, edema)
           span= gettext('Risk')
-              input(class='form-control', type='text', name='risk', tabindex="11", value=prenatalExam.risk)
+              input(class='form-control', type='text', name='risk', tabindex="12", value=prenatalExam.risk)
           div.checkbox
             label= gettext('Vitamin')
-              input(type='checkbox', name='vitamin', tabindex="12", value=1, checked=prenatalExam.vitamin==true)
+              input(type='checkbox', name='vitamin', tabindex="13", value=1, checked=prenatalExam.vitamin==true)
           div.checkbox
             label= gettext('Pray')
-              input(type='checkbox', name='pray', tabindex="13", value=1, checked=prenatalExam.pray==true)
+              input(type='checkbox', name='pray', tabindex="14", value=1, checked=prenatalExam.pray==true)
 
         div(class='form-group col-md-3')
-          label(class='')= gettext('Return Date')
+          label(class='')= gettext('Other continued')
+          div= gettext('Notes')
+          textarea(id='note', class='form-control', tabindex="15", wrap="soft", rows="4", name='note')= prenatalExam.note
           div= gettext('Return Date')
-          input(id='returnDate', class='form-control', type='date', tabindex="14", autocomplete="off", name='returnDate', value=returnDate)
+          input(id='returnDate', class='form-control', type='date', tabindex="16", autocomplete="off", name='returnDate', value=returnDate)
 
 
       div.row
