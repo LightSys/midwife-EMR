@@ -115,10 +115,14 @@ var adjustSelectData = function(list, key) {
         ;
       newObj.selectKey = obj.selectKey;
       newObj.label = obj.label;
-      if (obj.selectKey === key) {
-        newObj.selected = true;
+      if (key) {
+        if (obj.selectKey === key) {
+          newObj.selected = true;
+        } else {
+          newObj.selected = false;
+        }
       } else {
-        newObj.selected = false;
+        newObj.selected = obj.selected;
       }
       newList.push(newObj);
     });

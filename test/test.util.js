@@ -218,6 +218,7 @@ describe('Util', function(done) {
   describe('adjustSelectData()', function(done) {
     var sel1 = []
       , sel2 = []
+      , sel3 = []
       ;
 
     before(function(done) {
@@ -229,6 +230,10 @@ describe('Util', function(done) {
       sel2.push({selectKey: '?', label: 'Unknown', selected: false});
       sel2.push({selectKey: 'N', label: 'No', selected: false});
       sel2.push({selectKey: 'Y', label: 'Yes', selected: false});
+      sel3.push({selectKey: '', label: '', selected: false});
+      sel3.push({selectKey: '?', label: 'Unknown', selected: false});
+      sel3.push({selectKey: 'N', label: 'No', selected: true});
+      sel3.push({selectKey: 'Y', label: 'Yes', selected: false});
       done();
     });
 
@@ -250,6 +255,15 @@ describe('Util', function(done) {
       newSel2[3].selected.should.be.true;
       done();
     });
+
+    it('if not key passed, retains default', function(done) {
+      var newSel3 = util.adjustSelectData(sel3, void(0))
+        ;
+      sel3[2].selected.should.be.true;
+      newSel3[2].selected.should.be.true;
+      done();
+    });
+
   });
 });
 
