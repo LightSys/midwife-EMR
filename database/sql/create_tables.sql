@@ -369,13 +369,13 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
 );
 SHOW WARNINGS;
 
-
--- Consider storing expected result format as JSON in the blob field.
-CREATE TABLE IF NOT EXISTS `labTest` (
+-- A grouping of tests that belong together. May contain 1 or more labTests.
+CREATE TABLE IF NOT EXISTS `labSuite` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30) NOT NULL,
-  description VARCHAR(300) NULL,
-  resultFormat BLOB NOT NULL,
+  description VARCHAR(100) NULL,
+  category VARCHAR(50) NULL,
+  viewTemplate VARCHAR(100) NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
@@ -386,18 +386,59 @@ CREATE TABLE IF NOT EXISTS `labTest` (
 SHOW WARNINGS;
 
 
--- Consider storing results as JSON in the blob field.
-CREATE TABLE IF NOT EXISTS `labResult` (
+-- Defines a specific test.
+CREATE TABLE IF NOT EXISTS `labTest` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  labTest_id INT NOT NULL,
-  date DATE NOT NULL,
-  result BLOB NOT NULL,
-  warn BOOLEAN NULL,
+  name VARCHAR(70) NOT NULL,
+  abbrev VARCHAR(70) NULL,
+  normal VARCHAR(50) NULL,
+  unit VARCHAR(10) NULL,
+  minRangeDecimal DECIMAL(7,3) NULL,
+  maxRangeDecimal DECIMAL(7,3) NULL,
+  minRangeInteger INT NULL,
+  maxRangeInteger INT NULL,
+  labSuite_id INT NOT NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
+  UNIQUE (name),
+  UNIQUE (abbrev),
+  FOREIGN KEY (labSuite_id) REFERENCES labSuite (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
+
+-- Defines additional acceptable values for a specific lab test.
+CREATE TABLE IF NOT EXISTS `labTestValue` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  value VARCHAR(50) NOT NULL,
+  labTest_id INT NOT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  UNIQUE (labTest_id, value),
+  FOREIGN KEY (labTest_id) REFERENCES labTest (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
+
+-- Holds the test result for a specific test and patient.
+CREATE TABLE IF NOT EXISTS `labTestResult` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  testDate DATETIME NOT NULL,
+  result VARCHAR(100) NOT NULL,
+  warn BOOLEAN NULL,
+  labTest_id INT NOT NULL,
   pregnancy_id INT NOT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (labTest_id) REFERENCES labTest (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );

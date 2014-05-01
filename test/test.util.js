@@ -193,7 +193,7 @@ describe('Util', function(done) {
         , edd
         , validEdd = moment(lmp)
         ;
-      validEdd.add('years', 1).subtract('months', 3).add('days', 7);
+      validEdd.add('days', 280);
       edd = moment(util.calcEdd(lmp));
       edd.year().should.equal(validEdd.year());
       edd.month().should.equal(validEdd.month());
@@ -206,7 +206,7 @@ describe('Util', function(done) {
         , edd
         , validEdd = moment(lmp)
         ;
-      validEdd.add('years', 1).subtract('months', 3).add('days', 7);
+      validEdd.add('days', 280);
       edd = moment(util.calcEdd(lmp));
       edd.year().should.equal(validEdd.year());
       edd.month().should.equal(validEdd.month());

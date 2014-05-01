@@ -120,6 +120,16 @@ ALTER TABLE prenatalExamLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE prenatalExamLog DROP PRIMARY KEY;
 ALTER TABLE prenatalExamLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating labSuiteLog
+SELECT 'labSuiteLog' AS Creating FROM DUAL;
+CREATE TABLE labSuiteLog LIKE labSuite;
+ALTER TABLE labSuiteLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE labSuiteLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE labSuiteLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE labSuiteLog DROP PRIMARY KEY;
+ALTER TABLE labSuiteLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE labSuiteLog DROP KEY name;
+--
 -- Creating labTestLog
 SELECT 'labTestLog' AS Creating FROM DUAL;
 CREATE TABLE labTestLog LIKE labTest;
@@ -129,15 +139,26 @@ ALTER TABLE labTestLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE labTestLog DROP PRIMARY KEY;
 ALTER TABLE labTestLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE labTestLog DROP KEY name;
+ALTER TABLE labTestLog DROP KEY abbrev;
 --
--- Creating labResultLog
-SELECT 'labResultLog' AS Creating FROM DUAL;
-CREATE TABLE labResultLog LIKE labResult;
-ALTER TABLE labResultLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE labResultLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE labResultLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE labResultLog DROP PRIMARY KEY;
-ALTER TABLE labResultLog ADD PRIMARY KEY (id, replacedAt);
+-- Creating labTestValueLog
+SELECT 'labTestValueLog' AS Creating FROM DUAL;
+CREATE TABLE labTestValueLog LIKE labTestValue;
+ALTER TABLE labTestValueLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE labTestValueLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE labTestValueLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE labTestValueLog DROP PRIMARY KEY;
+ALTER TABLE labTestValueLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE labTestValueLog DROP KEY labTest_id;
+--
+-- Creating labTestResultLog
+SELECT 'labTestResultLog' AS Creating FROM DUAL;
+CREATE TABLE labTestResultLog LIKE labTestResult;
+ALTER TABLE labTestResultLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE labTestResultLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE labTestResultLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE labTestResultLog DROP PRIMARY KEY;
+ALTER TABLE labTestResultLog ADD PRIMARY KEY (id, replacedAt);
 --
 -- Creating referralLog
 SELECT 'referralLog' AS Creating FROM DUAL;
