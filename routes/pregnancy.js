@@ -9,6 +9,7 @@
 var _ = require('underscore')
   , Promise = require('bluebird')
   , moment = require('moment')
+  , Bookshelf = require('bookshelf')
   , cfg = require('../config')
   , hasRole = require('../auth').hasRole
   , Patient = require('../models').Patient
@@ -22,6 +23,14 @@ var _ = require('underscore')
   , User = require('../models').User
   , Users = require('../models').Users
   , SelectData = require('../models').SelectData
+  , LabSuite = require('../models').LabSuite
+  , LabSuites = require('../models').LabSuites
+  , LabTest = require('../models').LabTest
+  , LabTests = require('../models').LabTests
+  , LabTestValue = require('../models').LabTestValue
+  , LabTestValues = require('../models').LabTestValues
+  , LabTestResult = require('../models').LabTestResult
+  , LabTestResults = require('../models').LabTestResults
   , Event = require('../models').Event
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
@@ -1252,13 +1261,231 @@ var prenatalExamDelete = function(req, res) {
   }
 };
 
+
+/* --------------------------------------------------------
+ * labsEdit()
+ *
+ * Displays the main labs page that contains many sub-sections
+ * covering labs, etc.
+ * -------------------------------------------------------- */
 var labsEdit = function(req, res) {
-  var data = getCommonFormData(req, {title: req.gettext('Labs')})
+  var data
+    , suiteDefs = []
     ;
   if (req.paramPregnancy) {
-    res.render('labs', data);
+    // --------------------------------------------------------
+    // Load the available lab tests so that the user can choose
+    // which one to add if desired. Includes the lab suite names
+    // as well as all of the tests within each suite.
+    // --------------------------------------------------------
+    new LabSuites()
+      .fetch({withRelated: ['LabTest']})
+      .then(function(suites) {
+        suites.forEach(function(suite) {
+          var tests = suite.related('LabTest')
+            , testNames = _.pluck(tests.toJSON(), 'name')
+            ;
+          suiteDefs.push({
+            id: suite.get('id')
+            , name: suite.get('name')
+            , tests: testNames
+          });
+        });
+        data = getCommonFormData(req,
+          _.extend({title: req.gettext('Labs')}, {labTests: suiteDefs}));
+        return res.render('labs', data);
+      })
+      .caught(function(err) {
+        logError(err);
+        return res.redirect(cfg.path.search);
+      });
   } else {
     // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * labAddForm()
+ *
+ * Displays the form that the user fills out for a specific
+ * suite of tests.
+ *
+ * Note that this is generated via a POST instead of a GET
+ * because the user specified in the form which lab suite
+ * to use. This produces a form that contains all of the
+ * tests within the chosen suite.
+ * -------------------------------------------------------- */
+var labAddForm = function(req, res) {
+  var data
+    , suiteId
+    , suiteName
+    , viewTemplate
+    , data
+    , qb
+    ;
+  if (req.paramPregnancy) {
+    suiteId = req.body.suite;
+    if (suiteId) {
+      LabSuite.forge({id: suiteId})
+        .fetch()
+        .then(function(suite) {
+          if (suite) {
+            viewTemplate = suite.get('viewTemplate');
+            suiteName = suite.get('name');
+            // --------------------------------------------------------
+            // Load the tests for this suite to pass to the form.
+            // --------------------------------------------------------
+            new LabTests().query(function(qb) {
+                qb.where('labSuite_id', '=', suiteId);
+              })
+              .fetch({withRelated: ['LabTestValue']})
+              .then(function(testList) {
+                var labTests = []
+                  , labTestOmitFlds = ['LabTestValue', 'updatedBy',
+                      'updatedAt', 'supervisor']
+                  , testData
+                  , formData = {title: req.gettext('Add Lab Test: ') + suiteName}
+                  ;
+
+                // --------------------------------------------------------
+                // Prepare the test data by putting it into the format used
+                // by the Jade select mixins and sorting by value.
+                // --------------------------------------------------------
+                testList.each(function(test) {
+                  var vals
+                    ;
+                  testData = _.omit(test.toJSON(), labTestOmitFlds);
+                  vals = _.pluck(test.related('LabTestValue').toJSON(), 'value');
+
+                  // If we have records in the labTestValue table for this test.
+                  if (vals.length > 0) {
+                    vals = _.map(vals, function(val) {
+                      return {
+                        selectKey: val
+                        , selected: false
+                        , label: val
+                      };
+                    });
+                    // --------------------------------------------------------
+                    // Create an empty value as the default value and put it
+                    // at the top.
+                    // --------------------------------------------------------
+                    vals.push({selectKey: '', selected: true, label: ''});
+                    testData.values = _.sortBy(vals, 'selectKey');
+                  }
+                  labTests.push(testData);
+                });
+
+                data = getCommonFormData(req, _.extend(formData, {labTests: labTests}));
+                res.render('labs/' + viewTemplate, data);
+              });
+          } else {
+            logWarn('Suite id not found.');
+            res.redirect(cfg.path.search);
+          }
+        });
+    } else {
+      logWarn('Suite id not passed.');
+      res.redirect(cfg.path.search);
+    }
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+
+/* --------------------------------------------------------
+ * labAdd()
+ *
+ * Creates new lab results in the database for a single
+ * lab suite which may contain more than one lab test. This
+ * results in inserting multiple records into the
+ * labTestResult table within one transaction.
+ * -------------------------------------------------------- */
+var labAdd = function(req, res) {
+  var supervisor = null
+    , flds = _.omit(req.body, ['_csrf'])
+    , testResults = {}
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id) {
+
+    if (hasRole(req, 'attending')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    // --------------------------------------------------------
+    // Consolidate our results in preparation for storage into
+    // the testResults array.
+    // --------------------------------------------------------
+    _.each(flds, function(val, key) {
+      var fldType = key.split('-')[0]
+        , testId = key.split('-')[1]
+        ;
+      if (val.length === 0) return;
+      if (! testResults[testId]) {
+        testResults[testId] = {
+          labTest_id: testId
+          , pregnancy_id: req.paramPregnancy.id
+          , testDate: moment().format('YYYY-MM-DD HH:mm:ss.SSS')
+          , result: ''
+          , warn: null
+        };
+      }
+      if (fldType === 'warn' && val === '1') testResults[testId].warn = true;
+
+      // --------------------------------------------------------
+      // Number always overrides the select if both are provided.
+      // --------------------------------------------------------
+      if (fldType === 'number' &&
+        _.isNumber(Number(val))) testResults[testId].result = val;
+      if (fldType === 'select') {
+        if (testResults[testId].result.length === 0) {
+          testResults[testId].result = val;
+        }
+      }
+    });
+
+    // --------------------------------------------------------
+    // Insert all of the records as a single transaction.
+    // --------------------------------------------------------
+    Bookshelf.DB.knex.transaction(function(t) {
+      return Promise.all(_.map(testResults, function(tst) {
+        return new Promise(function(resolve, reject) {
+          LabTestResult.forge(tst)
+            .setUpdatedBy(req.session.user.id)
+            .setSupervisor(supervisor)
+            .save(null, {transacting: t})
+            .then(function(model) {
+              logInfo('Saved ' + model.get('id'));
+              resolve(model.get('id'));
+            })
+            .caught(function(err) {
+              reject(err);
+            });
+        });
+      }))
+      .then(function(rows) {
+        t.commit();
+        logInfo('Committed ' + rows.length + ' records.');
+      }, function(err) {
+        logError(err);
+        t.rollback();
+        logInfo('Transaction was rolled back.');
+        req.flash('error', req.gettext('There was a problem and your changes were NOT saved.'));
+      })
+      .then(function() {
+        res.redirect(cfg.path.pregnancyLabsEditForm.replace(/:id/, req.paramPregnancy.id));
+      });
+    });
+
+  } else {
+    logError('Error in update of labAdd(): pregnancy not found.');
+    // TODO: handle this better.
     res.redirect(cfg.path.search);
   }
 };
@@ -1292,5 +1519,7 @@ module.exports = {
   , prenatalExamEdit: prenatalExamEdit
   , prenatalExamDelete: prenatalExamDelete
   , labsEdit: labsEdit
+  , labAddForm: labAddForm
+  , labAdd: labAdd
 };
 

@@ -1,0 +1,30 @@
+extends ../layouts/default_layout
+
+block defaultLab
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var name;
+  - var min, max;
+  - var normal, unit;
+  - var tabIndex = 0;
+  - var warn = false;
+  p(class='text-warning')= gettext('Some tests have a number and a select field. Choose one or the other, not both. If both filled, number will be used and select discarded.')
+  form(id='addLabForm', role='form', name='addLabForm', action='/pregnancy/' + rec.id + '/labadd', method='post')
+    div.row
+      each test, idx in labTests
+        - name = test.name !== test.abbrev? test.name + ' (' + test.abbrev + ')': test.name;
+        - max = test.maxRangeDecimal || test.maxRangeInteger;
+        - min = test.minRangeDecimal || test.minRangeInteger;
+        - if (! libs._.isNumber(max)) max = '';
+        - if (! libs._.isNumber(min)) min = '';
+        - normal = ! libs._.isNull(test.normal)? test.normal: gettext('None');
+        - unit = ! libs._.isNull(test.unit)? test.unit: gettext('None');
+        - tabIndex += 3;
+        +labTest('md', 2, name, test.id, min, max, test.values, tabIndex, unit, normal, warn)
+
+    div.row
+      div(class='col-md-1')
+        input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+        input(type='hidden', name='_csrf', value=token)
+

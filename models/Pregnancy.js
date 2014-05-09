@@ -183,6 +183,10 @@ Pregnancy = Bookshelf.Model.extend({
       return this.hasMany(require('./PrenatalExam').PrenatalExam, 'pregnancy_id');
     }
 
+  , labTestResult: function() {
+      return this.hasMany(require('./LabTestResult').LabTestResult, 'labTest_id');
+    }
+
 }, {
   // --------------------------------------------------------
   // Class Properties.

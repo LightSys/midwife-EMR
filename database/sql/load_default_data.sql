@@ -142,10 +142,10 @@ SELECT 'labSuite' AS 'Loading' FROM DUAL;
 INSERT INTO `labSuite`
   (name, description, category, viewTemplate, updatedBy, updatedAt)
 VALUES
-  ('Blood', '', 'Blood', 'Blood', 1, NOW()),
-  ('Urinalysis', '', 'Urinalysis', 'Urinalysis', 1, NOW()),
-  ('Wet mount', '', 'Wet mount', 'WetMount', 1, NOW()),
-  ('Gram stain', '', 'Gram stain', 'GramStain', 1, NOW())
+  ('Blood', '', 'Blood', 'defaultLab', 1, NOW()),
+  ('Urinalysis', '', 'Urinalysis', 'defaultLab', 1, NOW()),
+  ('Wet mount', '', 'Wet mount', 'defaultLab', 1, NOW()),
+  ('Gram stain', '', 'Gram stain', 'defaultLab', 1, NOW())
 ;
 
 SELECT 'labTest' AS 'Loading' FROM DUAL;

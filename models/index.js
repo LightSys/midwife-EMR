@@ -16,5 +16,13 @@ module.exports = {
   , Events: require('./Event').Events
   , SelectData: require('./SelectData').SelectData
   , SelectDatas: require('./SelectData').SelectDatas
+  , LabSuite: require('./LabSuite').LabSuite
+  , LabSuites: require('./LabSuite').LabSuites
+  , LabTest: require('./LabTest').LabTest
+  , LabTests: require('./LabTest').LabTests
+  , LabTestValue: require('./LabTestValue').LabTestValue
+  , LabTestValues: require('./LabTestValue').LabTestValues
+  , LabTestResult: require('./LabTestResult').LabTestResult
+  , LabTestResults: require('./LabTestResult').LabTestResults
 };
 

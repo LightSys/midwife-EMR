@@ -185,7 +185,8 @@ cfg.path.pregnancyPrenatalExamEdit = '/pregnancy/:id/prenatalexamedit/:id2'; // 
 cfg.path.pregnancyPrenatalExamDelete = '/pregnancy/:id/prenatalexamdelete/:id2'; // POST
 cfg.path.pregnancyLabsEditForm = '/pregnancy/:id/labs';     // GET
 cfg.path.pregnancyLabsEdit = '/pregnancy/:id/labs';         // POST
-
+cfg.path.labAddForm = '/pregnancy/:id/labaddform';    // GET
+cfg.path.labAdd = '/pregnancy/:id/labadd';    // POST
 
 module.exports = cfg;
 

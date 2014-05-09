@@ -108,6 +108,7 @@ app.use(flash());
 app.locals({
   libs: {
     mmt: moment     // Moment's global reference is deprecated.
+    , _: _          // Underscore
   }
 });
 
@@ -353,7 +354,10 @@ app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
 // Labs
 app.get(cfg.path.pregnancyLabsEditForm, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.labsEdit);
-
+app.post(cfg.path.labAddForm, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.labAddForm);
+app.post(cfg.path.labAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.labAdd);
 
 // --------------------------------------------------------
 // The last resort.

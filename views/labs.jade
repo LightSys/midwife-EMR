@@ -5,5 +5,34 @@ block labs
   +pregnancyTab('labs')
   +patientWell(rec)
 
-  div
-    p.text-primary Sorry, this page is not yet done.
+  - var addLabModalHeaderLabel = 'Add Lab Result';
+  - var addLabPath = '/pregnancy/' + rec.id + '/labaddform';
+
+  form(id='addLabFormId', role='form', name='addLabForm', action=addLabPath, method='post')
+    div.row
+      div.col-md-4
+        button(class='btn btn-primary', data-toggle='modal', data-target="#addLab-modal")= gettext('Add Lab Result')
+
+    div(id='addLab-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='addLabModalHeaderLabel', aria-hidden='true')
+      div(class='modal-dialog')
+        div(class='modal-content')
+          div(class='modal-header')
+            h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab test that you want.')
+          div(class='modal-body')
+            div.row
+              div(class='col-md-4')
+                p(class='text-info lead')= gettext('Select the lab test that you want to add.')
+                div.form-group
+                  each suite in labTests
+                    label.radio= suite.name
+                      input(type='radio', name='suite', value=suite.id)
+              div(class='col-md-8')
+                each suite in labTests
+                  dl
+                    dt= suite.name
+                    dd= suite.tests.join(', ')
+          div(class='modal-footer')
+            input(type='hidden', name='_csrf', value=token)
+            input(type='hidden', name='pregnancy_id', value=rec.id)
+            button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+            button(type='submit', class='btn btn-primary')= gettext('Add Lab')
