@@ -9,8 +9,17 @@ block defaultLab
   - var normal, unit;
   - var tabIndex = 0;
   - var warn = false;
-  p(class='text-warning')= gettext('Some tests have a number and a select field. Choose one or the other, not both. If both filled, number will be used and select discarded.')
+  - var testDate = libs.mmt().format('YYYY-MM-DD');
   form(id='addLabForm', role='form', name='addLabForm', action='/pregnancy/' + rec.id + '/labadd', method='post')
+    div.row
+      div(class='col-md-3')
+        label= gettext('Date of these tests')
+        input(id='testDate', class='form-control', type='date', tabindex="1", autocomplete="off", name='testDate', value=testDate)
+    div.row
+      div(class='col-md-12')
+        hr
+        p(class='text-warning')= gettext('Some tests have a number and a select field. Choose one or the other, not both. If both filled, number will be used and select discarded.')
+
     div.row
       each test, idx in labTests
         - name = test.name !== test.abbrev? test.name + ' (' + test.abbrev + ')': test.name;

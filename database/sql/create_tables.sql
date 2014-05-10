@@ -429,7 +429,7 @@ SHOW WARNINGS;
 -- Holds the test result for a specific test and patient.
 CREATE TABLE IF NOT EXISTS `labTestResult` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  testDate DATETIME NOT NULL,
+  testDate DATE NOT NULL,
   result VARCHAR(100) NOT NULL,
   warn BOOLEAN NULL,
   labTest_id INT NOT NULL,

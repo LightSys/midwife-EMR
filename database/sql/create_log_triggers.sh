@@ -32,7 +32,7 @@ function get_columns_sql {
 }
 
 function get_tables_sql {
- sql="SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%Log' AND table_schema = '$db';" 
+ sql="SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%Log' AND table_schema = '$db';"
 }
 
 get_tables_sql
@@ -84,7 +84,7 @@ TRIGGER1
 cat <<TRIGGER2
 );
 END;${delimiter}
-DELIMITER ; 
+DELIMITER ;
 TRIGGER2
 
   echo " "
@@ -125,7 +125,7 @@ TRIGGER3
 cat <<TRIGGER4
 );
 END;${delimiter}
-DELIMITER ; 
+DELIMITER ;
 TRIGGER4
 
 
@@ -167,7 +167,7 @@ TRIGGER5
 cat <<TRIGGER6
 );
 END;${delimiter}
-DELIMITER ; 
+DELIMITER ;
 TRIGGER6
 done
 

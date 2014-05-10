@@ -141,7 +141,10 @@ VALUES
   ('wksMthsYrs', 'Years', 'Years', 0, 1, NOW()),
   ('wksMths', '', '', 1, 1, NOW()),
   ('wksMths', 'Weeks', 'Weeks', 0, 1, NOW()),
-  ('wksMths', 'Months', 'Months', 0, 1, NOW())
+  ('wksMths', 'Months', 'Months', 0, 1, NOW()),
+  ('maleFemale', '', '', 1, 1, NOW()),
+  ('maleFemale', 'F', 'Female', 0, 1, NOW()),
+  ('maleFemale', 'M', 'Male', 0, 1, NOW())
 ;
 
 -- Load default tests per client specifications.
@@ -149,10 +152,10 @@ SELECT 'labSuite' AS 'Loading' FROM DUAL;
 INSERT INTO `labSuite`
   (name, description, category, viewTemplate, updatedBy, updatedAt)
 VALUES
-  ('Blood', '', 'Blood', 'Blood', 1, NOW()),
-  ('Urinalysis', '', 'Urinalysis', 'Urinalysis', 1, NOW()),
-  ('Wet mount', '', 'Wet mount', 'WetMount', 1, NOW()),
-  ('Gram stain', '', 'Gram stain', 'GramStain', 1, NOW())
+  ('Blood', '', 'Blood', 'defaultLab', 1, NOW()),
+  ('Urinalysis', '', 'Urinalysis', 'defaultLab', 1, NOW()),
+  ('Wet mount', '', 'Wet mount', 'defaultLab', 1, NOW()),
+  ('Gram stain', '', 'Gram stain', 'defaultLab', 1, NOW())
 ;
 
 SELECT 'labTest' AS 'Loading' FROM DUAL;

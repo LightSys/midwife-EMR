@@ -1406,7 +1406,8 @@ var labAddForm = function(req, res) {
  * -------------------------------------------------------- */
 var labAdd = function(req, res) {
   var supervisor = null
-    , flds = _.omit(req.body, ['_csrf'])
+    , testDate = req.body.testDate
+    , flds = _.omit(req.body, ['_csrf', 'testDate'])
     , testResults = {}
     ;
 
@@ -1431,7 +1432,7 @@ var labAdd = function(req, res) {
         testResults[testId] = {
           labTest_id: testId
           , pregnancy_id: req.paramPregnancy.id
-          , testDate: moment().format('YYYY-MM-DD HH:mm:ss.SSS')
+          , testDate: moment(testDate).format('YYYY-MM-DD')
           , result: ''
           , warn: null
         };
