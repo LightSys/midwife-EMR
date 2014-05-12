@@ -1271,13 +1271,18 @@ var prenatalExamDelete = function(req, res) {
 var labsEdit = function(req, res) {
   var data
     , suiteDefs = []
+    , labResults = []
     ;
+
   if (req.paramPregnancy) {
     // --------------------------------------------------------
-    // Load the available lab tests so that the user can choose
-    // which one to add if desired. Includes the lab suite names
-    // as well as all of the tests within each suite.
+    // The labs page has a lot of data so we load all of the
+    // data sequentially in order to populate the page.
+    //
+    // TODO: consider using Promise.all() to load in parallel.
     // --------------------------------------------------------
+
+    // labSuite, labTest, and labTestValue for adding new lab results.
     new LabSuites()
       .fetch({withRelated: ['LabTest']})
       .then(function(suites) {
@@ -1291,8 +1296,25 @@ var labsEdit = function(req, res) {
             , tests: testNames
           });
         });
-        data = getCommonFormData(req,
-          _.extend({title: req.gettext('Labs')}, {labTests: suiteDefs}));
+      })
+      // Get existing labTestResult records.
+      .then(function() {
+        return new LabTestResults({'pregnancy_id': req.paramPregnancy.id})
+          .fetch({withRelated: ['LabTest']});
+      })
+      // Massage the labTestResult records into the format that we want.
+      .then(function(ltResults) {
+        _.each(ltResults.toJSON(), function(result) {
+            var r = _.omit(result, ['updatedBy','updatedAt','supervisor','LabTest']);
+            r.name = result.LabTest.name;
+            labResults.push(r);
+        });
+      })
+      // Prepare the data for the form and return it to the user.
+      .then(function() {
+        data = getCommonFormData(req, _.extend({title: req.gettext('Labs')},
+            {labTests: suiteDefs, labTestResults: labResults})
+        );
         return res.render('labs', data);
       })
       .caught(function(err) {
@@ -1301,6 +1323,7 @@ var labsEdit = function(req, res) {
       });
   } else {
     // Pregnancy not found.
+    logError('Pregnancy not found: ' + req.url);
     res.redirect(cfg.path.search);
   }
 };
