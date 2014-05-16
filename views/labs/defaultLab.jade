@@ -11,11 +11,16 @@ block defaultLab
   - var warn = false;
   - var isRange = false;
   - var testDate = libs.mmt().format('YYYY-MM-DD');
+  - var labsPath = '/pregnancy/' + rec.id + '/labs';
   form(id='addLabForm', role='form', name='addLabForm', action='/pregnancy/' + rec.id + '/labadd', method='post')
     div.row
       div(class='col-md-3')
         label= gettext('Date of these tests')
         input(id='testDate', class='form-control', type='date', tabindex="1", autocomplete="off", name='testDate', value=testDate)
+      div(class='form-group col-md-2 col-md-offset-7')
+        //- This label just causes everything on this row to line up better.
+        label &nbsp;
+        a(href=labsPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
     div.row
       div(class='col-md-12')
         hr
