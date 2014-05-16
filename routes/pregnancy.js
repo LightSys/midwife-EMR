@@ -1457,6 +1457,7 @@ var labAdd = function(req, res) {
           , pregnancy_id: req.paramPregnancy.id
           , testDate: moment(testDate).format('YYYY-MM-DD')
           , result: ''
+          , result2: ''
           , warn: null
         };
       }
@@ -1465,6 +1466,10 @@ var labAdd = function(req, res) {
       // --------------------------------------------------------
       // Number always overrides the select if both are provided.
       // --------------------------------------------------------
+      if (fldType === 'numberLow' &&
+        _.isNumber(Number(val))) testResults[testId].result = val;
+      if (fldType === 'numberHigh' &&
+        _.isNumber(Number(val))) testResults[testId].result2 = val;
       if (fldType === 'number' &&
         _.isNumber(Number(val))) testResults[testId].result = val;
       if (fldType === 'select') {

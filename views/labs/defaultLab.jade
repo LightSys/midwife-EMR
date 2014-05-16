@@ -9,6 +9,7 @@ block defaultLab
   - var normal, unit;
   - var tabIndex = 0;
   - var warn = false;
+  - var isRange = false;
   - var testDate = libs.mmt().format('YYYY-MM-DD');
   form(id='addLabForm', role='form', name='addLabForm', action='/pregnancy/' + rec.id + '/labadd', method='post')
     div.row
@@ -29,8 +30,9 @@ block defaultLab
         - if (! libs._.isNumber(min)) min = '';
         - normal = ! libs._.isNull(test.normal)? test.normal: gettext('None');
         - unit = ! libs._.isNull(test.unit)? test.unit: gettext('None');
+        - isRange = test.isRange || false;
         - tabIndex += 3;
-        +labTest('md', 2, name, test.id, min, max, test.values, tabIndex, unit, normal, warn)
+        +labTest('md', 2, name, test.id, min, max, isRange, test.values, tabIndex, unit, normal, warn)
 
     div.row
       div(class='col-md-1')

@@ -27,6 +27,7 @@ CREATE TABLE `labTest` (
   `maxRangeDecimal` decimal(7,3) DEFAULT NULL,
   `minRangeInteger` int(11) DEFAULT NULL,
   `maxRangeInteger` int(11) DEFAULT NULL,
+  `isRange` tinyint(1) NOT NULL DEFAULT '0',
   `labSuite_id` int(11) NOT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
@@ -48,7 +49,7 @@ LabTest = Bookshelf.Model.extend({
 
   , permittedAttributes: ['id', 'name', 'abbrev', 'normal', 'unit',
         'minRangeDecimal', 'maxRangeDecimal', 'minRangeInteger', 'maxRangeInteger',
-        'labSuite_id', 'updatedBy', 'updatedAt', 'supervisor']
+        'isRange', 'labSuite_id', 'updatedBy', 'updatedAt', 'supervisor']
 
   , initialize: function() {
     this.on('saving', this.saving, this);

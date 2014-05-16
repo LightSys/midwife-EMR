@@ -19,15 +19,16 @@ block labs
             td= gettext('Result')
             td= gettext('Warn')
         - var pregId = 'pregnancyId-' + rec.id;
-        - var testDate, testWarn;
+        - var testDate, testWarn, testResult;
         tbody(id=pregId)
           each ltr in labTestResults
             - testDate = ltr.testDate? libs.mmt(ltr.testDate).format('MM-DD-YYYY'): '';
             - testWarn = ltr.warn == 1? gettext('Yes'): '';
+            - testResult = ltr.result2? ltr.result + ' - ' + ltr.result2: ltr.result;
             tr(class='labTestResultsRow', id=labTestResultsRow)
               td= ltr.name
               td= testDate
-              td= ltr.result
+              td= testResult
               td= testWarn
 
   //- Add Lab Test modal dialog and form.

@@ -1,12 +1,15 @@
-mixin labTest(bsDevSize, numColumns, name, testId, min, max, values, tabIndex, unit, normal, warn)
+mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, tabIndex, unit, normal, warn)
 
   - var outerClass = 'col-' + bsDevSize + '-' + parseInt(12/numColumns);
   - var fullWidth = 'col-' + bsDevSize + '-12';
   - var halfWidth = 'col-' + bsDevSize + '-6';
+  - var qtrWidth = 'col-' + bsDevSize + '-3';
   - var thirdWidth = 'col-' + bsDevSize + '-4';
   - var customWidth = 'col-' + bsDevSize + '-';           // Must supply final number 1-12
   - var customOffset = 'col-' + bsDevSize + '-offset-';   // Must supply final number 1-11
   - var fldNameNumber = 'number-' + testId;
+  - var fldNameNumberLow = 'numberLow-' + testId;
+  - var fldNameNumberHigh = 'numberHigh-' + testId;
   - var fldNameSelect = 'select-' + testId;
   - var fldNameWarn = 'warn-' + testId;
   - var minText = (''+min).length === 0? 'None': min
@@ -27,8 +30,14 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, values, tabIndex, u
             - }
         div.row
           - if (min || max)
-            div(class=halfWidth)
-              input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber)
+            - if (isRange)
+              div(class=qtrWidth)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberLow)
+              div(class=qtrWidth)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberHigh)
+            - else
+              div(class=halfWidth)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber)
           - if (values)
             div(class=halfWidth)
               +select('form-control', fldNameSelect, tabIndex++, values)

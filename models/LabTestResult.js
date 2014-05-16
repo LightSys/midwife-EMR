@@ -19,8 +19,9 @@ var moment = require('moment')
 /*
 CREATE TABLE `labTestResult` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `testDate` datetime NOT NULL,
+  `testDate` date NOT NULL,
   `result` varchar(100) NOT NULL,
+  `result2` varchar(100) DEFAULT NULL,
   `warn` tinyint(1) DEFAULT NULL,
   `labTest_id` int(11) NOT NULL,
   `pregnancy_id` int(11) NOT NULL,
@@ -42,8 +43,8 @@ CREATE TABLE `labTestResult` (
 LabTestResult = Bookshelf.Model.extend({
   tableName: 'labTestResult'
 
-  , permittedAttributes: ['id', 'testDate', 'result', 'warn', 'labTest_id',
-        'pregnancy_id', 'updatedBy', 'updatedAt', 'supervisor']
+  , permittedAttributes: ['id', 'testDate', 'result', 'result2', 'warn',
+        'labTest_id', 'pregnancy_id', 'updatedBy', 'updatedAt', 'supervisor']
 
   , initialize: function() {
     this.on('saving', this.saving, this);

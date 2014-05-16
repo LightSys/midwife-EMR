@@ -1,4 +1,4 @@
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: healthTeaching_after_insert
 -- ---------------------------------------------------------------
@@ -12,7 +12,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.topic, NEW.teacher, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: healthTeaching_after_update
 -- ---------------------------------------------------------------
@@ -26,7 +26,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.topic, NEW.teacher, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: healthTeaching_after_delete
 -- ---------------------------------------------------------------
@@ -40,7 +40,7 @@ BEGIN
   VALUES (OLD.id, OLD.date, OLD.topic, OLD.teacher, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labSuite_after_insert
 -- ---------------------------------------------------------------
@@ -54,7 +54,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.category, NEW.viewTemplate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labSuite_after_update
 -- ---------------------------------------------------------------
@@ -68,7 +68,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.category, NEW.viewTemplate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labSuite_after_delete
 -- ---------------------------------------------------------------
@@ -82,7 +82,7 @@ BEGIN
   VALUES (OLD.id, OLD.name, OLD.description, OLD.category, OLD.viewTemplate, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTest_after_insert
 -- ---------------------------------------------------------------
@@ -92,11 +92,11 @@ CREATE TRIGGER labTest_after_insert AFTER INSERT ON labTest
 FOR EACH ROW
 BEGIN
   INSERT INTO labTestLog
-  (id, name, abbrev, normal, unit, minRangeDecimal, maxRangeDecimal, minRangeInteger, maxRangeInteger, labSuite_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.abbrev, NEW.normal, NEW.unit, NEW.minRangeDecimal, NEW.maxRangeDecimal, NEW.minRangeInteger, NEW.maxRangeInteger, NEW.labSuite_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, name, abbrev, normal, unit, minRangeDecimal, maxRangeDecimal, minRangeInteger, maxRangeInteger, isRange, labSuite_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.abbrev, NEW.normal, NEW.unit, NEW.minRangeDecimal, NEW.maxRangeDecimal, NEW.minRangeInteger, NEW.maxRangeInteger, NEW.isRange, NEW.labSuite_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTest_after_update
 -- ---------------------------------------------------------------
@@ -106,11 +106,11 @@ CREATE TRIGGER labTest_after_update AFTER UPDATE ON labTest
 FOR EACH ROW
 BEGIN
   INSERT INTO labTestLog
-  (id, name, abbrev, normal, unit, minRangeDecimal, maxRangeDecimal, minRangeInteger, maxRangeInteger, labSuite_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.abbrev, NEW.normal, NEW.unit, NEW.minRangeDecimal, NEW.maxRangeDecimal, NEW.minRangeInteger, NEW.maxRangeInteger, NEW.labSuite_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, name, abbrev, normal, unit, minRangeDecimal, maxRangeDecimal, minRangeInteger, maxRangeInteger, isRange, labSuite_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.abbrev, NEW.normal, NEW.unit, NEW.minRangeDecimal, NEW.maxRangeDecimal, NEW.minRangeInteger, NEW.maxRangeInteger, NEW.isRange, NEW.labSuite_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTest_after_delete
 -- ---------------------------------------------------------------
@@ -120,11 +120,11 @@ CREATE TRIGGER labTest_after_delete AFTER DELETE ON labTest
 FOR EACH ROW
 BEGIN
   INSERT INTO labTestLog
-  (id, name, abbrev, normal, unit, minRangeDecimal, maxRangeDecimal, minRangeInteger, maxRangeInteger, labSuite_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.name, OLD.abbrev, OLD.normal, OLD.unit, OLD.minRangeDecimal, OLD.maxRangeDecimal, OLD.minRangeInteger, OLD.maxRangeInteger, OLD.labSuite_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, name, abbrev, normal, unit, minRangeDecimal, maxRangeDecimal, minRangeInteger, maxRangeInteger, isRange, labSuite_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.abbrev, OLD.normal, OLD.unit, OLD.minRangeDecimal, OLD.maxRangeDecimal, OLD.minRangeInteger, OLD.maxRangeInteger, OLD.isRange, OLD.labSuite_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTestResult_after_insert
 -- ---------------------------------------------------------------
@@ -134,11 +134,11 @@ CREATE TRIGGER labTestResult_after_insert AFTER INSERT ON labTestResult
 FOR EACH ROW
 BEGIN
   INSERT INTO labTestResultLog
-  (id, testDate, result, warn, labTest_id, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.testDate, NEW.result, NEW.warn, NEW.labTest_id, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, testDate, result, result2, warn, labTest_id, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.testDate, NEW.result, NEW.result2, NEW.warn, NEW.labTest_id, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTestResult_after_update
 -- ---------------------------------------------------------------
@@ -148,11 +148,11 @@ CREATE TRIGGER labTestResult_after_update AFTER UPDATE ON labTestResult
 FOR EACH ROW
 BEGIN
   INSERT INTO labTestResultLog
-  (id, testDate, result, warn, labTest_id, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.testDate, NEW.result, NEW.warn, NEW.labTest_id, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, testDate, result, result2, warn, labTest_id, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.testDate, NEW.result, NEW.result2, NEW.warn, NEW.labTest_id, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTestResult_after_delete
 -- ---------------------------------------------------------------
@@ -162,11 +162,11 @@ CREATE TRIGGER labTestResult_after_delete AFTER DELETE ON labTestResult
 FOR EACH ROW
 BEGIN
   INSERT INTO labTestResultLog
-  (id, testDate, result, warn, labTest_id, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.testDate, OLD.result, OLD.warn, OLD.labTest_id, OLD.pregnancy_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, testDate, result, result2, warn, labTest_id, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.testDate, OLD.result, OLD.result2, OLD.warn, OLD.labTest_id, OLD.pregnancy_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTestValue_after_insert
 -- ---------------------------------------------------------------
@@ -180,7 +180,7 @@ BEGIN
   VALUES (NEW.id, NEW.value, NEW.labTest_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTestValue_after_update
 -- ---------------------------------------------------------------
@@ -194,7 +194,7 @@ BEGIN
   VALUES (NEW.id, NEW.value, NEW.labTest_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: labTestValue_after_delete
 -- ---------------------------------------------------------------
@@ -208,7 +208,7 @@ BEGIN
   VALUES (OLD.id, OLD.value, OLD.labTest_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: medication_after_insert
 -- ---------------------------------------------------------------
@@ -222,7 +222,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.medicationType, NEW.numberDispensed, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: medication_after_update
 -- ---------------------------------------------------------------
@@ -236,7 +236,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.medicationType, NEW.numberDispensed, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: medication_after_delete
 -- ---------------------------------------------------------------
@@ -250,7 +250,7 @@ BEGIN
   VALUES (OLD.id, OLD.date, OLD.medicationType, OLD.numberDispensed, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: medicationType_after_insert
 -- ---------------------------------------------------------------
@@ -264,7 +264,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: medicationType_after_update
 -- ---------------------------------------------------------------
@@ -278,7 +278,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: medicationType_after_delete
 -- ---------------------------------------------------------------
@@ -292,7 +292,7 @@ BEGIN
   VALUES (OLD.id, OLD.name, OLD.description, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: patient_after_insert
 -- ---------------------------------------------------------------
@@ -306,7 +306,7 @@ BEGIN
   VALUES (NEW.id, NEW.dohID, NEW.dob, NEW.generalInfo, NEW.ageOfMenarche, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: patient_after_update
 -- ---------------------------------------------------------------
@@ -320,7 +320,7 @@ BEGIN
   VALUES (NEW.id, NEW.dohID, NEW.dob, NEW.generalInfo, NEW.ageOfMenarche, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: patient_after_delete
 -- ---------------------------------------------------------------
@@ -334,7 +334,7 @@ BEGIN
   VALUES (OLD.id, OLD.dohID, OLD.dob, OLD.generalInfo, OLD.ageOfMenarche, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: pregnancyHistory_after_insert
 -- ---------------------------------------------------------------
@@ -348,7 +348,7 @@ BEGIN
   VALUES (NEW.id, NEW.day, NEW.month, NEW.year, NEW.FT, NEW.finalGA, NEW.finalGAPeriod, NEW.sexOfBaby, NEW.placeOfBirth, NEW.attendant, NEW.typeOfDelivery, NEW.lengthOfLabor, NEW.birthWeight, NEW.episTear, NEW.repaired, NEW.howLongBFed, NEW.howLongBFedPeriod, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: pregnancyHistory_after_update
 -- ---------------------------------------------------------------
@@ -362,7 +362,7 @@ BEGIN
   VALUES (NEW.id, NEW.day, NEW.month, NEW.year, NEW.FT, NEW.finalGA, NEW.finalGAPeriod, NEW.sexOfBaby, NEW.placeOfBirth, NEW.attendant, NEW.typeOfDelivery, NEW.lengthOfLabor, NEW.birthWeight, NEW.episTear, NEW.repaired, NEW.howLongBFed, NEW.howLongBFedPeriod, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: pregnancyHistory_after_delete
 -- ---------------------------------------------------------------
@@ -376,7 +376,7 @@ BEGIN
   VALUES (OLD.id, OLD.day, OLD.month, OLD.year, OLD.FT, OLD.finalGA, OLD.finalGAPeriod, OLD.sexOfBaby, OLD.placeOfBirth, OLD.attendant, OLD.typeOfDelivery, OLD.lengthOfLabor, OLD.birthWeight, OLD.episTear, OLD.repaired, OLD.howLongBFed, OLD.howLongBFedPeriod, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: pregnancy_after_insert
 -- ---------------------------------------------------------------
@@ -390,7 +390,7 @@ BEGIN
   VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.maidenname, NEW.nickname, NEW.religion, NEW.maritalStatus, NEW.telephone, NEW.work, NEW.education, NEW.clientIncome, NEW.clientIncomePeriod, NEW.address, NEW.barangay, NEW.city, NEW.postalCode, NEW.gravidaNumber, NEW.lmp, NEW.sureLMP, NEW.warning, NEW.riskPresent, NEW.riskObHx, NEW.riskMedHx, NEW.riskLifestyle, NEW.riskNote, NEW.edd, NEW.alternateEdd, NEW.useAlternateEdd, NEW.doctorConsultDate, NEW.dentistConsultDate, NEW.mbBook, NEW.whereDeliver, NEW.fetuses, NEW.monozygotic, NEW.pregnancyEndDate, NEW.pregnancyEndResult, NEW.iugr, NEW.note, NEW.numberRequiredTetanus, NEW.invertedNipples, NEW.hasUS, NEW.wantsUS, NEW.gravida, NEW.stillBirths, NEW.abortions, NEW.living, NEW.para, NEW.term, NEW.preterm, NEW.philHealthMCP, NEW.philHealthNCP, NEW.philHealthID, NEW.philHealthApproved, NEW.currentlyVomiting, NEW.currentlyDizzy, NEW.currentlyFainting, NEW.currentlyBleeding, NEW.currentlyUrinationPain, NEW.currentlyBlurryVision, NEW.currentlySwelling, NEW.currentlyVaginalPain, NEW.currentlyVaginalItching, NEW.currentlyNone, NEW.useIodizedSalt, NEW.takingMedication, NEW.planToBreastFeed, NEW.birthCompanion, NEW.practiceFamilyPlanning, NEW.practiceFamilyPlanningDetails, NEW.familyHistoryTwins, NEW.familyHistoryHighBloodPressure, NEW.familyHistoryDiabetes, NEW.familyHistoryHeartProblems, NEW.familyHistoryTB, NEW.familyHistorySmoking, NEW.familyHistoryNone, NEW.historyFoodAllergy, NEW.historyMedicineAllergy, NEW.historyAsthma, NEW.historyHeartProblems, NEW.historyKidneyProblems, NEW.historyHepatitis, NEW.historyGoiter, NEW.historyHighBloodPressure, NEW.historyHospitalOperation, NEW.historyBloodTransfusion, NEW.historySmoking, NEW.historyDrinking, NEW.historyNone, NEW.questionnaireNote, NEW.partnerFirstname, NEW.partnerLastname, NEW.partnerAge, NEW.partnerWork, NEW.partnerEducation, NEW.partnerIncome, NEW.partnerIncomePeriod, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.patient_id, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: pregnancy_after_update
 -- ---------------------------------------------------------------
@@ -404,7 +404,7 @@ BEGIN
   VALUES (NEW.id, NEW.firstname, NEW.lastname, NEW.maidenname, NEW.nickname, NEW.religion, NEW.maritalStatus, NEW.telephone, NEW.work, NEW.education, NEW.clientIncome, NEW.clientIncomePeriod, NEW.address, NEW.barangay, NEW.city, NEW.postalCode, NEW.gravidaNumber, NEW.lmp, NEW.sureLMP, NEW.warning, NEW.riskPresent, NEW.riskObHx, NEW.riskMedHx, NEW.riskLifestyle, NEW.riskNote, NEW.edd, NEW.alternateEdd, NEW.useAlternateEdd, NEW.doctorConsultDate, NEW.dentistConsultDate, NEW.mbBook, NEW.whereDeliver, NEW.fetuses, NEW.monozygotic, NEW.pregnancyEndDate, NEW.pregnancyEndResult, NEW.iugr, NEW.note, NEW.numberRequiredTetanus, NEW.invertedNipples, NEW.hasUS, NEW.wantsUS, NEW.gravida, NEW.stillBirths, NEW.abortions, NEW.living, NEW.para, NEW.term, NEW.preterm, NEW.philHealthMCP, NEW.philHealthNCP, NEW.philHealthID, NEW.philHealthApproved, NEW.currentlyVomiting, NEW.currentlyDizzy, NEW.currentlyFainting, NEW.currentlyBleeding, NEW.currentlyUrinationPain, NEW.currentlyBlurryVision, NEW.currentlySwelling, NEW.currentlyVaginalPain, NEW.currentlyVaginalItching, NEW.currentlyNone, NEW.useIodizedSalt, NEW.takingMedication, NEW.planToBreastFeed, NEW.birthCompanion, NEW.practiceFamilyPlanning, NEW.practiceFamilyPlanningDetails, NEW.familyHistoryTwins, NEW.familyHistoryHighBloodPressure, NEW.familyHistoryDiabetes, NEW.familyHistoryHeartProblems, NEW.familyHistoryTB, NEW.familyHistorySmoking, NEW.familyHistoryNone, NEW.historyFoodAllergy, NEW.historyMedicineAllergy, NEW.historyAsthma, NEW.historyHeartProblems, NEW.historyKidneyProblems, NEW.historyHepatitis, NEW.historyGoiter, NEW.historyHighBloodPressure, NEW.historyHospitalOperation, NEW.historyBloodTransfusion, NEW.historySmoking, NEW.historyDrinking, NEW.historyNone, NEW.questionnaireNote, NEW.partnerFirstname, NEW.partnerLastname, NEW.partnerAge, NEW.partnerWork, NEW.partnerEducation, NEW.partnerIncome, NEW.partnerIncomePeriod, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.patient_id, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: pregnancy_after_delete
 -- ---------------------------------------------------------------
@@ -418,7 +418,7 @@ BEGIN
   VALUES (OLD.id, OLD.firstname, OLD.lastname, OLD.maidenname, OLD.nickname, OLD.religion, OLD.maritalStatus, OLD.telephone, OLD.work, OLD.education, OLD.clientIncome, OLD.clientIncomePeriod, OLD.address, OLD.barangay, OLD.city, OLD.postalCode, OLD.gravidaNumber, OLD.lmp, OLD.sureLMP, OLD.warning, OLD.riskPresent, OLD.riskObHx, OLD.riskMedHx, OLD.riskLifestyle, OLD.riskNote, OLD.edd, OLD.alternateEdd, OLD.useAlternateEdd, OLD.doctorConsultDate, OLD.dentistConsultDate, OLD.mbBook, OLD.whereDeliver, OLD.fetuses, OLD.monozygotic, OLD.pregnancyEndDate, OLD.pregnancyEndResult, OLD.iugr, OLD.note, OLD.numberRequiredTetanus, OLD.invertedNipples, OLD.hasUS, OLD.wantsUS, OLD.gravida, OLD.stillBirths, OLD.abortions, OLD.living, OLD.para, OLD.term, OLD.preterm, OLD.philHealthMCP, OLD.philHealthNCP, OLD.philHealthID, OLD.philHealthApproved, OLD.currentlyVomiting, OLD.currentlyDizzy, OLD.currentlyFainting, OLD.currentlyBleeding, OLD.currentlyUrinationPain, OLD.currentlyBlurryVision, OLD.currentlySwelling, OLD.currentlyVaginalPain, OLD.currentlyVaginalItching, OLD.currentlyNone, OLD.useIodizedSalt, OLD.takingMedication, OLD.planToBreastFeed, OLD.birthCompanion, OLD.practiceFamilyPlanning, OLD.practiceFamilyPlanningDetails, OLD.familyHistoryTwins, OLD.familyHistoryHighBloodPressure, OLD.familyHistoryDiabetes, OLD.familyHistoryHeartProblems, OLD.familyHistoryTB, OLD.familyHistorySmoking, OLD.familyHistoryNone, OLD.historyFoodAllergy, OLD.historyMedicineAllergy, OLD.historyAsthma, OLD.historyHeartProblems, OLD.historyKidneyProblems, OLD.historyHepatitis, OLD.historyGoiter, OLD.historyHighBloodPressure, OLD.historyHospitalOperation, OLD.historyBloodTransfusion, OLD.historySmoking, OLD.historyDrinking, OLD.historyNone, OLD.questionnaireNote, OLD.partnerFirstname, OLD.partnerLastname, OLD.partnerAge, OLD.partnerWork, OLD.partnerEducation, OLD.partnerIncome, OLD.partnerIncomePeriod, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.patient_id, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: prenatalExam_after_insert
 -- ---------------------------------------------------------------
@@ -432,7 +432,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.weight, NEW.systolic, NEW.diastolic, NEW.cr, NEW.fh, NEW.fht, NEW.fhtNote, NEW.pos, NEW.mvmt, NEW.edema, NEW.risk, NEW.vitamin, NEW.pray, NEW.note, NEW.returnDate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: prenatalExam_after_update
 -- ---------------------------------------------------------------
@@ -446,7 +446,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.weight, NEW.systolic, NEW.diastolic, NEW.cr, NEW.fh, NEW.fht, NEW.fhtNote, NEW.pos, NEW.mvmt, NEW.edema, NEW.risk, NEW.vitamin, NEW.pray, NEW.note, NEW.returnDate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: prenatalExam_after_delete
 -- ---------------------------------------------------------------
@@ -460,7 +460,7 @@ BEGIN
   VALUES (OLD.id, OLD.date, OLD.weight, OLD.systolic, OLD.diastolic, OLD.cr, OLD.fh, OLD.fht, OLD.fhtNote, OLD.pos, OLD.mvmt, OLD.edema, OLD.risk, OLD.vitamin, OLD.pray, OLD.note, OLD.returnDate, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: priority_after_insert
 -- ---------------------------------------------------------------
@@ -474,7 +474,7 @@ BEGIN
   VALUES (NEW.id, NEW.eType, NEW.priority, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: priority_after_update
 -- ---------------------------------------------------------------
@@ -488,7 +488,7 @@ BEGIN
   VALUES (NEW.id, NEW.eType, NEW.priority, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: priority_after_delete
 -- ---------------------------------------------------------------
@@ -502,7 +502,7 @@ BEGIN
   VALUES (OLD.id, OLD.eType, OLD.priority, OLD.assigned, OLD.pregnancy_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: referral_after_insert
 -- ---------------------------------------------------------------
@@ -516,7 +516,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.referral, NEW.reason, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: referral_after_update
 -- ---------------------------------------------------------------
@@ -530,7 +530,7 @@ BEGIN
   VALUES (NEW.id, NEW.date, NEW.referral, NEW.reason, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: referral_after_delete
 -- ---------------------------------------------------------------
@@ -544,7 +544,7 @@ BEGIN
   VALUES (OLD.id, OLD.date, OLD.referral, OLD.reason, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: role_after_insert
 -- ---------------------------------------------------------------
@@ -558,7 +558,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: role_after_update
 -- ---------------------------------------------------------------
@@ -572,7 +572,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: role_after_delete
 -- ---------------------------------------------------------------
@@ -586,7 +586,7 @@ BEGIN
   VALUES (OLD.id, OLD.name, OLD.description, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: selectData_after_insert
 -- ---------------------------------------------------------------
@@ -600,7 +600,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.selectKey, NEW.label, NEW.selected, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: selectData_after_update
 -- ---------------------------------------------------------------
@@ -614,7 +614,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.selectKey, NEW.label, NEW.selected, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: selectData_after_delete
 -- ---------------------------------------------------------------
@@ -628,7 +628,7 @@ BEGIN
   VALUES (OLD.id, OLD.name, OLD.selectKey, OLD.label, OLD.selected, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: user_after_insert
 -- ---------------------------------------------------------------
@@ -642,7 +642,7 @@ BEGIN
   VALUES (NEW.id, NEW.username, NEW.firstname, NEW.lastname, NEW.password, NEW.email, NEW.lang, NEW.status, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: user_after_update
 -- ---------------------------------------------------------------
@@ -656,7 +656,7 @@ BEGIN
   VALUES (NEW.id, NEW.username, NEW.firstname, NEW.lastname, NEW.password, NEW.email, NEW.lang, NEW.status, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: user_after_delete
 -- ---------------------------------------------------------------
@@ -670,7 +670,7 @@ BEGIN
   VALUES (OLD.id, OLD.username, OLD.firstname, OLD.lastname, OLD.password, OLD.email, OLD.lang, OLD.status, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: user_role_after_insert
 -- ---------------------------------------------------------------
@@ -684,7 +684,7 @@ BEGIN
   VALUES (NEW.id, NEW.user_id, NEW.role_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: user_role_after_update
 -- ---------------------------------------------------------------
@@ -698,7 +698,7 @@ BEGIN
   VALUES (NEW.id, NEW.user_id, NEW.role_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: user_role_after_delete
 -- ---------------------------------------------------------------
@@ -712,7 +712,7 @@ BEGIN
   VALUES (OLD.id, OLD.user_id, OLD.role_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: vaccination_after_insert
 -- ---------------------------------------------------------------
@@ -726,7 +726,7 @@ BEGIN
   VALUES (NEW.id, NEW.vaccinationType, NEW.vacDate, NEW.vacMonth, NEW.vacYEAR, NEW.administeredInternally, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: vaccination_after_update
 -- ---------------------------------------------------------------
@@ -740,7 +740,7 @@ BEGIN
   VALUES (NEW.id, NEW.vaccinationType, NEW.vacDate, NEW.vacMonth, NEW.vacYEAR, NEW.administeredInternally, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: vaccination_after_delete
 -- ---------------------------------------------------------------
@@ -754,7 +754,7 @@ BEGIN
   VALUES (OLD.id, OLD.vaccinationType, OLD.vacDate, OLD.vacMonth, OLD.vacYEAR, OLD.administeredInternally, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: vaccinationType_after_insert
 -- ---------------------------------------------------------------
@@ -768,7 +768,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: vaccinationType_after_update
 -- ---------------------------------------------------------------
@@ -782,7 +782,7 @@ BEGIN
   VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
-
+ 
 -- ---------------------------------------------------------------
 -- Trigger: vaccinationType_after_delete
 -- ---------------------------------------------------------------
