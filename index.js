@@ -358,6 +358,11 @@ app.post(cfg.path.labAddForm, common, hasSuper,
     inRoles(['attending', 'supervisor']), pregnancy.labAddForm);
 app.post(cfg.path.labAdd, common, hasSuper,
     inRoles(['attending', 'supervisor']), pregnancy.labAdd);
+app.get(cfg.path.labEditForm, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.labEditForm);
+app.post(cfg.path.labEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.labEdit);
+
 
 // --------------------------------------------------------
 // The last resort.

@@ -144,6 +144,9 @@ $(function() {
     // List of roles.
     $('.roleListRow').click(handleRowClick('/role/:id/edit'));
 
+    // Lab tests
+    $('.labTestResultsRow').click(handleRowClick('/pregnancy/:pid/labedit/:id'));
+
     // --------------------------------------------------------
     // Prenatal screen: automatically pre-fill the estimated
     // due date based upon the lmp date if the edd is not

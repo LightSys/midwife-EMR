@@ -187,6 +187,9 @@ cfg.path.pregnancyLabsEditForm = '/pregnancy/:id/labs';     // GET
 cfg.path.pregnancyLabsEdit = '/pregnancy/:id/labs';         // POST
 cfg.path.labAddForm = '/pregnancy/:id/labaddform';    // GET
 cfg.path.labAdd = '/pregnancy/:id/labadd';    // POST
+cfg.path.labEditForm = '/pregnancy/:id/labedit/:id2';   // GET
+cfg.path.labEdit = '/pregnancy/:id/labedit/:id2';       // POST
+
 
 module.exports = cfg;
 

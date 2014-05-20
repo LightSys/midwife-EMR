@@ -19,13 +19,14 @@ block labs
             td= gettext('Result')
             td= gettext('Warn')
         - var pregId = 'pregnancyId-' + rec.id;
-        - var testDate, testWarn, testResult;
+        - var testDate, testWarn, testResult, labTestResultId;
         tbody(id=pregId)
           each ltr in labTestResults
+            - labTestResultId = 'labTestResult-' + ltr.id;
             - testDate = ltr.testDate? libs.mmt(ltr.testDate).format('MM-DD-YYYY'): '';
             - testWarn = ltr.warn == 1? gettext('Yes'): '';
             - testResult = ltr.result2? ltr.result + ' - ' + ltr.result2: ltr.result;
-            tr(class='labTestResultsRow', id=labTestResultsRow)
+            tr(class='labTestResultsRow', id=labTestResultId)
               td= ltr.name
               td= testDate
               td= testResult

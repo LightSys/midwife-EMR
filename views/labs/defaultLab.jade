@@ -10,9 +10,19 @@ block defaultLab
   - var tabIndex = 0;
   - var warn = false;
   - var isRange = false;
-  - var testDate = libs.mmt().format('YYYY-MM-DD');
-  - var labsPath = '/pregnancy/' + rec.id + '/labs';
-  form(id='addLabForm', role='form', name='addLabForm', action='/pregnancy/' + rec.id + '/labadd', method='post')
+  - var testDate = labTestResultDate? labTestResultDate: libs.mmt().format('YYYY-MM-DD');
+  - var labsMainPath;
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  - var labsPath;
+  //- If labTestResultId exists, this is an edit of a specific lab test rather
+  //- than the creation of a suite of lab tests.
+  - if (labTestResultId) {
+  -   labsPath = '/pregnancy/' + rec.id + '/labedit/' + labTestResultId;
+  - } else {
+  -   labsPath = '/pregnancy/' + rec.id + '/labadd';
+  - }
+  - var result = result2 = null;
+  form(id='addEditLabForm', role='form', name='addEditLabForm', action=labsPath, method='post')
     div.row
       div(class='col-md-3')
         label= gettext('Date of these tests')
@@ -20,7 +30,7 @@ block defaultLab
       div(class='form-group col-md-2 col-md-offset-7')
         //- This label just causes everything on this row to line up better.
         label &nbsp;
-        a(href=labsPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
+        a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
     div.row
       div(class='col-md-12')
         hr
@@ -37,10 +47,12 @@ block defaultLab
         - unit = ! libs._.isNull(test.unit)? test.unit: gettext('None');
         - isRange = test.isRange || false;
         - tabIndex += 3;
-        +labTest('md', 2, name, test.id, min, max, isRange, test.values, tabIndex, unit, normal, warn)
+        - result = test.result;
+        - result2 = test.result2;
+        - warn = test.warn;
+        +labTest('md', 2, name, test.id, min, max, isRange, test.values, result, result2, tabIndex, unit, normal, warn)
 
     div.row
       div(class='col-md-1')
         input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
         input(type='hidden', name='_csrf', value=token)
-

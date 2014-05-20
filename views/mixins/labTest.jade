@@ -1,4 +1,4 @@
-mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, tabIndex, unit, normal, warn)
+mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, result, result2, tabIndex, unit, normal, warn)
 
   - var outerClass = 'col-' + bsDevSize + '-' + parseInt(12/numColumns);
   - var fullWidth = 'col-' + bsDevSize + '-12';
@@ -32,12 +32,12 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, ta
           - if (min || max)
             - if (isRange)
               div(class=qtrWidth)
-                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberLow)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberLow, value=result)
               div(class=qtrWidth)
-                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberHigh)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberHigh, value=result2)
             - else
               div(class=halfWidth)
-                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber, value=result)
           - if (values)
             div(class=halfWidth)
               +select('form-control', fldNameSelect, tabIndex++, values)

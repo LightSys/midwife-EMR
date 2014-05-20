@@ -256,6 +256,12 @@ var load = function(req, res, next) {
               }
             }
           }
+          // --------------------------------------------------------
+          // Editing lab tests
+          // --------------------------------------------------------
+          if (op === 'labedit') {
+            req.paramLabTestResultId = id2;
+          }
         }
         next();
       });
@@ -1365,9 +1371,6 @@ var labAddForm = function(req, res) {
               .fetch({withRelated: ['LabTestValue']})
               .then(function(testList) {
                 var labTests = []
-                  , labTestOmitFlds = ['LabTestValue', 'updatedBy',
-                      'updatedAt', 'supervisor']
-                  , testData
                   , formData = {title: req.gettext('Add Lab Test: ') + suiteName}
                   ;
 
@@ -1376,28 +1379,7 @@ var labAddForm = function(req, res) {
                 // by the Jade select mixins and sorting by value.
                 // --------------------------------------------------------
                 testList.each(function(test) {
-                  var vals
-                    ;
-                  testData = _.omit(test.toJSON(), labTestOmitFlds);
-                  vals = _.pluck(test.related('LabTestValue').toJSON(), 'value');
-
-                  // If we have records in the labTestValue table for this test.
-                  if (vals.length > 0) {
-                    vals = _.map(vals, function(val) {
-                      return {
-                        selectKey: val
-                        , selected: false
-                        , label: val
-                      };
-                    });
-                    // --------------------------------------------------------
-                    // Create an empty value as the default value and put it
-                    // at the top.
-                    // --------------------------------------------------------
-                    vals.push({selectKey: '', selected: true, label: ''});
-                    testData.values = _.sortBy(vals, 'selectKey');
-                  }
-                  labTests.push(testData);
+                  labTests.push(labTestFormat(test));
                 });
 
                 data = getCommonFormData(req, _.extend(formData, {labTests: labTests}));
@@ -1418,20 +1400,23 @@ var labAddForm = function(req, res) {
   }
 };
 
-
 /* --------------------------------------------------------
- * labAdd()
+ * labAddEdit()
  *
- * Creates new lab results in the database for a single
- * lab suite which may contain more than one lab test. This
- * results in inserting multiple records into the
- * labTestResult table within one transaction.
+ * For new lab results, creates new lab results in the
+ * database for a single lab suite which may contain more
+ * than one lab test. This results in inserting multiple
+ * records into the labTestResult table within one transaction.
+ *
+ * For updates of lab results, still uses a transaction but
+ * existing records are updated rather than inserted.
  * -------------------------------------------------------- */
-var labAdd = function(req, res) {
+var labAddEdit = function(req, res) {
   var supervisor = null
     , testDate = req.body.testDate
     , flds = _.omit(req.body, ['_csrf', 'testDate'])
     , testResults = {}
+    , isUpdate = _.has(req, 'paramLabTestResultId')
     ;
 
   if (req.paramPregnancy &&
@@ -1460,6 +1445,12 @@ var labAdd = function(req, res) {
           , result2: ''
           , warn: null
         };
+        if (isUpdate) {
+          // This is an update, not an insert so add the id.
+          // The existence of the id will cause the ORM to
+          // do an update rather than an insert into the DB.
+          testResults[testId].id = req.paramLabTestResultId;
+        }
       }
       if (fldType === 'warn' && val === '1') testResults[testId].warn = true;
 
@@ -1480,7 +1471,7 @@ var labAdd = function(req, res) {
     });
 
     // --------------------------------------------------------
-    // Insert all of the records as a single transaction.
+    // Insert or update all of the records as a single transaction.
     // --------------------------------------------------------
     Bookshelf.DB.knex.transaction(function(t) {
       return Promise.all(_.map(testResults, function(tst) {
@@ -1519,6 +1510,98 @@ var labAdd = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * labTestFormat()
+ *
+ * Formats the JSON of a lab test in the format required
+ * for the add or edit form.
+ *
+ * param       labTest - JSON representing labTest with labTestValue
+ * param       result - the result the user already chose, if any
+ * param       result2 - the high range of the result if a range
+ * param       warn - if result, whether warning or not
+ * return      labTestFormatted - JSON in correct format
+ * -------------------------------------------------------- */
+var labTestFormat = function(labTest, result, result2, warn) {
+  var labTestOmitFlds = ['LabTestValue', 'updatedBy', 'updatedAt', 'supervisor']
+    , data = _.omit(labTest.toJSON(), labTestOmitFlds)
+    , ltVals = _.pluck(labTest.related('LabTestValue').toJSON(), 'value')
+    , resultInVals = false
+    ;
+  data.result = result || void(0);
+  data.result2 = result2 || void(0);
+  data.warn = warn || void(0);
+  if (ltVals.length > 0) {
+    ltVals = _.map(ltVals, function(val) {
+      if (! resultInVals && val === result) {
+        resultInVals = true;
+      }
+      return {
+        selectKey: val
+        , selected: result && result === val? true: false
+        , label: val
+      };
+    });
+    // --------------------------------------------------------
+    // Create an empty value as the default value and put it
+    // at the top.
+    // --------------------------------------------------------
+    ltVals.push({selectKey: '', selected: true, label: ''});
+    data.values = _.sortBy(ltVals, 'selectKey');
+  }
+
+  return data;
+};
+
+/* --------------------------------------------------------
+ * labEditForm()
+ *
+ * Displays the form to edit an individual lab test result.
+ * -------------------------------------------------------- */
+var labEditForm = function(req, res) {
+  var ltrId = req.paramLabTestResultId
+    ;
+  if (req.paramPregnancy && ltrId) {
+    LabTestResult.forge({id: ltrId})
+      .fetch()
+      .then(function(rst) {
+        var labTestId = rst.get('labTest_id')
+          , result = rst.get('result')
+          , result2 = rst.get('result2')
+          , warn = rst.get('warn')
+          , testDate = rst.get('testDate')
+          ;
+        LabTest.forge({id: labTestId})
+          .fetch({withRelated: ['LabTestValue']})
+          .then(function(labTest) {
+            LabSuite.forge({id: labTest.get('labSuite_id')})
+              .fetch()
+              .then(function(suite) {
+                var viewTemplate = suite.get('viewTemplate')
+                  , formData = {
+                    title: req.gettext('Edit Lab Test: ' + labTest.get('name'))
+                    , labTestResultId: ltrId
+                    , labTestResultDate: moment(testDate).format('YYYY-MM-DD')
+                  }
+                  , data
+                  , ltf = labTestFormat(labTest, result, result2, warn)
+                  ;
+                data = getCommonFormData(req, _.extend(formData, {labTests: [ltf]}));
+                res.render('labs/' + viewTemplate, data);
+              });
+          });
+      })
+      .caught(function(err) {
+        logError(err);
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -1549,6 +1632,8 @@ module.exports = {
   , prenatalExamDelete: prenatalExamDelete
   , labsEdit: labsEdit
   , labAddForm: labAddForm
-  , labAdd: labAdd
+  , labAdd: labAddEdit    // Note: uses same method as labEdit
+  , labEditForm: labEditForm
+  , labEdit: labAddEdit   // Note: uses same method as labAdd
 };
 
