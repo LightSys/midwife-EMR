@@ -14,10 +14,14 @@ block defaultLab
   - var labsMainPath;
   - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
   - var labsPath;
+  - var labDeletePath;
+  - var isUpdate = false;
   //- If labTestResultId exists, this is an edit of a specific lab test rather
   //- than the creation of a suite of lab tests.
   - if (labTestResultId) {
   -   labsPath = '/pregnancy/' + rec.id + '/labedit/' + labTestResultId;
+  -   labDeletePath = '/pregnancy/' + rec.id + '/labdelete/' + labTestResultId;
+  -   isUpdate = true;
   - } else {
   -   labsPath = '/pregnancy/' + rec.id + '/labadd';
   - }
@@ -53,6 +57,27 @@ block defaultLab
         +labTest('md', 2, name, test.id, min, max, isRange, test.values, result, result2, tabIndex, unit, normal, warn)
 
     div.row
-      div(class='col-md-1')
+      div(class='col-md-2')
         input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
         input(type='hidden', name='_csrf', value=token)
+      - if (isUpdate) {
+      div(class='col-md-2 col-md-offset-8')
+        button(class='btn disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+      - }
+
+  - if (isUpdate) {
+  div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+    form(id='deleteLabTestEditForm', role='form', name='labTestEditForm', action=labDeletePath, method='post')
+      div(class='modal-dialog')
+        div(class='modal-content')
+          div(class='modal-header')
+            h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+          div(class='modal-body')
+            p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+          div(class='modal-footer')
+            input(type='hidden', name='_csrf', value=token)
+            input(type='hidden', name='pregnancy_id', value=rec.id)
+            input(type='hidden', name='labTestResultId', value=labTestResultId)
+            button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+            button(type='submit', class='btn btn-primary')= gettext('Delete')
+  - }

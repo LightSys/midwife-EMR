@@ -257,9 +257,9 @@ var load = function(req, res, next) {
             }
           }
           // --------------------------------------------------------
-          // Editing lab tests
+          // Lab tests
           // --------------------------------------------------------
-          if (op === 'labedit') {
+          if (op === 'labedit' || op === 'labdelete') {
             req.paramLabTestResultId = id2;
           }
         }
@@ -1403,6 +1403,8 @@ var labAddForm = function(req, res) {
 /* --------------------------------------------------------
  * labAddEdit()
  *
+ * Add or update labTestResult records.
+ *
  * For new lab results, creates new lab results in the
  * database for a single lab suite which may contain more
  * than one lab test. This results in inserting multiple
@@ -1601,6 +1603,54 @@ var labEditForm = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * labDelete()
+ *
+ * Delete a specific labTestResult row.
+ * -------------------------------------------------------- */
+var labDelete = function(req, res) {
+  var supervisor = null
+    , flds = req.body
+    ;
+
+  if (req.paramPregnancy && req.body &&
+      req.paramPregnancy.id && req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id &&
+      req.paramLabTestResultId && req.body.labTestResultId &&
+      req.body.labTestResultId == req.paramLabTestResultId) {
+
+    if (hasRole(req, 'attending')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    flds.labTestResultId = parseInt(flds.labTestResultId, 10);
+    flds.pregnancy_id = parseInt(flds.pregnancy_id, 10);
+
+    ltr = new LabTestResult({id: flds.labTestResultId,
+      pregnancy_id: flds.pregnancy_id});
+    ltr
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .destroy().then(function() {
+        var path = cfg.path.pregnancyLabsEdit
+          ;
+        path = path.replace(/:id2/, flds.labTestResultId);
+        path = path.replace(/:id/, flds.pregnancy_id);
+        logInfo('Deleted labTestResult with id: ' + flds.labTestResultId);
+        req.flash('info', req.gettext('Lab Test Result was deleted.'));
+        res.redirect(path);
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
 
 // --------------------------------------------------------
 // Initialize the module.
@@ -1635,5 +1685,6 @@ module.exports = {
   , labAdd: labAddEdit    // Note: uses same method as labEdit
   , labEditForm: labEditForm
   , labEdit: labAddEdit   // Note: uses same method as labAdd
+  , labDelete: labDelete
 };
 

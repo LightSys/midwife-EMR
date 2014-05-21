@@ -362,6 +362,8 @@ app.get(cfg.path.labEditForm, common, hasSuper,
     inRoles(['attending', 'supervisor']), pregnancy.labEditForm);
 app.post(cfg.path.labEdit, common, hasSuper,
     inRoles(['attending', 'supervisor']), pregnancy.labEdit);
+app.post(cfg.path.labDelete, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.labDelete);
 
 
 // --------------------------------------------------------
