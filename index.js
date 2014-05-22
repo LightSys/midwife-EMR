@@ -29,6 +29,7 @@ var express = require('express')
   , users = require('./routes').users
   , roles = require('./routes').roles
   , pregnancy = require('./routes').pregnancy
+  , referral = require('./routes').referral
   , error = require('./routes').error
   , logInfo = require('./util').logInfo
   , logWarn = require('./util').logWarn
@@ -367,15 +368,15 @@ app.post(cfg.path.labDelete, common, hasSuper,
 
 // Referrals
 app.get(cfg.path.referralAddForm, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.referralAddForm);
+    inRoles(['attending', 'supervisor']), referral.referralAddForm);
 app.post(cfg.path.referralAdd, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.referralAddEdit);
+    inRoles(['attending', 'supervisor']), referral.referralAddEdit);
 app.get(cfg.path.referralEditForm, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.referralEditForm);
+    inRoles(['attending', 'supervisor']), referral.referralEditForm);
 app.post(cfg.path.referralEdit, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.referralAddEdit);
+    inRoles(['attending', 'supervisor']), referral.referralAddEdit);
 app.post(cfg.path.referralDelete, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.referralDelete);
+    inRoles(['attending', 'supervisor']), referral.referralDelete);
 
 
 // --------------------------------------------------------

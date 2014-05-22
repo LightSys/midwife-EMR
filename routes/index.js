@@ -6,4 +6,5 @@ module.exports = {
   , users: require('./users')
   , roles: require('./roles')
   , pregnancy: require('./pregnancy')
+  , referral: require('./referral')
 };
