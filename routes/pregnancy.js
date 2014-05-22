@@ -31,6 +31,8 @@ var _ = require('underscore')
   , LabTestValues = require('../models').LabTestValues
   , LabTestResult = require('../models').LabTestResult
   , LabTestResults = require('../models').LabTestResults
+  , Referral = require('../models').Referral
+  , Referrals = require('../models').Referrals
   , Event = require('../models').Event
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
@@ -261,6 +263,12 @@ var load = function(req, res, next) {
           // --------------------------------------------------------
           if (op === 'labedit' || op === 'labdelete') {
             req.paramLabTestResultId = id2;
+          }
+          // --------------------------------------------------------
+          // Referrals
+          // --------------------------------------------------------
+          if (op === 'referraledit' || 'referraldelete') {
+            req.paramReferralId = id2;
           }
         }
         next();
@@ -1278,6 +1286,7 @@ var labsEdit = function(req, res) {
   var data
     , suiteDefs = []
     , labResults = []
+    , referrals = []
     ;
 
   if (req.paramPregnancy) {
@@ -1316,10 +1325,25 @@ var labsEdit = function(req, res) {
             labResults.push(r);
         });
       })
+      // Get the referrals
+      .then(function() {
+        return new Referrals({pregnancy_id: req.paramPregnancy.id})
+          .fetch();
+      })
+      // Load the referrals into our list
+      .then(function(refs) {
+        var refList = [];
+        _.each(refs.toJSON(), function(ref) {
+          ref.date = moment(ref.date).format('YYYY-MM-DD');
+          refList.push(ref);
+        });
+        refList = _.sortBy(refList, 'date');
+        referrals = refList;
+      })
       // Prepare the data for the form and return it to the user.
       .then(function() {
         data = getCommonFormData(req, _.extend({title: req.gettext('Labs')},
-            {labTests: suiteDefs, labTestResults: labResults})
+            {labTests: suiteDefs, labTestResults: labResults, referrals: referrals})
         );
         return res.render('labs', data);
       })
@@ -1634,7 +1658,6 @@ var labDelete = function(req, res) {
       .destroy().then(function() {
         var path = cfg.path.pregnancyLabsEdit
           ;
-        path = path.replace(/:id2/, flds.labTestResultId);
         path = path.replace(/:id/, flds.pregnancy_id);
         logInfo('Deleted labTestResult with id: ' + flds.labTestResultId);
         req.flash('info', req.gettext('Lab Test Result was deleted.'));
@@ -1651,6 +1674,154 @@ var labDelete = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * referralAddForm()
+ *
+ * Displays the form to add a new referral.
+ * -------------------------------------------------------- */
+var referralAddForm = function(req, res) {
+  var data = {title: req.gettext('Add Referral')};
+  if (req.paramPregnancy) {
+    res.render('referralAddEditForm', getCommonFormData(req, data));
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * referralEditForm()
+ *
+ * Displays the form to edit or delete an existing referral.
+ * -------------------------------------------------------- */
+var referralEditForm = function(req, res) {
+  var data = {title: req.gettext('Edit Referral')};
+  if (req.paramPregnancy && req.paramReferralId) {
+    var refId = req.paramReferralId
+      ;
+    Referral.forge({id: refId})
+      .fetch()
+      .then(function(model) {
+        var referral = _.omit(model.toJSON(), ['updatedBy', 'updatedAt', 'supervisor'])
+          ;
+        referral.date = moment(referral.date).format('YYYY-MM-DD');
+        data.referralRec = referral;
+        res.render('referralAddEditForm', getCommonFormData(req, data));
+      })
+      .caught(function(err) {
+        logError(err);
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+};
+
+/* --------------------------------------------------------
+ * referralAddEdit()
+ *
+ * Adds new referrals to the database or updates existing
+ * referrals.
+ * -------------------------------------------------------- */
+var referralAddEdit = function(req, res) {
+  var supervisor = null
+    , flds = _.omit(req.body, ['_csrf'])
+    ;
+
+  if (req.paramPregnancy && req.body &&
+      req.paramPregnancy.id && req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    if (hasRole(req, 'attending')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    // If this is an update, set the id so that the ORM does
+    // an update rather than an insert.
+    if (req.paramReferralId) {
+      flds.id = req.paramReferralId;
+    }
+
+    // --------------------------------------------------------
+    // Insert into database after sanity check.
+    // --------------------------------------------------------
+    Referral.checkFields(flds).then(function(flds) {
+      Referral.forge(flds)
+        .setUpdatedBy(req.session.user.id)
+        .setSupervisor(supervisor)
+        .save()
+        .then(function(model) {
+          var path = cfg.path.pregnancyLabsEdit
+            ;
+          path = path.replace(/:id/, flds.pregnancy_id);
+          req.flash('info', req.gettext('Referral was saved.'));
+          res.redirect(path);
+        })
+        .caught(function(err) {
+          logError(err);
+          res.redirect(cfg.path.search);
+        });
+    })
+    .caught(function(err) {
+      logError(err);
+      res.redirect(cfg.path.search);
+    });
+
+  } else {
+    logError('Error in update of referralAddEdit(): pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
+
+
+/* --------------------------------------------------------
+ * referralDelete()
+ *
+ * Deletes a referral from the database.
+ * -------------------------------------------------------- */
+var referralDelete = function(req, res) {
+  var supervisor = null
+    , flds = req.body
+    ;
+
+  if (req.paramPregnancy && req.body &&
+      req.paramPregnancy.id && req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id &&
+      req.paramReferralId && req.body.referralId &&
+      req.body.referralId == req.paramReferralId) {
+
+    if (hasRole(req, 'attending')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    flds.referralId = parseInt(flds.referralId, 10);
+    flds.pregnancy_id = parseInt(flds.pregnancy_id, 10);
+
+    ref = new Referral({id: flds.referralId, pregnancy_id: flds.pregnancy_id});
+    ref
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .destroy().then(function() {
+        var path = cfg.path.pregnancyLabsEdit
+          ;
+        path = path.replace(/:id/, flds.pregnancy_id);
+        logInfo('Deleted Referral with id: ' + flds.referralId);
+        req.flash('info', req.gettext('Referral was deleted.'));
+        res.redirect(path);
+      })
+      .caught(function(err) {
+        logError(err);
+        // TODO: handle this better.
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    // Pregnancy not found.
+    res.redirect(cfg.path.search);
+  }
+
+};
 
 // --------------------------------------------------------
 // Initialize the module.
@@ -1686,5 +1857,9 @@ module.exports = {
   , labEditForm: labEditForm
   , labEdit: labAddEdit   // Note: uses same method as labAdd
   , labDelete: labDelete
+  , referralAddForm: referralAddForm
+  , referralAddEdit: referralAddEdit
+  , referralEditForm: referralEditForm
+  , referralDelete: referralDelete
 };
 

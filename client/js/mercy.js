@@ -83,7 +83,7 @@ $(function() {
     };
 
     /* --------------------------------------------------------
-     * handleRowClick()
+     * onClickChangeLocation()
      *
      * Curry function that handles a click event on a row in a
      * table. Expects the id attribute in the row to be in the
@@ -100,7 +100,7 @@ $(function() {
      * param       path - 'something/:id/somethingElse'
      * return      function - handles the click event
      * -------------------------------------------------------- */
-    var handleRowClick = function(path) {
+    var onClickChangeLocation = function(path) {
       return function(evt) {
         var id = evt.currentTarget.id.split('-')[1]
           , pid = evt.currentTarget.parentElement.id.split('-')[1]
@@ -130,22 +130,26 @@ $(function() {
     // Handle clicks in tables by retrieving a child page.
     // --------------------------------------------------------
     // Search results.
-    $('.searchResultsRow').click(handleRowClick('/pregnancy/:id/prenatal'));
+    $('.searchResultsRow').click(onClickChangeLocation('/pregnancy/:id/prenatal'));
 
     // Midwife Interview screen, pregnancy history.
-    $('.pregHistoryRow').click(handleRowClick('/pregnancy/:pid/preghistoryedit/:id'));
+    $('.pregHistoryRow').click(onClickChangeLocation('/pregnancy/:pid/preghistoryedit/:id'));
 
     // Prenatal screen, prenatal exams.
-    $('.prenatalExamRow').click(handleRowClick('/pregnancy/:pid/prenatalexamedit/:id'));
+    $('.prenatalExamRow').click(onClickChangeLocation('/pregnancy/:pid/prenatalexamedit/:id'));
 
     // List of users.
-    $('.userListRow').click(handleRowClick('/user/:id/edit'));
+    $('.userListRow').click(onClickChangeLocation('/user/:id/edit'));
 
     // List of roles.
-    $('.roleListRow').click(handleRowClick('/role/:id/edit'));
+    $('.roleListRow').click(onClickChangeLocation('/role/:id/edit'));
 
     // Lab tests
-    $('.labTestResultsRow').click(handleRowClick('/pregnancy/:pid/labedit/:id'));
+    $('.labTestResultsRow').click(onClickChangeLocation('/pregnancy/:pid/labedit/:id'));
+
+    // Referrals
+    $('.referralsRow').click(onClickChangeLocation('/pregnancy/:pid/referraledit/:id'));
+
 
     // --------------------------------------------------------
     // Prenatal screen: automatically pre-fill the estimated

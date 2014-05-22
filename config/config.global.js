@@ -190,6 +190,12 @@ cfg.path.labAdd = '/pregnancy/:id/labadd';    // POST
 cfg.path.labEditForm = '/pregnancy/:id/labedit/:id2';   // GET
 cfg.path.labEdit = '/pregnancy/:id/labedit/:id2';       // POST
 cfg.path.labDelete = '/pregnancy/:id/labdelete/:id2';   // POST
+cfg.path.referralAddForm = '/pregnancy/:id/referraladd';    // GET
+cfg.path.referralAdd = '/pregnancy/:id/referraladd';    // POST
+cfg.path.referralEditForm = '/pregnancy/:id/referraledit/:id2';    // GET
+cfg.path.referralEdit = '/pregnancy/:id/referraledit/:id2';    // POST
+cfg.path.referralDelete = '/pregnancy/:id/referraldelete/:id2';   // POST
+
 
 
 module.exports = cfg;

@@ -365,6 +365,18 @@ app.post(cfg.path.labEdit, common, hasSuper,
 app.post(cfg.path.labDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), pregnancy.labDelete);
 
+// Referrals
+app.get(cfg.path.referralAddForm, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.referralAddForm);
+app.post(cfg.path.referralAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.referralAddEdit);
+app.get(cfg.path.referralEditForm, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.referralEditForm);
+app.post(cfg.path.referralEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.referralAddEdit);
+app.post(cfg.path.referralDelete, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.referralDelete);
+
 
 // --------------------------------------------------------
 // The last resort.

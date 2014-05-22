@@ -24,5 +24,7 @@ module.exports = {
   , LabTestValues: require('./LabTestValue').LabTestValues
   , LabTestResult: require('./LabTestResult').LabTestResult
   , LabTestResults: require('./LabTestResult').LabTestResults
+  , Referral: require('./Referral').Referral
+  , Referrals: require('./Referral').Referrals
 };
 

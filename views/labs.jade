@@ -5,59 +5,93 @@ block labs
   +pregnancyTab('labs')
   +patientWell(rec)
 
+  // Lab tests
   - var addLabModalHeaderLabel = 'Add Lab Result';
   - var addLabPath = '/pregnancy/' + rec.id + '/labaddform';
 
+  //- Referrals
+  - referralDate = libs.mmt().format('YYYY-MM-DD');
+  - var addReferralFormPath = '/pregnancy/' + rec.id + '/referraladd';
+
   div.row
+    //- All sections on the left of the screen.
     div(class='col-md-6')
-      label= gettext('Lab Results')
-      table(id='labTestResults', class='table table-striped table-bordered table-hover table-condensed responsive')
-        thead
-          tr
-            td= gettext('Exam')
-            td= gettext('Date')
-            td= gettext('Result')
-            td= gettext('Warn')
-        - var pregId = 'pregnancyId-' + rec.id;
-        - var testDate, testWarn, testResult, labTestResultId;
-        tbody(id=pregId)
-          each ltr in labTestResults
-            - labTestResultId = 'labTestResult-' + ltr.id;
-            - testDate = ltr.testDate? libs.mmt(ltr.testDate).format('MM-DD-YYYY'): '';
-            - testWarn = ltr.warn == 1? gettext('Yes'): '';
-            - testResult = ltr.result2? ltr.result + ' - ' + ltr.result2: ltr.result;
-            tr(class='labTestResultsRow', id=labTestResultId)
-              td= ltr.name
-              td= testDate
-              td= testResult
-              td= testWarn
+      div.row
+        div(class='col-md-12')
+          label= gettext('Lab Results')
+          table(id='labTestResults', class='table table-striped table-bordered table-hover table-condensed responsive')
+            thead
+              tr
+                td= gettext('Exam')
+                td= gettext('Date')
+                td= gettext('Result')
+                td= gettext('Warn')
+            - var pregId = 'pregnancyId-' + rec.id;
+            - var testDate, testWarn, testResult, labTestResultId;
+            tbody(id=pregId)
+              each ltr in labTestResults
+                - labTestResultId = 'labTestResult-' + ltr.id;
+                - testDate = ltr.testDate? libs.mmt(ltr.testDate).format('MM-DD-YYYY'): '';
+                - testWarn = ltr.warn == 1? gettext('Yes'): '';
+                - testResult = ltr.result2? ltr.result + ' - ' + ltr.result2: ltr.result;
+                tr(class='labTestResultsRow', id=labTestResultId)
+                  td= ltr.name
+                  td= testDate
+                  td= testResult
+                  td= testWarn
 
-  //- Add Lab Test modal dialog and form.
-  div.row
-    div(class='col-md-2 col-md-offset-4')
-      form(id='addLabFormId', role='form', name='addLabForm', action=addLabPath, method='post')
-        button(class='btn btn-primary', data-toggle='modal', data-target="#addLab-modal")= gettext('Add Lab Result')
+      //- Add Lab Test modal dialog and form.
+      div.row
+        div(class='col-md-4 col-md-offset-8')
+          form(id='addLabFormId', role='form', name='addLabForm', action=addLabPath, method='post')
+            button(class='btn btn-primary', data-toggle='modal', data-target="#addLab-modal")= gettext('Add Lab Result')
 
-        div(id='addLab-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='addLabModalHeaderLabel', aria-hidden='true')
-          div(class='modal-dialog')
-            div(class='modal-content')
-              div(class='modal-header')
-                h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab test that you want.')
-              div(class='modal-body')
-                div.row
-                  div(class='col-md-4')
-                    p(class='text-info lead')= gettext('Select the lab test that you want to add.')
-                    div.form-group
-                      each suite in labTests
-                        label.radio= suite.name
-                          input(type='radio', name='suite', value=suite.id)
-                  div(class='col-md-8')
-                    each suite in labTests
-                      dl
-                        dt= suite.name
-                        dd= suite.tests.join(', ')
-              div(class='modal-footer')
-                input(type='hidden', name='_csrf', value=token)
-                input(type='hidden', name='pregnancy_id', value=rec.id)
-                button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
-                button(type='submit', class='btn btn-primary')= gettext('Add Lab')
+            div(id='addLab-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='addLabModalHeaderLabel', aria-hidden='true')
+              div(class='modal-dialog')
+                div(class='modal-content')
+                  div(class='modal-header')
+                    h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab test that you want.')
+                  div(class='modal-body')
+                    div.row
+                      div(class='col-md-4')
+                        p(class='text-info lead')= gettext('Select the lab test that you want to add.')
+                        div.form-group
+                          each suite in labTests
+                            label.radio= suite.name
+                              input(type='radio', name='suite', value=suite.id)
+                      div(class='col-md-8')
+                        each suite in labTests
+                          dl
+                            dt= suite.name
+                            dd= suite.tests.join(', ')
+                  div(class='modal-footer')
+                    input(type='hidden', name='_csrf', value=token)
+                    input(type='hidden', name='pregnancy_id', value=rec.id)
+                    button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+                    button(type='submit', class='btn btn-primary')= gettext('Add Lab')
+
+
+    //- All sections on the right of the screen.
+    div(class='col-md-6')
+      div.row
+        div(class='col-md-12')
+          label= gettext('Referrals')
+          table(id='Referrals', class='table table-striped table-bordered table-hover table-condensed responsive')
+            thead
+              tr
+                td= gettext('Date')
+                td= gettext('Referred to')
+                td= gettext('Reason')
+            - var pregId = 'pregnancyId-' + rec.id;
+            tbody(id=pregId)
+              each ref in referrals
+                tr(class='referralsRow', id='referral-'+ref.id)
+                  td= ref.date
+                  td= ref.referral
+                  td= ref.reason
+
+      //- Add Referrals button
+      div.row
+        div(class='col-md-4 col-md-offset-8')
+          a(class='btn btn-primary', href=addReferralFormPath)= gettext('Add Referral')
+
