@@ -1314,7 +1314,10 @@ var labsEdit = function(req, res) {
       })
       // Get existing labTestResult records.
       .then(function() {
-        return new LabTestResults({'pregnancy_id': req.paramPregnancy.id})
+        return new LabTestResults()
+          .query(function(qb) {
+            qb.where('pregnancy_id', '=', req.paramPregnancy.id);
+          })
           .fetch({withRelated: ['LabTest']});
       })
       // Massage the labTestResult records into the format that we want.
@@ -1327,13 +1330,14 @@ var labsEdit = function(req, res) {
       })
       // Get the referrals
       .then(function() {
-        return new Referrals({pregnancy_id: req.paramPregnancy.id})
-          .fetch();
+        return new Referrals().query()
+          .where({pregnancy_id: req.paramPregnancy.id})
+          .select();
       })
       // Load the referrals into our list
       .then(function(refs) {
         var refList = [];
-        _.each(refs.toJSON(), function(ref) {
+        _.each(refs, function(ref) {
           ref.date = moment(ref.date).format('YYYY-MM-DD');
           refList.push(ref);
         });
