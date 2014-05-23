@@ -11,19 +11,16 @@ block defaultLab
   - var warn = false;
   - var isRange = false;
   - var testDate = labTestResultDate? labTestResultDate: libs.mmt().format('YYYY-MM-DD');
-  - var labsMainPath;
   - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
-  - var labsPath;
+  - var labsPath = '/pregnancy/' + rec.id + '/labtest';
   - var labDeletePath;
   - var isUpdate = false;
   //- If labTestResultId exists, this is an edit of a specific lab test rather
   //- than the creation of a suite of lab tests.
   - if (labTestResultId) {
-  -   labsPath = '/pregnancy/' + rec.id + '/labedit/' + labTestResultId;
-  -   labDeletePath = '/pregnancy/' + rec.id + '/labdelete/' + labTestResultId;
+  -   labsPath = '/pregnancy/' + rec.id + '/labtest/' + labTestResultId;
+  -   labDeletePath = '/pregnancy/' + rec.id + '/labtest/' + labTestResultId + '/delete';
   -   isUpdate = true;
-  - } else {
-  -   labsPath = '/pregnancy/' + rec.id + '/labadd';
   - }
   - var result = result2 = null;
   form(id='addEditLabForm', role='form', name='addEditLabForm', action=labsPath, method='post')

@@ -183,13 +183,14 @@ cfg.path.pregnancyPrenatalExamAdd = '/pregnancy/:id/prenatalexamadd'; // POST
 cfg.path.pregnancyPrenatalExamEditForm = '/pregnancy/:id/prenatalexamedit/:id2'; // GET
 cfg.path.pregnancyPrenatalExamEdit = '/pregnancy/:id/prenatalexamedit/:id2'; // POST
 cfg.path.pregnancyPrenatalExamDelete = '/pregnancy/:id/prenatalexamdelete/:id2'; // POST
+// TODO: Are both of these routes used?
 cfg.path.pregnancyLabsEditForm = '/pregnancy/:id/labs';     // GET
 cfg.path.pregnancyLabsEdit = '/pregnancy/:id/labs';         // POST
-cfg.path.labAddForm = '/pregnancy/:id/labaddform';    // GET
-cfg.path.labAdd = '/pregnancy/:id/labadd';    // POST
-cfg.path.labEditForm = '/pregnancy/:id/labedit/:id2';   // GET
-cfg.path.labEdit = '/pregnancy/:id/labedit/:id2';       // POST
-cfg.path.labDelete = '/pregnancy/:id/labdelete/:id2';   // POST
+// Lab Test Results
+cfg.path.labTestAddForm = '/pregnancy/:id/labtestaddform';      // POST - a submitted form specifying the suite
+cfg.path.labTestAdd = '/pregnancy/:id/labtest';              // POST - a submitted form with new test results
+cfg.path.labTestEdit = '/pregnancy/:id/labtest/:id2';       // GET/POST
+cfg.path.labTestDelete = '/pregnancy/:id/labtest/:id2/delete';   // POST
 // Referrals
 cfg.path.referralAdd = '/pregnancy/:id/referral';       // GET/POST - create/save new referral
 cfg.path.referralEdit = '/pregnancy/:id/referral/:id2'; // GET/POST - edit/save referral

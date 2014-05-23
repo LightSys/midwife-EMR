@@ -145,7 +145,7 @@ $(function() {
     $('.roleListRow').click(onClickChangeLocation('/role/:id/edit'));
 
     // Lab tests
-    $('.labTestResultsRow').click(onClickChangeLocation('/pregnancy/:pid/labedit/:id'));
+    $('.labTestResultsRow').click(onClickChangeLocation('/pregnancy/:pid/labtest/:id'));
 
     // Referrals
     $('.referralsRow').click(onClickChangeLocation('/pregnancy/:pid/referral/:id'));

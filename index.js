@@ -30,6 +30,7 @@ var express = require('express')
   , roles = require('./routes').roles
   , pregnancy = require('./routes').pregnancy
   , referral = require('./routes').referral
+  , labs = require('./routes').labs
   , error = require('./routes').error
   , logInfo = require('./util').logInfo
   , logWarn = require('./util').logWarn
@@ -352,19 +353,21 @@ app.post(cfg.path.pregnancyPrenatalExamEdit, common, hasSuper,
 app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.prenatalExamDelete);
 
-// Labs
+// Labs main page
 app.get(cfg.path.pregnancyLabsEditForm, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.labsEdit);
-app.post(cfg.path.labAddForm, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.labAddForm);
-app.post(cfg.path.labAdd, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.labAdd);
-app.get(cfg.path.labEditForm, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.labEditForm);
-app.post(cfg.path.labEdit, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.labEdit);
-app.post(cfg.path.labDelete, common, hasSuper,
-    inRoles(['attending', 'supervisor']), pregnancy.labDelete);
+
+// Lab Tests
+app.post(cfg.path.labTestAddForm, common, hasSuper,
+    inRoles(['attending', 'supervisor']), labs.labTestAddForm);
+app.post(cfg.path.labTestAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), labs.labTestSave);
+app.get(cfg.path.labTestEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), labs.labTestEditForm);
+app.post(cfg.path.labTestEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), labs.labTestSave);
+app.post(cfg.path.labTestDelete, common, hasSuper,
+    inRoles(['attending', 'supervisor']), labs.labDelete);
 
 // Referrals
 app.get(cfg.path.referralAdd, common, hasSuper,
