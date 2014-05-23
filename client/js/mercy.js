@@ -148,7 +148,7 @@ $(function() {
     $('.labTestResultsRow').click(onClickChangeLocation('/pregnancy/:pid/labedit/:id'));
 
     // Referrals
-    $('.referralsRow').click(onClickChangeLocation('/pregnancy/:pid/referraledit/:id'));
+    $('.referralsRow').click(onClickChangeLocation('/pregnancy/:pid/referral/:id'));
 
 
     // --------------------------------------------------------

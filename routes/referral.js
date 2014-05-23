@@ -66,12 +66,12 @@ var referralEditForm = function(req, res) {
 
 
 /* --------------------------------------------------------
- * referralAddEdit()
+ * referralSave()
  *
  * Adds new referrals to the database or updates existing
  * referrals.
  * -------------------------------------------------------- */
-var referralAddEdit = function(req, res) {
+var referralSave = function(req, res) {
   var supervisor = null
     , flds = _.omit(req.body, ['_csrf'])
     ;
@@ -116,7 +116,7 @@ var referralAddEdit = function(req, res) {
     });
 
   } else {
-    logError('Error in update of referralAddEdit(): pregnancy not found.');
+    logError('Error in update of referralSave(): pregnancy not found.');
     // TODO: handle this better.
     res.redirect(cfg.path.search);
   }
@@ -173,7 +173,7 @@ var referralDelete = function(req, res) {
 module.exports = {
   referralAddForm: referralAddForm
   , referralEditForm: referralEditForm
-  , referralAddEdit: referralAddEdit
+  , referralSave: referralSave
   , referralDelete: referralDelete
 };
 

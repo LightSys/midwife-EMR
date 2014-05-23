@@ -367,14 +367,14 @@ app.post(cfg.path.labDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), pregnancy.labDelete);
 
 // Referrals
-app.get(cfg.path.referralAddForm, common, hasSuper,
+app.get(cfg.path.referralAdd, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralAddForm);
 app.post(cfg.path.referralAdd, common, hasSuper,
-    inRoles(['attending', 'supervisor']), referral.referralAddEdit);
-app.get(cfg.path.referralEditForm, common, hasSuper,
+    inRoles(['attending', 'supervisor']), referral.referralSave);
+app.get(cfg.path.referralEdit, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralEditForm);
 app.post(cfg.path.referralEdit, common, hasSuper,
-    inRoles(['attending', 'supervisor']), referral.referralAddEdit);
+    inRoles(['attending', 'supervisor']), referral.referralSave);
 app.post(cfg.path.referralDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralDelete);
 

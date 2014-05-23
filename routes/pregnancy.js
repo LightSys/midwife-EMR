@@ -152,6 +152,7 @@ var load = function(req, res, next) {
   var id = req.params.id
     , id2 = parseInt(req.params.id2, 10)
     , op = req.params.op
+    , op2 = req.params.op2
     , formatDate = function(val) {
         var d
           , formatted

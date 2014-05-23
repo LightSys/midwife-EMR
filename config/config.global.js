@@ -165,7 +165,7 @@ cfg.path.pregnancyNewForm = '/pregnancy/new';         // GET
 cfg.path.pregnancyCreate = '/pregnancy';              // POST
 cfg.path.pregnancyEditForm = '/pregnancy/:id/edit';   // GET
 cfg.path.pregnancyUpdate = '/pregnancy/:id/update';   // POST
-cfg.path.pregnancyLoad = '/pregnancy/:id/:op?/:id2?';       // parameter handling
+cfg.path.pregnancyLoad = '/pregnancy/:id/:op?/:id2?/:op2?';       // parameter handling
 cfg.path.pregnancyHistory = '/pregnancy/:id/history'; // GET
 cfg.path.pregnancyQuesEdit = '/pregnancy/:id/quesEdit';   // GET
 cfg.path.pregnancyQuesUpdate = '/pregnancy/:id/quesUpdate';   // POST
@@ -190,13 +190,10 @@ cfg.path.labAdd = '/pregnancy/:id/labadd';    // POST
 cfg.path.labEditForm = '/pregnancy/:id/labedit/:id2';   // GET
 cfg.path.labEdit = '/pregnancy/:id/labedit/:id2';       // POST
 cfg.path.labDelete = '/pregnancy/:id/labdelete/:id2';   // POST
-cfg.path.referralAddForm = '/pregnancy/:id/referraladd';    // GET
-cfg.path.referralAdd = '/pregnancy/:id/referraladd';    // POST
-cfg.path.referralEditForm = '/pregnancy/:id/referraledit/:id2';    // GET
-cfg.path.referralEdit = '/pregnancy/:id/referraledit/:id2';    // POST
-cfg.path.referralDelete = '/pregnancy/:id/referraldelete/:id2';   // POST
-
-
+// Referrals
+cfg.path.referralAdd = '/pregnancy/:id/referral';       // GET/POST - create/save new referral
+cfg.path.referralEdit = '/pregnancy/:id/referral/:id2'; // GET/POST - edit/save referral
+cfg.path.referralDelete = '/pregnancy/:id/referral/:id2/delete'; // POST - delete referral
 
 module.exports = cfg;
 
