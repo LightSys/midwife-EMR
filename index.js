@@ -307,27 +307,27 @@ app.post(cfg.path.setSuper, common, inRoles(['attending']), users.saveSupervisor
 // --------------------------------------------------------
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
 app.get(cfg.path.pregnancyNewForm, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.addForm);
+    inRoles(['clerk','attending','supervisor']), pregnancy.generalAddForm);
 app.post(cfg.path.pregnancyCreate, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.create);
+    inRoles(['clerk','attending','supervisor']), pregnancy.generalAddSave);
 app.get(cfg.path.pregnancyEditForm, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.editForm);
+    inRoles(['clerk','attending','supervisor']), pregnancy.generalEditForm);
 app.post(cfg.path.pregnancyUpdate, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.update);
+    inRoles(['clerk','attending','supervisor']), pregnancy.generalEditSave);
 app.get(cfg.path.pregnancyHistory, common,
     inRoles(['supervisor']), pregnancy.history);
 
 // Pregnancy Questionnaire
 app.get(cfg.path.pregnancyQuesEdit, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.quesEdit);
+    inRoles(['attending','supervisor']), pregnancy.questionaireForm);
 app.post(cfg.path.pregnancyQuesUpdate, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.quesUpdate);
+    inRoles(['attending','supervisor']), pregnancy.questionaireSave);
 
 // Pregnancy midwife interview
 app.get(cfg.path.pregnancyMidwifeEdit, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.midwifeEdit);
+    inRoles(['attending','supervisor']), pregnancy.midwifeForm);
 app.post(cfg.path.pregnancyMidwifeUpdate, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.midwifeUpdate);
+    inRoles(['attending','supervisor']), pregnancy.midwifeSave);
 
 // Pregnancy History
 app.get(cfg.path.pregnancyHistoryAdd, common, hasSuper,
@@ -343,9 +343,9 @@ app.post(cfg.path.pregnancyHistoryDelete, common, hasSuper,
 
 // Prenatal
 app.get(cfg.path.pregnancyPrenatalEdit, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalEdit);
+    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalForm);
 app.post(cfg.path.pregnancyPrenatalUpdate, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.prenatalUpdate);
+    inRoles(['attending','supervisor']), pregnancy.prenatalSave);
 
 // Prenatal Exams
 app.get(cfg.path.pregnancyPrenatalExamAdd, common, hasSuper,
@@ -361,7 +361,7 @@ app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
 
 // Labs main page
 app.get(cfg.path.pregnancyLabsEditForm, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.labsEdit);
+    inRoles(['attending','supervisor']), pregnancy.labsForm);
 
 // Lab Tests
 app.post(cfg.path.labTestAddForm, common, hasSuper,

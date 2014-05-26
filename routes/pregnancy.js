@@ -427,11 +427,11 @@ var getCommonFormData = function(req, addData) {
 };
 
 /* --------------------------------------------------------
- * quesEdit()
+ * questionaireForm()
  *
  * Display the pregnancy questionnaire form.
  * -------------------------------------------------------- */
-var quesEdit = function(req, res) {
+var questionaireForm = function(req, res) {
   var data = {title: req.gettext('Pregnancy Questionnaire')};
   if (req.paramPregnancy) {
     res.render('pregnancyQuestionnaire', getCommonFormData(req, data));
@@ -442,11 +442,11 @@ var quesEdit = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * quesUpdate()
+ * questionaireSave()
  *
  * Update the pregnancy record with the questionnaire data.
  * -------------------------------------------------------- */
-var quesUpdate = function(req, res) {
+var questionaireSave = function(req, res) {
   var supervisor = null
     , pregFlds = {}
     , defaultFlds = {
@@ -528,7 +528,7 @@ var quesUpdate = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * addForm()
+ * generalAddForm()
  *
  * Display the form to create a new pregnancy record.
  *
@@ -537,7 +537,7 @@ var quesUpdate = function(req, res) {
  * param       next - callback
  * return      undefined
  * -------------------------------------------------------- */
-var addForm = function(req, res) {
+var generalAddForm = function(req, res) {
   var data = {title: req.gettext('New Client Record') }
     ;
   res.render('pregnancyAddForm', getEditFormData(req, data));
@@ -582,14 +582,14 @@ var getEditFormData = function(req, addData) {
 };
 
 /* --------------------------------------------------------
- * editForm()
+ * generalEditForm()
  *
  * Displays the edit form for the pregnancy.
  *
  * param
  * return
  * -------------------------------------------------------- */
-var editForm = function(req, res) {
+var generalEditForm = function(req, res) {
   var data = {title: req.gettext('Edit Client')};
   if (req.paramPregnancy) {
     res.render('pregnancyEditForm', getEditFormData(req, data));
@@ -600,7 +600,7 @@ var editForm = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * create()
+ * generalAddSave()
  *
  * Create a new patient record and the corresponding pregnancy
  * record to go along with it. Insures that the required fields
@@ -610,7 +610,7 @@ var editForm = function(req, res) {
  * param       res
  * return      undefined
  * -------------------------------------------------------- */
-var create = function(req, res) {
+var generalAddSave = function(req, res) {
   var common = {
         updatedBy: req.session.user.id
         , supervisor: null
@@ -672,11 +672,11 @@ var create = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * update()
+ * generalEditSave()
  *
  * Update the main patient record (general information).
  * -------------------------------------------------------- */
-var update = function(req, res) {
+var generalEditSave = function(req, res) {
   var pregFlds
     , patFlds
     , dob = req.body.dob.length > 0? req.body.dob: null
@@ -731,11 +731,11 @@ var update = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * midwifeEdit()
+ * midwifeForm()
  *
  * Display the midwife interview screen.
  * -------------------------------------------------------- */
-var midwifeEdit = function(req, res) {
+var midwifeForm = function(req, res) {
   var data = getCommonFormData(req, {title: req.gettext('Midwife Interview')})
     ;
   // --------------------------------------------------------
@@ -754,12 +754,12 @@ var midwifeEdit = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * midwifeUpdate()
+ * midwifeSave()
  *
  * Update the patient, pregnancy and pregnancyHistory records
  * with changes from the midwife interview screen.
  * -------------------------------------------------------- */
-var midwifeUpdate = function(req, res) {
+var midwifeSave = function(req, res) {
   var supervisor = null
     , pregFlds = {}
     , defaultFlds = {
@@ -829,11 +829,11 @@ var midwifeUpdate = function(req, res) {
 
 
 /* --------------------------------------------------------
- * prenatalEdit()
+ * prenatalForm()
  *
  * Display the edit form for the prenatal information.
  * -------------------------------------------------------- */
-var prenatalEdit = function(req, res) {
+var prenatalForm = function(req, res) {
   var data = getCommonFormData(req, {title: req.gettext('Prenatal')})
     ;
   if (req.paramPregnancy) {
@@ -845,12 +845,12 @@ var prenatalEdit = function(req, res) {
 };
 
 /* --------------------------------------------------------
- * prenatalUpdate()
+ * prenatalSave()
  *
  * Update the high-level prenatal information about the
  * pregnancy.
  * -------------------------------------------------------- */
-var prenatalUpdate = function(req, res) {
+var prenatalSave = function(req, res) {
   var supervisor = null
     , pnFlds = {}
     , defaultFlds = {
@@ -917,12 +917,12 @@ var prenatalUpdate = function(req, res) {
 
 
 /* --------------------------------------------------------
- * labsEdit()
+ * labsForm()
  *
  * Displays the main labs page that contains many sub-sections
  * covering labs, etc.
  * -------------------------------------------------------- */
-var labsEdit = function(req, res) {
+var labsForm = function(req, res) {
   var data
     , suiteDefs = []
     , labResults = []
@@ -1009,19 +1009,19 @@ var labsEdit = function(req, res) {
 init();
 
 module.exports = {
-  addForm: addForm
-  , create: create
+  generalAddForm: generalAddForm
+  , generalAddSave: generalAddSave
+  , generalEditForm: generalEditForm
+  , generalEditSave: generalEditSave
+  , questionaireForm: questionaireForm
+  , questionaireSave: questionaireSave
+  , midwifeForm: midwifeForm
+  , midwifeSave: midwifeSave
+  , prenatalForm: prenatalForm
+  , prenatalSave: prenatalSave
+  , labsForm: labsForm
   , load: load
-  , editForm: editForm
-  , update: update
   , history: history
-  , quesEdit: quesEdit
-  , quesUpdate: quesUpdate
-  , midwifeEdit: midwifeEdit
-  , midwifeUpdate: midwifeUpdate
-  , prenatalEdit: prenatalEdit
-  , prenatalUpdate: prenatalUpdate
-  , labsEdit: labsEdit
   , getCommonFormData: getCommonFormData
 };
 
