@@ -265,7 +265,7 @@ var load = function(req, res, next) {
           // --------------------------------------------------------
           // Referrals
           // --------------------------------------------------------
-          if (op === 'referraledit' || 'referraldelete') {
+          if (op === 'referral') {
             req.paramReferralId = id2;
           }
         }
