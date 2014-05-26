@@ -133,7 +133,7 @@ $(function() {
     $('.searchResultsRow').click(onClickChangeLocation('/pregnancy/:id/prenatal'));
 
     // Midwife Interview screen, pregnancy history.
-    $('.pregHistoryRow').click(onClickChangeLocation('/pregnancy/:pid/preghistoryedit/:id'));
+    $('.pregHistoryRow').click(onClickChangeLocation('/pregnancy/:pid/preghistory/:id'));
 
     // Prenatal screen, prenatal exams.
     $('.prenatalExamRow').click(onClickChangeLocation('/pregnancy/:pid/prenatalexamedit/:id'));

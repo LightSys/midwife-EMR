@@ -171,11 +171,11 @@ cfg.path.pregnancyQuesEdit = '/pregnancy/:id/quesEdit';   // GET
 cfg.path.pregnancyQuesUpdate = '/pregnancy/:id/quesUpdate';   // POST
 cfg.path.pregnancyMidwifeEdit = '/pregnancy/:id/midwifeinterview'; // GET
 cfg.path.pregnancyMidwifeUpdate = '/pregnancy/:id/midwifeinterview'; // POST
-cfg.path.pregnancyHistoryAddForm = '/pregnancy/:id/preghistoryaddform'; // GET
-cfg.path.pregnancyHistoryAdd = '/pregnancy/:id/preghistoryadd'; // POST
-cfg.path.pregnancyHistoryEditForm = '/pregnancy/:id/preghistoryedit/:id2'; // GET
-cfg.path.pregnancyHistoryEdit = '/pregnancy/:id/preghistoryedit/:id2'; // POST
-cfg.path.pregnancyHistoryDelete = '/pregnancy/:id/preghistorydelete/:id2'; // POST
+// Pregnancy History
+cfg.path.pregnancyHistoryAdd = '/pregnancy/:id/preghistory'; // GET/POST
+cfg.path.pregnancyHistoryEdit = '/pregnancy/:id/preghistory/:id2'; // GET/POST
+cfg.path.pregnancyHistoryDelete = '/pregnancy/:id/preghistory/:id2/delete'; // POST
+
 cfg.path.pregnancyPrenatalEdit = '/pregnancy/:id/prenatal'; // GET
 cfg.path.pregnancyPrenatalUpdate = '/pregnancy/:id/prenatal'; // POST
 cfg.path.pregnancyPrenatalExamAddForm = '/pregnancy/:id/prenatalexamaddform'; // GET

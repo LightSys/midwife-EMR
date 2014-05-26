@@ -5,7 +5,7 @@ block midwifeInterview
   +pregnancyTab('midwifeinterview')
   +patientWell(rec)
 
-  - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistoryaddform';
+  - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistory';
   form(id='midwifeForm', role='form', name='midwifeInterview', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
     div.row
       div(class='form-group col-sm-3')

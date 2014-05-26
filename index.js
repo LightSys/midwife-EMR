@@ -30,6 +30,7 @@ var express = require('express')
   , roles = require('./routes').roles
   , pregnancy = require('./routes').pregnancy
   , referral = require('./routes').referral
+  , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , error = require('./routes').error
   , logInfo = require('./util').logInfo
@@ -326,16 +327,18 @@ app.get(cfg.path.pregnancyMidwifeEdit, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.midwifeEdit);
 app.post(cfg.path.pregnancyMidwifeUpdate, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.midwifeUpdate);
-app.get(cfg.path.pregnancyHistoryAddForm, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryAddForm);
+
+// Pregnancy History
+app.get(cfg.path.pregnancyHistoryAdd, common, hasSuper,
+    inRoles(['attending','supervisor']), pregnancyHistory.pregnancyHistoryAddForm);
 app.post(cfg.path.pregnancyHistoryAdd, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryAdd);
-app.get(cfg.path.pregnancyHistoryEditForm, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryEditForm);
+    inRoles(['attending','supervisor']), pregnancyHistory.pregnancyHistorySave);
+app.get(cfg.path.pregnancyHistoryEdit, common, hasSuper,
+    inRoles(['attending','supervisor']), pregnancyHistory.pregnancyHistoryEditForm);
 app.post(cfg.path.pregnancyHistoryEdit, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryEdit);
+    inRoles(['attending','supervisor']), pregnancyHistory.pregnancyHistorySave);
 app.post(cfg.path.pregnancyHistoryDelete, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.pregnancyHistoryDelete);
+    inRoles(['attending','supervisor']), pregnancyHistory.pregnancyHistoryDelete);
 
 // Prenatal
 app.get(cfg.path.pregnancyPrenatalEdit, common, hasSuper,

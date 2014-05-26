@@ -232,9 +232,8 @@ var load = function(req, res, next) {
         if (! isNaN(id2)) {
           // --------------------------------------------------------
           // Historical pregnancies.
-          // TODO: use req.route instead for this test.
           // --------------------------------------------------------
-          if (op === 'preghistoryedit' || op === 'preghistorydelete') {
+          if (op === 'preghistory') {
             req.paramPregHist = _.find(rec.pregnancyHistory, function(r) {
               return r.id === id2;
             });
@@ -385,7 +384,7 @@ var getCommonFormData = function(req, addData) {
     }
 
     // Add or edit pregnancy histories.
-    if (path === cfg.path.pregnancyHistoryAddForm) {
+    if (path === cfg.path.pregnancyHistoryAdd) {
       fg = adjustSelectData(wksMths, void(0));
       et = adjustSelectData(yesNoUnknown, void(0));
       er = adjustSelectData(yesNoUnknown, void(0));
@@ -393,7 +392,7 @@ var getCommonFormData = function(req, addData) {
       mf = adjustSelectData(maleFemale, void(0));
       at = adjustSelectData(attendant, void(0));
     }
-    if (path === cfg.path.pregnancyHistoryEditForm) {
+    if (path === cfg.path.pregnancyHistoryEdit) {
       fg = adjustSelectData(wksMths, req.paramPregHist.finalGAPeriod);
       et = adjustSelectData(yesNoUnknown, req.paramPregHist.episTear);
       er = adjustSelectData(yesNoUnknown, req.paramPregHist.repaired);
@@ -828,174 +827,6 @@ var midwifeUpdate = function(req, res) {
 
 };
 
-/* --------------------------------------------------------
- * pregnancyHistoryAddForm()
- *
- * Displays the historical pregnancy form for adding.
- * -------------------------------------------------------- */
-var pregnancyHistoryAddForm = function(req, res) {
-  var data = {title: req.gettext('Add Historical Pregnancy')};
-  if (req.paramPregnancy) {
-    res.render('midwifeInterviewAddPreg', getCommonFormData(req, data));
-  } else {
-    // Pregnancy not found.
-    res.redirect(cfg.path.search);
-  }
-};
-
-/* --------------------------------------------------------
- * pregnancyHistoryEditForm()
- *
- * Displays the historical pregnancy form for editing.
- * -------------------------------------------------------- */
-var pregnancyHistoryEditForm = function(req, res) {
-  var data = {title: req.gettext('Edit Historical Pregnancy')};
-  if (req.paramPregnancy) {
-    res.render('midwifeInterviewEditPreg', getCommonFormData(req, data));
-  } else {
-    // Pregnancy not found.
-    res.redirect(cfg.path.search);
-  }
-};
-
-/* --------------------------------------------------------
- * pregnancyHistoryEdit()
- *
- * Updates the historical pregnancy record.
- * -------------------------------------------------------- */
-var pregnancyHistoryEdit = function(req, res) {
-  var supervisor = null
-    , flds = req.body
-    , pregHistRec
-    , defaultFlds = {
-        FT: '0'
-      }
-    ;
-
-  if (req.paramPregnancy &&
-      req.body &&
-      req.paramPregnancy.id &&
-      req.body.pregnancy_id &&
-      req.paramPregnancy.id == req.body.pregnancy_id) {
-
-    if (hasRole(req, 'attending')) {
-      supervisor = req.session.supervisor.id;
-    }
-
-    // --------------------------------------------------------
-    // Allow 'unchecking' a box by providing a default of off.
-    // --------------------------------------------------------
-    flds = _.extend(defaultFlds, _.omit(flds, ['_csrf']));
-
-    pregHistRec = new PregnancyHistory(flds);
-    pregHistRec
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .save(flds, {method: 'update'}).then(function(model) {
-        var path = cfg.path.pregnancyHistoryEditForm
-          ;
-        path = path.replace(/:id/, flds.pregnancy_id);
-        path = path.replace(/:id2/, flds.id);
-        res.redirect(path);
-      })
-      .caught(function(err) {
-        logError(err);
-        // TODO: handle this better.
-        res.redirect(cfg.path.search);
-      });
-  } else {
-    logError('Error in update of pregnancyHistory: pregnancy not found.');
-    // TODO: handle this better.
-    res.redirect(cfg.path.search);
-  }
-};
-
-/* --------------------------------------------------------
- * pregnancyHistoryAdd()
- *
- * Adds a new historical pregnancy record. Called from the
- * midwife interview screen.
- * -------------------------------------------------------- */
-var pregnancyHistoryAdd = function(req, res) {
-  var supervisor = null
-    , flds = req.body
-    , pregHistRec
-    ;
-
-  if (req.paramPregnancy &&
-      req.body &&
-      req.paramPregnancy.id &&
-      req.body.pregnancy_id &&
-      req.paramPregnancy.id == req.body.pregnancy_id) {
-
-    if (hasRole(req, 'attending')) {
-      supervisor = req.session.supervisor.id;
-    }
-    pregHistRec = new PregnancyHistory(flds);
-    pregHistRec
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .save().then(function(model) {
-        res.redirect(cfg.path.pregnancyHistoryAddForm.replace(/:id/, model.get('pregnancy_id')));
-      })
-      .caught(function(err) {
-        logError(err);
-        // TODO: handle this better.
-        res.redirect(cfg.path.search);
-      });
-
-  } else {
-    logError('Error in update of pregnancyHistory: pregnancy not found.');
-    // TODO: handle this better.
-    res.redirect(cfg.path.search);
-  }
-};
-
-/* --------------------------------------------------------
- * pregnancyHistoryDelete()
- *
- * Deletes a new historical pregnancy record. Called from the
- * midwife interview screen.
- * -------------------------------------------------------- */
-var pregnancyHistoryDelete = function(req, res) {
-  var supervisor = null
-    , flds = req.body
-    , pregHistRec
-    ;
-
-  if (req.paramPregnancy &&
-      req.body &&
-      req.paramPregnancy.id &&
-      req.body.pregnancy_id &&
-      req.paramPregnancy.id == req.body.pregnancy_id) {
-
-    if (hasRole(req, 'attending')) {
-      supervisor = req.session.supervisor.id;
-    }
-    flds.id = parseInt(flds.id, 10);
-    flds.pregnancy_id = parseInt(flds.pregnancy_id, 10);
-
-    pregHistRec = new PregnancyHistory({id: flds.id, pregnancy_id: flds.pregnancy_id});
-    pregHistRec
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .destroy().then(function() {
-        var path = cfg.path.pregnancyMidwifeEdit
-          ;
-        path = path.replace(/:id/, flds.pregnancy_id);
-        res.redirect(path);
-      })
-      .caught(function(err) {
-        logError(err);
-        // TODO: handle this better.
-        res.redirect(cfg.path.search);
-      });
-  } else {
-    logError('Error in update of pregnancyHistory: pregnancy not found.');
-    // TODO: handle this better.
-    res.redirect(cfg.path.search);
-  }
-};
 
 /* --------------------------------------------------------
  * prenatalEdit()
@@ -1228,7 +1059,7 @@ var prenatalExamEdit = function(req, res) {
       });
 
   } else {
-    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    logError('Error in update of prenatalExam: pregnancy not found.');
     // TODO: handle this better.
     res.redirect(cfg.path.search);
   }
@@ -1268,7 +1099,7 @@ var prenatalExamDelete = function(req, res) {
         res.redirect(cfg.path.search);
       });
   } else {
-    logError('Error in update of pregnancyHistory: pregnancy not found.');
+    logError('Error in delete of prental exam: pregnancy not found.');
     // TODO: handle this better.
     res.redirect(cfg.path.search);
   }
@@ -1378,11 +1209,6 @@ module.exports = {
   , quesUpdate: quesUpdate
   , midwifeEdit: midwifeEdit
   , midwifeUpdate: midwifeUpdate
-  , pregnancyHistoryAddForm: pregnancyHistoryAddForm
-  , pregnancyHistoryAdd: pregnancyHistoryAdd
-  , pregnancyHistoryEditForm: pregnancyHistoryEditForm
-  , pregnancyHistoryEdit: pregnancyHistoryEdit
-  , pregnancyHistoryDelete: pregnancyHistoryDelete
   , prenatalEdit: prenatalEdit
   , prenatalUpdate: prenatalUpdate
   , prenatalExamAddForm: prenatalExamAddForm
