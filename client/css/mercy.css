@@ -42,6 +42,17 @@ h2.patient-well {
   margin-top: 0;
 }
 
+.spacing {
+  margin-top: 10px;
+  padding-top: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
+.spacing-row {
+  margin-top: 10px;
+}
+
 /* Colors */
 .navbar, .side-nav {
   background-color: #428BCA;

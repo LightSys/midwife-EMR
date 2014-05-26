@@ -188,6 +188,8 @@ var load = function(req, res, next) {
         rec.edd = formatDate(rec.edd);
         rec.alternateEdd = formatDate(rec.alternateEdd);
         rec.pregnancyEndDate = formatDate(rec.pregnancyEndDate);
+        rec.dentistConsultDate = formatDate(rec.dentistConsultDate);
+        rec.doctorConsultDate = formatDate(rec.doctorConsultDate);
 
         // --------------------------------------------------------
         // Calculate the gestational age at this point or at the
@@ -1003,6 +1005,40 @@ var labsForm = function(req, res) {
 };
 
 
+/* --------------------------------------------------------
+ * doctorDentistSave()
+ *
+ * Update the doctor and/or dentist consult date fields.
+ * -------------------------------------------------------- */
+var doctorDentistSave = function(req, res) {
+  var supervisor = null
+    , flds = _.omit(req.body, ['_csrf'])
+    ;
+
+  if (req.paramPregnancy && req.paramPregnancy.id) {
+
+    if (hasRole(req, 'attending')) {
+      supervisor = req.session.supervisor.id;
+    }
+
+    flds.id = req.paramPregnancy.id;
+    Pregnancy.forge(flds)
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .save().then(function(pregnancy) {
+        req.flash('info', req.gettext('Doctor/Dentist dates were updated.'));
+        res.redirect(cfg.path.pregnancyLabsEditForm.replace(/:id/, flds.id));
+      })
+      .caught(function(err) {
+        logError(err);
+        res.redirect(cfg.path.search);
+      });
+  } else {
+    logError('Error in update of Doctor/Dentist: pregnancy not found.');
+    res.redirect(cfg.path.search);
+  }
+};
+
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -1020,6 +1056,7 @@ module.exports = {
   , prenatalForm: prenatalForm
   , prenatalSave: prenatalSave
   , labsForm: labsForm
+  , doctorDentistSave: doctorDentistSave
   , load: load
   , history: history
   , getCommonFormData: getCommonFormData

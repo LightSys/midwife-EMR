@@ -387,6 +387,10 @@ app.post(cfg.path.referralEdit, common, hasSuper,
 app.post(cfg.path.referralDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralDelete);
 
+// Doctor and dentist consult dates
+app.post(cfg.path.docDenConsult, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnancy.doctorDentistSave);
+
 
 // --------------------------------------------------------
 // The last resort.

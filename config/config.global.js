@@ -194,6 +194,11 @@ cfg.path.labTestDelete = '/pregnancy/:id/labtest/:id2/delete';   // POST
 cfg.path.referralAdd = '/pregnancy/:id/referral';       // GET/POST - create/save new referral
 cfg.path.referralEdit = '/pregnancy/:id/referral/:id2'; // GET/POST - edit/save referral
 cfg.path.referralDelete = '/pregnancy/:id/referral/:id2/delete'; // POST - delete referral
+// Doctor/Dentist Consult dates
+cfg.path.docDenConsult = '/pregnancy/:id/doctordentist';  // POST
+
+
+
 
 module.exports = cfg;
 
