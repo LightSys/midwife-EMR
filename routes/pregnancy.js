@@ -241,7 +241,7 @@ var load = function(req, res, next) {
           // --------------------------------------------------------
           // Prenatal exams.
           // --------------------------------------------------------
-          if (op === 'prenatalexamedit' || op === 'prenatalexamdelete') {
+          if (op === 'prenatalexam') {
             req.paramPrenatalExam = _.find(rec.prenatalExam, function(p) {
               return p.id === id2;
             });
@@ -359,10 +359,10 @@ var getCommonFormData = function(req, addData) {
     }
 
     // Add or edit prenatal examinations.
-    if (path === cfg.path.pregnancyPrenatalExamAddForm) {
+    if (path === cfg.path.pregnancyPrenatalExamAdd) {
       ed = adjustSelectData(edema, void(0));
     }
-    if (path === cfg.path.pregnancyPrenatalExamEditForm) {
+    if (path === cfg.path.pregnancyPrenatalExamEdit) {
       ed = adjustSelectData(edema, req.paramPrenatalExam.edema);
       if (_.isUndefined(req.paramPrenatalExam.edema)) req.paramPrenatalExam.edema = '';
     }
@@ -915,196 +915,6 @@ var prenatalUpdate = function(req, res) {
   }
 };
 
-var prenatalExamAddForm = function(req, res) {
-  var data = {title: req.gettext('Add Prenatal Exam')};
-  if (req.paramPregnancy) {
-    res.render('prenatalAddEditExam', getCommonFormData(req, data));
-  } else {
-    // Pregnancy not found.
-    res.redirect(cfg.path.search);
-  }
-};
-
-/* --------------------------------------------------------
- * clerkPermittedFields()()
- *
- * Clerks have restrictions on which fields they can change
- * on prenatal exams. Clerks can only change these fields:
- *    weight, systolic, diastolic, date
- *
- * These fields necessarily need to have values:
- *    id, pregnancy_id, _csrf
- *
- * Therefore, only the allowed fields are returned.
- *
- * param    flds - the flds fron req.body
- * return   flds - the flds that are allowed
- * -------------------------------------------------------- */
-var clerkPermittedFields = function(flds) {
-  return _.pick(flds,
-      'weight','systolic','diastolic','date','_csrf','pregnancy_id', 'id');
-};
-
-var prenatalExamAdd = function(req, res, next) {
-  var supervisor = null
-    , flds = req.body
-    , disAllowed
-    , pass
-    , preRec
-    , unauth
-    ;
-
-  if (req.paramPregnancy &&
-      req.body &&
-      req.paramPregnancy.id &&
-      req.body.pregnancy_id &&
-      req.paramPregnancy.id == req.body.pregnancy_id) {
-
-    if (hasRole(req, 'attending')) {
-      supervisor = req.session.supervisor.id;
-    }
-
-    // --------------------------------------------------------
-    // The form should disable the fields that clerks should
-    // not change but should that fail, this check will
-    // eliminate any fields that are disallowed.
-    // --------------------------------------------------------
-    if (hasRole(req, 'clerk')) {
-      flds = clerkPermittedFields(flds);
-    }
-
-    preRec = new PrenatalExam(flds);
-    preRec
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .save(flds, {method: 'insert'}).then(function(model) {
-        var pregId = model.get('pregnancy_id');
-        req.flash('info', req.gettext('Prenatal Exam was saved.'));
-        res.redirect(cfg.path.pregnancyPrenatalEdit.replace(/:id/, pregId));
-      })
-      .caught(function(err) {
-        logError(err);
-        // TODO: handle this better.
-        res.redirect(cfg.path.search);
-      });
-
-  } else {
-    logError('Error in add of prenatal exam: pregnancy not found.');
-    // TODO: handle this better.
-    res.redirect(cfg.path.search);
-  }
-};
-
-var prenatalExamEditForm = function(req, res) {
-  var data = {title: req.gettext('Edit Prenatal Exam')};
-  if (req.paramPregnancy) {
-    res.render('prenatalAddEditExam', getCommonFormData(req, data));
-  } else {
-    // Pregnancy not found.
-    res.redirect(cfg.path.search);
-  }
-};
-
-var prenatalExamEdit = function(req, res) {
-  var supervisor = null
-    , flds = _.omit(req.body, ['_csrf'])
-    , preRec
-    , defaultFlds = {
-        mvmt: '0'
-        , edema: '0'
-        , risk: '0'
-        , vitamin: '0'
-        , pray: '0'
-      }
-    ;
-
-  if (req.paramPregnancy &&
-      req.body &&
-      req.paramPregnancy.id &&
-      req.body.pregnancy_id &&
-      req.paramPregnancy.id == req.body.pregnancy_id) {
-
-    if (hasRole(req, 'attending')) {
-      supervisor = req.session.supervisor.id;
-    }
-
-    // --------------------------------------------------------
-    // The form should disable the fields that clerks should
-    // not change but should that fail, this check will
-    // eliminate any fields that are disallowed.
-    // --------------------------------------------------------
-    if (hasRole(req, 'clerk')) {
-      flds = clerkPermittedFields(flds);
-    }
-
-    // --------------------------------------------------------
-    // Allow 'unchecking' a box by providing a default of off.
-    // --------------------------------------------------------
-    flds = _.defaults(flds, defaultFlds);
-
-    preRec = new PrenatalExam(flds);
-    preRec
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .save(flds, {patch: true, method: 'update'}).then(function(model) {
-        var path = cfg.path.pregnancyPrenatalEdit
-          ;
-        path = path.replace(/:id/, flds.pregnancy_id);
-        res.redirect(path);
-      })
-      .caught(function(err) {
-        logError(err);
-        // TODO: handle this better.
-        res.redirect(cfg.path.search);
-      });
-
-  } else {
-    logError('Error in update of prenatalExam: pregnancy not found.');
-    // TODO: handle this better.
-    res.redirect(cfg.path.search);
-  }
-};
-
-var prenatalExamDelete = function(req, res) {
-  var supervisor = null
-    , flds = req.body
-    , peRec
-    ;
-
-  if (req.paramPregnancy &&
-      req.body &&
-      req.paramPregnancy.id &&
-      req.body.pregnancy_id &&
-      req.paramPregnancy.id == req.body.pregnancy_id) {
-
-    if (hasRole(req, 'attending')) {
-      supervisor = req.session.supervisor.id;
-    }
-    flds.id = parseInt(flds.id, 10);
-    flds.pregnancy_id = parseInt(flds.pregnancy_id, 10);
-
-    peRec = new PrenatalExam({id: flds.id, pregnancy_id: flds.pregnancy_id});
-    peRec
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .destroy().then(function() {
-        var path = cfg.path.pregnancyPrenatalEdit
-          ;
-        path = path.replace(/:id/, flds.pregnancy_id);
-        res.redirect(path);
-      })
-      .caught(function(err) {
-        logError(err);
-        // TODO: handle this better.
-        res.redirect(cfg.path.search);
-      });
-  } else {
-    logError('Error in delete of prental exam: pregnancy not found.');
-    // TODO: handle this better.
-    res.redirect(cfg.path.search);
-  }
-};
-
 
 /* --------------------------------------------------------
  * labsEdit()
@@ -1211,11 +1021,6 @@ module.exports = {
   , midwifeUpdate: midwifeUpdate
   , prenatalEdit: prenatalEdit
   , prenatalUpdate: prenatalUpdate
-  , prenatalExamAddForm: prenatalExamAddForm
-  , prenatalExamAdd: prenatalExamAdd
-  , prenatalExamEditForm: prenatalExamEditForm
-  , prenatalExamEdit: prenatalExamEdit
-  , prenatalExamDelete: prenatalExamDelete
   , labsEdit: labsEdit
   , getCommonFormData: getCommonFormData
 };

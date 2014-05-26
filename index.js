@@ -32,6 +32,7 @@ var express = require('express')
   , referral = require('./routes').referral
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
+  , prenatalExam = require('./routes').prenatalExam
   , error = require('./routes').error
   , logInfo = require('./util').logInfo
   , logWarn = require('./util').logWarn
@@ -345,16 +346,18 @@ app.get(cfg.path.pregnancyPrenatalEdit, common, hasSuper,
     inRoles(['clerk','attending','supervisor']), pregnancy.prenatalEdit);
 app.post(cfg.path.pregnancyPrenatalUpdate, common, hasSuper,
     inRoles(['attending','supervisor']), pregnancy.prenatalUpdate);
-app.get(cfg.path.pregnancyPrenatalExamAddForm, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamAddForm);
+
+// Prenatal Exams
+app.get(cfg.path.pregnancyPrenatalExamAdd, common, hasSuper,
+    inRoles(['clerk','attending','supervisor']), prenatalExam.prenatalExamAddForm);
 app.post(cfg.path.pregnancyPrenatalExamAdd, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamAdd);
-app.get(cfg.path.pregnancyPrenatalExamEditForm, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamEditForm);
+    inRoles(['clerk','attending','supervisor']), prenatalExam.prenatalExamSave);
+app.get(cfg.path.pregnancyPrenatalExamEdit, common, hasSuper,
+    inRoles(['clerk','attending','supervisor']), prenatalExam.prenatalExamEditForm);
 app.post(cfg.path.pregnancyPrenatalExamEdit, common, hasSuper,
-    inRoles(['clerk','attending','supervisor']), pregnancy.prenatalExamEdit);
+    inRoles(['clerk','attending','supervisor']), prenatalExam.prenatalExamSave);
 app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.prenatalExamDelete);
+    inRoles(['attending','supervisor']), prenatalExam.prenatalExamDelete);
 
 // Labs main page
 app.get(cfg.path.pregnancyLabsEditForm, common, hasSuper,

@@ -9,4 +9,5 @@ module.exports = {
   , referral: require('./referral')
   , labs: require('./labs')
   , pregnancyHistory: require('./pregnancyHistory')
+  , prenatalExam: require('./prenatalExam')
 };

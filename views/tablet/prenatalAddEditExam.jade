@@ -11,7 +11,7 @@ block prenatalAddEditExam
   //- Default for adding a new prenatal exam.
   - var formId = 'addPrenatalExamForm';
   - var formName = 'prenatalAddExam';
-  - var formAction = '/pregnancy/' + rec.id + '/prenatalexamadd';
+  - var formAction = '/pregnancy/' + rec.id + '/prenatalexam';
   - var returnDate;
   - var ga = rec.ga;
 
@@ -19,10 +19,10 @@ block prenatalAddEditExam
   - if (prenatalExam) {
   -   formId = 'editPrenatalExamForm';
   -   formName = 'prenatalEditExam';
-  -   formAction = '/pregnancy/' + rec.id + '/prenatalexamedit/' + prenatalExam.id;
+  -   formAction = '/pregnancy/' + rec.id + '/prenatalexam/' + prenatalExam.id;
   -   defaultDate = libs.mmt(prenatalExam.date).format('YYYY-MM-DD');
   -   returnDate = libs.mmt(prenatalExam.returnDate).format('YYYY-MM-DD');
-  -   prenatalExamDeletePath = '/pregnancy/' + rec.id + '/prenatalexamdelete/' + prenatalExam.id;
+  -   prenatalExamDeletePath = '/pregnancy/' + rec.id + '/prenatalexam/' + prenatalExam.id + '/delete';
   -   ga = prenatalExam.ga;
   - } else {
   -   // So that exceptions are not thrown in value attributes below.

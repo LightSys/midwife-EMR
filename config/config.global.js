@@ -178,11 +178,10 @@ cfg.path.pregnancyHistoryDelete = '/pregnancy/:id/preghistory/:id2/delete'; // P
 
 cfg.path.pregnancyPrenatalEdit = '/pregnancy/:id/prenatal'; // GET
 cfg.path.pregnancyPrenatalUpdate = '/pregnancy/:id/prenatal'; // POST
-cfg.path.pregnancyPrenatalExamAddForm = '/pregnancy/:id/prenatalexamaddform'; // GET
-cfg.path.pregnancyPrenatalExamAdd = '/pregnancy/:id/prenatalexamadd'; // POST
-cfg.path.pregnancyPrenatalExamEditForm = '/pregnancy/:id/prenatalexamedit/:id2'; // GET
-cfg.path.pregnancyPrenatalExamEdit = '/pregnancy/:id/prenatalexamedit/:id2'; // POST
-cfg.path.pregnancyPrenatalExamDelete = '/pregnancy/:id/prenatalexamdelete/:id2'; // POST
+// Prenatal exams
+cfg.path.pregnancyPrenatalExamAdd = '/pregnancy/:id/prenatalexam'; // GET/POST
+cfg.path.pregnancyPrenatalExamEdit = '/pregnancy/:id/prenatalexam/:id2'; // GET/POST
+cfg.path.pregnancyPrenatalExamDelete = '/pregnancy/:id/prenatalexam/:id2/delete'; // POST
 // TODO: Are both of these routes used?
 cfg.path.pregnancyLabsEditForm = '/pregnancy/:id/labs';     // GET
 cfg.path.pregnancyLabsEdit = '/pregnancy/:id/labs';         // POST

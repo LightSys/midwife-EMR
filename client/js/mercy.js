@@ -136,7 +136,7 @@ $(function() {
     $('.pregHistoryRow').click(onClickChangeLocation('/pregnancy/:pid/preghistory/:id'));
 
     // Prenatal screen, prenatal exams.
-    $('.prenatalExamRow').click(onClickChangeLocation('/pregnancy/:pid/prenatalexamedit/:id'));
+    $('.prenatalExamRow').click(onClickChangeLocation('/pregnancy/:pid/prenatalexam/:id'));
 
     // List of users.
     $('.userListRow').click(onClickChangeLocation('/user/:id/edit'));
