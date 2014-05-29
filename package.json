@@ -20,6 +20,7 @@
     "node-cache": "^0.4.1",
     "passport": "~0.1.18",
     "passport-local": "~0.1.6",
+    "pdfkit": "^0.6.2",
     "recluster": "^0.3.6",
     "underscore": "~1.5.2",
     "validator": "~3.1.0"

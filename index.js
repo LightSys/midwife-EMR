@@ -34,6 +34,8 @@ var express = require('express')
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
   , error = require('./routes').error
+  , report = require('./routes').report
+  , dewormingRpt = require('./routes').dewormingRpt
   , logInfo = require('./util').logInfo
   , logWarn = require('./util').logWarn
   , logError = require('./util').logError
@@ -391,6 +393,12 @@ app.post(cfg.path.referralDelete, common, hasSuper,
 app.post(cfg.path.docDenConsult, common, hasSuper,
     inRoles(['attending', 'supervisor']), pregnancy.doctorDentistSave);
 
+
+// Reports
+app.get(cfg.path.reportForm, common, hasSuper,
+    inRoles(['supervisor', 'clerk']), report.form);
+app.post(cfg.path.reportRun, common, hasSuper,
+    inRoles(['supervisor', 'clerk']), report.run);
 
 // --------------------------------------------------------
 // The last resort.

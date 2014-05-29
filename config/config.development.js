@@ -35,6 +35,7 @@ cfg.site.languagesMap = {
 cfg.site.languages = _.keys(cfg.site.languagesMap);
 cfg.site.defaultLanguage = 'en-US';
 cfg.site.debugLanguage = 'it-CH';
+cfg.site.tmpDir = 'tmp';
 
 // --------------------------------------------------------
 // Search settings.

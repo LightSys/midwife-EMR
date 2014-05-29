@@ -41,6 +41,7 @@ cfg.users = {
 // --------------------------------------------------------
 cfg.site = {};
 cfg.site.title = gettext('Mercy Maternity');
+cfg.site.tmpDir = 'tmp';
 
 // --------------------------------------------------------
 // Host settings.

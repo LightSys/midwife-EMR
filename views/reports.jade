@@ -1,0 +1,23 @@
+extends layouts/default_layout
+
+block reportsForm
+  +titleMsg(title)
+
+  - var reportPath = '/report/run';
+
+  form(id='reportsForm', role='form', name='reportsForm', action=reportPath, method='post')
+    div.row
+      div(class='col-md-6')
+        label= gettext('Report from:')
+        input(class='form-control input-lg', type='date', tabindex="1", autocomplete="off", name='dateFrom')
+      div(class='col-md-6')
+        label= gettext('Report to:')
+        input(class='form-control input-lg', type='date', tabindex="2", autocomplete="off", name='dateTo')
+    div.row
+      div(class='col-md-6')
+        label= gettext('Select the report:')
+        +select('form-control input-lg', 'report', 3, reportType)
+    div.row
+      div(class='col-md-6')
+        input(class='btn btn-primary', type='submit', value=gettext('Run Report'))
+        input(type='hidden', name='_csrf', value=token)

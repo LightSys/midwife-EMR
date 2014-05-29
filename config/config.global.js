@@ -29,6 +29,9 @@ var cfg = {}
 // Note: any attribute that needs localization with the
 // templates needs to be added to the i18nLocals() function
 // in index.js.
+//
+// Note: tmpDir is assumed to be secure and site installations
+// should insure that this is the case.
 // --------------------------------------------------------
 cfg.site = {};
 cfg.site.title = gettext('Your Site Name');
@@ -36,6 +39,7 @@ cfg.site.languagesMap = {'en-US': 'English - Unites States', 'it-CH': 'Debugging
 cfg.site.languages = _.keys(cfg.site.languagesMap);
 cfg.site.defaultLanguage = 'en-US';
 cfg.site.debugLanguage = 'it-CH';
+cfg.site.tmpDir = 'tmp';
 
 // --------------------------------------------------------
 // Search settings.
@@ -197,6 +201,9 @@ cfg.path.referralDelete = '/pregnancy/:id/referral/:id2/delete'; // POST - delet
 // Doctor/Dentist Consult dates
 cfg.path.docDenConsult = '/pregnancy/:id/doctordentist';  // POST
 
+// Reports
+cfg.path.reportForm = '/report/form';                 // GET
+cfg.path.reportRun = '/report/run';                   // POST
 
 
 
