@@ -200,10 +200,19 @@ cfg.path.referralEdit = '/pregnancy/:id/referral/:id2'; // GET/POST - edit/save 
 cfg.path.referralDelete = '/pregnancy/:id/referral/:id2/delete'; // POST - delete referral
 // Doctor/Dentist Consult dates
 cfg.path.docDenConsult = '/pregnancy/:id/doctordentist';  // POST
+// Vaccinations
+cfg.path.vaccinationAdd = '/pregnancy/:id/vaccination';         // GET/POST
+cfg.path.vaccinationEdit = '/pregnancy/:id/vaccination/:id2';   // GET/POST
+cfg.path.vaccinationDelete = '/pregnancy/:id/vaccination/:id2/delete';  // POST
+
+
+// AJAX calls
+cfg.path.requiredTetanus = '/pregnancy/:id/requiredtetanus';    // POST
 
 // Reports
 cfg.path.reportForm = '/report/form';                 // GET
 cfg.path.reportRun = '/report/run';                   // POST
+
 
 
 

@@ -26,5 +26,9 @@ module.exports = {
   , LabTestResults: require('./LabTestResult').LabTestResults
   , Referral: require('./Referral').Referral
   , Referrals: require('./Referral').Referrals
+  , Vaccination: require('./Vaccination').Vaccination
+  , Vaccinations: require('./Vaccination').Vaccinations
+  , VaccinationType: require('./VaccinationType').VaccinationType
+  , VaccinationTypes: require('./VaccinationType').VaccinationTypes
 };
 

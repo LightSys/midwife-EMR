@@ -722,8 +722,8 @@ CREATE TRIGGER vaccination_after_insert AFTER INSERT ON vaccination
 FOR EACH ROW
 BEGIN
   INSERT INTO vaccinationLog
-  (id, vaccinationType, vacDate, vacMonth, vacYEAR, administeredInternally, note, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.vaccinationType, NEW.vacDate, NEW.vacMonth, NEW.vacYEAR, NEW.administeredInternally, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, vaccinationType, vacDate, vacMonth, vacYear, administeredInternally, note, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.vaccinationType, NEW.vacDate, NEW.vacMonth, NEW.vacYear, NEW.administeredInternally, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -736,8 +736,8 @@ CREATE TRIGGER vaccination_after_update AFTER UPDATE ON vaccination
 FOR EACH ROW
 BEGIN
   INSERT INTO vaccinationLog
-  (id, vaccinationType, vacDate, vacMonth, vacYEAR, administeredInternally, note, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.vaccinationType, NEW.vacDate, NEW.vacMonth, NEW.vacYEAR, NEW.administeredInternally, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, vaccinationType, vacDate, vacMonth, vacYear, administeredInternally, note, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.vaccinationType, NEW.vacDate, NEW.vacMonth, NEW.vacYear, NEW.administeredInternally, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -750,8 +750,8 @@ CREATE TRIGGER vaccination_after_delete AFTER DELETE ON vaccination
 FOR EACH ROW
 BEGIN
   INSERT INTO vaccinationLog
-  (id, vaccinationType, vacDate, vacMonth, vacYEAR, administeredInternally, note, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.vaccinationType, OLD.vacDate, OLD.vacMonth, OLD.vacYEAR, OLD.administeredInternally, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, vaccinationType, vacDate, vacMonth, vacYear, administeredInternally, note, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (OLD.id, OLD.vaccinationType, OLD.vacDate, OLD.vacMonth, OLD.vacYear, OLD.administeredInternally, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
  

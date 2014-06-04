@@ -10,6 +10,7 @@ module.exports = {
   , labs: require('./labs')
   , pregnancyHistory: require('./pregnancyHistory')
   , prenatalExam: require('./prenatalExam')
+  , vaccination: require('./vaccination')
   , report: require('./report')
   , dewormingRpt: require('./dewormingRpt')
 };

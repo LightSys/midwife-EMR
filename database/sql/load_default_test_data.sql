@@ -144,7 +144,17 @@ VALUES
   ('wksMths', 'Months', 'Months', 0, 1, NOW()),
   ('maleFemale', '', '', 1, 1, NOW()),
   ('maleFemale', 'F', 'Female', 0, 1, NOW()),
-  ('maleFemale', 'M', 'Male', 0, 1, NOW())
+  ('maleFemale', 'M', 'Male', 0, 1, NOW()),
+  ('internalExternal', '', '', 1, 1, NOW()),
+  ('internalExternal', 'Internal', 'Internal', 0, 1, NOW()),
+  ('internalExternal', 'External', 'External', 0, 1, NOW())
+;
+
+SELECT 'vaccinationType' AS 'Loading' FROM DUAL;
+INSERT INTO `vaccinationType`
+  (name, description, updatedBy, updatedAt)
+VALUES
+  ('Tetanus Toxoid', 'Tetanus Toxoid', 1, NOW())
 ;
 
 -- Load default tests per client specifications.

@@ -270,6 +270,12 @@ var load = function(req, res, next) {
           if (op === 'referral') {
             req.paramReferralId = id2;
           }
+          // --------------------------------------------------------
+          // Vaccinations
+          // --------------------------------------------------------
+          if (op === 'vaccination') {
+            req.paramVaccinationId = id2;
+          }
         }
         next();
       });
@@ -369,20 +375,10 @@ var getCommonFormData = function(req, addData) {
       if (_.isUndefined(req.paramPrenatalExam.edema)) req.paramPrenatalExam.edema = '';
     }
 
-    // Labs page.
-    if (path === cfg.path.pregnancyLabsEditForm) {
-
-    }
-
     // Questionnaire page.
     if (path === cfg.path.pregnancyQuesEdit) {
       us = adjustSelectData(yesNoUnanswered, req.paramPregnancy.useIodizedSalt);
       if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
-    }
-
-    // Midwife interview page.
-    if (path === cfg.path.pregnancyMidwifeEdit) {
-
     }
 
     // Add or edit pregnancy histories.
@@ -929,6 +925,7 @@ var labsForm = function(req, res) {
     , suiteDefs = []
     , labResults = []
     , referrals = []
+    , vaccinations = []
     ;
 
   if (req.paramPregnancy) {
@@ -986,10 +983,32 @@ var labsForm = function(req, res) {
         refList = _.sortBy(refList, 'date');
         referrals = refList;
       })
+      // Get the vaccinations
+      .then(function() {
+        return new Vaccinations().query()
+          .column('vaccination.id', 'vacDate', 'vacMonth', 'vacYear', 'administeredInternally', 'note')
+          .join('vaccinationType', 'vaccinationType', '=', 'vaccinationType.id')
+          .column('name', 'description')
+          .where({pregnancy_id: req.paramPregnancy.id})
+          .select();
+      })
+      // Load the vaccinations into our list
+      .then(function(vacs) {
+        var vacList = [];
+        _.each(vacs, function(vac) {
+          vac.vacDate = moment(vac.vacDate).format('YYYY-MM-DD');
+          vacList.push(vac);
+        });
+        vacList = _.sortBy(vacList, 'id');
+        vaccinations = vacList;
+      })
       // Prepare the data for the form and return it to the user.
       .then(function() {
-        data = getCommonFormData(req, _.extend({title: req.gettext('Labs')},
-            {labTests: suiteDefs, labTestResults: labResults, referrals: referrals})
+        data = getCommonFormData(
+                req,
+                _.extend({title: req.gettext('Labs')},
+                  {labTests: suiteDefs, labTestResults: labResults,
+                  referrals: referrals, vaccinations: vaccinations})
         );
         return res.render('labs', data);
       })

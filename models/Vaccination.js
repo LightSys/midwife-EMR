@@ -14,39 +14,45 @@ var moment = require('moment')
   ;
 
 /*
-CREATE TABLE `vaccinations` (
-  `administeredInternally` tinyint(1) DEFAULT '1',
-  `administeredBy` varchar(255) DEFAULT NULL,
-  `administerDate` datetime DEFAULT NULL,
-  `approxAdministerYear` int(11) DEFAULT NULL,
-  `approxAdministerMonth` enum('','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') DEFAULT '',
-  `nextDoseDate` datetime DEFAULT NULL,
+CREATE TABLE `vaccination` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `createdAt` datetime NOT NULL,
+  `vaccinationType` int(11) NOT NULL,
+  `vacDate` date DEFAULT NULL,
+  `vacMonth` tinyint(4) DEFAULT NULL,
+  `vacYEAR` int(11) DEFAULT NULL,
+  `administeredInternally` tinyint(1) NOT NULL,
+  `note` varchar(300) DEFAULT NULL,
+  `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
-  `vaccine_id` int(11) DEFAULT NULL,
-  `patient_id` int(11) DEFAULT NULL,
+  `supervisor` int(11) DEFAULT NULL,
+  `pregnancy_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `patient_id` (`patient_id`),
-  CONSTRAINT `vaccinations_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=173 DEFAULT CHARSET=latin1
+  KEY `pregnancy_id` (`pregnancy_id`),
+  KEY `vaccinationType` (`vaccinationType`),
+  KEY `updatedBy` (`updatedBy`),
+  KEY `supervisor` (`supervisor`),
+  CONSTRAINT `vaccination_ibfk_1` FOREIGN KEY (`pregnancy_id`) REFERENCES `pregnancy` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `vaccination_ibfk_2` FOREIGN KEY (`vaccinationType`) REFERENCES `vaccinationType` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `vaccination_ibfk_3` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `vaccination_ibfk_4` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1
 */
 
 Vaccination = Bookshelf.Model.extend({
-  tableName: 'vaccinations'
+  tableName: 'vaccination'
 
-  , permittedAttributes: ['administeredInternally','administeredBy','administerDate',
-            'approxAdministerYear','approxAdministerMonth','nextDoseDate','id',
-            'createdAt','updatedAt','vaccine_id','patient_id']
+  , permittedAttributes: ['id', 'vaccinationType', 'vacDate', 'vacMonth', 'vacYear',
+      'administeredInternally', 'note', 'updatedBy', 'updatedAt', 'supervisor',
+      'pregnancy_id']
 
   // --------------------------------------------------------
   // Relationships
   // --------------------------------------------------------
-  , patient: function() {
-      return this.belongsTo(Patient);
+  , pregnancy: function() {
+      return this.belongsTo(require('./Pregnancy').Pregnancy, 'pregnancy_id');
     }
-  , vaccine: function() {
-      return this.hasOne(Vaccine);
+  , vaccinationType: function() {
+      return this.belongsTo(require('./VaccinationType').VaccinationType, 'vaccinationType');
     }
 
 });

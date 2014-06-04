@@ -150,6 +150,9 @@ $(function() {
     // Referrals
     $('.referralsRow').click(onClickChangeLocation('/pregnancy/:pid/referral/:id'));
 
+    // Vaccinations
+    $('.vaccinationsRow').click(onClickChangeLocation('/pregnancy/:pid/vaccination/:id'));
+
 
     // --------------------------------------------------------
     // Prenatal screen: automatically pre-fill the estimated
@@ -168,6 +171,34 @@ $(function() {
           console.log(e);
         }
       }
+    });
+
+    // --------------------------------------------------------
+    // POST changes to the required tetanus field (radio buttons)
+    // to the server using AJAX.
+    // --------------------------------------------------------
+    $('input[name="numberRequiredTetanus"]').on('click', function(evt) {
+      var val = evt.currentTarget.value
+        , myself = $(this)
+        , recId = myself.attr('data-recId')
+        , token = myself.attr('data-token')
+        , url = '/pregnancy/' + recId + '/requiredtetanus'
+        , data = {}
+        ;
+      data._csrf = token; data.numberRequiredTetanus = val;
+      $.post(url, data, function() {
+        //console.log('Success');
+      })
+      .fail(function() {
+        alert('Sorry, unable to save the number of required tetanus.');
+        // Since the radio button has already been changed by the user now
+        // the database is out of sync. Reload the page to show the user
+        // the same thing as what is in the database or force the user
+        // to login again if that is the issue.
+        window.location.reload();
+      });
+      // Allow the radio button to select the value.
+      return true;
     });
 
 
