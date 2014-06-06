@@ -40,22 +40,25 @@ html(lang="en")
           if roleInfo.isAuthenticated
             ul(class="nav navbar-nav side-nav")
               li
-                a(href="/") <i class="fa fa-home"></i>
+                a(href="/") <i class="fa fa-fw fa-home"></i>
                   = gettext('Home')
               if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending') || roleInfo.hasRole('guard')
                 li
-                  a(href="/search") <i class="fa fa-search"></i>
+                  a(href="/search") <i class="fa fa-fw fa-search"></i>
                     = gettext('Search')
               if roleInfo.hasRole('administrator')
                 li
-                  a(href="/user") <i class="fa fa-users"></i>
+                  a(href="/user") <i class="fa fa-fw fa-users"></i>
                     = gettext('Users')
               if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')
                 li
-                  a(href="/pregnancy/new") <i class="fa fa-user-md"></i>
+                  a(href="/pregnancy/new") <i class="fa fa-fw fa-user-md"></i>
                     = gettext('New Client')
+                li
+                  a(href="/report/form") <i class="fa fa-fw fa-file-text-o"></i>
+                    = gettext('Reports')
               li
-                a(href="/logout") <i class="fa fa-power-off"></i>
+                a(href="/logout") <i class="fa fa-fw fa-power-off"></i>
                   = gettext('Logout')
 
           //- Header menu options on the right

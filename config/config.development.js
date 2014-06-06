@@ -41,7 +41,7 @@ cfg.site.tmpDir = 'tmp';
 // Search settings.
 // --------------------------------------------------------
 cfg.search = {};
-cfg.search.rowsPerPage = 5;
+cfg.search.rowsPerPage = 20;
 
 // --------------------------------------------------------
 // Host settings.

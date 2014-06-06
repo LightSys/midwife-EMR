@@ -17,6 +17,12 @@ block reportsForm
       div(class='col-md-6')
         label= gettext('Select the report:')
         +select('form-control input-lg', 'report', 3, reportType)
+      div(class='col-md-6')
+        label= gettext('Select the in-charge:')
+        +select('form-control input-lg', 'inCharge', 4, inCharge)
+    div.row
+      div(class='col-md-12')
+        &nbsp;
     div.row
       div(class='col-md-6')
         input(class='btn btn-primary', type='submit', value=gettext('Run Report'))
