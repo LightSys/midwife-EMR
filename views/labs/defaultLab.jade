@@ -10,6 +10,7 @@ block defaultLab
   - var tabIndex = 0;
   - var warn = false;
   - var isRange = false;
+  - var isText = false;
   - var testDate = labTestResultDate? labTestResultDate: libs.mmt().format('YYYY-MM-DD');
   - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
   - var labsPath = '/pregnancy/' + rec.id + '/labtest';
@@ -47,11 +48,12 @@ block defaultLab
         - normal = ! libs._.isNull(test.normal)? test.normal: gettext('None');
         - unit = ! libs._.isNull(test.unit)? test.unit: gettext('None');
         - isRange = test.isRange || false;
+        - isText = test.isText || false;
         - tabIndex += 3;
         - result = test.result;
         - result2 = test.result2;
         - warn = test.warn;
-        +labTest('md', 2, name, test.id, min, max, isRange, test.values, result, result2, tabIndex, unit, normal, warn)
+        +labTest('md', 2, name, test.id, min, max, isRange, isText, test.values, result, result2, tabIndex, unit, normal, warn)
 
     div.row
       div(class='col-md-2')

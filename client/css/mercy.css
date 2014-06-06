@@ -71,3 +71,10 @@ h2.patient-well {
   background-color: #3276B1;
   color: #FFFFFF;
 }
+
+td.table-cell-date {
+  min-width: 6em;
+}
+
+
+

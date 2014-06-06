@@ -400,6 +400,7 @@ CREATE TABLE IF NOT EXISTS `labTest` (
   minRangeInteger INT NULL,
   maxRangeInteger INT NULL,
   isRange BOOLEAN NOT NULL DEFAULT 0,
+  isText BOOLEAN NOT NULL DEFAULT 0,
   labSuite_id INT NOT NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
@@ -433,7 +434,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `labTestResult` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   testDate DATE NOT NULL,
-  result VARCHAR(100) NOT NULL,
+  result VARCHAR(500) NOT NULL,
   result2 VARCHAR(100) NULL,    -- used with labTest.isRange == true
   warn BOOLEAN NULL,
   labTest_id INT NOT NULL,

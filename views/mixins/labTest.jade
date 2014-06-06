@@ -1,4 +1,4 @@
-mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, result, result2, tabIndex, unit, normal, warn)
+mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, values, result, result2, tabIndex, unit, normal, warn)
 
   - var outerClass = 'col-' + bsDevSize + '-' + parseInt(12/numColumns);
   - var fullWidth = 'col-' + bsDevSize + '-12';
@@ -11,6 +11,7 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, re
   - var fldNameNumberLow = 'numberLow-' + testId;
   - var fldNameNumberHigh = 'numberHigh-' + testId;
   - var fldNameSelect = 'select-' + testId;
+  - var fldNameText = 'text-' + testId;
   - var fldNameWarn = 'warn-' + testId;
   - var minText = (''+min).length === 0? 'None': min
   - var maxText = (''+max).length === 0? 'None': max
@@ -25,6 +26,8 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, re
               label= gettext('Enter a number on the left OR select a value on the right.')
             - } else if (values) {
               label= gettext('Select a value from the list.')
+            - } else if (isText) {
+              label= gettext('Enter the lab results as text.')
             - } else {
               label= gettext('Enter the result as a number.')
             - }
@@ -41,6 +44,10 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, values, re
           - if (values)
             div(class=halfWidth)
               +select('form-control', fldNameSelect, tabIndex++, values)
+          - if (isText)
+            div(class=fullWidth)
+              textarea(class='form-control', rows='3', tabindex=tabIndex++, wrap='soft', name=fldNameText)= result
+
       div(class='panel-footer')
         div.row
           div(class=customWidth+'3')

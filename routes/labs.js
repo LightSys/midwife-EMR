@@ -214,6 +214,7 @@ var labTestSave = function(req, res) {
           testResults[testId].result = val;
         }
       }
+      if (fldType === 'text') testResults[testId].result = val;
     });
 
     // --------------------------------------------------------
