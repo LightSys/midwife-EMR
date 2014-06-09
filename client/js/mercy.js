@@ -153,6 +153,9 @@ $(function() {
     // Vaccinations
     $('.vaccinationsRow').click(onClickChangeLocation('/pregnancy/:pid/vaccination/:id'));
 
+    // Medications
+    $('.medicationsRow').click(onClickChangeLocation('/pregnancy/:pid/medication/:id'));
+
 
     // --------------------------------------------------------
     // Prenatal screen: automatically pre-fill the estimated

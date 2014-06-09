@@ -11,6 +11,7 @@ module.exports = {
   , pregnancyHistory: require('./pregnancyHistory')
   , prenatalExam: require('./prenatalExam')
   , vaccination: require('./vaccination')
+  , medication: require('./medication')
   , report: require('./report')
   , dewormingRpt: require('./dewormingRpt')
 };

@@ -78,7 +78,6 @@ var vaccinationEditForm = function(req, res) {
         }
         data.vaccinationRec = vaccination;
         data.vaccinationRec.vacType = vacType.get('name');
-        console.dir(data.vaccinationRec);
         res.render('vaccinationAddEditForm', getCommonFormData(req, data));
       })
       .caught(function(err) {
@@ -128,7 +127,6 @@ var vaccinationSave = function(req, res) {
     // --------------------------------------------------------
     // Handle date, year, and month combinations.
     // --------------------------------------------------------
-    console.dir(flds);
     if (flds.vacDate.length > 0 && moment(flds.vacDate).isValid()) {
       flds.vacMonth = null;
       flds.vacYear = null;

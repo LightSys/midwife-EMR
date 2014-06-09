@@ -204,6 +204,10 @@ cfg.path.docDenConsult = '/pregnancy/:id/doctordentist';  // POST
 cfg.path.vaccinationAdd = '/pregnancy/:id/vaccination';         // GET/POST
 cfg.path.vaccinationEdit = '/pregnancy/:id/vaccination/:id2';   // GET/POST
 cfg.path.vaccinationDelete = '/pregnancy/:id/vaccination/:id2/delete';  // POST
+// Medications
+cfg.path.medicationAdd = '/pregnancy/:id/medication';         // GET/POST
+cfg.path.medicationEdit = '/pregnancy/:id/medication/:id2';   // GET/POST
+cfg.path.medicationDelete = '/pregnancy/:id/medication/:id2/delete';  // POST
 
 
 // AJAX calls

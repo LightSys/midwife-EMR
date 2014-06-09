@@ -30,5 +30,9 @@ module.exports = {
   , Vaccinations: require('./Vaccination').Vaccinations
   , VaccinationType: require('./VaccinationType').VaccinationType
   , VaccinationTypes: require('./VaccinationType').VaccinationTypes
+  , Medication: require('./Medication').Medication
+  , Medications: require('./Medication').Medications
+  , MedicationType: require('./MedicationType').MedicationType
+  , MedicationTypes: require('./MedicationType').MedicationTypes
 };
 

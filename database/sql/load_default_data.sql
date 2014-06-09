@@ -147,6 +147,16 @@ VALUES
   ('Tetanus Toxoid', 'Tetanus Toxoid', 1, NOW())
 ;
 
+SELECT 'medicationType' AS 'Loading' FROM DUAL;
+INSERT INTO `medicationType`
+  (name, description, updatedBy, updatedAt)
+VALUES
+  ('Mebendazole 500mg PO', 'Mebendazole 500mg PO', 1, NOW()),
+  ('Albendazole 400mg PO', 'Albendazole 400mg PO', 1, NOW()),
+  ('Ferrous Sulfate', 'Ferrous Sulfate', 1, NOW()),
+  ('Ferrous Fumarate', 'Ferrous Fumarate', 1, NOW())
+;
+
 -- Load default tests per client specifications.
 SELECT 'labSuite' AS 'Loading' FROM DUAL;
 INSERT INTO `labSuite`

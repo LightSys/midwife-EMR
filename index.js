@@ -31,6 +31,7 @@ var express = require('express')
   , pregnancy = require('./routes').pregnancy
   , referral = require('./routes').referral
   , vaccination = require('./routes').vaccination
+  , medication = require('./routes').medication
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
@@ -405,6 +406,19 @@ app.post(cfg.path.vaccinationEdit, common, hasSuper,
     inRoles(['attending', 'supervisor']), vaccination.vaccinationSave);
 app.post(cfg.path.vaccinationDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), vaccination.vaccinationDelete);
+
+// Medications and vitamins
+app.get(cfg.path.medicationAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), medication.medicationAddForm);
+app.post(cfg.path.medicationAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), medication.medicationSave);
+app.get(cfg.path.medicationEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), medication.medicationEditForm);
+app.post(cfg.path.medicationEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), medication.medicationSave);
+app.post(cfg.path.medicationDelete, common, hasSuper,
+    inRoles(['attending', 'supervisor']), medication.medicationDelete);
+
 
 
 // AJAX Calls.

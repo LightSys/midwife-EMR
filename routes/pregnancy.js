@@ -31,6 +31,10 @@ var _ = require('underscore')
   , LabTestResults = require('../models').LabTestResults
   , Referral = require('../models').Referral
   , Referrals = require('../models').Referrals
+  , Vaccination = require('../models').Vaccination
+  , Vaccinations = require('../models').Vaccinations
+  , Medication = require('../models').Medication
+  , Medications = require('../models').Medications
   , Event = require('../models').Event
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
@@ -275,6 +279,12 @@ var load = function(req, res, next) {
           // --------------------------------------------------------
           if (op === 'vaccination') {
             req.paramVaccinationId = id2;
+          }
+          // --------------------------------------------------------
+          // Medications
+          // --------------------------------------------------------
+          if (op === 'medication') {
+            req.paramMedicationId = id2;
           }
         }
         next();
@@ -926,6 +936,7 @@ var labsForm = function(req, res) {
     , labResults = []
     , referrals = []
     , vaccinations = []
+    , medications = []
     ;
 
   if (req.paramPregnancy) {
@@ -1002,13 +1013,36 @@ var labsForm = function(req, res) {
         vacList = _.sortBy(vacList, 'id');
         vaccinations = vacList;
       })
+      // Get the medications
+      .then(function() {
+        return new Medications().query()
+          .column('medication.id', 'date', 'numberDispensed', 'note')
+          .join('medicationType', 'medicationType', '=', 'medicationType.id')
+          .column('name', 'description')
+          .where({pregnancy_id: req.paramPregnancy.id})
+          .select();
+      })
+      // Load the medications into our list
+      .then(function(meds) {
+        var medList = [];
+        _.each(meds, function(med) {
+          med.date = moment(med.date).format('YYYY-MM-DD');
+          medList.push(med);
+        });
+        medList = _.sortBy(medList, 'date');
+        medications = medList;
+      })
       // Prepare the data for the form and return it to the user.
       .then(function() {
         data = getCommonFormData(
                 req,
-                _.extend({title: req.gettext('Labs')},
-                  {labTests: suiteDefs, labTestResults: labResults,
-                  referrals: referrals, vaccinations: vaccinations})
+                _.extend({title: req.gettext('Labs')}, {
+                    labTests: suiteDefs
+                    , labTestResults: labResults
+                    , referrals: referrals
+                    , vaccinations: vaccinations
+                    , medications: medications
+                })
         );
         return res.render('labs', data);
       })
