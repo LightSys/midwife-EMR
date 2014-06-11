@@ -23,6 +23,7 @@ var form = function(req, res) {
   var data = {
         title: req.gettext('Reports')
         , user: req.session.user
+        , messages: req.flash()
       }
     ;
   // TODO: create reportType as a select instead of this hack.
