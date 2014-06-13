@@ -60,7 +60,6 @@ var prenatalExamSave = function(req, res) {
     , preRec
     , defaultFlds = {
         mvmt: '0'
-        , edema: '0'
         , risk: '0'
         , vitamin: '0'
         , pray: '0'
@@ -94,7 +93,7 @@ var prenatalExamSave = function(req, res) {
     // --------------------------------------------------------
     // If a new record, remove empty id field so ORM knows.
     // --------------------------------------------------------
-    if (flds.id.length === 0) delete flds.id;
+    if (flds.id && flds.id.length === 0) delete flds.id;
 
     preRec = new PrenatalExam(flds);
     preRec

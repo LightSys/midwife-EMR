@@ -40,7 +40,7 @@ var should = require('should')
   ;
 
 describe('Pregnancy', function(done) {
-  this.timeout(7000);
+  this.timeout(8000);
 
   before(function(done) {
     utils.loginManyAsync(request, allUserNames, allUserAgents)
@@ -351,7 +351,7 @@ describe('Pregnancy', function(done) {
     });
 
     it('clerk can display add form', function(done) {
-      var reqUrl = cfg.path.pregnancyPrenatalExamAddForm.replace(':id', pregId)
+      var reqUrl = cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
         , req = request.get(reqUrl)
         ;
       clerk.attachCookies(req);
@@ -363,7 +363,7 @@ describe('Pregnancy', function(done) {
       var fldsCfg = {
           request: request
           , agent: clerk
-          , getPath: cfg.path.pregnancyPrenatalExamAddForm.replace(':id', pregId)
+          , getPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
           , formName: 'prenatalAddExam'
           , postPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
         }
@@ -402,7 +402,7 @@ describe('Pregnancy', function(done) {
       var fldsCfg = {
           request: request
           , agent: clerk
-          , getPath: cfg.path.pregnancyPrenatalExamAddForm.replace(':id', pregId)
+          , getPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
           , formName: 'prenatalAddExam'
           , postPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
         }
@@ -452,7 +452,7 @@ describe('Pregnancy', function(done) {
     });
 
     it('clerk can display edit form', function(done) {
-      var url = cfg.path.pregnancyPrenatalExamEditForm
+      var url = cfg.path.pregnancyPrenatalExamEdit
         , reqUrl = url.replace(':id', pregId).replace(':id2', peId)
         , req = request.get(reqUrl)
         ;
@@ -462,7 +462,7 @@ describe('Pregnancy', function(done) {
     });
 
     it('clerk can update exam for bp and weight fields', function(done) {
-      var getUrl = cfg.path.pregnancyPrenatalExamEditForm
+      var getUrl = cfg.path.pregnancyPrenatalExamEdit
         , postUrl = cfg.path.pregnancyPrenatalExamEdit
         , fldsCfg = {
             request: request
@@ -523,7 +523,7 @@ describe('Pregnancy', function(done) {
     });
 
     it('clerk cannot update exam for other fields', function(done) {
-      var getUrl = cfg.path.pregnancyPrenatalExamEditForm
+      var getUrl = cfg.path.pregnancyPrenatalExamEdit
         , postUrl = cfg.path.pregnancyPrenatalExamEdit
         , fldsCfg = {
             request: request
@@ -580,7 +580,7 @@ describe('Pregnancy', function(done) {
     });
 
     it('clerk cannot delete prenatal records', function(done) {
-      var getUrl = cfg.path.pregnancyPrenatalExamEditForm
+      var getUrl = cfg.path.pregnancyPrenatalExamEdit
         , postUrl = cfg.path.pregnancyPrenatalExamDelete
         , fldsCfg = {
             request: request

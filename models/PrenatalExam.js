@@ -53,11 +53,10 @@ PrenatalExam = Bookshelf.Model.extend({
 
   , permittedAttributes: ['id', 'date', 'weight', 'systolic', 'diastolic', 'cr',
       'fh', 'fht', 'fhtNote', 'pos', 'mvmt', 'edema', 'risk', 'vitamin', 'pray',
-      'note', 'returnDate', 'checkin', 'checkout', 'chartPulled', 'updatedBy',
-      'updatedAt', 'supervisor', 'pregnancy_id']
+      'note', 'returnDate', 'updatedBy', 'updatedAt', 'supervisor', 'pregnancy_id']
 
   , initialize: function() {
-    this.on('saving', this.saving, this);
+      this.on('saving', this.saving, this);
     }
 
   , saving: function(model) {
