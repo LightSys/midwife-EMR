@@ -7,6 +7,9 @@
  */
 
 var express = require('express')
+  , http = require('http')
+  , https = require('https')
+  , url = require('url')
   , device = require('express-device')
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
@@ -185,7 +188,7 @@ app.use(function(req, res, next) {
 });
 
 // --------------------------------------------------------
-// Get the git revision as the number of commits then save 
+// Get the git revision as the number of commits then save
 // to app locals for use in the templates.
 // --------------------------------------------------------
 gitHistory().on('data', function(commit) {
@@ -448,9 +451,38 @@ if (process.env.NODE_ENV == 'test') {
   logInfo('TEST mode');
   app.listen(cfg.host.port);
 } else {
-  app.listen(cfg.host.port);
+  if (cfg.tls.key) {
+    // --------------------------------------------------------
+    // Listen for HTTPS connections.
+    // --------------------------------------------------------
+    https.createServer(cfg.tls, app).listen(cfg.host.tlsPort);
+
+    // --------------------------------------------------------
+    // Catch all incoming HTTP connections and redirect to HTTPS.
+    // --------------------------------------------------------
+    http.createServer(function(req, res) {
+      var httpsLoc = url.format({
+            protocol: 'https', hostname: cfg.host.name, port: cfg.host.tlsPort
+          })
+        ;
+      res.setHeader('Location', httpsLoc);
+      res.statusCode = 302;
+      res.end('Redirecting to ' + httpsLoc);
+    }).listen(cfg.host.port);
+
+  } else {
+    // --------------------------------------------------------
+    // HTTP only. This should not be used for production.
+    // --------------------------------------------------------
+    http.createServer(app).listen(cfg.host.port);
+  }
 }
-logInfo('Server listening on port ' + cfg.host.port);
+if (cfg.tls.key) {
+  logInfo('Server listening for HTTPS on port ' + cfg.host.tlsPort +
+      ' and redirecting port ' + cfg.host.port);
+} else {
+  logInfo('Server listening in INSECURE mode on port ' + cfg.host.port);
+}
 
 // --------------------------------------------------------
 // Exports app for the sake of testing.

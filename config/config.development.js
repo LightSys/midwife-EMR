@@ -10,7 +10,8 @@
  * -------------------------------------------------------------------------------
  */
 
-var _ = require('underscore')
+var fs = require('fs')
+  , _ = require('underscore')
   ;
 
 var cfg = require('./config.global')
@@ -47,6 +48,20 @@ cfg.search.rowsPerPage = 20;
 // Host settings.
 // --------------------------------------------------------
 cfg.host.port = 3000
+cfg.host.name = '192.168.2.199';    // must be set for TLS use.
+cfg.host.tlsPort = 4430;
+
+// --------------------------------------------------------
+// TLS settings.
+// Note that this section follows the Node API here.
+// http://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener
+// --------------------------------------------------------
+cfg.tls.key = fs.readFileSync('cert/serverKey.pem');  // Set to false to disable TLS.
+cfg.tls.cert = fs.readFileSync('cert/serverCrt.pem');
+cfg.tls.passphrase = 'ayDnv8QsX6uqJqa4APW9i7i3e';
+cfg.tls.ciphers = 'AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH';
+cfg.tls.handshakeTimeout = 120;
+cfg.tls.honorCipherOrder = true;
 
 // --------------------------------------------------------
 // Database settings.

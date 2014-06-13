@@ -8,9 +8,11 @@ Custom software for a charity maternity clinic in the Philippines. This software
 - Prenatal history
 - Prenatal questionnaire
 - Prenatal examinations
-  - Lab results (to be completed)
-  - Vaccinations (to be completed)
+  - Lab results
+  - Vaccinations
   - Prenatal measurements/notes
+  - Referrals
+  - Medicines administered
 - Search
   - exact and wildcard
 - Reports (to be completed)
@@ -27,8 +29,8 @@ Custom software for a charity maternity clinic in the Philippines. This software
 - Full logging of all changes to the database
   - All historical changes reviewable by supervisor role or admin role as
     appropriate
-- HTTPS (to be completed)
-- Tests (94 to date)
+- HTTPS (HTTP redirects to HTTPS)
+- Tests (132 to date)
 - MIT license
 
 ## Status
@@ -37,7 +39,7 @@ Alpha - development is ongoing.
 
 ## Technology
 
-- Nodejs - version v0.10.26 (or latest)
+- Nodejs - version v0.10.28 (or latest)
 - MySQL
 
 Web based and compatible with tablet browsers.
