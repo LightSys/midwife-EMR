@@ -17,24 +17,28 @@ mixin patientWell(record)
   - var stillBirths = record.stillBirths || '0';
   - var living = record.living || '0';
   - var gaText = gettext('Current GA: ') 
+  - if (! record.prenatalSchedule) record.prenatalSchedule = {};
+  - var prenatalDay = record.prenatalSchedule.day || '';
+  - var prenatalLoc = record.prenatalSchedule.location || '';
+  - var prenatalSep = prenatalDay? ' @ ': '';
   - if (record.pregnancyEndDate && record.pregnancyEndDate !== '0000-00-00') {
   -   gaText = gettext('Final GA: ');
   - }
   div(class='pregName well well-sm')
     div(class='row')
-      div(class='col-lg-5 col-md-5')
+      div(class='col-md-5')
         h2(class='patient-well')= name
-      div(class='col-lg-4 col-md-4')
+      div(class='col-md-3')
         div(class='lead')= gettext('Age: ')
           span(class='lead text-primary')= age
-          span(class='lead text-primary') &nbsp;&nbsp;(
-          span(class='lead text-primary')= dob
-          span(class='lead text-primary') )
-      div(class='col-lg-3 col-md-3')
+          span(class='small text-primary') &nbsp;&nbsp;(
+          span(class='small text-primary')= dob
+          span(class='small text-primary') )
+      div(class='col-md-4')
         div(class='lead')= gaText
           span(class='lead text-primary')= record.ga
     div(class='row')
-      div(class='col-lg-5 col-md-5')
+      div(class='col-md-5')
         span= gettext('G: ')
         strong(class='lead text-primary')= gravida
         span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -49,5 +53,12 @@ mixin patientWell(record)
         span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         span= gettext('L: ')
         strong(class='lead text-primary')= living
-      div(class='col-lg-7 col-md-7')
-        div(class='lead')= gettext('MMC: ') + dohFormatted
+      div(class='col-md-3')
+        div(class='lead')= gettext('MMC: ')
+          span(class='lead text-primary')= dohFormatted
+      div(class='col-md-4')
+        div(class='lead')= gettext('Prenatal: ')
+          span(class='small text-primary')= prenatalDay
+          span(class='small text-primary')= prenatalSep + prenatalLoc
+
+

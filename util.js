@@ -11,6 +11,15 @@ var moment = require('moment')
   , INFO = 1
   , WARN = 2
   , ERROR = 3
+  , ABBR = [
+      {key: 'Sunday', val: 'Sun'}
+      , {key: 'Monday', val: 'Mon'}
+      , {key: 'Tuesday', val: 'Tue'}
+      , {key: 'Wednesday', val: 'Wed'}
+      , {key: 'Thursday', val: 'Thu'}
+      , {key: 'Friday', val: 'Fri'}
+      , {key: 'Saturday', val: 'Sat'}
+    ]
   ;
 
 var writeLog = function(msg, logType) {
@@ -129,6 +138,25 @@ var adjustSelectData = function(list, key) {
   return newList;
 };
 
+/* --------------------------------------------------------
+ * getAbbr()
+ *
+ * Returns an abbreviation for the string passed if known,
+ * otherwise returns the string itself.
+ *
+ * TODO: store the abbreviations in the database as opposed
+ * to being hard-coded in this module.
+ *
+ * param      key
+ * return     abbreviation
+ * -------------------------------------------------------- */
+var getAbbr = function(key) {
+  var abbr = _.find(ABBR, function(obj) {return obj.key === key;})
+    ;
+  if (abbr) return abbr.val;
+  return key;
+};
+
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
@@ -136,6 +164,7 @@ module.exports = {
   , getGA: getGA
   , calcEdd: calcEdd
   , adjustSelectData: adjustSelectData
+  , getAbbr: getAbbr
 };
 
 

@@ -34,5 +34,7 @@ module.exports = {
   , Medications: require('./Medication').Medications
   , MedicationType: require('./MedicationType').MedicationType
   , MedicationTypes: require('./MedicationType').MedicationTypes
+  , Schedule: require('./Schedule').Schedule
+  , Schedules: require('./Schedule').Schedules
 };
 

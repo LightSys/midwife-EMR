@@ -81,6 +81,13 @@ block pregnancyAdd
         div(class='form-group col-sm-3')
           span= gettext('Income period')
           +select('form-control input-lg', 'partnerIncomePeriod', 21, partnerIncomePeriod)
+      div.row
+        div(class='form-group col-sm-4')
+          span= gettext('Prenatal Day')
+          +select('form-control input-lg', 'prenatalDay', 22, prenatalDay)
+        div(class='form-group col-sm-4')
+          span= gettext('Prenatal Location')
+          +select('form-control input-lg', 'prenatalLocation', 22, prenatalLocation)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))

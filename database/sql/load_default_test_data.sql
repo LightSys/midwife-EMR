@@ -147,7 +147,21 @@ VALUES
   ('maleFemale', 'M', 'Male', 0, 1, NOW()),
   ('internalExternal', '', '', 1, 1, NOW()),
   ('internalExternal', 'Internal', 'Internal', 0, 1, NOW()),
-  ('internalExternal', 'External', 'External', 0, 1, NOW())
+  ('internalExternal', 'External', 'External', 0, 1, NOW()),
+  ('location', 'Mercy', 'Mercy', 1, 1, NOW()),
+  ('location', 'Agadao', 'Agadao', 0, 1, NOW()),
+  ('location', 'Isla Verda', 'Isla Verda', 0, 1, NOW()),
+  ('location', 'Samal', 'Samal', 0, 1, NOW()),
+  ('scheduleType', '', '', 1, 1, NOW()),
+  ('scheduleType', 'Prenatal', 'Prenatal', 0, 1, NOW()),
+  ('dayOfWeek', '', '', 1, 1, NOW()),
+  ('dayOfWeek', 'Monday', 'Monday', 0, 1, NOW()),
+  ('dayOfWeek', 'Tuesday', 'Tuesday', 0, 1, NOW()),
+  ('dayOfWeek', 'Wednesday', 'Wednesday', 0, 1, NOW()),
+  ('dayOfWeek', 'Thursday', 'Thursday', 0, 1, NOW()),
+  ('dayOfWeek', 'Friday', 'Friday', 0, 1, NOW()),
+  ('dayOfWeek', 'Saturday', 'Saturday', 0, 1, NOW()),
+  ('dayOfWeek', 'Sunday', 'Sunday', 0, 1, NOW())
 ;
 
 SELECT 'vaccinationType' AS 'Loading' FROM DUAL;

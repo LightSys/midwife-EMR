@@ -11,31 +11,40 @@ block search
         div(class='col-md-6')
           div.form-group
             span= gettext('First name')
-            input(class='form-control', type='text', name='firstname')
+            input(class='form-control', type='text', tabindex='1', name='firstname')
             span.help-block= gettext('Use the % sign as a wildcard. E.g. Eliza% or %beth')
         div(class='col-md-6')
           div.form-group
             span= gettext('Last name')
-            input(class='form-control', type='text', autofocus, name='lastname')
+            input(class='form-control', type='text', autofocus, tabindex='2', name='lastname')
             span.help-block= gettext('Use the % sign as a wildcard. E.g. Weid% or %maven or Wei%en')
       div.row
         div(class='col-md-6')
           div.form-group
             span= gettext('Date of birth')
-            input(class='form-control', type='date', name='dob')
+            input(class='form-control', type='date', tabindex='3', name='dob')
         div(class='col-md-6')
           div.form-group
             span= gettext('MMC #')
-            input(class='form-control', type='number', name='doh')
+            input(class='form-control', type='number', tabindex='4', name='doh')
       div.row
         div(class='col-md-6')
           div.form-group
             span= gettext('Priority #')
-            input(class='form-control', type='number', name='priority', disabled)
+            input(class='form-control', type='number', tabindex='5', name='priority', disabled)
         div(class='col-md-6')
           div.form-group
             span= gettext('Phil health ID')
-            input(class='form-control', type='number', name='philHealth')
+            input(class='form-control', type='number', tabindex='6', name='philHealth')
+      div.row
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('Prenatal Day')
+            +select('form-control input-lg', 'prenatalDay', 7, prenatalDay)
+        div(class='col-md-6')
+          div.form-group
+            span= gettext('Prental Location')
+            +select('form-control input-lg', 'prenatalLocation', 8, prenatalLocation)
 
       div.row
         div(class='col-md-12')

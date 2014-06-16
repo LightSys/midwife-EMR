@@ -36,6 +36,15 @@ ALTER TABLE patientLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE patientLog DROP PRIMARY KEY;
 ALTER TABLE patientLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating pregnancyLog
+SELECT 'pregnancyLog' AS Creating FROM DUAL;
+CREATE TABLE pregnancyLog LIKE pregnancy;
+ALTER TABLE pregnancyLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE pregnancyLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE pregnancyLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE pregnancyLog DROP PRIMARY KEY;
+ALTER TABLE pregnancyLog ADD PRIMARY KEY (id, replacedAt);
+--
 -- Creating vaccinationTypeLog
 SELECT 'vaccinationTypeLog' AS Creating FROM DUAL;
 CREATE TABLE vaccinationTypeLog LIKE vaccinationType;
@@ -54,15 +63,6 @@ ALTER TABLE vaccinationLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE vaccinationLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE vaccinationLog DROP PRIMARY KEY;
 ALTER TABLE vaccinationLog ADD PRIMARY KEY (id, replacedAt);
---
--- Creating pregnancyLog
-SELECT 'pregnancyLog' AS Creating FROM DUAL;
-CREATE TABLE pregnancyLog LIKE pregnancy;
-ALTER TABLE pregnancyLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE pregnancyLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE pregnancyLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE pregnancyLog DROP PRIMARY KEY;
-ALTER TABLE pregnancyLog ADD PRIMARY KEY (id, replacedAt);
 --
 -- Creating healthTeachingLog
 SELECT 'healthTeachingLog' AS Creating FROM DUAL;
@@ -178,4 +178,13 @@ ALTER TABLE selectDataLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE selectDataLog DROP PRIMARY KEY;
 ALTER TABLE selectDataLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE selectDataLog DROP KEY name;
+--
+-- Creating scheduleLog
+SELECT 'scheduleLog' AS Creating FROM DUAL;
+CREATE TABLE scheduleLog LIKE schedule;
+ALTER TABLE scheduleLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE scheduleLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE scheduleLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE scheduleLog DROP PRIMARY KEY;
+ALTER TABLE scheduleLog ADD PRIMARY KEY (id, replacedAt);
 --

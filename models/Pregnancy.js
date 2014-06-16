@@ -191,6 +191,10 @@ Pregnancy = Bookshelf.Model.extend({
       return this.hasMany(require('./Vaccination').Vaccination, 'pregnancy_id');
   }
 
+  , schedule: function() {
+      return this.hasMany(require('./Schedule').Schedule, 'pregnancy_id');
+  }
+
 }, {
   // --------------------------------------------------------
   // Class Properties.

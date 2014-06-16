@@ -588,6 +588,48 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: schedule_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS schedule_after_insert;
+CREATE TRIGGER schedule_after_insert AFTER INSERT ON schedule
+FOR EACH ROW
+BEGIN
+  INSERT INTO scheduleLog
+  (id, pregnancy_id, scheduleType, location, day, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.pregnancy_id, NEW.scheduleType, NEW.location, NEW.day, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: schedule_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS schedule_after_update;
+CREATE TRIGGER schedule_after_update AFTER UPDATE ON schedule
+FOR EACH ROW
+BEGIN
+  INSERT INTO scheduleLog
+  (id, pregnancy_id, scheduleType, location, day, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.pregnancy_id, NEW.scheduleType, NEW.location, NEW.day, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: schedule_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS schedule_after_delete;
+CREATE TRIGGER schedule_after_delete AFTER DELETE ON schedule
+FOR EACH ROW
+BEGIN
+  INSERT INTO scheduleLog
+  (id, pregnancy_id, scheduleType, location, day, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.pregnancy_id, OLD.scheduleType, OLD.location, OLD.day, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: selectData_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

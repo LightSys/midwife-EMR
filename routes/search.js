@@ -11,17 +11,63 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
+  , SelectData = require('../models').SelectData
   , cfg = require('../config')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   ;
 
+/* --------------------------------------------------------
+ * view()
+ *
+ * Display the search form.
+ * -------------------------------------------------------- */
 var view = function(req, res) {
-  res.render('search', {
-    title: req.gettext('Pregnancy Search')
-    , user: req.session.user
-  });
+  var location
+    , dayOfWeek
+    , refresh = function(dataName) {
+        return new Promise(function(resolve, reject) {
+          SelectData.getSelect(dataName)
+            .then(function(list) {
+              resolve(list);
+            })
+            .caught(function(err) {
+              err.status = 500;
+              reject(err);
+            });
+        });
+      }
+    ;
+
+  refresh('location')
+    .then(function(list) {
+      var l
+        ;
+      // --------------------------------------------------------
+      // Insert an empty record as a default after unsetting the
+      // current default.
+      // --------------------------------------------------------
+      l = _.map(list, function(obj) {obj.selected = false; return obj;})
+      l.unshift({ selectKey: '', label: '', selected: true });
+      location = l;
+    })
+    .then(function() {
+      refresh('dayOfWeek')
+        .then(function(list) {
+          // --------------------------------------------------------
+          // Insert an empty record as a default.
+          // --------------------------------------------------------
+          list.unshift({ selectKey: '', label: '', selected: true });
+          dayOfWeek = list;
+          res.render('search', {
+            title: req.gettext('Pregnancy Search')
+            , user: req.session.user
+            , prenatalDay: dayOfWeek
+            , prenatalLocation: location
+          });
+        });
+    });
 };
 
 /* --------------------------------------------------------
@@ -91,6 +137,12 @@ var execute = function(req, res) {
   if (flds.dob && flds.dob.length > 0) qb.where('dob', otherOp, flds.dob);
   if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', otherOp, flds.doh);
   if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', otherOp, flds.philHealth);
+  if (flds.prenatalDay.length > 0 || flds.prenatalLocation.length > 0) {
+    qb.join('schedule', 'schedule.pregnancy_id', '=', 'pregnancy.id');
+    qb.where('schedule.scheduleType', '=', 'Prenatal');
+    if (flds.prenatalDay.length > 0) qb.andWhere('schedule.day', '=', flds.prenatalDay);
+    if (flds.prenatalLocation.length > 0) qb.andWhere('schedule.location', '=', flds.prenatalLocation);
+  }
   qb
     .limit(rowsPerPage)
     .offset((rowsPerPage * (pageNum-1)))

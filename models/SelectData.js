@@ -80,7 +80,9 @@ SelectData = Bookshelf.Model.extend({
     return new Promise(function(resolve, reject) {
       var query = new SelectData().query()
         ;
-      query.where('name', '=', name)
+      query
+        .where('name', '=', name)
+        .orderBy('id', 'asc')   // order by the order loaded into selectData
         .select()
         .then(function(records) {
           var recs = _.map(records, function(rec) {

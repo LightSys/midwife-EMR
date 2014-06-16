@@ -36,10 +36,13 @@ var _ = require('underscore')
   , Medication = require('../models').Medication
   , Medications = require('../models').Medications
   , Event = require('../models').Event
+  , Schedule = require('../models').Schedule
+  , Schedules = require('../models').Schedules
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , getGA = require('../util').getGA
+  , getAbbr = require('../util').getAbbr
   , calcEdd = require('../util').calcEdd
   , adjustSelectData = require('../util').adjustSelectData
   , maritalStatus = []
@@ -57,6 +60,8 @@ var _ = require('underscore')
   , wksMthsYrs = []
   , wksMths = []
   , maleFemale = []
+  , location = []
+  , dayOfWeek = []
   ;
 
 /* --------------------------------------------------------
@@ -82,6 +87,8 @@ var init = function() {
     , wksMthsYrsName = 'wksMthsYrs'
     , wksMthsName = 'wksMths'
     , maleFemaleName = 'maleFemale'
+    , locationName = 'location'
+    , dayOfWeekName = 'dayOfWeek'
     , interval = cfg.data.selectRefreshInterval
   ;
 
@@ -136,6 +143,8 @@ var init = function() {
   doRefresh(wksMthsYrsName, function(l) {wksMthsYrs = l;});
   doRefresh(wksMthsName, function(l) {wksMths = l;});
   doRefresh(maleFemaleName, function(l) {maleFemale = l;});
+  doRefresh(locationName, function(l) {location = l;});
+  doRefresh(dayOfWeekName, function(l) {dayOfWeek = l;});
 };
 
 /* --------------------------------------------------------
@@ -178,7 +187,8 @@ var load = function(req, res, next) {
               qb.orderBy('month', 'asc');
             }
           }
-        , 'prenatalExam']})
+        , 'prenatalExam'
+        , 'schedule']})
       .then(function(rec) {
         if (! rec) return next();
         rec = rec.toJSON();
@@ -343,6 +353,7 @@ var history = function(req, res) {
  * -------------------------------------------------------- */
 var getCommonFormData = function(req, addData) {
  var path = req.route.path
+   , schRec
    , ed   // edema
    , rp   // riskPresent
    , ro   // riskObHx
@@ -362,6 +373,19 @@ var getCommonFormData = function(req, addData) {
   // Load select data for the various pages as per the route.
   // --------------------------------------------------------
   if (req.paramPregnancy) {
+
+    // --------------------------------------------------------
+    // Store the prenatal scheduling for the client in the record.
+    // --------------------------------------------------------
+    schRec = _.find(req.paramPregnancy.schedule, function(obj) {
+      return obj.scheduleType === 'Prenatal';
+    });
+    if (schRec) {
+      req.paramPregnancy.prenatalSchedule = {
+        day: getAbbr(schRec.day)
+        , location: schRec.location
+      };
+    } else {req.paramPregnancy.prenatalSchedule = {};}
 
     // Prenatal page.
     if (path === cfg.path.pregnancyPrenatalEdit) {
@@ -554,6 +578,9 @@ var generalAddForm = function(req, res) {
 /* --------------------------------------------------------
  * getEditFormData()
  *
+ * TODO: refactor to use getCommonFormData() instead of this
+ * function.
+ *
  * Returns an object representing the data that is rendered
  * when the edit form is displayed. Expects the caller to
  * pass the key/value pair for title in addData.
@@ -575,7 +602,29 @@ var getEditFormData = function(req, addData) {
         req.paramPregnancy? req.paramPregnancy.clientIncomePeriod: void(0))
     , partnerInc = adjustSelectData(incomePeriod,
         req.paramPregnancy? req.paramPregnancy.partnerIncomePeriod: void(0))
+    , schRec
+    , prenatalDay = adjustSelectData(dayOfWeek, void(0))
+    , prenatalLoc = adjustSelectData(location, void(0))
     ;
+
+  // --------------------------------------------------------
+  // Store the prenatal scheduling for the client in the record.
+  // --------------------------------------------------------
+  if (req.paramPregnancy) {
+    schRec = _.find(req.paramPregnancy.schedule, function(obj) {
+      return obj.scheduleType === 'Prenatal';
+    });
+    if (schRec) {
+      req.paramPregnancy.prenatalSchedule = {
+        id: schRec.id
+        , day: getAbbr(schRec.day)
+        , location: schRec.location
+      };
+      prenatalDay = adjustSelectData(dayOfWeek, schRec.day);
+      prenatalLoc = adjustSelectData(location, req.paramPregnancy.prenatalSchedule.location);
+    } else {req.paramPregnancy.prenatalSchedule = {};}
+  }
+
   return _.extend(addData, {
     user: req.session.user
     , messages: req.flash()
@@ -585,6 +634,8 @@ var getEditFormData = function(req, addData) {
     , partnerEducation: partEdu
     , clientIncomePeriod: clientInc
     , partnerIncomePeriod: partnerInc
+    , prenatalLocation: prenatalLoc
+    , prenatalDay: prenatalDay
     , rec: req.paramPregnancy
   });
 };
@@ -625,8 +676,11 @@ var generalAddSave = function(req, res) {
       }
     , dob = req.body.dob.length > 0? req.body.dob: null
     , doh = req.body.doh.length > 0? req.body.doh: null
+    , prenatalLoc = req.body.prenatalLocation.length > 0? req.body.prenatalLocation: null
+    , prenatalDay = req.body.prenatalDay.length > 0? req.body.prenatalDay: null
     , pregFlds = _.omit(req.body, ['_csrf', 'dob'])
     , patFlds = {}
+    , schFlds = {}
     ;
 
   if (hasRole(req, 'attending')) {
@@ -634,6 +688,7 @@ var generalAddSave = function(req, res) {
   }
   pregFlds = _.extend(pregFlds, common);
   patFlds = _.extend(common, {dob: dob, dohID: doh});
+  schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
 
   // --------------------------------------------------------
   // Validate the fields.
@@ -659,8 +714,15 @@ var generalAddSave = function(req, res) {
             .setSupervisor(common.supervisor)
             .save()
             .then(function(pregnancy) {
-              req.flash('info', req.gettext('Pregnancy was created.'));
-              res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, pregnancy.get('id')));
+              schFlds.pregnancy_id = pregnancy.get('id');
+              Schedule
+                .forge(schFlds)
+                .setUpdatedBy(req.session.user.id)
+                .setSupervisor(common.supervisor)
+                .save().then(function() {
+                  req.flash('info', req.gettext('Pregnancy was created.'));
+                  res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, pregnancy.get('id')));
+                });
             })
             .caught(function(e) {
               logError('Error saving pregnancy record. Orphan patient record id: ' + patient.get('id'));
@@ -687,8 +749,12 @@ var generalAddSave = function(req, res) {
 var generalEditSave = function(req, res) {
   var pregFlds
     , patFlds
+    , schFlds
     , dob = req.body.dob.length > 0? req.body.dob: null
     , doh = req.body.doh.length > 0? req.body.doh: null
+    , prenatalLoc = req.body.prenatalLocation.length > 0? req.body.prenatalLocation: null
+    , prenatalDay = req.body.prenatalDay.length > 0? req.body.prenatalDay: null
+    , scheduleId = req.body.scheduleId.length > 0? req.body.scheduleId: null
     , supervisor = null;
     ;
   if (req.paramPregnancy &&
@@ -700,26 +766,36 @@ var generalEditSave = function(req, res) {
     if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
-    pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority']);
+    pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority',
+        'prenatalDay', 'prenatalLocation']);
     patFlds = {dohID: doh, dob: dob};
     patFlds = _.extend(patFlds, {id: req.paramPregnancy.patient_id});
+    schFlds = {scheduleType: 'Prenatal', location: prenatalLoc,
+      day: prenatalDay, pregnancy_id: req.paramPregnancy.id};
+    if (scheduleId !== null) schFlds.id = scheduleId;
     Pregnancy.checkFields(pregFlds).then(function(flds) {
       Pregnancy.forge(flds)
         .setUpdatedBy(req.session.user.id)
         .setSupervisor(supervisor)
         .save().then(function() {
-          Patient
-            .forge(patFlds)
+          Schedule
+            .forge(schFlds)
             .setUpdatedBy(req.session.user.id)
             .setSupervisor(supervisor)
-            .save()
-            .then(function(patient) {
-              req.flash('info', req.gettext('Pregnancy was updated.'));
-              res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, flds.id));
-            })
-            .caught(function(err) {
-              logError(err);
-              res.redirect(cfg.path.search);
+            .save().then(function() {
+              Patient
+                .forge(patFlds)
+                .setUpdatedBy(req.session.user.id)
+                .setSupervisor(supervisor)
+                .save()
+                .then(function(patient) {
+                  req.flash('info', req.gettext('Pregnancy was updated.'));
+                  res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, flds.id));
+                })
+                .caught(function(err) {
+                  logError(err);
+                  res.redirect(cfg.path.search);
+                });
             });
       })
       .caught(function(err) {
