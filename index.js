@@ -48,6 +48,7 @@ var express = require('express')
   , attending = []
   , revision = 0
   , tmpRevision = 0
+  , useSecureCookie = cfg.tls.key || false;
   ;
 
 // --------------------------------------------------------
@@ -104,7 +105,7 @@ app.use(express.methodOverride());
 app.use(express.cookieParser(cfg.cookie.secret));
 app.use(express.session({
   secret: cfg.session.secret
-  , cookie: {maxAge: cfg.cookie.maxAge}
+  , cookie: {maxAge: cfg.cookie.maxAge, secure: useSecureCookie}
   , store: new SessionStore(cfg.session)
 }));
 app.use(express.bodyParser());
