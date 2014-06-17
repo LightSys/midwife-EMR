@@ -1055,9 +1055,7 @@ var labsForm = function(req, res) {
             r.name = result.LabTest.name;
             ltests.push(r);
         });
-        labResults = _.sortBy(ltests, function(obj) {
-          return obj.testDate;
-        });
+        labResults = _.sortBy(ltests, 'testDate');
       })
       // Get the referrals
       .then(function() {
@@ -1068,11 +1066,10 @@ var labsForm = function(req, res) {
       // Load the referrals into our list
       .then(function(refs) {
         var refList = [];
-        _.each(refs, function(ref) {
-          ref.date = moment(ref.date).format('YYYY-MM-DD');
-          refList.push(ref);
+        refList = _.sortBy(refs, 'date')
+        _.each(refList, function(ref) {
+          ref.date = moment(ref.date).format('MM-DD-YYYY');
         });
-        refList = _.sortBy(refList, 'date');
         referrals = refList;
       })
       // Get the vaccinations
