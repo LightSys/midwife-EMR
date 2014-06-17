@@ -1048,10 +1048,15 @@ var labsForm = function(req, res) {
       })
       // Massage the labTestResult records into the format that we want.
       .then(function(ltResults) {
+        var ltests = []
+          ;
         _.each(ltResults.toJSON(), function(result) {
             var r = _.omit(result, ['updatedBy','updatedAt','supervisor','LabTest']);
             r.name = result.LabTest.name;
-            labResults.push(r);
+            ltests.push(r);
+        });
+        labResults = _.sortBy(ltests, function(obj) {
+          return obj.testDate;
         });
       })
       // Get the referrals
