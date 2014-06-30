@@ -470,8 +470,8 @@ CREATE TRIGGER priority_after_insert AFTER INSERT ON priority
 FOR EACH ROW
 BEGIN
   INSERT INTO priorityLog
-  (id, eType, priority, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.eType, NEW.priority, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, eType, priority, barcode, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.eType, NEW.priority, NEW.barcode, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -484,8 +484,8 @@ CREATE TRIGGER priority_after_update AFTER UPDATE ON priority
 FOR EACH ROW
 BEGIN
   INSERT INTO priorityLog
-  (id, eType, priority, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.eType, NEW.priority, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, eType, priority, barcode, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.eType, NEW.priority, NEW.barcode, NEW.assigned, NEW.pregnancy_id, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -498,8 +498,8 @@ CREATE TRIGGER priority_after_delete AFTER DELETE ON priority
 FOR EACH ROW
 BEGIN
   INSERT INTO priorityLog
-  (id, eType, priority, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.eType, OLD.priority, OLD.assigned, OLD.pregnancy_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, eType, priority, barcode, assigned, pregnancy_id, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.eType, OLD.priority, OLD.barcode, OLD.assigned, OLD.pregnancy_id, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -596,8 +596,8 @@ CREATE TRIGGER schedule_after_insert AFTER INSERT ON schedule
 FOR EACH ROW
 BEGIN
   INSERT INTO scheduleLog
-  (id, pregnancy_id, scheduleType, location, day, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.pregnancy_id, NEW.scheduleType, NEW.location, NEW.day, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, scheduleType, location, day, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.scheduleType, NEW.location, NEW.day, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -610,8 +610,8 @@ CREATE TRIGGER schedule_after_update AFTER UPDATE ON schedule
 FOR EACH ROW
 BEGIN
   INSERT INTO scheduleLog
-  (id, pregnancy_id, scheduleType, location, day, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.pregnancy_id, NEW.scheduleType, NEW.location, NEW.day, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, scheduleType, location, day, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.scheduleType, NEW.location, NEW.day, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -624,8 +624,8 @@ CREATE TRIGGER schedule_after_delete AFTER DELETE ON schedule
 FOR EACH ROW
 BEGIN
   INSERT INTO scheduleLog
-  (id, pregnancy_id, scheduleType, location, day, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.pregnancy_id, OLD.scheduleType, OLD.location, OLD.day, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, scheduleType, location, day, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (OLD.id, OLD.scheduleType, OLD.location, OLD.day, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
  

@@ -40,7 +40,7 @@ VALUES
   ('logout', 'A user logged out'),
   ('supervisor', 'A user set a supervisor'),
   ('history', 'A user viewed changes from log tables'),
-  ('prenatalCheckin', 'Client checkin for a prenatal exam.'),
+  ('prenatalCheckIn', 'Client checkin for a prenatal exam.'),
   ('prenatalCheckOut', 'Client checkout of a prenatal exam.'),
   ('prenatalChartPulled', 'Chart pulled for a prental exam.')
 ;

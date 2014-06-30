@@ -57,6 +57,7 @@ do
     if [ $ut = $lt ]
     then
       echo "ALTER TABLE $lt DROP KEY priority;"
+      echo "ALTER TABLE $lt DROP KEY barcode;"
     fi
   done
   for ut in $uniq_labTestId_tbls

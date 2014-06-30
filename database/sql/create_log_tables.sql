@@ -110,6 +110,7 @@ ALTER TABLE priorityLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE priorityLog DROP PRIMARY KEY;
 ALTER TABLE priorityLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE priorityLog DROP KEY priority;
+ALTER TABLE priorityLog DROP KEY barcode;
 --
 -- Creating prenatalExamLog
 SELECT 'prenatalExamLog' AS Creating FROM DUAL;

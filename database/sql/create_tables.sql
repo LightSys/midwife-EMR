@@ -40,7 +40,7 @@ SHOW WARNINGS;
 
 -- Many-to-many join table for user and role.
 -- Notes:
--- 2014-01-22: updatedBy field allows NULL because the orm (Bookshelf) 
+-- 2014-01-22: updatedBy field allows NULL because the orm (Bookshelf)
 -- presently cannot handle updating an extra field in a many-to-many join table.
 CREATE TABLE IF NOT EXISTS `user_role` (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -330,12 +330,14 @@ CREATE TABLE IF NOT EXISTS `priority` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   eType INT NOT NULL,
   priority INT NOT NULL,
+  barcode INT NOT NULL,
   assigned DATETIME NULL,
   pregnancy_id INT NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
   UNIQUE (priority, eType),
+  UNIQUE (barcode),
   FOREIGN KEY (eType) REFERENCES eventType (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
