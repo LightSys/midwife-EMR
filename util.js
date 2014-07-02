@@ -139,6 +139,31 @@ var adjustSelectData = function(list, key) {
 };
 
 /* --------------------------------------------------------
+ * addBlankSelectData()
+ *
+ * Adds a blank select data record to the beginning of the
+ * select data list passed. This allows a select in a form
+ * to be unselected until the user decides to select something.
+ *
+ * Note that this deselects all other records and causes the
+ * new blank record to be the only one that is selected.
+ *
+ * Note also that this does nothing if there already is a
+ * record with a selectKey equal to ''.
+ *
+ * The list is passed by reference and therefore the original
+ * list is modified.
+ *
+ * param      list - an array of select data objects
+ * return     undefined
+ * -------------------------------------------------------- */
+var addBlankSelectData = function(list) {
+  if (_.find(list, function(e) {return e.selectKey === '';})) return list;
+  _.each(list, function(obj) {obj.selected = false;});
+  list.unshift({selectKey: '', label: '', selected: true});
+};
+
+/* --------------------------------------------------------
  * getAbbr()
  *
  * Returns an abbreviation for the string passed if known,
@@ -164,6 +189,7 @@ module.exports = {
   , getGA: getGA
   , calcEdd: calcEdd
   , adjustSelectData: adjustSelectData
+  , addBlankSelectData: addBlankSelectData
   , getAbbr: getAbbr
 };
 

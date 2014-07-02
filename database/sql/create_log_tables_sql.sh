@@ -23,6 +23,7 @@ uniq_username_tbls='userLog'
 uniq_priority_tbls='priorityLog'
 uniq_labTestId_tbls='labTestValueLog'
 uniq_abbrev_tbls='labTestLog'
+uniq_pregnancy_tbls='scheduleLog'
 
 # Get the list of tables from the creation script.
 tbls=$(grep "CREATE TABLE" create_tables.sql |grep -v $excludepat |sed -e 's/CREATE TABLE IF NOT EXISTS `//' |sed -e 's/` (//'|tr '\n' " ")
@@ -72,6 +73,13 @@ do
     if [ $ut = $lt ]
     then
       echo "ALTER TABLE $lt DROP KEY abbrev;"
+    fi
+  done
+  for ut in $uniq_pregnancy_tbls
+  do
+    if [ $ut = $lt ]
+    then
+      echo "ALTER TABLE $lt DROP KEY pregnancy_id;"
     fi
   done
   echo "--"

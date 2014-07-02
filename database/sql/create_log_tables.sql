@@ -188,4 +188,5 @@ ALTER TABLE scheduleLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE scheduleLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE scheduleLog DROP PRIMARY KEY;
 ALTER TABLE scheduleLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE scheduleLog DROP KEY pregnancy_id;
 --

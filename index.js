@@ -38,6 +38,7 @@ var express = require('express')
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
+  , guard = require('./routes').guard
   , error = require('./routes').error
   , report = require('./routes').report
   , dewormingRpt = require('./routes').dewormingRpt
@@ -423,6 +424,12 @@ app.post(cfg.path.medicationEdit, common, hasSuper,
 app.post(cfg.path.medicationDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), medication.medicationDelete);
 
+// Checkin and checkout routes for the guard
+app.get(cfg.path.checkInOut, common, inRoles(['guard']), guard.checkInOut);
+app.post(cfg.path.checkIn, common, inRoles(['guard']), guard.checkInOutSave);
+app.post(cfg.path.checkOut, common, inRoles(['guard']), guard.checkInOutSave);
+app.get(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOut);
+app.post(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOutSave);
 
 
 // AJAX Calls.

@@ -13,6 +13,7 @@ var _ = require('underscore')
   , Pregnancies = require('../models').Pregnancies
   , SelectData = require('../models').SelectData
   , cfg = require('../config')
+  , hasRole = require('../auth').hasRole
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -26,6 +27,11 @@ var _ = require('underscore')
 var view = function(req, res) {
   var location
     , dayOfWeek
+    , data = {
+        title: req.gettext('Pregnancy Search')
+        , user: req.session.user
+        , messages: req.flash()
+      }
     , refresh = function(dataName) {
         return new Promise(function(resolve, reject) {
           SelectData.getSelect(dataName)
@@ -40,7 +46,7 @@ var view = function(req, res) {
       }
     ;
 
-  refresh('location')
+  return refresh('location')
     .then(function(list) {
       var l
         ;
@@ -60,13 +66,14 @@ var view = function(req, res) {
           // --------------------------------------------------------
           list.unshift({ selectKey: '', label: '', selected: true });
           dayOfWeek = list;
-          res.render('search', {
-            title: req.gettext('Pregnancy Search')
-            , user: req.session.user
-            , prenatalDay: dayOfWeek
-            , prenatalLocation: location
-          });
+          data.prenatalDay = dayOfWeek;
+          data.prenatalLocation = location;
+          return res.render('search', data);
         });
+    })
+    .caught(function(err) {
+      logError(err);
+      return res.render('search', data);
     });
 };
 
@@ -87,7 +94,7 @@ var execute = function(req, res) {
     , pageNum = 1
     , rowsPerPage = parseInt(cfg.search.rowsPerPage, 10)
     , qb
-    results = []
+    , results = []
     , cols = [
         'patient.dob'
         , 'patient.dohID'
@@ -100,6 +107,7 @@ var execute = function(req, res) {
     , fnOp = '='
     , lnOp = '='
     , otherOp = '='
+    , renderData
     ;
 
   // --------------------------------------------------------
@@ -143,6 +151,10 @@ var execute = function(req, res) {
     if (flds.prenatalDay.length > 0) qb.andWhere('schedule.day', '=', flds.prenatalDay);
     if (flds.prenatalLocation.length > 0) qb.andWhere('schedule.location', '=', flds.prenatalLocation);
   }
+  if (flds.priority && flds.priority.length > 0 && parseInt(flds.priority) !== NaN) {
+    qb.join('priority', 'priority.pregnancy_id', '=', 'pregnancy.id');
+    qb.where('priority.priority', '=', flds.priority);
+  }
   qb
     .limit(rowsPerPage)
     .offset((rowsPerPage * (pageNum-1)))
@@ -152,12 +164,17 @@ var execute = function(req, res) {
       r.dob = moment(r.dob).format('MM-DD-YYYY');
       results.push(r);
     });
-    res.render('searchResults', {
+    renderData = {
       title: req.gettext('Search Results')
       , user: req.session.user
       , results: results
       , pageNum: pageNum
-    });
+      , isGuard: false
+    };
+    if (hasRole(req, 'guard')) {
+      renderData.isGuard = true;
+    }
+    res.render('searchResults', renderData);
   });
 };
 

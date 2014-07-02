@@ -131,6 +131,7 @@ $(function() {
     // --------------------------------------------------------
     // Search results.
     $('.searchResultsRow').click(onClickChangeLocation('/pregnancy/:id/prenatal'));
+    $('.searchResultsRowGuard').click(onClickChangeLocation('/pregnancy/:id/checkinout'));
 
     // Midwife Interview screen, pregnancy history.
     $('.pregHistoryRow').click(onClickChangeLocation('/pregnancy/:pid/preghistory/:id'));

@@ -55,7 +55,7 @@ Referral = Bookshelf.Model.extend({
   // --------------------------------------------------------
 
   , pregnancy: function() {
-      return this.belongsTo(require('./Patient').Patient, 'patient_id');
+      return this.belongsTo(require('./Pregnancy').Pregnancy, 'pregnancy_id');
     }
 
 }, {

@@ -50,6 +50,10 @@ html(lang="en")
                 li
                   a(href="/user") <i class="fa fa-fw fa-users"></i>
                     = gettext('Users')
+              if roleInfo.hasRole('guard')
+                li
+                  a(href="/checkin") <i class="fa fa-fw fa-check-circle-o"></i>
+                    = gettext('New Client Checkin')
               if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')
                 li
                   a(href="/pregnancy/new") <i class="fa fa-fw fa-user-md"></i>
@@ -114,7 +118,17 @@ html(lang="en")
                 block reportsForm
                 block vaccinationAddEditForm
                 block medicationAddEditForm
+                block checkinout
               else
                 block login
+
+    //- Display the priority number in a fixed position when it is available.
+    - var priorityNumber = rec && rec.prenatalCheckinPriority? rec.prenatalCheckinPriority: void(0);
+    - var priorityVisible = priorityNumber? ' priority-visible': '';
+    div(class='priority-number-outer ' + priorityVisible)
+      div(class='priority-number-inner-msg')
+        span(class='priority-msg')= gettext('Priority')
+      div(class='priority-number-inner-number')
+        span(class='priority-number')= priorityNumber
 
     script(src='/js/mercy-footer.min.js')

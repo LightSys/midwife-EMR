@@ -81,8 +81,8 @@ block pregnancyEdit
           span= gettext('MMC #')
           input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='doh', value=rec.patient.dohID)
         div(class='form-group col-sm-3')
-          span= gettext('Priority #')
-          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='priority', value=rec.priority)
+          span= gettext('Priority Barcode #')
+          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='priorityBarcode', value=priorityBarcode)
         div(class='form-group col-sm-2')
           span= gettext('Partner income')
           input(class='form-control input-lg', type='number', tabindex="20", autocomplete="off", name='partnerIncome', value=rec.partnerIncome)
@@ -92,10 +92,10 @@ block pregnancyEdit
       div.row
         div(class='form-group col-sm-4')
           span= gettext('Prenatal Day')
-          +select('form-control input-lg', 'prenatalDay', 22, value=prenatalDay)
+          +select('form-control input-lg', 'prenatalDay', 24, value=prenatalDay)
         div(class='form-group col-sm-4')
           span= gettext('Prenatal Location')
-          +select('form-control input-lg', 'prenatalLocation', 22, value=prenatalLocation)
+          +select('form-control input-lg', 'prenatalLocation', 25, value=prenatalLocation)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))

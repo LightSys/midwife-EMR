@@ -38,6 +38,8 @@ var _ = require('underscore')
   , Event = require('../models').Event
   , Schedule = require('../models').Schedule
   , Schedules = require('../models').Schedules
+  , Priority = require('../models').Priority
+  , Priorities = require('../models').Priorities
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -45,6 +47,7 @@ var _ = require('underscore')
   , getAbbr = require('../util').getAbbr
   , calcEdd = require('../util').calcEdd
   , adjustSelectData = require('../util').adjustSelectData
+  , addBlankSelectData = require('../util').addBlankSelectData
   , maritalStatus = []
   , religion = []
   , education = []
@@ -62,6 +65,8 @@ var _ = require('underscore')
   , maleFemale = []
   , location = []
   , dayOfWeek = []
+  , prenatalCheckInId
+  , prenatalCheckOutId
   ;
 
 /* --------------------------------------------------------
@@ -145,6 +150,16 @@ var init = function() {
   doRefresh(maleFemaleName, function(l) {maleFemale = l;});
   doRefresh(locationName, function(l) {location = l;});
   doRefresh(dayOfWeekName, function(l) {dayOfWeek = l;});
+
+  // --------------------------------------------------------
+  // Do a one time load of EventType ids.
+  // --------------------------------------------------------
+  new EventTypes()
+    .fetch()
+    .then(function(list) {
+      prenatalCheckInId = list.findWhere({name: 'prenatalCheckIn'}).get('id');
+      prenatalCheckOutId = list.findWhere({name: 'prenatalCheckOut'}).get('id');
+    });
 };
 
 /* --------------------------------------------------------
@@ -188,6 +203,7 @@ var load = function(req, res, next) {
             }
           }
         , 'prenatalExam'
+        , 'priority'
         , 'schedule']})
       .then(function(rec) {
         if (! rec) return next();
@@ -237,6 +253,14 @@ var load = function(req, res, next) {
             peRec.examiner = userMap[""+peRec.updatedBy]['username'];
             if (peRec.supervisor) peRec.examiner += '/' + userMap[""+peRec.supervisor]['username'];
           });
+        }
+
+        // --------------------------------------------------------
+        // Place the prenatal priority number in an easy to access location.
+        // --------------------------------------------------------
+        rec.prenatalCheckinPriority = void(0);
+        if (_.isArray(rec.priority) && rec.priority.length > 0) {
+          rec.prenatalCheckinPriority = _.findWhere(rec.priority, {eType: prenatalCheckInId}).priority;
         }
 
         if (rec) req.paramPregnancy = rec;
@@ -603,14 +627,21 @@ var getEditFormData = function(req, addData) {
     , partnerInc = adjustSelectData(incomePeriod,
         req.paramPregnancy? req.paramPregnancy.partnerIncomePeriod: void(0))
     , schRec
-    , prenatalDay = adjustSelectData(dayOfWeek, void(0))
-    , prenatalLoc = adjustSelectData(location, void(0))
+    , priRec
+    , prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
+    , prenatalLoc = _.map(location, function(obj) {return _.clone(obj);})
     ;
 
   // --------------------------------------------------------
-  // Store the prenatal scheduling for the client in the record.
+  // Add an empty selection as the default.
   // --------------------------------------------------------
+  addBlankSelectData(prenatalDay);
+  addBlankSelectData(prenatalLoc);
+
   if (req.paramPregnancy) {
+    // --------------------------------------------------------
+    // Store the prenatal scheduling for the client in the record.
+    // --------------------------------------------------------
     schRec = _.find(req.paramPregnancy.schedule, function(obj) {
       return obj.scheduleType === 'Prenatal';
     });
@@ -623,6 +654,13 @@ var getEditFormData = function(req, addData) {
       prenatalDay = adjustSelectData(dayOfWeek, schRec.day);
       prenatalLoc = adjustSelectData(location, req.paramPregnancy.prenatalSchedule.location);
     } else {req.paramPregnancy.prenatalSchedule = {};}
+
+    // --------------------------------------------------------
+    // Store the priority number for the view.
+    // --------------------------------------------------------
+    priRec = _.find(req.paramPregnancy.priority, function(obj) {
+      return obj.eType === prenatalCheckInId;
+    });
   }
 
   return _.extend(addData, {
@@ -636,6 +674,7 @@ var getEditFormData = function(req, addData) {
     , partnerIncomePeriod: partnerInc
     , prenatalLocation: prenatalLoc
     , prenatalDay: prenatalDay
+    , priority: priRec && priRec.priority? priRec.priority: null
     , rec: req.paramPregnancy
   });
 };
@@ -665,6 +704,15 @@ var generalEditForm = function(req, res) {
  * record to go along with it. Insures that the required fields
  * are provided otherwise does not change the database.
  *
+ * Also inserts into the following tables depending upon the
+ * information provided by the user.
+ *
+ *  schedule
+ *  priority
+ *  event
+ *
+ * All writes to the database are done in a single transaction.
+ *
  * param       req
  * param       res
  * return      undefined
@@ -678,9 +726,13 @@ var generalAddSave = function(req, res) {
     , doh = req.body.doh.length > 0? req.body.doh: null
     , prenatalLoc = req.body.prenatalLocation.length > 0? req.body.prenatalLocation: null
     , prenatalDay = req.body.prenatalDay.length > 0? req.body.prenatalDay: null
+    , priorityBarcode = req.body.priorityBarcode || void(0)
     , pregFlds = _.omit(req.body, ['_csrf', 'dob'])
     , patFlds = {}
-    , schFlds = {}
+    , schFlds = false
+    , priFlds = {eType: prenatalCheckInId}
+    , evtFlds = {}
+    , pregnancy_id
     ;
 
   if (hasRole(req, 'attending')) {
@@ -688,7 +740,9 @@ var generalAddSave = function(req, res) {
   }
   pregFlds = _.extend(pregFlds, common);
   patFlds = _.extend(common, {dob: dob, dohID: doh});
-  schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
+  if (prenatalLoc && prenatalDay) {
+    schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
+  }
 
   // --------------------------------------------------------
   // Validate the fields.
@@ -697,54 +751,187 @@ var generalAddSave = function(req, res) {
     .then(function(result) {
       return _.object(['patFlds', 'pregFlds'], result);
     })
-    // --------------------------------------------------------
-    // Save patient and pregnancy records.
-    // --------------------------------------------------------
     .then(function(flds) {
-      Patient
-        .forge(flds.patFlds)
-        .setUpdatedBy(req.session.user.id)
-        .setSupervisor(common.supervisor)
-        .save()
-        .then(function(patient) {
-          var pregFields = _.extend(flds.pregFlds, {patient_id: patient.get('id')});
-          Pregnancy
-            .forge(pregFields)
-            .setUpdatedBy(req.session.user.id)
-            .setSupervisor(common.supervisor)
-            .save()
-            .then(function(pregnancy) {
-              schFlds.pregnancy_id = pregnancy.get('id');
-              Schedule
-                .forge(schFlds)
+      // --------------------------------------------------------
+      // Here begins a transaction that saves to the patient,
+      // pregnancy, schedule, priority, and event tables.
+      // --------------------------------------------------------
+      return Bookshelf.DB.knex.transaction(function(t) {
+
+        // --------------------------------------------------------
+        // Create and save the patient record.
+        // --------------------------------------------------------
+        Patient
+          .forge(flds.patFlds)
+          .setUpdatedBy(req.session.user.id)
+          .setSupervisor(common.supervisor)
+          .save(null, {transacting: t})
+          .then(function(patient) {
+            // --------------------------------------------------------
+            // Create and save the pregnancy record.
+            // --------------------------------------------------------
+            var pregFields = _.extend(flds.pregFlds, {patient_id: patient.get('id')});
+            return Pregnancy
+              .forge(pregFields)
+              .setUpdatedBy(req.session.user.id)
+              .setSupervisor(common.supervisor)
+              .save(null, {transacting: t});
+          })
+          .then(function(pregnancy) {
+            // --------------------------------------------------------
+            // Save the pregnancy id for later.
+            // --------------------------------------------------------
+            pregnancy_id = pregnancy.get('id');
+            if (schFlds) {
+              // --------------------------------------------------------
+              // User specified day and location for the schedule so save.
+              // --------------------------------------------------------
+              schFlds.pregnancy_id = pregnancy_id;
+              return new Schedule(schFlds)
                 .setUpdatedBy(req.session.user.id)
                 .setSupervisor(common.supervisor)
-                .save().then(function() {
-                  req.flash('info', req.gettext('Pregnancy was created.'));
-                  res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, pregnancy.get('id')));
+                .save(null, {transacting: t})
+                .then(function() {
+                  return pregnancy;
                 });
-            })
-            .caught(function(e) {
-              logError('Error saving pregnancy record. Orphan patient record id: ' + patient.get('id'));
-              throw e;
+            } else {
+              // --------------------------------------------------------
+              // No schedule specified.
+              // --------------------------------------------------------
+              return pregnancy;
+            }
+          })
+          .then(function(pregnancy) {
+            var assignedDateTime
+              ;
+            return new Promise(function(resolve, reject) {
+              if (priorityBarcode) {
+                // --------------------------------------------------------
+                // The user specified a priority number so retrieve the record
+                // based upon the priority barcode. This is the priority that
+                // the guard assigned when the client arrived but there were
+                // no patient/pregnancy records in the system yet.
+                // --------------------------------------------------------
+                priFlds.barcode = priorityBarcode;
+                Priority.forge(priFlds)
+                  .fetch()
+                  .then(function(priModel) {
+                    var priorityPregId
+                      , msg
+                      ;
+                    if (priModel === null) {
+                      // --------------------------------------------------------
+                      // The priority number was not found which means that the
+                      // priority number does not exist.
+                      // --------------------------------------------------------
+                      msg = req.gettext('The guard did not assign this priority number. Please choose a different one.');
+                      req.flash('error', msg);
+                      return reject(msg);
+                    }
+                    assignedDateTime = priModel.get('assigned');
+                    priorityPregId = priModel.get('pregnancy_id');
+                    if (! priorityPregId) {
+                      // --------------------------------------------------------
+                      // The pregnancy id in the priority record is not set which
+                      // is as expected. The assigned field in the priority record
+                      // will be used as the dateTime stamp for the prenatalCheckIn
+                      // event that will be inserted into the event table.
+                      //
+                      // We set the pregnancy id in the priority record as a flag
+                      // so that this is not processed again as well as remove the
+                      // assigned value.
+                      // --------------------------------------------------------
+                      priModel
+                        .set('pregnancy_id', pregnancy_id)
+                        .setUpdatedBy(req.session.user.id)
+                        .setSupervisor(common.supervisor)
+                        .save(null, {transacting: t})
+                        .then(function() {
+                          var opts = {}
+                            ;
+                          // --------------------------------------------------------
+                          // Now create a prenatal checkin event using the datetime
+                          // stamp from the priority record.
+                          // --------------------------------------------------------
+                          opts.eDateTime = assignedDateTime;
+                          opts.pregnancy_id = pregnancy_id;
+                          opts.sid = req.sessionID;
+                          Event.prenatalCheckInEvent(opts, t).then(function() {
+                            resolve();
+                          });
+                      });
+                    } else {
+                      // --------------------------------------------------------
+                      // This means that the priority number entered is already
+                      // assigned to another pregnancy. We reject the whole thing.
+                      // --------------------------------------------------------
+                      msg = req.gettext('The priority number has already been used by another client. Please choose another.');
+                      req.flash('error', msg);
+                      reject(msg);
+                    }
+                  });
+
+              } else {
+                // --------------------------------------------------------
+                // Priority number was not entered in form when pregnancy created.
+                // This is fine but there will be no prenatalCheckIn event
+                // created.
+                // --------------------------------------------------------
+                resolve();
+              }
             });
-        })
-        .caught(function(e) {
-          logError('Error saving patient record: ' + e);
-          throw e;
-        });
+          })
+          .then(function() {
+            t.commit();
+          })
+          .caught(function(e) {
+            logError('Error saving pregnancy record. Rolling back transaction.');
+            logError(e);
+            t.rollback();
+            return e;
+          });
+      })    // end of transaction
     })
-    .caught(function(e) {
-      logError(e);
-      res.status(406);
-      res.end();    // TODO: need a custom 406 page.
+    .then(function() {
+      // --------------------------------------------------------
+      // A successful transaction, return the edit page.
+      // --------------------------------------------------------
+      req.flash('info', req.gettext('Pregnancy was created.'));
+      res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, pregnancy_id));
+    })
+    .caught(function(err) {
+      // --------------------------------------------------------
+      // A problem was encountered, return a new blank form with
+      // an error message.
+      // --------------------------------------------------------
+
+      // --------------------------------------------------------
+      // If the error is a string, it came from the fields check
+      // so we log it appropriately. Otherwise, it was already
+      // logged before.
+      // --------------------------------------------------------
+      if (_.isString(err)) {
+        req.flash('error', err);
+        logError(err);
+      }
+
+      // TODO: return a form with the user's changes preserved excepting the priority number.
+      res.redirect(cfg.path.pregnancyNewForm);
     });
 };
 
 /* --------------------------------------------------------
  * generalEditSave()
  *
- * Update the main patient record (general information).
+ * Update the patient record and the corresponding pregnancy
+ * record to go along with it. Insures that the required fields
+ * are provided otherwise does not change the database.
+ *
+ * Also inserts/updates the following tables depending upon the
+ * information provided by the user.
+ *
+ *  schedule
+ *  priority
  * -------------------------------------------------------- */
 var generalEditSave = function(req, res) {
   var pregFlds
@@ -755,6 +942,7 @@ var generalEditSave = function(req, res) {
     , prenatalLoc = req.body.prenatalLocation.length > 0? req.body.prenatalLocation: null
     , prenatalDay = req.body.prenatalDay.length > 0? req.body.prenatalDay: null
     , scheduleId = req.body.scheduleId.length > 0? req.body.scheduleId: null
+    , priorityBarcode = req.body.priorityBarcode.length > 0? req.body.priorityBarcode: null
     , supervisor = null;
     ;
   if (req.paramPregnancy &&
@@ -766,47 +954,191 @@ var generalEditSave = function(req, res) {
     if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
     }
-    pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priority',
+    pregFlds = _.omit(req.body, ['_csrf', 'doh', 'dob', 'priorityBarcode',
         'prenatalDay', 'prenatalLocation']);
     patFlds = {dohID: doh, dob: dob};
     patFlds = _.extend(patFlds, {id: req.paramPregnancy.patient_id});
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc,
       day: prenatalDay, pregnancy_id: req.paramPregnancy.id};
     if (scheduleId !== null) schFlds.id = scheduleId;
-    Pregnancy.checkFields(pregFlds).then(function(flds) {
-      Pregnancy.forge(flds)
-        .setUpdatedBy(req.session.user.id)
-        .setSupervisor(supervisor)
-        .save().then(function() {
-          Schedule
-            .forge(schFlds)
+
+    // --------------------------------------------------------
+    // Convert to a number.
+    // --------------------------------------------------------
+    if (priorityBarcode) {
+      priorityBarcode = parseInt(priorityBarcode, 10) || null;
+    }
+
+    Pregnancy.checkFields(pregFlds)
+      .then(function(flds) {
+        return Bookshelf.DB.knex.transaction(function(t) {
+          // --------------------------------------------------------
+          // Save the pregnancy information.
+          // --------------------------------------------------------
+          return Pregnancy.forge(flds)
             .setUpdatedBy(req.session.user.id)
             .setSupervisor(supervisor)
-            .save().then(function() {
-              Patient
+            .save(null, {transacting: t})
+            .then(function() {
+              // --------------------------------------------------------
+              // Save the patient record.
+              // --------------------------------------------------------
+              return Patient
                 .forge(patFlds)
                 .setUpdatedBy(req.session.user.id)
                 .setSupervisor(supervisor)
-                .save()
-                .then(function(patient) {
-                  req.flash('info', req.gettext('Pregnancy was updated.'));
-                  res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, flds.id));
-                })
-                .caught(function(err) {
-                  logError(err);
-                  res.redirect(cfg.path.search);
+                .save(null, {transacting: t});
+            })
+            .then(function() {
+              // --------------------------------------------------------
+              // Create or update the schedule records as necessary.
+              // --------------------------------------------------------
+              if (_.isNull(prenatalDay) || _.isNull(prenatalLoc)) return;
+              return Schedule
+                .forge(schFlds)
+                .setUpdatedBy(req.session.user.id)
+                .setSupervisor(supervisor)
+                .save(null, {transacting: t});
+            })
+            .then(function() {
+              return new Promise(function(resolve, reject) {
+                // --------------------------------------------------------
+                // Handle priority numbers.
+                // --------------------------------------------------------
+                var priFlds = {
+                      eType: prenatalCheckInId
+                      , pregnancy_id: req.paramPregnancy.id
+                    }
+                  ;
+                Promise
+                  .join(Priority.getAvailablePriorityBarcodes(prenatalCheckInId),
+                        Priority.getAssignedPriorityBarcodes(prenatalCheckInId))
+                  .spread(function(available, assigned) {
+                    Priority.forge(priFlds)
+                      .fetch()
+                      .then(function(priorityRec) {
+                        if (priorityRec === null && priorityBarcode === null) {
+                          // --------------------------------------------------------
+                          // Priority number was not already assigned and it is not
+                          // being assigned now. There is nothing to do.
+                          // --------------------------------------------------------
+                          return resolve();
+                        }
+
+                        if (priorityRec !== null && priorityRec.get('barcode') == priorityBarcode) {
+                          // --------------------------------------------------------
+                          // The priority number that was already assigned is not being
+                          // changed. Apparently the user entered it twice. There is
+                          // nothing to do.
+                          // --------------------------------------------------------
+                          return resolve();
+                        }
+
+                        if (priorityRec !== null && priorityBarcode === null) {
+                          // --------------------------------------------------------
+                          // The priority number is already assigned and this save
+                          // is not changing that. There is nothing to do.
+                          // --------------------------------------------------------
+                          return resolve();
+                        }
+
+                        if (! _.contains(available, priorityBarcode) &&
+                            ! _.contains(assigned, priorityBarcode)) {
+                          // --------------------------------------------------------
+                          // The priority barcode the user chose to assign does not
+                          // exist in the system and therefore cannot be used.
+                          // --------------------------------------------------------
+                          return reject('The priority barcode specified does not exist.');
+                        }
+
+                        if (_.contains(assigned, priorityBarcode)) {
+                          // --------------------------------------------------------
+                          // The priority barcode the user choose to assign is already
+                          // assigned to another pregnancy and cannot be used.
+                          // --------------------------------------------------------
+                          return reject('The priority barcode specified is already used.');
+                        }
+
+                        if (priorityRec === null && _.contains(available, priorityBarcode)) {
+                          // --------------------------------------------------------
+                          // Priority barcode was not already assigned and it is being
+                          // assigned now to a number that is available for use.
+                          //
+                          // Update the priority record with the pregnancy id and
+                          // create a prenatal check in event using the date/time that
+                          // the priority record was created.
+                          // --------------------------------------------------------
+                          return Priority
+                            .forge()
+                            .query(function(qb) {
+                              qb.where('barcode', '=', priorityBarcode);
+                              qb.andWhere('eType', '=', prenatalCheckInId);
+                            })
+                            .fetch()
+                            .then(function(priRec) {
+                              var assigned
+                                ;
+                              if (priRec === null) return reject();
+                              assigned = priRec.get('assigned');
+                              priRec
+                                .set('pregnancy_id', req.paramPregnancy.id)
+                                .setUpdatedBy(req.session.user.id)
+                                .setSupervisor(supervisor)
+                                .save(null, {method: 'update', transacting: t})
+                                .then(function() {
+                                  var opts = {
+                                        eDateTime: assigned
+                                        , pregnancy_id: req.paramPregnancy.id
+                                        , sid: req.sessionID
+                                      }
+                                    ;
+                                  Event.prenatalCheckInEvent(opts, t).then(function() {
+                                    resolve();
+                                  });
+                                });
+                            });
+                        } else {
+                          // --------------------------------------------------------
+                          // This is an unaccounted for situation - abort.
+                          // --------------------------------------------------------
+                          console.log('Unknown priority number situation. Aborting.');
+                          return reject();
+                        }
+                      })
                 });
+              });   // end Promise
+            })
+            .then(function() {
+              t.commit();
+              req.flash('info', req.gettext('Pregnancy was updated.'));
+            })
+            .caught(function(err) {
+              logError(err);
+              t.rollback();
+              req.flash('error', err);
             });
+          })    // end transaction
+          .caught(function(err) {
+            // --------------------------------------------------------
+            // Rollback transaction stats - we don't need this but we don't
+            // want it to propagate.
+            // --------------------------------------------------------
+          });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Success or already handled error.
+        // --------------------------------------------------------
+        res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, req.paramPregnancy.id));
       })
       .caught(function(err) {
+        // --------------------------------------------------------
+        // Failure in checkFields().
+        // --------------------------------------------------------
         logError(err);
-        res.redirect(cfg.path.search);
+        req.flash('error', err);
+        res.redirect(cfg.path.pregnancyEditForm.replace(/:id/, req.paramPregnancy.id));
       });
-    })
-    .caught(function(err) {
-      logError(err);
-      res.redirect(cfg.path.search);
-    });
 
   } else {
     logError('Error in update of pregnancy: pregnancy not found.');

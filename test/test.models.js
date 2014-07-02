@@ -27,8 +27,12 @@ var should = require('should')
   , Pregnancies = require('../models').Pregnancies
   , Event = require('../models').Event
   , Events = require('../models').Events
+  , EventType = require('../models').EventType
+  , EventTypes = require('../models').EventTypes
   , SelectData = require('../models').SelectData
   , SelectDatas = require('../models').SelectDatas
+  , Priority = require('../models').Priority
+  , Priorities = require('../models').Priorities
   ;
 
 describe('Models', function(done) {
@@ -404,6 +408,79 @@ describe('Models', function(done) {
           done(err);
         });
     });
+
+  });
+
+  describe('Priority', function(done) {
+    var eType
+      ;
+
+    before(function(done) {
+      EventType.forge({name: 'prenatalCheckIn'})
+        .fetch()
+        .then(function(model) {
+          eType = model.get('id');
+        })
+        .then(function() {
+          new Priorities()
+            .fetch()
+            .then(function(priColl) {
+              var models = []
+                ;
+              // --------------------------------------------------------
+              // Delete all of the priority records from the database.
+              // --------------------------------------------------------
+              priColl.forEach(function(model) {
+                models.push(model.destroy());
+              });
+              Promise.all(models).then(function() {
+                // --------------------------------------------------------
+                // Put three priority test records into the database.
+                // --------------------------------------------------------
+                var data = [{eType: eType, priority: 1, pregnancy_id: 1000}
+                      , {eType: eType, priority: 2}
+                      , {eType: eType, priority: 3}]
+                  , models = []
+                  ;
+                _.each(data, function(model) {
+                  var mod = Priority.forge(model);
+                  mod.setUpdatedBy(1);
+                  mod.setSupervisor(null);
+                  models.push(mod.save());
+                });
+                Promise.all(models).then(function() {
+                  done();
+                });
+              });
+            });
+        });
+    });
+
+    it('getAvailablePriorityNumbers', function(done) {
+      Priority.getAvailablePriorityNumbers(eType)
+        .then(function(ids) {
+          ids.should.have.length(2);
+          ids[0].should.eql(2);
+          ids[1].should.eql(3);
+          done();
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
+    it('getAssignedPriorityNumbers', function(done) {
+      Priority.getAssignedPriorityNumbers(eType)
+        .then(function(ids) {
+          ids.should.have.length(1);
+          ids[0].should.eql(1);
+          done();
+        })
+        .caught(function(err) {
+          done(err);
+        });
+    });
+
 
   });
 

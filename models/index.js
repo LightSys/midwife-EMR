@@ -14,6 +14,8 @@ module.exports = {
   , PrenatalExams: require('./PrenatalExam').PrenatalExams
   , Event: require('./Event').Event
   , Events: require('./Event').Events
+  , EventType: require('./EventType').EventType
+  , EventTypes: require('./EventType').EventTypes
   , SelectData: require('./SelectData').SelectData
   , SelectDatas: require('./SelectData').SelectDatas
   , LabSuite: require('./LabSuite').LabSuite
@@ -36,5 +38,7 @@ module.exports = {
   , MedicationTypes: require('./MedicationType').MedicationTypes
   , Schedule: require('./Schedule').Schedule
   , Schedules: require('./Schedule').Schedules
+  , Priority: require('./Priority').Priority
+  , Priorities: require('./Priority').Priorities
 };
 

@@ -57,13 +57,14 @@ var LOGIN = 1
  *
  * param       eventType - required event type
  * param       options - optional parameters
+ * param       transaction - optional transaction to use
  * return      promise
  * -------------------------------------------------------- */
-var recordEvent = function(eventType, options) {
+var recordEvent = function(eventType, options, transaction) {
   return new Promise(function(resolve, reject) {
-    options.eDateTime = moment().format('YYYY-MM-DD HH:mm:ss')
+    options.eDateTime = options.eDateTime || moment().format('YYYY-MM-DD HH:mm:ss')
     Event.forge(_.extend({eventType: eventType}, options))
-      .save()
+      .save(null, {transacting: transaction})
       .then(function(evt) {
         resolve(evt);
       })
@@ -115,27 +116,36 @@ Event = Bookshelf.Model.extend({
    * prenatalChartEvent()
    *
    * Records the appropriate event in the event table. Option
-   * field names are:
+   * field names, which are all optional, are:
    *  note
-   *  sid
-   *  pregnancyId
-   *  userId
+   *  pregnancy_id
+   *  user_id
+   *  eDateTime
    *
    * param       options - an options object
+   * param       transaction - an optional transaction object
    * return      promise
    * -------------------------------------------------------- */
-  loginEvent: function(options) {return recordEvent(LOGIN, options);}
-  , logoutEvent: function(options) {return recordEvent(LOGOUT, options);}
-  , setSuperEvent: function(options) {return recordEvent(SUPER, options);}
-  , historyEvent: function(options) {return recordEvent(HISTORY, options);}
-  , prenatalCheckInEvent: function(options) {
-      return recordEvent(PRENATAL_CHECKIN, options);
+  loginEvent: function(options, transaction) {
+    return recordEvent(LOGIN, options, transaction);
+  }
+  , logoutEvent: function(options, transaction) {
+      return recordEvent(LOGOUT, options, transaction);
     }
-  , prenatalCheckOutEvent: function(options) {
-      return recordEvent(PRENATAL_CHECKOUT, options);
+  , setSuperEvent: function(options, transaction) {
+      return recordEvent(SUPER, options, transaction);
     }
-  , prenatalChartEvent: function(options) {
-      return recordEvent(PRENATAL_CHART, options);
+  , historyEvent: function(options, transaction) {
+      return recordEvent(HISTORY, options, transaction);
+    }
+  , prenatalCheckInEvent: function(options, transaction) {
+      return recordEvent(PRENATAL_CHECKIN, options, transaction);
+    }
+  , prenatalCheckOutEvent: function(options, transaction) {
+      return recordEvent(PRENATAL_CHECKOUT, options, transaction);
+    }
+  , prenatalChartEvent: function(options, transaction) {
+      return recordEvent(PRENATAL_CHART, options, transaction);
     }
 
 });

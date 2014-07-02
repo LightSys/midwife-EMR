@@ -215,6 +215,62 @@ describe('Util', function(done) {
     });
   });
 
+  describe('addBlankSelectData', function(done) {
+    var sel1
+      ;
+
+    beforeEach(function(done) {
+      sel1 = [];
+      sel1.push({selectKey: '?', label: 'Unknown', selected: true});
+      sel1.push({selectKey: 'N', label: 'No', selected: false});
+      sel1.push({selectKey: 'Y', label: 'Yes', selected: false});
+      done();
+    });
+
+    it('length should be increased by one', function(done) {
+      var origLen = sel1.length
+        , newList
+        ;
+      util.addBlankSelectData(sel1);
+      sel1.should.have.length(origLen + 1);
+      done();
+    });
+
+    it('blank record should be first', function(done) {
+      var newList
+        ;
+      util.addBlankSelectData(sel1);
+      sel1[0].selectKey.should.have.length(0);
+      sel1[0].label.should.have.length(0);
+      sel1[0].selected.should.be.true;
+      done();
+    });
+
+    it('blank record should be only one selected', function(done) {
+      var newList
+        ;
+      util.addBlankSelectData(sel1);
+      _.where(sel1, {selected: true}).should.have.length(1);
+      done();
+    });
+
+    it('should only allow one blank record', function(done) {
+      var newList1
+        , newList2
+        , origLen = sel1.length
+        ;
+      // TODO: acknowledge and address that fact that the passed list
+      // is passed by reference and so the assignment here is a little
+      // misleading. OR change to clone the list.
+      util.addBlankSelectData(sel1);
+      sel1.should.have.length(origLen + 1);
+      util.addBlankSelectData(sel1);
+      sel1.should.have.length(origLen + 1);
+      done();
+    });
+
+  });
+
   describe('adjustSelectData()', function(done) {
     var sel1 = []
       , sel2 = []

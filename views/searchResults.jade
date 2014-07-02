@@ -3,6 +3,8 @@ extends layouts/default_layout
 block searchResults
   +titleMsg(title)
 
+  - var rowClass = 'searchResultsRow';
+  - if (isGuard) rowClass = 'searchResultsRowGuard';
   div.row
     div(class='form-group col-sm-2')
       a(class='btn btn-default', href='/search')= gettext('New Search')
@@ -23,7 +25,7 @@ block searchResults
           tbody
             each rec in results
               -var searchResultsId = 'searchResultsId-' + rec.id;
-              tr(class='searchResultsRow', id=searchResultsId)
+              tr(class=rowClass, id=searchResultsId)
                 td= rec.lastname
                 td= rec.firstname
                 td= rec.dob

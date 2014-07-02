@@ -189,11 +189,15 @@ Pregnancy = Bookshelf.Model.extend({
 
   , vaccination: function() {
       return this.hasMany(require('./Vaccination').Vaccination, 'pregnancy_id');
-  }
+    }
 
   , schedule: function() {
       return this.hasMany(require('./Schedule').Schedule, 'pregnancy_id');
-  }
+    }
+
+  , priority: function() {
+      return this.hasMany(require('./Priority').Priority, 'pregnancy_id');
+    }
 
 }, {
   // --------------------------------------------------------

@@ -224,7 +224,11 @@ cfg.path.vaccinationDelete = '/pregnancy/:id/vaccination/:id2/delete';  // POST
 cfg.path.medicationAdd = '/pregnancy/:id/medication';         // GET/POST
 cfg.path.medicationEdit = '/pregnancy/:id/medication/:id2';   // GET/POST
 cfg.path.medicationDelete = '/pregnancy/:id/medication/:id2/delete';  // POST
-
+// Checkin/Checkout
+cfg.path.checkInOut = '/pregnancy/:id/checkinout';  // GET
+cfg.path.checkIn = '/pregnancy/:id/checkin';        // POST
+cfg.path.checkOut = '/pregnancy/:id/checkout';      // POST
+cfg.path.newCheckIn = '/checkin';                   // GET/POST
 
 // AJAX calls
 cfg.path.requiredTetanus = '/pregnancy/:id/requiredtetanus';    // POST
