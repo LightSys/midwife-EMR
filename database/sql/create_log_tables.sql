@@ -101,17 +101,6 @@ ALTER TABLE pregnancyHistoryLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnancyHistoryLog DROP PRIMARY KEY;
 ALTER TABLE pregnancyHistoryLog ADD PRIMARY KEY (id, replacedAt);
 --
--- Creating priorityLog
-SELECT 'priorityLog' AS Creating FROM DUAL;
-CREATE TABLE priorityLog LIKE priority;
-ALTER TABLE priorityLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE priorityLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE priorityLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE priorityLog DROP PRIMARY KEY;
-ALTER TABLE priorityLog ADD PRIMARY KEY (id, replacedAt);
-ALTER TABLE priorityLog DROP KEY priority;
-ALTER TABLE priorityLog DROP KEY barcode;
---
 -- Creating prenatalExamLog
 SELECT 'prenatalExamLog' AS Creating FROM DUAL;
 CREATE TABLE prenatalExamLog LIKE prenatalExam;

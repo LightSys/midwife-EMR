@@ -411,8 +411,21 @@ describe('Models', function(done) {
 
   });
 
+  // --------------------------------------------------------
+  // Note that the priority table needs to be populated for
+  // this test and that is not scripted properly yet. A way
+  // to get around this as a hack is to copy the contents of
+  // the priority table in the development database into the
+  // test database. Yes, this is a hack.
+  //
+  // INSERT INTO priority
+  // (eType, priority, barcode, updatedBy, updatedAt)
+  // SELECT eType, priority, barcode, updatedBy, updatedAt
+  // FROM mercy1.priority;
+  // --------------------------------------------------------
   describe('Priority', function(done) {
     var eType
+      , numPriorities
       ;
 
     before(function(done) {
@@ -422,46 +435,31 @@ describe('Models', function(done) {
           eType = model.get('id');
         })
         .then(function() {
+          // --------------------------------------------------------
+          // Unset all priority assignments.
+          // --------------------------------------------------------
           new Priorities()
             .fetch()
-            .then(function(priColl) {
-              var models = []
-                ;
-              // --------------------------------------------------------
-              // Delete all of the priority records from the database.
-              // --------------------------------------------------------
-              priColl.forEach(function(model) {
-                models.push(model.destroy());
+            .then(function(list) {
+              numPriorities = list.size();  // save for the tests
+              var list2 = _.map(list.models, function(pri) {
+                pri.set('pregnancy_id', null);
+                pri.set('assigned', null);
+                pri.setUpdatedBy(1);
+                pri.setSupervisor(null);
+                return pri.save();
               });
-              Promise.all(models).then(function() {
-                // --------------------------------------------------------
-                // Put three priority test records into the database.
-                // --------------------------------------------------------
-                var data = [{eType: eType, priority: 1, pregnancy_id: 1000}
-                      , {eType: eType, priority: 2}
-                      , {eType: eType, priority: 3}]
-                  , models = []
-                  ;
-                _.each(data, function(model) {
-                  var mod = Priority.forge(model);
-                  mod.setUpdatedBy(1);
-                  mod.setSupervisor(null);
-                  models.push(mod.save());
-                });
-                Promise.all(models).then(function() {
-                  done();
-                });
+              Promise.all(list2).then(function() {
+                done();
               });
             });
         });
     });
 
-    it('getAvailablePriorityNumbers', function(done) {
-      Priority.getAvailablePriorityNumbers(eType)
+    it('getAvailablePriorityBarcodes', function(done) {
+      Priority.getAvailablePriorityBarcodes(eType)
         .then(function(ids) {
-          ids.should.have.length(2);
-          ids[0].should.eql(2);
-          ids[1].should.eql(3);
+          ids.should.have.length(numPriorities);
           done();
         })
         .caught(function(err) {
@@ -469,19 +467,27 @@ describe('Models', function(done) {
         });
     });
 
-    it('getAssignedPriorityNumbers', function(done) {
-      Priority.getAssignedPriorityNumbers(eType)
-        .then(function(ids) {
-          ids.should.have.length(1);
-          ids[0].should.eql(1);
-          done();
+    it('getAssignedPriorityBarcodes', function(done) {
+      Priority.forge({priority: 1})
+        .fetch()
+        .then(function(pri) {
+          pri.set('assigned', moment().format('YYYY-MM-DD HH:mm:ss.SSS'));
+          pri.setUpdatedBy(1);
+          pri.setSupervisor(null);
+          pri.save()
+            .then(function(pri2) {
+              Priority.getAssignedPriorityBarcodes(eType)
+                .then(function(ids) {
+                  ids.should.have.length(1);
+                  (ids[0]).should.eql(pri2.get('barcode'));
+                  done();
+                })
+                .caught(function(err) {
+                  done(err);
+                });
+            });
         })
-        .caught(function(err) {
-          done(err);
-        });
     });
-
-
   });
 
 });

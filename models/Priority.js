@@ -74,6 +74,11 @@ var getAvailablePriorityBarcodes = function(eType) {
  * assigned to pregnancies for the given event type. Returns
  * a promise.
  *
+ * Assignment equals either having the pregnancy_id field
+ * populated or the assigned field populated. The latter is
+ * the case when the priority number has been assigned to a
+ * new patient that does not have a patient record yet.
+ *
  * param       eType
  * return      list
  * -------------------------------------------------------- */
@@ -83,6 +88,7 @@ var getAssignedPriorityBarcodes = function(eType) {
   return new Promise(function(resolve, reject) {
     new Priorities().query(function(qb) {
         qb.whereNotNull('pregnancy_id');
+        qb.orWhereNotNull('assigned');
         qb.andWhere('eType', '=', et);
       })
       .fetch()

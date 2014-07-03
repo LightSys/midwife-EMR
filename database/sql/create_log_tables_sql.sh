@@ -13,14 +13,13 @@
 # -------------------------------------------
 
 # Don't create log tables for these tables.
-excludepat='doh\|session\|event\|eventType'
+excludepat='doh\|session\|event\|eventType\|priority'
 
 # Certain tables have unique constraints which do not allow proper logging
 # when they exist in the log tables. We have a hard-coded list of the 
 # constraints that need to be removed.
 uniq_name_tbls='roleLog vaccinationTypeLog medicationTypeLog labSuiteLog labTestLog selectDataLog'
 uniq_username_tbls='userLog'
-uniq_priority_tbls='priorityLog'
 uniq_labTestId_tbls='labTestValueLog'
 uniq_abbrev_tbls='labTestLog'
 uniq_pregnancy_tbls='scheduleLog'
@@ -51,14 +50,6 @@ do
     if [ $ut = $lt ]
     then
       echo "ALTER TABLE $lt DROP KEY username;"
-    fi
-  done
-  for ut in $uniq_priority_tbls
-  do
-    if [ $ut = $lt ]
-    then
-      echo "ALTER TABLE $lt DROP KEY priority;"
-      echo "ALTER TABLE $lt DROP KEY barcode;"
     fi
   done
   for ut in $uniq_labTestId_tbls
