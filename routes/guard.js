@@ -244,10 +244,24 @@ var checkInOutSave = function(req, res) {
     Priority.forge({eType: prenatalCheckInId, barcode: priorityBarcode})
       .fetch()
       .then(function(priRec) {
+        // --------------------------------------------------------
+        // Sanity checks.
+        // --------------------------------------------------------
         if (! priRec) {
           req.flash('warning', req.gettext('Sorry, that priority # barcode was not found.'));
           return res.redirect(cfg.path.newCheckIn);
         }
+        if (priRec.get('pregnancy_id') !== null) {
+          req.flash('error', req.gettext('This priority number has already been assigned to another client.'));
+          logError('In checkin route for new patient with priority number via pregnancy id already assigned to another pregnancy.');
+          return res.redirect(cfg.path.newCheckIn);
+        }
+        if (priRec.get('assigned') !== null) {
+          req.flash('error', req.gettext('This priority number has already been assigned to another client.'));
+          logError('In checkin route for new patient with priority number via assigned field already assigned to another pregnancy.');
+          return res.redirect(cfg.path.newCheckIn);
+        }
+
         priRec
           .setUpdatedBy(req.session.user.id)
           .setSupervisor(null)
