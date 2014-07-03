@@ -13,6 +13,7 @@
  */
 
 var Bookshelf = require('bookshelf')
+  , Knex = require('knex')
   , moment = require('moment')
   , _ = require('underscore')
   , Promise = require('bluebird')
@@ -36,7 +37,7 @@ var Bookshelf = require('bookshelf')
  * -------------------------------------------------------- */
 Bookshelf.DB = {};
 var init = function(dbSettings) {
-  Bookshelf.DB = Bookshelf.initialize({
+  var knex = Knex({
     client: 'mysql'
     , connection: {
       host: dbSettings.host
@@ -47,6 +48,7 @@ var init = function(dbSettings) {
       , charset: dbSettings.charset
     }
   });
+  Bookshelf.DB = Bookshelf(knex);
 
   // --------------------------------------------------------
   // Define our base Model that all classes extend from.

@@ -6,7 +6,8 @@
   "dependencies": {
     "bcrypt": "~0.7.7",
     "bluebird": "~1.0.3",
-    "bookshelf": "^0.6.10",
+    "bookshelf": "^0.7.6",
+    "knex": "^0.6.2",
     "commander": "^2.2.0",
     "connect-mysql": "~2.0.0",
     "consolidate": "~0.10.0",
