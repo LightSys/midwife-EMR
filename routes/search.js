@@ -80,11 +80,7 @@ var view = function(req, res) {
 /* --------------------------------------------------------
  * execute()
  *
- * Perform the search. Fields firstname, lastname and dob
- * are ANDed, while the fields doh, philHealth, and
- * priority are ORed.
- *
- * TODO: implement search by priority number.
+ * Perform the search using the parameters passed.
  *
  * param
  * return
@@ -93,6 +89,7 @@ var execute = function(req, res) {
   var flds = _.omit(req.body, ['_csrf', 'searchType', 'next', 'previous'])
     , pageNum = 1
     , rowsPerPage = parseInt(cfg.search.rowsPerPage, 10)
+    , priorityQry = flds.priority && flds.priority.length > 0 && parseInt(flds.priority, 10) !== NaN
     , qb
     , results = []
     , cols = [
@@ -103,6 +100,7 @@ var execute = function(req, res) {
         , 'pregnancy.lastname'
         , 'pregnancy.address'
         , 'pregnancy.barangay'
+        , 'priority.priority'
       ]
     , fnOp = '='
     , lnOp = '='
@@ -129,41 +127,62 @@ var execute = function(req, res) {
   }
 
   qb = new Pregnancy().query();
-  qb.join('patient', 'patient.id', '=', 'pregnancy.patient_id');
-  if (flds.firstname && flds.firstname.length > 0) {
-    if (flds.firstname.indexOf('%') !== -1) {
-      fnOp = 'LIKE';
-    }
-    qb.where('firstname', fnOp, flds.firstname);
-  }
-  if (flds.lastname && flds.lastname.length > 0) {
-    if (flds.lastname.indexOf('%') !== -1) {
-      lnOp = 'LIKE';
-    }
-    qb.where('lastname', lnOp, flds.lastname);
-  }
-  if (flds.dob && flds.dob.length > 0) qb.where('dob', otherOp, flds.dob);
-  if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', otherOp, flds.doh);
-  if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', otherOp, flds.philHealth);
-  if (flds.prenatalDay.length > 0 || flds.prenatalLocation.length > 0) {
-    qb.join('schedule', 'schedule.pregnancy_id', '=', 'pregnancy.id');
-    qb.where('schedule.scheduleType', '=', 'Prenatal');
-    if (flds.prenatalDay.length > 0) qb.andWhere('schedule.day', '=', flds.prenatalDay);
-    if (flds.prenatalLocation.length > 0) qb.andWhere('schedule.location', '=', flds.prenatalLocation);
-  }
-  if (flds.priority && flds.priority.length > 0 && parseInt(flds.priority) !== NaN) {
-    qb.join('priority', 'priority.pregnancy_id', '=', 'pregnancy.id');
+  qb.join('patient', 'patient.id', 'pregnancy.patient_id');
+  if (priorityQry) {
+    // --------------------------------------------------------
+    // A Priority number was specified in the query so that
+    // overrides all other parameters.
+    // --------------------------------------------------------
+    qb.join('priority', 'priority.pregnancy_id', 'pregnancy.id');
     qb.where('priority.priority', '=', flds.priority);
+  } else {
+    // --------------------------------------------------------
+    // Get all records matching the query parameters but make
+    // sure that if records have priority numbers assigned, that
+    // they are at the top in ascending order.
+    // 
+    // Note: in order to get the records that have an assigned
+    // priority number to the top AND in ascending order, we will
+    // need to do a union. For the moment we are satisfied with
+    // getting the priority records to the top using the order
+    // by clause below though we have to sacrifice our preference
+    // for ascending order in order to allow the priority records
+    // to appear first.
+    // --------------------------------------------------------
+    qb.leftOuterJoin('priority', 'priority.pregnancy_id', 'pregnancy.id');
+    if (flds.firstname && flds.firstname.length > 0) {
+      if (flds.firstname.indexOf('%') !== -1) {
+        fnOp = 'LIKE';
+      }
+      qb.where('firstname', fnOp, flds.firstname);
+    }
+    if (flds.lastname && flds.lastname.length > 0) {
+      if (flds.lastname.indexOf('%') !== -1) {
+        lnOp = 'LIKE';
+      }
+      qb.where('lastname', lnOp, flds.lastname);
+    }
+    if (flds.dob && flds.dob.length > 0) qb.where('dob', otherOp, flds.dob);
+    if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', otherOp, flds.doh);
+    if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', otherOp, flds.philHealth);
+    if (flds.prenatalDay.length > 0 || flds.prenatalLocation.length > 0) {
+      qb.join('schedule', 'schedule.pregnancy_id', 'pregnancy.id');
+      qb.where('schedule.scheduleType', '=', 'Prenatal');
+      if (flds.prenatalDay.length > 0) qb.andWhere('schedule.day', '=', flds.prenatalDay);
+      if (flds.prenatalLocation.length > 0) qb.andWhere('schedule.location', '=', flds.prenatalLocation);
+    }
   }
-  qb
-    .limit(rowsPerPage)
+
+  qb.limit(rowsPerPage)
     .offset((rowsPerPage * (pageNum-1)))
-    .select(cols).then(function(list) {
-    _.each(list, function(rec) {
-      var r = _.pick(rec, 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address', 'barangay');
-      r.dob = moment(r.dob).format('MM-DD-YYYY');
-      results.push(r);
-    });
+    .select(cols)
+    .orderBy('priority', 'desc')    // hack to get recs with priority numbers to top, though not correct order
+    .then(function(list) {
+      _.each(list, function(rec) {
+        var r = _.pick(rec, 'priority', 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address', 'barangay');
+        r.dob = moment(r.dob).format('MM-DD-YYYY');
+        results.push(r);
+      });
     renderData = {
       title: req.gettext('Search Results')
       , user: req.session.user
