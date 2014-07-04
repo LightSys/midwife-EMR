@@ -9,6 +9,7 @@
 var express = require('express')
   , http = require('http')
   , https = require('https')
+  , heapdump = require('heapdump')
   , url = require('url')
   , device = require('express-device')
   , passport = require('passport')
