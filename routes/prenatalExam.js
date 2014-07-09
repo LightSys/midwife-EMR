@@ -64,6 +64,7 @@ var prenatalExamSave = function(req, res) {
         , vitamin: '0'
         , pray: '0'
       }
+    , saveOpts = {method: 'update'}
     ;
 
   if (req.paramPregnancy &&
@@ -91,15 +92,19 @@ var prenatalExamSave = function(req, res) {
     flds = _.defaults(flds, defaultFlds);
 
     // --------------------------------------------------------
-    // If a new record, remove empty id field so ORM knows.
+    // If a new record, remove empty id field and set method
+    // for the sake of the ORM.
     // --------------------------------------------------------
-    if (flds.id && flds.id.length === 0) delete flds.id;
+    if (! !! flds.id) {
+      delete flds.id;
+      saveOpts.method = 'insert';
+    }
 
     preRec = new PrenatalExam(flds);
     preRec
       .setUpdatedBy(req.session.user.id)
       .setSupervisor(supervisor)
-      .save(flds).then(function(model) {
+      .save(flds, saveOpts).then(function(model) {
         var path = cfg.path.pregnancyPrenatalEdit
           ;
         path = path.replace(/:id/, flds.pregnancy_id);
