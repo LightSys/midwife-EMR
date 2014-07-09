@@ -1109,20 +1109,17 @@ var generalEditSave = function(req, res) {
               });   // end Promise
             })
             .then(function() {
-              t.commit();
+              logInfo('Pregnancy was updated.');
               req.flash('info', req.gettext('Pregnancy was updated.'));
             })
             .caught(function(err) {
               logError(err);
-              t.rollback();
               req.flash('error', err);
             });
-          })    // end transaction
-          .caught(function(err) {
-            // --------------------------------------------------------
-            // Rollback transaction stats - we don't need this but we don't
-            // want it to propagate.
-            // --------------------------------------------------------
+          // --------------------------------------------------------
+          // returns a transaction - commit() or rollback() is called
+          // automatically when returning a promise.
+          // --------------------------------------------------------
           });
       })
       .then(function() {
