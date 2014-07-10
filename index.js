@@ -43,6 +43,7 @@ var express = require('express')
   , error = require('./routes').error
   , report = require('./routes').report
   , dewormingRpt = require('./routes').dewormingRpt
+  , priorityList =require('./routes').priorityList
   , logInfo = require('./util').logInfo
   , logWarn = require('./util').logWarn
   , logError = require('./util').logError
@@ -431,6 +432,15 @@ app.post(cfg.path.checkIn, common, inRoles(['guard']), guard.checkInOutSave);
 app.post(cfg.path.checkOut, common, inRoles(['guard']), guard.checkInOutSave);
 app.get(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOut);
 app.post(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOutSave);
+
+// Priority List
+app.post(cfg.path.priorityListLoad, priorityList.load);  // parameter handling for AJAX save only
+app.get(cfg.path.priorityList, common, hasSuper,
+    inRoles(['attending', 'clerk', 'supervisor']), priorityList.page);  // GET page
+app.post(cfg.path.priorityList, common, hasSuper,
+    inRoles(['attending', 'clerk', 'supervisor']), priorityList.data);  // POST AJAX for data
+app.post(cfg.path.priorityListSave, common, hasSuper,
+    inRoles(['attending', 'clerk', 'supervisor']), priorityList.save);  // POST AJAX for save
 
 
 // AJAX Calls.

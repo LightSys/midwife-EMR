@@ -237,6 +237,10 @@ cfg.path.requiredTetanus = '/pregnancy/:id/requiredtetanus';    // POST
 cfg.path.reportForm = '/report/form';                 // GET
 cfg.path.reportRun = '/report/run';                   // POST
 
+// Priority list
+cfg.path.priorityListLoad = '/priorityList/:id/:op';  // parameter handling
+cfg.path.priorityList = '/priorityList';         // GET/POST page and AJAX data
+cfg.path.priorityListSave = '/priorityList/:id/save';      // POST to save data
 
 
 

@@ -29,6 +29,7 @@ module.exports = function(grunt) {
                 , 'bower_components/moment/min/moment.min.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/mercy.js'
+                , 'client/js/priorityList.js'
               ]
             }
           }

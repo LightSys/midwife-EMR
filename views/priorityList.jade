@@ -1,0 +1,28 @@
+extends layouts/default_layout
+
+block priorityList
+  +titleMsg(title)
+
+  p= gettext('Check mark when the chart is pulled for each client.')
+
+  form(id='priorityListForm', role='form', name='priorityList', action='/priorityList/', method='post')
+    div.row
+      div(class='col-md-12')
+        table(id='priorityListTable', class='table table-striped table-bordered table-hover table-condensed responsive')
+          thead
+            tr
+              td= gettext('Priority')
+              td= gettext('Name')
+              td= gettext('MMC')
+              td= gettext('CheckIn')
+              td= gettext('Chart')
+              td= gettext('Wgt')
+              td= gettext('BP')
+              td= gettext('Exam')
+              td= gettext('CheckOut')
+          tbody
+
+    div.row
+      div(class='col-md-12')
+        input(id='csrfToken', type='hidden', name='_csrf', value=token)
+

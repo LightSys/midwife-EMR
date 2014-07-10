@@ -61,6 +61,9 @@ html(lang="en")
                 li
                   a(href="/report/form") <i class="fa fa-fw fa-file-text-o"></i>
                     = gettext('Reports')
+                li
+                  a(href="/priorityList") <i class="fa fa-fw fa-list-alt"></i>
+                    = gettext('Priority List')
               li
                 a(href="/logout") <i class="fa fa-fw fa-power-off"></i>
                   = gettext('Logout')
@@ -119,6 +122,7 @@ html(lang="en")
                 block vaccinationAddEditForm
                 block medicationAddEditForm
                 block checkinout
+                block priorityList
               else
                 block login
 

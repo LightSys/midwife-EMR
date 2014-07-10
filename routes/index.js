@@ -15,4 +15,5 @@ module.exports = {
   , guard: require('./guard')
   , report: require('./report')
   , dewormingRpt: require('./dewormingRpt')
+  , priorityList: require('./priorityList')
 };
