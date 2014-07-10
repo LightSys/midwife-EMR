@@ -2,13 +2,14 @@
  * -------------------------------------------------------------------------------
  * guard.js
  *
- * Handling of guard functions.
+ * Handling of guard functions and other checkin, checkout and chart pulling events.
  * -------------------------------------------------------------------------------
  */
 
 var _ = require('underscore')
   , moment = require('moment')
   , Bookshelf = require('bookshelf')
+  , Promise = require('bluebird')
   , cfg = require('../config')
   , Priority = require('../models').Priority
   , Priorities = require('../models').Priorities
@@ -74,6 +75,131 @@ var checkInOut = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * simpleCheckOutForm()
+ *
+ * Displays a check out form that is not tied to any
+ * particular client, i.e. the pregnancy id is not known in
+ * advance. This allows the guard to quickly checkout clients
+ * based solely upon the priority barcode that is scanned.
+ * -------------------------------------------------------- */
+var simpleCheckOutForm = function simpleCheckOutForm(req, res) {
+  var data = {
+        title: req.gettext('Check Out')
+        , user: req.session.user
+        , messages: req.flash()
+        , rec: req.paramPregnancy || void(0)
+      }
+    ;
+
+  res.render('checkout', data);
+};
+
+
+/* --------------------------------------------------------
+ * simpleCheckOut()
+ *
+ * Checkout a client based solely upon the priority barcode
+ * without the pregnancy id being passed. The guard may use
+ * this in order to check out clients based solely upon the
+ * priority tag that they return.
+ * -------------------------------------------------------- */
+var simpleCheckOut = function simpleCheckOut(req, res) {
+  var priorityBarcode = req.body.priorityBarcode
+    , currDateTime = moment().format('YYYY-MM-DD HH:mm:ss')
+    , data = {
+        title: req.gettext('Check Out')
+        , user: req.session.user
+        , messages: req.flash()
+        , rec: req.paramPregnancy || void(0)
+      }
+    , priorityNumber
+    ;
+
+  Priority.forge({eType: prenatalCheckInId, barcode: priorityBarcode})
+    .fetch()
+    .then(function(priRec) {
+      var msg
+        , pregId = priRec.get('pregnancy_id') || void(0)
+        ;
+      // --------------------------------------------------------
+      // Sanity checks.
+      // --------------------------------------------------------
+      if (! priRec) {
+        msg = req.gettext('Sorry, that priority # barcode does not exist.');
+      }
+      if (! msg && ! pregId) {
+        msg = req.gettext('Sorry, that priority barcode is not associated with a client.');
+      }
+      if (msg) {
+        req.flash('warning', msg);
+        return Promise.reject(msg);
+      }
+
+      priorityNumber = priRec.get('priority');
+
+      // --------------------------------------------------------
+      // Clear the pregnancy id and assigned fields from the
+      // priority table and create a checkout event in a single
+      // transaction.
+      // --------------------------------------------------------
+      return checkOut(pregId, priorityBarcode, req.session.user.id, req.sessionID);
+    })
+    .then(function() {
+      req.flash('info', req.gettext('Priority number ' + priorityNumber + ' has checked out.'));
+      data.messages = req.flash();
+      return res.render('checkout', data);
+    })
+    .caught(function(err) {
+      console.log('Error: ' + err);
+      data.messages = req.flash();
+      return res.render('checkout', data);
+    });
+};
+
+/* --------------------------------------------------------
+ * checkOut()
+ *
+ * Checkout the client based upon the parameters passed.
+ * Returns a Bookshelf promise from the transaction.
+ *
+ * param    pregId          - pregnancy id
+ * param    priorityBarcode - barcode that was scanned
+ * param    userId          - user id
+ * param    sessionId       - session id
+ * returns  promise
+ * -------------------------------------------------------- */
+var checkOut = function checkOut(pregId, priorityBarcode, userId, sessionId) {
+  return Bookshelf.DB.knex.transaction(function(t) {
+    Priority.forge()
+      .where({
+        eType: prenatalCheckInId
+        , barcode: priorityBarcode
+        , pregnancy_id: pregId})
+      .setUpdatedBy(userId)
+      .setSupervisor(null)
+      .save({assigned: null, pregnancy_id: null}, {method: 'update', transacting: t})
+      .then(function(priRec2) {
+        var opts = {
+              eDateTime: moment().format('YYYY-MM-DD HH:mm:ss.SSS')
+              , pregnancy_id: pregId
+              , sid: sessionId
+            }
+          ;
+        return Event.prenatalCheckOutEvent(opts, t).then(function() {
+          logInfo('Pregnancy id ' + pregId + ' has checked out.');
+        });
+      })
+      .then(function() {
+        t.commit();
+      })
+      .caught(function(err) {
+        logError('Rolling back transaction');
+        console.log(err);
+        t.rollback();
+      });
+  }); // end transaction
+};
 
 /* --------------------------------------------------------
  * checkInOutSave()
@@ -193,6 +319,9 @@ var checkInOutSave = function(req, res) {
             return;
           }
 
+          // --------------------------------------------------------
+          // TODO: refactor to use the checkOut() function.
+          // --------------------------------------------------------
           return Bookshelf.DB.knex.transaction(function(t) {
             priRec
               .setUpdatedBy(req.session.user.id)
@@ -300,6 +429,8 @@ init();
 module.exports = {
   checkInOut: checkInOut
   , checkInOutSave: checkInOutSave
+  , simpleCheckOut: simpleCheckOut
+  , simpleCheckOutForm: simpleCheckOutForm
 };
 
 

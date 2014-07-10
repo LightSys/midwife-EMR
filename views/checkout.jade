@@ -1,0 +1,19 @@
+extends layouts/default_layout
+
+block checkout
+  +titleMsg(title)
+
+  - var action = '/checkout';
+  - var btnText = 'Check Out';
+  form(role='form', name='checkout', action=action, method='post')
+    div.row
+      div(class='form-group col-sm-2')
+        label= gettext('6 Digit Priority #')
+        input(class='form-control input-lg', type='text', tabindex="1", autofocus, autocomplete="off", name='priorityBarcode', value=priorityBarcode)
+    div.row
+      div(class='form-group col-sm-2')
+        input(class='btn btn-primary', type='submit', value=btnText)
+        input(type='hidden', name='_csrf', value=token)
+
+
+

@@ -53,7 +53,10 @@ html(lang="en")
               if roleInfo.hasRole('guard')
                 li
                   a(href="/checkin") <i class="fa fa-fw fa-check-circle-o"></i>
-                    = gettext('New Client Checkin')
+                    = gettext('New Client Check In')
+                li
+                  a(href="/checkout") <i class="fa fa-fw fa-circle-o"></i>
+                    = gettext('Client Check Out')
               if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')
                 li
                   a(href="/pregnancy/new") <i class="fa fa-fw fa-user-md"></i>
@@ -122,6 +125,7 @@ html(lang="en")
                 block vaccinationAddEditForm
                 block medicationAddEditForm
                 block checkinout
+                block checkout
                 block priorityList
               else
                 block login

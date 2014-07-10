@@ -432,6 +432,8 @@ app.post(cfg.path.checkIn, common, inRoles(['guard']), guard.checkInOutSave);
 app.post(cfg.path.checkOut, common, inRoles(['guard']), guard.checkInOutSave);
 app.get(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOut);
 app.post(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOutSave);
+app.get(cfg.path.simpleCheckOut, common, inRoles(['guard']), guard.simpleCheckOutForm);
+app.post(cfg.path.simpleCheckOut, common, inRoles(['guard']), guard.simpleCheckOut);
 
 // Priority List
 app.post(cfg.path.priorityListLoad, priorityList.load);  // parameter handling for AJAX save only

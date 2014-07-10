@@ -229,6 +229,7 @@ cfg.path.checkInOut = '/pregnancy/:id/checkinout';  // GET
 cfg.path.checkIn = '/pregnancy/:id/checkin';        // POST
 cfg.path.checkOut = '/pregnancy/:id/checkout';      // POST
 cfg.path.newCheckIn = '/checkin';                   // GET/POST
+cfg.path.simpleCheckOut = '/checkout';                 // GET/POST
 
 // AJAX calls
 cfg.path.requiredTetanus = '/pregnancy/:id/requiredtetanus';    // POST
