@@ -229,25 +229,24 @@ var labTestSave = function(req, res) {
             .save(null, {transacting: t})
             .then(function(model) {
               logInfo('Saved ' + model.get('id'));
-              resolve(model.get('id'));
+              return resolve(model.get('id'));
             })
             .caught(function(err) {
-              reject(err);
+              return reject(err);
             });
         });
       }))
       .then(function(rows) {
-        t.commit();
         logInfo('Committed ' + rows.length + ' records.');
-      }, function(err) {
+      })
+      .caught(function(err) {
         logError(err);
-        t.rollback();
         logInfo('Transaction was rolled back.');
         req.flash('error', req.gettext('There was a problem and your changes were NOT saved.'));
-      })
-      .then(function() {
-        res.redirect(cfg.path.pregnancyLabsEditForm.replace(/:id/, req.paramPregnancy.id));
       });
+    })
+    .then(function() {
+      res.redirect(cfg.path.pregnancyLabsEditForm.replace(/:id/, req.paramPregnancy.id));
     });
 
   } else {
