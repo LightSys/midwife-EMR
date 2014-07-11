@@ -2,9 +2,12 @@
 
 Custom software for a charity maternity clinic in the Philippines. This software is specifically designed for one particular clinic, though anyone can use parts or all of it freely as you see fit. See license for details. *Use at your own risk - there is no warranty.*
 
+Currently the software concentrates upon the prenatal check ups during the pregnancy. Other phases of pregnancy handling are not yet implemented.
+
 ## Features
 
 - New patient setup
+  - Any number of patients allowed.
 - Prenatal history
 - Prenatal questionnaire
 - Prenatal examinations
@@ -13,10 +16,25 @@ Custom software for a charity maternity clinic in the Philippines. This software
   - Prenatal measurements/notes
   - Referrals
   - Medicines administered
+  - Health Teachings (to be completed)
 - Search
   - exact and wildcard
-- Reports (to be completed)
-- Priority number scheduling (to be completed)
+  - search by priority number (scanning the priority badge/tag)
+- Reports
+  - 1 so far, more to come
+  - Reports produce PDFs for storage, printing, etc.
+  - Report input includes to and from dates, type of report, etc.
+- Priority number scheduling
+  - Barcode generation system to allow scanning priority badges/tags for
+    faster processing
+    - Generator script creates PDF of barcodes
+    - Barcodes can then be permanently attached to priority badges/tags that the patients
+      use when they arrive. This is done once to setup the priority
+      badges/tags.
+    - The queuing system uses priority badges/tags and scanners can be used to
+      quickly access the patient's records as they proceed through the exam
+      processes. (Note: staff should always confirm name of patient after
+      scanning priority badge/tag.)
 - User management (staff, etc.)
   - Roles
      - Supervisor
@@ -25,7 +43,9 @@ Custom software for a charity maternity clinic in the Philippines. This software
      - Guard
      - Administrator
   - Permissions and ACL based upon roles
+  - Any number of users/staff allowed.
 - Web browser and mobile browser compatible
+  - Native Android client in development (separate)
 - Full logging of all changes to the database
   - All historical changes reviewable by supervisor role or admin role as
     appropriate
@@ -35,18 +55,18 @@ Custom software for a charity maternity clinic in the Philippines. This software
 
 ## Status
 
-Alpha - development is ongoing.
+Alpha - development is ongoing and nearing on-site pilot.
 
 ## Technology
 
-- Nodejs - version v0.10.28 (or latest)
+- Nodejs - version v0.10.29 (or latest)
 - MySQL
 
 Web based and compatible with tablet browsers.
 
 ## Contributions
 
-Contributions, comments, suggestions and pull requests are welcome.
+Contributions, comments, suggestions, issues and pull requests are welcome.
 
 ## License
 
