@@ -109,6 +109,7 @@ app.use(express.cookieParser(cfg.cookie.secret));
 app.use(express.session({
   secret: cfg.session.secret
   , cookie: {maxAge: cfg.cookie.maxAge, secure: useSecureCookie}
+  , rolling: true   // Allows session to remain active as long as it is being used.
   , store: new SessionStore(cfg.session)
 }));
 app.use(express.bodyParser());
