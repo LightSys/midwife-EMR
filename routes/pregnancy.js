@@ -52,10 +52,6 @@ var _ = require('underscore')
   , religion = []
   , education = []
   , edema = []
-  , riskPresent = []
-  , riskObHx = []
-  , riskMedHx = []
-  , riskLifestyle = []
   , incomePeriod = []
   , yesNoUnanswered = []
   , yesNoUnknown = []
@@ -67,6 +63,7 @@ var _ = require('underscore')
   , dayOfWeek = []
   , prenatalCheckInId
   , prenatalCheckOutId
+  , riskCodes = {}
   ;
 
 /* --------------------------------------------------------
@@ -81,10 +78,6 @@ var init = function() {
     , religionName = 'religion'
     , educationName = 'education'
     , edemaName = 'edema'
-    , riskPresentName = 'riskPresent'
-    , riskObHxName = 'riskObHx'
-    , riskMedHxName = 'riskMedHx'
-    , riskLifestyleName = 'riskLifestyle'
     , incomePeriodName = 'incomePeriod'
     , yesNoUnansweredName = 'yesNoUnanswered'
     , yesNoUnknownName = 'yesNoUnknown'
@@ -137,10 +130,6 @@ var init = function() {
   doRefresh(religionName, function(l) {religion = l;});
   doRefresh(educationName, function(l) {education = l;});
   doRefresh(edemaName, function(l) {edema = l;});
-  doRefresh(riskPresentName, function(l) {riskPresent = l;});
-  doRefresh(riskObHxName, function(l) {riskObHx = l;});
-  doRefresh(riskMedHxName, function(l) {riskMedHx = l;});
-  doRefresh(riskLifestyleName, function(l) {riskLifestyle = l;});
   doRefresh(incomePeriodName, function(l) {incomePeriod = l;});
   doRefresh(yesNoUnansweredName, function(l) {yesNoUnanswered = l;});
   doRefresh(yesNoUnknownName, function(l) {yesNoUnknown = l;});
@@ -159,6 +148,15 @@ var init = function() {
     .then(function(list) {
       prenatalCheckInId = list.findWhere({name: 'prenatalCheckIn'}).get('id');
       prenatalCheckOutId = list.findWhere({name: 'prenatalCheckOut'}).get('id');
+    });
+
+  // --------------------------------------------------------
+  // Do a one time load of risk codes.
+  // --------------------------------------------------------
+  new RiskCodes()
+    .fetch()
+    .then(function(list) {
+      riskCodes = list.toJSON();
     });
 };
 
@@ -204,10 +202,22 @@ var load = function(req, res, next) {
           }
         , 'prenatalExam'
         , 'priority'
-        , 'schedule']})
-      .then(function(rec) {
-        if (! rec) return next();
-        rec = rec.toJSON();
+        , 'risk'
+        , 'schedule']
+      })
+      .then(function(pregRec) {
+        var rec
+          ;
+        if (! pregRec) return next();
+
+        rec = pregRec.toJSON();
+
+        // --------------------------------------------------------
+        // Set only the required information for risk.
+        // --------------------------------------------------------
+        rec.risk = _.map(rec.risk, function(risk) {
+          return _.omit(risk, 'pregnancy_id', 'updatedBy', 'updatedAt', 'supervisor');
+        })
 
         // --------------------------------------------------------
         // Fix the dates for the screen in the format that the
@@ -379,10 +389,6 @@ var getCommonFormData = function(req, addData) {
  var path = req.route.path
    , schRec
    , ed   // edema
-   , rp   // riskPresent
-   , ro   // riskObHx
-   , rm   // riskMedHx
-   , rl   // riskLifestyle
    , us   // useIodizedSalt
    , fg   // finalGAPeriod
    , et   // episTear
@@ -391,6 +397,7 @@ var getCommonFormData = function(req, addData) {
    , tod = 'NSD' // type of delivery - defaults to NSD
    , mf   // male or female
    , at   // attendant
+   , rc   // riskCodes
    ;
 
   // --------------------------------------------------------
@@ -413,15 +420,8 @@ var getCommonFormData = function(req, addData) {
 
     // Prenatal page.
     if (path === cfg.path.pregnancyPrenatalEdit) {
-      rp = adjustSelectData(riskPresent, req.paramPregnancy.riskPresent);
-      ro = adjustSelectData(riskObHx, req.paramPregnancy.riskObHx);
-      rm = adjustSelectData(riskMedHx, req.paramPregnancy.riskMedHx);
-      rl = adjustSelectData(riskLifestyle, req.paramPregnancy.riskLifestyle);
-
-      if (_.isUndefined(req.paramPregnancy.riskPresent)) req.paramPregnancy.riskPresent = '';
-      if (_.isUndefined(req.paramPregnancy.riskObHx)) req.paramPregnancy.riskObHx = '';
-      if (_.isUndefined(req.paramPregnancy.riskMedHx)) req.paramPregnancy.riskMedHx = '';
-      if (_.isUndefined(req.paramPregnancy.riskLifestyle)) req.paramPregnancy.riskLifestyle = '';
+      // Set up the risk codes.
+      rc = riskCodes;
     }
 
     // Add or edit prenatal examinations.
@@ -467,10 +467,6 @@ var getCommonFormData = function(req, addData) {
     , pregHist: req.paramPregHist || void(0)
     , prenatalExam: req.paramPrenatalExam || void(0)
     , edema: ed
-    , riskPresent: rp
-    , riskObHx: ro
-    , riskMedHx: rm
-    , riskLifestyle: rl
     , useIodizedSalt: us
     , finalGAPeriod: fg
     , episTear: et
@@ -479,6 +475,7 @@ var getCommonFormData = function(req, addData) {
     , defaultTypeOfDelivery: tod
     , sexOfBaby: mf
     , attendant: at
+    , riskCodes: rc
   });
 };
 
@@ -1266,12 +1263,45 @@ var prenatalForm = function(req, res) {
 var prenatalSave = function(req, res) {
   var supervisor = null
     , pnFlds = {}
+    , riskFlds = {}
+    , riskInsertRecs = []
+    , riskDeleteRecs = []
     , defaultFlds = {
         philHealthMCP: '0'
         , philHealthNCP: '0'
         , philHealthApproved: '0'
         , useAlternateEdd: '0'
         , sureLMP: '0'
+      }
+    , defaultRiskFlds = {
+        A1: '0'
+        , A2: '0'
+        , B1: '0'
+        , B2: '0'
+        , B3: '0'
+        , C: '0'
+        , F: '0'
+        , D1: '0'
+        , D2: '0'
+        , D3: '0'
+        , D4: '0'
+        , D5: '0'
+        , D6: '0'
+        , D7: '0'
+        , E1: '0'
+        , E2: '0'
+        , E3: '0'
+        , E4: '0'
+        , E5: '0'
+        , E6: '0'
+        , E7: '0'
+        , E8: '0'
+        , G1: '0'
+        , G2: '0'
+        , G3: '0'
+        , G4: '0'
+        , G5: '0'
+        , G6: '0'
       }
     ;
 
@@ -1288,7 +1318,8 @@ var prenatalSave = function(req, res) {
     // --------------------------------------------------------
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
-    pnFlds = _.defaults(_.omit(req.body, ['_csrf']), defaultFlds);
+    pnFlds = _.defaults(_.omit(req.body, _.union(['_csrf'], _.keys(defaultRiskFlds))), defaultFlds);
+    riskFlds = _.defaults(_.omit(req.body, _.union(['_csrf'], _.keys(pnFlds))), defaultRiskFlds);
 
     // --------------------------------------------------------
     // If the edd is not filled in and the lmp is, calculate
@@ -1303,20 +1334,80 @@ var prenatalSave = function(req, res) {
       pnFlds.edd = calcEdd(pnFlds.lmp);
     }
 
+    // --------------------------------------------------------
+    // For each potential risk, determine if the pregnancy had
+    // previously had the risk assigned. If so and the new value
+    // is '0' (unchecked), delete the record. If not and the
+    // new value is '1' (checked), insert a new record. Store
+    // decisions in riskInsertRecs and riskDeleteRecs to be
+    // applied later.
+    // --------------------------------------------------------
+    _.each(riskFlds, function(val, key) {
+      var riskCodeId
+        , riskRec
+        ;
+      // --------------------------------------------------------
+      // Get the riskCode id that this risk name maps to.
+      // --------------------------------------------------------
+      riskCodeId = _.findWhere(riskCodes, {name: key}).id;
+
+      // --------------------------------------------------------
+      // Find if risk record already exists in the database for
+      // this pregnancy.
+      // --------------------------------------------------------
+      riskRec = _.findWhere(req.paramPregnancy.risk, {riskCode: riskCodeId});
+      if (riskRec) {
+        if (val === '0') {
+          // --------------------------------------------------------
+          // Delete the record from the risk table.
+          // --------------------------------------------------------
+          riskDeleteRecs.push({id: riskRec.id, pregnancy_id: req.paramPregnancy.id});
+        }
+      } else {
+        if (val === '1') {
+          // --------------------------------------------------------
+          // Create a new record in the risk table.
+          // --------------------------------------------------------
+          riskInsertRecs.push({riskCode: riskCodeId, pregnancy_id: req.paramPregnancy.id});
+        }
+      }
+    });
+
+    // --------------------------------------------------------
+    // Save the data, the pregnncy record first and then the
+    // risk records.
+    // --------------------------------------------------------
     Pregnancy.forge({id: pnFlds.id})
       .fetch().then(function(pregnancy) {
         pregnancy
           .setUpdatedBy(req.session.user.id)
           .setSupervisor(supervisor)
-          .save(pnFlds).then(function(pregnancy) {
-            req.flash('info', req.gettext('Pregnancy was updated.'));
-            res.redirect(cfg.path.pregnancyPrenatalEdit.replace(/:id/, pregnancy.id));
+          .save(pnFlds)
+          .then(function(pregnancy) {
+            // --------------------------------------------------------
+            // Delete the risk records necessary.
+            // --------------------------------------------------------
+            var risksDel = new Risks(riskDeleteRecs);
+            risksDel.invokeThen('destroy', null)
+              .then(function() {
+                // --------------------------------------------------------
+                // Insert the new risk records.
+                // --------------------------------------------------------
+                var risksIns = new Risks(riskInsertRecs);
+                risksIns.invokeThen('setUpdatedBy', [req.session.user.id]).then(function() {
+                  risksIns.invokeThen('setSupervisor', supervisor).then(function() {
+                    risksIns.invokeThen('save').then(function() {
+                      req.flash('info', req.gettext('Pregnancy was updated.'));
+                      res.redirect(cfg.path.pregnancyPrenatalEdit.replace(/:id/, pregnancy.id));
+                    });
+                  });
+                });
+              });
           })
           .caught(function(err) {
             logError(err);
             res.redirect(cfg.path.search);
           });
-
       })
       .caught(function(err) {
         logError(err);

@@ -107,10 +107,6 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   lmp DATE NULL,
   sureLMP BOOLEAN NULL DEFAULT 0,
   warning BOOLEAN NULL DEFAULT 0,
-  riskPresent CHAR(2) NULL,
-  riskObHx CHAR(2) NULL,
-  riskMedHx CHAR(2) NULL,
-  riskLifestyle CHAR(2) NULL,
   riskNote VARCHAR(250) NULL,
   edd DATE NULL,
   alternateEdd DATE NULL,
@@ -193,6 +189,29 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 SHOW WARNINGS;
+
+-- Look up tables for risk information.
+CREATE TABLE IF NOT EXISTS `riskCode` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(40) NOT NULL,
+  riskType VARCHAR(20) NOT NULL,
+  description VARCHAR(250) NULL,
+  UNIQUE (name)
+);
+
+CREATE TABLE IF NOT EXISTS `risk` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pregnancy_id INT NOT NULL,
+  riskCode INT NOT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  UNIQUE (pregnancy_id, riskCode),
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (riskCode) REFERENCES riskCode (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
 
 -- Look up table for vaccination.
 CREATE TABLE IF NOT EXISTS `vaccinationType` (

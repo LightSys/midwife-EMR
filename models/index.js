@@ -40,5 +40,9 @@ module.exports = {
   , Schedules: require('./Schedule').Schedules
   , Priority: require('./Priority').Priority
   , Priorities: require('./Priority').Priorities
+  , Risk: require('./Risk').Risk
+  , Risks: require('./Risk').Risks
+  , RiskCode: require('./RiskCode').RiskCode
+  , RiskCodes: require('./RiskCode').RiskCodes
 };
 

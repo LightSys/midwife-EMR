@@ -37,10 +37,6 @@ CREATE TABLE `pregnancy` (
   `lmp` date DEFAULT NULL,
   `sureLMP` tinyint(1) DEFAULT '0',
   `warning` tinyint(1) DEFAULT '0',
-  `riskPresent` char(2) DEFAULT NULL,
-  `riskObHx` char(2) DEFAULT NULL,
-  `riskMedHx` char(2) DEFAULT NULL,
-  `riskLifestyle` char(2) DEFAULT NULL,
   `riskNote` varchar(250) DEFAULT NULL,
   `edd` date DEFAULT NULL,
   `alternateEdd` date DEFAULT NULL,
@@ -125,7 +121,7 @@ CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
@@ -134,19 +130,18 @@ Pregnancy = Bookshelf.Model.extend({
   , permittedAttributes: ['id', 'firstname', 'lastname', 'maidenname', 'nickname',
       'religion', 'maritalStatus', 'telephone', 'work', 'education',
       'clientIncome', 'clientIncomePeriod', 'address', 'barangay', 'city',
-      'postalCode', 'gravidaNumber', 'lmp', 'sureLMP', 'warning', 'riskPresent',
-      'riskObHx', 'riskMedHx', 'riskLifestyle', 'riskNote', 'edd', 'alternateEdd',
-      'useAlternateEdd', 'doctorConsultDate', 'dentistConsultDate', 'mbBook',
-      'whereDeliver', 'fetuses', 'monozygotic', 'pregnancyEndDate',
-      'pregnancyEndResult', 'iugr', 'note', 'numberRequiredTetanus',
-      'invertedNipples', 'hasUS', 'wantsUS', 'gravida', 'stillBirths',
-      'abortions', 'living', 'para', 'term', 'preterm', 'philHealthMCP',
-      'philHealthNCP', 'philHealthID', 'philHealthApproved', 'currentlyVomiting',
-      'currentlyDizzy', 'currentlyFainting', 'currentlyBleeding',
-      'currentlyUrinationPain', 'currentlyBlurryVision', 'currentlySwelling',
-      'currentlyVaginalPain', 'currentlyVaginalItching', 'currentlyNone',
-      'useIodizedSalt', 'takingMedication', 'planToBreastFeed', 'birthCompanion',
-      'practiceFamilyPlanning', 'practiceFamilyPlanningDetails',
+      'postalCode', 'gravidaNumber', 'lmp', 'sureLMP', 'warning', 'riskNote',
+      'edd', 'alternateEdd', 'useAlternateEdd', 'doctorConsultDate',
+      'dentistConsultDate', 'mbBook', 'whereDeliver', 'fetuses', 'monozygotic',
+      'pregnancyEndDate', 'pregnancyEndResult', 'iugr', 'note',
+      'numberRequiredTetanus', 'invertedNipples', 'hasUS', 'wantsUS', 'gravida',
+      'stillBirths', 'abortions', 'living', 'para', 'term', 'preterm',
+      'philHealthMCP', 'philHealthNCP', 'philHealthID', 'philHealthApproved',
+      'currentlyVomiting', 'currentlyDizzy', 'currentlyFainting',
+      'currentlyBleeding', 'currentlyUrinationPain', 'currentlyBlurryVision',
+      'currentlySwelling', 'currentlyVaginalPain', 'currentlyVaginalItching',
+      'currentlyNone', 'useIodizedSalt', 'takingMedication', 'planToBreastFeed',
+      'birthCompanion', 'practiceFamilyPlanning', 'practiceFamilyPlanningDetails',
       'familyHistoryTwins', 'familyHistoryHighBloodPressure',
       'familyHistoryDiabetes', 'familyHistoryHeartProblems', 'familyHistoryTB',
       'familyHistorySmoking', 'familyHistoryNone', 'historyFoodAllergy',
@@ -197,6 +192,10 @@ Pregnancy = Bookshelf.Model.extend({
 
   , priority: function() {
       return this.hasMany(require('./Priority').Priority, 'pregnancy_id');
+    }
+
+  , risk: function() {
+      return this.hasMany(require('./Risk').Risk, 'pregnancy_id');
     }
 
 }, {

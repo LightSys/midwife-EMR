@@ -45,6 +45,16 @@ ALTER TABLE pregnancyLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnancyLog DROP PRIMARY KEY;
 ALTER TABLE pregnancyLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating riskLog
+SELECT 'riskLog' AS Creating FROM DUAL;
+CREATE TABLE riskLog LIKE risk;
+ALTER TABLE riskLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE riskLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE riskLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE riskLog DROP PRIMARY KEY;
+ALTER TABLE riskLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE riskLog DROP KEY pregnancy_id;
+--
 -- Creating vaccinationTypeLog
 SELECT 'vaccinationTypeLog' AS Creating FROM DUAL;
 CREATE TABLE vaccinationTypeLog LIKE vaccinationType;
