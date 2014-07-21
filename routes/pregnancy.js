@@ -1475,7 +1475,12 @@ var labsForm = function(req, res) {
             r.name = result.LabTest.name;
             ltests.push(r);
         });
-        labResults = _.sortBy(ltests, 'testDate');
+        // --------------------------------------------------------
+        // Sort by test id then date.
+        // --------------------------------------------------------
+        labResults = _.sortBy(ltests, function(lt) {
+          return Number(lt.labTest_id + '.' + moment(lt.testDate).unix());
+        });
       })
       // Get the referrals
       .then(function() {
