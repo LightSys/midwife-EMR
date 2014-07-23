@@ -55,6 +55,7 @@ var _ = require('underscore')
   , incomePeriod = []
   , yesNoUnanswered = []
   , yesNoUnknown = []
+  , episTear = []
   , attendant = []
   , wksMthsYrs = []
   , wksMths = []
@@ -81,6 +82,7 @@ var init = function() {
     , incomePeriodName = 'incomePeriod'
     , yesNoUnansweredName = 'yesNoUnanswered'
     , yesNoUnknownName = 'yesNoUnknown'
+    , episTearName = 'episTear'
     , attendantName = 'attendant'
     , wksMthsYrsName = 'wksMthsYrs'
     , wksMthsName = 'wksMths'
@@ -133,6 +135,7 @@ var init = function() {
   doRefresh(incomePeriodName, function(l) {incomePeriod = l;});
   doRefresh(yesNoUnansweredName, function(l) {yesNoUnanswered = l;});
   doRefresh(yesNoUnknownName, function(l) {yesNoUnknown = l;});
+  doRefresh(episTearName, function(l) {episTear = l;});
   doRefresh(attendantName, function(l) {attendant = l;});
   doRefresh(wksMthsYrsName, function(l) {wksMthsYrs = l;});
   doRefresh(wksMthsName, function(l) {wksMths = l;});
@@ -442,7 +445,7 @@ var getCommonFormData = function(req, addData) {
     // Add or edit pregnancy histories.
     if (path === cfg.path.pregnancyHistoryAdd) {
       fg = adjustSelectData(wksMths, void(0));
-      et = adjustSelectData(yesNoUnknown, void(0));
+      et = adjustSelectData(episTear, void(0));
       er = adjustSelectData(yesNoUnknown, void(0));
       bf = adjustSelectData(wksMthsYrs, void(0));
       mf = adjustSelectData(maleFemale, void(0));
@@ -450,7 +453,7 @@ var getCommonFormData = function(req, addData) {
     }
     if (path === cfg.path.pregnancyHistoryEdit) {
       fg = adjustSelectData(wksMths, req.paramPregHist.finalGAPeriod);
-      et = adjustSelectData(yesNoUnknown, req.paramPregHist.episTear);
+      et = adjustSelectData(episTear, req.paramPregHist.episTear);
       er = adjustSelectData(yesNoUnknown, req.paramPregHist.repaired);
       bf = adjustSelectData(wksMthsYrs, req.paramPregHist.howLongBFedPeriod);
       mf = adjustSelectData(maleFemale, req.paramPregHist.sexOfBaby);
