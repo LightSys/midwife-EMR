@@ -21,7 +21,7 @@ block prenatalAddEditExam
   -   formName = 'prenatalEditExam';
   -   formAction = '/pregnancy/' + rec.id + '/prenatalexam/' + prenatalExam.id;
   -   defaultDate = libs.mmt(prenatalExam.date).format('YYYY-MM-DD');
-  -   returnDate = libs.mmt(prenatalExam.returnDate).format('YYYY-MM-DD');
+  -   returnDate = prenatalExam.returnDate? libs.mmt(prenatalExam.returnDate).format('YYYY-MM-DD'): void(0);
   -   prenatalExamDeletePath = '/pregnancy/' + rec.id + '/prenatalexam/' + prenatalExam.id + '/delete';
   -   ga = prenatalExam.ga;
   - } else {
@@ -35,7 +35,7 @@ block prenatalAddEditExam
         div(class='form-group col-md-3')
           label(class='')= gettext('Mother Information')
           div= gettext('Date')
-          input(id='date', class='form-control', type='date', tabindex="1", autocomplete="off", name='date', value=defaultDate)
+          +datePicker('form-control', 1, 'date', defaultDate, 'date')
           span= gettext('Weight')
           input(id='weight', class='form-control', type='number', step="0.1", min="30", max="200", tabindex="2", autocomplete="off", name='weight', autofocus, value=prenatalExam.weight)
           div.row
@@ -86,7 +86,7 @@ block prenatalAddEditExam
           div= gettext('Notes')
           textarea(id='note', class='form-control', tabindex="15", wrap="soft", rows="4", name='note')= prenatalExam.note
           div= gettext('Return Date')
-          input(id='returnDate', class='form-control', type='date', tabindex="16", autocomplete="off", name='returnDate', value=returnDate)
+          +datePicker('form-control', 16, 'returnDate', returnDate, 'returnDate', '+1m')
 
 
       div.row

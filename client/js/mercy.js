@@ -178,6 +178,71 @@ $(function() {
     });
 
     // --------------------------------------------------------
+    // Add and configure datepickers for all inputs that are
+    // for dates. We don't use HTML5 input with type of date
+    // because it is extremely inconsistent across browsers.
+    // We are using jQuery UI's Datepicker instead.
+    //
+    // Inputs that are targeted will have the class 'datepicker'.
+    //
+    // The database expects dates in YYYY-MM-DD format while the
+    // client wants dates in MM/DD/YYYY format for display.
+    // Therefore we use a hidden field for each date that is
+    // populated by the Datepicker with the value that the user
+    // has chosen in the format required by the backend. The
+    // input that the user sees displays the same date in the
+    // format that the user expects. This is a feature of the
+    // jQuery Datepicker widget using the altField and altFormat
+    // options of Datepicker.
+    //
+    // The input field and the hidden field are linked by a data
+    // field within the input element named 'data-alt-field'. If
+    // found, the alternate field option is used. The value of
+    // data-alt-field should be the id of the hidden field in
+    // the format expected by a jQuery selector, e.g. '#altField-dob'.
+    // Both fields should have the value attribute set if the
+    // value is coming from the database on page load.
+    //
+    // <input type='text' class='datepicker' data-alt-field='#altField-dob' name='displayField-dob'>
+    // <input type='hidden' id='altField-dob' name='dob'>
+    //
+    // Note that Datepicker date format specs and the Moment
+    // library format specs vary, i.e. 'mm/dd/yy' = 'MM/DD/YYYY'.
+    //
+    // Default date is specifed with the data-defaultDate data
+    // field. Datepicker accepts JS Date objects, date strings,
+    // or period representations from today such as '+1m'. See
+    // datepicker docs for details.
+    //
+    // TODO: handle display format in the configuration file or
+    // some other user setting along with locale, etc.
+    // --------------------------------------------------------
+    $('.datepicker').each(function() {
+      var $fld = $(this)
+        , altFld = $fld.attr('data-alt-field')
+        , defaultDate = $fld.attr('data-defaultDate')
+        , onClose = function onClose(dateStr, dp) {
+            if (dateStr.length === 0) $(this).datepicker('setDate', null);
+          }
+        , initDpOpts = {dateFormat: 'yy-mm-dd', altFormat: 'yy-mm-dd', onClose: onClose}
+        , val = $fld.val()
+        ;
+      $fld.datepicker(initDpOpts);  // For initial load of date from field.
+      if (val) {
+        $fld.datepicker('option', 'defaultDate', moment(val, 'YYYY-MM-DD').toDate());
+      } else {
+        if (defaultDate) {
+          $fld.datepicker('option', 'defaultDate', defaultDate);
+        }
+      }
+      if (altFld) {
+        $fld.datepicker('option', 'altField', altFld);
+      }
+      // After the pre-existing date is loaded, set format to client display format.
+      $fld.datepicker('option', 'dateFormat', 'mm/dd/yy');
+    });
+
+    // --------------------------------------------------------
     // POST changes to the required tetanus field (radio buttons)
     // to the server using AJAX.
     // --------------------------------------------------------

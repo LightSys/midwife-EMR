@@ -28,7 +28,7 @@ block referralAddEditForm
       div.row
         div(class='col-md-4')
           label= gettext('Date of the referral')
-          input(id='refDate', class='form-control', type='date', tabindex="1", autocomplete="off", name='date', value=referralDate)
+          +datePicker('form-control', 1, 'date', referralDate, 'refDate')
         div(class='form-group col-md-2 col-md-offset-6')
           //- This label just causes everything on this row to line up better.
           label &nbsp;

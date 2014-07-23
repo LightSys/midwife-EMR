@@ -30,6 +30,7 @@ module.exports = function(grunt) {
                 , 'client/js/responsive-tables.js'
                 , 'client/js/mercy.js'
                 , 'client/js/priorityList.js'
+                , 'client/js/jquery-ui.min.js'
               ]
             }
           }
@@ -53,6 +54,9 @@ module.exports = function(grunt) {
               , 'client/css/sb-admin.css'
               , 'client/css/responsive-tables.css'
               , 'client/css/mercy.css'
+              , 'client/css/jquery-ui.min.css'
+              , 'client/css/jquery-ui.structure.min.css'
+              , 'client/css/jquery-ui.theme.min.css'
             ]
           }
         }

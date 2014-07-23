@@ -95,7 +95,7 @@ block labs
                 tbody(id=pregId)
                   each med in medications
                     - var medName = med.name;
-                    - var medDate = med.date;
+                    - var medDate = libs.mmt(med.date).format('MM-DD-YYYY');
                     tr(class='medicationsRow', id='medication-'+med.id)
                       td= medDate
                       td= medName
@@ -145,10 +145,10 @@ block labs
             div.row
               div(class='col-md-6')
                 label= gettext('Doctor consult date')
-                input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='doctorConsultDate', value=rec.doctorConsultDate)
+                +datePicker('form-control input-lg', 3, 'doctorConsultDate', rec.doctorConsultDate)
               div(class='col-md-6')
                 label= gettext('Dentist consult date')
-                input(class='form-control input-lg', type='date', tabindex="4", autocomplete="off", name='dentistConsultDate', value=rec.dentistConsultDate)
+                +datePicker('form-control input-lg', 4, 'dentistConsultDate', rec.dentistConsultDate)
             div(class='row spacing-row')
               div(class='col-md-4 col-md-offset-8')
                 input(class='btn btn-primary pull-right', type='submit', value=gettext('Save Dates'))
@@ -173,7 +173,7 @@ block labs
                     - var vacDate;
                     - var by = vac.administeredInternally? 'Internal': 'External';
                     - if (libs.mmt(vac.vacDate).isValid()) {
-                    -   vacDate = libs.mmt(vac.vacDate).format('YYYY-MM-DD');
+                    -   vacDate = libs.mmt(vac.vacDate).format('MM-DD-YYYY');
                     - } else {
                     -   if (vac.vacMonth && vac.vacYear) {
                     -     vacDate = vac.vacMonth + ' - ' + vac.vacYear;

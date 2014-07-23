@@ -14,7 +14,7 @@ block pregnancyAdd
           input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname')
         div(class='form-group col-sm-4')
           span= gettext('Date of Birth')
-          input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob')
+          +datePicker('form-control input-lg', 3, 'dob')
       div.row
         div(class='form-group col-sm-4')
           span= gettext('Religion')

@@ -42,15 +42,15 @@ block prenatal
           div(class='col-md-4 ')
             div
               span= gettext('LMP')
-              input(id='prenatal-lmp', class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', value=rec.lmp)
+              +datePicker('form-control', 5, 'lmp', rec.lmp, 'prenatal-lmp')
           div(class='col-md-4 ')
             div
               span= gettext('EDD')
-              input(id='prenatal-edd', class='form-control', type='date', name='edd', tabindex="7", value=rec.edd)
+              +datePicker('form-control', 7, 'edd', rec.edd, 'prenatal-edd')
           div(class='col-md-4 ')
             div
               span= gettext('Alternate EDD')
-              input(class='form-control', type='date', name='alternateEdd', tabindex="8", value=rec.alternateEdd)
+              +datePicker('form-control', 8, 'alternateEdd', rec.alternateEdd)
         div.row
           div(class='col-md-6 ')
             div.checkbox
@@ -169,7 +169,7 @@ block prenatal
               div(class='col-md-6 ')
                 div
                   span= gettext('End Date')
-                  input(class='form-control', type='date', name='pregnancyEndDate', tabindex="38", value=rec.pregnancyEndDate)
+                  +datePicker('form-control', 38, 'pregnancyEndDate', rec.pregnancyEndDate)
               div(class='col-md-6 ')
                 div
                   span= gettext('End Result')

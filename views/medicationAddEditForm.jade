@@ -29,7 +29,7 @@ block medicationAddEditForm
       div.row
         div(class='col-md-4')
           label= gettext('Date of the medication')
-          input(id='date', class='form-control', type='date', tabindex="1", autocomplete="off", name='date', value=medicationDate)
+          +datePicker('form-control', 1, 'date', medicationDate, 'date')
         div(class='form-group col-md-2 col-md-offset-6')
           //- This label just causes everything on this row to line up better.
           label &nbsp;

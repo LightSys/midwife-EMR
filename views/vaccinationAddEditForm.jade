@@ -33,7 +33,8 @@ block vaccinationAddEditForm
       div.row
         div(class='col-md-4')
           label= gettext('Date of the vaccination')
-          input(id='vacDate', class='form-control', type='date', tabindex="1", autocomplete="off", name='vacDate', value=vaccinationDate)
+          //-input(id='vacDate', class='form-control', type='date', tabindex="1", autocomplete="off", name='vacDate', value=vaccinationDate)
+          +datePicker('form-control', 1, 'vacDate', vaccinationDate, 'vacDate')
         div(class='col-md-2')
           label= gettext('or month')
           input(id='varMonth', class='form-control', type='number', tabindex='2', autocomplete='off', name='vacMonth', value=vaccinationMonth)
