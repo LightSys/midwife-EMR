@@ -28,6 +28,9 @@ block profileEditForm
         div.form-group
           span= gettext('Email')
           input(class='form-control', type='text', name='email', autocomplete="off", tabindex="6", value=profile.email)
+        div.form-group
+          span= gettext('Display name')
+          input(class='form-control', type='text', name='displayName', autocomplete="off", tabindex="7", value=profile.displayName)
 
         input(class='btn btn-default btn-primary', type='submit', value=gettext('Save'))
 

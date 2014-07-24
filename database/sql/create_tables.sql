@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   password VARCHAR(60) NOT NULL,
   email VARCHAR(100) NULL,
   lang VARCHAR(10) NULL,
+  displayName VARCHAR(100) NULL,
   status BOOLEAN NOT NULL DEFAULT 1,
   note VARCHAR(300) NULL,
   updatedBy INT NOT NULL,

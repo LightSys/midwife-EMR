@@ -680,8 +680,8 @@ CREATE TRIGGER user_after_insert AFTER INSERT ON user
 FOR EACH ROW
 BEGIN
   INSERT INTO userLog
-  (id, username, firstname, lastname, password, email, lang, status, note, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.username, NEW.firstname, NEW.lastname, NEW.password, NEW.email, NEW.lang, NEW.status, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, username, firstname, lastname, password, email, lang, displayName, status, note, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.username, NEW.firstname, NEW.lastname, NEW.password, NEW.email, NEW.lang, NEW.displayName, NEW.status, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -694,8 +694,8 @@ CREATE TRIGGER user_after_update AFTER UPDATE ON user
 FOR EACH ROW
 BEGIN
   INSERT INTO userLog
-  (id, username, firstname, lastname, password, email, lang, status, note, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.username, NEW.firstname, NEW.lastname, NEW.password, NEW.email, NEW.lang, NEW.status, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, username, firstname, lastname, password, email, lang, displayName, status, note, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.username, NEW.firstname, NEW.lastname, NEW.password, NEW.email, NEW.lang, NEW.displayName, NEW.status, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -708,8 +708,8 @@ CREATE TRIGGER user_after_delete AFTER DELETE ON user
 FOR EACH ROW
 BEGIN
   INSERT INTO userLog
-  (id, username, firstname, lastname, password, email, lang, status, note, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.username, OLD.firstname, OLD.lastname, OLD.password, OLD.email, OLD.lang, OLD.status, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, username, firstname, lastname, password, email, lang, displayName, status, note, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.username, OLD.firstname, OLD.lastname, OLD.password, OLD.email, OLD.lang, OLD.displayName, OLD.status, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
  

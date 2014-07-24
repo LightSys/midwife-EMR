@@ -405,6 +405,7 @@ var addForm = function(req, res) {
       , password: ''
       , email: ''
       , lang: ''
+      , displayName: ''
       , 'status': ''
       , note: ''
     }

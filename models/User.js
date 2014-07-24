@@ -21,16 +21,11 @@ var moment = require('moment')
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , User = {}
-  , permittedAttributes = ['id', 'username', 'firstname', 'lastname', 'password',
-      'email', 'lang', 'status', 'note', 'updatedBy', 'updatedAt', 'supervisor']
   ;
 
-
 var hashPassword = function(pw, cb) {
-  //var start = moment();
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(pw, salt, function(er2, hash) {
-      //logError('Hash generation time: ' + moment().diff(start));
       return cb(null, hash);
     });
   });
@@ -43,13 +38,38 @@ var checkPassword = function(pw, hash, cb) {
   });
 };
 
+/*
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `firstname` varchar(30) NOT NULL,
+  `lastname` varchar(30) NOT NULL,
+  `password` varchar(60) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `lang` varchar(10) DEFAULT NULL,
+  `displayName` varchar(100) DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT '1',
+  `note` varchar(300) DEFAULT NULL,
+  `updatedBy` int(11) NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  `supervisor` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  KEY `updatedBy` (`updatedBy`),
+  KEY `supervisor` (`supervisor`),
+  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `user_ibfk_2` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
+ */
 User = Bookshelf.Model.extend({
   // --------------------------------------------------------
   // Instance properties.
   // --------------------------------------------------------
   tableName: 'user'
 
-  , permittedAttributes: permittedAttributes
+  , permittedAttributes: ['id', 'username', 'firstname', 'lastname', 'password',
+      'email', 'lang', 'displayName', 'status', 'note', 'updatedBy', 'updatedAt',
+      'supervisor']
   , initialize: function() {
     this.on('saving', this.saving, this);
   }
