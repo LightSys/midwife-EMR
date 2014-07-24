@@ -1,10 +1,10 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * labs.js
  *
  * Handling of adding, editing, and deleting lab tests that are displayed on
  * the main labs page.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 var _ = require('underscore')
@@ -182,6 +182,7 @@ var labTestSave = function(req, res) {
         , testId = key.split('-')[1]
         ;
       if (val.length === 0) return;
+      if (fldType === 'displayField') return; // Eliminate displayField for date.
       if (! testResults[testId]) {
         testResults[testId] = {
           labTest_id: testId
@@ -221,31 +222,39 @@ var labTestSave = function(req, res) {
     // Insert or update all of the records as a single transaction.
     // --------------------------------------------------------
     Bookshelf.DB.knex.transaction(function(t) {
-      return Promise.all(_.map(testResults, function(tst) {
-        return new Promise(function(resolve, reject) {
-          LabTestResult.forge(tst)
-            .setUpdatedBy(req.session.user.id)
-            .setSupervisor(supervisor)
-            .save(null, {transacting: t})
-            .then(function(model) {
-              logInfo('Saved ' + model.get('id'));
-              return resolve(model.get('id'));
-            })
-            .caught(function(err) {
-              return reject(err);
-            });
-        });
+      return Promise.all(Promise.map(_.toArray(testResults), function(tst) {
+        return LabTestResult.forge(tst)
+          .setUpdatedBy(req.session.user.id)
+          .setSupervisor(supervisor)
+          .save(null, {transacting: t})
+          .then(function(model) {
+            return model;
+          })
+          .caught(function(err) {
+            throw err;  // Any errors will cause all records to be rolled back.
+          });
       }))
       .then(function(rows) {
+        // No errors but not committed yet.
         logInfo('Committed ' + rows.length + ' records.');
+        return true;
       })
       .caught(function(err) {
+        // Errors but not rolled back yet.
         logError(err);
         logInfo('Transaction was rolled back.');
         req.flash('error', req.gettext('There was a problem and your changes were NOT saved.'));
+        // We need to throw our way out of the transaction block
+        // in order to signal a rollback.
+        throw err;
       });
-    })
+    })    // End transaction.
     .then(function() {
+      // Transaction successful.
+      res.redirect(cfg.path.pregnancyLabsEditForm.replace(/:id/, req.paramPregnancy.id));
+    })
+    .caught(function(err) {
+      // Transaction failed.
       res.redirect(cfg.path.pregnancyLabsEditForm.replace(/:id/, req.paramPregnancy.id));
     });
 
