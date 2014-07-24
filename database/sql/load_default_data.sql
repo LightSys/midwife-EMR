@@ -292,6 +292,7 @@ VALUES
   ('+', (SELECT id FROM labTest WHERE abbrev = 'VDRL'), 1, NOW()),
   ('-', (SELECT id FROM labTest WHERE abbrev = 'VDRL'), 1, NOW()),
   ('0', (SELECT id FROM labTest WHERE abbrev = 'Albumin/Protein'), 1, NOW()),
+  ('Trace', (SELECT id FROM labTest WHERE abbrev = 'Albumin/Protein'), 1, NOW()),
   ('+1', (SELECT id FROM labTest WHERE abbrev = 'Albumin/Protein'), 1, NOW()),
   ('+2', (SELECT id FROM labTest WHERE abbrev = 'Albumin/Protein'), 1, NOW()),
   ('+3', (SELECT id FROM labTest WHERE abbrev = 'Albumin/Protein'), 1, NOW()),
