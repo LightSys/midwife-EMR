@@ -120,6 +120,13 @@ User = Bookshelf.Model.extend({
       });
   }
 
+  , findDisplayNameById: function(id, cb) {
+      User.findById(id, function(err, user) {
+        if (err) throw err;
+        return cb(null, user.get('displayName'));
+      });
+    }
+
   , findByUsername: function(username, cb) {
       this.forge({username: username})
         .fetch({withRelated: ['roles']})

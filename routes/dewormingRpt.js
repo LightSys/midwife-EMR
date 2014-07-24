@@ -20,6 +20,7 @@ var _ = require('underscore')
   , Medications = require('../models').Medications
   , MedicationType = require('../models').MedicationType
   , MedicationTypes = require('../models').MedicationTypes
+  , User = require('../models').User
   , cfg = require('../config')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
@@ -163,9 +164,10 @@ var doFromTo = function(doc, from, to) {
  * param      pageNum
  * param      totalPages
  * param      totalRows
+ * param      logisticsName
  * return     undefined
  * -------------------------------------------------------- */
-var doFooter = function(doc, pageNum, totalPages, totalRows) {
+var doFooter = function(doc, pageNum, totalPages, totalRows, logisticsName) {
   // Deworming and page
   doc
     .font(FONTS.HelveticaBold)
@@ -179,8 +181,7 @@ var doFooter = function(doc, pageNum, totalPages, totalRows) {
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(13)
-    // TODO: replace hard-code
-    .text('MONIQUE R. SUVOURNEROS, RM', 370, 730)
+    .text(logisticsName, 370, 730)
     .font(FONTS.Helvetica)
     .fontSize(10)
     .text('Logistics In-charge', 370, 745);
@@ -357,7 +358,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
       doReportName(doc, 'DEWORMING', 48);
       doFromTo(doc, opts.fromDate, opts.toDate);
       doColumnHeader(doc);
-      doFooter(doc, pageNum, totalPages, totalRows);
+      doFooter(doc, pageNum, totalPages, totalRows, opts.logisticsName);
     }
     doRow(doc, rec, currentRow, 25);
     currentRow++;
@@ -378,9 +379,10 @@ var doPages = function(doc, data, rowsPerPage, opts) {
  *
  * param      flds
  * param      writable
+ * param      logisticsName
  * return     undefined
  * -------------------------------------------------------- */
-var doReport = function(flds, writable) {
+var doReport = function(flds, writable, logisticsName) {
   var options = {
         margins: {
           top: 18
@@ -403,7 +405,7 @@ var doReport = function(flds, writable) {
 
   opts.fromDate = moment(flds.dateFrom).format('YYYY-MM-DD');
   opts.toDate = moment(flds.dateTo).format('YYYY-MM-DD');
-  opts.inCharge = flds.inCharge || '';
+  opts.logisticsName = logisticsName;
 
   // --------------------------------------------------------
   // Write the report to the writable stream passed.
@@ -469,7 +471,13 @@ var run = function(req, res) {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; MercyReport.pdf');
 
-  doReport(flds, writable);
+  // --------------------------------------------------------
+  // Get the displayName for the logistics in charge.
+  // --------------------------------------------------------
+  User.findDisplayNameById(Number(flds.inCharge), function(err, name) {
+    if (err) throw err;
+    doReport(flds, writable, name);
+  });
 };
 
 
