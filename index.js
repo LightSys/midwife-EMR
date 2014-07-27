@@ -273,8 +273,10 @@ app.get(cfg.path.home, common, hasSuper, home.home);
 // --------------------------------------------------------
 // Search
 // --------------------------------------------------------
-app.get(cfg.path.search, common, hasSuper, search.view);
-app.post(cfg.path.search, common, hasSuper, search.execute);
+app.get(cfg.path.search, common, hasSuper,
+    inRoles(['clerk', 'supervisor', 'attending', 'guard']), search.view);
+app.post(cfg.path.search, common, hasSuper,
+    inRoles(['clerk', 'supervisor', 'attending', 'guard']), search.execute);
 
 // --------------------------------------------------------
 // Users
