@@ -21,6 +21,7 @@ var express = require('express')
   , setRoleInfo = require('./auth').setRoleInfo(app)    // requires the app object
   , auth = require('./auth').auth
   , SessionStore = require('connect-mysql')(express)
+  , MySQL = require('mysql')                            // for conn pool for sessions
   , i18n = require('i18n-abide')
   , _ = require('underscore')
   , moment = require('moment')
@@ -106,6 +107,15 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser(cfg.cookie.secret));
+// We explicitly create our own pool because connect-mysql does not
+// have options to specify the database residing on a different host.
+cfg.session.pool = MySQL.createPool({
+  user: cfg.database.dbUser
+  , password: cfg.database.dbPass
+  , host: cfg.database.host
+  , port: cfg.database.port
+  , database: cfg.database.db
+});
 app.use(express.session({
   secret: cfg.session.secret
   , cookie: {maxAge: cfg.cookie.maxAge, secure: useSecureCookie}
@@ -211,7 +221,7 @@ app.use(function(req, res, next) {
 // express-device functionality: render different views
 // according to device type.
 // --------------------------------------------------------
-app.enableViewRouting();
+device.enableViewRouting(app);
 
 app.use(app.router);
 
