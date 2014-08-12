@@ -483,13 +483,13 @@ process.on('uncaughtException', function(err) {
 // --------------------------------------------------------
 if (process.env.NODE_ENV == 'test') {
   logInfo('TEST mode');
-  app.listen(cfg.host.port);
+  app.listen(cfg.host.port, cfg.host.name);
 } else {
   if (cfg.tls.key) {
     // --------------------------------------------------------
     // Listen for HTTPS connections.
     // --------------------------------------------------------
-    https.createServer(cfg.tls, app).listen(cfg.host.tlsPort);
+    https.createServer(cfg.tls, app).listen(cfg.host.tlsPort, cfg.host.name);
 
     // --------------------------------------------------------
     // Catch all incoming HTTP connections and redirect to HTTPS.
@@ -502,13 +502,13 @@ if (process.env.NODE_ENV == 'test') {
       res.setHeader('Location', httpsLoc);
       res.statusCode = 302;
       res.end('Redirecting to ' + httpsLoc);
-    }).listen(cfg.host.port);
+    }).listen(cfg.host.port, cfg.host.name);
 
   } else {
     // --------------------------------------------------------
     // HTTP only. This should not be used for production.
     // --------------------------------------------------------
-    http.createServer(app).listen(cfg.host.port);
+    http.createServer(app).listen(cfg.host.port, cfg.host.name);
   }
 }
 if (cfg.tls.key) {
