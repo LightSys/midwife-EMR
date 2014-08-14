@@ -1,8 +1,8 @@
 /*
  * -------------------------------------------------------------------------------
- * guard.js
+ * checkInOut.js
  *
- * Handling of guard functions and other checkin, checkout and chart pulling events.
+ * Handling of functions regarding checkin, checkout and chart pulling events.
  * -------------------------------------------------------------------------------
  */
 

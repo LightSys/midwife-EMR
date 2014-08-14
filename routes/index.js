@@ -12,7 +12,7 @@ module.exports = {
   , prenatalExam: require('./prenatalExam')
   , vaccination: require('./vaccination')
   , medication: require('./medication')
-  , guard: require('./guard')
+  , checkInOut: require('./checkInOut')
   , report: require('./report')
   , dewormingRpt: require('./dewormingRpt')
   , priorityList: require('./priorityList')

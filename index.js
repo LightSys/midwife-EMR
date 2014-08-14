@@ -40,7 +40,7 @@ var express = require('express')
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
-  , guard = require('./routes').guard
+  , checkInOut = require('./routes').checkInOut
   , error = require('./routes').error
   , report = require('./routes').report
   , dewormingRpt = require('./routes').dewormingRpt
@@ -440,13 +440,15 @@ app.post(cfg.path.medicationDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), medication.medicationDelete);
 
 // Checkin and checkout routes for the guard
-app.get(cfg.path.checkInOut, common, inRoles(['guard']), guard.checkInOut);
-app.post(cfg.path.checkIn, common, inRoles(['guard']), guard.checkInOutSave);
-app.post(cfg.path.checkOut, common, inRoles(['guard']), guard.checkInOutSave);
-app.get(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOut);
-app.post(cfg.path.newCheckIn, common, inRoles(['guard']), guard.checkInOutSave);
-app.get(cfg.path.simpleCheckOut, common, inRoles(['guard']), guard.simpleCheckOutForm);
-app.post(cfg.path.simpleCheckOut, common, inRoles(['guard']), guard.simpleCheckOut);
+app.get(cfg.path.checkInOut, common, inRoles(['guard']), checkInOut.checkInOut);
+app.post(cfg.path.checkIn, common, inRoles(['guard']), checkInOut.checkInOutSave);
+app.post(cfg.path.checkOut, common, inRoles(['guard']), checkInOut.checkInOutSave);
+app.get(cfg.path.newCheckIn, common, inRoles(['guard']), checkInOut.checkInOut);
+app.post(cfg.path.newCheckIn, common, inRoles(['guard']), checkInOut.checkInOutSave);
+app.get(cfg.path.simpleCheckOut, common,
+    inRoles(['guard', 'attending', 'clerk', 'supervisor']), checkInOut.simpleCheckOutForm);
+app.post(cfg.path.simpleCheckOut, common,
+    inRoles(['guard', 'attending', 'clerk', 'supervisor']), checkInOut.simpleCheckOut);
 
 // Priority List
 app.post(cfg.path.priorityListLoad, priorityList.load);  // parameter handling for AJAX save only
