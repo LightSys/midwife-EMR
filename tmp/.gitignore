@@ -1,0 +1,6 @@
+# Git is to ignore everything in this directory because we do not want
+# keys and certs to end up in the repository, but we do want the directory
+# to exist.
+*
+# Except this file
+!.gitignore
