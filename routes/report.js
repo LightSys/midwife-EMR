@@ -11,6 +11,7 @@ var _ = require('underscore')
   , User = require('../models').User
   , Users = require('../models').Users
   , deworming = require('./dewormingRpt')
+  , iron = require('./ironRpt')
   ;
 
 
@@ -31,9 +32,18 @@ var form = function(req, res) {
     selectKey: 'deworming'
     , selected: false
     , label: 'Deworming Report'
+  }
+  , {
+    selectKey: 'iron1'
+    , selected: false
+    , label: 'Iron Given Date 1'
+  }
+  , {
+    selectKey: 'iron2'
+    , selected: false
+    , label: 'Iron Given Date 2'
   }];
 
-  // TODO: make the inCharge select better too.
   new Users()
     .fetch({withRelated: 'roles'})
     .then(function(list) {
@@ -62,9 +72,12 @@ var form = function(req, res) {
  * Runs the user selected report.
  * -------------------------------------------------------- */
 var run = function(req, res) {
-  console.log('report.run()');
+  var report = req.body && req.body.report || void 0
+    ;
 
-  deworming.run(req, res);
+  if (report === 'deworming') deworming.run(req, res);
+  if (report === 'iron1') iron.run(req, res);
+  if (report === 'iron2') iron.run(req, res);
 
 };
 
