@@ -1,0 +1,82 @@
+extends ../layouts/default_layout
+
+block defaultLab
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var name;
+  - var min, max;
+  - var normal, unit;
+  - var tabIndex = 0;
+  - var warn = false;
+  - var isRange = false;
+  - var isText = false;
+  - var testDate = labTestResultDate? labTestResultDate: libs.mmt().format('YYYY-MM-DD');
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  - var labsPath = '/pregnancy/' + rec.id + '/labtest';
+  - var labDeletePath;
+  - var isUpdate = false;
+  //- If labTestResultId exists, this is an edit of a specific lab test rather
+  //- than the creation of a suite of lab tests.
+  - if (labTestResultId) {
+  -   labsPath = '/pregnancy/' + rec.id + '/labtest/' + labTestResultId;
+  -   labDeletePath = '/pregnancy/' + rec.id + '/labtest/' + labTestResultId + '/delete';
+  -   isUpdate = true;
+  - }
+  - var result = result2 = null;
+  form(id='addEditLabForm', role='form', name='addEditLabForm', action=labsPath, method='post')
+    div.row
+      div(class='col-xs-3')
+        label= gettext('Date of these tests')
+        +datePicker('form-control', 1, 'testDate', testDate, 'testDate')
+      div(class='form-group col-xs-2 col-xs-offset-7')
+        //- This label just causes everything on this row to line up better.
+        label &nbsp;
+        a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
+    div.row
+      div(class='col-xs-12')
+        hr
+        p(class='text-warning')= gettext('Some tests have a number and a select field. Choose one or the other, not both. If both filled, number will be used and select discarded.')
+
+    div.row
+      each test, idx in labTests
+        - name = test.name !== test.abbrev? test.name + ' (' + test.abbrev + ')': test.name;
+        - max = test.maxRangeDecimal || test.maxRangeInteger;
+        - min = test.minRangeDecimal || test.minRangeInteger;
+        - if (! libs._.isNumber(max)) max = '';
+        - if (! libs._.isNumber(min)) min = '';
+        - normal = ! libs._.isNull(test.normal)? test.normal: gettext('None');
+        - unit = ! libs._.isNull(test.unit)? test.unit: gettext('None');
+        - isRange = test.isRange || false;
+        - isText = test.isText || false;
+        - tabIndex += 3;
+        - result = test.result;
+        - result2 = test.result2;
+        - warn = test.warn;
+        +labTest('xs', 1, name, test.id, min, max, isRange, isText, test.values, result, result2, tabIndex, unit, normal, warn)
+
+    div.row
+      div(class='col-xs-2')
+        input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+        input(type='hidden', name='_csrf', value=token)
+      - if (isUpdate) {
+      div(class='col-xs-2 col-xs-offset-8')
+        button(class='btn disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+      - }
+
+  - if (isUpdate) {
+  div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+    form(id='deleteLabTestEditForm', role='form', name='labTestEditForm', action=labDeletePath, method='post')
+      div(class='modal-dialog')
+        div(class='modal-content')
+          div(class='modal-header')
+            h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+          div(class='modal-body')
+            p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+          div(class='modal-footer')
+            input(type='hidden', name='_csrf', value=token)
+            input(type='hidden', name='pregnancy_id', value=rec.id)
+            input(type='hidden', name='labTestResultId', value=labTestResultId)
+            button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+            button(type='submit', class='btn btn-primary')= gettext('Delete')
+  - }

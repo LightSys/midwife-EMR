@@ -1,0 +1,91 @@
+extends layouts/default_layout
+
+block vaccinationAddEditForm
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var formId = 'vaccinationAddEdit';
+  - var formName = 'vaccinationAddEditForm';
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  //- Default of adding a vaccination
+  - var formAction = '/pregnancy/' + rec.id + '/vaccination';
+  - var vaccinationDate = '';
+  - var vaccinationMonth = '';
+  - var vaccinationYear = '';
+  - var administeredInternally = false;
+  - var vaccinationNote = '';
+  - var isUpdate = false;
+  - var vaccinationDeletePath;
+  //- If editing a vaccination
+  - if (vaccinationRec && vaccinationRec.id) {
+  -   formAction ='/pregnancy/' + rec.id + '/vaccination/' + vaccinationRec.id;
+  -   vaccinationDate = vaccinationRec.vacDate || vaccinationDate;
+  -   vaccinationYear = vaccinationRec.vacYear || vaccinationYear;
+  -   vaccinationMonth = vaccinationRec.vacMonth || vaccinationMonth;
+  -   administeredInternally = vaccinationRec.administeredInternally || false;
+  -   vaccinationNote = vaccinationRec.note || '';
+  -   isUpdate = true;
+  -   vaccinationDeletePath = '/pregnancy/' + rec.id + '/vaccination/' + vaccinationRec.id + '/delete';
+  - }
+
+  div
+    form(id=formId, role='form', name=formName, action=formAction, method='post')
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Date of the vaccination')
+          //-input(id='vacDate', class='form-control', type='date', tabindex="1", autocomplete="off", name='vacDate', value=vaccinationDate)
+          +datePicker('form-control', 1, 'vacDate', vaccinationDate, 'vacDate')
+        div(class='col-xs-2')
+          label= gettext('or month')
+          input(id='varMonth', class='form-control', type='number', tabindex='2', autocomplete='off', name='vacMonth', value=vaccinationMonth)
+        div(class='col-xs-2')
+          label= gettext('and year')
+          input(id='varYear', class='form-control', type='number', tabindex='2', autocomplete='off', name='vacYear', value=vaccinationYear)
+        div(class='form-group col-xs-2 col-xs-offset-2')
+          //- This label just causes everything on this row to line up better.
+          label &nbsp;
+          a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Type of vaccination')
+          - if (! isUpdate) {
+          +select('form-control', 'vaccinationType', 3, vaccinationType)
+          - } else {
+            p= gettext(vaccinationRec.vacType)
+          - }
+        div(class='col-xs-4')
+          div.checkbox
+            label= gettext('Administered by MMC?')
+              input(type='checkbox', name='administeredInternally', tabindex="4", value=1, checked=administeredInternally==true)
+        div(class='col-xs-4')
+          label= gettext('Notes')
+          textarea(class='form-control input-lg', tabindex="5", autocomplete="off", rows=4, name='note')= vaccinationNote
+      div.row
+        div(class='col-xs-4')
+          span &nbsp;
+      div.row
+        div(class='col-xs-2')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          button(type='submit', class='btn btn-primary')= gettext('Save Vaccination')
+        - if (isUpdate) {
+        div(class='col-xs-2 col-xs-offset-8')
+          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+        - }
+
+    - if (isUpdate) {
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deleteVaccinationEditForm', role='form', name='VaccinationEditForm', action=vaccinationDeletePath, method='post')
+        div(class='modal-dialog')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='vaccinationId', value=vaccinationRec.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')
+    - }

@@ -1,0 +1,80 @@
+extends layouts/default_layout
+
+block medicationAddEditForm
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var formId = 'medicationAddEdit';
+  - var formName = 'medicationAddEditForm';
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  //- Default of adding a medication
+  - var formAction = '/pregnancy/' + rec.id + '/medication';
+  - var medicationDate = libs.mmt().format('YYYY-MM-DD');
+  - var medicationNote = '';
+  - var numberDispensed = '';
+  - var isUpdate = false;
+  - var medicationDeletePath;
+  //- If editing a medication
+  - if (medicationRec && medicationRec.id) {
+  -   formAction ='/pregnancy/' + rec.id + '/medication/' + medicationRec.id;
+  -   medicationDate = medicationRec.date || medicationDate;
+  -   medicationNote = medicationRec.note || '';
+  -   numberDispensed = medicationRec.numberDispensed || '';
+  -   isUpdate = true;
+  -   medicationDeletePath = '/pregnancy/' + rec.id + '/medication/' + medicationRec.id + '/delete';
+  - }
+
+  div
+    form(id=formId, role='form', name=formName, action=formAction, method='post')
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Date of the medication')
+          +datePicker('form-control', 1, 'date', medicationDate, 'date')
+        div(class='form-group col-xs-2 col-xs-offset-6')
+          //- This label just causes everything on this row to line up better.
+          label &nbsp;
+          a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Type of medication')
+          - if (! isUpdate) {
+          +select('form-control', 'medicationType', 2, medicationType)
+          - } else {
+            p= gettext(medicationRec.medType)
+          - }
+      div.row
+        div(class='col-xs-4')
+          label= gettext('# Dispensed')
+          input(class='form-control', type='number', tabindex='3', autocomplete="off", name='numberDispensed', value=numberDispensed)
+        div(class='col-xs-8')
+          label= gettext('Notes')
+          textarea(class='form-control input-lg', tabindex="4", autocomplete="off", rows=2, name='note')= medicationNote
+      div.row
+        div(class='col-xs-4')
+          span &nbsp;
+      div.row
+        div(class='col-xs-2')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          button(type='submit', class='btn btn-primary')= gettext('Save Medication')
+        - if (isUpdate) {
+        div(class='col-xs-2 col-xs-offset-8')
+          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+        - }
+
+    - if (isUpdate) {
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deleteMedicationEditForm', role='form', name='MedicationEditForm', action=medicationDeletePath, method='post')
+        div(class='modal-dialog')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='medicationId', value=medicationRec.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')
+    - }

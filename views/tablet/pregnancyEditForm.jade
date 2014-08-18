@@ -70,30 +70,37 @@ block pregnancyEdit
         div(class='form-group col-xs-4')
           span= gettext('Partner education')
           +select('form-control input-lg', 'partnerEducation', 17, partnerEducation)
-      div.row
-        div(class='form-group col-xs-3')
-          span= gettext('Client Income')
-          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='clientIncome', value=rec.clientIncome)
-        div(class='form-group col-xs-5')
-          span= gettext('Income period')
-          +select('form-control input-lg', 'clientIncomePeriod', 19, clientIncomePeriod)
-      div.row
-        div(class='form-group col-xs-3')
-          span= gettext('Partner income')
-          input(class='form-control input-lg', type='number', tabindex="20", autocomplete="off", name='partnerIncome', value=rec.partnerIncome)
-        div(class='form-group col-xs-5')
-          span= gettext('Income period')
-          +select('form-control input-lg', 'partnerIncomePeriod', 21, partnerIncomePeriod)
-      div.row
         div(class='form-group col-xs-4')
           span= gettext('MMC #')
           input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='doh', value=rec.patient.dohID)
+      div.row
         div(class='form-group col-xs-4')
-          span= gettext('Priority #')
-          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='priority', value=rec.priority)
+          span= gettext('Client Income')
+          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='clientIncome', value=rec.clientIncome)
+        div(class='form-group col-xs-4')
+          span= gettext('Income period')
+          +select('form-control input-lg', 'clientIncomePeriod', 19, clientIncomePeriod)
+        div(class='form-group col-xs-4')
+          span= gettext('Priority Barcode #')
+          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='priorityBarcode', value=priorityBarcode)
+      div.row
+        div(class='form-group col-xs-4')
+          span= gettext('Partner income')
+          input(class='form-control input-lg', type='number', tabindex="20", autocomplete="off", name='partnerIncome', value=rec.partnerIncome)
+        div(class='form-group col-xs-4')
+          span= gettext('Income period')
+          +select('form-control input-lg', 'partnerIncomePeriod', 21, partnerIncomePeriod)
+        div(class='form-group col-xs-4')
+          span= gettext('Prenatal Day')
+          +select('form-control input-lg', 'prenatalDay', 24, value=prenatalDay)
+      div.row
+        div(class='form-group col-xs-4 col-xs-offset-8')
+          span= gettext('Prenatal Location')
+          +select('form-control input-lg', 'prenatalLocation', 25, value=prenatalLocation)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
         input(type='hidden', name='_csrf', value=token)
         input(type='hidden', name='id', value=rec.id)
+        input(type='hidden', name='scheduleId', value=rec.prenatalSchedule.id);
 

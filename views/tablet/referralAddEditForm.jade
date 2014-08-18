@@ -1,0 +1,72 @@
+extends layouts/default_layout
+
+block referralAddEditForm
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var formId = 'referralAddEdit';
+  - var formName = 'referralAddEditForm';
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  //- Default of adding a referral
+  - var formAction = '/pregnancy/' + rec.id + '/referral';
+  - var referralDate = libs.mmt().format('YYYY-MM-DD');
+  - var referral = '';
+  - var reason = 'Routine';
+  - var isUpdate = false;
+  - var referralDeletePath;
+  //- If editing a referral
+  - if (referralRec && referralRec.id) {
+  -   formAction ='/pregnancy/' + rec.id + '/referral/' + referralRec.id;
+  -   referralDate = referralRec.date || referralDate;
+  -   referral = referralRec.referral || referral;
+  -   reason = referralRec.reason || '';
+  -   isUpdate = true;
+  -   referralDeletePath = '/pregnancy/' + rec.id + '/referral/' + referralRec.id + '/delete';
+  - }
+  div
+    form(id=formId, role='form', name=formName, action=formAction, method='post')
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Date of the referral')
+          +datePicker('form-control', 1, 'date', referralDate, 'refDate')
+        div(class='form-group col-xs-2 col-xs-offset-6')
+          //- This label just causes everything on this row to line up better.
+          label &nbsp;
+          a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Type of referral')
+          input(id='refReferral', class='form-control', type='text', tabindex='2', autofocus, autocomplete='on', name='referral', value=referral)
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Reason')
+          input(id='refReason', class='form-control', type='text', tabindex='3', autocomplete='on', name='reason', value=reason)
+      div.row
+        div(class='col-xs-4')
+          span &nbsp;
+      div.row
+        div(class='col-xs-2')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          button(type='submit', class='btn btn-primary')= gettext('Save Referral')
+        - if (isUpdate) {
+        div(class='col-xs-2 col-xs-offset-8')
+          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+        - }
+
+    - if (isUpdate) {
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deleteReferralEditForm', role='form', name='ReferralEditForm', action=referralDeletePath, method='post')
+        div(class='modal-dialog')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='referralId', value=referralRec.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')
+    - }

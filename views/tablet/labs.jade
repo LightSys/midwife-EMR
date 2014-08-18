@@ -5,5 +5,205 @@ block labs
   +pregnancyTab('labs')
   +patientWell(rec)
 
-  div
-    p.text-primary Sorry, this page is not yet done.
+  // Lab tests
+  - var addLabModalHeaderLabel = 'Add Lab Result';
+  - var addLabPath = '/pregnancy/' + rec.id + '/labtestaddform';
+
+  //- Referrals
+  - var addReferralFormPath = '/pregnancy/' + rec.id + '/referral';
+
+  //- Vaccinations
+  - var addVaccinationFormPath = '/pregnancy/' + rec.id + '/vaccination';
+
+  //- Medications
+  - var addMedicationFormPath = '/pregnancy/' + rec.id + '/medication';
+
+  div.row
+    //- -------------------------------------------------
+    //- All sections on the left of the screen.
+    //- -------------------------------------------------
+    div(class='col-xs-6')
+      div.row
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Lab Results')
+              table(id='labTestResults', class='table table-striped table-bordered table-hover table-condensed responsive')
+                thead
+                  tr
+                    td= gettext('Exam')
+                    td(class='table-cell-date')= gettext('Date')
+                    td= gettext('Result')
+                    td= gettext('Warn')
+                - var pregId = 'pregnancyId-' + rec.id;
+                - var testDate, testWarn, testResult, labTestResultId;
+                tbody(id=pregId)
+                  each ltr in labTestResults
+                    - labTestResultId = 'labTestResult-' + ltr.id;
+                    - testDate = ltr.testDate? libs.mmt(ltr.testDate).format('MM-DD-YYYY'): '';
+                    - testWarn = ltr.warn == 1? gettext('Yes'): '';
+                    - testResult = ltr.result2? ltr.result + ' - ' + ltr.result2: ltr.result;
+                    tr(class='labTestResultsRow', id=labTestResultId)
+                      td= ltr.name
+                      td= testDate
+                      td= testResult
+                      td= testWarn
+
+          //- Add Lab Test modal dialog and form.
+          div.row
+            div(class='col-xs-6 col-xs-offset-6')
+              form(id='addLabFormId', role='form', name='addLabForm', action=addLabPath, method='post')
+                button(class='btn btn-primary', data-toggle='modal', data-target="#addLab-modal")= gettext('Add Lab Result')
+
+                div(id='addLab-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='addLabModalHeaderLabel', aria-hidden='true')
+                  div(class='modal-dialog')
+                    div(class='modal-content')
+                      div(class='modal-header')
+                        h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab test that you want.')
+                      div(class='modal-body')
+                        div.row
+                          div(class='col-xs-4')
+                            p(class='text-info lead')= gettext('Select the lab test that you want to add.')
+                            div.form-group
+                              each suite in labTests
+                                label.radio= suite.name
+                                  input(type='radio', name='suite', value=suite.id)
+                          div(class='col-xs-8')
+                            each suite in labTests
+                              dl
+                                dt= suite.name
+                                dd= suite.tests.join(', ')
+                      div(class='modal-footer')
+                        input(type='hidden', name='_csrf', value=token)
+                        input(type='hidden', name='pregnancy_id', value=rec.id)
+                        button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+                        button(type='submit', class='btn btn-primary')= gettext('Add Lab')
+
+      div.row
+        //- Medications
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Medications')
+              table(id='Medications', class='table table-striped table-bordered table-hover table-condensed responsive')
+                thead
+                  tr
+                    td= gettext('Date')
+                    td= gettext('Name')
+                    td= gettext('# dispensed')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each med in medications
+                    - var medName = med.name;
+                    - var medDate = libs.mmt(med.date).format('MM-DD-YYYY');
+                    tr(class='medicationsRow', id='medication-'+med.id)
+                      td= medDate
+                      td= medName
+                      td= med.numberDispensed
+          div.row
+            div(class='col-xs-12')
+              //- Add Medications button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  a(class='btn btn-primary pull-right', href=addMedicationFormPath)= gettext('Add Medication')
+
+    //- -------------------------------------------------
+    //- All sections on the right of the screen.
+    //- -------------------------------------------------
+    div(class='col-xs-6')
+      div.row
+        //- Referrals
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Referrals')
+              table(id='Referrals', class='table table-striped table-bordered table-hover table-condensed responsive')
+                thead
+                  tr
+                    td= gettext('Date')
+                    td= gettext('Referred to')
+                    td= gettext('Reason')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each ref in referrals
+                    tr(class='referralsRow', id='referral-'+ref.id)
+                      td= ref.date
+                      td= ref.referral
+                      td= ref.reason
+
+          div.row
+            div(class='col-xs-12')
+              //- Add Referrals button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  a(class='btn btn-primary pull-right', href=addReferralFormPath)= gettext('Add Referral')
+
+      div.row
+        //- Doctor/Dentist consult dates
+        div(class='col-xs-12 panel panel-default spacing')
+          form(role='form', name='docDenConsultDates', action='/pregnancy/' + rec.id + '/doctordentist', method='post')
+            div.row
+              div(class='col-xs-6')
+                label= gettext('Doctor consult date')
+                +datePicker('form-control input-lg', 3, 'doctorConsultDate', rec.doctorConsultDate)
+              div(class='col-xs-6')
+                label= gettext('Dentist consult date')
+                +datePicker('form-control input-lg', 4, 'dentistConsultDate', rec.dentistConsultDate)
+            div(class='row spacing-row')
+              div(class='col-xs-4 col-xs-offset-8')
+                input(class='btn btn-primary pull-right', type='submit', value=gettext('Save Dates'))
+                input(type='hidden', name='_csrf', value=token)
+
+      div.row
+        //- Vaccinations
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Vaccinations')
+              table(id='Vaccinations', class='table table-striped table-bordered table-hover table-condensed responsive')
+                thead
+                  tr
+                    td= gettext('Type')
+                    td= gettext('Date')
+                    td= gettext('Administered by')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each vac in vaccinations
+                    - var vacName = vac.name;
+                    - var vacDate;
+                    - var by = vac.administeredInternally? 'Internal': 'External';
+                    - if (libs.mmt(vac.vacDate).isValid()) {
+                    -   vacDate = libs.mmt(vac.vacDate).format('MM-DD-YYYY');
+                    - } else {
+                    -   if (vac.vacMonth && vac.vacYear) {
+                    -     vacDate = vac.vacMonth + ' - ' + vac.vacYear;
+                    -   } else {
+                    -     if (vac.vacYear) {
+                    -       vacDate = vac.vacYear;
+                    -     }
+                    -   }
+                    - }
+                    tr(class='vaccinationsRow', id='vaccination-'+vac.id)
+                      td= vacName
+                      td= vacDate
+                      td= by
+          div.row
+            div(class='col-xs-12')
+              //- Note that the save for this is handled via AJAX.
+              label= gettext('Number of required tetanus ')
+          div.row
+            div(class='col-xs-12')
+              label(class='radio-inline')= gettext('0')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='0', checked=rec.numberRequiredTetanus==1) 0
+              label(class='radio-inline')= gettext('1')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='1', checked=rec.numberRequiredTetanus==1) 1
+              label(class='radio-inline')= gettext('2')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='2', checked=rec.numberRequiredTetanus==2) 2
+
+          div.row
+            div(class='col-xs-12')
+              //- Add Vaccinations button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  a(class='btn btn-primary pull-right', href=addVaccinationFormPath)= gettext('Add Vaccination')
+

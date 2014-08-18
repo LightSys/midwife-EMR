@@ -6,6 +6,7 @@
 //- @param    record - the pregnancy record
 //- ---------------------------------------------------------
 mixin patientWell(record)
+  - var priorityNumber = record && record.prenatalCheckinPriority? record.prenatalCheckinPriority: '';
   - var name = record.lastname + ', ' + record.firstname;
   - var dob = libs.mmt(record.patient.dob).format('MM-DD-YYYY');
   - var age = libs.mmt().diff(dob, 'years');
@@ -17,25 +18,36 @@ mixin patientWell(record)
   - var stillBirths = record.stillBirths || '0';
   - var living = record.living || '0';
   - var gaText = gettext('Current GA: ') 
+  - if (! record.prenatalSchedule) record.prenatalSchedule = {};
+  - var prenatalDay = record.prenatalSchedule.day || '';
+  - var prenatalLoc = record.prenatalSchedule.location || '';
+  - var prenatalSep = prenatalDay? ' @ ': '';
   - if (record.pregnancyEndDate && record.pregnancyEndDate !== '0000-00-00') {
   -   gaText = gettext('Final GA: ');
   - }
   div(class='pregName well well-sm')
     div(class='row')
-      div(class='col-lg-3 col-xs-12')
+      div(class='col-xs-10')
         h2(class='patient-well')= name
+      div(class='col-xs-2')
+        div(class='lead text-right')
+          span(class='badge text-primary')= priorityNumber
     div(class='row visible-xs visible-sm')
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-xs-4')
         div(class='lead')= gettext('Age: ')
           span(class='lead text-primary')= age
           span(class='lead text-primary') &nbsp;&nbsp;(
           span(class='lead text-primary')= dob
           span(class='lead text-primary') )
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-xs-4')
         div(class='lead')= gaText
           span(class='lead text-primary')= record.ga
+      div(class='col-xs-4')
+        div(class='lead')= gettext('Prenatal: ')
+          span(class='small text-primary')= prenatalDay
+          span(class='small text-primary')= prenatalSep + prenatalLoc
     div(class='row')
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-xs-6')
         span= gettext('G: ')
         strong(class='lead text-primary')= gravida
         span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -50,5 +62,5 @@ mixin patientWell(record)
         span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         span= gettext('L: ')
         strong(class='lead text-primary')= living
-      div(class='col-lg-3 col-xs-6')
+      div(class='col-xs-4 col-xs-offset-2')
         div(class='lead')= gettext('MMC: ') + dohFormatted

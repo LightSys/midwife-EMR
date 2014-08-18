@@ -1,0 +1,64 @@
+mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, values, result, result2, tabIndex, unit, normal, warn)
+
+  - var outerClass = 'col-' + bsDevSize + '-' + parseInt(12/numColumns);
+  - var fullWidth = 'col-' + bsDevSize + '-12';
+  - var halfWidth = 'col-' + bsDevSize + '-6';
+  - var qtrWidth = 'col-' + bsDevSize + '-3';
+  - var thirdWidth = 'col-' + bsDevSize + '-4';
+  - var customWidth = 'col-' + bsDevSize + '-';           // Must supply final number 1-12
+  - var customOffset = 'col-' + bsDevSize + '-offset-';   // Must supply final number 1-11
+  - var fldNameNumber = 'number-' + testId;
+  - var fldNameNumberLow = 'numberLow-' + testId;
+  - var fldNameNumberHigh = 'numberHigh-' + testId;
+  - var fldNameSelect = 'select-' + testId;
+  - var fldNameText = 'text-' + testId;
+  - var fldNameWarn = 'warn-' + testId;
+  - var minText = (''+min).length === 0? 'None': min
+  - var maxText = (''+max).length === 0? 'None': max
+  div(class=outerClass)
+    div(class='panel panel-primary')
+      div(class='panel-heading')
+        h4= name
+      div(class='panel-body')
+        div.row
+          div(class=fullWidth)
+            - if ((min || max) && values) {
+              label= gettext('Enter a number on the left OR select a value on the right.')
+            - } else if (values) {
+              label= gettext('Select a value from the list.')
+            - } else if (isText) {
+              label= gettext('Enter the lab results as text.')
+            - } else {
+              label= gettext('Enter the result as a number.')
+            - }
+        div.row
+          - if (min || max)
+            - if (isRange)
+              div(class=qtrWidth)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberLow, value=result)
+              div(class=qtrWidth)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberHigh, value=result2)
+            - else
+              div(class=halfWidth)
+                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber, value=result)
+          - if (values)
+            div(class=halfWidth)
+              +select('form-control', fldNameSelect, tabIndex++, values)
+          - if (isText)
+            div(class=fullWidth)
+              textarea(class='form-control', rows='3', tabindex=tabIndex++, wrap='soft', name=fldNameText)= result
+
+      div(class='panel-footer')
+        div.row
+          div(class=customWidth+'3')
+            span= gettext('Unit: ') + unit
+          div(class=customWidth+'6')
+            span= gettext('Normal: ') + normal
+          div(class=customWidth+'3')
+            label= gettext('Warning: ')
+            span &nbsp;
+            input(type='checkbox', name=fldNameWarn, tabindex=tabIndex, value=1, checked=warn==true)
+        div.row
+          div(class=customWidth+'6 '+customOffset+'3')
+            span= gettext('Min: ') + minText + ', ' + gettext('Max: ') + maxText
+

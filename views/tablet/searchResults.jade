@@ -3,6 +3,8 @@ extends layouts/default_layout
 block searchResults
   +titleMsg(title)
 
+  - var rowClass = 'searchResultsRow';
+  - if (isGuard) rowClass = 'searchResultsRowGuard';
   div.row
     div(class='form-group col-xs-2')
       a(class='btn btn-default', href='/search')= gettext('New Search')
@@ -13,6 +15,7 @@ block searchResults
         table(class='table table-striped table-bordered table-hover responsive')
           thead
             tr
+              th.header= gettext('Priority')
               th.header= gettext('Last name')
               th.header= gettext('First name')
               th.header= gettext('Date of birth')
@@ -24,6 +27,7 @@ block searchResults
             each rec in results
               -var searchResultsId = 'searchResultsId-' + rec.id;
               tr(class='searchResultsRow', id=searchResultsId)
+                td= rec.priority
                 td= rec.lastname
                 td= rec.firstname
                 td= rec.dob
