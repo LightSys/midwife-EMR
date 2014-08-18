@@ -25,59 +25,12 @@ var _ = require('underscore')
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , FONTS = require('./reportGeneral').FONTS
+  , centerText = require('./reportGeneral').centerText
+  , doSiteTitle = require('./reportGeneral').doSiteTitle
+  , doReportName = require('./reportGeneral').doReportName
+  , doCellBorders = require('./reportGeneral').doCellBorders
   ;
 
-
-/* --------------------------------------------------------
- * centerText()
- *
- * Writes the specified text centered according to the
- * specified font and fontSize on the specified y coordinate.
- *
- * param      doc
- * param      text
- * param      font
- * param      fontSize
- * param      y
- * return     undefined
- * -------------------------------------------------------- */
-var centerText = function(doc, text, font, fontSize, y) {
-  var textWidth
-    , xpos
-    ;
-  doc.font(font);
-  doc.fontSize(fontSize);
-  textWidth = parseInt(doc.widthOfString(text), 10);
-  xpos = Math.round((doc.page.width/2) - (textWidth/2));
-  doc.text(text, xpos, y);
-};
-
-/* --------------------------------------------------------
- * doSiteTitle()
- *
- * Writes the site title at the y coordinate specified.
- *
- * param       doc
- * param       y
- * return      undefined
- * -------------------------------------------------------- */
-var doSiteTitle = function(doc, y) {
-  centerText(doc, cfg.site.title, FONTS.Helvetica, 18, y);
-};
-
-/* --------------------------------------------------------
- * doReportName()
- *
- * Writes the report name at the specified y coordinate.
- *
- * param      doc
- * param      text
- * param      y
- * return     undefined
- * -------------------------------------------------------- */
-var doReportName = function(doc, text, y) {
-  centerText(doc, text, FONTS.Helvetica, 20, y);
-};
 
 /* --------------------------------------------------------
  * doColumnHeader()
@@ -241,29 +194,6 @@ var getData = function(dateFrom, dateTo) {
       });
   });
 };
-
-/* --------------------------------------------------------
- * doCellBorders()
- *
- * Write a single cell's border on the page.
- *
- * param      doc
- * param      x
- * param      y
- * param      width
- * param      height
- * return     undefined
- * -------------------------------------------------------- */
-var doCellBorders = function(doc, x, y, width, height) {
-  doc
-    .moveTo(x, y)
-    .lineTo(x + width, y)
-    .lineTo(x + width, y + height)
-    .lineTo(x, y + height)
-    .lineTo(x, y)
-    .stroke();
-};
-
 
 /* --------------------------------------------------------
  * doRow()
@@ -456,7 +386,6 @@ var doReport = function(flds, writable, logisticsName) {
         _.each(list, function(rec) {
           var recDate = moment(rec.date)
             ;
-          if (rec.pregnancy_id === 3045) console.dir(rec);
           if (currPregId === rec.pregnancy_id) {
             if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
                 ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
