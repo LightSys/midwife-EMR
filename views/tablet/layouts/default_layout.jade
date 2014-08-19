@@ -62,14 +62,14 @@ html(lang="en")
               if roleInfo.hasRole('guard') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending') || roleInfo.hasRole('clerk')
                 li
                   a(href="/checkout") <i class="fa fa-fw fa-circle-o"></i>
-                    = gettext('Client Check Out')
+                    = gettext('Check Out')
               if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')
                 li
                   a(href="/report/form") <i class="fa fa-fw fa-file-text-o"></i>
                     = gettext('Reports')
                 li
                   a(href="/priorityList") <i class="fa fa-fw fa-list-alt"></i>
-                    = gettext('Priority List')
+                    = gettext('Priority')
               li
                 a(href="/logout") <i class="fa fa-fw fa-power-off"></i>
                   = gettext('Logout')
@@ -97,7 +97,7 @@ html(lang="en")
 
       div#page-wrapper
         div.row
-          div.col-sm-12
+          div.col-xs-12
             div.container-fluid
               if user
                 block content
