@@ -58,7 +58,7 @@ describe('Utils', function(done) {
         ;
       utils.getFormFieldsAsync(request, admin, path, formName)
         .then(function(fldNames) {
-          fldNames.should.be.an.instanceOf(Array).and.have.length(9);
+          fldNames.should.be.an.instanceOf(Array).and.have.length(10);
           fldNames.should.contain('username');
           fldNames.should.contain('firstname');
           fldNames.should.contain('lastname');
@@ -66,6 +66,7 @@ describe('Utils', function(done) {
           fldNames.should.contain('password2');
           fldNames.should.contain('email');
           fldNames.should.contain('note');
+          fldNames.should.contain('displayName');
           fldNames.should.contain('_csrf');
           fldNames.should.contain('status');
           done();
