@@ -8,6 +8,10 @@ block search
   div.searchbox
     form(role='form', name='search', action='/search', method='post')
       div.row
+        div(class='form-group')
+          div(class='col-xs-12')
+            input(class='btn btn-default', type='submit', value=gettext('Search'))
+      div.row
         div(class='col-xs-6')
           div.form-group
             span= gettext('First name')
