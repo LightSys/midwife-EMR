@@ -17,7 +17,7 @@ var passport = require('passport')
   ;
 
 var home = function(req, res) {
-  res.render('content', {
+  res.render('home', {
     title: req.gettext('Home')
     , user: req.session.user
   });
