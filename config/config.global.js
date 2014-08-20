@@ -82,9 +82,13 @@ cfg.database.charset = 'utf8';
 
 // --------------------------------------------------------
 // Cache settings.
+// In memory cache time to live settings. How long to cache
+// before updating. Currently using node-cache module.
 // --------------------------------------------------------
-cfg.cache = {};
-cfg.cache.userTTL = 600;   // TTL is in seconds
+cfg.cache = {};                   // TTL is in seconds
+cfg.cache.shortTTL = 60 * 10;     // 10 minutes
+cfg.cache.mediumTTL = 60 * 60;    // 1 hour
+cfg.cache.longTTL = 60 * 60 * 24; // 1 day
 
 // --------------------------------------------------------
 // Data settings.
