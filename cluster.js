@@ -1,12 +1,13 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * cluster.js
  *
  * Provide a wrapper around the application that provides support for clusters.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 var fs = require('fs')
+  , _ = require('underscore')
   , config = {
       readyWhen: 'listening'
     }
@@ -23,6 +24,20 @@ cluster.run();
 process.on('SIGUSR1', function() {
     console.log('Got SIGUSR1, reloading cluster...');
     cluster.reload();
+});
+
+// --------------------------------------------------------
+// Rebroadcast all messages from the workers to all
+// workers (including the original sender).
+// --------------------------------------------------------
+_.each(cluster.workers, function(worker) {
+  // For each worker, listen for messages.
+  worker.process.on('message', function(msg) {
+    // For each message received, rebroadcast it to all workers.
+    _.each(cluster.workers, function(worker) {
+      worker.process.send(msg);
+    });
+  });
 });
 
 console.log("spawned cluster, kill -s SIGUSR1", process.pid, "to reload");

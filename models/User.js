@@ -38,6 +38,18 @@ var checkPassword = function(pw, hash, cb) {
   });
 };
 
+// --------------------------------------------------------
+// Update the cache of users whenever any cluster worker
+// (including this one) updates it.
+// --------------------------------------------------------
+process.on('message', function(msg) {
+  if (msg && msg.cmd && msg.cmd === 'User:saved') {
+    userIdMapCache.del('usermap', function() {
+      User.getUserIdMap();
+    });
+  }
+});
+
 /*
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -72,6 +84,7 @@ User = Bookshelf.Model.extend({
       'supervisor']
   , initialize: function() {
     this.on('saving', this.saving, this);
+    this.on('saved', this.saved, this);
   }
 
   , saving: function(model) {
@@ -79,6 +92,10 @@ User = Bookshelf.Model.extend({
       Bookshelf.Model.prototype.saving.apply(this, model);
     }
 
+  , saved: function(model) {
+    // Inform other cluster workers so that they cay update their cache.
+    process.send({cmd: 'User:saved'});
+  }
   , checkPassword: function(pw, cb) {
       this.fetch()
         .then(function(rec) {
