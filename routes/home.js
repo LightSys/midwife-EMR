@@ -177,7 +177,7 @@ var home = function(req, res) {
   getPrenatalHistory(function(err, ph) {
     getRecentPrenatalHistory(function(err, rph) {
       res.render('home', {
-        title: req.gettext('Home')
+        title: req.gettext('Dashboard')
         , user: req.session.user
       });
     });

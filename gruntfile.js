@@ -27,7 +27,6 @@ module.exports = function(grunt) {
                 , 'bower_components/bootstrap/dist/js/bootstrap.js'
                 , 'bower_components/underscore/underscore.js'
                 , 'bower_components/moment/min/moment.min.js'
-                , 'bower_components/jqplot/jquery.jqplot.min.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
                 , 'client/js/mercy.js'
@@ -52,7 +51,6 @@ module.exports = function(grunt) {
           files: {
             'static/css/mercy-combined.css': [
               'bower_components/bootstrap/dist/css/bootstrap.css'
-              , 'bower_components/jqplot/jquery.jqplot.min.css'
               , 'client/css/sb-admin.css'
               , 'client/css/responsive-tables.css'
               , 'client/css/jquery-ui.min.css'
