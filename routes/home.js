@@ -83,10 +83,10 @@ var getRecentPrenatalHistory = function(cb) {
     if (err) logError(err);
     if (_.isEmpty(recs)) {
       var knex
-        , sql = 'SELECT COUNT(*) AS cnt, DAYNAME(eDateTime) AS day ' +
-        'FROM event WHERE eventType = ? ' +
-        'AND eDateTime > DATE_SUB(CURDATE(), INTERVAL ABS(1-DAYOFWEEK(CURDATE())) DAY) ' +
-        'GROUP BY DAYOFWEEK(eDateTime)';
+        , sql = 'SELECT COUNT(*) AS cnt, DAYNAME(date) AS day ' +
+        'FROM prenatalExam ' +
+        'WHERE date > DATE_SUB(CURDATE(), INTERVAL ABS(1-DAYOFWEEK(CURDATE())) DAY) ' +
+        'GROUP BY DAYOFWEEK(date)';
       knex = Bookshelf.DB.knex;
       knex
         .raw(sql, prenatalCheckOutId)
@@ -132,29 +132,26 @@ var getPrenatalHistory = function(cb) {
       // Get the data from the database and update the cache.
       var knex = Bookshelf.DB.knex;
       // Last week (not this week).
-      knex('event')
+      knex('prenatalExam')
         .count('* as lastWeek')
-        .whereRaw('WEEK(eDateTime) = WEEK(CURDATE()) - 1')
-        .andWhere('eventType', '=', prenatalCheckOutId)
+        .whereRaw('WEEK(date) = WEEK(CURDATE()) - 1')
         .then(function(data) {
           stats.lastWeek = data[0].lastWeek;
         })
         .then(function() {
           // Last month (not this month).
-          return knex('event')
+          return knex('prenatalExam')
             .count('* as lastMonth')
-            .whereRaw('MONTH(eDateTime) = MONTH(CURDATE()) - 1')
-            .andWhere('eventType', '=', prenatalCheckOutId);
+            .whereRaw('MONTH(date) = MONTH(CURDATE()) - 1');
         })
         .then(function(data) {
           stats.lastMonth = data[0].lastMonth;
         })
         .then(function() {
           // Last year (not this year).
-          return knex('event')
+          return knex('prenatalExam')
             .count('* as lastYear')
-            .whereRaw('YEAR(eDateTime) = YEAR(CURDATE()) - 1')
-            .andWhere('eventType', '=', prenatalCheckOutId);
+            .whereRaw('YEAR(date) = YEAR(CURDATE()) - 1');
         })
         .then(function(data) {
           stats.lastYear = data[0].lastYear;
