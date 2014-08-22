@@ -47,13 +47,17 @@ $(function() {
      * and 'data-options' attributes respectively.
      *
      * param      el   - the jQuery selection criteria
+     * param      line - true to do a line instead of bar chart (false)
      * return     undefined 
      * -------------------------------------------------------- */
-    var doChart = function doChart(el) {
+    var doChart = function doChart(el, line, legend) {
       var $prenatalThisWeek = $(el)
         , data = $prenatalThisWeek.attr('data-data')
         , options = $prenatalThisWeek.attr('data-options')
         , divWidth = parseInt($prenatalThisWeek.css('width'), 10)
+        , doLine = line? true: false
+        , doLegend = legend? true: false
+        , ticks = null
         , plot
         ;
 
@@ -67,6 +71,26 @@ $(function() {
       }
 
       // --------------------------------------------------------
+      // If the number of data elements is too high it will make
+      // the axis labels hard to read, so we substitute our own
+      // ticks function in order to eliminate some labels for
+      // readability.
+      // --------------------------------------------------------
+      if (data.data.length > 15) {
+        ticks = function(axis) {
+          var tickArr = []
+            , interval = Math.round(data.data.length / 15)
+            ;
+          _.each(data.data, function(dat, idx) {
+            if (idx % interval === 0) {
+              tickArr.push([idx, dat[0]]);
+            }
+          });
+          return tickArr;
+        };
+      }
+
+      // --------------------------------------------------------
       // Specify the options for the chart. Additional options or
       // options to override these can be specified in the
       // data-options attribute of the element specified.
@@ -75,14 +99,21 @@ $(function() {
         series: {
           //points: {show: true, fill: false},
           bars: {
-            show: true,
+            show: !doLine,
             barWidth: 0.6,
             align: "center"
+          },
+          lines: {
+            show: doLine,
           }
+        },
+        legend: {
+          show: doLegend,
+          margin: [0, -40]  // Move legend outside of canvas so doesn't interfere with graph.
         },
         xaxis: {
           mode: "categories",
-          tickLength: 0,
+         ticks: ticks
         }
       }, options || {});
 
@@ -98,9 +129,8 @@ $(function() {
         var value = bar[1]
           , o = plot.pointOffset({x: idx, y: value})
           , leftOffset = -6
-          , topOffset = 4
+          , topOffset = -15
           ;
-        if (value < 4) topOffset -= 20;
         writeDataValue($prenatalThisWeek, o, leftOffset, topOffset, value);
       });
     };
@@ -114,6 +144,7 @@ $(function() {
       // --------------------------------------------------------
       doChart('#prenatalThisWeek');
       doChart('#prenatalHistory');
+      doChart('#prenatalHistoryByWeek', true, true);
     }
 
 

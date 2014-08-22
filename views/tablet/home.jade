@@ -3,14 +3,22 @@ extends layouts/default_layout
 block home
   h1= title
 
-  h3
-    = gettext('User Information')
+  div.row
+    div(class='col-xs-6')
+      h3(class='charts')= gettext('Prenatal Exams This Week')
+      div(id='prenatalThisWeek', data-data=prenatalThisWeekData, data-options=prenatalThisWeekOptions)
+    div(class='col-xs-6')
+      h3(class='charts')= gettext('Prenatal History')
+      div(id='prenatalHistory', data-data=prenatalHistoryData, data-options=prenatalHistoryOptions)
+  div.row
+    div(class='col-xs-12')
+      h3(class='charts')= gettext('Prenatal History By Week')
+      - prenatalHistoryByWeekData.label = 'year-week (yy-wk)';
+      div(id='prenatalHistoryByWeek', data-data=prenatalHistoryByWeekData, data-options=prenatalHistoryByWeekOptions)
 
-  p= gettext('User id: ') + user.id + ', ' + gettext('Name: ') + user.username
-
-  - if (revision)
-    p= gettext('Application revision: ') + revision
+  hr
+  - if (applicationRevision)
+    p= gettext('Application revision: ') + applicationRevision
 
   p= gettext('Designed for a tablet.')
-  hr
 

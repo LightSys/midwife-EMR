@@ -23,6 +23,7 @@ var passport = require('passport')
   , Event = require('../models').Event
   , prenatalHistory = 'stats:prenatalHistory'
   , prenatalRecentHistory = 'stats:prenatalRecentHistory'
+  , prenatalHistoryByWeek = 'stats:prenatalHistoryByWeek'
   , prenatalCheckInId
   , prenatalCheckOutId
   ;
@@ -83,7 +84,7 @@ var getRecentPrenatalHistory = function(cb) {
     if (err) logError(err);
     if (_.isEmpty(recs)) {
       var knex
-        , sql = 'SELECT COUNT(*) AS cnt, DAYNAME(date) AS day ' +
+        , sql = 'SELECT COUNT(*) AS cnt, SUBSTR(DAYNAME(date), 1, 3) AS day ' +
         'FROM prenatalExam ' +
         'WHERE date > DATE_SUB(CURDATE(), INTERVAL ABS(1-DAYOFWEEK(CURDATE())) DAY) ' +
         'GROUP BY DAYOFWEEK(date)';
@@ -106,6 +107,51 @@ var getRecentPrenatalHistory = function(cb) {
   });
 };
 
+
+/* --------------------------------------------------------
+ * getPrenatalHistoryByWeek()
+ *
+ * Return the number of prenatal exams conducted by week
+ * going back the specified number of weeks from the present.
+ *
+ * param      numWeeks
+ * param      cb
+ * return     undefined
+ * -------------------------------------------------------- */
+var getPrenatalHistoryByWeek = function(numWeeks, cb) {
+  var stats = {}
+    , cacheKey = prenatalHistoryByWeek + ':' + numWeeks
+    ;
+  longCache.get(cacheKey, function(err, recs) {
+    if (err) logError(err);
+    if (_.isEmpty(recs)) {
+      var knex
+        , sql = 'SELECT COUNT(*) AS cnt, ' +
+        'CONCAT(SUBSTR(YEAR(date), 3), "-", LPAD(WEEK(date, 2), 2, "0")) AS yearweek ' +
+        'FROM prenatalExam ' +
+        'WHERE date > DATE_SUB(CURDATE(), INTERVAL ? WEEK) ' +
+        'GROUP BY CONCAT(SUBSTR(YEAR(date), 3), "-", LPAD(WEEK(date, 2), 2, "0"))';
+      knex = Bookshelf.DB.knex;
+      knex
+        .raw(sql, numWeeks)
+        .then(function(data) {
+          stats.historyByWeek = data[0];
+        })
+        .then(function() {
+          // Distribute results to all worker processes.
+          process.send({cmd: cacheKey, stats: stats});
+          return cb(null, stats);
+        });
+
+    } else {
+      // Return the cached results.
+      return cb(null, recs[cacheKey]);
+    }
+  });
+
+
+
+};
 
 /* --------------------------------------------------------
  * getPrenatalHistory()
@@ -188,14 +234,29 @@ var home = function(req, res) {
       _.each(rph.currWeek, function(rec) {
         prenatalThisWeekData.data.push([rec.day, rec.cnt]);
       });
-      res.render('home', {
-        title: req.gettext('At a Glance')
-        , user: req.session.user
-        , prenatalThisWeekData: prenatalThisWeekData
-        , prenatalThisWeekOptions: ''
-        , prenatalHistoryData: prenatalHistoryData
-        , prenatalHistoryOptions: ''
+
+      // TODO: put hard-coded number of weeks in a config file, etc.
+      getPrenatalHistoryByWeek(52, function(err, hbw) {
+        var prenatalHistoryByWeekData = {};
+        prenatalHistoryByWeekData.data = [];
+        _.each(hbw.historyByWeek, function(rec) {
+          prenatalHistoryByWeekData.data.push([rec.yearweek, rec.cnt]);
+        });
+
+        res.render('home', {
+          title: req.gettext('At a Glance')
+          , user: req.session.user
+          , prenatalThisWeekData: prenatalThisWeekData
+          , prenatalThisWeekOptions: ''
+          , prenatalHistoryData: prenatalHistoryData
+          , prenatalHistoryOptions: ''
+          , prenatalHistoryByWeekData: prenatalHistoryByWeekData
+          , prenatalHistoryByWeekOptions: ''
+        });
+
+
       });
+
     });
   });
 };

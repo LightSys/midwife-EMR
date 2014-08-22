@@ -124,7 +124,8 @@ h4.charts {
   margin-bottom: 20px;
 }
 #prenatalThisWeek,
-#prenatalHistory {
+#prenatalHistory,
+#prenatalHistoryByWeek {
   height: 300px;
 }
 
