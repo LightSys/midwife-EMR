@@ -117,3 +117,16 @@ td.table-cell-date {
   text-align: center;
   font-size: 80px;
 }
+
+/* Charts on home page. */
+h3.charts,
+h4.charts {
+  margin-bottom: 20px;
+}
+#prenatalThisWeek,
+#prenatalHistory {
+  height: 300px;
+}
+
+
+

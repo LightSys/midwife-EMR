@@ -172,10 +172,29 @@ var getPrenatalHistory = function(cb) {
 
 var home = function(req, res) {
   getPrenatalHistory(function(err, ph) {
+    var prenatalHistoryData = {}
+      ;
+    prenatalHistoryData.data = [];
+    prenatalHistoryData.data.push(['Last Week', ph.lastWeek]);
+    prenatalHistoryData.data.push(['Last Month', ph.lastMonth]);
+    prenatalHistoryData.data.push(['Last Year', ph.lastYear]);
     getRecentPrenatalHistory(function(err, rph) {
+      // --------------------------------------------------------
+      // Put the data in the format expected by the chart library.
+      // --------------------------------------------------------
+      var prenatalThisWeekData = {}
+        ;
+      prenatalThisWeekData.data = [];
+      _.each(rph.currWeek, function(rec) {
+        prenatalThisWeekData.data.push([rec.day, rec.cnt]);
+      });
       res.render('home', {
-        title: req.gettext('Dashboard')
+        title: req.gettext('At a Glance')
         , user: req.session.user
+        , prenatalThisWeekData: prenatalThisWeekData
+        , prenatalThisWeekOptions: ''
+        , prenatalHistoryData: prenatalHistoryData
+        , prenatalHistoryOptions: ''
       });
     });
   });
