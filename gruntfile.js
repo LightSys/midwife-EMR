@@ -27,9 +27,12 @@ module.exports = function(grunt) {
                 , 'bower_components/bootstrap/dist/js/bootstrap.js'
                 , 'bower_components/underscore/underscore.js'
                 , 'bower_components/moment/min/moment.min.js'
+                , 'bower_components/flot/jquery.flot.js'
+                , 'bower_components/flot/jquery.flot.categories.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
                 , 'client/js/mercy.js'
+                , 'client/js/mercy-home.js'
                 , 'client/js/priorityList.js'
               ]
             }

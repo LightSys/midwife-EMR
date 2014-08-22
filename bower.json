@@ -19,6 +19,7 @@
     "underscore": "~1.6.0",
     "bootstrap": "3.0.3",
     "moment": "~2.6.0",
-    "jquery": "1.11.0"
+    "jquery": "1.11.0",
+    "flot": "~0.8.3"
   }
 }
