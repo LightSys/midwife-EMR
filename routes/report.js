@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Users = require('../models').Users
   , deworming = require('./dewormingRpt')
   , iron = require('./ironRpt')
+  , vaccine = require('./vaccinationRpt')
   ;
 
 
@@ -42,6 +43,16 @@ var form = function(req, res) {
     selectKey: 'iron2'
     , selected: false
     , label: 'Iron Given Date 2'
+  }
+  , {
+    selectKey: 'vaccine1'
+    , selected: false
+    , label: 'Tetanus Given Date 1'
+  }
+  , {
+    selectKey: 'vaccine2'
+    , selected: false
+    , label: 'Tetanus Given Date 2'
   }];
 
   new Users()
@@ -78,6 +89,8 @@ var run = function(req, res) {
   if (report === 'deworming') deworming.run(req, res);
   if (report === 'iron1') iron.run(req, res);
   if (report === 'iron2') iron.run(req, res);
+  if (report === 'vaccine1') vaccine.run(req, res);
+  if (report === 'vaccine2') vaccine.run(req, res);
 
 };
 
