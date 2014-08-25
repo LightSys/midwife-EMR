@@ -322,7 +322,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
  * return     undefined
  * -------------------------------------------------------- */
 var doReport = function(flds, writable, logisticsName) {
-  var reportNum = parseInt(flds.report.slice(-1), 10) // hack: iron1 or iron2
+  var reportNum = parseInt(flds.report.slice(-1), 10) // hack: iron1 through iron5
     , options = {
         margins: {
           top: 18
@@ -357,55 +357,41 @@ var doReport = function(flds, writable, logisticsName) {
   getData(opts.fromDate, opts.toDate)
     .then(function(list) {
       var data = []
+        , dataMap = {}
         , currPregId = 0
         , fDate = moment(opts.fromDate)
         , tDate = moment(opts.toDate)
         ;
 
-      if (reportNum === 1) {
-        // --------------------------------------------------------
-        // We only want the first iron medication for the patient and
-        // only if it falls within the target date range for the report.
-        // --------------------------------------------------------
-        _.each(list, function(rec) {
-          var recDate = moment(rec.date)
-            ;
-          if (currPregId !== rec.pregnancy_id) {
-            if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
-                ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
-              data.push(rec);
-            }
-            currPregId = rec.pregnancy_id;
-          }
-        });
-      } else if (reportNum === 2) {
-        // --------------------------------------------------------
-        // We only want the second iron medication for the patient and
-        // only if it falls within the target date range for the report.
-        // --------------------------------------------------------
-        _.each(list, function(rec) {
-          var recDate = moment(rec.date)
-            ;
-          if (currPregId === rec.pregnancy_id) {
-            if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
-                ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
-              // Make sure we don't add the same record twice since this
-              // report does not care about 3rd or later administrations.
-              if (data.length > 0 && data[data.length - 1].pregnancy_id !== currPregId) {
-                data.push(rec);
-              } else {
-                data.push(rec);
-              }
-            }
-          } else {
-            currPregId = rec.pregnancy_id;
-          }
-        });
+      // --------------------------------------------------------
+      // Break out the iron dispensations into order by pregnancy.
+      // Assumes that the list is sorted by pregnancy_id then
+      // by date.
+      // --------------------------------------------------------
+      _.each(list, function(rec) {
+        if (dataMap[rec.pregnancy_id]) {
+          dataMap[rec.pregnancy_id].push(rec);
+        } else {
+          dataMap[rec.pregnancy_id] = [rec];
+        }
+      });
 
-      } else {
-        // This is unexpected so bail.
-        throw new Error('Unexpected reportNum of ' + reportNum);
-      }
+      // --------------------------------------------------------
+      // Populate the data array with the records that are needed
+      // for this particular report.
+      // --------------------------------------------------------
+      _.each(_.keys(dataMap), function(key) {
+        var rec = dataMap[key][reportNum-1]
+          , recDate
+          ;
+        if (rec) {
+          recDate = moment(rec.date);
+          if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
+              ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
+            data.push(rec);
+          }
+        }
+      });
 
       doPages(doc, data, rowsPerPage, opts);
     })

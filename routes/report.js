@@ -45,6 +45,21 @@ var form = function(req, res) {
     , label: 'Iron Given Date 2'
   }
   , {
+    selectKey: 'iron3'
+    , selected: false
+    , label: 'Iron Given Date 3'
+  }
+  , {
+    selectKey: 'iron4'
+    , selected: false
+    , label: 'Iron Given Date 4'
+  }
+  , {
+    selectKey: 'iron5'
+    , selected: false
+    , label: 'Iron Given Date 5'
+  }
+  , {
     selectKey: 'vaccine1'
     , selected: false
     , label: 'Tetanus Given Date 1'
@@ -89,6 +104,9 @@ var run = function(req, res) {
   if (report === 'deworming') deworming.run(req, res);
   if (report === 'iron1') iron.run(req, res);
   if (report === 'iron2') iron.run(req, res);
+  if (report === 'iron3') iron.run(req, res);
+  if (report === 'iron4') iron.run(req, res);
+  if (report === 'iron5') iron.run(req, res);
   if (report === 'vaccine1') vaccine.run(req, res);
   if (report === 'vaccine2') vaccine.run(req, res);
 
