@@ -16,4 +16,5 @@ module.exports = {
   , report: require('./report')
   , dewormingRpt: require('./dewormingRpt')
   , priorityList: require('./priorityList')
+  , summaryRpt: require('./summaryRpt')
 };

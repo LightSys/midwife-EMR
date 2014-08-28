@@ -7,6 +7,7 @@
  */
 
 var cfg = require('../config')
+  , fontAwesomeFile = 'static/font-awesome/fonts/fontawesome-webfont.ttf'
   ;
 
 /* --------------------------------------------------------
@@ -102,7 +103,9 @@ var FONTS = {
   , TimesBoldItalic: 'Times-BoldItalic'
   , Symbol: 'Symbol'
   , ZapfDingbats: 'ZapfDingbats'
+  , FontAwesome: fontAwesomeFile
 };
+
 
 module.exports = {
   FONTS: FONTS

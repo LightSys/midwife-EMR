@@ -241,6 +241,7 @@ cfg.path.requiredTetanus = '/pregnancy/:id/requiredtetanus';    // POST
 // Reports
 cfg.path.reportForm = '/report/form';                 // GET
 cfg.path.reportRun = '/report/run';                   // POST
+cfg.path.reportSummary = '/report/summary/:id?';           // GET
 
 // Priority list
 cfg.path.priorityListLoad = '/priorityList/:id/:op';  // parameter handling

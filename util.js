@@ -22,6 +22,18 @@ var moment = require('moment')
     ]
   ;
 
+/* --------------------------------------------------------
+ * formatDohID()
+ *
+ * Return the specified dohID formatted per the usual spec.
+ *
+ * param      dohID
+ * return     formatted string
+ * -------------------------------------------------------- */
+var formatDohID = function(dohID) {
+  return dohID? dohID.slice(0,2) + '-' + dohID.slice(2,4) + '-' + dohID.slice(4): '';
+};
+
 var writeLog = function(msg, logType) {
   var fn = 'info'
     , id = process.env.WORKER_ID? process.env.WORKER_ID: 0
@@ -191,6 +203,7 @@ module.exports = {
   , adjustSelectData: adjustSelectData
   , addBlankSelectData: addBlankSelectData
   , getAbbr: getAbbr
+  , formatDohID: formatDohID
 };
 
 

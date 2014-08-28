@@ -13,8 +13,25 @@ var _ = require('underscore')
   , deworming = require('./dewormingRpt')
   , iron = require('./ironRpt')
   , vaccine = require('./vaccinationRpt')
+  , summaryRpt = require('./summaryRpt')
   ;
 
+
+/* --------------------------------------------------------
+ * summary()
+ *
+ * Generates the summary report for the current pregnancy.
+ * -------------------------------------------------------- */
+var summary = function summary(req, res) {
+  var id = req.param('id')
+    ;
+  if (! id) {
+    req.flash('warning', req.gettext('Pregnancy id not specified.'));
+    // TODO: fix with better path that still shows flash messages.
+    return res.redirect(cfg.path.search);
+  }
+  summaryRpt.run(req, res);
+};
 
 /* --------------------------------------------------------
  * form()
@@ -115,6 +132,7 @@ var run = function(req, res) {
 module.exports = {
   form: form
   , run: run
+  , summary: summary
 };
 
 

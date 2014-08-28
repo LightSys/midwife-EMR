@@ -469,6 +469,8 @@ app.get(cfg.path.reportForm, common, hasSuper,
     inRoles(['supervisor', 'clerk']), report.form);
 app.post(cfg.path.reportRun, common, hasSuper,
     inRoles(['supervisor', 'clerk']), report.run);
+app.get(cfg.path.reportSummary, common, hasSuper,
+    inRoles(['supervisor', 'clerk']), report.summary);
 
 // --------------------------------------------------------
 // The last resort.
