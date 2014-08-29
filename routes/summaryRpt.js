@@ -452,6 +452,13 @@ var doMidwifeInterview = function(doc, data, opts, ypos) {
     , y = ypos
     , midwifeNotes = ''
     , noneOfAbove = false
+    , gravida = data.pregnancy.gravida? data.pregnancy.gravida: ''
+    , para = data.pregnancy.para? data.pregnancy.para: ''
+    , abortions = data.pregnancy.abortions? data.pregnancy.abortions: ''
+    , living = data.pregnancy.living? data.pregnancy.living: ''
+    , stillBirths = data.pregnancy.stillBirths? data.pregnancy.stillBirths: ''
+    , term = data.pregnancy.term? data.pregnancy.term: ''
+    , preterm = data.pregnancy.preterm? data.pregnancy.preterm: ''
     , x2
     , x3
     ;
@@ -483,21 +490,21 @@ var doMidwifeInterview = function(doc, data, opts, ypos) {
 
   x += 100;
   y = ypos + 10;
-  doShortAnswer(doc, 'Gravida:', data.pregnancy.gravida, x, y, true);
+  doShortAnswer(doc, 'Gravida:', gravida, x, y, true);
   x = doc.x + 20;
   x2 = x;   // Save for term and preterm below.
-  doShortAnswer(doc, 'Para:', data.pregnancy.para, x, y, true);
+  doShortAnswer(doc, 'Para:', para, x, y, true);
   x = doc.x + 80;
-  doShortAnswer(doc, 'Abortions:', data.pregnancy.abortions, x, y, true);
+  doShortAnswer(doc, 'Abortions:', abortions, x, y, true);
   x = doc.x + 20;
-  doShortAnswer(doc, 'Living:', data.pregnancy.living, x, y, true);
+  doShortAnswer(doc, 'Living:', living, x, y, true);
   x = doc.x + 20;
-  doShortAnswer(doc, 'Still births:', data.pregnancy.stillBirths, x, y, true);
+  doShortAnswer(doc, 'Still births:', stillBirths, x, y, true);
 
   y += 15;
-  doShortAnswer(doc, 'Term:', data.pregnancy.term, x2, y, true);
+  doShortAnswer(doc, 'Term:', term, x2, y, true);
   x2 = doc.x + 20;
-  doShortAnswer(doc, 'Preterm:', data.pregnancy.preterm, x2, y, true);
+  doShortAnswer(doc, 'Preterm:', preterm, x2, y, true);
 
   y += 15;
   y = doVertFldVal(doc, 'Midwife comments', midwifeNotes, x3, y, true);
@@ -915,7 +922,11 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
     data.push(row.weight);
     data.push(row.systolic + ' / ' + row.diastolic);
     data.push(row.cr);
-    data.push(getGA(estDueDate, moment(row.date)));
+    if (estDueDate) {
+      data.push(getGA(estDueDate, moment(row.date)));
+    } else {
+      data.push('');
+    }
     data.push(row.fh);
     data.push(row.fht);
     data.push(row.pos);
