@@ -76,16 +76,17 @@ var form = function(req, res) {
     , selected: false
     , label: 'Iron Given Date 5'
   }
-  , {
-    selectKey: 'vaccine1'
-    , selected: false
-    , label: 'Tetanus Given Date 1'
-  }
-  , {
-    selectKey: 'vaccine2'
-    , selected: false
-    , label: 'Tetanus Given Date 2'
-  }];
+  //, {
+    //selectKey: 'vaccine1'
+    //, selected: false
+    //, label: 'Tetanus Given Date 1'
+  //}
+  //, {
+    //selectKey: 'vaccine2'
+    //, selected: false
+    //, label: 'Tetanus Given Date 2'
+  //}
+  ];
 
   new Users()
     .fetch({withRelated: 'roles'})
