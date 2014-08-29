@@ -35,6 +35,7 @@ var _ = require('underscore')
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , formatDohID = require('../util').formatDohID
+  , getGA = require('../util').getGA
   , FONTS = require('./reportGeneral').FONTS
   , centerText = require('./reportGeneral').centerText
   , doSiteTitle = require('./reportGeneral').doSiteTitle
@@ -82,17 +83,28 @@ var doReportDate = function(doc, opts) {
  * doSep()
  *
  * Draw a horizontal separator line at the specified y position.
+ * If position is specified it draws the separator on the left
+ * or right side of the page.
  *
  * param      doc
  * param      opts
  * param      ypos
  * param      color     - e.g. '#995' or 'red'
+ * param      position - null or 'left' or 'right'
  * return     undefined
  * -------------------------------------------------------- */
-var doSep = function(doc, opts, ypos, color) {
+var doSep = function(doc, opts, ypos, color, position) {
   var left = opts.margins.left
     , right = doc.page.width - opts.margins.right
     ;
+
+  if (position) {
+    if (position === 'left') {
+      right = (doc.page.width / 2) - 10;
+    } else if (position === 'right') {
+      left = (doc.page.width / 2) + 10;
+    }
+  }
   doc
     .lineWidth(1)
     .moveTo(left, ypos)
@@ -357,9 +369,9 @@ var doClientGeneral = function(doc, data, opts, ypos) {
 
 
 /* --------------------------------------------------------
- * doNote()
+ * doPrenatal()
  *
- * Creates the risk note section.
+ * Creates the prental section.
  *
  * param      doc
  * param      data
@@ -367,18 +379,57 @@ var doClientGeneral = function(doc, data, opts, ypos) {
  * param      ypos
  * return     y - new y position
  * -------------------------------------------------------- */
-var doNote = function(doc, data, opts, ypos) {
+var doPrenatal = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
     , riskNote = ''
+    , lmp = data.pregnancy.lmp
+    , edd = data.pregnancy.edd
+    , altEdd = data.pregnancy.alternateEdd
+    , useAltEdd = data.pregnancy.useAlternateEdd
+    , ga = ''
     ;
 
   if (data.pregnancy.riskNote) {
     riskNote = data.pregnancy.riskNote.replace(/(?:\r\n|\r|\n)/g, ' ');
   }
-  doSep(doc, opts, ypos, greyLightColor);
 
-  y += 10;
+  if (edd || altEdd) {
+    // Favor the alternateEdd if the useAlternateEdd is specified.
+    if (useAltEdd && altEdd && moment(altEdd).isAfter('1990')) {
+      ga = getGA(moment(altEdd));
+      edd = moment(edd).format('MM-DD-YYYY');
+      altEdd = moment(altEdd).format('MM-DD-YYYY');
+    } else {
+      ga = getGA(moment(edd));
+      edd = moment(edd).format('MM-DD-YYYY');
+      altEdd = '';
+    }
+  }
+
+  doSep(doc, opts, ypos, greyLightColor);
+  y += 5;
+  doVertFldVal(doc, 'GA', ga, x, y, true);
+  x += 40;
+  doVertFldVal(doc, 'Lmp', moment(lmp).format('MM-DD-YYYY'), x, y, true);
+  x += 60;
+  doVertFldVal(doc, 'Edd', edd, x, y, true);
+  x += 60;
+  doVertFldVal(doc, 'Alt Edd', altEdd, x, y, true);
+  x += 60;
+  doVertFldVal(doc, 'Use Alt Edd', useAltEdd? 'Yes': '', x, y, true);
+  x += 60;
+  doVertFldVal(doc, 'P/H MCP', data.pregnancy.philHealthMCP? 'Yes': '', x, y, true);
+  x += 40;
+  doVertFldVal(doc, 'P/H NCP', data.pregnancy.philHealthNCP? 'Yes': '', x, y, true);
+  x += 40;
+  doVertFldVal(doc, 'P/H Number', data.pregnancy.philHealthID, x, y, true);
+  x += 60;
+  doVertFldVal(doc, 'P/H Approved', data.pregnancy.philHealthApproved? 'Yes': '', x, y, true);
+
+
+  y += 30;
+  x = opts.margins.left;
   doVertFldVal(doc, 'Risk Notes', riskNote, x, y, true);
 
   y = doc.y + 10;
@@ -630,27 +681,374 @@ var doPregnancyHistory = function(doc, data, opts, ypos) {
 };
 
 /* --------------------------------------------------------
+ * doLabResults()
+ *
+ * Write all of the lab results.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doLabResults = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , colNames = []
+    , colData = []
+    ;
+
+  y += 5;
+  colNames.push('Exam                         ');
+  colNames.push('Date      ');
+  colNames.push('Result                                           ');
+  colNames.push('Warn');
+
+  _.each(data.labTestResults, function(row) {
+    var data = []
+      , result
+      , warn = row.warn? 'Yes': ''
+      ;
+    data.push(row.name);
+    data.push(moment(row.testDate).format('MM-DD-YYYY'));
+    result = row.result;
+    if (row.result2.length > 0) result += ' - ' + row.result2;
+    data.push(result);
+    data.push(warn);
+    colData.push(data);
+  });
+
+  doLabel(doc, 'Lab Test Results', x, y);
+  y += 10;
+  y = doTable(doc, colNames, colData, opts, y);
+
+  return y + 10;
+};
+
+
+/* --------------------------------------------------------
+ * doVaccinations()
+ *
+ * Write the list of vaccinations given to the patient.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doVaccinations = function(doc, data, opts, ypos) {
+  var x = (doc.page.width / 2) + 10
+    , y = ypos
+    , colNames = []
+    , colData = []
+    , reqTetanus = ''
+    ;
+
+  if (data.pregnancy.numberRequiredTetanus) {
+    reqTetanus = '' + data.pregnancy.numberRequiredTetanus;
+  }
+
+  colNames.push('Name                      ');
+  colNames.push('Date     ');
+  colNames.push('Internal');
+
+  _.each(data.vaccinations, function(row) {
+    var data = []
+      ;
+    data.push(row.name);
+    if (row.vacDate && moment(row.vacDate).isValid()) {
+      data.push(moment(row.vacDate).format('MM-DD-YYYY'));
+    } else if (row.vacMonth && row.vacYear) {
+      data.push(row.vacMonth + ' - ' + row.vacYear);
+    } else if (row.vacYear) {
+      data.push(row.vacYear);
+    }
+    if (row.administeredInternally) {
+      data.push('Internal');
+    } else {
+      data.push('External');
+    }
+    colData.push(data);
+  });
+
+  doLabel(doc, 'Vaccinations', x, y);
+  x = doc.page.width - opts.margins.right - 90;
+  doShortAnswer(doc, 'Required tetanus:', reqTetanus, x, y, true);
+
+  y += 10;
+  y = doTable(doc, colNames, colData, opts, y, 'right');
+
+  return y + 10;
+};
+
+/* --------------------------------------------------------
+ * doMedications()
+ *
+ * Write the list of medications given to the patient.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doMedications = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , colNames = []
+    , colData = []
+    ;
+
+  colNames.push('Name                      ');
+  colNames.push('Date     ');
+  colNames.push('Nbr');
+
+  _.each(data.medications, function(row) {
+    var data = []
+      ;
+    data.push(row.name);
+    data.push(moment(row.date).format('MM-DD-YYYY'));
+    data.push(row.numberDispensed);
+    colData.push(data);
+  });
+
+  doLabel(doc, 'Medications', x, y);
+  y += 10;
+  y = doTable(doc, colNames, colData, opts, y, 'left');
+
+  return y + 10;
+};
+
+
+/* --------------------------------------------------------
+ * doPrenatalNotes()
+ *
+ * Write out the notes for each prenatal exam in a table.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doPrenatalNotes = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , colNames = []
+    , colData = []
+    ;
+
+  colNames.push('Date');
+  colNames.push('Note                                                       ');
+
+  _.each(data.prenatalExams, function(row) {
+    var data = []
+      ;
+    if (row.note) {
+      data.push(moment(row.date).format('MM-DD-YYYY'));
+      data.push(row.note);
+      colData.push(data);
+    }
+  });
+
+
+  doLabel(doc, 'Prenatal Examination Notes', x, y);
+  y += 10;
+  y = doTable(doc, colNames, colData, opts, y);
+
+  return y + 10;
+};
+
+/* --------------------------------------------------------
+ * doPrenatalExams()
+ *
+ * Write out a table of prenatal exams.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doPrenatalExams = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , colNames = []
+    , colData = []
+    , estDueDate
+    ;
+
+  // --------------------------------------------------------
+  // The estimated due date is required to calculate the GA
+  // at each prenatal exam below.
+  // --------------------------------------------------------
+  if (data.pregnancy.edd || data.pregnancy.alternateEdd) {
+    // Favor the alternateEdd if the useAlternateEdd is specified.
+    if (data.pregnancy.useAlternateEdd &&
+        data.pregnancy.alternateEdd &&
+        moment(data.pregnancy.alternateEdd).isAfter('1990')) {
+      estDueDate = moment(data.pregnancy.alternateEdd);
+    } else {
+      estDueDate = moment(data.pregnancy.edd);
+    }
+  }
+  colNames.push('Date     ');
+  colNames.push('Wgt');
+  colNames.push('BP     ');
+  colNames.push('CR ');
+  colNames.push('GA   ');
+  colNames.push('FH');
+  colNames.push('FHT');
+  colNames.push('POS');
+  colNames.push('Mvmt');
+  colNames.push('Edema');
+  colNames.push('Risk ');
+  colNames.push('Vit');
+  colNames.push('Pray');
+  colNames.push('Return   ');
+
+  _.each(data.prenatalExams, function(row) {
+    var data = []
+      ;
+    data.push(moment(row.date).format('MM-DD-YYYY'));
+    data.push(row.weight);
+    data.push(row.systolic + ' / ' + row.diastolic);
+    data.push(row.cr);
+    data.push(getGA(estDueDate, moment(row.date)));
+    data.push(row.fh);
+    data.push(row.fht);
+    data.push(row.pos);
+    data.push(row.mvmt? 'Yes': 'No');
+    data.push(row.edema);
+    data.push(row.risk);
+    data.push(row.vitamin? 'Yes': 'No');
+    data.push(row.pray? 'Yes': 'No');
+    data.push(moment(row.returnDate).format('MM-DD-YYYY'));
+    colData.push(data);
+  });
+
+  doLabel(doc, 'Prenatal Examinations', x, y);
+  y += 10;
+  y = doTable(doc, colNames, colData, opts, y);
+
+  return y + 10;
+};
+
+
+/* --------------------------------------------------------
+ * doReferrals()
+ *
+ * Write the referral information.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doReferrals = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , colNames = []
+    , colData = []
+    ;
+
+  colNames.push('Date  ');
+  colNames.push('Referred to');
+  colNames.push('Reason     ');
+
+  _.each(data.referrals, function(row) {
+    var data = []
+      ;
+    data.push(moment(row.date).format('MM-DD-YYYY'));
+    data.push(row.referral);
+    data.push(row.reason);
+    colData.push(data);
+  });
+
+  doLabel(doc, 'Referrals', x, y);
+  y += 10;
+  y = doTable(doc, colNames, colData, opts, y, 'left');
+
+  return y + 10;
+};
+
+
+/* --------------------------------------------------------
+ * doDoctorDentist()
+ *
+ * Writes the doctor and dentist visit dates.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doDoctorDentist = function(doc, data, opts, ypos) {
+  var x = (doc.page.width / 2) + 10
+    , y = ypos
+    , docDate = ''
+    , denDate = ''
+    ;
+
+  if (data.pregnancy.doctorConsultDate &&
+      moment(data.pregnancy.doctorConsultDate).isAfter('1990')) {
+    docDate = moment(data.pregnancy.doctorConsultDate).format('MM-DD-YYYY');
+  }
+  if (data.pregnancy.dentistConsultDate &&
+      moment(data.pregnancy.dentistConsultDate).isAfter('1990')) {
+    denDate = moment(data.pregnancy.dentistConsultDate).format('MM-DD-YYYY');
+  }
+
+  doVertFldVal(doc, 'Doctor consult', docDate, x, y, true);
+  x += 100;
+  y = doVertFldVal(doc, 'Dentist consult', denDate, x, y, true);
+
+  return y +20;
+};
+
+
+/* --------------------------------------------------------
  * doTable()
  *
  * Write out a table across the full width of the page using
- * the columns passed. Assumes that the columns header tites
- * represent the width of the column. In other words, pad
- * columns with extra spaces should they need to be wider.
+ * the columns passed unless position parameter is passed.
+ * Position parameter can be 'left' or 'right' to create the
+ * table on the left half or right half of the page accordingly.
+ * Assumes that the columns header tites represent the width
+ * of the column. In other words, pad columns with extra
+ * spaces should they need to be wider.
  *
+ * param      doc
  * param      columns - list of column names
+ * param      rows
  * param      opts
  * param      ypos
+ * param      position - default is full width, 'left', 'right'
  * return     y - final y
  * -------------------------------------------------------- */
-var doTable = function(doc, columns, rows, opts, ypos) {
+var doTable = function(doc, columns, rows, opts, ypos, position) {
   var x = opts.margins.left
+    , left = x
     , y = ypos
     , pageWidth = opts.pageWidth - opts.margins.left - opts.margins.right
     , colWidth = {}
     , totalColWidth = 0
     ;
 
-  doSep(doc, opts, y, greyLightColor);
+  if (position) {
+    if (position === 'left') {
+      pageWidth = (doc.page.width / 2) - 10;
+    } else if (position === 'right') {
+      pageWidth = (doc.page.width / 2) - 10;
+      x = (doc.page.width / 2) + 10;
+      left = x;
+    }
+  }
+
+  doSep(doc, opts, y, greyLightColor, position);
   y += 5;
 
   // --------------------------------------------------------
@@ -681,7 +1079,7 @@ var doTable = function(doc, columns, rows, opts, ypos) {
     x += colWidth[col];
   });
   y += 12;
-  doSep(doc, opts, y, greyLightColor);
+  doSep(doc, opts, y, greyLightColor, position);
 
   // --------------------------------------------------------
   // Write out the rows.
@@ -690,18 +1088,19 @@ var doTable = function(doc, columns, rows, opts, ypos) {
   doc
     .font(FONTS.Helvetica)
     .fontSize(9);
-  x = opts.margins.left;
+  x = left;
   _.each(rows, function(row) {
     _.each(row, function(fld, idx) {
       if (idx > 0) x += colWidth[columns[idx-1]];
       doc.text(fld, x, y);
     });
-    x = opts.margins.left;
+    x = left;
     y += 10;      // Move down a line.
-    doSep(doc, opts, y, greyLightColor);
+    doSep(doc, opts, y, greyLightColor, position);
     y += 10;
   });
 
+  return y + 10;
 };
 
 
@@ -765,11 +1164,41 @@ var doPage1 = function doPage1(doc, data, opts) {
     ;
   doPageCommon(doc, data, opts);
   y = doClientGeneral(doc, data, opts, y);
-  y = doNote(doc, data, opts, y);
+  y = doPrenatal(doc, data, opts, y);
   y = doQuestionnaire(doc, data, opts, y);
   y = doMidwifeInterview(doc, data, opts, y);
   y = doPregnancyHistory(doc, data, opts, y);
   doFooter(doc, 'Summary Report', 'Page 1', moment().format('MMM DD, YYYY h:mm a'), opts);
+};
+
+
+/* --------------------------------------------------------
+ * doPage2()
+ *
+ * Write out the information for the first page.
+ *
+ * param      doc     - the document
+ * param      data    - the data
+ * param      opts    - options
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPage2 = function doPage2(doc, data, opts) {
+  var y = 85
+    , y1
+    , y2
+    ;
+  doc.addPage();
+  doPageCommon(doc, data, opts);
+  y = doLabResults(doc, data, opts, y);
+  y1 = doMedications(doc, data, opts, y);   // left side
+  y2 = doVaccinations(doc, data, opts, y);  // right side
+  y = y1 > y2? y1: y2;
+  y = doPrenatalExams(doc, data, opts, y);
+  y = doPrenatalNotes(doc, data, opts, y);
+  y1 = doReferrals(doc, data, opts, y);     // left side
+  y2 = doDoctorDentist(doc, data, opts, y); // right side
+
+  doFooter(doc, 'Summary Report', 'Page 2', moment().format('MMM DD, YYYY h:mm a'), opts);
 };
 
 /* --------------------------------------------------------
@@ -788,7 +1217,7 @@ var doPages = function(doc, data, opts) {
     ;
 
   doPage1(doc, data, opts);
-
+  doPage2(doc, data, opts);
 };
 
 
@@ -822,6 +1251,8 @@ var getData = function(id) {
       // Vaccinations
       .then(function() {
         return new Vaccinations().query(function(qb) {
+          qb.innerJoin('vaccinationType', 'vaccination.vaccinationType', 'vaccinationType.id');
+          qb.select(['vaccinationType.name']);
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
@@ -832,6 +1263,8 @@ var getData = function(id) {
       // Medications
       .then(function() {
         return new Medications().query(function(qb) {
+          qb.innerJoin('medicationType', 'medication.medicationType', 'medicationType.id');
+          qb.select(['medicationType.name']);
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
@@ -882,6 +1315,8 @@ var getData = function(id) {
       // Lab Test Results
       .then(function() {
         return new LabTestResults().query(function(qb) {
+          qb.innerJoin('labTest', 'labTestResult.labTest_id', 'labTest.id');
+          qb.select(['labTest.name', 'labTest.abbrev'])
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
