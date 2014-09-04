@@ -17,4 +17,5 @@ module.exports = {
   , dewormingRpt: require('./dewormingRpt')
   , priorityList: require('./priorityList')
   , summaryRpt: require('./summaryRpt')
+  , dohMasterListRpt: require('./dohMasterListRpt')
 };

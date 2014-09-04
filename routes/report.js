@@ -14,6 +14,7 @@ var _ = require('underscore')
   , iron = require('./ironRpt')
   , vaccine = require('./vaccinationRpt')
   , summaryRpt = require('./summaryRpt')
+  , dohMasterList = require('./dohMasterListRpt')
   ;
 
 
@@ -76,6 +77,11 @@ var form = function(req, res) {
     , selected: false
     , label: 'Iron Given Date 5'
   }
+  , {
+    selectKey: 'dohmasterlist'
+    , selected: false
+    , label: 'DOH Master List'
+  }
   //, {
     //selectKey: 'vaccine1'
     //, selected: false
@@ -127,7 +133,7 @@ var run = function(req, res) {
   if (report === 'iron5') iron.run(req, res);
   if (report === 'vaccine1') vaccine.run(req, res);
   if (report === 'vaccine2') vaccine.run(req, res);
-
+  if (report === 'dohmasterlist') dohMasterList.run(req, res);
 };
 
 module.exports = {
