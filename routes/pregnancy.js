@@ -626,6 +626,7 @@ var getEditFormData = function(req, addData) {
         req.paramPregnancy? req.paramPregnancy.clientIncomePeriod: void(0))
     , partnerInc = adjustSelectData(incomePeriod,
         req.paramPregnancy? req.paramPregnancy.partnerIncomePeriod: void(0))
+    , mbb = adjustSelectData(yesNoUnanswered, '')
     , schRec
     , priRec
     , prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
@@ -661,6 +662,12 @@ var getEditFormData = function(req, addData) {
     priRec = _.find(req.paramPregnancy.priority, function(obj) {
       return obj.eType === prenatalCheckInId;
     });
+
+    // --------------------------------------------------------
+    // Set the value for the Mother Baby Book.
+    // --------------------------------------------------------
+    if (req.paramPregnancy.mbBook === 1) mbb = adjustSelectData(yesNoUnanswered, 'Y');
+    if (req.paramPregnancy.mbBook === 0) mbb = adjustSelectData(yesNoUnanswered, 'N');
   }
 
   return _.extend(addData, {
@@ -669,6 +676,7 @@ var getEditFormData = function(req, addData) {
     , marital: ms
     , religion: rel
     , education: edu
+    , mbBook: mbb
     , partnerEducation: partEdu
     , clientIncomePeriod: clientInc
     , partnerIncomePeriod: partnerInc
@@ -743,6 +751,13 @@ var generalAddSave = function(req, res) {
   if (prenatalLoc && prenatalDay) {
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
   }
+
+  // --------------------------------------------------------
+  // If unselected, don't translate that to 'No'.
+  // --------------------------------------------------------
+  if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
+  if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
+  if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
   // --------------------------------------------------------
   // Validate the fields.
@@ -968,6 +983,13 @@ var generalEditSave = function(req, res) {
     if (priorityBarcode) {
       priorityBarcode = parseInt(priorityBarcode, 10) || null;
     }
+
+    // --------------------------------------------------------
+    // If unselected, don't translate that to 'No'.
+    // --------------------------------------------------------
+    if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
+    if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
+    if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
     Pregnancy.checkFields(pregFlds)
       .then(function(flds) {

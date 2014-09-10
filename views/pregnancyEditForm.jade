@@ -95,6 +95,9 @@ block pregnancyEdit
         div(class='form-group col-sm-4')
           span= gettext('Prenatal Location')
           +select('form-control input-lg', 'prenatalLocation', 25, value=prenatalLocation)
+        div(class='form-group col-sm-2')
+          span= gettext('Mother - Baby Book?')
+          +select('form-control input-lg', 'mbBook', 26, value=mbBook)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
