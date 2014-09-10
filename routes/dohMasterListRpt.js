@@ -255,6 +255,7 @@ var doHeaderPage1 = function(doc, opts) {
 };
 
 
+
 /* --------------------------------------------------------
  * doFooterPage1()
  *
@@ -351,6 +352,98 @@ var doFooterPage1 = function(doc, opts) {
 
 
 /* --------------------------------------------------------
+ * doFooterPage2()
+ *
+ * Write out the footer on page 2.
+ *
+ * param      doc
+ * param      opts
+ * return     undefined
+ * -------------------------------------------------------- */
+var doFooterPage2 = function(doc, opts) {
+  var x = opts.margins.left
+    , y = doc.page.height - opts.margins.bottom - 95
+    , headingFontSize = 12
+    , textFontSize = 8
+    , lineHgt = 10
+    , yTop = y
+    , tmpX
+    , tmpX2
+    , tmpStr
+    , tmpStr2
+    ;
+
+  // --------------------------------------------------------
+  // Column 1
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(headingFontSize)
+    .text('2/ Birth Plan:', x, y, {underline: true});
+  y += 20;
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(textFontSize)
+    .text('11 A = Y / N', x, y);
+  y += lineHgt; doc.text('11 B = Home, Hospital, Clinic', x, y);
+  y += lineHgt; doc.text('11 C = Husband, hilot, MW, PHN', x, y);
+  y += lineHgt; doc.text('11 D = Y / N', x, y);
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(textFontSize);
+  y += lineHgt; doc.text('3/ 1st Hemoglobin', x, y);
+  y += lineHgt; doc.text('4/ 2nd Hemoglobin', x, y);
+
+  // --------------------------------------------------------
+  // Column 2
+  // --------------------------------------------------------
+  x += 234;
+  y = yTop;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(textFontSize);
+  tmpStr = '5/ ';
+  tmpStr2 = 'Reproductive Tract infection (RTI)/ Sexually Transmitted Infection (STI) - ';
+  tmpX = x + doc.widthOfString(tmpStr);
+  tmpX2 = tmpX + doc.widthOfString(tmpStr2);
+  doc.text(tmpStr + tmpStr2, x, y);
+  doc.font(FONTS.Helvetica);
+  doc.text('Syphillix, HIV, Gram Stain, KOH mount, Wet mount', tmpX2, y);
+  y += lineHgt; doc.text('& PaP Smear. If positive, list the pregnant woman in the TCL for STD/HIV/AIDS.', tmpX, y);
+  y += (lineHgt * 1.5);
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(textFontSize);
+  tmpStr = '6/ ';
+  tmpStr2 = 'Iron Supplementation / Multiple Micronutrient Supplementation/ Multivitamis = ';
+  tmpX = x + doc.widthOfString(tmpStr);
+  tmpX2 = tmpX + doc.widthOfString(tmpStr2);
+  doc.text(tmpStr + tmpStr2, x, y);
+  doc.font(FONTS.Helvetica);
+  doc.text('60 mg elemental iron with 400 mcg Folic Acid -', tmpX2, y);
+  doc.font(FONTS.HelveticaBold);
+  y += lineHgt; doc.text('1 tablet once a day (Start upon diagnosis of pregnancy, 180 tablets for 6 months).', tmpX, y);
+  tmpStr = '7/ ';
+  tmpStr2 = 'Quality Prenatal Care';
+  tmpX = x + doc.widthOfString(tmpStr);
+  tmpX2 = x + 324;
+  y += lineHgt; doc.text(tmpStr + tmpStr2, x, y);
+  y += lineHgt; doc.text('(1) Seen be a doctor', tmpX, y);
+  doc.text('(4) 3 basic laboratory exams: hemoglobin, blood typing, urinalysis', tmpX2, y);
+  y += lineHgt; doc.text('(2) Seen be a dentist', tmpX, y);
+  doc.text('(5) Complete iron supplementation for 6 months (180 tabs)', tmpX2, y);
+  y += lineHgt; doc.text('(3) 4 or more PNV: 1 in 1st Tri, 1 in 2nd Tri and 2 in 3rd Tri', tmpX, y);
+  doc.text('(6) Provided with health info, counseling, etc.', tmpX2, y);
+  tmpStr = '8/ REMARKS - ex.: ';
+  tmpStr2 = 'Provided health info, given deworming tablet / Insecticide Treated Nets in malaria endemic areas, etc.';
+  tmpX = x + doc.widthOfString(tmpStr);
+  y += lineHgt; doc.text(tmpStr, x, y);
+  doc.font(FONTS.Helvetica);
+  doc.text(tmpStr2, tmpX, y);
+};
+
+
+/* --------------------------------------------------------
  * doColHeaderPage1()
  *
  * Write the column headers out for page 1.
@@ -364,6 +457,7 @@ var doColHeaderPage1 = function(doc, opts) {
     , y = opts.margins.top + 22
     , yTop = y
     , yBottom = y + 90
+    , yColNum = yBottom - 12
     , yMid = yBottom - 45
     , fontSizeLarge = 10
     , fontSizeSmall = 7
@@ -406,7 +500,6 @@ var doColHeaderPage1 = function(doc, opts) {
       .moveTo(x, y)
       .lineTo(x, yBottom)
       .stroke();
-
   });
 
   // --------------------------------------------------------
@@ -440,7 +533,7 @@ var doColHeaderPage1 = function(doc, opts) {
   doc.text(texts[1], centerX - (widths[1]/2), y);
   y += 14;
   doc.text(texts[2], centerX - (widths[2]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[3], centerX - (widths[3]/2), y);
 
   // --------------------------------------------------------
@@ -461,7 +554,7 @@ var doColHeaderPage1 = function(doc, opts) {
   doc.text(texts[0], centerX - (widths[0]/2), y);
   y += 27;
   doc.text(texts[1], centerX - (widths[1]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[2], centerX - (widths[2]/2), y);
 
   // --------------------------------------------------------
@@ -479,7 +572,7 @@ var doColHeaderPage1 = function(doc, opts) {
     widths.push(doc.widthOfString(s));
   });
   doc.text(texts[0], centerX - (widths[0]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[1], centerX - (widths[1]/2), y);
 
   // --------------------------------------------------------
@@ -503,7 +596,7 @@ var doColHeaderPage1 = function(doc, opts) {
   doc.text(texts[1], centerX - (widths[1]/2), y);
   y += 14;
   doc.text(texts[2], centerX - (widths[2]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[3], centerX - (widths[3]/2), y);
 
   // --------------------------------------------------------
@@ -534,7 +627,7 @@ var doColHeaderPage1 = function(doc, opts) {
   doc.text(texts[3], centerX - (maxWidth/2), y);
   y += 11;
   doc.text(texts[4], centerX - (maxWidth/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[5], centerX - (widths[5]/2), y);
 
   // --------------------------------------------------------
@@ -552,7 +645,7 @@ var doColHeaderPage1 = function(doc, opts) {
     widths.push(doc.widthOfString(s));
   });
   doc.text(texts[0], centerX - (widths[0]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[1], centerX - (widths[1]/2), y);
 
   // --------------------------------------------------------
@@ -597,7 +690,7 @@ var doColHeaderPage1 = function(doc, opts) {
   y += 9;
   doc.fontSize(fontSizeSmall);
   doc.text(texts[1], centerX - (widths[1]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.fontSize(fontSizeLarge);
   doc.text(texts[2], centerX - (widths[2]/2), y);
 
@@ -622,7 +715,7 @@ var doColHeaderPage1 = function(doc, opts) {
   y += 9;
   doc.fontSize(fontSizeSmall);
   doc.text(texts[1], centerX - (widths[1]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.fontSize(fontSizeLarge);
   doc.text(texts[2], centerX - (widths[2]/2), y);
 
@@ -647,7 +740,7 @@ var doColHeaderPage1 = function(doc, opts) {
   y += 9;
   doc.fontSize(fontSizeSmall);
   doc.text(texts[1], centerX - (widths[1]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.fontSize(fontSizeLarge);
   doc.text(texts[2], centerX - (widths[2]/2), y);
 
@@ -676,7 +769,7 @@ var doColHeaderPage1 = function(doc, opts) {
   doc.text(texts[2], centerX - (widths[2]/2), y);
   y += 13;
   doc.text(texts[3], centerX - (widths[3]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[4], centerX - (widths[4]/2), y);
   y = yTop + 22;
   doc.text(texts[5], colPos[10] - widths[5] - 10, y);
@@ -712,7 +805,7 @@ var doColHeaderPage1 = function(doc, opts) {
   doc.text(texts[0], centerX - (widths[0]/2), y);
   y += 11;
   doc.text(texts[1], centerX - (widths[1]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[2], centerX - (widths[2]/2), y);
 
   // --------------------------------------------------------
@@ -733,27 +826,582 @@ var doColHeaderPage1 = function(doc, opts) {
   doc.text(texts[0], centerX - (widths[0]/2), y);
   y += 11;
   doc.text(texts[1], centerX - (widths[1]/2), y);
-  y = yBottom - 15;
+  y = yColNum;
   doc.text(texts[2], centerX - (widths[2]/2), y);
 };
 
 
 /* --------------------------------------------------------
- * doRowsGridPage1()
+ * doColHeaderPage2()
+ *
+ * Write the column headers out for page 2.
+ *
+ * param      doc
+ * param      opts
+ * return     undefined
+ * -------------------------------------------------------- */
+var doColHeaderPage2 = function(doc, opts) {
+  var x = opts.margins.left
+    , y = opts.margins.top + 22
+    , yTop = y
+    , yBottom = y + 90
+    , yColNum = yBottom - 12
+    , yMidUpper = yTop + 18
+    , yMidLower = yBottom - 55
+    , fontSizeLarge = 9
+    , fontSizeSmall = 7
+    , colPos
+    , midColsLower = [1, 2, 3, 7, 14]
+    , midColsUpper = [8, 9, 10]
+    , bottomCols = [12, 13]
+    , centerX
+    , widths = []
+    , maxWidth
+    , texts = []
+    ;
+
+  // --------------------------------------------------------
+  // Outer box around the column header.
+  // --------------------------------------------------------
+  doc
+    .moveTo(x, y)
+    .lineTo(doc.page.width - opts.margins.right, y)
+    .lineTo(doc.page.width - opts.margins.right, y + 72)
+    .lineTo(x, y + 72)
+    .lineTo(x, y)
+    .stroke();
+
+  // --------------------------------------------------------
+  // Small box under the outer box.
+  // --------------------------------------------------------
+  doc
+    .moveTo(x, y + 72)
+    .lineTo(x, y + 72 + 18)
+    .lineTo(doc.page.width - opts.margins.right, y + 72 + 18)
+    .lineTo(doc.page.width - opts.margins.right, y + 72)
+    .stroke();
+
+  // --------------------------------------------------------
+  // Draw column vertical dividers.
+  // --------------------------------------------------------
+  colPos = getColXposPage2(opts);
+  _.each(colPos, function(x, idx) {
+    y = yTop;
+    if (_.contains(midColsLower, idx)) y = yMidLower;
+    if (_.contains(midColsUpper, idx)) y = yMidUpper;
+    if (_.contains(bottomCols, idx)) y = yBottom;
+    doc
+      .moveTo(x, y)
+      .lineTo(x, yBottom)
+      .stroke();
+  });
+
+  // --------------------------------------------------------
+  // Draw the horizontal dividers in some columns.
+  // --------------------------------------------------------
+  doc
+    .moveTo(colPos[0], yMidLower)
+    .lineTo(colPos[4], yMidLower)
+    .moveTo(colPos[6], yMidLower)
+    .lineTo(colPos[8], yMidLower)
+    .moveTo(colPos[11], yMidLower)
+    .lineTo(colPos[15], yMidLower)
+    .stroke();
+
+  doc
+    .moveTo(colPos[0], yMidUpper)
+    .lineTo(colPos[4], yMidUpper)
+    .moveTo(colPos[6], yMidUpper)
+    .lineTo(colPos[11], yMidUpper)
+    .stroke();
+
+
+  // --------------------------------------------------------
+  // Text in Column 1 (Mother and Child book).
+  // --------------------------------------------------------
+  centerX = ((colPos[1] - colPos[0])/2) + colPos[0];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Mother');
+  texts.push('& Child-');
+  texts.push('Book');
+  texts.push('(11A)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 2 (Where to deliver).
+  // --------------------------------------------------------
+  centerX = ((colPos[2] - colPos[1])/2) + colPos[1];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Where');
+  texts.push('to');
+  texts.push('deliver');
+  texts.push('(11B)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 3 (Partner during deliver).
+  // --------------------------------------------------------
+  centerX = ((colPos[3] - colPos[2])/2) + colPos[2];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Partner');
+  texts.push('during');
+  texts.push('deliver');
+  texts.push('(11C)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 4 (Phil Health).
+  // --------------------------------------------------------
+  centerX = ((colPos[4] - colPos[3])/2) + colPos[3];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Phil');
+  texts.push('Health');
+  texts.push('Member');
+  texts.push('(11D)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+
+  // --------------------------------------------------------
+  // Text over Columns 1 to 4.
+  // --------------------------------------------------------
+  centerX = ((colPos[4] - colPos[0])/2) + colPos[0];
+  y = yTop + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Birth Plan');
+  texts.push('(11)');
+  texts.push('2/');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 18;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y = yTop + 4;
+  doc.fontSize(fontSizeSmall);
+  doc.text(texts[2], centerX + (widths[0]/2) + 3, y);
+
+  // --------------------------------------------------------
+  // Text in Column 5 (Previous TT Received).
+  // --------------------------------------------------------
+  centerX = ((colPos[5] - colPos[4])/2) + colPos[4];
+  y = yTop + 8;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Previous');
+  texts.push('TT Imm\'n');
+  texts.push('Received');
+  texts.push('(Date');
+  texts.push('Received)');
+  texts.push('(12)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y += 11;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  y += 11;
+  doc.text(texts[4], centerX - (widths[4]/2), y);
+  y = yColNum;
+  doc.text(texts[5], centerX - (widths[5]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 6 (TT Immunization given).
+  // --------------------------------------------------------
+  centerX = ((colPos[6] - colPos[5])/2) + colPos[5];
+  y = yTop + 8;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('TT Immuni');
+  texts.push('zation');
+  texts.push('given');
+  texts.push('(Date');
+  texts.push('Given)');
+  texts.push('(13)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y += 11;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  y += 11;
+  doc.text(texts[4], centerX - (widths[4]/2), y);
+  y = yColNum;
+  doc.text(texts[5], centerX - (widths[5]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 7 (Hemoglobin 1).
+  // --------------------------------------------------------
+  centerX = ((colPos[7] - colPos[6])/2) + colPos[6];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('1st');
+  texts.push('Date');
+  texts.push('Result');
+  texts.push('(14)');
+  texts.push('3/');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  doc.fontSize(fontSizeSmall);
+  y = yMidLower + 2;
+  doc.text(texts[4], centerX + (widths[0]/2) + 3, y);
+
+  // --------------------------------------------------------
+  // Text in Column 8 (Hemoglobin 2).
+  // --------------------------------------------------------
+  centerX = ((colPos[8] - colPos[7])/2) + colPos[7];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('2nd');
+  texts.push('Date');
+  texts.push('Result');
+  texts.push('(15)');
+  texts.push('4/');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  doc.fontSize(fontSizeSmall);
+  y = yMidLower + 2;
+  doc.text(texts[4], centerX + (widths[0]/2) + 3, y);
+
+  // --------------------------------------------------------
+  // Text in Column 9 (Blood Type).
+  // --------------------------------------------------------
+  centerX = ((colPos[9] - colPos[8])/2) + colPos[8];
+  y = yMidUpper + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Blood');
+  texts.push('Type');
+  texts.push('Date');
+  texts.push('Result');
+  texts.push('(16)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y = yMidLower + 15; // Line up on these 4 columns.
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y += 11;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  y = yColNum;
+  doc.text(texts[4], centerX - (widths[4]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 10 (Urinalysis).
+  // --------------------------------------------------------
+  centerX = ((colPos[10] - colPos[9])/2) + colPos[9];
+  y = yMidUpper + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Urinalysis');
+  texts.push('Date');
+  texts.push('Result');
+  texts.push('(17)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y = yMidLower + 15; // Line up on these 4 columns.
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 11 (RTI STI).
+  // --------------------------------------------------------
+  centerX = ((colPos[11] - colPos[10])/2) + colPos[10];
+  y = yMidUpper + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('RTI');
+  texts.push('STI');
+  texts.push('Date');
+  texts.push('Result');
+  texts.push('(17)');
+  texts.push('5/');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y = yMidLower + 15; // Line up on these 4 columns.
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y += 11;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  y = yColNum;
+  doc.text(texts[4], centerX - (widths[4]/2), y);
+  doc.fontSize(fontSizeSmall);
+  y = yMidUpper + 6;
+  doc.text(texts[5], centerX + (widths[0]/2) + 3, y);
+
+  // --------------------------------------------------------
+  // Text over Columns 7 to 8.
+  // --------------------------------------------------------
+  centerX = ((colPos[8] - colPos[6])/2) + colPos[6];
+  y = yMidUpper + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Hemoglobin');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+
+  // --------------------------------------------------------
+  // Text over Columns 6 to 11.
+  // --------------------------------------------------------
+  centerX = ((colPos[11] - colPos[6])/2) + colPos[6];
+  y = yTop + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Laboratory Examinations');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 12 to 14 (Iron with Folic).
+  // --------------------------------------------------------
+  centerX = ((colPos[14] - colPos[11])/2) + colPos[11];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Iron with Folic');
+  texts.push('No. of Tablets/');
+  texts.push('Date Given');
+  texts.push('(19)');
+  texts.push('6/');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  doc.fontSize(fontSizeSmall);
+  y = yMidLower + 2;
+  doc.text(texts[4], centerX + (widths[0]/2) + 3, y);
+
+  // --------------------------------------------------------
+  // Text in Column 15 (Iodized Salt).
+  // --------------------------------------------------------
+  centerX = ((colPos[15] - colPos[14])/2) + colPos[14];
+  y = yMidLower + 4;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Using');
+  texts.push('Iodized');
+  texts.push('Salt (Y/N)');
+  texts.push('(20)');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 11;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 11;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y = yColNum;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+
+  // --------------------------------------------------------
+  // Text over Columns 12 to 15.
+  // --------------------------------------------------------
+  centerX = ((colPos[15] - colPos[11])/2) + colPos[11];
+  y = yTop + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('MicroNutrient Supplementation');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+
+  // --------------------------------------------------------
+  // Text in Column 15 (Quality Prenatal Care).
+  // --------------------------------------------------------
+  centerX = ((colPos[16] - colPos[15])/2) + colPos[15];
+  y = yTop + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Quality');
+  texts.push('Prenatal');
+  texts.push('Care');
+  texts.push('(Yes/No)');
+  texts.push('(21)');
+  texts.push('7/');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 19;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  y += 19;
+  doc.text(texts[2], centerX - (widths[2]/2), y);
+  y += 19;
+  doc.text(texts[3], centerX - (widths[3]/2), y);
+  y = yColNum;
+  doc.text(texts[4], centerX - (widths[4]/2), y);
+  doc.fontSize(fontSizeSmall);
+  y = yTop + 3;
+  doc.text(texts[5], centerX + (widths[0]/2) + 2, y);
+
+  // --------------------------------------------------------
+  // Text in Column 16 (Remarks).
+  // --------------------------------------------------------
+  centerX = ((colPos[17] - colPos[16])/2) + colPos[16];
+  y = yTop + 6;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(fontSizeLarge);
+  texts = []; widths = [];
+  texts.push('Remarks');
+  texts.push('(22)');
+  texts.push('8/');
+  _.each(texts, function(s) {
+    widths.push(doc.widthOfString(s));
+  });
+  doc.text(texts[0], centerX - (widths[0]/2), y);
+  y += 19;
+  y = yColNum;
+  doc.text(texts[1], centerX - (widths[1]/2), y);
+  doc.fontSize(fontSizeSmall);
+  y = yTop + 3;
+  doc.text(texts[2], centerX + (widths[0]/2) + 2, y);
+};
+
+
+/* --------------------------------------------------------
+ * doRowsGridPage()
  *
  * Write out the lines for the rows on page one without the
  * data.
  *
  * param      doc
  * param      opts
+ * param      page - 1 or 2
  * return     undefined
  * -------------------------------------------------------- */
-var doRowsGridPage1 = function(doc, opts) {
+var doRowsGridPage = function(doc, opts, page) {
   var xLeft = opts.margins.left
     , xRight = doc.page.width - opts.margins.right
     , yTop = opts.margins.top + 22 + 90
     , rowHeight = 45
-    , colPos = getColXposPage1(opts)
+    , colPos = page === 1 ? getColXposPage1(opts): page === 2 ? getColXposPage2(opts): void 0
     , numRows = 8
     , y = yTop + rowHeight    // Skip top line because already there.
     , i
@@ -779,6 +1427,31 @@ var doRowsGridPage1 = function(doc, opts) {
       .lineTo(x, yTop + (rowHeight * numRows))
       .stroke();
   });
+};
+
+
+/* --------------------------------------------------------
+ * doPageNumber()
+ *
+ * Write the page number of the report out including info
+ * about whether this is side A or B. Includes the date
+ * as well.
+ *
+ * param      doc
+ * param      opts
+ * param      side
+ * param      page
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPageNumber = function(doc, opts, side, page) {
+  var xLeft = opts.margins.left
+    , y = opts.margins.top + 10
+    , theDate = moment().format('MM/DD/YYYY')
+    ;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(10)
+    .text('Printed on ' + theDate + '    Page ' + page + ' - ' + side, xLeft, y);
 };
 
 
@@ -813,6 +1486,79 @@ var getColXposPage1 = function(opts) {
 
 
 /* --------------------------------------------------------
+ * getColXposPage2()
+ *
+ * Returns an array with the x value of each of the 18 lines
+ * that make up the columns of page 2.
+ *
+ * param       opts
+ * return      array of x positions
+ * -------------------------------------------------------- */
+var getColXposPage2 = function(opts) {
+  var xPos = []
+    , x
+    ;
+  x = opts.margins.left; xPos.push(x);  // left margin
+  x += 36; xPos.push(x);                // Mother and Child book
+  x += 51; xPos.push(x);                // Where to deliver
+  x += 54; xPos.push(x);                // Partner
+  x += 36; xPos.push(x);                // Phil Health
+  x += 48; xPos.push(x);                // Previous TT
+  x += 51; xPos.push(x);                // TT Immunizations
+  x += 48; xPos.push(x);                // Lab 1
+  x += 48; xPos.push(x);                // Lab 2
+  x += 48; xPos.push(x);                // Blood type
+  x += 51; xPos.push(x);                // Urinalysis
+  x += 54; xPos.push(x);                // RTI STI
+  x += 48; xPos.push(x);                // Iron 1
+  x += 48; xPos.push(x);                // Iron 2
+  x += 48; xPos.push(x);                // Iron 3
+  x += 48; xPos.push(x);                // Salt
+  x += 48; xPos.push(x);                // Quality Prenatal
+  x += 135; xPos.push(x);               // Remarks
+  return xPos;
+};
+
+
+/* --------------------------------------------------------
+ * doStaticPage1()
+ *
+ * Write out the static (non-data) elements of page 1.
+ *
+ * param      doc
+ * param      opts
+ * param      currPage - the current page number
+ * return     undefined
+ * -------------------------------------------------------- */
+var doStaticPage1 = function(doc, opts, currPage) {
+  doPageNumber(doc, opts, 'A', currPage);
+  doHeaderPage1(doc, opts);
+  doFooterPage1(doc, opts);
+  doColHeaderPage1(doc, opts);
+  doRowsGridPage(doc, opts, 1);
+};
+
+
+/* --------------------------------------------------------
+ * doStaticPage2()
+ *
+ * Write out the static (non-data) elements of page 2.
+ *
+ * param      doc
+ * param      opts
+ * param      currPage - the current page number
+ * return     undefined
+ * -------------------------------------------------------- */
+var doStaticPage2 = function(doc, opts, currPage) {
+  doc.addPage();
+  doPageNumber(doc, opts, 'B', currPage);
+  doFooterPage2(doc, opts);
+  doColHeaderPage2(doc, opts);
+  doRowsGridPage(doc, opts, 2);
+};
+
+
+/* --------------------------------------------------------
  * doPages()
  *
  * Writes all the pages of the report.
@@ -829,6 +1575,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
     , totalPcs = _.reduce(_.pluck(data, 'numberDispensed'),
         function(memo, num) {return memo + num;}, 0)
     , totalPages = Math.ceil(data.length / rowsPerPage) * 2
+    , dataPage2 = []
     ;
 
 
@@ -837,18 +1584,28 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   // --------------------------------------------------------
   _.each(data, function(rec) {
     if (currentRow === 0) {
-      doHeaderPage1(doc, opts);
-      doFooterPage1(doc, opts);
-      doColHeaderPage1(doc, opts);
-      doRowsGridPage1(doc, opts);
+      dataPage2 = [];
+      doStaticPage1(doc, opts, pageNum);
     }
-    //if (currentRow >= rowsPerPage) {
-      //doc.addPage();
-      //currentRow = 0;
-      //pageNum++;
-    //}
+    // Save the data for page 2.
+    dataPage2.push(rec);
+    // Write out the data for page 1.
+    //doRowPage1(doc, opts, rec);
 
+    // Page 2
+    if (currentRow >= rowsPerPage) {
+      currentRow = 0;
+      pageNum++;
+      // Write out the static and data for page 2.
+      //doStaticPage2(doc, opts, pageNum);
+      //doRowsPage2(doc, opts, dataPage2);
+    }
+    currentRow++;
   });
+  // Write out the last page 2.
+  doStaticPage2(doc, opts, pageNum);
+  //doRowsPage2(doc, opts, dataPage2);
+
 
 };
 
@@ -974,6 +1731,5 @@ var run = function(req, res) {
 module.exports = {
   run: run
 };
-
 
 
