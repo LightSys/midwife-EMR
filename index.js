@@ -28,6 +28,7 @@ var express = require('express')
   , gitHistory = require('git-history')
   , cfg = require('./config')
   , path = require('path')
+  , fs = require('fs')
   , User = require('./models').User
   , search = require('./routes').search
   , home = require('./routes').home
@@ -204,18 +205,23 @@ app.use(function(req, res, next) {
 
 // --------------------------------------------------------
 // Get the git revision as the number of commits then save
-// to app locals for use in the templates.
+// to app locals for use in the templates if we are running
+// within a git repository.
 // --------------------------------------------------------
-gitHistory().on('data', function(commit) {
-  tmpRevision++;
-});
-gitHistory().on('end', function() {
-  revision = tmpRevision;
-});
-app.use(function(req, res, next) {
-  if (revision != 0) app.locals.applicationRevision = revision;
-  next();
-});
+if (fs.existsSync('./.git')) {
+  gitHistory().on('data', function(commit) {
+    tmpRevision++;
+  });
+  gitHistory().on('end', function() {
+    revision = tmpRevision;
+  });
+  app.use(function(req, res, next) {
+    if (revision != 0) app.locals.applicationRevision = revision;
+    next();
+  });
+} else {
+  app.locals.applicationRevision = void(0);
+}
 
 // --------------------------------------------------------
 // express-device functionality: render different views
