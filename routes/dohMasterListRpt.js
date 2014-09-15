@@ -9,6 +9,7 @@
 var _ = require('underscore')
   , moment = require('moment')
   , Promise = require('bluebird')
+  , Bookshelf = require('bookshelf')
   , PDFDocument = require('pdfkit')
   , fs = require('fs')
   , os = require('os')
@@ -19,6 +20,16 @@ var _ = require('underscore')
   , Medications = require('../models').Medications
   , MedicationType = require('../models').MedicationType
   , MedicationTypes = require('../models').MedicationTypes
+  , Risk = require('../models').Risk
+  , Risks = require('../models').Risks
+  , RiskCode = require('../models').RiskCode
+  , RiskCodes = require('../models').RiskCodes
+  , PrenatalExam = require('../models').PrenatalExam
+  , PrenatalExams = require('../models').PrenatalExams
+  , Vaccination = require('../models').Vaccination
+  , Vaccinations = require('../models').Vaccinations
+  , LabTestResult = require('../models').LabTestResult
+  , LabTestResults = require('../models').LabTestResults
   , User = require('../models').User
   , cfg = require('../config')
   , logInfo = require('../util').logInfo
@@ -33,114 +44,6 @@ var _ = require('underscore')
 
 
 /* --------------------------------------------------------
- * doColumnHeader()
- *
- * Writes the column header on the current page.
- *
- * param      doc
- * return     undefined
- * -------------------------------------------------------- */
-var doColumnHeader = function(doc) {
-  var x = doc.page.margins.left
-    , y = 80
-    , width = doc.page.width - doc.page.margins.right - doc.page.margins.left
-    , height = 40
-    ;
-  // Outer rectangle
-  doc
-    .rect(x, y, width, height)
-    .stroke();
-
-  // Column dividers
-  doc
-    .moveTo(x + 220, y)
-    .lineTo(x + 220, y + height)
-    .moveTo(x + 245, y)
-    .lineTo(x + 245, y + height)
-    .moveTo(x + 301, y)
-    .lineTo(x + 301, y + height)
-    .moveTo(x + 333, y)
-    .lineTo(x + 333, y + height)
-    .moveTo(x + 480, y)
-    .lineTo(x + 480, y + height)
-    .stroke();
-
-  // Headings
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(12)
-    .text('Name', x + 92, y + 10)
-    .text('Last', x + 56, y + 25)
-    .text('First', x + 158, y + 25)
-    .text('Age', x + 221, y + 10)
-    .text('LMP', x + 260, y + 10)
-    .text('GP', x + 308, y + 10)
-    .text('Address', x + 386, y + 10)
-    .text('IRON', x + 510, y + 10)
-    .text('Pcs.', x + 485, y + 25)
-    .text('Date', x + 535, y + 25)
-    ;
-};
-
-/* --------------------------------------------------------
- * doFromTo()
- *
- * Write the from and to dates that the report covers on
- * the report.
- *
- * param      doc
- * param      from
- * param      to
- * return     undefined
- * -------------------------------------------------------- */
-var doFromTo = function(doc, from, to) {
-  var fromDate = moment(from).format('MM/DD/YYYY')
-    , toDate = moment(to).format('MM/DD/YYYY')
-    ;
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(11)
-    .text('Reporting Period:', 18, 24)
-    .font(FONTS.Helvetica)
-    .fontSize(10)
-    .text(fromDate + ' to ' + toDate, 18, 38);
-};
-
-/* --------------------------------------------------------
- * doFooter()
- *
- * Write the totals, page numbering, and inCharge stuff at
- * the bottom of the report.
- *
- * param      doc
- * param      pageNum
- * param      totalPages
- * param      totalPcs
- * param      logisticsName
- * return     undefined
- * -------------------------------------------------------- */
-var doFooter = function(doc, pageNum, totalPages, totalPcs, logisticsName) {
-  // Deworming and page
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(13)
-    .text('Total Iron: ' + totalPcs, 18, 730)
-    .font(FONTS.Helvetica)
-    .fontSize(10)
-    .text('Page ' + pageNum + ' of ' + totalPages, 18, 745);
-
-  // Logistics in charge
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(13)
-    .text(logisticsName, 370, 730)
-    .font(FONTS.Helvetica)
-    .fontSize(10)
-    .text('Logistics In-charge', 370, 745);
-};
-
-
-/* --------------------------------------------------------
  * getData()
  *
  * Queries the database for the required information. Returns
@@ -151,85 +54,837 @@ var doFooter = function(doc, pageNum, totalPages, totalPcs, logisticsName) {
  * return     Promise
  * -------------------------------------------------------- */
 var getData = function(dateFrom, dateTo) {
+  var data
+    , pregIds
+    ;
   return new Promise(function(resolve, reject) {
+    // --------------------------------------------------------
+    // Get the list of clients that are being reported on
+    // which consists of the clients that came for prenatal
+    // exams during the dates specified.
+    // --------------------------------------------------------
+    new PrenatalExams().query()
+      .select(['pregnancy_id'])
+      .where('date', '>=', dateFrom)
+      .andWhere('date', '<=', dateTo)
+      .then(function(list) {
+        pregIds = _.pluck(list, 'pregnancy_id');
 
-    // STUB
-    var list = [{id: 1, firstname: 'Test', lastname: 'Record'}];
-    return resolve(list);
+        // --------------------------------------------------------
+        // Get the relevant information from the pregnancy and
+        // patient tables.
+        // --------------------------------------------------------
+        return new Pregnancies().query()
+          .column('pregnancy.id', 'pregnancy.firstname','pregnancy.lastname',
+           'pregnancy.address', 'pregnancy.barangay', 'pregnancy.city',
+           'pregnancy.gravida', 'pregnancy.para', 'pregnancy.abortions',
+           'pregnancy.stillBirths', 'pregnancy.edd', 'pregnancy.alternateEdd',
+           'pregnancy.useAlternateEdd', 'pregnancy.doctorConsultDate',
+           'pregnancy.dentistConsultDate', 'pregnancy.mbBook', 'pregnancy.lmp',
+           'pregnancy.whereDeliver', 'pregnancy.birthCompanion',
+           'pregnancy.philHealthMCP', 'pregnancy.philHealthNCP',
+           'pregnancy.useIodizedSalt', 'patient.dohID', 'patient.dob',
+           'patient.generalInfo', 'patient.ageOfMenarche')
+          .innerJoin('patient', 'patient.id', 'pregnancy.patient_id')
+          .whereIn('pregnancy.id', pregIds)
+          .select();
+      })
+      .then(function(pregs) {
+        data = pregs;
+        // --------------------------------------------------------
+        // Add all of the placeholders for the data obtained below.
+        // --------------------------------------------------------
+        _.each(data, function(rec) {
+          rec.risks = [];
+          rec.prenatalExams = [];
+          rec.vaccinations = [];
+          rec.labTests = [];
+          rec.medications = [];
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the date of registration which we derive by finding
+        // the date that the first pregnancy record was updated.
+        //
+        // Note: set the order of the final data here due to the
+        // merge of data in the next step.
+        // --------------------------------------------------------
+        var knex = Bookshelf.DB.knex
+          , sql
+          ;
+        sql = 'SELECT id, MIN(updatedAt) AS registeredDate FROM pregnancyLog ';
+        sql += 'WHERE id IN (' + pregIds.join(',') + ') GROUP BY id ';
+        sql += 'ORDER BY lastname asc, firstname asc';
+        return knex.raw(sql);
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Merge the registration dates into the pregnancy records.
+        // --------------------------------------------------------
+        var data2 = [];
+        _.each(list[0], function(rec) {
+          data2.push(_.extend(_.findWhere(data, {id: rec.id}),
+              {registeredDate: rec.registeredDate}));
+        })
+        data = data2;
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the risk codes.
+        // --------------------------------------------------------
+        return new Risks().query()
+          .column('risk.pregnancy_id', 'risk.updatedAt AS riskUpdatedAt',
+            'riskCode.name AS riskName')
+          .innerJoin('riskCode', 'risk.riskCode', 'riskCode.id')
+          .whereIn('risk.pregnancy_id', pregIds)
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the risks found to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var d = _.findWhere(data, {id: rec.pregnancy_id});
+          d.risks.push(_.omit(rec, ['pregnancy_id']));
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the prenatalExams.
+        // --------------------------------------------------------
+        return new PrenatalExams().query()
+          .column('prenatalExam.pregnancy_id', 'prenatalExam.date AS prenatalExamDate')
+          .whereIn('prenatalExam.pregnancy_id', pregIds)
+          .orderBy('prenatalExam.date')
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the prenatal exam dates to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var d = _.findWhere(data, {id: rec.pregnancy_id});
+          d.prenatalExams.push(_.omit(rec, ['pregnancy_id']));
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the vaccination data.
+        // --------------------------------------------------------
+        return new Vaccinations().query()
+          .column('vaccination.pregnancy_id', 'vaccination.vacDate',
+            'vaccination.vacMonth', 'vaccination.vacYear',
+            'vaccination.administeredInternally', 'vaccinationType.name')
+          .innerJoin('vaccinationType', 'vaccination.vaccinationType',
+            'vaccinationType.id')
+          .whereIn('vaccination.pregnancy_id', pregIds)
+          .andWhere('vaccinationType.name', 'LIKE', '%Tetanus%')
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the vaccinations to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var d = _.findWhere(data, {id: rec.pregnancy_id});
+          d.vaccinations.push(_.omit(rec, ['pregnancy_id']));
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the laboratory results.
+        // --------------------------------------------------------
+        return new LabTestResults().query()
+          .column('labTestResult.testDate', 'labTestResult.result',
+            'labTestResult.result2', 'labTestResult.pregnancy_id', 'labTest.name')
+          .innerJoin('labTest', 'labTest.id', 'labTestResult.labTest_id')
+          .whereIn('labTestResult.pregnancy_id', pregIds)
+          .whereIn('labTest.name',
+            ['Hemoglobin', 'Blood Type', 'Red Blood Cells', 'White Blood Cells'])
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the labs to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var d = _.findWhere(data, {id: rec.pregnancy_id});
+          d.labTests.push(_.omit(rec, ['pregnancy_id']));
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the medication data.
+        // --------------------------------------------------------
+        return new Medications().query()
+          .column('medication.pregnancy_id', 'medication.date',
+            'medication.numberDispensed', 'medicationType.name')
+          .innerJoin('medicationType', 'medication.medicationType',
+            'medicationType.id')
+          .whereIn('medication.pregnancy_id', pregIds)
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the medications to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var d = _.findWhere(data, {id: rec.pregnancy_id});
+          d.medications.push(_.omit(rec, ['pregnancy_id']));
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Return the data to the caller.
+        // --------------------------------------------------------
 
+        return resolve(data);
+      });
   });
 };
 
 /* --------------------------------------------------------
+ * replaceNull()
+ *
+ * Return a new dictionary with the same keys as the passed
+ * dictionary but with the keys within the list of keys
+ * passed that evaluate to null being set to the passed
+ * replacement value instead.
+ *
+ * param      hash - the dictionary
+ * param      keys - a list of key names
+ * param      replacement - what nulls will be replaced with
+ * return     new hash
+ * -------------------------------------------------------- */
+var replaceNull = function(hash, keys, replacement) {
+  var dict = _.clone(hash);
+  _.each(keys, function(key) {
+    if (_.isNull(hash[key])) {
+      dict[key] = replacement;
+    } else {
+      dict[key] = hash[key];
+    }
+  });
+  return dict;
+};
+
+
+/* --------------------------------------------------------
+ * centerInCol()
+ *
+ * Centers the specified text within the column boundaries
+ * passed. Assumes that font and fontSize have already
+ * been appropriately applied to the doc object.
+ *
+ * param      doc
+ * param      str
+ * param      colLeft
+ * param      colRight
+ * param      y
+ * return     undefined
+ * -------------------------------------------------------- */
+var centerInCol = function(doc, str, colLeft, colRight, y) {
+  var center = ((colRight - colLeft)/2) + colLeft
+    , tmpStr = '' + str      // convert to a string
+    , strWidth = doc.widthOfString(tmpStr)
+    ;
+  doc.text(tmpStr, center - (strWidth/2), y);
+};
+
+
+/* --------------------------------------------------------
  * doRowPage1()
  *
- * Writes a row on the report including borders and text.
+ * Writes a row of data to the report (the lines already exist).
  *
  * param      doc
  * param      data
+ * param      rec
  * param      rowNum
- * param      rowHeight
  * return     undefined
  * -------------------------------------------------------- */
-var doRowPage1 = function(doc, data, rowNum, rowHeight) {
-  var cells = []
+var doRowPage1 = function(doc, opts, rec, rowNum) {
+  var rowHeight = 45
     , startX = doc.page.margins.left
-    , startY = 120 + (rowNum * rowHeight)
-    , remark = data.note && data.note.length > 0? data.note: ''
-    , gravida = data.gravida || 1
-    , para = data.para || 0
+    , startY = opts.margins.top + 108 + ((rowNum - 1) * rowHeight)
+    , colPos = getColXposPage1(opts)
+    , largeFont = 13
+    , smallFont = 9
+    , smallLineHgt = 12
+    , colPadLeft = 6
+    , colPadTop = 12
+    , tmpX
+    , tmpY
+    , tmpWidth
+    , tmpHeight
+    , tmpStr
+    , lmp
+    , tri1 = []
+    , tri2 = []
+    , tri3 = []
     ;
-  // Create the cell borders
-  // Lastname
-  doCellBorders(doc, startX, startY, 130, rowHeight);
-  // Firstname
-  doCellBorders(doc, startX + 130, startY, 90, rowHeight);
-  // Age
-  doCellBorders(doc, startX + 220, startY, 25, rowHeight);
-  // LMP
-  doCellBorders(doc, startX + 245, startY, 56, rowHeight);
-  // GP
-  doCellBorders(doc, startX + 301, startY, 32, rowHeight);
-  // Address
-  doCellBorders(doc, startX + 333, startY, 187, rowHeight);
-  // Pcs
-  doCellBorders(doc, startX + 480, startY, 40, rowHeight);
-  // Date
-  doCellBorders(doc, startX + 520, startY, 56, rowHeight);
 
   // --------------------------------------------------------
-  // Write the row contents.
+  // Replace nulls with sensible defaults for certain fields.
+  // --------------------------------------------------------
+  rec = replaceNull(rec, ['gravida', 'para', 'abortions', 'stillBirths'], ' ');
+  rec = replaceNull(rec, ['doctorConsultDate', 'dentistConsultDate'], '');
+
+  // --------------------------------------------------------
+  // Date of Registration
+  // --------------------------------------------------------
+  tmpStr = moment(rec.registeredDate).format('MM/DD/YYYY');
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[0], colPos[1], startY + colPadTop);
+
+  // --------------------------------------------------------
+  // Name
   // --------------------------------------------------------
   doc
     .font(FONTS.Helvetica)
-    .fontSize(11);
-  // Lastname
-  doc.text(data.lastname.toUpperCase(), startX + 2, startY + 9);
-  // Firstname
-  doc.text(data.firstname.toUpperCase(), startX + 132, startY + 9);
-  // Age
-  doc.text(moment().diff(data.dob, 'years'), startX + 225, startY + 9);
-  // LMP
-  doc
-    .fontSize(10)
-    .text(moment(data.lmp).format('MM/DD/YYYY'), startX + 247, startY + 9);
-  // GP
-  doc
-    .fontSize(12)
-    .text(gravida + '-' + para, startX + 305, startY + 9);
+    .fontSize(largeFont)
+    .text(rec.lastname, colPos[1] + colPadLeft, startY + colPadTop);
+  tmpX = colPos[1] + (colPos[2] - colPos[1]) / 2;
+  doc.text(rec.firstname, tmpX, startY + colPadTop);
+
+  // --------------------------------------------------------
   // Address
+  // --------------------------------------------------------
+  tmpWidth = colPos[3] - colPos[2] - colPadLeft;
+  tmpHeight = rowHeight - colPadTop;
+  tmpStr = rec.address + ', ' + rec.city + '  ' + rec.barangay;
   doc
-    .fontSize(8)
-    .text(data.address.slice(0, 28), startX + 336, startY + 3)
-    .text(data.city, startX + 336, startY + 11);
-  // Pcs
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont)
+    .text(tmpStr, colPos[2] + colPadLeft, startY + colPadTop,
+        {width: tmpWidth, height: tmpHeight});
+
+  // --------------------------------------------------------
+  // Age and DOB
+  // --------------------------------------------------------
   doc
-    .fontSize(11)
-    .text(data.numberDispensed, startX + 490, startY + 9)
-  // Date
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpStr = moment().diff(moment(rec.dob), 'years');
+  centerInCol(doc, tmpStr, colPos[3], colPos[4], startY + colPadTop);
+  tmpStr = moment(rec.dob).format('MM/DD/YYYY');
+  centerInCol(doc, tmpStr, colPos[3], colPos[4],
+      startY + colPadTop + smallLineHgt);
+
+  // --------------------------------------------------------
+  // LMP and GPAS
+  // --------------------------------------------------------
   doc
-    .fontSize(10)
-    .text(moment(data.date).format('MM/DD/YYYY'), startX + 522, startY + 9)
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpStr = rec.lmp && rec.lmp !== '0000-00-00'? moment(rec.lmp).format('MM/DD/YYYY'): '';
+  centerInCol(doc, tmpStr, colPos[4], colPos[5], startY + colPadTop);
+  tmpStr = rec.gravida + '-' + rec.para + '-' + rec.abortions + '-' + rec.stillBirths;
+  centerInCol(doc, tmpStr, colPos[4], colPos[5], startY + (rowHeight / 2));
+
+  // --------------------------------------------------------
+  // EDC
+  // --------------------------------------------------------
+  if (rec.useAlternateEdd && rec.alternateEdd) {
+    tmpStr = moment(rec.alternateEdd).format('MM/DD/YYYY');
+  } else {
+    if (rec.edd) {
+      tmpStr = moment(rec.edd).format('MM/DD/YYYY');
+    } else {
+      tmpStr = '';
+    }
+  }
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[5], colPos[6], startY + colPadTop);
+
+  // --------------------------------------------------------
+  // Prenatal Visits by trimester.
+  // --------------------------------------------------------
+  if (rec.lmp && rec.lmp !== '0000-00-00') {
+    lmp = moment(rec.lmp);
+
+    // --------------------------------------------------------
+    // Split out the prenatal exam dates by trimester.
+    // --------------------------------------------------------
+    _.each(rec.prenatalExams, function(exam) {
+      var diffWeeks = moment(exam.prenatalExamDate).diff(lmp, 'weeks');
+      if (diffWeeks < 12) {
+        tri1.push(moment(exam.prenatalExamDate).format('MM/DD/YYYY'));
+      }
+      if (diffWeeks >= 12 && diffWeeks < 27) {
+        tri2.push(moment(exam.prenatalExamDate).format('MM/DD/YYYY'));
+      }
+      if (diffWeeks >= 27) {
+        tri3.push(moment(exam.prenatalExamDate).format('MM/DD/YYYY'));
+      }
+    });
+
+    // 1st Trimester.
+    doc
+      .font(FONTS.Helvetica)
+      .fontSize(smallFont);
+    tmpY = startY + 6;
+    _.each(tri1, function(dte) {
+      centerInCol(doc, dte, colPos[6], colPos[7], tmpY);
+      tmpY += 8;
+    });
+
+    // 2nd Trimester.
+    doc
+      .font(FONTS.Helvetica)
+      .fontSize(smallFont);
+    tmpY = startY + 6;
+    _.each(tri2, function(dte) {
+      centerInCol(doc, dte, colPos[7], colPos[8], tmpY);
+      tmpY += 8;
+    });
+
+    // 3rd Trimester.
+    doc
+      .font(FONTS.Helvetica)
+      .fontSize(smallFont);
+    tmpY = startY + 6;
+    _.each(tri3, function(dte) {
+      centerInCol(doc, dte, colPos[8], colPos[9], tmpY);
+      tmpY += 8;
+    });
+  }
+
+  // --------------------------------------------------------
+  // Risk Codes.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpY = startY + 6;
+  _.each(rec.risks, function(risk) {
+    var at = moment(risk.riskUpdatedAt).format('MM/DD/YYYY')
+      , name = risk.riskName.length === 1 ? '  ' + risk.riskName: risk.riskName
+      , str = name + ': ' + at
+      ;
+    centerInCol(doc, str, colPos[9], colPos[10], tmpY);
+    tmpY += 8;
+  });
+
+  // --------------------------------------------------------
+  // Seen by doctor.
+  // --------------------------------------------------------
+  tmpStr = rec.doctorConsultDate && rec.doctorConsultDate !== '0000-00-00' ?
+    moment(rec.doctorConsultDate).format('MM/DD/YYYY'): '';
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[10], colPos[11], startY + colPadTop);
+
+  // --------------------------------------------------------
+  // Seen by dentist.
+  // --------------------------------------------------------
+  tmpStr = rec.dentistConsultDate && rec.dentistConsultDate !== '0000-00-00' ?
+    moment(rec.dentistConsultDate).format('MM/DD/YYYY'): '';
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[11], colPos[12], startY + colPadTop);
+};
+
+
+/* --------------------------------------------------------
+ * doRowPage2()
+ *
+ * Writes out the data for a row on page 2.
+ *
+ * param      doc
+ * param      data
+ * param      rec
+ * param      rowNum
+ * return     undefined
+ * -------------------------------------------------------- */
+var doRowPage2 = function(doc, opts, rec, rowNum) {
+  var rowHeight = 45
+    , startX = doc.page.margins.left
+    , startY = opts.margins.top + 108 + ((rowNum - 1) * rowHeight)
+    , colPos = getColXposPage2(opts)
+    , largeFont = 13
+    , smallFont = 9
+    , smallLineHgt = 12
+    , colPadLeft = 6
+    , colPadTop = 12
+    , tmpX
+    , tmpWidth
+    , tmpHeight
+    , tmpStr
+    , tmpList = []
+    , cntPrevTT
+    , cntTri1 = 0
+    , cntTri2 = 0
+    , cntTri3 = 0
+    , cntIron = 0
+    , cntHemo = 0
+    , cntBT = 0
+    , cntUri = 0
+    , tmpRec
+    ;
+
+  // --------------------------------------------------------
+  // Mother and child book.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(largeFont);
+  tmpStr = '';
+  if (rec.mbBook === 1) tmpStr = 'Yes';
+  if (rec.mbBook === 0) tmpStr = 'No';
+  centerInCol(doc, tmpStr, colPos[0], colPos[1], startY + colPadTop);
+
+  // --------------------------------------------------------
+  // Where is delivery.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpStr = rec.whereDeliver.slice(0, 10);
+  centerInCol(doc, tmpStr, colPos[1], colPos[2], startY + colPadTop);
+
+  // --------------------------------------------------------
+  // Partner during delivery.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpStr = rec.birthCompanion.slice(0, 10);
+  centerInCol(doc, tmpStr, colPos[2], colPos[3], startY + colPadTop);
+
+  // --------------------------------------------------------
+  // Phil Health member.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpStr = rec.philHealthMCP || rec.philHealthNCP ? 'Yes': 'No';
+  centerInCol(doc, tmpStr, colPos[3], colPos[4], startY + colPadTop);
+
+  // --------------------------------------------------------
+  // Previous Tetanus.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpY = startY + 6;
+  // Pull out the externally administered vaccinations.
+  tmpList = [];
+  _.each(rec.vaccinations, function(vac) {
+    if (vac.administeredInternally === 0) {
+      tmpList.push(vac);
+    }
+  });
+  cntPrevTT = tmpList.length;
+  if (tmpList.length > 0) {
+    // Sort tmpList in place.
+    tmpList.sort(function(a, b) {
+      function convertToMoment(obj) {
+        if (obj.vacDate && moment(obj.vacDate).isValid()) {
+          return moment(obj.vacDate);
+        } else if (obj.vacYear) {
+          if (obj.vacMonth) {
+            return moment({year: obj.vacYear, month: obj.vacMonth});
+          } else {
+            return moment({year: obj.vacYear});
+          }
+        }
+        return void 0;
+      }
+      var ma = convertToMoment(a)
+        , mb = convertToMoment(b)
+        ;
+      if (! ma) return 1;
+      if (! mb) return -1;
+      return ma.unix() - mb.unix();
+    });
+
+    // Write to the column.
+    tmpY = startY + 6;
+    _.each(tmpList, function(vac) {
+      var str
+        ;
+      if (vac.vacDate) {
+        str = moment(vac.vacDate).format('MM/DD/YY');
+      } else if (vac.vacYear) {
+        str = vac.vacYear;
+        if (vac.vacMonth) str = vac.vacMonth + '-' + str;
+      }
+      centerInCol(doc, str, colPos[4], colPos[5], tmpY);
+      tmpY += 8;
+    });
+  }
+
+  // --------------------------------------------------------
+  // Tetanus immunizations given.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpY = startY + 6;
+  // Pull out the internally administered vaccinations.
+  tmpList = [];
+  _.each(rec.vaccinations, function(vac) {
+    if (vac.administeredInternally === 1) {
+      tmpList.push(vac);
+    }
+  });
+  if (tmpList.length > 0) {
+    // Sort tmpList in place.
+    tmpList.sort(function(a, b) {
+      function convertToMoment(obj) {
+        if (obj.vacDate && moment(obj.vacDate).isValid()) {
+          return moment(obj.vacDate);
+        } else if (obj.vacYear) {
+          if (obj.vacMonth) {
+            return moment({year: obj.vacYear, month: obj.vacMonth});
+          } else {
+            return moment({year: obj.vacYear});
+          }
+        }
+        return void 0;
+      }
+      var ma = convertToMoment(a)
+        , mb = convertToMoment(b)
+        ;
+      if (! ma) return 1;
+      if (! mb) return -1;
+      return ma.unix() - mb.unix();
+    });
+
+    // Write to the column but move down according to the
+    // number of prior Tetanus shots given externally.
+    tmpY = startY + 6 + (cntPrevTT * 8);
+    _.each(tmpList, function(vac) {
+      var str
+        ;
+      if (vac.vacDate) {
+        str = moment(vac.vacDate).format('MM/DD/YY');
+      } else if (vac.vacYear) {
+        str = vac.vacYear;
+        if (vac.vacMonth) str = vac.vacMonth + '-' + str;
+      }
+      centerInCol(doc, str, colPos[5], colPos[6], tmpY);
+      tmpY += 8;
+    });
+  }
+
+  // --------------------------------------------------------
+  // Hemoglobin 1st and 2nd dates.
+  // --------------------------------------------------------
+  tmpList = _.filter(rec.labTests, function(lt) {
+    return lt.name.toLowerCase() === 'hemoglobin';
+  });
+  if (tmpList.length > 0) {
+    tmpList = _.sortBy(tmpList, 'testDate');
+    tmpStr = moment(tmpList[0].testDate).format('MM/DD/YY');
+    tmpY = startY + colPadTop;
+    centerInCol(doc, tmpStr, colPos[6], colPos[7], tmpY);
+    tmpStr = '' + tmpList[0].result;
+    tmpY += 20;
+    centerInCol(doc, tmpStr, colPos[6], colPos[7], tmpY);
+
+    if (tmpList.length > 1) {
+      tmpStr = moment(tmpList[1].testDate).format('MM/DD/YY');
+      tmpY = startY + colPadTop;
+      centerInCol(doc, tmpStr, colPos[7], colPos[8], tmpY);
+      tmpStr = '' + tmpList[1].result;
+      tmpY += 20;
+      centerInCol(doc, tmpStr, colPos[7], colPos[8], tmpY);
+    }
+  }
+
+  // --------------------------------------------------------
+  // Blood type.
+  // --------------------------------------------------------
+  tmpList = _.filter(rec.labTests, function(lt) {
+    return lt.name.toLowerCase() === 'blood type';
+  });
+  if (tmpList.length > 0) {
+    tmpList = _.sortBy(tmpList, 'testDate');
+    tmpStr = moment(tmpList[0].testDate).format('MM/DD/YY');
+    tmpY = startY + colPadTop;
+    centerInCol(doc, tmpStr, colPos[8], colPos[9], tmpY);
+    tmpStr = '' + tmpList[0].result;
+    tmpY += 20;
+    centerInCol(doc, tmpStr, colPos[8], colPos[9], tmpY);
+  }
+
+  // --------------------------------------------------------
+  // Urinalysis.
+  // --------------------------------------------------------
+  // wbc
+  tmpList = _.filter(rec.labTests, function(lt) {
+    return lt.name.toLowerCase() === 'white blood cells';
+  });
+  if (tmpList.length > 0) {
+    tmpList = _.sortBy(tmpList, 'testDate');
+    tmpRec = tmpList[tmpList.length - 1];   // Use most recent result.
+    tmpStr = moment(tmpRec.testDate).format('MM/DD/YY');
+    tmpY = startY + colPadTop;
+    centerInCol(doc, tmpStr, colPos[9], colPos[10], tmpY);
+    tmpStr = tmpRec.result;
+    if (tmpRec.result2) tmpStr += ' - ' + tmpRec.result2;
+    tmpY += 8;
+    centerInCol(doc, tmpStr, colPos[9], colPos[10], tmpY);
+  }
+  // rbc
+  tmpList = _.filter(rec.labTests, function(lt) {
+    return lt.name.toLowerCase() === 'red blood cells';
+  });
+  if (tmpList.length > 0) {
+    tmpList = _.sortBy(tmpList, 'testDate');
+    tmpRec = tmpList[tmpList.length - 1];   // Use most recent result.
+    tmpStr = moment(tmpRec.testDate).format('MM/DD/YY');
+    tmpY = startY + colPadTop + 20;
+    centerInCol(doc, tmpStr, colPos[9], colPos[10], tmpY);
+    tmpStr = tmpRec.result;
+    if (tmpRec.result2) tmpStr += ' - ' + tmpRec.result2;
+    tmpY += 8;
+    centerInCol(doc, tmpStr, colPos[9], colPos[10], tmpY);
+  }
+
+
+  // --------------------------------------------------------
+  // RTI / STI.
+  // --------------------------------------------------------
+  // TODO: do this field.
+
+  // --------------------------------------------------------
+  // Iron with folic in three columns.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpList = _.filter(rec.medications, function(med) {
+    return med.name.toLowerCase().indexOf('ferrous') !== -1;
+  });
+  tmpList = _.sortBy(tmpList, 'date');
+  if (tmpList.length > 0) {
+    // 1st Column.
+    tmpStr = '' + tmpList[0].numberDispensed;
+    tmpY = startY + colPadTop + 4;
+    centerInCol(doc, tmpStr, colPos[11], colPos[12], tmpY);
+    tmpY += 12;
+    tmpStr = moment(tmpList[0].date).format('MM-DD-YY');
+    centerInCol(doc, tmpStr, colPos[11], colPos[12], tmpY);
+
+    // 2nd Column.
+    if (tmpList.length > 1) {
+      tmpStr = '' + tmpList[1].numberDispensed;
+      tmpY = startY + colPadTop + 4;
+      centerInCol(doc, tmpStr, colPos[12], colPos[13], tmpY);
+      tmpY += 12;
+      tmpStr = moment(tmpList[1].date).format('MM-DD-YY');
+      centerInCol(doc, tmpStr, colPos[12], colPos[13], tmpY);
+
+      // 3rd Column.
+      if (tmpList.length > 2) {
+        tmpStr = '' + tmpList[2].numberDispensed;
+        tmpY = startY + colPadTop + 4;
+        centerInCol(doc, tmpStr, colPos[13], colPos[14], tmpY);
+        tmpY += 12;
+        tmpStr = moment(tmpList[2].date).format('MM-DD-YY');
+        centerInCol(doc, tmpStr, colPos[13], colPos[14], tmpY);
+      }
+    }
+  }
+
+  // --------------------------------------------------------
+  // Use Iodized Salt.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  if (rec.useIodizedSalt === 'Y') tmpStr = 'Yes';
+  if (rec.useIodizedSalt === 'N') tmpStr = 'No';
+  if (! rec.useIodizedSalt) tmpStr = '';
+  tmpY = startY + colPadTop;
+  centerInCol(doc, tmpStr, colPos[14], colPos[15], tmpY);
+
+  // --------------------------------------------------------
+  // Quality Prenatal Care.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(largeFont);
+  tmpStr = '';
+  if (rec.doctorConsultDate && moment(rec.doctorConsultDate).isValid() &&
+      rec.dentistConsultDate && moment(rec.dentistConsultDate).isValid()) {
+
+    // Determine if the proper number and timing of prenatal exams occurred.
+    _.each(rec.prenatalExams, function(exam) {
+      var diffWeeks = moment(exam.prenatalExamDate).diff(moment(rec.lmp), 'weeks');
+      if (diffWeeks < 12) {
+        cntTri1++;
+      }
+      if (diffWeeks >= 12 && diffWeeks < 27) {
+        cntTri2++;
+      }
+      if (diffWeeks >= 27) {
+        cntTri3++;
+      }
+    });
+
+    // Determine if the proper amount of iron suppliments were given.
+    tmpList = _.filter(rec.medications, function(med) {
+      return med.name.toLowerCase().indexOf('ferrous') !== -1;
+    });
+    tmpList = _.pluck(tmpList, 'numberDispensed');
+    cntIron = _.reduce(tmpList, function(memo, val) {return memo + val;});
+
+    // Determine if the proper labs were done.
+    cntHemo = _.filter(rec.labTests, function(lt) {
+      return lt.name.toLowerCase() === 'hemoglobin';
+    }).length;
+    cntBT = _.filter(rec.labTests, function(lt) {
+      return lt.name.toLowerCase() === 'blood type';
+    }).length;
+    cntUri = _.filter(rec.labTests, function(lt) {
+      return lt.name.toLowerCase() === 'red blood cells' ||
+        lt.name.toLowerCase() === 'white blood cells';
+    }).length;
+
+
+    if (cntTri1 >= 1 && cntTri2 >= 1 && cntTri3 >= 2 && cntHemo > 0 &&
+        cntBT > 0 && cntUri > 0 && cntIron >= 180 && rec.mbBook === 1) {
+      tmpStr = 'Yes';
+      tmpY = startY + colPadTop;
+      centerInCol(doc, tmpStr, colPos[15], colPos[16], tmpY);
+    }
+  }
+
+  // --------------------------------------------------------
+  // Remarks: pull whether deworming was given.
+  // Note: remarks are limited in lines, just 2 deworming
+  // records are used.
+  // --------------------------------------------------------
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFont);
+  tmpList = _.filter(rec.medications, function(med) {
+    return med.name.toLowerCase().indexOf('mebendazole') !== -1 ||
+      med.name.toLowerCase().indexOf('albendazole') !== -1;
+  });
+  if (tmpList.length > 2) tmpList = tmpList.slice(0, 2);  // Limit what is printed.
+  tmpY = startY + colPadTop - 4;
+  _.each(tmpList, function(med) {
+    var str1 = moment(med.date).format('MM/DD/YY') + ': ' + med.numberDispensed +
+        ' tablet(s)'
+      , str2 = med.name
+      ;
+    doc.text(str1, colPos[16] + colPadLeft, tmpY);
+    tmpY += 10;
+    doc.text(str2, colPos[16] + colPadLeft, tmpY);
+    tmpY += 12;
+  });
 
 };
 
@@ -263,7 +918,7 @@ var doHeaderPage1 = function(doc, opts) {
  *
  * param      doc
  * param      opts
- * return     undefined 
+ * return     undefined
  * -------------------------------------------------------- */
 var doFooterPage1 = function(doc, opts) {
   var x = opts.margins.left
@@ -1214,7 +1869,7 @@ var doColHeaderPage2 = function(doc, opts) {
   texts.push('STI');
   texts.push('Date');
   texts.push('Result');
-  texts.push('(17)');
+  texts.push('(18)');
   texts.push('5/');
   _.each(texts, function(s) {
     widths.push(doc.widthOfString(s));
@@ -1421,11 +2076,25 @@ var doRowsGridPage = function(doc, opts, page) {
   // --------------------------------------------------------
   // Draw the column lines.
   // --------------------------------------------------------
-  _.each(colPos, function(x) {
-    doc
-      .moveTo(x, yTop)
-      .lineTo(x, yTop + (rowHeight * numRows))
-      .stroke();
+  _.each(colPos, function(x, idx) {
+    var y;
+    if (page === 2 && idx === 5) {
+      // Special: this has numbers for the column divider.
+      for (var i = 0; i < numRows; i++) {
+        y = yTop + (rowHeight * i) + 3;
+        doc.text('1', x - 1, y);
+        y += 8; doc.text('2', x - 1, y);
+        y += 8; doc.text('3', x - 1, y);
+        y += 8; doc.text('4', x - 1, y);
+        y += 8; doc.text('5', x - 1, y);
+      }
+    } else {
+      // Normal processing.
+      doc
+        .moveTo(x, yTop)
+        .lineTo(x, yTop + (rowHeight * numRows))
+        .stroke();
+    }
   });
 };
 
@@ -1444,14 +2113,26 @@ var doRowsGridPage = function(doc, opts, page) {
  * return     undefined
  * -------------------------------------------------------- */
 var doPageNumber = function(doc, opts, side, page) {
-  var xLeft = opts.margins.left
+  var xStr1 = opts.margins.left
+    , xStr2
     , y = opts.margins.top + 10
-    , theDate = moment().format('MM/DD/YYYY')
+    , from = moment(opts.fromDate).format('ddd MMM DD, YYYY')
+    , to = moment(opts.toDate).format('ddd MMM DD, YYYY')
+    , str1 = 'Page ' + page + ' - ' + side
+    , str2 = 'Reporting for: ' + from + ' to ' + to
     ;
+
+  if (moment(opts.fromDate).isSame(moment(opts.toDate), 'day')) {
+    str2 = 'Reporting for: ' + from;
+  }
   doc
     .font(FONTS.HelveticaBold)
-    .fontSize(10)
-    .text('Printed on ' + theDate + '    Page ' + page + ' - ' + side, xLeft, y);
+    .fontSize(10);
+  xStr2 = xStr1 + doc.widthOfString(str1) + 20;
+
+  doc
+    .text(str1, xStr1, y)
+    .text(str2, xStr2, y);
 };
 
 
@@ -1531,6 +2212,7 @@ var getColXposPage2 = function(opts) {
  * return     undefined
  * -------------------------------------------------------- */
 var doStaticPage1 = function(doc, opts, currPage) {
+  if (currPage > 1) doc.addPage();
   doPageNumber(doc, opts, 'A', currPage);
   doHeaderPage1(doc, opts);
   doFooterPage1(doc, opts);
@@ -1570,7 +2252,7 @@ var doStaticPage2 = function(doc, opts, currPage) {
  * return     undefined
  * -------------------------------------------------------- */
 var doPages = function(doc, data, rowsPerPage, opts) {
-  var currentRow = 0
+  var currentRow = 1
     , pageNum = 1
     , totalPcs = _.reduce(_.pluck(data, 'numberDispensed'),
         function(memo, num) {return memo + num;}, 0)
@@ -1583,28 +2265,39 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   // Do each row, adding pages as necessary.
   // --------------------------------------------------------
   _.each(data, function(rec) {
-    if (currentRow === 0) {
+    if (currentRow === 1) {
       dataPage2 = [];
       doStaticPage1(doc, opts, pageNum);
     }
-    // Save the data for page 2.
-    dataPage2.push(rec);
-    // Write out the data for page 1.
-    //doRowPage1(doc, opts, rec);
+    // Write out the row for page 1.
+    doRowPage1(doc, opts, rec, currentRow);
 
-    // Page 2
-    if (currentRow >= rowsPerPage) {
-      currentRow = 0;
-      pageNum++;
+    // Save the row for page 2.
+    dataPage2.push(rec);
+
+    // Last row written for page 1, not do all of page 2.
+    if (currentRow === rowsPerPage) {
+      currentRow = 1;
       // Write out the static and data for page 2.
-      //doStaticPage2(doc, opts, pageNum);
-      //doRowsPage2(doc, opts, dataPage2);
+      doStaticPage2(doc, opts, pageNum);
+      _.each(dataPage2, function(rec) {
+        doRowPage2(doc, opts, rec, currentRow);
+        currentRow++;
+      });
+      pageNum++;
+      currentRow = 1;
+    } else {
+      currentRow++;
     }
-    currentRow++;
   });
   // Write out the last page 2.
-  doStaticPage2(doc, opts, pageNum);
-  //doRowsPage2(doc, opts, dataPage2);
+  if (currentRow > 1) {
+    doStaticPage2(doc, opts, pageNum);
+    _.each(dataPage2, function(rec) {
+      doRowPage2(doc, opts, rec, currentRow);
+      currentRow++;
+    });
+  }
 
 
 };
@@ -1616,10 +2309,9 @@ var doPages = function(doc, data, rowsPerPage, opts) {
  *
  * param      flds
  * param      writable
- * param      logisticsName
  * return     undefined
  * -------------------------------------------------------- */
-var doReport = function(flds, writable, logisticsName) {
+var doReport = function(flds, writable) {
   var options = {
         margins: {
           top: 18
@@ -1642,7 +2334,6 @@ var doReport = function(flds, writable, logisticsName) {
 
   opts.fromDate = moment(flds.dateFrom).format('YYYY-MM-DD');
   opts.toDate = moment(flds.dateTo).format('YYYY-MM-DD');
-  opts.logisticsName = logisticsName;
   opts.title = options.info.Title;
   opts.margins = options.margins;
 
@@ -1685,6 +2376,7 @@ var run = function(req, res) {
 
   // --------------------------------------------------------
   // Check that required fields are in place.
+  // Note: logistics in charge is not necessary for this report.
   // --------------------------------------------------------
   if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom).isValid()) {
     fieldsReady = false;
@@ -1693,10 +2385,6 @@ var run = function(req, res) {
   if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo).isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
-  }
-  if (! flds.inCharge || flds.inCharge.length == 0) {
-    fieldsReady = false;
-    req.flash('error', req.gettext('You must choose an In Charge person for the report.'));
   }
   if (! fieldsReady) {
     console.log('Iron report: not all fields supplied.');
@@ -1718,13 +2406,7 @@ var run = function(req, res) {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; MercyReport.pdf');
 
-  // --------------------------------------------------------
-  // Get the displayName for the logistics in charge.
-  // --------------------------------------------------------
-  User.findDisplayNameById(Number(flds.inCharge), function(err, name) {
-    if (err) throw err;
-    doReport(flds, writable, name);
-  });
+  doReport(flds, writable);
 };
 
 
