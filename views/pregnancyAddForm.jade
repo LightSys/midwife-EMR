@@ -91,6 +91,21 @@ block pregnancyAdd
         div(class='form-group col-sm-2')
           span= gettext('Mother - Baby Book?')
           +select('form-control input-lg', 'mbBook', 26, mbBook)
+        div(class='form-group col-sm-2')
+          //- We move the logic for a custom field out of the core route to the
+          //- view so that the routes can deal with custom fields at a generic level.
+          //- This is obtuse but it means that we can add/modify a custom field in
+          //- the view without touching the routes or other deeper logic, for
+          //- whatever that is worth. Obviously, more work needs to be done here.
+          - var cusFldType = libs._.findWhere(customFieldTypes, {name: 'Agdao'});
+          //- Load defaults and we are including a JSON string to help the
+          //- backend discern our intentions.
+          - var agdaoSelectValue = [];
+          - agdaoSelectValue.push({selectKey: '', label: '', selected: true});
+          - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "Y"}', label: 'Yes', selected: false});
+          - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "N"}', label: 'No', selected: false});
+          span= gettext(cusFldType.label)
+          +select('form-control input-lg', 'customField', 27, value=agdaoSelectValue)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))

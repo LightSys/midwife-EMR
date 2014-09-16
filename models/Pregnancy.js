@@ -198,6 +198,10 @@ Pregnancy = Bookshelf.Model.extend({
       return this.hasMany(require('./Risk').Risk, 'pregnancy_id');
     }
 
+  , customField: function() {
+      return this.hasMany(require('./CustomField').CustomField, 'pregnancy_id');
+    }
+
 }, {
   // --------------------------------------------------------
   // Class Properties.

@@ -514,6 +514,29 @@ CREATE TABLE IF NOT EXISTS `schedule` (
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `customFieldType` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(20) NOT NULL,
+  title VARCHAR(30) NULL,
+  description VARCHAR(250) NULL,
+  label VARCHAR(50) NULL,
+  valueFieldName VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS `customField` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customFieldType_id INT NOT NULL,
+  pregnancy_id INT NOT NULL,
+  booleanVal BOOLEAN NULL,
+  intVal INT NULL,
+  decimalVal DECIMAL(10, 5) NULL,
+  textVAl TEXT NULL,
+  dateTimeVal DATETIME NULL,
+  UNIQUE (customFieldType_id, pregnancy_id),
+  FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+
 SET foreign_key_checks = 1;
 
 

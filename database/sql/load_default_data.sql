@@ -407,3 +407,10 @@ VALUES
 ;
 
 
+SELECT 'customFieldType' AS 'Loading' FROM DUAL;
+INSERT INTO `customFieldType`
+  (name, title, description, label, valueFieldName)
+VALUES
+  ('Agdao', 'In Agdao?', 'Does the client reside in Agdao?', 'Agdao?', 'booleanVal');
+
+

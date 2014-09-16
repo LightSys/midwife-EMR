@@ -44,5 +44,9 @@ module.exports = {
   , Risks: require('./Risk').Risks
   , RiskCode: require('./RiskCode').RiskCode
   , RiskCodes: require('./RiskCode').RiskCodes
+  , CustomField: require('./CustomField').CustomField
+  , CustomFields: require('./CustomField').CustomFields
+  , CustomFieldType: require('./CustomFieldType').CustomFieldType
+  , CustomFieldTypes: require('./CustomFieldType').CustomFieldTypes
 };
 

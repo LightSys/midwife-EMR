@@ -40,6 +40,10 @@ var _ = require('underscore')
   , Schedules = require('../models').Schedules
   , Priority = require('../models').Priority
   , Priorities = require('../models').Priorities
+  , CustomField = require('../models').CustomField
+  , CustomFields = require('../models').CustomFields
+  , CustomFieldType = require('../models').CustomFieldType
+  , CustomFieldTypes = require('../models').CustomFieldTypes
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -65,6 +69,7 @@ var _ = require('underscore')
   , prenatalCheckInId
   , prenatalCheckOutId
   , riskCodes = {}
+  , customFieldTypes   // Not associated with select data but custom fields.
   ;
 
 /* --------------------------------------------------------
@@ -144,6 +149,15 @@ var init = function() {
   doRefresh(dayOfWeekName, function(l) {dayOfWeek = l;});
 
   // --------------------------------------------------------
+  // Do a one time load of custom field types.
+  // --------------------------------------------------------
+  new CustomFieldTypes()
+    .fetch()
+    .then(function(list) {
+      customFieldTypes = list.toJSON();
+    });
+
+  // --------------------------------------------------------
   // Do a one time load of EventType ids.
   // --------------------------------------------------------
   new EventTypes()
@@ -206,7 +220,8 @@ var load = function(req, res, next) {
         , 'prenatalExam'
         , 'priority'
         , 'risk'
-        , 'schedule']
+        , 'schedule'
+        , 'customField']
       })
       .then(function(pregRec) {
         var rec
@@ -479,6 +494,8 @@ var getCommonFormData = function(req, addData) {
     , sexOfBaby: mf
     , attendant: at
     , riskCodes: rc
+    , customFields: req.paramPregnancy.customField
+    , customFieldTypes: customFieldTypes
   });
 };
 
@@ -627,6 +644,7 @@ var getEditFormData = function(req, addData) {
     , partnerInc = adjustSelectData(incomePeriod,
         req.paramPregnancy? req.paramPregnancy.partnerIncomePeriod: void(0))
     , mbb = adjustSelectData(yesNoUnanswered, '')
+    , cf = req.paramPregnancy? req.paramPregnancy.customField: void(0)
     , schRec
     , priRec
     , prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
@@ -684,6 +702,8 @@ var getEditFormData = function(req, addData) {
     , prenatalDay: prenatalDay
     , priority: priRec && priRec.priority? priRec.priority: null
     , rec: req.paramPregnancy
+    , customFields: cf
+    , customFieldTypes: customFieldTypes
   });
 };
 
@@ -895,6 +915,57 @@ var generalAddSave = function(req, res) {
                 resolve();
               }
             });
+          })
+          .then(function() {
+            var jsonObj
+              ;
+            // --------------------------------------------------------
+            // Handle any custom fields, if any.
+            //
+            // Custom fields will arrive for new records in this format:
+            // customField-new as the key and the value will be a JSON
+            // string with two elements: customFieldType_id and value.
+            //
+            // E.g. customField: '{customFieldType_id: 1, value: "Y"}'
+            // Look up id 1 in the customFieldType table, get the value
+            // from the valueFieldName field, use that value as the field
+            // to put the 'Y' in the customField table.
+            // --------------------------------------------------------
+            if (req.body.customField && req.body.customField.length > 0) {
+              try {
+                jsonObj = JSON.parse(req.body.customField);
+                return new CustomFieldType({id: jsonObj.customFieldType_id})
+                  .fetch()
+                  .then(function(cftModel) {
+                    var cfObj
+                      ;
+                    if (! cftModel) return true;
+                    if (cftModel.get('valueFieldName') === 'booleanVal') {
+                      cfObj = {booleanVal: jsonObj.value === 'Y'? 1: 0};
+                    }
+                    if (cftModel.get('valueFieldName') === 'intVal') {
+                      cfObj = {intVal: parseInt(jsonObj.value, 10)};
+                    }
+                    if (cftModel.get('valueFieldName') === 'decimalVal') {
+                      cfObj = {decimalVal: jsonObj.value - 0};
+                    }
+                    if (cftModel.get('valueFieldName') === 'textVal') cfObj = {textVal: jsonObj.value};
+                    if (cftModel.get('valueFieldName') === 'dateTimeVal') cfObj = {dateTimeVal: jsonObj.value};
+                    cfObj = _.extend(cfObj, {customFieldType_id: cftModel.id, pregnancy_id: pregnancy_id});
+                    return CustomField
+                      .forge(cfObj)
+                      .save(null, {transacting: t})
+                      .then(function(cfModel) {
+                        logInfo('Saved custom field.');
+                      });
+                  });
+              } catch (e) {
+                logError('Unable to save custom fields during pregnancy creation.');
+                logError(e);
+              }
+            } else {
+              console.log('No custom fields submitted.');
+            }
           })
           .then(function() {
             t.commit();
@@ -1129,6 +1200,84 @@ var generalEditSave = function(req, res) {
                       })
                 });
               });   // end Promise
+            })
+            .then(function() {
+              var jsonObj
+                ;
+              // --------------------------------------------------------
+              // Handle custom fields, if any.
+              //
+              // Custom fields will arrive for new records in this format:
+              // customField-new as the key and the value will be a JSON
+              // string with two elements: customFieldType_id and value.
+              //
+              // E.g. customField: '{customFieldType_id: 1, value: "Y"}'
+              // Look up id 1 in the customFieldType table, get the value
+              // from the valueFieldName field, use that value as the field
+              // to put the 'Y' in the customField table.
+              // --------------------------------------------------------
+              if (req.body.customField && req.body.customField.length > 0) {
+                try {
+                  jsonObj = JSON.parse(req.body.customField);
+                  return new CustomFieldType({id: jsonObj.customFieldType_id})
+                    .fetch()
+                    .then(function(cftModel) {
+                      var cfObj
+                        ;
+                      if (! cftModel) return true;
+
+                      // --------------------------------------------------------
+                      // Prepare the customField record whether for create or update.
+                      // --------------------------------------------------------
+                      if (cftModel.get('valueFieldName') === 'booleanVal') {
+                        cfObj = {booleanVal: jsonObj.value === 'Y'? 1: 0};
+                      }
+                      if (cftModel.get('valueFieldName') === 'intVal') {
+                        cfObj = {intVal: parseInt(jsonObj.value, 10)};
+                      }
+                      if (cftModel.get('valueFieldName') === 'decimalVal') {
+                        cfObj = {decimalVal: jsonObj.value - 0};
+                      }
+                      if (cftModel.get('valueFieldName') === 'textVal') cfObj = {textVal: jsonObj.value};
+                      if (cftModel.get('valueFieldName') === 'dateTimeVal') cfObj = {dateTimeVal: jsonObj.value};
+
+                      // --------------------------------------------------------
+                      // Determine if there already is a customField record or if
+                      // we are creating a new one.
+                      // --------------------------------------------------------
+                      return new CustomField({customFieldType_id: cftModel.get('id'), pregnancy_id: req.paramPregnancy.id})
+                        .fetch()
+                        .then(function(cfModel) {
+                          if (! cfModel) {
+                            // --------------------------------------------------------
+                            // Creating a new record.
+                            // --------------------------------------------------------
+                            cfObj = _.extend(cfObj, {customFieldType_id: cftModel.id, pregnancy_id: req.paramPregnancy.id});
+                            return CustomField
+                              .forge(cfObj)
+                              .save(null, {transacting: t})
+                              .then(function(cfModel) {
+                                logInfo('Saved custom field.');
+                              });
+                          } else {
+                            // --------------------------------------------------------
+                            //  Updating existing record.
+                            // --------------------------------------------------------
+                            return cfModel
+                              .save(cfObj, {transacting: t})
+                              .then(function(model) {
+                                logInfo('Updated custom field.');
+                              });
+                          }
+                        });
+                    });
+                } catch (e) {
+                  logError('Unable to save custom fields during pregnancy creation.');
+                  logError(e);
+                }
+              } else {
+                console.log('No custom fields submitted.');
+              }
             })
             .then(function() {
               logInfo('Pregnancy was updated.');
