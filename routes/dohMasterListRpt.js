@@ -30,6 +30,10 @@ var _ = require('underscore')
   , Vaccinations = require('../models').Vaccinations
   , LabTestResult = require('../models').LabTestResult
   , LabTestResults = require('../models').LabTestResults
+  , CustomField = require('../models').CustomField
+  , CustomFields = require('../models').CustomFields
+  , CustomFieldType = require('../models').CustomFieldType
+  , CustomFieldTypes = require('../models').CustomFieldTypes
   , User = require('../models').User
   , cfg = require('../config')
   , logInfo = require('../util').logInfo
@@ -100,6 +104,7 @@ var getData = function(dateFrom, dateTo) {
           rec.vaccinations = [];
           rec.labTests = [];
           rec.medications = [];
+          rec.customFields = [];
         });
       })
       .then(function() {
@@ -236,6 +241,33 @@ var getData = function(dateFrom, dateTo) {
       })
       .then(function() {
         // --------------------------------------------------------
+        // Get the custom field data. This report is customized for
+        // a customization field named 'Agdao' in the customFieldType
+        // table. If the custom field is not there, there will be
+        // no adverse affect on the report. If it is there, the
+        // Agdao addresses will be highlighted.
+        // --------------------------------------------------------
+        return new CustomFields().query()
+          .column('customField.pregnancy_id', 'customField.booleanVal',
+            'customFieldType.name')
+          .innerJoin('customFieldType', 'customField.customFieldType_id',
+            'customFieldType.id')
+          .whereIn('customField.pregnancy_id', pregIds)
+          .andWhere('customFieldType.name', '=', 'Agdao')
+          .andWhere('customField.booleanVal', '=', 1)
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the custom fields to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var d = _.findWhere(data, {id: rec.pregnancy_id});
+          d.customFields.push(_.omit(rec, ['pregnancy_id']));
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
         // Return the data to the caller.
         // --------------------------------------------------------
 
@@ -350,6 +382,23 @@ var doRowPage1 = function(doc, opts, rec, rowNum) {
   tmpX = colPos[1] + (colPos[2] - colPos[1]) / 2;
   doc.text(rec.firstname, tmpX, startY + colPadTop);
 
+  // --------------------------------------------------------
+  // "Highlight" the address cell if the client resides in Agdao
+  // per the custom fields. This really is not a PDFKit
+  // hightlight - we draw a yellow filled rectangle in the cell
+  // but it has the effect that we want.
+  // --------------------------------------------------------
+  if (rec.customFields && rec.customFields.length > 0 &&
+      _.findWhere(rec.customFields, {name: 'Agdao'})) {
+    tmpX = colPos[2] + colPadLeft - 1;
+    tmpY = startY + colPadTop - 3;
+    tmpWidth = colPos[3] - colPos[2] - (2 * colPadLeft) + 2;
+    tmpHeight = rowHeight - colPadTop + 2;
+    doc
+      .rect(tmpX, tmpY, tmpWidth, tmpHeight)
+      .fill('yellow');
+    doc.fillColor('black');     // Set back to black.
+  }
   // --------------------------------------------------------
   // Address
   // --------------------------------------------------------
@@ -2345,16 +2394,23 @@ var doReport = function(flds, writable) {
   // Build the parts of the document.
   getData(opts.fromDate, opts.toDate)
     .then(function(list) {
-      var data = []
-        , dataMap = {}
-        , currPregId = 0
-        , fDate = moment(opts.fromDate)
-        , tDate = moment(opts.toDate)
+      var partitioned
+        , data
         ;
+      // --------------------------------------------------------
+      // Sort all of the custom field 'Agdao' records to the front.
+      // The getData() function already returns records in
+      // lastname, firstname order which will apply to the
+      // remainder of the data.
+      // --------------------------------------------------------
+      partitioned = _.partition(list, function(rec) {
+        return !! (rec.customFields && rec.customFields.length > 0 &&
+            _.findWhere(rec.customFields, {name: 'Agdao'}));
+      });
+      data = partitioned[0];
+      _.each(partitioned[1], function(rec) { data.push(rec); });
 
-      // ???
-
-      doPages(doc, list, rowsPerPage, opts);
+      doPages(doc, data, rowsPerPage, opts);
     })
     .then(function() {
       doc.end();

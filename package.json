@@ -25,7 +25,7 @@
     "passport-local": "~0.1.6",
     "pdfkit": "^0.6.2",
     "recluster": "^0.3.6",
-    "underscore": "~1.5.2",
+    "underscore": "~1.7.0",
     "validator": "~3.1.0"
   },
   "devDependencies": {
