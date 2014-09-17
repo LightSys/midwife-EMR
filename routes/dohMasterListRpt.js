@@ -708,6 +708,11 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
       return ma.unix() - mb.unix();
     });
 
+    // If for some strange reason there are more than 5 Tetanus shots
+    // given, only report on the first 5 because that is all the space
+    // on the report that there is.
+    if (tmpList.length > 5) tmpList.splice(5);
+
     // Write to the column but move down according to the
     // number of prior Tetanus shots given externally.
     tmpY = startY + 6 + (cntPrevTT * 8);
@@ -2341,6 +2346,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   });
   // Write out the last page 2.
   if (currentRow > 1) {
+    currentRow = 1;
     doStaticPage2(doc, opts, pageNum);
     _.each(dataPage2, function(rec) {
       doRowPage2(doc, opts, rec, currentRow);
