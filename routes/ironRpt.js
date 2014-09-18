@@ -20,6 +20,10 @@ var _ = require('underscore')
   , MedicationType = require('../models').MedicationType
   , MedicationTypes = require('../models').MedicationTypes
   , User = require('../models').User
+  , CustomField = require('../models').CustomField
+  , CustomFields = require('../models').CustomFields
+  , CustomFieldType = require('../models').CustomFieldType
+  , CustomFieldTypes = require('../models').CustomFieldTypes
   , cfg = require('../config')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
@@ -151,25 +155,38 @@ var doFooter = function(doc, pageNum, totalPages, totalPcs, logisticsName) {
  * return     Promise
  * -------------------------------------------------------- */
 var getData = function(dateFrom, dateTo) {
+  var medTypeIds
+    , pregIds
+    , data
+    ;
   return new Promise(function(resolve, reject) {
+    // --------------------------------------------------------
     // First get the ids of the medicines we are interested in.
+    // --------------------------------------------------------
     new MedicationTypes().query()
       .where('name', 'LIKE', 'Ferrous%')
       .select(['id'])
       .then(function(medTypes) {
-        // Create the subquery which gets all iron medication records for
-        // pregnancies that were medicated during the target date range.
-        var medTypeIds = _.pluck(medTypes, 'id')
-        , subQuery = new Medications().query()
+        medTypeIds = _.pluck(medTypes, 'id');
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the pregnancy ids that we need.
+        // --------------------------------------------------------
+        return new Medications().query()
             .distinct('medication.pregnancy_id')
             .whereIn('medication.medicationType', medTypeIds)
             .andWhere('medication.date', '>=', dateFrom)
             .andWhere('medication.date', '<=', dateTo)
-          ;
-
+            .select();
+      })
+      .then(function(list) {
+        pregIds = _.pluck(list, 'pregnancy_id');
+      })
+      .then(function(medTypes) {
         // Now query the data restricted to those ids.
         // Note that this will get more than we need, but we need it
-        // in order to determine if this is Iron 1 or Iron 2.
+        // in order to determine if this is Iron 1 or 2, 3, etc.
         // The sort by pregnancy.id then medication.date is important
         // for the processing to follow.
         new Medications().query()
@@ -181,11 +198,49 @@ var getData = function(dateFrom, dateTo) {
           .join('patient', 'pregnancy.patient_id', '=', 'patient.id')
           .column('patient.dob')
           .whereIn('medication.medicationType', medTypeIds)
-          .whereIn('medication.pregnancy_id', subQuery)
+          .whereIn('medication.pregnancy_id', pregIds)
           .orderByRaw('pregnancy.id ASC, medication.date ASC')
           .select()
           .then(function(list) {
-            resolve(list);
+            data = list;
+            // --------------------------------------------------------
+            // Add all of the placeholders for the data obtained below.
+            // --------------------------------------------------------
+            _.each(data, function(rec) {
+              rec.customFields = [];
+            });
+          })
+          .then(function() {
+            // --------------------------------------------------------
+            // Get the custom field data. This report is customized for
+            // a customization field named 'Agdao' in the customFieldType
+            // table. If the custom field is not there, there will be
+            // no adverse affect on the report. If it is there, the
+            // Agdao addresses will be highlighted.
+            // --------------------------------------------------------
+            return new CustomFields().query()
+              .column('customField.pregnancy_id', 'customField.booleanVal',
+                'customFieldType.name')
+              .innerJoin('customFieldType', 'customField.customFieldType_id',
+                'customFieldType.id')
+              .whereIn('customField.pregnancy_id', pregIds)
+              .andWhere('customFieldType.name', '=', 'Agdao')
+              .andWhere('customField.booleanVal', '=', 1)
+              .select();
+          })
+          .then(function(list) {
+            // --------------------------------------------------------
+            // Add the custom fields to the records to be returned.
+            // --------------------------------------------------------
+            _.each(list, function(rec) {
+              var meds = _.where(data, {pregnancy_id: rec.pregnancy_id});
+              _.each(meds, function(med) {
+                med.customFields.push(_.omit(rec, ['pregnancy_id']));
+              });
+            });
+          })
+          .then(function() {
+            resolve(data);
           })
           .caught(function(err) {
             logError(err);
@@ -252,6 +307,21 @@ var doRow = function(doc, data, rowNum, rowHeight) {
   doc
     .fontSize(12)
     .text(gravida + '-' + para, startX + 305, startY + 9);
+
+  // --------------------------------------------------------
+  // "Highlight" the address cell if the client resides in Agdao
+  // per the custom fields. This really is not a PDFKit
+  // hightlight - we draw a yellow filled rectangle in the cell
+  // but it has the effect that we want.
+  // --------------------------------------------------------
+  if (data.customFields && data.customFields.length > 0 &&
+      _.findWhere(data.customFields, {name: 'Agdao'})) {
+    doc
+      .rect(startX + 335, startY + 2, 143, 17)
+      .fill('yellow');
+    doc.fillColor('black');     // Set back to black.
+  }
+
   // Address
   doc
     .fontSize(8)

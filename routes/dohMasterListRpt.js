@@ -263,7 +263,7 @@ var getData = function(dateFrom, dateTo) {
         // --------------------------------------------------------
         _.each(list, function(rec) {
           var d = _.findWhere(data, {id: rec.pregnancy_id});
-          d.customFields.push(_.omit(rec, ['pregnancy_id']));
+          if (d) d.customFields.push(_.omit(rec, ['pregnancy_id']));
         });
       })
       .then(function() {
