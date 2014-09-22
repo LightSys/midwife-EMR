@@ -11,6 +11,29 @@ var cfg = require('../config')
   ;
 
 /* --------------------------------------------------------
+ * centerInCol()
+ *
+ * Centers the specified text within the column boundaries
+ * passed. Assumes that font and fontSize have already
+ * been appropriately applied to the doc object.
+ *
+ * param      doc
+ * param      str
+ * param      colLeft
+ * param      colRight
+ * param      y
+ * return     undefined
+ * -------------------------------------------------------- */
+var centerInCol = function(doc, str, colLeft, colRight, y) {
+  var center = ((colRight - colLeft)/2) + colLeft
+    , tmpStr = '' + str      // convert to a string
+    , strWidth = doc.widthOfString(tmpStr)
+    ;
+  doc.text(tmpStr, center - (strWidth/2), y);
+};
+
+
+/* --------------------------------------------------------
  * centerText()
  *
  * Writes the specified text centered according to the
@@ -110,6 +133,7 @@ var FONTS = {
 module.exports = {
   FONTS: FONTS
   , centerText: centerText
+  , centerInCol: centerInCol
   , doSiteTitle: doSiteTitle
   , doReportName: doReportName
   , doCellBorders: doCellBorders

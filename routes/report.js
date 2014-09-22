@@ -82,16 +82,31 @@ var form = function(req, res) {
     , selected: false
     , label: 'DOH Master List'
   }
-  //, {
-    //selectKey: 'vaccine1'
-    //, selected: false
-    //, label: 'Tetanus Given Date 1'
-  //}
-  //, {
-    //selectKey: 'vaccine2'
-    //, selected: false
-    //, label: 'Tetanus Given Date 2'
-  //}
+  , {
+    selectKey: 'vaccine1'
+    , selected: false
+    , label: 'Tetanus Given Date 1'
+  }
+  , {
+    selectKey: 'vaccine2'
+    , selected: false
+    , label: 'Tetanus Given Date 2'
+  }
+  , {
+    selectKey: 'vaccine3'
+    , selected: false
+    , label: 'Tetanus Given Date 3'
+  }
+  , {
+    selectKey: 'vaccine4'
+    , selected: false
+    , label: 'Tetanus Given Date 4'
+  }
+  , {
+    selectKey: 'vaccine5'
+    , selected: false
+    , label: 'Tetanus Given Date 5'
+  }
   ];
 
   new Users()
@@ -133,6 +148,9 @@ var run = function(req, res) {
   if (report === 'iron5') iron.run(req, res);
   if (report === 'vaccine1') vaccine.run(req, res);
   if (report === 'vaccine2') vaccine.run(req, res);
+  if (report === 'vaccine3') vaccine.run(req, res);
+  if (report === 'vaccine4') vaccine.run(req, res);
+  if (report === 'vaccine5') vaccine.run(req, res);
   if (report === 'dohmasterlist') dohMasterList.run(req, res);
 };
 

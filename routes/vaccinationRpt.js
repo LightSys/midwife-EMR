@@ -19,16 +19,27 @@ var _ = require('underscore')
   , Vaccinations = require('../models').Vaccinations
   , VaccinationType = require('../models').VaccinationType
   , VaccinationTypes = require('../models').VaccinationTypes
+  , PrenatalExam = require('../models').PrenatalExam
+  , PrenatalExams = require('../models').PrenatalExams
   , User = require('../models').User
+  , CustomField = require('../models').CustomField
+  , CustomFields = require('../models').CustomFields
+  , CustomFieldType = require('../models').CustomFieldType
+  , CustomFieldTypes = require('../models').CustomFieldTypes
+  , LabTestResult = require('../models').LabTestResult
+  , LabTestResults = require('../models').LabTestResults
   , cfg = require('../config')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , calcEdd = require('../util').calcEdd
+  , getGA = require('../util').getGA
   , FONTS = require('./reportGeneral').FONTS
   , centerText = require('./reportGeneral').centerText
   , doSiteTitle = require('./reportGeneral').doSiteTitle
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
+  , centerInCol = require('./reportGeneral').centerInCol
   ;
 
 
@@ -38,49 +49,205 @@ var _ = require('underscore')
  * Writes the column header on the current page.
  *
  * param      doc
+ * param      opts
  * return     undefined
  * -------------------------------------------------------- */
-var doColumnHeader = function(doc) {
+var doColumnHeader = function(doc, opts) {
   var x = doc.page.margins.left
     , y = 80
     , width = doc.page.width - doc.page.margins.right - doc.page.margins.left
     , height = 40
+    , colPos = getColXpos(opts)
+    , largeFont = 11
+    , smallFont = 8
     ;
-  // Outer rectangle
-  doc
-    .rect(x, y, width, height)
-    .stroke();
 
-  // Column dividers
-  doc
-    .moveTo(x + 220, y)
-    .lineTo(x + 220, y + height)
-    .moveTo(x + 245, y)
-    .lineTo(x + 245, y + height)
-    .moveTo(x + 301, y)
-    .lineTo(x + 301, y + height)
-    .moveTo(x + 333, y)
-    .lineTo(x + 333, y + height)
-    .moveTo(x + 480, y)
-    .lineTo(x + 480, y + height)
-    .stroke();
-
+  // --------------------------------------------------------
   // Headings
+  // --------------------------------------------------------
+  // Date
+  tmpStr = 'Date';
   doc
     .font(FONTS.HelveticaBold)
-    .fontSize(12)
-    .text('Name', x + 92, y + 10)
-    .text('Last', x + 56, y + 25)
-    .text('First', x + 158, y + 25)
-    .text('Age', x + 221, y + 10)
-    .text('LMP', x + 260, y + 10)
-    .text('GP', x + 308, y + 10)
-    .text('Address', x + 386, y + 10)
-    .text('IRON', x + 510, y + 10)
-    .text('Pcs.', x + 485, y + 25)
-    .text('Date', x + 535, y + 25)
-    ;
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[0], colPos[1], y);
+
+  // Lastname
+  tmpStr = 'Last Name';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[1], colPos[2], y);
+
+  // Firstname
+  tmpStr = 'First Name';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[2], colPos[3], y);
+
+  // Age
+  tmpStr = 'Age';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[3], colPos[4], y);
+
+  // LMP
+  tmpStr = 'LMP';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[4], colPos[5], y);
+
+  // GP
+  tmpStr = 'GP';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[5], colPos[6], y);
+
+  // Address
+  tmpStr = 'Address';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[6], colPos[7], y);
+
+  // AOG
+  tmpStr = 'AOG';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[7], colPos[8], y);
+
+  // Weight
+  tmpStr = 'Wt';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[8], colPos[9], y);
+
+  // BP
+  tmpStr = 'BP';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[9], colPos[10], y);
+
+  // CR
+  tmpStr = 'CR';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[10], colPos[11], y);
+
+  // RR
+  tmpStr = 'RR';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[11], colPos[12], y);
+
+  // UA WBC
+  tmpStr = 'UA';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[12], colPos[13], y - 6);
+  centerInCol(doc, 'WBC', colPos[12], colPos[13], y + 2);
+
+  // UA RBC
+  tmpStr = 'UA';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[13], colPos[14], y - 6);
+  centerInCol(doc, 'RBC', colPos[13], colPos[14], y + 2);
+
+  // Temp
+  tmpStr = 'Temp';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[14], colPos[15], y + 2);
+
+  // BT
+  tmpStr = 'BT';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[15], colPos[16], y);
+
+  // HBSAG
+  tmpStr = 'HBSAG';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(smallFont);
+  centerInCol(doc, tmpStr, colPos[16], colPos[17], y + 2);
+
+  // Hct
+  tmpStr = 'Hct';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[17], colPos[18], y);
+
+  // Hgb
+  tmpStr = 'Hgb';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[18], colPos[19], y);
+
+  // TT
+  tmpStr = 'TT' + opts.reportNum;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[19], colPos[20], y);
 };
+
+
+/* --------------------------------------------------------
+ * getColXpos()
+ *
+ * Returns an array with the x value of each of the lines
+ * that make up the columns of the report.
+ *
+ * param      opts
+ * return     array of x positions
+ * -------------------------------------------------------- */
+var getColXpos = function(opts) {
+  var xPos = []
+    , x
+    ;
+  x = opts.margins.left; xPos.push(x);  // left margin
+  x += 45; xPos.push(x);                // Date
+  x += 60; xPos.push(x);                // Lastname
+  x += 68; xPos.push(x);                // Firstname
+  x += 15; xPos.push(x);                // Age
+  x += 45; xPos.push(x);                // LMP
+  x += 16; xPos.push(x);                // GP
+  x += 158; xPos.push(x);               // Address
+  x += 42; xPos.push(x);                // AOG
+  x += 22; xPos.push(x);                // Weight
+  x += 32; xPos.push(x);                // Blood Pressure
+  x += 16; xPos.push(x);                // CR
+  x += 16; xPos.push(x);                // RR
+  x += 23; xPos.push(x);                // UA WBC
+  x += 23; xPos.push(x);                // UA RBC
+  x += 22; xPos.push(x);                // Temp
+  x += 16; xPos.push(x);                // Blood Type
+  x += 45; xPos.push(x);                // HBSAG
+  x += 22; xPos.push(x);                // Hct
+  x += 22; xPos.push(x);                // Hgb
+  x += 45; xPos.push(x);                // TT date
+
+  return xPos;
+};
+
+
 
 /* --------------------------------------------------------
  * doFromTo()
@@ -116,27 +283,58 @@ var doFromTo = function(doc, from, to) {
  * param      pageNum
  * param      totalPages
  * param      totalPcs
- * param      logisticsName
+ * param      opts
  * return     undefined
  * -------------------------------------------------------- */
-var doFooter = function(doc, pageNum, totalPages, totalPcs, logisticsName) {
-  // Deworming and page
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(13)
-    .text('Total Iron: ' + totalPcs, 18, 730)
-    .font(FONTS.Helvetica)
-    .fontSize(10)
-    .text('Page ' + pageNum + ' of ' + totalPages, 18, 745);
+var doFooter = function(doc, pageNum, totalPages, totalPcs, opts) {
+  var largeFontSize = 15
+    , smallFontSize = 12
+    , leftX = doc.page.margins.left
+    , centerX = doc.page.width / 2
+    , y = doc.page.height - opts.margins.bottom -
+        ((largeFontSize + smallFontSize)*1.5)
+    , str
+    , str2
+    , x
+    , len
+    , len2
+    ;
 
-  // Logistics in charge
+  // Lower left
   doc
     .font(FONTS.HelveticaBold)
-    .fontSize(13)
-    .text(logisticsName, 370, 730)
+    .fontSize(smallFontSize)
+    .text('TT' + opts.reportNum + '    -     ' + totalPcs, leftX, y);
+
+  // Lower center
+  doc
     .font(FONTS.Helvetica)
-    .fontSize(10)
-    .text('Logistics In-charge', 370, 745);
+    .fontSize(smallFontSize);
+  str = 'Page ' + pageNum + ' of ' + totalPages;
+  x = centerX - (doc.widthOfString(str)/2);
+  doc.text(str, x, y);
+
+  // Lower right
+  doc.font(FONTS.HelveticaBold).fontSize(largeFontSize);
+  str = opts.logisticsName;
+  len = doc.widthOfString(str);
+  doc.font(FONTS.Helvetica).fontSize(smallFontSize);
+  str2 = 'MMC Vaccine In-Charge';
+  len2 = doc.widthOfString(str2);
+  if (len >= len2) {
+    x = doc.page.width - opts.margins.right - len - 5;
+  } else {
+    x = doc.page.width - opts.margins.right - len2 - 5;
+  }
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFontSize)
+    .text(str, x, y);
+  y += largeFontSize;
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFontSize)
+    .text(str2, x, y);
 };
 
 
@@ -151,29 +349,55 @@ var doFooter = function(doc, pageNum, totalPages, totalPcs, logisticsName) {
  * return     Promise
  * -------------------------------------------------------- */
 var getData = function(dateFrom, dateTo) {
+  var vacTypeIds
+    , pregIds
+    , data
+    ;
   return new Promise(function(resolve, reject) {
-    // First get the ids of the medicines we are interested in.
+    // --------------------------------------------------------
+    // First get the ids of the vaccinations we are interested in.
+    // --------------------------------------------------------
     new VaccinationTypes().query()
       .where('name', 'LIKE', '%Tetanus%')
       .select(['id'])
       .then(function(vacTypes) {
-        // Create the subquery which gets all vaccination records for
-        // pregnancies that were vaccinated during the target date range.
-        var vacTypeIds = _.pluck(vacTypes, 'id')
-        , subQuery = new Vaccinations().query()
-            .distinct('vaccination.pregnancy_id')
-            .whereIn('vaccination.vaccinationType', vacTypeIds)
-            .andWhere('vaccination.vacDate', '>=', dateFrom)
-            .andWhere('vaccination.vacDate', '<=', dateTo)
-            .andWhere('vaccination.administeredInternally', '=', 1)
-          ;
+        vacTypeIds = _.pluck(vacTypes, 'id');
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the pregnancy ids we need.
+        // --------------------------------------------------------
+        var query = new Vaccinations().query()
+          .distinct('vaccination.pregnancy_id')
+          .whereIn('vaccination.vaccinationType', vacTypeIds)
+          .andWhere('vaccination.vacDate', '>=', dateFrom)
+          .andWhere('vaccination.vacDate', '<=', dateTo)
+          .andWhere('vaccination.administeredInternally', '=', 1);
+        return query.select();
+      })
+      .then(function(list) {
+        pregIds = _.pluck(list, 'pregnancy_id');
 
+        // --------------------------------------------------------
+        // If there are no matching records, we continue by using
+        // a non-existent pregnancy id to allow the queries below
+        // to continue though they will produce no records also.
+        // This allows a report to be generated with no patient
+        // data, which of course means that there are no records.
+        // Otherwise, it blows up ... it is just easier this way.
+        // --------------------------------------------------------
+        if (pregIds.length === 0) {
+          logInfo('Vaccination report with no matching records.');
+          pregIds = [-1];
+        }
+      })
+      .then(function() {
         // Now query the data restricted to those ids.
         // Note that this will get more than we need, but we need it
-        // in order to determine if this is TT 1 or TT 2.
+        // in order to determine if this is TT 1, 2, 3, 4, or 5.
         // The sort by pregnancy.id then vaccination.vacDate is important
         // for the processing to follow.
-        new Vaccinations().query()
+        var query = new Vaccinations().query()
           .column('vaccination.id', 'vaccination.vacDate', 'vaccination.vaccinationType', 'vaccination.note', 'vaccination.pregnancy_id')
           .join('vaccinationType', 'vaccination.vaccinationType', '=', 'vaccinationType.id')
           .column('vaccinationType.name', 'vaccinationType.description')
@@ -182,23 +406,81 @@ var getData = function(dateFrom, dateTo) {
           .join('patient', 'pregnancy.patient_id', '=', 'patient.id')
           .column('patient.dob')
           .whereIn('vaccination.vaccinationType', vacTypeIds)
-          .whereIn('vaccination.pregnancy_id', subQuery)
-          .orderByRaw('pregnancy.id ASC, vaccination.vacDate ASC')
-          .select()
-          .then(function(list) {
-            // --------------------------------------------------------
-            // We need the prenatal exam information here.
-            // TODO: determine the logic of choosing which prenatal exam to use.
-            // --------------------------------------------------------
-
-
-
-            resolve(list);
-          })
-          .caught(function(err) {
-            logError(err);
-            reject(err);
+          .whereIn('vaccination.pregnancy_id', pregIds)
+          .orderByRaw('pregnancy.id ASC, vaccination.vacDate ASC');
+        return query.select();
+      })
+      .then(function(list) {
+        data = list;
+        // --------------------------------------------------------
+        // Add all of the placeholders for the data obtained below.
+        // --------------------------------------------------------
+        _.each(data, function(rec) {
+          rec.prenatals = [];
+          rec.labTestResults = [];
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the prenatal exams sorted by date.
+        // --------------------------------------------------------
+        return new PrenatalExams().query()
+          .column('prenatalExam.id', 'prenatalExam.date', 'prenatalExam.weight',
+              'prenatalExam.systolic', 'prenatalExam.diastolic',
+              'prenatalExam.cr', 'prenatalExam.pregnancy_id')
+          .innerJoin('pregnancy', 'pregnancy.id', 'prenatalExam.pregnancy_id')
+          .whereIn('prenatalExam.pregnancy_id', pregIds)
+          .orderByRaw('prenatalExam.pregnancy_id ASC, prenatalExam.date ASC')
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the prenatal information to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var preExams = _.where(data, {pregnancy_id: rec.pregnancy_id});
+          _.each(preExams, function(pe) {
+            pe.prenatals.push(_.omit(rec, ['pregnancy_id']));
           });
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the lab tests that are needed sorted by date.
+        // --------------------------------------------------------
+        return new LabTestResults().query()
+          .column('labTestResult.id', 'labTestResult.testDate',
+              'labTestResult.result', 'labTestResult.result2',
+              'labTestResult.labTest_id', 'labTestResult.pregnancy_id',
+              'labTest.name', 'labTest.abbrev', 'labTest.labSuite_id')
+          .innerJoin('labTest', 'labTest.id', 'labTestResult.labTest_id')
+          .whereIn('labTestResult.pregnancy_id', pregIds)
+          .andWhere('labTest.abbrev', '=', 'wbc')
+          .orWhere('labTest.abbrev', '=', 'rbc-urine')
+          .orWhere('labTest.abbrev', '=', 'HBsAg')
+          .orWhere('labTest.abbrev', '=', 'Blood type')
+          .orWhere('labTest.abbrev', '=', 'Hct')
+          .orWhere('labTest.abbrev', '=', 'Hgb')
+          .orderByRaw('labTestResult.pregnancy_id ASC, labTestResult.testDate ASC')
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the lab test results to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var labResults = _.where(data, {pregnancy_id: rec.pregnancy_id});
+          _.each(labResults, function(lr) {
+            lr.labTestResults.push(_.omit(rec, ['pregnancy_id']));
+          });
+        });
+      })
+      .then(function() {
+        resolve(data);
+      })
+      .caught(function(err) {
+        logError(err);
+        reject(err);
       });
   });
 };
@@ -210,70 +492,178 @@ var getData = function(dateFrom, dateTo) {
  *
  * param      doc
  * param      data
+ * param      opts
  * param      rowNum
  * param      rowHeight
  * return     undefined
  * -------------------------------------------------------- */
-var doRow = function(doc, data, rowNum, rowHeight) {
+var doRow = function(doc, data, opts, rowNum, rowHeight) {
   var cells = []
     , startX = doc.page.margins.left
-    , startY = 120 + (rowNum * rowHeight)
-    , remark = data.note && data.note.length > 0? data.note: ''
-    , gravida = data.gravida || 1
-    , para = data.para || 0
+    , startY = 90 + (rowNum * rowHeight)
+    , fontSize = 8
+    , textY = startY + (rowHeight/2) - (fontSize/2) + 2
+    , colPadLeft = 2
+    , colPos = getColXpos(opts)
+    , tmpStr
+    , tmpWidth
+    , tmpWidth2
+    , pe          // prenatalExam
+    , ltr         // labTestResult
     ;
-  // Create the cell borders
-  // Lastname
-  doCellBorders(doc, startX, startY, 130, rowHeight);
-  // Firstname
-  doCellBorders(doc, startX + 130, startY, 90, rowHeight);
-  // Age
-  doCellBorders(doc, startX + 220, startY, 25, rowHeight);
-  // LMP
-  doCellBorders(doc, startX + 245, startY, 56, rowHeight);
-  // GP
-  doCellBorders(doc, startX + 301, startY, 32, rowHeight);
-  // Address
-  doCellBorders(doc, startX + 333, startY, 187, rowHeight);
-  // Pcs
-  doCellBorders(doc, startX + 480, startY, 40, rowHeight);
-  // Date
-  doCellBorders(doc, startX + 520, startY, 56, rowHeight);
+
+  // --------------------------------------------------------
+  // Draw all of the lines.
+  // --------------------------------------------------------
+  // Cell columns.
+  _.each(colPos, function(x, idx) {
+    doc
+      .moveTo(x, startY)
+      .lineTo(x, startY + rowHeight)
+      .stroke();
+  });
+  // Top and bottom lines of row.
+  doc
+    .moveTo(startX, startY)
+    .lineTo(colPos[colPos.length - 1], startY)
+    .moveTo(colPos[colPos.length - 1], startY + rowHeight)
+    .lineTo(startX, startY + rowHeight)
+    .stroke();
 
   // --------------------------------------------------------
   // Write the row contents.
   // --------------------------------------------------------
   doc
     .font(FONTS.Helvetica)
-    .fontSize(11);
-  // Lastname
-  doc.text(data.lastname.toUpperCase(), startX + 2, startY + 9);
-  // Firstname
-  doc.text(data.firstname.toUpperCase(), startX + 132, startY + 9);
-  // Age
-  doc.text(moment().diff(data.dob, 'years'), startX + 225, startY + 9);
-  // LMP
-  doc
-    .fontSize(10)
-    .text(moment(data.lmp).format('MM/DD/YYYY'), startX + 247, startY + 9);
-  // GP
-  doc
-    .fontSize(12)
-    .text(gravida + '-' + para, startX + 305, startY + 9);
-  // Address
-  doc
-    .fontSize(8)
-    .text(data.address.slice(0, 28), startX + 336, startY + 3)
-    .text(data.city, startX + 336, startY + 11);
-  // Pcs
-  doc
-    .fontSize(11)
-    .text(data.numberDispensed, startX + 490, startY + 9)
+    .fontSize(fontSize);
   // Date
-  doc
-    .fontSize(10)
-    .text(moment(data.date).format('MM/DD/YYYY'), startX + 522, startY + 9)
+  tmpStr = moment(data.vacDate).format('MM/DD/YYYY');
+  centerInCol(doc, tmpStr, colPos[0], colPos[1], textY);
 
+  // Lastname
+  doc.text(data.lastname.toUpperCase(), colPos[1] + colPadLeft, textY);
+
+  // Firstname
+  doc.text(data.firstname.toUpperCase(), colPos[2] + colPadLeft, textY);
+
+  // Age
+  tmpStr = moment().diff(moment(data.dob), 'years');
+  centerInCol(doc, tmpStr, colPos[3], colPos[4], textY);
+
+  // LMP
+  tmpStr = moment(data.lmp).format('MM/DD/YYYY');
+  centerInCol(doc, tmpStr, colPos[4], colPos[5], textY);
+
+  // GP
+  tmpStr = _.isNull(data.gravida)? '0': data.gravida;
+  tmpStr += '-';
+  tmpStr += _.isNull(data.para)? '0': data.para;
+  centerInCol(doc, tmpStr, colPos[5], colPos[6], textY);
+
+  // Address
+  tmpStr = data.address + ', ' + data.city;
+  tmpWidth = doc.widthOfString(tmpStr);   // address length
+  tmpWidth2 = colPos[7] - colPos[6];      // column width
+  if (tmpWidth > tmpWidth2) {
+    tmpStr = tmpStr.slice(0, ((tmpStr.length * tmpWidth2)/tmpWidth) - 1);
+  }
+  doc.text(tmpStr, colPos[6] + colPadLeft, textY);
+
+  // AOG calculated as of the from date of the report.
+  // TODO: find out what the "PU" is on the sample report.
+  tmpStr = 'PU ' + getGA(calcEdd(data.lmp), opts.fromDate);
+  if (tmpStr.length > 2) {
+    // Only print if we have actual data.
+    centerInCol(doc, tmpStr, colPos[7], colPos[8], textY);
+  }
+
+  // Weight - we take the most recent prenatalExam
+  // Note: if this report is run historically, the most recent
+  // prenatal exam may be significantly after the tetanus shot.
+  if (data.prenatals.length > 0) {
+    pe = _.last(data.prenatals);
+    tmpStr = pe.weight || '';
+    centerInCol(doc, tmpStr, colPos[8], colPos[9], textY);
+  }
+
+  // Blood Pressure
+  if (pe) {
+    tmpStr = pe.systolic + '/' + pe.diastolic;
+    centerInCol(doc, tmpStr, colPos[9], colPos[10], textY);
+  }
+
+  // CR
+  if (pe) {
+    tmpStr = pe.cr || '';
+    centerInCol(doc, tmpStr, colPos[10], colPos[11], textY);
+  }
+
+  // RR - this is blank since we do not record it.
+
+  // U/A WBC
+  if (data.labTestResults.length > 0) {
+    ltr = _.last(_.where(data.labTestResults, {abbrev: 'wbc'}));
+    if (ltr) {
+      tmpStr = ltr.result;
+      if (ltr.result2) tmpStr += '-' + ltr.result2;
+      centerInCol(doc, tmpStr, colPos[12], colPos[13], textY);
+    }
+  }
+
+  // U/A RBC
+  if (data.labTestResults.length > 0) {
+    ltr = _.last(_.where(data.labTestResults, {abbrev: 'rbc-urine'}));
+    if (ltr) {
+      tmpStr = ltr.result;
+      if (ltr.result2) tmpStr += '-' + ltr.result2;
+      centerInCol(doc, tmpStr, colPos[13], colPos[14], textY);
+    }
+  }
+
+  // Temp - this is blank since we do not record it.
+
+  // Blood Type
+  if (data.labTestResults.length > 0) {
+    ltr = _.last(_.where(data.labTestResults, {abbrev: 'Blood type'}));
+    if (ltr) {
+      tmpStr = ltr.result;
+      centerInCol(doc, tmpStr, colPos[15], colPos[16], textY);
+    }
+  }
+
+
+  // HBSAG
+  if (data.labTestResults.length > 0) {
+    ltr = _.last(_.where(data.labTestResults, {abbrev: 'HBsAg'}));
+    if (ltr) {
+      tmpStr = '';
+      if (ltr.result === '-') tmpStr = 'non-reactive';
+      if (ltr.result === '+') tmpStr = 'reactive';
+      centerInCol(doc, tmpStr, colPos[16], colPos[17], textY);
+    }
+  }
+
+  // Hct
+  if (data.labTestResults.length > 0) {
+    ltr = _.last(_.where(data.labTestResults, {abbrev: 'Hct'}));
+    if (ltr) {
+      tmpStr = ltr.result;
+      centerInCol(doc, tmpStr, colPos[17], colPos[18], textY);
+    }
+  }
+
+  // Hgb
+  if (data.labTestResults.length > 0) {
+    ltr = _.last(_.where(data.labTestResults, {abbrev: 'Hgb'}));
+    if (ltr) {
+      tmpStr = ltr.result;
+      centerInCol(doc, tmpStr, colPos[18], colPos[19], textY);
+    }
+  }
+
+  // TT - note that this is exactly the same as the date field.
+  tmpStr = moment(data.vacDate).format('MM/DD/YYYY');
+  centerInCol(doc, tmpStr, colPos[19], colPos[20], textY);
 };
 
 
@@ -291,32 +681,33 @@ var doRow = function(doc, data, rowNum, rowHeight) {
 var doPages = function(doc, data, rowsPerPage, opts) {
   var currentRow = 0
     , pageNum = 1
-    , totalPcs = _.reduce(_.pluck(data, 'numberDispensed'),
-        function(memo, num) {return memo + num;}, 0)
+    , totalVaccinations = data.length
     , totalPages = Math.ceil(data.length / rowsPerPage)
     ;
 
   // --------------------------------------------------------
-  // Do each row, adding pages as necessary.
+  // Do each row, adding pages as necessary. If there is no
+  // data, still create a page with no data.
   // --------------------------------------------------------
+  doSiteTitle(doc, 24);
+  doReportName(doc, opts.title, 48);
+  doFromTo(doc, opts.fromDate, opts.toDate);
+  doColumnHeader(doc, opts);
+  doFooter(doc, pageNum, totalPages, totalVaccinations, opts);
   _.each(data, function(rec) {
-    if (currentRow === 0) {
-      doSiteTitle(doc, 24);
-      doReportName(doc, opts.title, 48);
-      doFromTo(doc, opts.fromDate, opts.toDate);
-      doColumnHeader(doc);
-      doFooter(doc, pageNum, totalPages, totalPcs, opts.logisticsName);
-    }
-    doRow(doc, rec, currentRow, 21);
+    doRow(doc, rec, opts, currentRow, 14);
     currentRow++;
     if (currentRow >= rowsPerPage) {
       doc.addPage();
       currentRow = 0;
       pageNum++;
+      doSiteTitle(doc, 24);
+      doReportName(doc, opts.title, 48);
+      doFromTo(doc, opts.fromDate, opts.toDate);
+      doColumnHeader(doc, opts);
+      doFooter(doc, pageNum, totalPages, totalVaccinations, opts);
     }
-
   });
-
 };
 
 /* --------------------------------------------------------
@@ -347,7 +738,7 @@ var doReport = function(flds, writable, logisticsName) {
         }
       }
     , doc = new PDFDocument(options)
-    , rowsPerPage = 33    // Number of rows per page of this report.
+    , rowsPerPage = 31    // Number of rows per page of this report.
     , opts = {}
     ;
 
@@ -355,6 +746,8 @@ var doReport = function(flds, writable, logisticsName) {
   opts.toDate = moment(flds.dateTo).format('YYYY-MM-DD');
   opts.logisticsName = logisticsName;
   opts.title = options.info.Title;
+  opts.margins = options.margins;
+  opts.reportNum = reportNum;
 
   // --------------------------------------------------------
   // Write the report to the writable stream passed.
@@ -365,59 +758,46 @@ var doReport = function(flds, writable, logisticsName) {
   getData(opts.fromDate, opts.toDate)
     .then(function(list) {
       var data = []
+        , dataMap = {}
         , currPregId = 0
         , fDate = moment(opts.fromDate)
         , tDate = moment(opts.toDate)
         ;
 
-      if (reportNum === 1) {
-        // --------------------------------------------------------
-        // We only want the first vaccination medication for the patient and
-        // only if it falls within the target date range for the report.
-        // --------------------------------------------------------
-        _.each(list, function(rec) {
-          var recDate = moment(rec.vacDate)
-            ;
-          if (currPregId !== rec.pregnancy_id) {
-            if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
-                ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
-              data.push(rec);
-            }
-            currPregId = rec.pregnancy_id;
-          }
-        });
-      } else if (reportNum === 2) {
-        // --------------------------------------------------------
-        // We only want the second vaccination for the patient and
-        // only if it falls within the target date range for the report.
-        // --------------------------------------------------------
-        _.each(list, function(rec) {
-          var recDate = moment(rec.vacDate)
-            ;
-          if (currPregId === rec.pregnancy_id) {
-            if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
-                ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
-              // Make sure we don't add the same record twice since this
-              // report does not care about 3rd or later administrations.
-              if (data.length > 0 && data[data.length - 1].pregnancy_id !== currPregId) {
-                data.push(rec);
-              } else {
-                data.push(rec);
-              }
-            }
+      // --------------------------------------------------------
+      // Break out the vaccinations into order by pregnancy.
+      // Assumes that the list is sorted by pregnancy_id then
+      // by date.
+      // --------------------------------------------------------
+      _.each(list, function(rec) {
+        if (dataMap[rec.pregnancy_id]) {
+          dataMap[rec.pregnancy_id].push(rec);
+        } else {
+          dataMap[rec.pregnancy_id] = [rec];
+        }
+      });
+
+      // --------------------------------------------------------
+      // Populate the data array with the records that are needed
+      // for this particular report.
+      // --------------------------------------------------------
+      _.each(_.keys(dataMap), function(key) {
+        var rec = dataMap[key][reportNum-1]
+          , recDate
+          ;
+        if (rec) {
+          recDate = moment(rec.vacDate);
+          if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
+              ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
+            data.push(rec);
           } else {
-            currPregId = rec.pregnancy_id;
           }
-        });
+        } else {
+        }
+      });
 
-      } else {
-        // This is unexpected so bail.
-        throw new Error('Unexpected reportNum of ' + reportNum);
-      }
+      doPages(doc, data, rowsPerPage, opts);
 
-      console.dir(data[0]);
-
-      //doPages(doc, data, rowsPerPage, opts);
     })
     .then(function() {
       doc.end();
