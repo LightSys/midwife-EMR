@@ -418,6 +418,7 @@ var getData = function(dateFrom, dateTo) {
         _.each(data, function(rec) {
           rec.prenatals = [];
           rec.labTestResults = [];
+          rec.customFields = [];
         });
       })
       .then(function() {
@@ -472,6 +473,35 @@ var getData = function(dateFrom, dateTo) {
           var labResults = _.where(data, {pregnancy_id: rec.pregnancy_id});
           _.each(labResults, function(lr) {
             lr.labTestResults.push(_.omit(rec, ['pregnancy_id']));
+          });
+        });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the custom field data. This report is customized for
+        // a customization field named 'Agdao' in the customFieldType
+        // table. If the custom field is not there, there will be
+        // no adverse affect on the report. If it is there, the
+        // Agdao addresses will be highlighted.
+        // --------------------------------------------------------
+        return new CustomFields().query()
+          .column('customField.pregnancy_id', 'customField.booleanVal',
+            'customFieldType.name')
+          .innerJoin('customFieldType', 'customField.customFieldType_id',
+            'customFieldType.id')
+          .whereIn('customField.pregnancy_id', pregIds)
+          .andWhere('customFieldType.name', '=', 'Agdao')
+          .andWhere('customField.booleanVal', '=', 1)
+          .select();
+      })
+      .then(function(list) {
+        // --------------------------------------------------------
+        // Add the custom fields to the records to be returned.
+        // --------------------------------------------------------
+        _.each(list, function(rec) {
+          var agdaos = _.where(data, {pregnancy_id: rec.pregnancy_id});
+          _.each(agdaos, function(rec2) {
+            rec2.customFields.push(_.omit(rec, ['pregnancy_id']));
           });
         });
       })
@@ -559,6 +589,20 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   tmpStr += '-';
   tmpStr += _.isNull(data.para)? '0': data.para;
   centerInCol(doc, tmpStr, colPos[5], colPos[6], textY);
+
+  // --------------------------------------------------------
+  // "Highlight" the address cell if the client resides in Agdao
+  // per the custom fields. This really is not a PDFKit
+  // hightlight - we draw a yellow filled rectangle in the cell
+  // but it has the effect that we want.
+  // --------------------------------------------------------
+  if (data.customFields && data.customFields.length > 0 &&
+      _.findWhere(data.customFields, {name: 'Agdao'})) {
+    doc
+      .rect(colPos[6] + 2, textY - 3, colPos[7] - colPos[6] - 5, rowHeight - 4)
+      .fill('yellow');
+    doc.fillColor('black');     // Set back to black.
+  }
 
   // Address
   tmpStr = data.address + ', ' + data.city;

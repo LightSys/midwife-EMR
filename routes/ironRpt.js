@@ -233,9 +233,9 @@ var getData = function(dateFrom, dateTo) {
             // Add the custom fields to the records to be returned.
             // --------------------------------------------------------
             _.each(list, function(rec) {
-              var meds = _.where(data, {pregnancy_id: rec.pregnancy_id});
-              _.each(meds, function(med) {
-                med.customFields.push(_.omit(rec, ['pregnancy_id']));
+              var agdaos = _.where(data, {pregnancy_id: rec.pregnancy_id});
+              _.each(agdaos, function(rec2) {
+                rec2.customFields.push(_.omit(rec, ['pregnancy_id']));
               });
             });
           })
