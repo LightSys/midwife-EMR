@@ -206,8 +206,10 @@ var getData = function(dateFrom, dateTo) {
             'labTestResult.result2', 'labTestResult.pregnancy_id', 'labTest.name')
           .innerJoin('labTest', 'labTest.id', 'labTestResult.labTest_id')
           .whereIn('labTestResult.pregnancy_id', pregIds)
-          .whereIn('labTest.name',
-            ['Hemoglobin', 'Blood Type', 'Red Blood Cells', 'White Blood Cells'])
+          .whereIn('labTest.name', ['Hemoglobin', 'Blood Type', 'Red Blood Cells',
+              'White Blood Cells', 'Gram negative (-) extracellular diplococci',
+              'Gram negative (-) intracellular diplococci', 'Trichomonas-Urine',
+              'Trichomonads'])
           .select();
       })
       .then(function(list) {
@@ -546,6 +548,7 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
     , tmpHeight
     , tmpStr
     , tmpList = []
+    , tmpList2 = []
     , cntPrevTT
     , cntTri1 = 0
     , cntTri2 = 0
@@ -786,8 +789,55 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
 
   // --------------------------------------------------------
   // RTI / STI.
+  // 4 tests are involved:
+  // 'Gram negative (-) extracellular diplococci'
+  // 'Gram negative (-) intracellular diplococci'
+  // 'Trichomonas-Urine'
+  // 'Trichomonads' (from the Gram Stain suite)
+  //
+  // TODO: find out if this one concerns us for this.
+  // 'Trichomonas-WetMount'
+  //
+  // The diplococci tests are indicative of gonorrhea and if
+  // positive we would report 'gono' and the date.
+  //
+  // The trichomonads/trichomonas tests are to be reported
+  // as 'trich' and the date.
+  //
+  // If there are no matching labs for any of this, report No.
   // --------------------------------------------------------
-  // TODO: do this field.
+  tmpList = _.filter(rec.labTests, function(lt) {
+    return lt.name.toLowerCase() === 'gram negative (-) extracellular diplococci' ||
+           lt.name.toLowerCase() === 'gram negative (-) intracellular diplococci';
+  });
+  tmpList2 = _.filter(rec.labTests, function(lt) {
+    return lt.name.toLowerCase() === 'trichomonas-urine' ||
+           lt.name.toLowerCase() === 'trichomonads';
+  });
+  tmpY = startY + colPadTop;
+  if (tmpList.length === 0 && tmpList2.length === 0) {
+    tmpStr = 'No';
+    centerInCol(doc, tmpStr, colPos[10], colPos[11], tmpY);
+  } else {
+    tmpY -= 6;
+    if (tmpList.length > 0) {
+      centerInCol(doc, 'gono', colPos[10], colPos[11], tmpY);
+      tmpY += 10;
+      tmpList = _.sortBy(tmpList, 'testDate');
+      tmpRec = tmpList[tmpList.length - 1];   // Use most recent result.
+      tmpStr = moment(tmpRec.testDate).format('MM/DD/YY');
+      centerInCol(doc, tmpStr, colPos[10], colPos[11], tmpY);
+      tmpY += 12;
+    }
+    if (tmpList2.length > 0) {
+      centerInCol(doc, 'trich', colPos[10], colPos[11], tmpY);
+      tmpY += 10;
+      tmpList2 = _.sortBy(tmpList2, 'testDate');
+      tmpRec = tmpList2[tmpList2.length - 1];   // Use most recent result.
+      tmpStr = moment(tmpRec.testDate).format('MM/DD/YY');
+      centerInCol(doc, tmpStr, colPos[10], colPos[11], tmpY);
+    }
+  }
 
   // --------------------------------------------------------
   // Iron with folic in three columns.
