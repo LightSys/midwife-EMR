@@ -64,6 +64,15 @@ module.exports = function(grunt) {
           }
         }
       }
+    , copy: {
+        main: {
+          // Copy the image files that are associated with the jquery-ui css files.
+          expand: true
+          , cwd: 'client/css/'
+          , src: 'images/*'
+          , dest: 'static/css/'
+        }
+      }
   });
 
   // --------------------------------------------------------
@@ -71,12 +80,12 @@ module.exports = function(grunt) {
   // --------------------------------------------------------
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
-
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
   // --------------------------------------------------------
   // Define tasks.
   // --------------------------------------------------------
-  grunt.registerTask('default', ['uglify', 'cssmin']);
+  grunt.registerTask('default', ['uglify', 'cssmin', 'copy']);
 
 };
 
