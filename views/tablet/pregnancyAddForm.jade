@@ -62,27 +62,51 @@ block pregnancyAdd
         div(class='form-group col-xs-4')
           span= gettext('Partner education')
           +select('form-control input-lg', 'partnerEducation', 17, education)
+        div(class='form-group col-xs-4')
+          span= gettext('MMC #')
+          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='doh')
       div.row
         div(class='form-group col-xs-3')
           span= gettext('Client income')
-          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='clientIncome')
+          input(class='form-control input-lg', type='number', tabindex="19", autocomplete="off", name='clientIncome')
         div(class='form-group col-xs-5')
           span= gettext('Income period')
-          +select('form-control input-lg', 'clientIncomePeriod', 19, clientIncomePeriod)
+          +select('form-control input-lg', 'clientIncomePeriod', 20, clientIncomePeriod)
+        div(class='form-group col-xs-4')
+          span= gettext('Priority #')
+          input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='priority')
       div.row
         div(class='form-group col-xs-3')
           span= gettext('Partner income')
-          input(class='form-control input-lg', type='number', tabindex="20", autocomplete="off", name='partnerIncome')
+          input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='partnerIncome')
         div(class='form-group col-xs-5')
           span= gettext('Income period')
-          +select('form-control input-lg', 'partnerIncomePeriod', 21, partnerIncomePeriod)
+          +select('form-control input-lg', 'partnerIncomePeriod', 23, partnerIncomePeriod)
+        div(class='form-group col-xs-4')
+          span= gettext('Prenatal Day')
+          +select('form-control input-lg', 'prenatalDay', 24, value=prenatalDay)
       div.row
         div(class='form-group col-xs-4')
-          span= gettext('MMC #')
-          input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='doh')
+          span= gettext('Mother - Baby Book?')
+          +select('form-control input-lg', 'mbBook', 25, mbBook)
         div(class='form-group col-xs-4')
-          span= gettext('Priority #')
-          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='priority')
+          //- We move the logic for a custom field out of the core route to the
+          //- view so that the routes can deal with custom fields at a generic level.
+          //- This is obtuse but it means that we can add/modify a custom field in
+          //- the view without touching the routes or other deeper logic, for
+          //- whatever that is worth. Obviously, more work needs to be done here.
+          - var cusFldType = libs._.findWhere(customFieldTypes, {name: 'Agdao'});
+          //- Load defaults and we are including a JSON string to help the
+          //- backend discern our intentions.
+          - var agdaoSelectValue = [];
+          - agdaoSelectValue.push({selectKey: '', label: '', selected: true});
+          - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "Y"}', label: 'Yes', selected: false});
+          - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "N"}', label: 'No', selected: false});
+          span= gettext(cusFldType.label)
+          +select('form-control input-lg', 'customField', 26, value=agdaoSelectValue)
+        div(class='form-group col-xs-4')
+          span= gettext('Prenatal Location')
+          +select('form-control input-lg', 'prenatalLocation', 27, value=prenatalLocation)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
