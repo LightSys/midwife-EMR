@@ -691,7 +691,12 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   if (data.labTestResults.length > 0) {
     ltr = _.last(_.where(data.labTestResults, {abbrev: 'Hct'}));
     if (ltr) {
-      tmpStr = ltr.result;
+      // --------------------------------------------------------
+      // Actually Hct is in range 0 - .6 but it is commonly notated
+      // as 0 - 60. In our database it is the later but this report
+      // requires the more accurate version, so we divide by 100.
+      // --------------------------------------------------------
+      tmpStr = parseInt(ltr.result, 10)/100;
       centerInCol(doc, tmpStr, colPos[17], colPos[18], textY);
     }
   }
