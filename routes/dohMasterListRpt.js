@@ -209,7 +209,7 @@ var getData = function(dateFrom, dateTo) {
           .whereIn('labTest.name', ['Hemoglobin', 'Blood Type', 'Red Blood Cells',
               'White Blood Cells', 'Gram negative (-) extracellular diplococci',
               'Gram negative (-) intracellular diplococci', 'Trichomonas-Urine',
-              'Trichomonads'])
+              'Trichomonads', 'Trichomonas-WetMount'])
           .select();
       })
       .then(function(list) {
@@ -789,13 +789,11 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
 
   // --------------------------------------------------------
   // RTI / STI.
-  // 4 tests are involved:
+  // 5 tests are involved:
   // 'Gram negative (-) extracellular diplococci'
   // 'Gram negative (-) intracellular diplococci'
   // 'Trichomonas-Urine'
   // 'Trichomonads' (from the Gram Stain suite)
-  //
-  // TODO: find out if this one concerns us for this.
   // 'Trichomonas-WetMount'
   //
   // The diplococci tests are indicative of gonorrhea and if
@@ -812,7 +810,8 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
   });
   tmpList2 = _.filter(rec.labTests, function(lt) {
     return lt.name.toLowerCase() === 'trichomonas-urine' ||
-           lt.name.toLowerCase() === 'trichomonads';
+           lt.name.toLowerCase() === 'trichomonads' ||
+           lt.name.toLowerCase() === 'trichomonas-wetmount';
   });
   tmpY = startY + colPadTop;
   if (tmpList.length === 0 && tmpList2.length === 0) {
