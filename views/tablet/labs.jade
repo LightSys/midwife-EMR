@@ -20,9 +20,10 @@ block labs
 
   div.row
     //- -------------------------------------------------
-    //- All sections on the left of the screen.
+    //- In the desktop view these are on the left but for
+    //- tablets we take the whole screen for this.
     //- -------------------------------------------------
-    div(class='col-xs-6')
+    div(class='col-xs-12')
       div.row
         div(class='col-xs-12 panel panel-default spacing')
           div.row
@@ -108,9 +109,10 @@ block labs
                   a(class='btn btn-primary pull-right', href=addMedicationFormPath)= gettext('Add Medication')
 
     //- -------------------------------------------------
-    //- All sections on the right of the screen.
+    //- In the desktop view these are on the right but
+    //- in the tablet they are underneath the labs and meds.
     //- -------------------------------------------------
-    div(class='col-xs-6')
+    div(class='col-xs-12')
       div.row
         //- Referrals
         div(class='col-xs-12 panel panel-default spacing')
@@ -140,7 +142,7 @@ block labs
 
       div.row
         //- Doctor/Dentist consult dates
-        div(class='col-xs-12 panel panel-default spacing')
+        div(class='col-xs-6 panel panel-default spacing')
           form(role='form', name='docDenConsultDates', action='/pregnancy/' + rec.id + '/doctordentist', method='post')
             div.row
               div(class='col-xs-6')
@@ -154,9 +156,8 @@ block labs
                 input(class='btn btn-primary pull-right', type='submit', value=gettext('Save Dates'))
                 input(type='hidden', name='_csrf', value=token)
 
-      div.row
         //- Vaccinations
-        div(class='col-xs-12 panel panel-default spacing')
+        div(class='col-xs-6 panel panel-default spacing')
           div.row
             div(class='col-xs-12')
               label= gettext('Vaccinations')
