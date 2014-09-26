@@ -218,6 +218,11 @@ var load = function(req, res, next) {
             }
           }
         , 'prenatalExam'
+        , {
+            prenatalExam: function(qb) {
+              qb.orderBy('date', 'asc');
+            }
+        }
         , 'priority'
         , 'risk'
         , 'schedule'
