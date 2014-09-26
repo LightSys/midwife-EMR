@@ -28,7 +28,7 @@ block defaultLab
     div.row
       div(class='col-xs-3')
         label= gettext('Date of these tests')
-        +datePicker('form-control', 1, 'testDate', testDate, 'testDate')
+        input(id='testDate', type='date', class='form-control', tabindex='1', name='testDate', value=testDate)
       div(class='form-group col-xs-2 col-xs-offset-7')
         //- This label just causes everything on this row to line up better.
         label &nbsp;

@@ -145,10 +145,10 @@ block labs
             div.row
               div(class='col-xs-6')
                 label= gettext('Doctor consult date')
-                +datePicker('form-control input-lg', 3, 'doctorConsultDate', rec.doctorConsultDate)
+                input(type='date', class='form-control', tabindex='3', name='doctorConsultDate', value=rec.doctorConsultDate)
               div(class='col-xs-6')
                 label= gettext('Dentist consult date')
-                +datePicker('form-control input-lg', 4, 'dentistConsultDate', rec.dentistConsultDate)
+                input(type='date', class='form-control', tabindex='4', name='dentistConsultDate', value=rec.dentistConsultDate)
             div(class='row spacing-row')
               div(class='col-xs-4 col-xs-offset-8')
                 input(class='btn btn-primary pull-right', type='submit', value=gettext('Save Dates'))

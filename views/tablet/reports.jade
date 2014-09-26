@@ -9,10 +9,10 @@ block reportsForm
     div.row
       div(class='col-xs-6')
         label= gettext('Report from:')
-        +datePicker('form-control input-lg', 1, 'dateFrom', null, null, '-1m')
+        input(type='date', class='form-control', tabindex='1', name='dateFrom')
       div(class='col-xs-6')
         label= gettext('Report to:')
-        +datePicker('form-control input-lg', 2, 'dateTo', null, null, '-1d')
+        input(type='date', class='form-control', tabindex='2', name='dateTo')
     div.row
       div(class='col-xs-6')
         label= gettext('Select the report:')
