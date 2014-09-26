@@ -46,12 +46,12 @@ block midwifeInterviewEditPreg
           input(id='typeOfDelivery', class='form-control', type='text', tabindex="108", autocomplete="off", name='typeOfDelivery', value=pregHist.typeOfDelivery)
         div(class='form-group col-md-3')
           span= gettext('Labor (hours)')
-          input(id='lengthOfLabor', class='form-control', type='text', tabindex="109", autocomplete="off", name='lengthOfLabor', value=pregHist.lengthOfLabor)
+          input(id='lengthOfLabor', class='form-control', type='number', tabindex="109", autocomplete="off", name='lengthOfLabor', value=pregHist.lengthOfLabor)
 
       div.row
         div(class='form-group col-md-3')
           span= gettext('Birth Weight (kg)')
-          input(id='birthWeight', class='form-control', type='text', tabindex="110", autocomplete="off", name='birthWeight', value=pregHist.birthWeight)
+          input(id='birthWeight', class='form-control', type='number', step='.1', tabindex="110", autocomplete="off", name='birthWeight', value=pregHist.birthWeight)
         div(class='form-group col-md-3')
           span= gettext('Epis Tear?')
           +select('form-control', 'episTear', 111, episTear)
