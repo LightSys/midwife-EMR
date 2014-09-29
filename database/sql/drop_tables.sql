@@ -36,6 +36,8 @@ DROP TABLE IF EXISTS `prenatalExam`;
 DROP TABLE IF EXISTS `pregnancyHistory`;
 DROP TABLE IF EXISTS `schedule`;
 DROP TABLE IF EXISTS `risk`;
+DROP TABLE IF EXISTS `customField`;
+DROP TABLE IF EXISTS `customFieldType`;
 DROP TABLE IF EXISTS `riskCode`;
 DROP TABLE IF EXISTS `pregnancy`;
 DROP TABLE IF EXISTS `patient`;

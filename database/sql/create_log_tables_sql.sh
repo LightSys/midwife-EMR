@@ -13,7 +13,7 @@
 # -------------------------------------------
 
 # Don't create log tables for these tables.
-excludepat='doh\|session\|event\|eventType\|priority\|riskCode'
+excludepat='doh\|session\|event\|eventType\|priority\|riskCode\|customField\|customFieldType'
 
 # Certain tables have unique constraints which do not allow proper logging
 # when they exist in the log tables. We have a hard-coded list of the 
