@@ -26,7 +26,7 @@ block searchResults
           tbody
             each rec in results
               -var searchResultsId = 'searchResultsId-' + rec.id;
-              tr(class='searchResultsRow', id=searchResultsId)
+              tr(class=rowClass, id=searchResultsId)
                 td= rec.priority
                 td= rec.lastname
                 td= rec.firstname
