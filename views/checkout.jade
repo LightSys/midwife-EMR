@@ -9,7 +9,7 @@ block checkout
     div.row
       div(class='form-group col-sm-2')
         label= gettext('6 Digit Priority #')
-        input(class='form-control input-lg', type='text', tabindex="1", autofocus, autocomplete="off", name='priorityBarcode', value=priorityBarcode)
+        input(class='form-control input-lg', type='number', tabindex="1", autofocus, autocomplete="off", name='priorityBarcode', value=priorityBarcode)
     div.row
       div(class='form-group col-sm-2')
         input(class='btn btn-primary', type='submit', value=btnText)
