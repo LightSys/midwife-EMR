@@ -1,8 +1,14 @@
 # Mercy Maternal Care
 
-Custom software for a charity maternity clinic in the Philippines. This software is specifically designed for one particular clinic, though anyone can use parts or all of it freely as you see fit. See license for details. *Use at your own risk - there is no warranty.*
+Custom software for patient management for a charity maternity clinic in the
+Philippines. This software is specifically designed for one particular clinic,
+though anyone can use parts or all of it freely as you see fit. See license
+for details. *Use at your own risk - there is no warranty.*
 
-Currently the software concentrates upon the prenatal check ups during the pregnancy. Other phases of pregnancy handling are not yet implemented.
+Currently the application focus is upon the prenatal care. Post-prenatal care
+is not yet implemented.
+
+See the [wiki for more detailed documentation](wiki).
 
 ## Features
 
@@ -21,7 +27,12 @@ Currently the software concentrates upon the prenatal check ups during the pregn
   - exact and wildcard
   - search by priority number (scanning the priority badge/tag)
 - Reports
-  - 1 so far, more to come
+  - These are reports required by the local government
+    - Tetanus Reports 1 through 5
+    - Iron Given Reports 1 through 5
+    - Deworming Report
+    - DOH Master list
+    - Summary Report - everything about one patient.
   - Reports produce PDFs for storage, printing, etc.
   - Report input includes to and from dates, type of report, etc.
 - Priority number scheduling
@@ -55,11 +66,11 @@ Currently the software concentrates upon the prenatal check ups during the pregn
 
 ## Status
 
-Alpha - development is ongoing and nearing on-site pilot.
+Beta - development is ongoing and we are preparing for an on-site pilot.
 
 ## Technology
 
-- Nodejs - version v0.10.29 (or latest)
+- Nodejs - version v0.10.32 (or latest)
 - MySQL
 
 Web based and compatible with tablet browsers.
