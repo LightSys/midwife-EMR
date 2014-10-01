@@ -8,7 +8,7 @@ for details. *Use at your own risk - there is no warranty.*
 Currently the application focus is upon the prenatal care. Post-prenatal care
 is not yet implemented.
 
-See the [wiki for more detailed documentation](wiki).
+See the [wiki for more detailed documentation](../../wiki).
 
 ## Features
 
