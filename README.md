@@ -1,16 +1,17 @@
 # Mercy Maternal Care
 
-Custom software for patient management for a charity maternity clinic in the
-Philippines. This software is specifically designed for one particular clinic,
-though anyone can use parts or all of it freely as you see fit. See license
-for details. *Use at your own risk - there is no warranty.*
+Custom patient management software for a large maternity clinic in the
+Philippines serving a low income community. This software is specifically
+designed for one particular clinic, though anyone can use parts or all of it
+freely as you see fit. See license for details.
 
-Currently the application focus is upon the prenatal care. Post-prenatal care
-is not yet implemented.
+Currently the application focus is upon prenatal care. Post-prenatal care is
+not yet implemented. The clinic for which the application is designed serves
+up to 100 patients daily and performs over 20,000 prenatal exams per year.
 
-See the [wiki for more detailed documentation](../../wiki).
+See the [wiki for more detailed user and system documentation](../../wiki).
 
-## Features
+## Features at a glance
 
 - New patient setup
   - Any number of patients allowed.
@@ -22,12 +23,13 @@ See the [wiki for more detailed documentation](../../wiki).
   - Prenatal measurements/notes
   - Referrals
   - Medicines administered
-  - Health Teachings (to be completed)
-- Search
+  - Health Teachings (yet to be completed)
+- Patient Search
   - exact and wildcard
   - search by priority number (scanning the priority badge/tag)
+  - search by scheduled appointment day
 - Reports
-  - These are reports required by the local government
+  - To date these are reports required by the local government
     - Tetanus Reports 1 through 5
     - Iron Given Reports 1 through 5
     - Deworming Report
@@ -37,15 +39,14 @@ See the [wiki for more detailed documentation](../../wiki).
   - Report input includes to and from dates, type of report, etc.
 - Priority number scheduling
   - Barcode generation system to allow scanning priority badges/tags for
-    faster processing
+    faster and efficient patient processing
     - Generator script creates PDF of barcodes
     - Barcodes can then be permanently attached to priority badges/tags that the patients
       use when they arrive. This is done once to setup the priority
       badges/tags.
     - The queuing system uses priority badges/tags and scanners can be used to
       quickly access the patient's records as they proceed through the exam
-      processes. (Note: staff should always confirm name of patient after
-      scanning priority badge/tag.)
+      processes.
 - User management (staff, etc.)
   - Roles
      - Supervisor
@@ -56,17 +57,18 @@ See the [wiki for more detailed documentation](../../wiki).
   - Permissions and ACL based upon roles
   - Any number of users/staff allowed.
 - Web browser and mobile browser compatible
-  - Native Android client in development (separate)
+  - Native Android client in early stages of development (separate)
 - Full logging of all changes to the database
   - All historical changes reviewable by supervisor role or admin role as
     appropriate
 - HTTPS (HTTP redirects to HTTPS)
-- Tests (132 to date)
+  - Allows HTTP only if configured as such, though not recommended.
+- Tests (145 to date)
 - MIT license
 
 ## Status
 
-Beta - development is ongoing and we are preparing for an on-site pilot.
+Beta - development is ongoing as we are preparing for an on-site pilot.
 
 ## Technology
 
