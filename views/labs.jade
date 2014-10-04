@@ -105,7 +105,11 @@ block labs
               //- Add Medications button
               div.row
                 div(class='col-md-4 col-md-offset-8')
-                  a(class='btn btn-primary pull-right', href=addMedicationFormPath)= gettext('Add Medication')
+                  - if (roleInfo.hasRole('clerk')) {
+                    a(class='btn btn-primary pull-right', disabled=true, href=addMedicationFormPath)= gettext('Add Medication')
+                  - } else {
+                    a(class='btn btn-primary pull-right', href=addMedicationFormPath)= gettext('Add Medication')
+                  - }
 
     //- -------------------------------------------------
     //- All sections on the right of the screen.
@@ -136,7 +140,11 @@ block labs
               //- Add Referrals button
               div.row
                 div(class='col-md-4 col-md-offset-8')
-                  a(class='btn btn-primary pull-right', href=addReferralFormPath)= gettext('Add Referral')
+                  - if (roleInfo.hasRole('clerk')) {
+                      a(class='btn btn-primary pull-right', disabled=true, href=addReferralFormPath)= gettext('Add Referral')
+                  - } else {
+                      a(class='btn btn-primary pull-right', href=addReferralFormPath)= gettext('Add Referral')
+                  - }
 
       div.row
         //- Doctor/Dentist consult dates
@@ -151,7 +159,11 @@ block labs
                 +datePicker('form-control input-lg', 4, 'dentistConsultDate', rec.dentistConsultDate)
             div(class='row spacing-row')
               div(class='col-md-4 col-md-offset-8')
-                input(class='btn btn-primary pull-right', type='submit', value=gettext('Save Dates'))
+                - if (roleInfo.hasRole('clerk')) {
+                    input(class='btn btn-primary pull-right', disabled=true, type='submit', value=gettext('Save Dates'))
+                - } else {
+                    input(class='btn btn-primary pull-right', type='submit', value=gettext('Save Dates'))
+                - }
                 input(type='hidden', name='_csrf', value=token)
 
       div.row
@@ -203,5 +215,9 @@ block labs
               //- Add Vaccinations button
               div.row
                 div(class='col-md-4 col-md-offset-8')
-                  a(class='btn btn-primary pull-right', href=addVaccinationFormPath)= gettext('Add Vaccination')
+                  - if (roleInfo.hasRole('clerk')) {
+                      a(class='btn btn-primary pull-right', disabled=true, href=addVaccinationFormPath)= gettext('Add Vaccination')
+                  - } else {
+                      a(class='btn btn-primary pull-right', href=addVaccinationFormPath)= gettext('Add Vaccination')
+                  - }
 

@@ -391,19 +391,19 @@ app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
 
 // Labs main page
 app.get(cfg.path.pregnancyLabsEditForm, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.labsForm);
+    inRoles(['attending','supervisor', 'clerk']), pregnancy.labsForm);
 
 // Lab Tests
 app.post(cfg.path.labTestAddForm, common, hasSuper,
-    inRoles(['attending', 'supervisor']), labs.labTestAddForm);
+    inRoles(['attending', 'supervisor', 'clerk']), labs.labTestAddForm);
 app.post(cfg.path.labTestAdd, common, hasSuper,
-    inRoles(['attending', 'supervisor']), labs.labTestSave);
+    inRoles(['attending', 'supervisor', 'clerk']), labs.labTestSave);
 app.get(cfg.path.labTestEdit, common, hasSuper,
-    inRoles(['attending', 'supervisor']), labs.labTestEditForm);
+    inRoles(['attending', 'supervisor', 'clerk']), labs.labTestEditForm);
 app.post(cfg.path.labTestEdit, common, hasSuper,
-    inRoles(['attending', 'supervisor']), labs.labTestSave);
+    inRoles(['attending', 'supervisor', 'clerk']), labs.labTestSave);
 app.post(cfg.path.labTestDelete, common, hasSuper,
-    inRoles(['attending', 'supervisor']), labs.labDelete);
+    inRoles(['attending', 'supervisor', 'clerk']), labs.labDelete);
 
 // Referrals
 app.get(cfg.path.referralAdd, common, hasSuper,
