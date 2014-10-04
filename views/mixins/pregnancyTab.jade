@@ -3,11 +3,17 @@ mixin pregnancyTab(activePath)
   - var activeClasses = 'active';
   - var classes = noClasses;
   - var tabs = [];
-  - tabs.push({path: 'prenatal', name: 'Prenatal'});
-  - tabs.push({path: 'labs', name: 'Labs'});
-  - tabs.push({path: 'quesEdit', name: 'Questionnaire'});
-  - tabs.push({path: 'midwifeinterview', name: 'Midwife Interview'});
-  - tabs.push({path: 'edit', name: 'General'});
+  - if (roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')) {
+      - tabs.push({path: 'prenatal', name: 'Prenatal'});
+      - tabs.push({path: 'labs', name: 'Labs'});
+      - tabs.push({path: 'quesEdit', name: 'Questionnaire'});
+      - tabs.push({path: 'midwifeinterview', name: 'Midwife Interview'});
+      - tabs.push({path: 'edit', name: 'General'});
+  - } else if (roleInfo.hasRole('clerk')) {
+      - tabs.push({path: 'prenatal', name: 'Prenatal'});
+      - tabs.push({path: 'labs', name: 'Labs'});
+      - tabs.push({path: 'edit', name: 'General'});
+  - }
   ul(class='nav nav-tabs')
     each tab in tabs
       - classes = noClasses;
