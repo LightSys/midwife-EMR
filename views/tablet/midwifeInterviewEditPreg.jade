@@ -39,7 +39,7 @@ block midwifeInterviewEditPreg
       div.row
         div(class='form-group col-xs-3')
           span= gettext('Place of birth')
-          input(id='placeOfBirth', class='form-control', type='text', tabindex="106", autocomplete="off", name='placeOfBirth', value=pregHist.placeOfBirth)
+          +select('form-control', 'placeOfBirth', 106, placeOfBirth)
         div(class='form-group col-xs-3')
           span= gettext('Attendant')
           +select('form-control', 'attendant', 107, attendant)

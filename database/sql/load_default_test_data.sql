@@ -169,7 +169,14 @@ VALUES
   ('dayOfWeek', 'Thursday', 'Thursday', 0, 1, NOW()),
   ('dayOfWeek', 'Friday', 'Friday', 0, 1, NOW()),
   ('dayOfWeek', 'Saturday', 'Saturday', 0, 1, NOW()),
-  ('dayOfWeek', 'Sunday', 'Sunday', 0, 1, NOW())
+  ('dayOfWeek', 'Sunday', 'Sunday', 0, 1, NOW()),
+  ('placeOfBirth', '', '', 1, 1, NOW()),
+  ('placeOfBirth', 'MMC', 'MMC', 0, 1, NOW()),
+  ('placeOfBirth', 'Home', 'Home', 0, 1, NOW()),
+  ('placeOfBirth', 'SPMC', 'SPMC', 0, 1, NOW()),
+  ('placeOfBirth', 'Hospital', 'Hospital', 0, 1, NOW()),
+  ('placeOfBirth', 'Lying-in Clinic', 'Lying-in Clinic', 0, 1, NOW()),
+  ('placeOfBirth', 'Other', 'Other', 0, 1, NOW())
 ;
 
 SELECT 'vaccinationType' AS 'Loading' FROM DUAL;

@@ -66,6 +66,7 @@ var _ = require('underscore')
   , maleFemale = []
   , location = []
   , dayOfWeek = []
+  , placeOfBirth = []
   , prenatalCheckInId
   , prenatalCheckOutId
   , riskCodes = {}
@@ -94,6 +95,7 @@ var init = function() {
     , maleFemaleName = 'maleFemale'
     , locationName = 'location'
     , dayOfWeekName = 'dayOfWeek'
+    , placeOfBirthName = 'placeOfBirth'
     , interval = cfg.data.selectRefreshInterval
   ;
 
@@ -147,6 +149,7 @@ var init = function() {
   doRefresh(maleFemaleName, function(l) {maleFemale = l;});
   doRefresh(locationName, function(l) {location = l;});
   doRefresh(dayOfWeekName, function(l) {dayOfWeek = l;});
+  doRefresh(placeOfBirthName, function(l) {placeOfBirth = l;});
 
   // --------------------------------------------------------
   // Do a one time load of custom field types.
@@ -421,6 +424,7 @@ var getCommonFormData = function(req, addData) {
    , mf   // male or female
    , at   // attendant
    , rc   // riskCodes
+   , pb   // placeOfBirth
    ;
 
   // --------------------------------------------------------
@@ -470,6 +474,7 @@ var getCommonFormData = function(req, addData) {
       bf = adjustSelectData(wksMthsYrs, void(0));
       mf = adjustSelectData(maleFemale, void(0));
       at = adjustSelectData(attendant, void(0));
+      pb = adjustSelectData(placeOfBirth, void(0));
     }
     if (path === cfg.path.pregnancyHistoryEdit) {
       fg = adjustSelectData(wksMths, req.paramPregHist.finalGAPeriod);
@@ -478,6 +483,7 @@ var getCommonFormData = function(req, addData) {
       bf = adjustSelectData(wksMthsYrs, req.paramPregHist.howLongBFedPeriod);
       mf = adjustSelectData(maleFemale, req.paramPregHist.sexOfBaby);
       at = adjustSelectData(attendant, req.paramPregHist.attendant);
+      pb = adjustSelectData(placeOfBirth, req.paramPregHist.placeOfBirth);
       tod = req.paramPregHist.typeOfDelivery;
     }
 
@@ -499,6 +505,7 @@ var getCommonFormData = function(req, addData) {
     , sexOfBaby: mf
     , attendant: at
     , riskCodes: rc
+    , placeOfBirth: pb
     , customFields: req.paramPregnancy.customField
     , customFieldTypes: customFieldTypes
   });
