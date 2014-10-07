@@ -280,8 +280,8 @@ INSERT INTO `labTestValue`
   (value, labTest_id, updatedBy, updatedAt)
 VALUES
   -- HBsAg
-  ('+', (SELECT id FROM labTest WHERE abbrev = 'HBsAg'), 1, NOW()),
-  ('-', (SELECT id FROM labTest WHERE abbrev = 'HBsAg'), 1, NOW()),
+  ('Reactive', (SELECT id FROM labTest WHERE abbrev = 'HBsAg'), 1, NOW()),
+  ('Non-Reactive', (SELECT id FROM labTest WHERE abbrev = 'HBsAg'), 1, NOW()),
   ('A', (SELECT id FROM labTest WHERE abbrev = 'Blood type'), 1, NOW()),
   ('A-', (SELECT id FROM labTest WHERE abbrev = 'Blood type'), 1, NOW()),
   ('A+', (SELECT id FROM labTest WHERE abbrev = 'Blood type'), 1, NOW()),
