@@ -59,7 +59,7 @@ block vaccinationAddEditForm
               input(type='checkbox', name='administeredInternally', tabindex="4", value=1, checked=administeredInternally==true)
         div(class='col-md-4')
           label= gettext('Notes')
-          textarea(class='form-control input-lg', tabindex="5", autocomplete="off", rows=4, name='note')= vaccinationNote
+          textarea(class='form-control input-lg', tabindex="5", spellcheck="off", autocomplete="off", rows=4, name='note')= vaccinationNote
       div.row
         div(class='col-md-4')
           span &nbsp;

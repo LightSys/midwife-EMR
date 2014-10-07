@@ -63,7 +63,7 @@ block prenatalAddEditExam
               span= gettext('FHT')
               input(id='fht', class='form-control input-lg', type='number', tabindex="7", autocomplete="off", name='fht', value=prenatalExam.fht)
           span= gettext('FHT Note')
-          input(id='fhtNote', class='form-control input-lg', type='text', tabindex='8', autocomplete='off', name='fhtNote', value=prenatalExam.fhtNote)
+          input(id='fhtNote', class='form-control input-lg', type='text', tabindex='8', spellcheck="off", autocomplete='off', name='fhtNote', value=prenatalExam.fhtNote)
           span= gettext('Position')
           input(id='pos', class='form-control input-lg', type='text', tabindex="9", autocomplete="off", name='pos', value=prenatalExam.pos)
 
@@ -88,12 +88,12 @@ block prenatalAddEditExam
       div.row
         div(class='form-group col-xs-6')
           span= gettext('Risk note')
-              input(class='form-control', type='text', name='risk', tabindex="11", value=prenatalExam.risk)
+              input(class='form-control', type='text', name='risk', spellcheck="off", autocomplete="off", tabindex="11", value=prenatalExam.risk)
           div= gettext('Return Date')
           input(id='returnDate', class='form-control input-lg', type='date', tabindex="14", autocomplete="off", name='returnDate', value=returnDate)
         div(class='form-group col-xs-6')
           span= gettext('Notes')
-          textarea(id='note', class='form-control input-lg', tabindex="15", wrap="soft", rows="3", name='note')= prenatalExam.note
+          textarea(id='note', class='form-control input-lg', tabindex="15", spellcheck="off", autocomplete="off", wrap="soft", rows="3", name='note')= prenatalExam.note
 
       div.row
         div(class='form-group col-xs-2')

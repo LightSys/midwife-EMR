@@ -30,7 +30,7 @@ block midwifeInterview
 
       div(class='form-group col-xs-6')
         span= gettext('Comments')
-        textarea(class='form-control input-lg', rows='6', tabindex="6", wrap='soft', name='note')= rec.note
+        textarea(class='form-control input-lg', rows='6', tabindex="6", spellcheck="off", autocomplete="off", wrap='soft', name='note')= rec.note
 
     div.row
       div(class='form-group col-xs-2')

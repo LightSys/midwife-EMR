@@ -58,7 +58,7 @@ block pregnancyQuestionnaire
           label= gettext('Have you ever practiced family planning?')
             input(class='form-control input-sm', type='checkbox', name='practiceFamilyPlanning', tabindex="16", value=1, checked=rec.practiceFamilyPlanning==true)
         span= gettext('Family planning comments')
-        input(class='form-control', type='text', tabindex="17", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
+        input(class='form-control', type='text', tabindex="17", spellcheck="off", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
 
     div.row
       div(class='form-group col-xs-6')

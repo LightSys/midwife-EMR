@@ -60,7 +60,7 @@ block prenatalAddEditExam
               span= gettext('FHT')
               input(id='fht', class='form-control', type='number', tabindex="7", autocomplete="off", name='fht', value=prenatalExam.fht)
           span= gettext('FHT Note')
-          input(id='fhtNote', class='form-control', type='text', tabindex='8', autocomplete='off', name='fhtNote', value=prenatalExam.fhtNote)
+          input(id='fhtNote', class='form-control', type='text', tabindex='8', spellcheck="off", autocomplete='off', name='fhtNote', value=prenatalExam.fhtNote)
           span= gettext('Position')
           input(id='pos', class='form-control', type='text', tabindex="9", autocomplete="off", name='pos', value=prenatalExam.pos)
 
@@ -73,7 +73,7 @@ block prenatalAddEditExam
             label= gettext('Edema')
               +select('form-control', 'edema', 11, edema)
           span= gettext('Risk')
-              input(class='form-control', type='text', name='risk', tabindex="12", value=prenatalExam.risk)
+              input(class='form-control', type='text', name='risk', spellcheck="off", autocomplete="off", tabindex="12", value=prenatalExam.risk)
           div.checkbox
             label= gettext('Vitamin')
               input(type='checkbox', name='vitamin', tabindex="13", value=1, checked=prenatalExam.vitamin==true)
@@ -84,7 +84,7 @@ block prenatalAddEditExam
         div(class='form-group col-md-3')
           label(class='')= gettext('Other continued')
           div= gettext('Notes')
-          textarea(id='note', class='form-control', tabindex="15", wrap="soft", rows="4", name='note')= prenatalExam.note
+          textarea(id='note', class='form-control', tabindex="15", spellcheck="off", autocomplete="off", wrap="soft", rows="4", name='note')= prenatalExam.note
           div= gettext('Return Date')
           +datePicker('form-control', 16, 'returnDate', returnDate, 'returnDate', '+1m')
 
