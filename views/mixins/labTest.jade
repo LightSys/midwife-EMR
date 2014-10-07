@@ -58,7 +58,13 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
             label= gettext('Warning: ')
             span &nbsp;
             input(type='checkbox', name=fldNameWarn, tabindex=tabIndex, value=1, checked=warn==true)
-        div.row
-          div(class=customWidth+'6 '+customOffset+'3')
-            span= gettext('Min: ') + minText + ', ' + gettext('Max: ') + maxText
+        - if (! (minText === 'None' && maxText === 'None')) {
+            div.row
+              div(class=customWidth+'6 '+customOffset+'3')
+                span= gettext('Min: ') + minText + ', ' + gettext('Max: ') + maxText
+        - } else {
+            div.row
+              div(class=customWidth+'6 '+customOffset+'3')
+                span &nbsp;
+        -}
 
