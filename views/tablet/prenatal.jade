@@ -22,13 +22,13 @@ block prenatal
             div(class='form-group inline')
               div.checkbox
                 label= gettext('MCP')
-                  input(class='form-control input-sm', type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
+                  input(type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
               div.checkbox
                 label= gettext('NCP')
-                  input(class='form-control input-sm', type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
+                  input(type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
               div.checkbox
                 label= gettext('PHIC Approved')
-                  input(class='form-control input-sm', type='checkbox', name='philHealthApproved', tabindex="4", value=1, checked=rec.philHealthApproved==true)
+                  input(type='checkbox', name='philHealthApproved', tabindex="4", value=1, checked=rec.philHealthApproved==true)
         div.row
           div(class='col-xs-12')
             span= gettext('PHIC #')
@@ -52,10 +52,10 @@ block prenatal
         div(class='form-group')
           div.checkbox
             label= gettext('Sure of LMP')
-              input(class='form-control input-sm', type='checkbox', name='sureLMP', tabindex="7", value=1, checked=rec.sureLMP==true)
+              input(type='checkbox', name='sureLMP', tabindex="7", value=1, checked=rec.sureLMP==true)
           div.checkbox
             label= gettext('Use Alternate EDD')
-              input(class='form-control input-sm', type='checkbox', name='useAlternateEdd', tabindex="8", value=1, checked=rec.useAlternateEdd==true)
+              input(type='checkbox', name='useAlternateEdd', tabindex="8", value=1, checked=rec.useAlternateEdd==true)
         div.row
           div(class='col-xs-12')
             div
