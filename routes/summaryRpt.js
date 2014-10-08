@@ -720,6 +720,7 @@ var doLabResults = function(doc, data, opts, ypos) {
     data.push(moment(row.testDate).format('MM-DD-YYYY'));
     result = row.result;
     if (row.result2.length > 0) result += ' - ' + row.result2;
+    if (row.unit !== null && row.unit.length > 0) result += ' ' + row.unit;
     data.push(result);
     data.push(warn);
     colData.push(data);
@@ -1380,7 +1381,7 @@ var getData = function(id) {
       .then(function() {
         return new LabTestResults().query(function(qb) {
           qb.innerJoin('labTest', 'labTestResult.labTest_id', 'labTest.id');
-          qb.select(['labTest.name', 'labTest.abbrev'])
+          qb.select(['labTest.name', 'labTest.abbrev', 'labTest.unit'])
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
