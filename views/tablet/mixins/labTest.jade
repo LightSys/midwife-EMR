@@ -4,6 +4,8 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
   - var fullWidth = 'col-' + bsDevSize + '-12';
   - var halfWidth = 'col-' + bsDevSize + '-6';
   - var qtrWidth = 'col-' + bsDevSize + '-3';
+  - var toWidth = 'col-' + bsDevSize + '-1';              // Used with min/max
+  - var halfWidthSm = 'col-' + bsDevSize + '-5';          // Used with min/max
   - var thirdWidth = 'col-' + bsDevSize + '-4';
   - var customWidth = 'col-' + bsDevSize + '-';           // Must supply final number 1-12
   - var customOffset = 'col-' + bsDevSize + '-offset-';   // Must supply final number 1-11
@@ -36,12 +38,16 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
             - if (isRange)
               div(class=qtrWidth)
                 input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberLow, value=result)
+              div(class=toWidth) To
               div(class=qtrWidth)
                 input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberHigh, value=result2)
             - else
               div(class=halfWidth)
                 input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber, value=result)
-          - if (values)
+          - if (values && (min || max))
+            div(class=halfWidthSm)
+              +select('form-control', fldNameSelect, tabIndex++, values)
+          - else
             div(class=halfWidth)
               +select('form-control', fldNameSelect, tabIndex++, values)
           - if (isText)
