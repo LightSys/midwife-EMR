@@ -915,6 +915,8 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
   colNames.push('Wgt');
   colNames.push('BP     ');
   colNames.push('CR ');
+  colNames.push('Temp');
+  colNames.push('RR ');
   colNames.push('GA   ');
   colNames.push('FH');
   colNames.push('FHT');
@@ -928,10 +930,14 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
   _.each(data.prenatalExams, function(row) {
     var data = []
       ;
-    data.push(moment(row.date).format('MM-DD-YYYY'));
+    // Specify a manual line break in the table between the date and name.
+    data.push(moment(row.date).format('MM-DD-YYYY') +
+        '\n' + row.lastname + ', ' + row.firstname);
     data.push(row.weight);
     data.push(row.systolic + ' / ' + row.diastolic);
     data.push(row.cr);
+    data.push(row.temperature);
+    data.push(row.respiratoryRate);
     if (estDueDate) {
       data.push(getGA(estDueDate, moment(row.date)));
     } else {
@@ -954,7 +960,7 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Prenatal Examinations', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y);
+  y = doTable(doc, colNames, colData, opts, y, null, true);
 
   return y + 10;
 };
@@ -1045,6 +1051,12 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * of the column. In other words, pad columns with extra
  * spaces should they need to be wider.
  *
+ * If the wrap option is set, two features are activated. First
+ * the data that does not fit in it's respective column will be
+ * split across multiple lines so that it does fit. Second, data
+ * that has explicit line feeds in it will be split to different
+ * lines on those line feeds.
+ *
  * param      doc
  * param      columns - list of column names
  * param      rows
@@ -1115,29 +1127,45 @@ var doTable = function(doc, columns, rows, opts, ypos, position, wrap) {
     .fontSize(9);
   x = left;
   _.each(rows, function(row) {
-    var linesUsed = 1;
+    var linesUsed = 1
+      , maxLinesUsed = linesUsed
+      ;
     _.each(row, function(val, idx) {
       var currColWidth = colWidth[columns[idx]]
         , textWidth = doc.widthOfString(val)
         , colStart
+        , lines = String(val).split(/\n/)   // Detect a manual split.
+        , currY = y
         ;
       if (idx > 0) x += colWidth[columns[idx-1]];
       colStart = x;
       if (wrap) {
-        // --------------------------------------------------------
-        // Will wrap in column automatically but estimate how many
-        // lines so that the separator can be placed accordingly.
-        // --------------------------------------------------------
-        if (textWidth > currColWidth) {
+        if (lines.length > 1) {
+          // --------------------------------------------------------
+          // Line splits were manually set.
+          // --------------------------------------------------------
+          linesUsed = lines.length;
+          _.each(lines, function(line) {
+            doc.text(line, x, currY);
+            currY += 10;
+          });
+        } else if (textWidth > currColWidth) {
+          // --------------------------------------------------------
+          // Will wrap in column automatically but estimate how many
+          // lines so that the separator can be placed accordingly.
+          // --------------------------------------------------------
           linesUsed = Math.ceil(textWidth / currColWidth);
+          doc.text(val, x, y, {width: currColWidth});
+        } else {
+          doc.text(val, x, y);
         }
-        doc.text(val, x, y, {width: currColWidth});
+        maxLinesUsed = linesUsed > maxLinesUsed? linesUsed: maxLinesUsed;
       } else {
         doc.text(val, x, y);
       }
     });
     x = left;
-    y += linesUsed * 10;      // Move down a line.
+    y += maxLinesUsed * 10;      // Move down the number of lines used.
     doSep(doc, opts, y, greyLightColor, position);
     y += 10;
   });
@@ -1340,6 +1368,8 @@ var getData = function(id) {
       .then(function() {
         return new PrenatalExams().query(function(qb) {
           qb.where('pregnancy_id', '=', data.pregnancy.id);
+          qb.innerJoin('user', 'user.id', 'prenatalExam.updatedBy');
+          qb.select(['user.firstname', 'user.lastname', 'user.username']);
           qb.orderBy('prenatalExam.date');
         })
         .fetch();
