@@ -23,13 +23,15 @@ CREATE TABLE `prenatalExam` (
   `systolic` int(11) DEFAULT NULL,
   `diastolic` int(11) DEFAULT NULL,
   `cr` int(11) DEFAULT NULL,
+  `temperature` decimal(4,1) DEFAULT NULL,
+  `respiratoryRate` int(11) DEFAULT NULL,
   `fh` int(11) DEFAULT NULL,
   `fht` int(11) DEFAULT NULL,
   `fhtNote` varchar(20) DEFAULT NULL,
   `pos` varchar(10) DEFAULT NULL,
   `mvmt` tinyint(1) DEFAULT NULL,
   `edema` varchar(4) DEFAULT NULL,
-  `risk` tinyint(1) DEFAULT NULL,
+  `risk` varchar(100) DEFAULT NULL,
   `vitamin` tinyint(1) DEFAULT NULL,
   `pray` tinyint(1) DEFAULT NULL,
   `note` varchar(100) DEFAULT NULL,
@@ -52,8 +54,9 @@ PrenatalExam = Bookshelf.Model.extend({
   tableName: 'prenatalExam'
 
   , permittedAttributes: ['id', 'date', 'weight', 'systolic', 'diastolic', 'cr',
-      'fh', 'fht', 'fhtNote', 'pos', 'mvmt', 'edema', 'risk', 'vitamin', 'pray',
-      'note', 'returnDate', 'updatedBy', 'updatedAt', 'supervisor', 'pregnancy_id']
+      'temperature', 'respiratoryRate', 'fh', 'fht', 'fhtNote', 'pos', 'mvmt',
+      'edema', 'risk', 'vitamin', 'pray', 'note', 'returnDate', 'updatedBy',
+      'updatedAt', 'supervisor', 'pregnancy_id']
 
   , initialize: function() {
       this.on('saving', this.saving, this);
