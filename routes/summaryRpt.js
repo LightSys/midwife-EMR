@@ -832,6 +832,12 @@ var doMedications = function(doc, data, opts, ypos) {
  * doPrenatalNotes()
  *
  * Write out the notes for each prenatal exam in a table.
+ * There are actually three note fields, two long and one
+ * short.
+ *
+ * fhtNote  - short
+ * risk     - long
+ * note     - long
  *
  * param      doc
  * param      data
@@ -846,15 +852,19 @@ var doPrenatalNotes = function(doc, data, opts, ypos) {
     , colData = []
     ;
 
-  colNames.push('Date');
-  colNames.push('Note                                                       ');
+  colNames.push('Date ');
+  colNames.push('Risk                          ');
+  colNames.push('Other Notes                   ');
+  colNames.push('FHT Note');
 
   _.each(data.prenatalExams, function(row) {
     var data = []
       ;
     if (row.note) {
       data.push(moment(row.date).format('MM-DD-YYYY'));
+      data.push(row.risk);
       data.push(row.note);
+      data.push(row.fhtNote);
       colData.push(data);
     }
   });
@@ -862,7 +872,7 @@ var doPrenatalNotes = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Prenatal Examination Notes', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y);
+  y = doTable(doc, colNames, colData, opts, y, null, true);
 
   return y + 10;
 };
@@ -910,7 +920,6 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
   colNames.push('POS');
   colNames.push('Mvmt');
   colNames.push('Edema');
-  colNames.push('Risk ');
   colNames.push('Vit');
   colNames.push('Pray');
   colNames.push('Return   ');
@@ -932,10 +941,13 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
     data.push(row.pos);
     data.push(row.mvmt? 'Yes': 'No');
     data.push(row.edema);
-    data.push(row.risk);
     data.push(row.vitamin? 'Yes': 'No');
     data.push(row.pray? 'Yes': 'No');
-    data.push(moment(row.returnDate).format('MM-DD-YYYY'));
+    if (moment(row.returnDate).isValid()) {
+      data.push(moment(row.returnDate).format('MM-DD-YYYY'));
+    } else {
+      data.push('');
+    }
     colData.push(data);
   });
 
@@ -1038,9 +1050,10 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * param      opts
  * param      ypos
  * param      position - default is full width, 'left', 'right'
+ * param      wrap - whether to wrap data if too long for column
  * return     y - final y
  * -------------------------------------------------------- */
-var doTable = function(doc, columns, rows, opts, ypos, position) {
+var doTable = function(doc, columns, rows, opts, ypos, position, wrap) {
   var x = opts.margins.left
     , left = x
     , y = ypos
@@ -1101,12 +1114,29 @@ var doTable = function(doc, columns, rows, opts, ypos, position) {
     .fontSize(9);
   x = left;
   _.each(rows, function(row) {
-    _.each(row, function(fld, idx) {
+    var linesUsed = 1;
+    _.each(row, function(val, idx) {
+      var currColWidth = colWidth[columns[idx]]
+        , textWidth = doc.widthOfString(val)
+        , colStart
+        ;
       if (idx > 0) x += colWidth[columns[idx-1]];
-      doc.text(fld, x, y);
+      colStart = x;
+      if (wrap) {
+        // --------------------------------------------------------
+        // Will wrap in column automatically but estimate how many
+        // lines so that the separator can be placed accordingly.
+        // --------------------------------------------------------
+        if (textWidth > currColWidth) {
+          linesUsed = Math.ceil(textWidth / currColWidth);
+        }
+        doc.text(val, x, y, {width: currColWidth});
+      } else {
+        doc.text(val, x, y);
+      }
     });
     x = left;
-    y += 10;      // Move down a line.
+    y += linesUsed * 10;      // Move down a line.
     doSep(doc, opts, y, greyLightColor, position);
     y += 10;
   });
@@ -1179,14 +1209,14 @@ var doPage1 = function doPage1(doc, data, opts) {
   y = doQuestionnaire(doc, data, opts, y);
   y = doMidwifeInterview(doc, data, opts, y);
   y = doPregnancyHistory(doc, data, opts, y);
-  doFooter(doc, 'Summary Report', 'Page 1', moment().format('MMM DD, YYYY h:mm a'), opts);
+  doFooter(doc, 'Summary Report', 'Page 1 of 3', moment().format('MMM DD, YYYY h:mm a'), opts);
 };
 
 
 /* --------------------------------------------------------
  * doPage2()
  *
- * Write out the information for the first page.
+ * Write out the information for the second page.
  *
  * param      doc     - the document
  * param      data    - the data
@@ -1204,12 +1234,33 @@ var doPage2 = function doPage2(doc, data, opts) {
   y1 = doMedications(doc, data, opts, y);   // left side
   y2 = doVaccinations(doc, data, opts, y);  // right side
   y = y1 > y2? y1: y2;
-  y = doPrenatalExams(doc, data, opts, y);
-  y = doPrenatalNotes(doc, data, opts, y);
   y1 = doReferrals(doc, data, opts, y);     // left side
   y2 = doDoctorDentist(doc, data, opts, y); // right side
 
-  doFooter(doc, 'Summary Report', 'Page 2', moment().format('MMM DD, YYYY h:mm a'), opts);
+  doFooter(doc, 'Summary Report', 'Page 2 of 3', moment().format('MMM DD, YYYY h:mm a'), opts);
+};
+
+/* --------------------------------------------------------
+ * doPage3()
+ *
+ * Write out the information for the third page.
+ *
+ * param      doc     - the document
+ * param      data    - the data
+ * param      opts    - options
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPage3 = function doPage2(doc, data, opts) {
+  var y = 85
+    , y1
+    , y2
+    ;
+  doc.addPage();
+  doPageCommon(doc, data, opts);
+  y = doPrenatalExams(doc, data, opts, y);
+  y = doPrenatalNotes(doc, data, opts, y);
+
+  doFooter(doc, 'Summary Report', 'Page 3 of 3', moment().format('MMM DD, YYYY h:mm a'), opts);
 };
 
 /* --------------------------------------------------------
@@ -1229,6 +1280,7 @@ var doPages = function(doc, data, opts) {
 
   doPage1(doc, data, opts);
   doPage2(doc, data, opts);
+  doPage3(doc, data, opts);
 };
 
 
@@ -1287,6 +1339,7 @@ var getData = function(id) {
       .then(function() {
         return new PrenatalExams().query(function(qb) {
           qb.where('pregnancy_id', '=', data.pregnancy.id);
+          qb.orderBy('prenatalExam.date');
         })
         .fetch();
       })
