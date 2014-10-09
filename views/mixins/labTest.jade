@@ -47,7 +47,7 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
           - if (values && (min || max))
             div(class=halfWidthSm)
               +select('form-control', fldNameSelect, tabIndex++, values)
-          - else
+          - else if (values)
             div(class=halfWidth)
               +select('form-control', fldNameSelect, tabIndex++, values)
           - if (isText)
