@@ -29,6 +29,7 @@ module.exports = function(grunt) {
                 , 'bower_components/moment/min/moment.min.js'
                 , 'bower_components/flot/jquery.flot.js'
                 , 'bower_components/flot/jquery.flot.categories.js'
+                , 'bower_components/jquery.are-you-sure/jquery.are-you-sure.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
                 , 'client/js/mercy.js'

@@ -5,7 +5,7 @@ block search
 
   div.userEditBox
     - var action = '/user/' + editUser.id + '/update';
-      form(role='form', name='userForm', action=action, method='post')
+      form(class='dirty-check', role='form', name='userForm', action=action, method='post')
 
         div.form-group
           span= 'Id: ' + editUser.id
@@ -46,7 +46,7 @@ block search
       p= gettext('Check the roles that this user should belong to and press Save Role Assignments.')
 
     - var action = '/user/' + editUser.id + '/role/changeroles';
-      form(role='form', name='userForm', action=action, method='post')
+      form(class='dirty-check', role='form', name='userForm', action=action, method='post')
 
         div.form-group
           if roles

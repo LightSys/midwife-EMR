@@ -149,7 +149,7 @@ block labs
       div.row
         //- Doctor/Dentist consult dates
         div(class='col-md-12 panel panel-default spacing')
-          form(role='form', name='docDenConsultDates', action='/pregnancy/' + rec.id + '/doctordentist', method='post')
+          form(class='dirty-check', role='form', name='docDenConsultDates', action='/pregnancy/' + rec.id + '/doctordentist', method='post')
             div.row
               div(class='col-md-6')
                 label= gettext('Doctor consult date')

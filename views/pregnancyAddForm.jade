@@ -4,7 +4,7 @@ block pregnancyAdd
   +titleMsg(title)
 
   div.formBoxLarge
-    form(role='form', name='pregnancyForm', action='/pregnancy', method='post')
+    form(class='dirty-check', role='form', name='pregnancyForm', action='/pregnancy', method='post')
       div.row
         div(class='form-group col-sm-4')
           span= gettext('Last name')

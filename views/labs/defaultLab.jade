@@ -24,7 +24,7 @@ block defaultLab
   -   isUpdate = true;
   - }
   - var result = result2 = null;
-  form(id='addEditLabForm', role='form', name='addEditLabForm', action=labsPath, method='post')
+  form(id='addEditLabForm', class='dirty-check', role='form', name='addEditLabForm', action=labsPath, method='post')
     div.row
       div(class='col-md-3')
         label= gettext('Date of these tests')

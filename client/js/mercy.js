@@ -115,6 +115,7 @@ $(function() {
       };
     };
 
+
     // --------------------------------------------------------
     // Respond to changes in these forms.
     // --------------------------------------------------------
@@ -125,6 +126,26 @@ $(function() {
     disableOnChange('#prenatalForm');  // Prenatal Add prenatal exam button
     visibleOnChange('#prenatalForm');  // Prenatal Add explanation text
 
+
+    // --------------------------------------------------------
+    // Warn user if tries to navigate away with unsaved changes.
+    // Uses jQuery.areYouSure plugin. Only affects forms that
+    // have class 'dirty-check' in them.
+    // --------------------------------------------------------
+    $('form.dirty-check').areYouSure();
+
+    // --------------------------------------------------------
+    // Provide a visual clue to the user when the form data has
+    // changed so that the user knows there are pending changes.
+    // --------------------------------------------------------
+    $('form.dirty-check').on('dirty.areYouSure', function() {
+      $('#dirty-notice').show();
+      $('#dirty-notice-tablet').show();
+    });
+    $('form.dirty-check').on('clean.areYouSure', function() {
+      $('#dirty-notice').hide();
+      $('#dirty-notice-tablet').hide();
+    });
 
     // --------------------------------------------------------
     // Handle clicks in tables by retrieving a child page.

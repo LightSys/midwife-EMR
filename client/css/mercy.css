@@ -129,5 +129,24 @@ h4.charts {
   height: 300px;
 }
 
-
+span#dirty-notice {
+  display: none;
+  position: fixed;
+  top: 41px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1110;
+  background-color: white;
+  padding: 2px 5px;
+}
+span#dirty-notice-tablet {
+  display: none;
+  position: fixed;
+  top: 41px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1110;
+  background-color: white;
+  padding: 2px 5px;
+}
 

@@ -1131,6 +1131,7 @@ var doTable = function(doc, columns, rows, opts, ypos, position, wrap) {
       , maxLinesUsed = linesUsed
       ;
     _.each(row, function(val, idx) {
+      if (_.isNull(val)) val = '';
       var currColWidth = colWidth[columns[idx]]
         , textWidth = doc.widthOfString(val)
         , colStart

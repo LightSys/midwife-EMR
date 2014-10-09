@@ -24,7 +24,7 @@ block referralAddEditForm
   -   referralDeletePath = '/pregnancy/' + rec.id + '/referral/' + referralRec.id + '/delete';
   - }
   div
-    form(id=formId, role='form', name=formName, action=formAction, method='post')
+    form(id=formId, class='dirty-check', role='form', name=formName, action=formAction, method='post')
       div.row
         div(class='col-md-4')
           label= gettext('Date of the referral')

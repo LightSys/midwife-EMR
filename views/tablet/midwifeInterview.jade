@@ -6,7 +6,7 @@ block midwifeInterview
   +patientWell(rec)
 
   - var pregHistAddFormPath = '/pregnancy/' + rec.id + '/preghistory';
-  form(id='midwifeForm', role='form', name='midwifeInterview', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
+  form(id='midwifeForm', class='dirty-check', role='form', name='midwifeInterview', action='/pregnancy/' + rec.id + '/midwifeinterview', method='post')
     div.row
       div(class='form-group col-xs-4')
         label= gettext('Choose at least one:')

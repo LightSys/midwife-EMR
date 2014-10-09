@@ -5,7 +5,7 @@ block pregnancyQuestionnaire
   +pregnancyTab('quesEdit')
   +patientWell(rec)
 
-  form(role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
+  form(class='dirty-check', role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
       div(class='form-group col-xs-6')
         p(class='text-primary lead')= gettext('Present complaints')
