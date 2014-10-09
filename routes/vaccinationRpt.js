@@ -428,7 +428,8 @@ var getData = function(dateFrom, dateTo) {
         return new PrenatalExams().query()
           .column('prenatalExam.id', 'prenatalExam.date', 'prenatalExam.weight',
               'prenatalExam.systolic', 'prenatalExam.diastolic',
-              'prenatalExam.cr', 'prenatalExam.pregnancy_id')
+              'prenatalExam.cr', 'prenatalExam.respiratoryRate',
+              'prenatalExam.temperature', 'prenatalExam.pregnancy_id')
           .innerJoin('pregnancy', 'pregnancy.id', 'prenatalExam.pregnancy_id')
           .whereIn('prenatalExam.pregnancy_id', pregIds)
           .orderByRaw('prenatalExam.pregnancy_id ASC, prenatalExam.date ASC')
@@ -643,6 +644,10 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   }
 
   // RR - this is blank since we do not record it.
+  if (pe) {
+    tmpStr = pe.respiratoryRate || '';
+    centerInCol(doc, tmpStr, colPos[11], colPos[12], textY);
+  }
 
   // U/A WBC
   if (data.labTestResults.length > 0) {
@@ -665,6 +670,10 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   }
 
   // Temp - this is blank since we do not record it.
+  if (pe) {
+    tmpStr = pe.temperature || '';
+    centerInCol(doc, tmpStr, colPos[14], colPos[15], textY);
+  }
 
   // Blood Type
   if (data.labTestResults.length > 0) {
