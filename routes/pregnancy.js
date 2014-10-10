@@ -425,6 +425,7 @@ var getCommonFormData = function(req, addData) {
    , at   // attendant
    , rc   // riskCodes
    , pb   // placeOfBirth
+   , mb   // motherBabyBook
    ;
 
   // --------------------------------------------------------
@@ -464,6 +465,13 @@ var getCommonFormData = function(req, addData) {
     if (path === cfg.path.pregnancyQuesEdit) {
       us = adjustSelectData(yesNoUnanswered, req.paramPregnancy.useIodizedSalt);
       if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
+    }
+
+    // Midwife Interview page.
+    if (path === cfg.path.pregnancyMidwifeEdit) {
+      if (req.paramPregnancy.mbBook === null) mb = adjustSelectData(yesNoUnanswered, '');
+      if (req.paramPregnancy.mbBook === 1) mb = adjustSelectData(yesNoUnanswered, 'Y');
+      if (req.paramPregnancy.mbBook === 0) mb = adjustSelectData(yesNoUnanswered, 'N');
     }
 
     // Add or edit pregnancy histories.
@@ -508,6 +516,7 @@ var getCommonFormData = function(req, addData) {
     , placeOfBirth: pb
     , customFields: req.paramPregnancy.customField
     , customFieldTypes: customFieldTypes
+    , mbBook: mb
   });
 };
 
@@ -655,7 +664,6 @@ var getEditFormData = function(req, addData) {
         req.paramPregnancy? req.paramPregnancy.clientIncomePeriod: void(0))
     , partnerInc = adjustSelectData(incomePeriod,
         req.paramPregnancy? req.paramPregnancy.partnerIncomePeriod: void(0))
-    , mbb = adjustSelectData(yesNoUnanswered, '')
     , cf = req.paramPregnancy? req.paramPregnancy.customField: void(0)
     , schRec
     , priRec
@@ -692,12 +700,6 @@ var getEditFormData = function(req, addData) {
     priRec = _.find(req.paramPregnancy.priority, function(obj) {
       return obj.eType === prenatalCheckInId;
     });
-
-    // --------------------------------------------------------
-    // Set the value for the Mother Baby Book.
-    // --------------------------------------------------------
-    if (req.paramPregnancy.mbBook === 1) mbb = adjustSelectData(yesNoUnanswered, 'Y');
-    if (req.paramPregnancy.mbBook === 0) mbb = adjustSelectData(yesNoUnanswered, 'N');
   }
 
   return _.extend(addData, {
@@ -706,7 +708,6 @@ var getEditFormData = function(req, addData) {
     , marital: ms
     , religion: rel
     , education: edu
-    , mbBook: mbb
     , partnerEducation: partEdu
     , clientIncomePeriod: clientInc
     , partnerIncomePeriod: partnerInc
@@ -783,13 +784,6 @@ var generalAddSave = function(req, res) {
   if (prenatalLoc && prenatalDay) {
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
   }
-
-  // --------------------------------------------------------
-  // If unselected, don't translate that to 'No'.
-  // --------------------------------------------------------
-  if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
-  if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
-  if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
   // --------------------------------------------------------
   // Validate the fields.
@@ -1066,13 +1060,6 @@ var generalEditSave = function(req, res) {
     if (priorityBarcode) {
       priorityBarcode = parseInt(priorityBarcode, 10) || null;
     }
-
-    // --------------------------------------------------------
-    // If unselected, don't translate that to 'No'.
-    // --------------------------------------------------------
-    if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
-    if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
-    if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
     Pregnancy.checkFields(pregFlds)
       .then(function(flds) {
@@ -1382,6 +1369,13 @@ var midwifeSave = function(req, res) {
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
     pregFlds = _.extend(defaultFlds, _.omit(req.body, ['_csrf']));
+
+    // --------------------------------------------------------
+    // If unselected, don't translate that to 'No'.
+    // --------------------------------------------------------
+    if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
+    if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
+    if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
     Pregnancy.checkMidwifeInterviewFields(pregFlds).then(function(flds) {
       Pregnancy.forge({id: pregFlds.id})

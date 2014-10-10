@@ -24,38 +24,44 @@ block midwifeInterview
           label= gettext('None of the above')
             input(type='checkbox', name='noneOfAbove', tabindex="4", value=1, checked=rec.noneOfAbove==true)
 
-      div(class='form-group col-xs-2')
-        span= gettext('Age of menarche?')
-        input(class='form-control input-lg', type='number', tabindex="5", autocomplete="off", name='ageOfMenarche', value=rec.patient.ageOfMenarche)
+      div(class='form-group col-xs-3')
+        div.row
+          div(class='form-group col-xs-12')
+            span= gettext('Age of menarche?')
+            input(class='form-control input-lg', type='number', tabindex="5", autocomplete="off", name='ageOfMenarche', value=rec.patient.ageOfMenarche)
+        div.row
+          div(class='form-group col-xs-12')
+            span= gettext('Mother/Baby Book?')
+            +select('form-control input-lg', 'mbBook', 6, value=mbBook)
 
-      div(class='form-group col-xs-6')
+      div(class='form-group col-xs-5')
         span= gettext('Comments')
-        textarea(class='form-control input-lg', rows='6', tabindex="6", spellcheck="off", autocomplete="off", wrap='soft', name='note')= rec.note
+        textarea(class='form-control input-lg', rows='6', tabindex="7", spellcheck="off", autocomplete="off", wrap='soft', name='note')= rec.note
 
     div.row
       div(class='form-group col-xs-2')
         label= gettext('Grav')
-          input(class='form-control input-lg', type='number', tabindex="7", autocomplete="off", name='gravida', value=rec.gravida)
+          input(class='form-control input-lg', type='number', tabindex="8", autocomplete="off", name='gravida', value=rec.gravida)
       div(class='form-group col-xs-2 col-xs-offset-1')
         label= gettext('Para')
-          input(class='form-control input-lg', type='number', tabindex="8", autocomplete="off", name='para', value=rec.para)
+          input(class='form-control input-lg', type='number', tabindex="9", autocomplete="off", name='para', value=rec.para)
       div(class='form-group col-xs-2 col-xs-offset-1')
         label= gettext('A/M')
-          input(class='form-control input-lg', type='number', tabindex="11", autocomplete="off", name='abortions', value=rec.abortions)
+          input(class='form-control input-lg', type='number', tabindex="12", autocomplete="off", name='abortions', value=rec.abortions)
       div(class='form-group col-xs-2')
         label= gettext('Living')
-          input(class='form-control input-lg', type='number', tabindex="12", autocomplete="off", name='living', value=rec.living)
+          input(class='form-control input-lg', type='number', tabindex="13", autocomplete="off", name='living', value=rec.living)
       div(class='form-group col-xs-2')
         label= gettext('StillBirth')
-          input(class='form-control input-lg', type='number', tabindex="13", autocomplete="off", name='stillBirths', value=rec.stillBirths)
+          input(class='form-control input-lg', type='number', tabindex="14", autocomplete="off", name='stillBirths', value=rec.stillBirths)
 
     div.row
       div(class='form-group col-xs-2 col-xs-offset-2')
         label= gettext('Term')
-          input(class='form-control input-lg', type='number', tabindex="9", autocomplete="off", name='term', value=rec.term)
+          input(class='form-control input-lg', type='number', tabindex="10", autocomplete="off", name='term', value=rec.term)
       div(class='form-group col-xs-2')
         label= gettext('PreTerm')
-          input(class='form-control input-lg', type='number', tabindex="10", autocomplete="off", name='preterm', value=rec.preterm)
+          input(class='form-control input-lg', type='number', tabindex="11", autocomplete="off", name='preterm', value=rec.preterm)
 
     div.row
       div(class='col-xs-12')
