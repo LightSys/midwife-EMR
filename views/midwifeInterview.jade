@@ -29,9 +29,6 @@ block midwifeInterview
           div(class='form-group col-md-12')
             span= gettext('Age of menarche?')
             input(class='form-control', type='number', tabindex="5", autocomplete="off", name='ageOfMenarche', value=rec.patient.ageOfMenarche)
-          div(class='form-group col-md-12')
-            span= gettext('Mother/Baby Book?')
-            +select('form-control input-lg', 'mbBook', 6, mbBook)
 
       div(class='form-group col-md-6')
         span= gettext('Comments')

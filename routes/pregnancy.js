@@ -428,8 +428,8 @@ var getCommonFormData = function(req, addData) {
    , at   // attendant
    , rc   // riskCodes
    , pb   // placeOfBirth
-   , mb   // motherBabyBook
    , rf   // referrals datalist
+   , mb   // motherBabyBook
    ;
 
   // --------------------------------------------------------
@@ -480,13 +480,6 @@ var getCommonFormData = function(req, addData) {
       if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
     }
 
-    // Midwife Interview page.
-    if (path === cfg.path.pregnancyMidwifeEdit) {
-      if (req.paramPregnancy.mbBook === null) mb = adjustSelectData(yesNoUnanswered, '');
-      if (req.paramPregnancy.mbBook === 1) mb = adjustSelectData(yesNoUnanswered, 'Y');
-      if (req.paramPregnancy.mbBook === 0) mb = adjustSelectData(yesNoUnanswered, 'N');
-    }
-
     // Add or edit pregnancy histories.
     if (path === cfg.path.pregnancyHistoryAdd) {
       fg = adjustSelectData(wksMths, void(0));
@@ -529,7 +522,6 @@ var getCommonFormData = function(req, addData) {
     , placeOfBirth: pb
     , customFields: req.paramPregnancy.customField
     , customFieldTypes: customFieldTypes
-    , mbBook: mb
     , referralsDatalist: rf
   });
 };
@@ -715,6 +707,13 @@ var getEditFormData = function(req, addData) {
     priRec = _.find(req.paramPregnancy.priority, function(obj) {
       return obj.eType === prenatalCheckInId;
     });
+
+    // --------------------------------------------------------
+    // Mother/Baby Book.
+    // --------------------------------------------------------
+    if (req.paramPregnancy.mbBook === null) mb = adjustSelectData(yesNoUnanswered, '');
+    if (req.paramPregnancy.mbBook === 1) mb = adjustSelectData(yesNoUnanswered, 'Y');
+    if (req.paramPregnancy.mbBook === 0) mb = adjustSelectData(yesNoUnanswered, 'N');
   }
 
   return _.extend(addData, {
@@ -733,6 +732,7 @@ var getEditFormData = function(req, addData) {
     , customFields: cf
     , customFieldTypes: customFieldTypes
     , defaultCity: defaultCity
+    , mbBook: mb
   });
 };
 
@@ -800,6 +800,13 @@ var generalAddSave = function(req, res) {
   if (prenatalLoc && prenatalDay) {
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
   }
+
+  // --------------------------------------------------------
+  // If unselected, don't translate that to 'No'.
+  // --------------------------------------------------------
+  if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
+  if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
+  if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
   // --------------------------------------------------------
   // Validate the fields.
@@ -1069,6 +1076,13 @@ var generalEditSave = function(req, res) {
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc,
       day: prenatalDay, pregnancy_id: req.paramPregnancy.id};
     if (scheduleId !== null) schFlds.id = scheduleId;
+
+    // --------------------------------------------------------
+    // If unselected, don't translate that to 'No'.
+    // --------------------------------------------------------
+    if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
+    if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
+    if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
     // --------------------------------------------------------
     // Convert to a number.
@@ -1385,13 +1399,6 @@ var midwifeSave = function(req, res) {
     // Allow 'unchecking' a box by providing a default of off.
     // --------------------------------------------------------
     pregFlds = _.extend(defaultFlds, _.omit(req.body, ['_csrf']));
-
-    // --------------------------------------------------------
-    // If unselected, don't translate that to 'No'.
-    // --------------------------------------------------------
-    if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
-    if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
-    if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
     Pregnancy.checkMidwifeInterviewFields(pregFlds).then(function(flds) {
       Pregnancy.forge({id: pregFlds.id})

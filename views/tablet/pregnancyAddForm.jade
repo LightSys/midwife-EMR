@@ -112,6 +112,9 @@ block pregnancyAdd
         div(class='form-group col-xs-4')
           span= gettext('Prenatal Location')
           +select('form-control input-lg', 'prenatalLocation', 27, value=prenatalLocation)
+        div(class='form-group col-xs-4')
+          span= gettext('Mother/Baby Book?')
+          +select('form-control input-lg', 'mbBook', 28, mbBook)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
