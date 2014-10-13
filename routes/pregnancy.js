@@ -1710,9 +1710,10 @@ var labsForm = function(req, res) {
           // the 3 date fields: vacData, vacMonth, and vacYear.
           if (vac.vacDate === null) {
             if (vac.vacMonth && vac.vacYear) {
-              vac.sortDate = moment([vac.vacYear, vac.vacMonth]).format('YYYYMMDD');
+              // Moment expects month as 0 - 11.
+              vac.sortDate = moment([vac.vacYear, vac.vacMonth - 1]).format('YYYYMM');
             } else if (vac.vacYear) {
-              vac.sortDate = moment([vac.vacYear]).format('YYYYMMDD');
+              vac.sortDate = moment([vac.vacYear]).format('YYYY');
             } else {
               // Invalid record.
               vac.sortDate = '0';
