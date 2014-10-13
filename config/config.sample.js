@@ -46,6 +46,11 @@ cfg.search = {};
 cfg.search.rowsPerPage = 20;
 
 // --------------------------------------------------------
+// Client (patient) settings.
+// --------------------------------------------------------
+cfg.client.defaultCity = '';    // Optional default for new patient entry.
+
+// --------------------------------------------------------
 // Host settings.
 // --------------------------------------------------------
 cfg.host.port = 8000;
