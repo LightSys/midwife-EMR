@@ -100,6 +100,13 @@ var prenatalExamSave = function(req, res) {
       saveOpts.method = 'insert';
     }
 
+    // --------------------------------------------------------
+    // Store data in the position field all capitals.
+    // --------------------------------------------------------
+    if (flds.pos && flds.pos.length > 0) {
+      flds.pos = flds.pos.toUpperCase();
+    }
+
     preRec = new PrenatalExam(flds);
     preRec
       .setUpdatedBy(req.session.user.id)
