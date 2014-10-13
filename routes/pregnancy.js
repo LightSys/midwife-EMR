@@ -669,6 +669,7 @@ var getEditFormData = function(req, addData) {
     , priRec
     , prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
     , prenatalLoc = _.map(location, function(obj) {return _.clone(obj);})
+    , defaultCity = cfg.client.defaultCity.length > 0? cfg.client.defaultCity: '';
     ;
 
   // --------------------------------------------------------
@@ -717,6 +718,7 @@ var getEditFormData = function(req, addData) {
     , rec: req.paramPregnancy
     , customFields: cf
     , customFieldTypes: customFieldTypes
+    , defaultCity: defaultCity
   });
 };
 
