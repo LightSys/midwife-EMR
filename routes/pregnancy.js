@@ -1690,10 +1690,24 @@ var labsForm = function(req, res) {
       .then(function(vacs) {
         var vacList = [];
         _.each(vacs, function(vac) {
-          vac.vacDate = moment(vac.vacDate).format('YYYY-MM-DD');
+          // Create a virtual field in order to sort the records by date using
+          // the 3 date fields: vacData, vacMonth, and vacYear.
+          if (vac.vacDate === null) {
+            if (vac.vacMonth && vac.vacYear) {
+              vac.sortDate = moment([vac.vacYear, vac.vacMonth]).format('YYYYMMDD');
+            } else if (vac.vacYear) {
+              vac.sortDate = moment([vac.vacYear]).format('YYYYMMDD');
+            } else {
+              // Invalid record.
+              vac.sortDate = '0';
+            }
+          } else {
+            vac.vacDate = moment(vac.vacDate).format('YYYY-MM-DD');
+            vac.sortDate = moment(vac.vacDate).format('YYYYMMDD');
+          }
           vacList.push(vac);
         });
-        vacList = _.sortBy(vacList, 'id');
+        vacList = _.sortBy(vacList, 'sortDate');
         vaccinations = vacList;
       })
       // Get the medications

@@ -152,8 +152,17 @@ var vaccinationSave = function(req, res) {
       .setSupervisor(supervisor)
       .save()
       .then(function(model) {
-        var path = cfg.path.pregnancyLabsEdit
+        var path
           ;
+        if (flds.id) {
+          // Redirect back to the main labs page if we are editing a pre-existing
+          // record.
+          path = cfg.path.pregnancyLabsEdit;
+        } else {
+          // Redirect to the next empty vaccination form for easily entering
+          // multiple vaccination records.
+          path = cfg.path.vaccinationAdd;
+        }
         path = path.replace(/:id/, flds.pregnancy_id);
         req.flash('info', req.gettext('Vaccination was saved.'));
         res.redirect(path);
