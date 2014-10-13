@@ -176,7 +176,9 @@ VALUES
   ('placeOfBirth', 'SPMC', 'SPMC', 0, 1, NOW()),
   ('placeOfBirth', 'Hospital', 'Hospital', 0, 1, NOW()),
   ('placeOfBirth', 'Lying-in Clinic', 'Lying-in Clinic', 0, 1, NOW()),
-  ('placeOfBirth', 'Other', 'Other', 0, 1, NOW())
+  ('placeOfBirth', 'Other', 'Other', 0, 1, NOW()),
+  ('referrals', 'Doctor/Dentist', 'Doctor/Dentist', 0, 1, NOW()),
+  ('referrals', 'Routine Labs', 'Routine Labs', 0, 1, NOW())
 ;
 
 SELECT 'vaccinationType' AS 'Loading' FROM DUAL;

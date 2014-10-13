@@ -36,7 +36,8 @@ block referralAddEditForm
       div.row
         div(class='col-xs-4')
           label= gettext('Type of referral')
-          input(id='refReferral', class='form-control', type='text', tabindex='2', autofocus, autocomplete='on', name='referral', value=referral)
+          input(id='refReferral', list='referrals', class='form-control', type='text', tabindex='2', autofocus, autocomplete='on', name='referral', value=referral)
+          +datalist('referrals', referralsDatalist)
       div.row
         div(class='col-xs-4')
           label= gettext('Reason')
