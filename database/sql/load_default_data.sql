@@ -132,8 +132,11 @@ VALUES
   ('placeOfBirth', 'Hospital', 'Hospital', 0, 1, NOW()),
   ('placeOfBirth', 'Lying-in Clinic', 'Lying-in Clinic', 0, 1, NOW()),
   ('placeOfBirth', 'Other', 'Other', 0, 1, NOW()),
-  ('referrals', 'Doctor/Dentist', 'Doctor/Dentist', 0, 1, NOW()),
-  ('referrals', 'Routine Labs', 'Routine Labs', 0, 1, NOW())
+  ('referrals', 'Dr/Dentist', 'Dr/Dentist', 0, 1, NOW()),
+  ('referrals', 'U/A', 'U/A', 0, 1, NOW()),
+  ('referrals', 'Hgb', 'Hgb', 0, 1, NOW()),
+  ('referrals', 'U/A & Hgb', 'U/A & Hgb', 0, 1, NOW()),
+  ('referrals', 'All labs', 'All labs', 0, 1, NOW())
 ;
 
 SELECT 'vaccinationType' AS 'Loading' FROM DUAL;
