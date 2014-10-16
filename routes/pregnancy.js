@@ -429,7 +429,6 @@ var getCommonFormData = function(req, addData) {
    , rc   // riskCodes
    , pb   // placeOfBirth
    , rf   // referrals datalist
-   , mb   // motherBabyBook
    ;
 
   // --------------------------------------------------------
@@ -675,7 +674,8 @@ var getEditFormData = function(req, addData) {
     , priRec
     , prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
     , prenatalLoc = _.map(location, function(obj) {return _.clone(obj);})
-    , defaultCity = cfg.client.defaultCity.length > 0? cfg.client.defaultCity: '';
+    , defaultCity = cfg.client.defaultCity.length > 0? cfg.client.defaultCity: ''
+    , mb = adjustSelectData(yesNoUnanswered, '')
     ;
 
   // --------------------------------------------------------
