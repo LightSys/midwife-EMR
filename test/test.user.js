@@ -3,6 +3,8 @@
  * test.user.js
  *
  * BDD testing of the routes used to manage users and roles.
+ *
+ * Note: set environmental variable NODE_ENV_VERBOSE=1 to see extra debugging info.
  * ------------------------------------------------------------------------------- 
  */
 

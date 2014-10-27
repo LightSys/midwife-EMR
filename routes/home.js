@@ -96,7 +96,10 @@ var getRecentPrenatalHistory = function(cb) {
         })
         .then(function() {
           // Distribute results to all worker processes.
-          process.send({cmd: prenatalRecentHistory, stats: stats});
+          //
+          // NOTE: no idea why I need this check but sometimes the
+          // send() method is not there.
+          if (process.send) process.send({cmd: prenatalRecentHistory, stats: stats});
           return cb(null, stats);
         });
 
@@ -139,7 +142,10 @@ var getPrenatalHistoryByWeek = function(numWeeks, cb) {
         })
         .then(function() {
           // Distribute results to all worker processes.
-          process.send({cmd: cacheKey, stats: stats});
+          //
+          // NOTE: no idea why I need this check but sometimes the
+          // send() method is not there.
+          if (process.send) process.send({cmd: cacheKey, stats: stats});
           return cb(null, stats);
         });
 
@@ -206,7 +212,10 @@ var getPrenatalHistory = function(cb) {
           // Distribute results to all workers, and return results to caller.
           // Stats are saved in the node-cache instance longCache when
           // the message is received by each worker, including this one.
-          process.send({cmd: prenatalHistory, stats: stats});
+          //
+          // NOTE: no idea why I need this check but sometimes the
+          // send() method is not there.
+          if (process.send) process.send({cmd: prenatalHistory, stats: stats});
           return cb(null, stats);
         });
     } else {

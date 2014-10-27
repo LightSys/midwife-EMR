@@ -4,6 +4,8 @@
  *
  * Testing of the util.js module at the top level of the application (not the
  * utils.js in the test folder).
+ *
+ * Note: set environmental variable NODE_ENV_VERBOSE=1 to see extra debugging info.
  * ------------------------------------------------------------------------------- 
  */
 

@@ -3,6 +3,8 @@
  * test.utils.js
  *
  * Testing of the helper functions we use.
+ *
+ * Note: set environmental variable NODE_ENV_VERBOSE=1 to see extra debugging info.
  * ------------------------------------------------------------------------------- 
  */
 

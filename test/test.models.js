@@ -3,6 +3,8 @@
  * test.models.js
  *
  * Testing of the models and their relationships.
+ *
+ * Note: set environmental variable NODE_ENV_VERBOSE=1 to see extra debugging info.
  * -------------------------------------------------------------------------------
  */
 

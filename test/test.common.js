@@ -3,6 +3,8 @@
  * test.common.js
  *
  * BDD testing of the routes available to all roles.
+ *
+ * Note: set environmental variable NODE_ENV_VERBOSE=1 to see extra debugging info.
  * -------------------------------------------------------------------------------
  */
 
@@ -130,7 +132,7 @@ describe('authenticated', function(done) {
     it('by admin', function(done) {
       var req = request.get('/search');
       admin.attachCookies(req);
-      req.expect(200, done);
+      req.expect(403, done);
     });
 
     it('by guard', function(done) {
@@ -186,7 +188,7 @@ describe('authenticated', function(done) {
         if (err) done(err);
         postInfo.postReq
           .send(postInfo.formData)
-          .expect(200, done);
+          .expect(403, done);
       });
     });
 

@@ -3,6 +3,8 @@
  * test.pregnancy.js
  *
  * BDD testing of the routes that manage pregnancies.
+ *
+ * Note: set environmental variable NODE_ENV_VERBOSE=1 to see extra debugging info.
  * -------------------------------------------------------------------------------
  */
 

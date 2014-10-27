@@ -3,6 +3,8 @@
  * test.attending.js
  *
  * BDD testing of the routes pertaining to attending.
+ *
+ * Note: set environmental variable NODE_ENV_VERBOSE=1 to see extra debugging info.
  * -------------------------------------------------------------------------------
  */
 
