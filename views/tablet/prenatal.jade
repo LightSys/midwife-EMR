@@ -217,10 +217,10 @@ block prenatal
               //- If database has all zeros, will be invalid date.
               - if (returnDate == 'Invalid date') returnDate = '';
               - var bp = pe.systolic + ' / ' + pe.diastolic;
-              - var mvmt = pe.mvmt === 1? 'Y': 'N';
+              - var mvmt = pe.mvmt === 1? 'Y': '';
               - var edema = pe.edema === 'none'? 'None': pe.edema;
-              - var vitamin = pe.vitamin === 1? 'Y': 'N';
-              - var pray = pe.pray === 1? 'Y': 'N';
+              - var vitamin = pe.vitamin === 1? 'Y': '';
+              - var pray = pe.pray === 1? 'Y': '';
               tr(class='prenatalExamRow', id=prenatalExamId)
                 td= peDate
                 td= pe.weight

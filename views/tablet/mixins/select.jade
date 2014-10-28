@@ -1,5 +1,5 @@
-mixin select(classes, fieldName, tabindex, data)
-  select(class=classes, name=fieldName, tabindex=tabindex)
+mixin select(classes, fieldName, tabindex, data, readonly)
+  select(class=classes, name=fieldName, tabindex=tabindex, disabled=readonly)
     each rec in data
       option(value=rec.selectKey selected=rec.selected?true:false)= rec.label
 
