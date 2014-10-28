@@ -44,6 +44,7 @@ var _ = require('underscore')
   , CustomFields = require('../models').CustomFields
   , CustomFieldType = require('../models').CustomFieldType
   , CustomFieldTypes = require('../models').CustomFieldTypes
+  , RoFieldsByRole = require('../models').RoFieldsByRole
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -1448,9 +1449,22 @@ var midwifeSave = function(req, res) {
  * -------------------------------------------------------- */
 var prenatalForm = function(req, res) {
   var data = getCommonFormData(req, {title: req.gettext('Prenatal')})
+    , role = req.session.roleInfo.roleNames[0]
+    , table1 = 'pregnancy'
+    , table2 = 'risk'
     ;
   if (req.paramPregnancy) {
-    res.render('prenatal', data);
+    RoFieldsByRole
+      .getTableFieldsByRole(role, table1)
+      .then(function(map) {
+        data.readonlyFields = map;
+        RoFieldsByRole
+          .getTableFieldsByRole(role, table2)
+          .then(function(map) {
+            _.extend(data.readonlyFields, map);
+            res.render('prenatal', data);
+          });
+      });
   } else {
     // Pregnancy not found.
     res.redirect(cfg.path.search);
@@ -1506,6 +1520,7 @@ var prenatalSave = function(req, res) {
         , G5: '0'
         , G6: '0'
       }
+    , role = req.session.roleInfo.roleNames[0]
     ;
 
   if (req.paramPregnancy &&
@@ -1531,7 +1546,9 @@ var prenatalSave = function(req, res) {
     // leaves the lmp field, but if <Enter> is pressed while
     // in the lmp field, this will pick it up.
     // --------------------------------------------------------
-    if (pnFlds.edd.length === 0 &&
+    if (pnFlds.edd &&
+        pnFlds.edd.length === 0 &&
+        pnFlds.lmp &&
         pnFlds.lmp.length !== 0 &&
         pnFlds.useAlternateEdd === '0') {
       pnFlds.edd = calcEdd(pnFlds.lmp);
@@ -1578,43 +1595,70 @@ var prenatalSave = function(req, res) {
 
     // --------------------------------------------------------
     // Save the data, the pregnncy record first and then the
-    // risk records.
+    // risk records. But first check to see if the user is
+    // authorized to update all of these fields and eliminate
+    // the fields the user is not authorized for.
     // --------------------------------------------------------
-    Pregnancy.forge({id: pnFlds.id})
-      .fetch().then(function(pregnancy) {
-        pregnancy
-          .setUpdatedBy(req.session.user.id)
-          .setSupervisor(supervisor)
-          .save(pnFlds)
-          .then(function(pregnancy) {
-            // --------------------------------------------------------
-            // Delete the risk records necessary.
-            // --------------------------------------------------------
-            var risksDel = new Risks(riskDeleteRecs);
-            risksDel.invokeThen('destroy', null)
-              .then(function() {
-                // --------------------------------------------------------
-                // Insert the new risk records.
-                // --------------------------------------------------------
-                var risksIns = new Risks(riskInsertRecs);
-                risksIns.invokeThen('setUpdatedBy', [req.session.user.id]).then(function() {
-                  risksIns.invokeThen('setSupervisor', supervisor).then(function() {
-                    risksIns.invokeThen('save').then(function() {
+    RoFieldsByRole
+      .getTableFieldsByRole(role, 'pregnancy')
+      .then(function(roFlds) {
+        RoFieldsByRole
+          .getTableFieldsByRole(role, 'risk')
+          .then(function(roFlds2) {
+            _.each(pnFlds, function(val, key) {
+              if (_.has(roFlds, key)) delete pnFlds[key];
+            });
+            // All risk fields are represented as the riskCode field so if that
+            // is specified as readonly, we do nothing with the records.
+            if (_.has(roFlds2, 'riskCode')) {
+              riskDeleteRecs = [];
+              riskInsertRecs = [];
+            }
+            Pregnancy.forge({id: pnFlds.id})
+              .fetch().then(function(pregnancy) {
+                pregnancy
+                  .setUpdatedBy(req.session.user.id)
+                  .setSupervisor(supervisor)
+                  .save(pnFlds)
+                  .then(function(pregnancy) {
+                    var risksDel
+                      ;
+                    // --------------------------------------------------------
+                    // Delete the risk records necessary.
+                    // --------------------------------------------------------
+                    if (riskDeleteRecs.length > 0 || riskInsertRecs.length > 0) {
+                      risksDel = new Risks(riskDeleteRecs);
+                      risksDel.invokeThen('destroy', null)
+                        .then(function() {
+                          // --------------------------------------------------------
+                          // Insert the new risk records.
+                          // --------------------------------------------------------
+                          var risksIns = new Risks(riskInsertRecs);
+                          risksIns.invokeThen('setUpdatedBy', [req.session.user.id]).then(function() {
+                            risksIns.invokeThen('setSupervisor', supervisor).then(function() {
+                              risksIns.invokeThen('save').then(function() {
+                                req.flash('info', req.gettext('Pregnancy was updated.'));
+                                res.redirect(cfg.path.pregnancyPrenatalEdit.replace(/:id/, pregnancy.id));
+                              });
+                            });
+                          });
+                        });
+                    } else {
+                      // No risk records to change.
                       req.flash('info', req.gettext('Pregnancy was updated.'));
                       res.redirect(cfg.path.pregnancyPrenatalEdit.replace(/:id/, pregnancy.id));
-                    });
+                    }
+                  })
+                  .caught(function(err) {
+                    logError(err);
+                    res.redirect(cfg.path.search);
                   });
-                });
+              })
+              .caught(function(err) {
+                logError(err);
+                res.redirect(cfg.path.search);
               });
-          })
-          .caught(function(err) {
-            logError(err);
-            res.redirect(cfg.path.search);
           });
-      })
-      .caught(function(err) {
-        logError(err);
-        res.redirect(cfg.path.search);
       });
   } else {
     logError('Error in update of prenatal information: pregnancy not found.');

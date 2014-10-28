@@ -22,17 +22,17 @@ block prenatal
             div(class='form-group inline')
               div.checkbox
                 label= gettext('MCP')
-                  input(type='checkbox', name='philHealthMCP', tabindex="1", value=1, checked=rec.philHealthMCP==true)
+                  input(type='checkbox', name='philHealthMCP', tabindex="1", value=1, disabled=readonlyFields.philHealthMCP, checked=rec.philHealthMCP==true)
               div.checkbox
                 label= gettext('NCP')
-                  input(type='checkbox', name='philHealthNCP', tabindex="2", value=1, checked=rec.philHealthNCP==true)
+                  input(type='checkbox', name='philHealthNCP', tabindex="2", disabled=readonlyFields.philHealthNCP, value=1, checked=rec.philHealthNCP==true)
               div.checkbox
                 label= gettext('PHIC Approved')
-                  input(type='checkbox', name='philHealthApproved', tabindex="4", value=1, checked=rec.philHealthApproved==true)
+                  input(type='checkbox', name='philHealthApproved', tabindex="4", disabled=readonlyFields.philHealthApproved, value=1, checked=rec.philHealthApproved==true)
         div.row
           div(class='col-xs-12')
             span= gettext('PHIC #')
-            input(class='form-control', type='text', size=12, tabindex="3", autocomplete="off", name='philHealthID', value=rec.philHealthID)
+            input(class='form-control', type='text', size=12, tabindex="3", autocomplete="off", name='philHealthID', disabled=readonlyFields.philHealthID, value=rec.philHealthID)
 
       div(class='form-group col-xs-4 box')
         p(class='text-primary lead')= gettext('Estimated Due Dates')
@@ -40,27 +40,27 @@ block prenatal
           div(class='col-xs-12')
             div
               span= gettext('LMP')
-              input(id='prenatal-lmp', class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', value=rec.lmp)
+              input(id='prenatal-lmp', class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', disabled=readonlyFields.lmp, value=rec.lmp)
         div.row
           div(class='col-xs-12')
             div
               span= gettext('EDD')
-              input(id='prenatal-edd', class='form-control', type='date', name='edd', tabindex="6", value=rec.edd)
+              input(id='prenatal-edd', class='form-control', type='date', name='edd', tabindex="6", disabled=readonlyFields.edd, value=rec.edd)
 
       div(class='col-xs-4')
         p(class='text-primary lead') &nbsp;
         div(class='form-group')
           div.checkbox
             label= gettext('Sure of LMP')
-              input(type='checkbox', name='sureLMP', tabindex="7", value=1, checked=rec.sureLMP==true)
+              input(type='checkbox', name='sureLMP', tabindex="7", disabled=readonlyFields.sureLMP, value=1, checked=rec.sureLMP==true)
           div.checkbox
             label= gettext('Use Alternate EDD')
-              input(type='checkbox', name='useAlternateEdd', tabindex="8", value=1, checked=rec.useAlternateEdd==true)
+              input(type='checkbox', name='useAlternateEdd', tabindex="8", disabled=readonlyFields.useAlternateEdd, value=1, checked=rec.useAlternateEdd==true)
         div.row
           div(class='col-xs-12')
             div
               span= gettext('Alternate EDD')
-              input(class='form-control', type='date', name='alternateEdd', tabindex="9", value=rec.alternateEdd)
+              input(class='form-control', type='date', name='alternateEdd', tabindex="9", disabled=readonlyFields.alternateEdd, value=rec.alternateEdd)
 
 
     div.row
@@ -71,103 +71,103 @@ block prenatal
             p.text-primary= gettext('Risk Present')
             div.checkbox
               label= gettext('A1: Over 35')
-              input(type='checkbox', name='A1', tabindex="9", value=1, checked=hasRisk('A1')==true)
+              input(type='checkbox', name='A1', tabindex="9", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('A1')==true)
             div.checkbox
               label= gettext('A2: Under 18')
-              input(type='checkbox', name='A2', tabindex="10", value=1, checked=hasRisk('A2')==true)
+              input(type='checkbox', name='A2', tabindex="10", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('A2')==true)
             div.checkbox
               label= gettext('B1: Height < 4\'9"')
-              input(type='checkbox', name='B1', tabindex="11", value=1, checked=hasRisk('B1')==true)
+              input(type='checkbox', name='B1', tabindex="11", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('B1')==true)
             div.checkbox
               label= gettext('B2: Underweight')
-              input(type='checkbox', name='B2', tabindex="12", value=1, checked=hasRisk('B1')==true)
+              input(type='checkbox', name='B2', tabindex="12", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('B1')==true)
             div.checkbox
               label= gettext('B3: Overweight')
-              input(type='checkbox', name='B3', tabindex="13", value=1, checked=hasRisk('B3')==true)
+              input(type='checkbox', name='B3', tabindex="13", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('B3')==true)
             div.checkbox
               label= gettext('C: 4 or more children')
-              input(type='checkbox', name='C', tabindex="14", value=1, checked=hasRisk('C')==true)
+              input(type='checkbox', name='C', tabindex="14", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('C')==true)
             div.checkbox
               label= gettext('F: < 3 years since last birth')
-              input(type='checkbox', name='F', tabindex="15", value=1, checked=hasRisk('F')==true)
+              input(type='checkbox', name='F', tabindex="15", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('F')==true)
 
           div(class='col-xs-6 ')
             p.text-primary= gettext('Risk ObHx')
             div.checkbox
               label= gettext('D1: C/S')
-              input(type='checkbox', name='D1', tabindex="16", value=1, checked=hasRisk('D1')==true)
+              input(type='checkbox', name='D1', tabindex="16", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('D1')==true)
             div.checkbox
               label= gettext('D2: Stillbirth/death < 7 days')
-              input(type='checkbox', name='D2', tabindex="17", value=1, checked=hasRisk('D2')==true)
+              input(type='checkbox', name='D2', tabindex="17", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('D2')==true)
             div.checkbox
               label= gettext('D3: Anenatal bleeding')
-              input(type='checkbox', name='D3', tabindex="18", value=1, checked=hasRisk('D3')==true)
+              input(type='checkbox', name='D3', tabindex="18", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('D3')==true)
             div.checkbox
               label= gettext('D4: Hemorrhage')
-              input(type='checkbox', name='D4', tabindex="19", value=1, checked=hasRisk('D4')==true)
+              input(type='checkbox', name='D4', tabindex="19", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('D4')==true)
             div.checkbox
               label= gettext('D5: Convulsions')
-              input(type='checkbox', name='D5', tabindex="20", value=1, checked=hasRisk('D5')==true)
+              input(type='checkbox', name='D5', tabindex="20", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('D5')==true)
             div.checkbox
               label= gettext('D6: Forceps or vacuum')
-              input(type='checkbox', name='D6', tabindex="21", value=1, checked=hasRisk('D6')==true)
+              input(type='checkbox', name='D6', tabindex="21", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('D6')==true)
             div.checkbox
               label= gettext('D7: Malpresentation')
-              input(type='checkbox', name='D7', tabindex="22", value=1, checked=hasRisk('D7')==true)
+              input(type='checkbox', name='D7', tabindex="22", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('D7')==true)
 
         div.row
           div(class='col-xs-6 ')
             p.text-primary= gettext('Risk MedHx')
             div.checkbox
               label= gettext('E1: TB')
-              input(type='checkbox', name='E1', tabindex="23", value=1, checked=hasRisk('E1')==true)
+              input(type='checkbox', name='E1', tabindex="23", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E1')==true)
             div.checkbox
               label= gettext('E2: Heart disease')
-              input(type='checkbox', name='E2', tabindex="24", value=1, checked=hasRisk('E2')==true)
+              input(type='checkbox', name='E2', tabindex="24", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E2')==true)
             div.checkbox
               label= gettext('E3: Diabetes')
-              input(type='checkbox', name='E3', tabindex="25", value=1, checked=hasRisk('E3')==true)
+              input(type='checkbox', name='E3', tabindex="25", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E3')==true)
             div.checkbox
               label= gettext('E4: Dx Asthma')
-              input(type='checkbox', name='E4', tabindex="26", value=1, checked=hasRisk('E4')==true)
+              input(type='checkbox', name='E4', tabindex="26", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E4')==true)
             div.checkbox
               label= gettext('E5: Goiter')
-              input(type='checkbox', name='E5', tabindex="27", value=1, checked=hasRisk('E5')==true)
+              input(type='checkbox', name='E5', tabindex="27", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E5')==true)
             div.checkbox
               label= gettext('E6: Hypertension')
-              input(type='checkbox', name='E6', tabindex="28", value=1, checked=hasRisk('E6')==true)
+              input(type='checkbox', name='E6', tabindex="28", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E6')==true)
             div.checkbox
               label= gettext('E7: Malaria')
-              input(type='checkbox', name='E7', tabindex="29", value=1, checked=hasRisk('E7')==true)
+              input(type='checkbox', name='E7', tabindex="29", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E7')==true)
             div.checkbox
               label= gettext('E8: Parasites')
-              input(type='checkbox', name='E8', tabindex="30", value=1, checked=hasRisk('E8')==true)
+              input(type='checkbox', name='E8', tabindex="30", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('E8')==true)
 
           div(class='col-xs-6 ')
             p.text-primary= gettext('Risk Lifestyle')
             div.checkbox
               label= gettext('G1: Smoking')
-              input(type='checkbox', name='G1', tabindex="31", value=1, checked=hasRisk('G1')==true)
+              input(type='checkbox', name='G1', tabindex="31", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('G1')==true)
             div.checkbox
               label= gettext('G2: Drink alcohol')
-              input(type='checkbox', name='G2', tabindex="32", value=1, checked=hasRisk('G2')==true)
+              input(type='checkbox', name='G2', tabindex="32", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('G2')==true)
             div.checkbox
               label= gettext('G3: Multiple partners')
-              input(type='checkbox', name='G3', tabindex="33", value=1, checked=hasRisk('G3')==true)
+              input(type='checkbox', name='G3', tabindex="33", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('G3')==true)
             div.checkbox
               label= gettext('G4: Live w/ person HIV/AIDS')
-              input(type='checkbox', name='G4', tabindex="34", value=1, checked=hasRisk('G4')==true)
+              input(type='checkbox', name='G4', tabindex="34", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('G4')==true)
             div.checkbox
               label= gettext('G5: Expose comm. diseases')
-              input(type='checkbox', name='G5', tabindex="35", value=1, checked=hasRisk('G5')==true)
+              input(type='checkbox', name='G5', tabindex="35", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('G5')==true)
             div.checkbox
               label= gettext('G6: Victim of violence')
-              input(type='checkbox', name='G6', tabindex="36", value=1, checked=hasRisk('G6')==true)
+              input(type='checkbox', name='G6', tabindex="36", disabled=readonlyFields.riskCode, value=1, checked=hasRisk('G6')==true)
         div.row
           div(class='col-xs-6')
             div
               span.text-primary= gettext('Risk Notes')
-              textarea(class='form-control', tabindex="14", spellcheck="off", autocomplete="off", rows=4, name='riskNote')= rec.riskNote
+              textarea(class='form-control', tabindex="14", spellcheck="off", autocomplete="off", rows=4, disabled=readonlyFields.riskNote, name='riskNote')= rec.riskNote
 
           div(class='form-group col-xs-4 box')
             p(class='text-primary lead')= gettext('Pregnancy End Result')
@@ -175,12 +175,12 @@ block prenatal
               div(class='col-xs-12')
                 div
                   span= gettext('End Date')
-                  input(class='form-control', type='date', name='pregnancyEndDate', tabindex="15", value=rec.pregnancyEndDate)
+                  input(class='form-control', type='date', name='pregnancyEndDate', tabindex="15", disabled=readonlyFields.pregnancyEndDate, value=rec.pregnancyEndDate)
             div(class='row')
               div(class='col-xs-12')
                 div
                   span= gettext('End Result')
-                  input(class='form-control', type='text', size=20, tabindex="16", autocomplete="off", name='pregnancyEndResult', value=rec.pregnancyEndResult)
+                  input(class='form-control', type='text', size=20, tabindex="16", autocomplete="off", name='pregnancyEndResult', disabled=readonlyFields.pregnancyEndResult, value=rec.pregnancyEndResult)
 
     hr
     p(class='text-primary lead')= gettext('Prenatal Exams')

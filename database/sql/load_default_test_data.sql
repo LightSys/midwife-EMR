@@ -435,3 +435,29 @@ INSERT INTO `customFieldType`
 VALUES
   ('Agdao', 'In Agdao?', 'Does the client reside in Agdao?', 'Agdao?', 'booleanVal');
 
+
+SELECT 'roFieldsByRole' AS 'Loading' FROM DUAL;
+INSERT INTO `roFieldsByRole`
+  (roleName, tableName, fieldName)
+VALUES
+  ('clerk', 'prenatalExam', 'fh'),
+  ('clerk', 'prenatalExam', 'fht'),
+  ('clerk', 'prenatalExam', 'fhtNote'),
+  ('clerk', 'prenatalExam', 'pos'),
+  ('clerk', 'prenatalExam', 'mvmt'),
+  ('clerk', 'prenatalExam', 'edema'),
+  ('clerk', 'prenatalExam', 'risk'),
+  ('clerk', 'prenatalExam', 'vitamin'),
+  ('clerk', 'prenatalExam', 'pray'),
+  ('clerk', 'prenatalExam', 'note'),
+  ('clerk', 'prenatalExam', 'returnDate'),
+  ('clerk', 'pregnancy', 'lmp'),
+  ('clerk', 'pregnancy', 'sureLMP'),
+  ('clerk', 'pregnancy', 'edd'),
+  ('clerk', 'pregnancy', 'alternateEdd'),
+  ('clerk', 'pregnancy', 'useAlternateEdd'),
+  ('clerk', 'pregnancy', 'riskNote'),
+  ('clerk', 'pregnancy', 'pregnancyEndDate'),
+  ('clerk', 'pregnancy', 'pregnancyEndResult'),
+  ('clerk', 'risk', 'riskCode');
+

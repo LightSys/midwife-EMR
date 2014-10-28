@@ -123,8 +123,8 @@ var prenatalExamSave = function(req, res) {
     RoFieldsByRole
       .getTableFieldsByRole(role, 'prenatalExam')
       .then(function(roFlds) {
-        _.each(flds, function(fld) {
-          if (_.contains(roFlds, fld)) delete flds[fld];
+        _.each(flds, function(val, key) {
+          if (_.has(roFlds, key)) delete flds[key];
         });
         preRec = new PrenatalExam(flds);
         preRec

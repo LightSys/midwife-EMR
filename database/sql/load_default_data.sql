@@ -440,5 +440,14 @@ VALUES
   ('clerk', 'prenatalExam', 'vitamin'),
   ('clerk', 'prenatalExam', 'pray'),
   ('clerk', 'prenatalExam', 'note'),
-  ('clerk', 'prenatalExam', 'returnDate');
+  ('clerk', 'prenatalExam', 'returnDate'),
+  ('clerk', 'pregnancy', 'lmp'),
+  ('clerk', 'pregnancy', 'sureLMP'),
+  ('clerk', 'pregnancy', 'edd'),
+  ('clerk', 'pregnancy', 'alternateEdd'),
+  ('clerk', 'pregnancy', 'useAlternateEdd'),
+  ('clerk', 'pregnancy', 'riskNote'),
+  ('clerk', 'pregnancy', 'pregnancyEndDate'),
+  ('clerk', 'pregnancy', 'pregnancyEndResult'),
+  ('clerk', 'risk', 'riskCode');
 

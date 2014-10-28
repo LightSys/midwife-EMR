@@ -375,7 +375,7 @@ app.post(cfg.path.pregnancyHistoryDelete, common, hasSuper,
 app.get(cfg.path.pregnancyPrenatalEdit, common, hasSuper,
     inRoles(['clerk','attending','supervisor']), pregnancy.prenatalForm);
 app.post(cfg.path.pregnancyPrenatalUpdate, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.prenatalSave);
+    inRoles(['clerk', 'attending','supervisor']), pregnancy.prenatalSave);
 
 // Prenatal Exams
 app.get(cfg.path.pregnancyPrenatalExamAdd, common, hasSuper,
