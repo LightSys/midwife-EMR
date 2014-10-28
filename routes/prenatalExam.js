@@ -17,6 +17,7 @@ var _ = require('underscore')
   , getCommonFormData = require('./pregnancy').getCommonFormData
   , PrenatalExam = require('../models').PrenatalExam
   , PrenatalExams = require('../models').PrenatalExams
+  , RoFieldsByRole = require('../models').RoFieldsByRole
   ;
 
 /* --------------------------------------------------------
@@ -25,9 +26,18 @@ var _ = require('underscore')
  * Displays the form to add a prenatal exam.
  * -------------------------------------------------------- */
 var prenatalExamAddForm = function(req, res) {
-  var data = {title: req.gettext('Add Prenatal Exam')};
+  var data = {title: req.gettext('Add Prenatal Exam')}
+    , role = req.session.roleInfo.roleNames[0]
+    , table = 'prenatalExam'
+    ;
   if (req.paramPregnancy) {
-    res.render('prenatalAddEditExam', getCommonFormData(req, data));
+    data = getCommonFormData(req, data);
+    RoFieldsByRole
+      .getTableFieldsByRole(role, table)
+      .then(function(list) {
+        data.readonlyFields = list;
+        res.render('prenatalAddEditExam', data);
+      });
   } else {
     // Pregnancy not found.
     res.redirect(cfg.path.search);
@@ -40,9 +50,18 @@ var prenatalExamAddForm = function(req, res) {
  * Displays the form to edit an existing prenatal exam.
  * -------------------------------------------------------- */
 var prenatalExamEditForm = function(req, res) {
-  var data = {title: req.gettext('Edit Prenatal Exam')};
+  var data = {title: req.gettext('Edit Prenatal Exam')}
+    , role = req.session.roleInfo.roleNames[0]
+    , table = 'prenatalExam'
+    ;
   if (req.paramPregnancy) {
-    res.render('prenatalAddEditExam', getCommonFormData(req, data));
+    data = getCommonFormData(req, data);
+    RoFieldsByRole
+      .getTableFieldsByRole(role, table)
+      .then(function(list) {
+        data.readonlyFields = list;
+        res.render('prenatalAddEditExam', data);
+      });
   } else {
     // Pregnancy not found.
     res.redirect(cfg.path.search);
@@ -60,11 +79,11 @@ var prenatalExamSave = function(req, res) {
     , preRec
     , defaultFlds = {
         mvmt: '0'
-        , risk: '0'
         , vitamin: '0'
         , pray: '0'
       }
     , saveOpts = {method: 'update'}
+    , role = req.session.roleInfo.roleNames[0]
     ;
 
   if (req.paramPregnancy &&
@@ -75,15 +94,6 @@ var prenatalExamSave = function(req, res) {
 
     if (hasRole(req, 'attending')) {
       supervisor = req.session.supervisor.id;
-    }
-
-    // --------------------------------------------------------
-    // The form should disable the fields that clerks should
-    // not change but should that fail, this check will
-    // eliminate any fields that are disallowed.
-    // --------------------------------------------------------
-    if (hasRole(req, 'clerk')) {
-      flds = clerkPermittedFields(flds);
     }
 
     // --------------------------------------------------------
@@ -107,23 +117,32 @@ var prenatalExamSave = function(req, res) {
       flds.pos = flds.pos.toUpperCase();
     }
 
-    preRec = new PrenatalExam(flds);
-    preRec
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .save(flds, saveOpts).then(function(model) {
-        var path = cfg.path.pregnancyPrenatalEdit
-          ;
-        path = path.replace(/:id/, flds.pregnancy_id);
-        req.flash('info', req.gettext('Prenatal Exam was saved.'));
-        res.redirect(path);
-      })
-      .caught(function(err) {
-        logError(err);
-        // TODO: handle this better.
-        res.redirect(cfg.path.search);
+    // --------------------------------------------------------
+    // Remove the fields that are read-only by role before saving.
+    // --------------------------------------------------------
+    RoFieldsByRole
+      .getTableFieldsByRole(role, 'prenatalExam')
+      .then(function(roFlds) {
+        _.each(flds, function(fld) {
+          if (_.contains(roFlds, fld)) delete flds[fld];
+        });
+        preRec = new PrenatalExam(flds);
+        preRec
+          .setUpdatedBy(req.session.user.id)
+          .setSupervisor(supervisor)
+          .save(flds, saveOpts).then(function(model) {
+            var path = cfg.path.pregnancyPrenatalEdit
+              ;
+            path = path.replace(/:id/, flds.pregnancy_id);
+            req.flash('info', req.gettext('Prenatal Exam was saved.'));
+            res.redirect(path);
+          })
+          .caught(function(err) {
+            logError(err);
+            // TODO: handle this better.
+            res.redirect(cfg.path.search);
+          });
       });
-
   } else {
     logError('Error in update of prenatalExam: pregnancy not found.');
     // TODO: handle this better.
@@ -175,27 +194,6 @@ var prenatalExamDelete = function(req, res) {
     res.redirect(cfg.path.search);
   }
 };
-
-/* --------------------------------------------------------
- * clerkPermittedFields()
- *
- * Clerks have restrictions on which fields they can change
- * on prenatal exams. Clerks can only change these fields:
- *    weight, systolic, diastolic, date
- *
- * These fields necessarily need to have values:
- *    id, pregnancy_id, _csrf
- *
- * Therefore, only the allowed fields are returned.
- *
- * param    flds - the flds fron req.body
- * return   flds - the flds that are allowed
- * -------------------------------------------------------- */
-var clerkPermittedFields = function(flds) {
-  return _.pick(flds,
-      'weight','systolic','diastolic','date','_csrf','pregnancy_id', 'id');
-};
-
 
 module.exports = {
   prenatalExamAddForm: prenatalExamAddForm

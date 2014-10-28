@@ -1,11 +1,11 @@
-mixin datePicker(classes, tabindex, name, value, id, defaultDate)
+mixin datePicker(classes, tabindex, name, value, id, defaultDate, readonly)
   - var classVals = classes + ' datepicker';
   - var displayFieldName = 'displayField-' + name;
   - var hiddenFieldId = 'altField-' + name;
   - var dataAltFldValue = '#' + hiddenFieldId;
   - if (id) {
-    input(id=id, class=classVals, type='text', tabindex=tabindex, autocomplete="off", name=displayFieldName, data-defaultDate=defaultDate, data-alt-field=dataAltFldValue, value=value)
+    input(id=id, class=classVals, type='text', tabindex=tabindex, autocomplete="off", name=displayFieldName, data-defaultDate=defaultDate, data-alt-field=dataAltFldValue, disabled=readonly, value=value)
   - } else {
-    input(class=classVals, type='text', tabindex=tabindex, autocomplete="off", name=displayFieldName, data-defaultDate=defaultDate, data-alt-field=dataAltFldValue, value=value)
+    input(class=classVals, type='text', tabindex=tabindex, autocomplete="off", name=displayFieldName, data-defaultDate=defaultDate, data-alt-field=dataAltFldValue, disabled=readonly, value=value)
   - }
   input(type='hidden', id=hiddenFieldId, name=name)

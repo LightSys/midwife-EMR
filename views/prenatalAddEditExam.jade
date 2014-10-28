@@ -37,25 +37,25 @@ block prenatalAddEditExam
           div= gettext('Date')
           +datePicker('form-control', 1, 'date', defaultDate, 'date')
           span= gettext('Weight')
-          input(id='weight', class='form-control', type='number', step="0.1", min="30", max="200", tabindex="2", autocomplete="off", name='weight', autofocus, value=prenatalExam.weight)
+          input(id='weight', class='form-control', type='number', step="0.1", min="30", max="200", tabindex="2", autocomplete="off", name='weight', autofocus, disabled=readonlyFields.weight, value=prenatalExam.weight)
           div.row
             div.col-md-6
               span= gettext('Systolic')
-              input(id='systolic', class='form-control', type='number', tabindex="3", autocomplete="off", name='systolic', value=prenatalExam.systolic)
+              input(id='systolic', class='form-control', type='number', tabindex="3", autocomplete="off", name='systolic', disabled=readonlyFields.systolic, value=prenatalExam.systolic)
             div.col-md-6
               span= gettext('Diastolic')
-              input(id='diastolic', class='form-control', type='number', tabindex="4", autocomplete="off", name='diastolic', value=prenatalExam.diastolic)
+              input(id='diastolic', class='form-control', type='number', tabindex="4", autocomplete="off", name='diastolic', disabled=readonlyFields.diastolic, value=prenatalExam.diastolic)
           div.row
             div.col-md-6
               div= gettext('CR')
-              input(id='cr', class='form-control', type='number', tabindex="5", autocomplete="off", name='cr', value=prenatalExam.cr)
+              input(id='cr', class='form-control', type='number', tabindex="5", autocomplete="off", name='cr', disabled=readonlyFields.cr, value=prenatalExam.cr)
             div.col-md-6
               div= gettext('Temperature')
-              input(id='cr', class='form-control', type='number', step="0.1", tabindex="6", autocomplete="off", name='temperature', value=prenatalExam.temperature)
+              input(id='cr', class='form-control', type='number', step="0.1", tabindex="6", autocomplete="off", name='temperature', disabled=readonlyFields.temperature, value=prenatalExam.temperature)
           div.row
             div.col-md-6
               div= gettext('RR')
-              input(id='cr', class='form-control', type='number', tabindex="7", autocomplete="off", name='respiratoryRate', value=prenatalExam.respiratoryRate)
+              input(id='cr', class='form-control', type='number', tabindex="7", autocomplete="off", name='respiratoryRate', disabled=readonlyFields.respiratoryRate, value=prenatalExam.respiratoryRate)
 
         div(class='form-group col-md-3')
           label(class='')= gettext('Fetus Information')
@@ -64,38 +64,38 @@ block prenatalAddEditExam
           div.row
             div.col-md-6
               span= gettext('FH')
-              input(id='fh', class='form-control', type='number', tabindex="8", autocomplete="off", name='fh', value=prenatalExam.fh)
+              input(id='fh', class='form-control', type='number', tabindex="8", autocomplete="off", name='fh', disabled=readonlyFields.fh, value=prenatalExam.fh)
             div.col-md-6
               span= gettext('FHT')
-              input(id='fht', class='form-control', type='number', tabindex="9", autocomplete="off", name='fht', value=prenatalExam.fht)
+              input(id='fht', class='form-control', type='number', tabindex="9", autocomplete="off", name='fht', disabled=readonlyFields.fht, value=prenatalExam.fht)
           span= gettext('FHT Note')
-          input(id='fhtNote', class='form-control', type='text', tabindex='10', spellcheck="off", autocomplete='off', name='fhtNote', value=prenatalExam.fhtNote)
+          input(id='fhtNote', class='form-control', type='text', tabindex='10', spellcheck="off", autocomplete='off', name='fhtNote', disabled=readonlyFields.fhtNote, value=prenatalExam.fhtNote)
           span= gettext('Position (saved all caps)')
-          input(id='pos', class='form-control', type='text', tabindex="11", autocomplete="off", name='pos', value=prenatalExam.pos)
+          input(id='pos', class='form-control', type='text', tabindex="11", autocomplete="off", name='pos', disabled=readonlyFields.pos, value=prenatalExam.pos)
 
         div(class='form-group col-md-3')
           label(class='')= gettext('Other Information')
           div.checkbox
             label= gettext('Mvmt')
-              input(type='checkbox', name='mvmt', tabindex="12", value=1, checked=prenatalExam.mvmt==true)
+              input(type='checkbox', name='mvmt', tabindex="12", disabled=readonlyFields.mvmt, value=1, checked=prenatalExam.mvmt==true)
           div.checkbox
             label= gettext('Edema')
-              +select('form-control', 'edema', 13, edema)
+              +select('form-control', 'edema', 13, edema, readonlyFields.edema)
           span= gettext('Risk')
-              input(class='form-control', type='text', name='risk', spellcheck="off", autocomplete="off", tabindex="14", value=prenatalExam.risk)
+              input(class='form-control', type='text', name='risk', spellcheck="off", autocomplete="off", tabindex="14", disabled=readonlyFields.risk, value=prenatalExam.risk)
           div.checkbox
             label= gettext('Vitamin')
-              input(type='checkbox', name='vitamin', tabindex="15", value=1, checked=prenatalExam.vitamin==true)
+              input(type='checkbox', name='vitamin', tabindex="15", disabled=readonlyFields.vitamin, value=1, checked=prenatalExam.vitamin==true)
           div.checkbox
             label= gettext('Pray')
-              input(type='checkbox', name='pray', tabindex="16", value=1, checked=prenatalExam.pray==true)
+              input(type='checkbox', name='pray', tabindex="16", disabled=readonlyFields.pray, value=1, checked=prenatalExam.pray==true)
 
         div(class='form-group col-md-3')
           label(class='')= gettext('Other continued')
           div= gettext('Notes')
-          textarea(id='note', class='form-control', tabindex="17", spellcheck="off", autocomplete="off", wrap="soft", rows="4", name='note')= prenatalExam.note
+          textarea(id='note', class='form-control', tabindex="17", spellcheck="off", autocomplete="off", wrap="soft", rows="4", disabled=readonlyFields.note, name='note')= prenatalExam.note
           div= gettext('Return Date')
-          +datePicker('form-control', 16, 'returnDate', returnDate, 'returnDate', '+1m')
+          +datePicker('form-control', 16, 'returnDate', returnDate, 'returnDate', '+1m', readonlyFields.returnDate)
 
 
       div.row

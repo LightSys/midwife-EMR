@@ -538,6 +538,13 @@ CREATE TABLE IF NOT EXISTS `customField` (
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `roFieldsByRole` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  roleName VARCHAR(30) NOT NULL,
+  tableName VARCHAR(30) NOT NULL,
+  fieldName VARCHAR(30) NOT NULL,
+  UNIQUE (roleName, tableName, fieldName)
+);
 
 SET foreign_key_checks = 1;
 

@@ -48,5 +48,7 @@ module.exports = {
   , CustomFields: require('./CustomField').CustomFields
   , CustomFieldType: require('./CustomFieldType').CustomFieldType
   , CustomFieldTypes: require('./CustomFieldType').CustomFieldTypes
+  , RoFieldsByRole: require('./RoFieldsByRole').RoFieldsByRole
+  , RoFieldsByRoles: require('./RoFieldsByRole').RoFieldsByRoles
 };
 
