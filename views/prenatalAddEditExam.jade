@@ -95,7 +95,7 @@ block prenatalAddEditExam
           div= gettext('Notes')
           textarea(id='note', class='form-control', tabindex="17", spellcheck="off", autocomplete="off", wrap="soft", rows="4", disabled=readonlyFields.note, name='note')= prenatalExam.note
           div= gettext('Return Date')
-          +datePicker('form-control', 16, 'returnDate', returnDate, 'returnDate', '+1m', readonlyFields.returnDate)
+          +datePicker('form-control', 18, 'returnDate', returnDate, 'returnDate', '+1m', readonlyFields.returnDate)
 
 
       div.row
