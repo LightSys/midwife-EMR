@@ -349,9 +349,9 @@ app.get(cfg.path.pregnancyHistory, common,
 
 // Pregnancy Questionnaire
 app.get(cfg.path.pregnancyQuesEdit, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.questionaireForm);
+    inRoles(['clerk', 'attending','supervisor']), pregnancy.questionaireForm);
 app.post(cfg.path.pregnancyQuesUpdate, common, hasSuper,
-    inRoles(['attending','supervisor']), pregnancy.questionaireSave);
+    inRoles(['clerk', 'attending','supervisor']), pregnancy.questionaireSave);
 
 // Pregnancy midwife interview
 app.get(cfg.path.pregnancyMidwifeEdit, common, hasSuper,
