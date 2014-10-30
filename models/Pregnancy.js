@@ -202,6 +202,10 @@ Pregnancy = Bookshelf.Model.extend({
       return this.hasMany(require('./CustomField').CustomField, 'pregnancy_id');
     }
 
+  , teaching: function() {
+      return this.hasMany(require('./Teaching').Teaching, 'pregnancy_id');
+    }
+
 }, {
   // --------------------------------------------------------
   // Class Properties.

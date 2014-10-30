@@ -28,6 +28,13 @@ block search
           span= gettext('Email')
           input(class='form-control input-lg', type='text', autocomplete="off", name='email', value=editUser.email)
         div.form-group
+          span= gettext('Display name')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='displayName', value=editUser.displayName)
+        div.form-group
+          input(type='checkbox', name='isCurrentTeacher', value=1, checked=editUser.isCurrentTeacher==true)
+          span &nbsp;&nbsp;
+          span= gettext(' Is currently a teacher? ')
+        div.form-group
           label.radio-inline= gettext('Active')
             input(type='radio', name='status', value='1' checked=editUser.status==1)
           label.radio-inline= gettext('Inactive')

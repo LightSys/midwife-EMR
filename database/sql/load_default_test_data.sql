@@ -181,7 +181,15 @@ VALUES
   ('referrals', 'U/A', 'U/A', 0, 1, NOW()),
   ('referrals', 'Hgb', 'Hgb', 0, 1, NOW()),
   ('referrals', 'U/A & Hgb', 'U/A & Hgb', 0, 1, NOW()),
-  ('referrals', 'All labs', 'All labs', 0, 1, NOW())
+  ('referrals', 'All labs', 'All labs', 0, 1, NOW()),
+  ('teachingTopics', 'Nutr + FD', 'Nutr + FD', 1, 1, NOW()),
+  ('teachingTopics', 'BF', 'BF', 0, 1, NOW()),
+  ('teachingTopics', 'FP', 'FP', 0, 1, NOW()),
+  ('teachingTopics', 'L & D', 'L & D', 0, 1, NOW()),
+  ('teachingTopics', 'PP/NB', 'PP/NB', 0, 1, NOW()),
+  ('teachingTopics', 'Cln Catch', 'Cln Catch', 0, 1, NOW()),
+  ('teachingTopics', 'Labr/ROM', 'Labr/ROM', 0, 1, NOW()),
+  ('teachingTopics', 'Iron/Vit', 'Iron/Vit', 0, 1, NOW())
 ;
 
 SELECT 'vaccinationType' AS 'Loading' FROM DUAL;

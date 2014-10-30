@@ -1,0 +1,71 @@
+extends layouts/default_layout
+
+block teachingAddEditForm
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var formId = 'teachingAddEdit';
+  - var formName = 'teachingAddEditForm';
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  //- Default of adding a health teaching
+  - var formAction = '/pregnancy/' + rec.id + '/teaching';
+  - var teachingDate = libs.mmt().format('YYYY-MM-DD');
+  - var topic = '';
+  - var isUpdate = false;
+  - var teachingDeletePath;
+  //- If editing a health teaching
+  - if (teachingRec && teachingRec.id) {
+  -   formAction ='/pregnancy/' + rec.id + '/teaching/' + teachingRec.id;
+  -   teachingDate = teachingRec.date || teachingDate;
+  -   topic = teachingRec.topic || topic;
+  -   isUpdate = true;
+  -   teachingDeletePath = '/pregnancy/' + rec.id + '/teaching/' + teachingRec.id + '/delete';
+  - }
+  div
+    form(id=formId, class='dirty-check', role='form', name=formName, action=formAction, method='post')
+      div.row
+        div(class='col-xs-4')
+          label= gettext('Date of the teaching')
+          input(id='teachingDate', type='date', class='form-control', tabindex='1', name='date', value=teachingDate)
+        div(class='form-group col-xs-2 col-xs-offset-6')
+          //- This label just causes everything on this row to line up better.
+          label &nbsp;
+          a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
+      div.row
+        div(class='col-xs-6')
+          label= gettext('Topic of Teaching')
+          input(id='refTopic', list='topics', class='form-control', type='text', tabindex='2', autofocus, autocomplete='on', name='topic', value=topic)
+          +datalist('topics', teachingDatalist)
+      div.row
+        div(class='col-xs-6')
+          label= gettext('Teacher')
+          +select('form-control input-lg', 'teacher', 3, teachers)
+      div.row
+        div(class='col-xs-4')
+          span &nbsp;
+      div.row
+        div(class='col-xs-2')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          button(type='submit', class='btn btn-primary')= gettext('Save Teaching')
+        - if (isUpdate) {
+        div(class='col-xs-2 col-xs-offset-8')
+          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+        - }
+
+    - if (isUpdate) {
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deleteTeachingEditForm', role='form', name='TeachingEditForm', action=teachingDeletePath, method='post')
+        div(class='modal-dialog')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='teachingId', value=teachingRec.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')
+    - }

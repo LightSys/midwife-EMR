@@ -20,6 +20,7 @@ var moment = require('moment')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , addBlankSelectData = require('../util').addBlankSelectData
   , User = {}
   ;
 
@@ -62,6 +63,7 @@ CREATE TABLE `user` (
   `displayName` varchar(100) DEFAULT NULL,
   `status` tinyint(1) NOT NULL DEFAULT '1',
   `note` varchar(300) DEFAULT NULL,
+  `isCurrentTeacher` tinyint(1) DEFAULT '0',
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
   `supervisor` int(11) DEFAULT NULL,
@@ -71,7 +73,7 @@ CREATE TABLE `user` (
   KEY `supervisor` (`supervisor`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `user_ibfk_2` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1
  */
 User = Bookshelf.Model.extend({
   // --------------------------------------------------------
@@ -80,8 +82,8 @@ User = Bookshelf.Model.extend({
   tableName: 'user'
 
   , permittedAttributes: ['id', 'username', 'firstname', 'lastname', 'password',
-      'email', 'lang', 'displayName', 'status', 'note', 'updatedBy', 'updatedAt',
-      'supervisor']
+      'email', 'lang', 'displayName', 'status', 'note', 'isCurrentTeacher',
+     'updatedBy', 'updatedAt', 'supervisor']
   , initialize: function() {
     this.on('saving', this.saving, this);
     this.on('saved', this.saved, this);
@@ -240,6 +242,53 @@ User = Bookshelf.Model.extend({
       } else {
         return cb(null, result);
       }
+    }
+
+    /* --------------------------------------------------------
+     * getTeachersSelectData()
+     *
+     * Return a promise that returns a list of users in selectData
+     * format that are currently teachers. It also includes a
+     * blank first record that is selected. The label is the
+     * lastname, firstname concatenated and the key is the user id.
+     *
+     * return     a promise
+     * -------------------------------------------------------- */
+  , getTeachersSelectData: function() {
+      return new Promise(function(resolve, reject) {
+        var knex = Bookshelf.knex
+          , cacheKey = 'teachers'
+          ;
+        userIdMapCache.get(cacheKey, function(err, map) {
+          if (err) return reject(err);
+          if (map && _.size(map) > 0) {
+            return resolve(map[cacheKey]);
+          }
+
+          logInfo('User.getTeachersSelectData() - Refreshing cache.');
+          knex('user')
+            .where('isCurrentTeacher', true)
+            .orderBy('lastname', 'asc')
+            .select(['id', 'firstname', 'lastname'])
+            .then(function(list) {
+              var teachers = [];
+              _.each(list, function(rec) {
+                var t = {};
+                t.selectKey = String(rec.id);
+                t.label = rec.lastname + ', ' + rec.firstname;
+                t.selected = false;
+                teachers.push(t);
+              });
+              addBlankSelectData(teachers);
+              userIdMapCache.set(cacheKey, teachers);
+              resolve(teachers);
+            })
+            .caught(function(err) {
+              logError(err);
+              reject(err);
+            });
+        });
+      });
     }
 
     /* --------------------------------------------------------

@@ -35,6 +35,7 @@ block userList
           th.header= gettext('Last name')
           th.header= gettext('Email')
           th.header= gettext('Language')
+          th.header= gettext('Is teacher')
           th.header= gettext('Active')
           th.header= gettext('Comment')
           th.header= gettext('Roles')
@@ -42,12 +43,14 @@ block userList
       tbody
         each user in users
           - var userId = 'userList-' + user.id;
+          - var isTeacher = user.isCurrentTeacher? 'Yes': 'No';
           tr(class='userListRow', id=userId)
             td= user.username
             td= user.firstname
             td= user.lastname
             td= user.email
             td= user.lang
+            td= isTeacher
             td= user.status
             td= user.note
             td

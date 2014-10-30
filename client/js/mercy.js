@@ -172,6 +172,9 @@ $(function() {
     // Referrals
     $('.referralsRow').click(onClickChangeLocation('/pregnancy/:pid/referral/:id'));
 
+    // health teachings
+    $('.teachingsRow').click(onClickChangeLocation('/pregnancy/:pid/teaching/:id'));
+
     // Vaccinations
     $('.vaccinationsRow').click(onClickChangeLocation('/pregnancy/:pid/vaccination/:id'));
 

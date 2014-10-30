@@ -18,4 +18,5 @@ module.exports = {
   , priorityList: require('./priorityList')
   , summaryRpt: require('./summaryRpt')
   , dohMasterListRpt: require('./dohMasterListRpt')
+  , teaching: require('./teaching')
 };

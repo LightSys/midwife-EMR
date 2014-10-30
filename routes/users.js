@@ -491,6 +491,10 @@ var update = function(req, res) {
      , data = {}
     , fldsToOmit = ['password2','_csrf']
     , supervisor = null
+    , defaultFlds = {
+        isCurrentTeacher: '0'
+        , status: '0'
+      }
     ;
   if (req.paramUser &&
       req.body &&
@@ -510,9 +514,11 @@ var update = function(req, res) {
           // empty string in the database.
           fldsToOmit.push('password');
         }
-        editObj = _.extend({
-                      updatedBy: req.session.user.id
-                    }, _.omit(req.body, fldsToOmit));
+
+        // --------------------------------------------------------
+        // Set field defaults which allows unsettings checkboxes.
+        // --------------------------------------------------------
+        editObj = _.extend(defaultFlds, {updatedBy: req.session.user.id}, _.omit(req.body, fldsToOmit));
         user = new User(editObj);
         if (hasRole(req, 'attending')) {
           supervisor = req.session.supervisor.id;

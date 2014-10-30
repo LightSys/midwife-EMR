@@ -12,6 +12,9 @@ block labs
   //- Referrals
   - var addReferralFormPath = '/pregnancy/' + rec.id + '/referral';
 
+  // Health Teachings
+  - var addTeachingFormPath = '/pregnancy/' + rec.id + '/teaching';
+
   //- Vaccinations
   - var addVaccinationFormPath = '/pregnancy/' + rec.id + '/vaccination';
 
@@ -110,6 +113,34 @@ block labs
                   - } else {
                     a(class='btn btn-primary pull-right', href=addMedicationFormPath)= gettext('Add Medication')
                   - }
+
+        //- Health teachings
+        div(class='col-md-12 panel panel-default spacing')
+          div.row
+            div(class='col-md-12')
+              label= gettext('Health Teachings')
+              table(id='Teachings', class='table table-striped table-bordered table-hover table-condensed responsive')
+                thead
+                  tr
+                    td= gettext('Date')
+                    td= gettext('Topic')
+                    td= gettext('Teacher')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each topic in teachings
+                    - var teacherName = userMap[topic.teacher].lastname + ', ' + userMap[topic.teacher].firstname;
+                    tr(class='teachingsRow', id='teaching-'+topic.id)
+                      td= topic.date
+                      td= topic.topic
+                      td= teacherName
+
+          div.row
+            div(class='col-md-12')
+              //- Add Health Teachings button
+              div.row
+                div(class='col-md-4 col-md-offset-8')
+                  a(class='btn btn-primary pull-right', href=addTeachingFormPath)= gettext('Add Health Teaching')
+
 
     //- -------------------------------------------------
     //- All sections on the right of the screen.

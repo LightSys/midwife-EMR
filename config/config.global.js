@@ -234,6 +234,10 @@ cfg.path.vaccinationDelete = '/pregnancy/:id/vaccination/:id2/delete';  // POST
 cfg.path.medicationAdd = '/pregnancy/:id/medication';         // GET/POST
 cfg.path.medicationEdit = '/pregnancy/:id/medication/:id2';   // GET/POST
 cfg.path.medicationDelete = '/pregnancy/:id/medication/:id2/delete';  // POST
+// Health Teachings
+cfg.path.teachingAdd = '/pregnancy/:id/teaching';                 // GET/POST - create/save new health teaching
+cfg.path.teachingEdit = '/pregnancy/:id/teaching/:id2';           // GET/POST - edit/save health teaching
+cfg.path.teachingDelete = '/pregnancy/:id/teaching/:id2/delete';  // POST - delete health teaching
 // Checkin/Checkout
 cfg.path.checkInOut = '/pregnancy/:id/checkinout';  // GET
 cfg.path.checkIn = '/pregnancy/:id/checkin';        // POST

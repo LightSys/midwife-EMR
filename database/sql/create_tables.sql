@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   displayName VARCHAR(100) NULL,
   status BOOLEAN NOT NULL DEFAULT 1,
   note VARCHAR(300) NULL,
+  isCurrentTeacher BOOLEAN NULL DEFAULT 0,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,

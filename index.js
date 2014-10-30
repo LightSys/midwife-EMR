@@ -36,6 +36,7 @@ var express = require('express')
   , roles = require('./routes').roles
   , pregnancy = require('./routes').pregnancy
   , referral = require('./routes').referral
+  , teaching = require('./routes').teaching
   , vaccination = require('./routes').vaccination
   , medication = require('./routes').medication
   , pregnancyHistory = require('./routes').pregnancyHistory
@@ -416,6 +417,18 @@ app.post(cfg.path.referralEdit, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralSave);
 app.post(cfg.path.referralDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralDelete);
+
+// Health Teachings
+app.get(cfg.path.teachingAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), teaching.teachingAddForm);
+app.post(cfg.path.teachingAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), teaching.teachingSave);
+app.get(cfg.path.teachingEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), teaching.teachingEditForm);
+app.post(cfg.path.teachingEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), teaching.teachingSave);
+app.post(cfg.path.teachingDelete, common, hasSuper,
+    inRoles(['attending', 'supervisor']), teaching.teachingDelete);
 
 // Doctor and dentist consult dates
 app.post(cfg.path.docDenConsult, common, hasSuper,
