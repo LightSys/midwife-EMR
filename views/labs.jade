@@ -184,10 +184,10 @@ block labs
             div.row
               div(class='col-md-6')
                 label= gettext('Doctor consult date')
-                +datePicker('form-control input-lg', 3, 'doctorConsultDate', rec.doctorConsultDate)
+                +datePicker('form-control input-lg', 3, 'doctorConsultDate', rec.doctorConsultDate, undefined, undefined, false, 'Unknown')
               div(class='col-md-6')
                 label= gettext('Dentist consult date')
-                +datePicker('form-control input-lg', 4, 'dentistConsultDate', rec.dentistConsultDate)
+                +datePicker('form-control input-lg', 4, 'dentistConsultDate', rec.dentistConsultDate, undefined, undefined, false, 'Unknown')
             div(class='row spacing-row')
               div(class='col-md-4 col-md-offset-8')
                 - if (roleInfo.hasRole('clerk')) {

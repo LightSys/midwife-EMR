@@ -42,11 +42,11 @@ block prenatal
           div(class='col-md-4 ')
             div
               span= gettext('LMP')
-              +datePicker('form-control', 5, 'lmp', rec.lmp, 'prenatal-lmp', null, readonlyFields.lmp)
+              +datePicker('form-control', 5, 'lmp', rec.lmp, 'prenatal-lmp', null, readonlyFields.lmp, 'Unknown')
           div(class='col-md-4 ')
             div
               span= gettext('EDD')
-              +datePicker('form-control', 7, 'edd', rec.edd, 'prenatal-edd', null, readonlyFields.edd)
+              +datePicker('form-control', 7, 'edd', rec.edd, 'prenatal-edd', null, readonlyFields.edd, 'Unknown')
           div(class='col-md-4 ')
             div
               span= gettext('Alternate EDD')
