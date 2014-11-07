@@ -22,6 +22,8 @@ var moment = require('moment')
   , logError = require('../util').logError
   , addBlankSelectData = require('../util').addBlankSelectData
   , User = {}
+  , userCacheKey = 'users'
+  , teachersCacheKey = 'teachers'
   ;
 
 var hashPassword = function(pw, cb) {
@@ -45,8 +47,11 @@ var checkPassword = function(pw, hash, cb) {
 // --------------------------------------------------------
 process.on('message', function(msg) {
   if (msg && msg.cmd && msg.cmd === 'User:saved') {
-    userIdMapCache.del('usermap', function() {
+    userIdMapCache.del(userCacheKey, function() {
       User.getUserIdMap();
+    });
+    userIdMapCache.del(teachersCacheKey, function() {
+      User.getTeachersSelectData();
     });
   }
 });
@@ -257,12 +262,11 @@ User = Bookshelf.Model.extend({
   , getTeachersSelectData: function() {
       return new Promise(function(resolve, reject) {
         var knex = Bookshelf.knex
-          , cacheKey = 'teachers'
           ;
-        userIdMapCache.get(cacheKey, function(err, map) {
+        userIdMapCache.get(teachersCacheKey, function(err, map) {
           if (err) return reject(err);
           if (map && _.size(map) > 0) {
-            return resolve(map[cacheKey]);
+            return resolve(map[teachersCacheKey]);
           }
 
           logInfo('User.getTeachersSelectData() - Refreshing cache.');
@@ -280,7 +284,7 @@ User = Bookshelf.Model.extend({
                 teachers.push(t);
               });
               addBlankSelectData(teachers);
-              userIdMapCache.set(cacheKey, teachers);
+              userIdMapCache.set(teachersCacheKey, teachers);
               resolve(teachers);
             })
             .caught(function(err) {
@@ -308,10 +312,10 @@ User = Bookshelf.Model.extend({
       return new Promise(function(resolve, reject) {
         var knex = Bookshelf.knex
           ;
-        userIdMapCache.get('usermap', function(err, map) {
+        userIdMapCache.get(userCacheKey, function(err, map) {
           if (err) return reject(err);
           if (map && _.size(map) > 0) {
-            return resolve(map['usermap']);
+            return resolve(map[userCacheKey]);
           }
 
           logInfo('User.getUserIdMap() - Refreshing user id map cache.');
@@ -323,7 +327,7 @@ User = Bookshelf.Model.extend({
               _.each(list, function(user) {
                 map[user.id] = user;
               });
-              userIdMapCache.set('usermap', map);
+              userIdMapCache.set(userCacheKey, map);
               resolve(map);
             })
             .caught(function(err) {
