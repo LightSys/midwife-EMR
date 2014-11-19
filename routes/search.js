@@ -140,7 +140,7 @@ var execute = function(req, res) {
     // Get all records matching the query parameters but make
     // sure that if records have priority numbers assigned, that
     // they are at the top in ascending order.
-    // 
+    //
     // Note: in order to get the records that have an assigned
     // priority number to the top AND in ascending order, we will
     // need to do a union. For the moment we are satisfied with
@@ -165,7 +165,8 @@ var execute = function(req, res) {
     if (flds.dob && flds.dob.length > 0) qb.where('dob', otherOp, flds.dob);
     if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', otherOp, flds.doh);
     if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', otherOp, flds.philHealth);
-    if (flds.prenatalDay.length > 0 || flds.prenatalLocation.length > 0) {
+    if ((flds.prenatalDay && flds.prenatalDay.length > 0) ||
+        (flds.prenatalLocation && flds.prenatalLocation.length > 0)) {
       qb.join('schedule', 'schedule.pregnancy_id', 'pregnancy.id');
       qb.where('schedule.scheduleType', '=', 'Prenatal');
       if (flds.prenatalDay.length > 0) qb.andWhere('schedule.day', '=', flds.prenatalDay);

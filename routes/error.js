@@ -55,7 +55,7 @@ var logException = function(err, req, res, next) {
   if (err.status) msg += 'Status: ' + err.status + ' ';
   if (err.details) msg += err.details;
   if (msg.length) logError(msg);
-  logError(err.stack);
+  if (! isClientError(err.status)) logError(err.stack);
   next(err);
 };
 

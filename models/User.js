@@ -101,7 +101,7 @@ User = Bookshelf.Model.extend({
 
   , saved: function(model) {
     // Inform other cluster workers so that they cay update their cache.
-    process.send({cmd: 'User:saved'});
+    if (process && process.send) process.send({cmd: 'User:saved'});
   }
   , checkPassword: function(pw, cb) {
       this.fetch()
