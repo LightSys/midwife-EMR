@@ -134,7 +134,7 @@ describe('Pregnancy', function(done) {
             .then(function(postInfo) {
               postInfo.postReq
                 .send(postInfo.formData)
-                .expect(406, done);
+                .expect(302, done);
             })
             .caught(function(e) {
               done(e);
@@ -171,7 +171,7 @@ describe('Pregnancy', function(done) {
             .then(function(postInfo) {
               postInfo.postReq
                 .send(postInfo.formData)
-                .expect(406, done);
+                .expect(302, done);
             })
             .caught(function(e) {
               done(e);
@@ -409,7 +409,7 @@ describe('Pregnancy', function(done) {
           , postPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
         }
         , crazyWgt = Math.round(Math.random() * 500)
-        , testCR = 288
+        , testFH = 28
         ;
 
       utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
@@ -419,8 +419,7 @@ describe('Pregnancy', function(done) {
             ;
           postData.pregnancy_id = pregId;
           postData.weight = crazyWgt;
-          postData.cr = testCR;
-          postData.fh = 22;
+          postData.fh = testFH;
           postData.fht = 155;
           return postData;
         })
@@ -439,7 +438,7 @@ describe('Pregnancy', function(done) {
                     .then(function(model) {
                       model.get('pregnancy_id').should.equal(pregId);
                       model.get('weight').should.equal(crazyWgt);
-                      testCR.should.not.equal(model.get('cr'));
+                      testFH.should.not.equal(model.get('fh'));
                       done();
                     })
                     .caught(function(err) {
@@ -563,7 +562,6 @@ describe('Pregnancy', function(done) {
                     .fetch({require: true})
                     .then(function(model) {
                       model.get('pregnancy_id').should.equal(pregId2);
-                      cr.should.not.equal(model.get('cr'));
                       fh.should.not.equal(model.get('fh'));
                       done();
                     })

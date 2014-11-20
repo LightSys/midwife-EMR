@@ -420,10 +420,8 @@ describe('Models', function(done) {
   // the priority table in the development database into the
   // test database. Yes, this is a hack.
   //
-  // INSERT INTO priority
-  // (eType, priority, barcode, updatedBy, updatedAt)
-  // SELECT eType, priority, barcode, updatedBy, updatedAt
-  // FROM mercy1.priority;
+  // INSERT INTO priority (eType, priority, barcode, updatedBy, updatedAt)
+  // SELECT eType, priority, barcode, 1, updatedAt FROM mercy1.priority;
   // --------------------------------------------------------
   describe('Priority', function(done) {
     var eType

@@ -810,8 +810,8 @@ var generalAddSave = function(req, res) {
       }
     , dob = req.body.dob.length > 0? req.body.dob: null
     , doh = req.body.doh.length > 0? req.body.doh: null
-    , prenatalLoc = req.body.prenatalLocation.length > 0? req.body.prenatalLocation: null
-    , prenatalDay = req.body.prenatalDay.length > 0? req.body.prenatalDay: null
+    , prenatalLoc = req.body.prenatalLocation && req.body.prenatalLocation.length > 0? req.body.prenatalLocation: null
+    , prenatalDay = req.body.prenatalDay && req.body.prenatalDay.length > 0? req.body.prenatalDay: null
     , priorityBarcode = req.body.priorityBarcode || void(0)
     , pregFlds = _.omit(req.body, ['_csrf', 'dob'])
     , patFlds = {}
@@ -833,9 +833,9 @@ var generalAddSave = function(req, res) {
   // --------------------------------------------------------
   // If unselected, don't translate that to 'No'.
   // --------------------------------------------------------
-  if (pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
-  if (pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
-  if (pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
+  if (! pregFlds.mbBook || pregFlds.mbBook.length === 0) pregFlds.mbBook = null;
+  if (pregFlds.mbBook && pregFlds.mbBook === 'Y') pregFlds.mbBook = 1;
+  if (pregFlds.mbBook && pregFlds.mbBook === 'N') pregFlds.mbBook = 0;
 
   // --------------------------------------------------------
   // Validate the fields.
