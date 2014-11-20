@@ -449,6 +449,7 @@ INSERT INTO `roFieldsByRole`
   (roleName, tableName, fieldName)
 VALUES
   ('clerk', 'prenatalExam', 'fh'),
+  ('clerk', 'prenatalExam', 'fhNote'),
   ('clerk', 'prenatalExam', 'fht'),
   ('clerk', 'prenatalExam', 'fhtNote'),
   ('clerk', 'prenatalExam', 'pos'),

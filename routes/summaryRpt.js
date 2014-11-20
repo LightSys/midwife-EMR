@@ -833,10 +833,10 @@ var doMedications = function(doc, data, opts, ypos) {
  * doPrenatalNotes()
  *
  * Write out the notes for each prenatal exam in a table.
- * There are actually three note fields, two long and one
- * short.
+ * There are four note fields, two long and two short.
  *
  * fhtNote  - short
+ * fhNote   - short
  * risk     - long
  * note     - long
  *
@@ -856,20 +856,21 @@ var doPrenatalNotes = function(doc, data, opts, ypos) {
   colNames.push('Date ');
   colNames.push('Risk                          ');
   colNames.push('Other Notes                   ');
+  colNames.push('FH Note');
   colNames.push('FHT Note');
 
   _.each(data.prenatalExams, function(row) {
     var data = []
       ;
-    if (row.note) {
+    if (row.risk || row.note || row.fhNote || row.fhtNote) {
       data.push(moment(row.date).format('MM-DD-YYYY'));
       data.push(row.risk);
       data.push(row.note);
+      data.push(row.fhNote);
       data.push(row.fhtNote);
       colData.push(data);
     }
   });
-
 
   doLabel(doc, 'Prenatal Examination Notes', x, y);
   y += 10;

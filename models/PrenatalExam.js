@@ -26,6 +26,7 @@ CREATE TABLE `prenatalExam` (
   `temperature` decimal(4,1) DEFAULT NULL,
   `respiratoryRate` int(11) DEFAULT NULL,
   `fh` int(11) DEFAULT NULL,
+  `fhNote` varchar(30) DEFAULT NULL,
   `fht` int(11) DEFAULT NULL,
   `fhtNote` varchar(20) DEFAULT NULL,
   `pos` varchar(10) DEFAULT NULL,
@@ -47,16 +48,16 @@ CREATE TABLE `prenatalExam` (
   CONSTRAINT `prenatalExam_ibfk_1` FOREIGN KEY (`pregnancy_id`) REFERENCES `pregnancy` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `prenatalExam_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `prenatalExam_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=10001 DEFAULT CHARSET=latin1
 */
 
 PrenatalExam = Bookshelf.Model.extend({
   tableName: 'prenatalExam'
 
   , permittedAttributes: ['id', 'date', 'weight', 'systolic', 'diastolic', 'cr',
-      'temperature', 'respiratoryRate', 'fh', 'fht', 'fhtNote', 'pos', 'mvmt',
-      'edema', 'risk', 'vitamin', 'pray', 'note', 'returnDate', 'updatedBy',
-      'updatedAt', 'supervisor', 'pregnancy_id']
+      'temperature', 'respiratoryRate', 'fh', 'fhNote', 'fht', 'fhtNote', 'pos',
+      'mvmt', 'edema', 'risk', 'vitamin', 'pray', 'note', 'returnDate',
+      'updatedBy', 'updatedAt', 'supervisor', 'pregnancy_id']
 
   , initialize: function() {
       this.on('saving', this.saving, this);

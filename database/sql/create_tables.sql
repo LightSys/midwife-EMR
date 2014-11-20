@@ -375,6 +375,7 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
   temperature DECIMAL(4,1) NULL,
   respiratoryRate INT NULL,
   fh INT NULL,
+  fhNote VARCHAR(30) NULL,
   fht INT NULL,
   fhtNote VARCHAR(20) NULL,
   pos VARCHAR(10) NULL,

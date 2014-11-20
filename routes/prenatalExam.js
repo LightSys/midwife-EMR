@@ -21,7 +21,7 @@ var _ = require('underscore')
   ;
 
 /* --------------------------------------------------------
- * prentalExamAdd()
+ * prentalExamAddForm()
  *
  * Displays the form to add a prenatal exam.
  * -------------------------------------------------------- */

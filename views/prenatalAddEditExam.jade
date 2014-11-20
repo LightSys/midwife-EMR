@@ -66,36 +66,41 @@ block prenatalAddEditExam
               span= gettext('FH')
               input(id='fh', class='form-control', type='number', tabindex="8", autocomplete="off", name='fh', disabled=readonlyFields.fh, value=prenatalExam.fh)
             div.col-md-6
+              span= gettext('FH Note')
+              input(id='fhNote', class='form-control', type='text', tabindex='9', spellcheck="off", autocomplete='off', name='fhNote', disabled=readonlyFields.fhNote, value=prenatalExam.fhNote)
+          div.row
+            div.col-md-6
               span= gettext('FHT')
-              input(id='fht', class='form-control', type='number', tabindex="9", autocomplete="off", name='fht', disabled=readonlyFields.fht, value=prenatalExam.fht)
-          span= gettext('FHT Note')
-          input(id='fhtNote', class='form-control', type='text', tabindex='10', spellcheck="off", autocomplete='off', name='fhtNote', disabled=readonlyFields.fhtNote, value=prenatalExam.fhtNote)
+              input(id='fht', class='form-control', type='number', tabindex="10", autocomplete="off", name='fht', disabled=readonlyFields.fht, value=prenatalExam.fht)
+            div.col-md-6
+              span= gettext('FHT Note')
+              input(id='fhtNote', class='form-control', type='text', tabindex='11', spellcheck="off", autocomplete='off', name='fhtNote', disabled=readonlyFields.fhtNote, value=prenatalExam.fhtNote)
           span= gettext('Position (saved all caps)')
-          input(id='pos', class='form-control', type='text', tabindex="11", autocomplete="off", name='pos', disabled=readonlyFields.pos, value=prenatalExam.pos)
+          input(id='pos', class='form-control', type='text', tabindex="12", autocomplete="off", name='pos', disabled=readonlyFields.pos, value=prenatalExam.pos)
 
         div(class='form-group col-md-3')
           label(class='')= gettext('Other Information')
           div.checkbox
             label= gettext('Mvmt')
-              input(type='checkbox', name='mvmt', tabindex="12", disabled=readonlyFields.mvmt, value=1, checked=prenatalExam.mvmt==true)
+              input(type='checkbox', name='mvmt', tabindex="13", disabled=readonlyFields.mvmt, value=1, checked=prenatalExam.mvmt==true)
           div.checkbox
             label= gettext('Edema')
-              +select('form-control', 'edema', 13, edema, readonlyFields.edema)
+              +select('form-control', 'edema', 14, edema, readonlyFields.edema)
           span= gettext('Risk')
               input(class='form-control', type='text', name='risk', spellcheck="off", autocomplete="off", tabindex="14", disabled=readonlyFields.risk, value=prenatalExam.risk)
           div.checkbox
             label= gettext('Vitamin')
-              input(type='checkbox', name='vitamin', tabindex="15", disabled=readonlyFields.vitamin, value=1, checked=prenatalExam.vitamin==true)
+              input(type='checkbox', name='vitamin', tabindex="16", disabled=readonlyFields.vitamin, value=1, checked=prenatalExam.vitamin==true)
           div.checkbox
             label= gettext('Pray')
-              input(type='checkbox', name='pray', tabindex="16", disabled=readonlyFields.pray, value=1, checked=prenatalExam.pray==true)
+              input(type='checkbox', name='pray', tabindex="17", disabled=readonlyFields.pray, value=1, checked=prenatalExam.pray==true)
 
         div(class='form-group col-md-3')
           label(class='')= gettext('Other continued')
           div= gettext('Notes')
-          textarea(id='note', class='form-control', tabindex="17", spellcheck="off", autocomplete="off", wrap="soft", rows="4", disabled=readonlyFields.note, name='note')= prenatalExam.note
+          textarea(id='note', class='form-control', tabindex="18", spellcheck="off", autocomplete="off", wrap="soft", rows="4", disabled=readonlyFields.note, name='note')= prenatalExam.note
           div= gettext('Return Date')
-          +datePicker('form-control', 18, 'returnDate', returnDate, 'returnDate', '+1m', readonlyFields.returnDate)
+          +datePicker('form-control', 19, 'returnDate', returnDate, 'returnDate', '+1m', readonlyFields.returnDate)
 
 
       div.row
