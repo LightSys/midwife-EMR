@@ -215,6 +215,33 @@ describe('Util', function(done) {
       edd.day().should.equal(validEdd.day());
       done();
     });
+
+    it('should return a string in YYYY-MM-DD format by default', function(done) {
+      var lmp = moment('2000-01-01')
+        , edd
+        ;
+      edd = util.calcEdd(lmp);
+      edd.should.be.a.String;
+      /....-..-../.test(edd).should.be.true;
+      edd.slice(0, 4).should.equal('2000');
+      edd.slice(5, 7).should.equal('10');
+      edd.slice(8, 10).should.equal('07');
+      done();
+    });
+
+    it('should return a string in MM/DD/YYYY format if requested', function(done) {
+      var lmp = moment('2000-01-01')
+        , edd
+        ;
+      edd = util.calcEdd(lmp, 'MM/DD/YYYY');
+      edd.should.be.a.String;
+      /..\/..\/..../.test(edd).should.be.true;
+      edd.slice(0, 2).should.equal('10');
+      edd.slice(3, 5).should.equal('07');
+      edd.slice(6, 10).should.equal('2000');
+      done();
+    });
+
   });
 
   describe('addBlankSelectData', function(done) {
