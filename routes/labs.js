@@ -187,7 +187,7 @@ var labTestSave = function(req, res) {
         testResults[testId] = {
           labTest_id: testId
           , pregnancy_id: req.paramPregnancy.id
-          , testDate: moment(testDate).format('YYYY-MM-DD')
+          , testDate: testDate
           , result: ''
           , result2: ''
           , warn: null

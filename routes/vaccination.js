@@ -127,7 +127,7 @@ var vaccinationSave = function(req, res) {
     // --------------------------------------------------------
     // Handle date, year, and month combinations.
     // --------------------------------------------------------
-    if (flds.vacDate.length > 0 && moment(flds.vacDate).isValid()) {
+    if (flds.vacDate.length > 0 && moment(flds.vacDate, 'YYYY-MM-DD').isValid()) {
       flds.vacMonth = null;
       flds.vacYear = null;
     } else {

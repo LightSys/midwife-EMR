@@ -261,8 +261,8 @@ var getColXpos = function(opts) {
  * return     undefined
  * -------------------------------------------------------- */
 var doFromTo = function(doc, from, to) {
-  var fromDate = moment(from).format('MM/DD/YYYY')
-    , toDate = moment(to).format('MM/DD/YYYY')
+  var fromDate = moment(from, 'YYYY-MM-DD').format('MM/DD/YYYY')
+    , toDate = moment(to, 'YYYY-MM-DD').format('MM/DD/YYYY')
     ;
   doc
     .font(FONTS.HelveticaBold)
@@ -800,8 +800,8 @@ var doReport = function(flds, writable, logisticsName) {
     , opts = {}
     ;
 
-  opts.fromDate = moment(flds.dateFrom).format('YYYY-MM-DD');
-  opts.toDate = moment(flds.dateTo).format('YYYY-MM-DD');
+  opts.fromDate = flds.dateFrom;
+  opts.toDate = flds.dateTo;
   opts.logisticsName = logisticsName;
   opts.title = options.info.Title;
   opts.margins = options.margins;
@@ -818,8 +818,8 @@ var doReport = function(flds, writable, logisticsName) {
       var data = []
         , dataMap = {}
         , currPregId = 0
-        , fDate = moment(opts.fromDate)
-        , tDate = moment(opts.toDate)
+        , fDate = moment(opts.fromDate, 'YYYY-MM-DD')
+        , tDate = moment(opts.toDate, 'YYYY-MM-DD')
         ;
 
       // --------------------------------------------------------
@@ -878,11 +878,11 @@ var run = function(req, res) {
   // --------------------------------------------------------
   // Check that required fields are in place.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom).isValid()) {
+  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo).isValid()) {
+  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }

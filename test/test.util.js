@@ -46,7 +46,7 @@ describe('Util', function(done) {
     });
 
     it('should handle edd in the future by 23 days', function(done) {
-      var edd = moment().add('days', 23)
+      var edd = moment().add(23, 'days')
         , result
         ;
       result = util.getGA(edd);
@@ -55,7 +55,7 @@ describe('Util', function(done) {
     });
 
     it('should handle edd in the future by 180 days', function(done) {
-      var edd = moment().add('days', 180)
+      var edd = moment().add(180, 'days')
         , result
         ;
       result = util.getGA(edd);
@@ -64,7 +64,7 @@ describe('Util', function(done) {
     });
 
     it('should handle edd in the past by 23 days', function(done) {
-      var edd = moment().subtract('days', 23)
+      var edd = moment().subtract(23, 'days')
         , result
         ;
       result = util.getGA(edd);
@@ -73,7 +73,7 @@ describe('Util', function(done) {
     });
 
     it('should handle edd in the past by 180 days', function(done) {
-      var edd = moment().subtract('days', 180)
+      var edd = moment().subtract(180, 'days')
         , result
         ;
       result = util.getGA(edd);
@@ -82,8 +82,8 @@ describe('Util', function(done) {
     });
 
     it('should handle edd & rDate parameters', function(done) {
-      var edd = moment().subtract('days', 100)
-        , rDate = moment(edd).subtract('days', 23)
+      var edd = moment().subtract(100, 'days')
+        , rDate = moment(edd).subtract(23, 'days')
         , result
         ;
       result = util.getGA(edd, rDate);
@@ -92,8 +92,8 @@ describe('Util', function(done) {
     });
 
     it('should handle edd & rDate parameters with rDate greater than edd', function(done) {
-      var edd = moment().subtract('days', 100)
-        , rDate = edd.clone().add('days', 23)
+      var edd = moment().subtract(100, 'days')
+        , rDate = edd.clone().add(23, 'days')
         , result
         ;
       result = util.getGA(edd, rDate);
@@ -102,8 +102,8 @@ describe('Util', function(done) {
     });
 
     it('should handle date objects as parameters', function(done) {
-      var edd = moment().subtract('days', 100).toDate()
-        , rDate = moment(edd).add('days', 23).toDate()
+      var edd = moment().subtract(100, 'days').toDate()
+        , rDate = moment(edd).add(23, 'days').toDate()
         , result
         ;
       result = util.getGA(edd, rDate);
@@ -118,6 +118,16 @@ describe('Util', function(done) {
         ;
       result = util.getGA(edd, rDate);
       result.should.equal('28 4/7');
+      done();
+    });
+
+    it('should handle a ref date before pregnancy started', function(done) {
+      var edd = '2014-12-01'
+        , rDate = '2014-01-03'
+        , result
+        ;
+      result = util.getGA(edd, rDate);
+      result.should.equal('0 0/7');
       done();
     });
 
@@ -170,9 +180,9 @@ describe('Util', function(done) {
       edd = util.calcEdd(lmp);
       if (! edd) return done(new Error('Result was undefined'));
       moment.isMoment(edd).should.be.false;
-      moment(edd).isValid().should.be.true;
       edd.should.be.a.String;
       /....-..-../.test(edd).should.be.true;
+      moment(edd, 'YYYY-MM-DD').isValid().should.be.true;
       done();
     });
 
@@ -184,19 +194,30 @@ describe('Util', function(done) {
       edd = util.calcEdd(lmp);
       if (! edd) return done(new Error('Result was undefined'));
       moment.isMoment(edd).should.be.false;
-      moment(edd).isValid().should.be.true;
       edd.should.be.a.String;
       /....-..-../.test(edd).should.be.true;
+      moment(edd, 'YYYY-MM-DD').isValid().should.be.true;
+      done();
+    });
+
+    it('if passed a String instance, should throw an error', function(done) {
+      var lmp = '2014-11-23'
+        , edd
+        , isValid
+        ;
+      (function() {
+        edd = util.calcEdd(lmp);
+      }).should.throw();
       done();
     });
 
     it('should estimate based on historical lmp', function(done) {
-      var lmp = moment().subtract('days', 55)
+      var lmp = moment().subtract(55, 'days')
         , edd
         , validEdd = moment(lmp)
         ;
-      validEdd.add('days', 280);
-      edd = moment(util.calcEdd(lmp));
+      validEdd.add(280, 'days');
+      edd = moment(util.calcEdd(lmp), 'YYYY-MM-DD');
       edd.year().should.equal(validEdd.year());
       edd.month().should.equal(validEdd.month());
       edd.day().should.equal(validEdd.day());
@@ -204,12 +225,12 @@ describe('Util', function(done) {
     });
 
     it('should estimate based on future lmp', function(done) {
-      var lmp = moment().add('days', 55)
+      var lmp = moment().add(55, 'days')
         , edd
         , validEdd = moment(lmp)
         ;
-      validEdd.add('days', 280);
-      edd = moment(util.calcEdd(lmp));
+      validEdd.add(280, 'days');
+      edd = moment(util.calcEdd(lmp), 'YYYY-MM-DD');
       edd.year().should.equal(validEdd.year());
       edd.month().should.equal(validEdd.month());
       edd.day().should.equal(validEdd.day());
@@ -217,7 +238,7 @@ describe('Util', function(done) {
     });
 
     it('should return a string in YYYY-MM-DD format by default', function(done) {
-      var lmp = moment('2000-01-01')
+      var lmp = moment('2000-01-01', 'YYYY-MM-DD')
         , edd
         ;
       edd = util.calcEdd(lmp);
@@ -230,7 +251,7 @@ describe('Util', function(done) {
     });
 
     it('should return a string in MM/DD/YYYY format if requested', function(done) {
-      var lmp = moment('2000-01-01')
+      var lmp = moment('2000-01-01', 'YYYY-MM-DD')
         , edd
         ;
       edd = util.calcEdd(lmp, 'MM/DD/YYYY');

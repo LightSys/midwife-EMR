@@ -34,6 +34,7 @@ var _ = require('underscore')
   , doSiteTitle = require('./reportGeneral').doSiteTitle
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
+  , NO_RECORDS_FOUND_TYPE = 1000
   ;
 
 
@@ -99,8 +100,8 @@ var doColumnHeader = function(doc) {
  * return     undefined
  * -------------------------------------------------------- */
 var doFromTo = function(doc, from, to) {
-  var fromDate = moment(from).format('MM/DD/YYYY')
-    , toDate = moment(to).format('MM/DD/YYYY')
+  var fromDate = moment(from, 'YYYY-MM-DD').format('MM/DD/YYYY')
+    , toDate = moment(to, 'YYYY-MM-DD').format('MM/DD/YYYY')
     ;
   doc
     .font(FONTS.HelveticaBold)
@@ -182,6 +183,16 @@ var getData = function(dateFrom, dateTo) {
       })
       .then(function(list) {
         pregIds = _.pluck(list, 'pregnancy_id');
+        logInfo('Deworming Report: ' + pregIds.length + ' pregnancies.');
+        if (pregIds.length === 0) {
+          // --------------------------------------------------------
+          // Throw something that can be caught appropriately to let
+          // the user know that no records were found.
+          // --------------------------------------------------------
+          var err = new Error('No records were found using from: ' + dateFrom + ', to: ' + dateTo);
+          err.type = NO_RECORDS_FOUND_TYPE;
+          throw err;
+        }
       })
       .then(function(medTypes) {
         // --------------------------------------------------------
@@ -244,7 +255,13 @@ var getData = function(dateFrom, dateTo) {
             logError(err);
             reject(err);
           });
+      })
+      .caught(function(err) {
+        reject(err);
       });
+  })
+  .caught(function(err) {
+    return err;
   });
 };
 
@@ -412,8 +429,8 @@ var doReport = function(flds, writable, logisticsName) {
     , opts = {}
     ;
 
-  opts.fromDate = moment(flds.dateFrom).format('YYYY-MM-DD');
-  opts.toDate = moment(flds.dateTo).format('YYYY-MM-DD');
+  opts.fromDate = flds.dateFrom;
+  opts.toDate = flds.dateTo;
   opts.logisticsName = logisticsName;
 
   // --------------------------------------------------------
@@ -422,10 +439,37 @@ var doReport = function(flds, writable, logisticsName) {
   doc.pipe(writable);
 
   // Build the parts of the document.
+  // Note that the result from the promise will either be a list
+  // or an Error.
   getData(opts.fromDate, opts.toDate)
-    .then(function(list) {
-      opts.totalRows = list.length;
-      doPages(doc, list, rowsPerPage, opts);
+    .then(function(result) {
+      if (_.isArray(result)) {
+        opts.totalRows = result.length;
+        doPages(doc, result, rowsPerPage, opts);
+      } else {
+        // --------------------------------------------------------
+        // An "error" occurred of some sort. It may be just that
+        // there were no records for the report, or something more
+        // serious. Output to the report so that serious errors
+        // can be reported by the users.
+        // --------------------------------------------------------
+        if (result && result.type && result.type === NO_RECORDS_FOUND_TYPE) {
+          centerText(doc, 'No records were generated for the report.', FONTS.HelveticaBold, 20, 100);
+        } else {
+          centerText(doc, 'Oops! An error occurred.', FONTS.HelveticaBold, 20, 100);
+          doc
+            .font(FONTS.HelveticaBold)
+            .fontSize(15)
+            .text('1. Please print and/or save this page.', 20, 130)
+            .text('2. Then give this page to your supervisor.', 20, 160);
+        }
+        if (result && result.message) {
+          doc
+            .font(FONTS.Helvetica)
+            .fontSize(10)
+            .text(result.message, 20, 200);
+        }
+      }
     })
     .then(function() {
       doc.end();
@@ -448,11 +492,11 @@ var run = function(req, res) {
   // --------------------------------------------------------
   // Check that required fields are in place.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom).isValid()) {
+  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo).isValid()) {
+  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }

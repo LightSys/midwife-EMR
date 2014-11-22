@@ -41,10 +41,14 @@ $(function() {
       if (! lmp) throw new Error('calcEdd() must be called with the lmp date.');
       var edd
         ;
-      if (! (moment(lmp)).isValid()) {
+
+      // --------------------------------------------------------
+      // Sanity check that we are passed a Date or Moment.
+      // --------------------------------------------------------
+      if (! _.isDate(lmp) && ! moment.isMoment(lmp)) {
         throw new Error('calcEdd() must be called with a valid date.');
       }
-      edd = moment(lmp).add('days', 280);
+      edd = moment(lmp).add(280, 'days');
       if (format) return edd.format(format);
       return edd.format('YYYY-MM-DD');
     };

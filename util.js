@@ -71,7 +71,12 @@ var logError = function(msg) {
  *
  * Calculation assumes a 40 week pregnancy and subtracts
  * the refDate from the estimated due date, which is
- * also passed as a parameter.
+ * also passed as a parameter. Params edd and rDate can be
+ * Moment objects, JS Date objects, or strings in YYYY-MM-DD
+ * format.
+ *
+ * Note: if parameters are not 'date-like' per above specifications,
+ * will return an empty string.
  *
  * param      edd - estimated due date as JS Date or Moment obj
  * param      rDate - the reference date use for the calculation
@@ -79,10 +84,40 @@ var logError = function(msg) {
  * -------------------------------------------------------- */
 var getGA = function(edd, rDate) {
   if (! edd) throw new Error('getGA() must be called with an estimated due date.');
-  var estDue = moment(edd)
-    , refDate = moment(rDate) || moment()
-    , weeks = Math.abs(40 - estDue.diff(refDate, 'weeks') - 1)
-    , days = Math.abs(estDue.diff(refDate.add('weeks', 40 - weeks), 'days'))
+  var estDue
+    , refDate
+    , tmpDate
+    ;
+  // Sanity check for edd.
+  if (typeof edd === 'string' && /....-..-../.test(edd)) {
+    estDue = moment(edd, 'YYYY-MM-DD');
+  }
+  if (moment.isMoment(edd)) estDue = edd;
+  if (_.isDate(edd)) estDue = moment(edd);
+  if (! estDue) return '';
+
+  // Sanity check for rDate.
+  if (rDate) {
+    if (typeof rDate === 'string' && /....-..-../.test(rDate)) {
+      refDate = moment(rDate, 'YYYY-MM-DD');
+    }
+    if (moment.isMoment(rDate)) refDate = rDate;
+    if (_.isDate(rDate)) refDate = moment(rDate);
+    if (! refDate) return '';
+  } else {
+    refDate = moment();
+  }
+
+  // --------------------------------------------------------
+  // Sanity check for reference date before pregnancy started.
+  // --------------------------------------------------------
+  tmpDate = estDue.clone();
+  if (refDate.isBefore(tmpDate.subtract(280, 'days'))) {
+    return '0 0/7';
+  }
+
+  var weeks = Math.abs(40 - estDue.diff(refDate, 'weeks') - 1)
+    , days = Math.abs(estDue.diff(refDate.add(40 - weeks, 'weeks'), 'days'))
     ;
   if (_.isNaN(weeks) || ! _.isNumber(weeks)) return '';
   if (_.isNaN(days) || ! _.isNumber(days)) return '';
@@ -112,10 +147,14 @@ var calcEdd = function(lmp, format) {
   if (! lmp) throw new Error('calcEdd() must be called with the lmp date.');
   var edd
     ;
-  if (! (moment(lmp)).isValid()) {
+
+  // --------------------------------------------------------
+  // Sanity check that we are passed a Date or Moment.
+  // --------------------------------------------------------
+  if (! _.isDate(lmp) && ! moment.isMoment(lmp)) {
     throw new Error('calcEdd() must be called with a valid date.');
   }
-  edd = moment(lmp).add('days', 280);
+  edd = moment(lmp).add(280, 'days');
   if (format) return edd.format(format);
   return edd.format('YYYY-MM-DD');
 };

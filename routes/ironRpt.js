@@ -33,6 +33,7 @@ var _ = require('underscore')
   , doSiteTitle = require('./reportGeneral').doSiteTitle
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
+  , NO_RECORDS_FOUND_TYPE = 1000
   ;
 
 
@@ -159,6 +160,7 @@ var getData = function(dateFrom, dateTo) {
     , pregIds
     , data
     ;
+
   return new Promise(function(resolve, reject) {
     // --------------------------------------------------------
     // First get the ids of the medicines we are interested in.
@@ -182,6 +184,16 @@ var getData = function(dateFrom, dateTo) {
       })
       .then(function(list) {
         pregIds = _.pluck(list, 'pregnancy_id');
+        logInfo('Iron Report: ' + pregIds.length + ' pregnancies.');
+        if (pregIds.length === 0) {
+          // --------------------------------------------------------
+          // Throw something that can be caught appropriately to let
+          // the user know that no records were found.
+          // --------------------------------------------------------
+          var err = new Error('No records were found using from: ' + dateFrom + ', to: ' + dateTo);
+          err.type = NO_RECORDS_FOUND_TYPE;
+          throw err;
+        }
       })
       .then(function(medTypes) {
         // Now query the data restricted to those ids.
@@ -246,7 +258,13 @@ var getData = function(dateFrom, dateTo) {
             logError(err);
             reject(err);
           });
+      })
+      .caught(function(err) {
+        reject(err);
       });
+  })
+  .caught(function(err) {
+    return err;
   });
 };
 
@@ -413,8 +431,8 @@ var doReport = function(flds, writable, logisticsName) {
     , opts = {}
     ;
 
-  opts.fromDate = moment(flds.dateFrom).format('YYYY-MM-DD');
-  opts.toDate = moment(flds.dateTo).format('YYYY-MM-DD');
+  opts.fromDate = flds.dateFrom;
+  opts.toDate = flds.dateTo;
   opts.logisticsName = logisticsName;
   opts.title = options.info.Title;
 
@@ -424,46 +442,74 @@ var doReport = function(flds, writable, logisticsName) {
   doc.pipe(writable);
 
   // Build the parts of the document.
+  // Note that the result from the promise will either be a list
+  // or an Error.
   getData(opts.fromDate, opts.toDate)
-    .then(function(list) {
+    .then(function(result) {
       var data = []
         , dataMap = {}
         , currPregId = 0
-        , fDate = moment(opts.fromDate)
-        , tDate = moment(opts.toDate)
+        , fDate = moment(opts.fromDate, 'YYYY-MM-DD')
+        , tDate = moment(opts.toDate, 'YYYY-MM-DD')
         ;
 
-      // --------------------------------------------------------
-      // Break out the iron dispensations into order by pregnancy.
-      // Assumes that the list is sorted by pregnancy_id then
-      // by date.
-      // --------------------------------------------------------
-      _.each(list, function(rec) {
-        if (dataMap[rec.pregnancy_id]) {
-          dataMap[rec.pregnancy_id].push(rec);
-        } else {
-          dataMap[rec.pregnancy_id] = [rec];
-        }
-      });
+      if (_.isArray(result)) {
 
-      // --------------------------------------------------------
-      // Populate the data array with the records that are needed
-      // for this particular report.
-      // --------------------------------------------------------
-      _.each(_.keys(dataMap), function(key) {
-        var rec = dataMap[key][reportNum-1]
-          , recDate
-          ;
-        if (rec) {
-          recDate = moment(rec.date);
-          if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
-              ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
-            data.push(rec);
+        // --------------------------------------------------------
+        // Break out the iron dispensations into order by pregnancy.
+        // Assumes that the result is sorted by pregnancy_id then
+        // by date.
+        // --------------------------------------------------------
+        _.each(result, function(rec) {
+          if (dataMap[rec.pregnancy_id]) {
+            dataMap[rec.pregnancy_id].push(rec);
+          } else {
+            dataMap[rec.pregnancy_id] = [rec];
           }
-        }
-      });
+        });
 
-      doPages(doc, data, rowsPerPage, opts);
+        // --------------------------------------------------------
+        // Populate the data array with the records that are needed
+        // for this particular report.
+        // --------------------------------------------------------
+        _.each(_.keys(dataMap), function(key) {
+          var rec = dataMap[key][reportNum-1]
+            , recDate
+            ;
+          if (rec) {
+            recDate = moment(rec.date);
+            if ((recDate.isSame(fDate, 'day') || (recDate.isAfter(fDate, 'day'))) &&
+                ((recDate.isSame(tDate, 'day')) || (recDate.isBefore(tDate, 'day')))) {
+              data.push(rec);
+            }
+          }
+        });
+
+        doPages(doc, data, rowsPerPage, opts);
+      } else {
+        // --------------------------------------------------------
+        // An "error" occurred of some sort. It may be just that
+        // there were no records for the report, or something more
+        // serious. Output to the report so that serious errors
+        // can be reported by the users.
+        // --------------------------------------------------------
+        if (result && result.type && result.type === NO_RECORDS_FOUND_TYPE) {
+          centerText(doc, 'No records were generated for the report.', FONTS.HelveticaBold, 20, 100);
+        } else {
+          centerText(doc, 'Oops! An error occurred.', FONTS.HelveticaBold, 20, 100);
+          doc
+            .font(FONTS.HelveticaBold)
+            .fontSize(15)
+            .text('1. Please print and/or save this page.', 20, 130)
+            .text('2. Then give this page to your supervisor.', 20, 160);
+        }
+        if (result && result.message) {
+          doc
+            .font(FONTS.Helvetica)
+            .fontSize(10)
+            .text(result.message, 20, 200);
+        }
+      }
     })
     .then(function() {
       doc.end();
@@ -486,11 +532,11 @@ var run = function(req, res) {
   // --------------------------------------------------------
   // Check that required fields are in place.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom).isValid()) {
+  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo).isValid()) {
+  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }

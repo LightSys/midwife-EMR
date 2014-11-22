@@ -2197,13 +2197,13 @@ var doPageNumber = function(doc, opts, side, page) {
   var xStr1 = opts.margins.left
     , xStr2
     , y = opts.margins.top + 10
-    , from = moment(opts.fromDate).format('ddd MMM DD, YYYY')
-    , to = moment(opts.toDate).format('ddd MMM DD, YYYY')
+    , from = moment(opts.fromDate, 'YYYY-MM-DD').format('ddd MMM DD, YYYY')
+    , to = moment(opts.toDate, 'YYYY-MM-DD').format('ddd MMM DD, YYYY')
     , str1 = 'Page ' + page + ' - ' + side
     , str2 = 'Reporting for: ' + from + ' to ' + to
     ;
 
-  if (moment(opts.fromDate).isSame(moment(opts.toDate), 'day')) {
+  if (moment(opts.fromDate, 'YYYY-MM-DD').isSame(moment(opts.toDate, 'YYYY-MM-DD'), 'day')) {
     str2 = 'Reporting for: ' + from;
   }
   doc
@@ -2414,8 +2414,8 @@ var doReport = function(flds, writable) {
     , opts = {}
     ;
 
-  opts.fromDate = moment(flds.dateFrom).format('YYYY-MM-DD');
-  opts.toDate = moment(flds.dateTo).format('YYYY-MM-DD');
+  opts.fromDate = flds.dateFrom;
+  opts.toDate = flds.dateTo;
   opts.title = options.info.Title;
   opts.margins = options.margins;
 
@@ -2467,11 +2467,11 @@ var run = function(req, res) {
   // Check that required fields are in place.
   // Note: logistics in charge is not necessary for this report.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom).isValid()) {
+  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo).isValid()) {
+  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo, 'YYYY-MM-DD').isValid()) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }

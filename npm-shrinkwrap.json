@@ -916,9 +916,9 @@
       }
     },
     "moment": {
-      "version": "2.4.0",
-      "from": "moment@~2.4.0",
-      "resolved": "https://registry.npmjs.org/moment/-/moment-2.4.0.tgz"
+      "version": "2.8.4",
+      "from": "moment@2.8.4",
+      "resolved": "https://registry.npmjs.org/moment/-/moment-2.8.4.tgz"
     },
     "mysql": {
       "version": "2.0.1",

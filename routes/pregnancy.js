@@ -212,7 +212,13 @@ var load = function(req, res, next) {
           ;
         if (val === null) return '';
         if (val === '0000-00-00') return '';
-        d = moment(val);
+        if (_.isDate(val)) {
+          d = moment(val);
+        } else if (typeof val === 'string' && /....-..-../.test(val)) {
+          d = moment(val, 'YYYY-MM-DD');
+        } else {
+          return '';
+        }
         if (! d.isValid()) return '';
         return d.format('YYYY-MM-DD');
       }
