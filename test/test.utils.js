@@ -61,16 +61,16 @@ describe('Utils', function(done) {
       utils.getFormFieldsAsync(request, admin, path, formName)
         .then(function(fldNames) {
           fldNames.should.be.an.instanceOf(Array).and.have.length(10);
-          fldNames.should.contain('username');
-          fldNames.should.contain('firstname');
-          fldNames.should.contain('lastname');
-          fldNames.should.contain('password');
-          fldNames.should.contain('password2');
-          fldNames.should.contain('email');
-          fldNames.should.contain('note');
-          fldNames.should.contain('displayName');
-          fldNames.should.contain('_csrf');
-          fldNames.should.contain('status');
+          fldNames.should.containEql('username');
+          fldNames.should.containEql('firstname');
+          fldNames.should.containEql('lastname');
+          fldNames.should.containEql('password');
+          fldNames.should.containEql('password2');
+          fldNames.should.containEql('email');
+          fldNames.should.containEql('note');
+          fldNames.should.containEql('displayName');
+          fldNames.should.containEql('_csrf');
+          fldNames.should.containEql('status');
           done();
         })
         .catch(function(e) {
