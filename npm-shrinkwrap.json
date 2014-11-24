@@ -75,9 +75,9 @@
       "resolved": "https://registry.npmjs.org/commander/-/commander-2.2.0.tgz"
     },
     "connect-mysql": {
-      "version": "2.0.0",
-      "from": "connect-mysql@~2.0.0",
-      "resolved": "https://registry.npmjs.org/connect-mysql/-/connect-mysql-2.0.0.tgz"
+      "version": "2.1.1",
+      "from": "connect-mysql@2.1.1",
+      "resolved": "https://registry.npmjs.org/connect-mysql/-/connect-mysql-2.1.1.tgz"
     },
     "consolidate": {
       "version": "0.10.0",
@@ -932,41 +932,44 @@
       "resolved": "https://registry.npmjs.org/moment/-/moment-2.8.4.tgz"
     },
     "mysql": {
-      "version": "2.0.1",
-      "from": "mysql@~2.0.0-rc2",
-      "resolved": "https://registry.npmjs.org/mysql/-/mysql-2.0.1.tgz",
+      "version": "2.5.3",
+      "from": "mysql@2.5.3",
+      "resolved": "https://registry.npmjs.org/mysql/-/mysql-2.5.3.tgz",
       "dependencies": {
-        "require-all": {
-          "version": "0.0.3",
-          "from": "require-all@0.0.3",
-          "resolved": "https://registry.npmjs.org/require-all/-/require-all-0.0.3.tgz"
-        },
         "bignumber.js": {
-          "version": "1.0.1",
-          "from": "bignumber.js@1.0.1",
-          "resolved": "https://registry.npmjs.org/bignumber.js/-/bignumber.js-1.0.1.tgz"
+          "version": "1.4.1",
+          "from": "bignumber.js@1.4.1",
+          "resolved": "https://registry.npmjs.org/bignumber.js/-/bignumber.js-1.4.1.tgz"
         },
         "readable-stream": {
-          "version": "1.1.10",
-          "from": "readable-stream@~1.1.9",
-          "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-1.1.10.tgz",
+          "version": "1.1.13",
+          "from": "readable-stream@~1.1.13",
+          "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-1.1.13.tgz",
           "dependencies": {
             "core-util-is": {
               "version": "1.0.1",
-              "from": "core-util-is@~1.0.0",
-              "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.1.tgz"
+              "from": "core-util-is@~1.0.0"
+            },
+            "isarray": {
+              "version": "0.0.1",
+              "from": "isarray@0.0.1",
+              "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
             },
             "string_decoder": {
-              "version": "0.10.24",
+              "version": "0.10.31",
               "from": "string_decoder@~0.10.x",
-              "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-0.10.24.tgz"
+              "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-0.10.31.tgz"
             },
-            "debuglog": {
-              "version": "0.0.2",
-              "from": "debuglog@0.0.2",
-              "resolved": "https://registry.npmjs.org/debuglog/-/debuglog-0.0.2.tgz"
+            "inherits": {
+              "version": "2.0.1",
+              "from": "inherits@~2.0.1"
             }
           }
+        },
+        "require-all": {
+          "version": "0.0.8",
+          "from": "require-all@0.0.8",
+          "resolved": "https://registry.npmjs.org/require-all/-/require-all-0.0.8.tgz"
         }
       }
     },
