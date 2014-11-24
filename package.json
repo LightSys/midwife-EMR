@@ -11,7 +11,7 @@
     "connect-mysql": "~2.0.0",
     "consolidate": "~0.10.0",
     "express": "~3.4.7",
-    "express-device": "^0.3.10",
+    "express-device": "^0.3.11",
     "express-flash": "0.0.2",
     "git-history": "0.0.2",
     "heapdump": "^0.2.9",

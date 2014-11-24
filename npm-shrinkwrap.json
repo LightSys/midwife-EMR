@@ -237,9 +237,9 @@
       }
     },
     "express-device": {
-      "version": "0.3.10",
-      "from": "express-device@^0.3.10",
-      "resolved": "https://registry.npmjs.org/express-device/-/express-device-0.3.10.tgz",
+      "version": "0.3.11",
+      "from": "express-device@0.3.11",
+      "resolved": "https://registry.npmjs.org/express-device/-/express-device-0.3.11.tgz",
       "dependencies": {
         "express-partials": {
           "version": "0.3.0",
