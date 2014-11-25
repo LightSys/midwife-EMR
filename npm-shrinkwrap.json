@@ -1589,9 +1589,9 @@
       }
     },
     "recluster": {
-      "version": "0.3.6",
-      "from": "recluster@",
-      "resolved": "https://registry.npmjs.org/recluster/-/recluster-0.3.6.tgz"
+      "version": "0.3.7",
+      "from": "recluster@^0.3.7",
+      "resolved": "https://registry.npmjs.org/recluster/-/recluster-0.3.7.tgz"
     },
     "underscore": {
       "version": "1.7.0",
