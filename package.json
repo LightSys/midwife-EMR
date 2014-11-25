@@ -20,7 +20,7 @@
     "knex": "^0.6.22",
     "moment": "~2.8.4",
     "mysql": "^2.5.3",
-    "node-cache": "^0.4.1",
+    "node-cache": "^1.0.3",
     "passport": "~0.1.18",
     "passport-local": "~0.1.6",
     "pdfkit": "^0.6.2",

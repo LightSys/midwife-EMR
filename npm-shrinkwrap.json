@@ -974,9 +974,9 @@
       }
     },
     "node-cache": {
-      "version": "0.4.1",
-      "from": "node-cache@",
-      "resolved": "https://registry.npmjs.org/node-cache/-/node-cache-0.4.1.tgz"
+      "version": "1.0.3",
+      "from": "node-cache@1.0.3",
+      "resolved": "https://registry.npmjs.org/node-cache/-/node-cache-1.0.3.tgz"
     },
     "passport": {
       "version": "0.1.18",
