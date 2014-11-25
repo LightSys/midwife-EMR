@@ -1599,9 +1599,9 @@
       "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.7.0.tgz"
     },
     "validator": {
-      "version": "3.1.0",
-      "from": "validator@~3.1.0",
-      "resolved": "https://registry.npmjs.org/validator/-/validator-3.1.0.tgz"
+      "version": "3.22.1",
+      "from": "validator@~3.22.1",
+      "resolved": "https://registry.npmjs.org/validator/-/validator-3.22.1.tgz"
     }
   }
 }
