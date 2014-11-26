@@ -194,19 +194,23 @@ $(function() {
     // due date based upon the lmp date if the edd is not
     // already filled in.
     // --------------------------------------------------------
-    $('#prenatal-lmp').on('blur', function(evt) {
-      var lmp = moment(evt.target.value)
+    $('#prenatal-lmp').on('change', function(evt) {
+      var val = evt.target.value
         , eddFld = $('#prenatal-edd')
+        , lmp
         ;
-      if (eddFld.val().length == 0) {
-        try {
-          // --------------------------------------------------------
-          // Using the jQuery.UI.datepicker API to set the date.
-          // --------------------------------------------------------
-          eddFld.datepicker('setDate', calcEdd(lmp, 'MM/DD/YYYY'));
-        } catch (e) {
-          // Must not have contained a valid date.
-          console.log(e);
+      if (evt.target.value) {
+        lmp = moment(evt.target.value, 'MM/DD/YYYY');
+        if (eddFld.val().length == 0) {
+          try {
+            // --------------------------------------------------------
+            // Using the jQuery.UI.datepicker API to set the date.
+            // --------------------------------------------------------
+            eddFld.datepicker('setDate', calcEdd(lmp, 'MM/DD/YYYY'));
+          } catch (e) {
+            // Must not have contained a valid date.
+            console.log(e);
+          }
         }
       }
     });
