@@ -916,14 +916,17 @@ var generalAddSave = function(req, res) {
                   .fetch()
                   .then(function(priModel) {
                     var priorityPregId
-                      , msg
+                      , msg = 'Sorry, the priority barcode was not found. Please enter the barcode again.'
                       ;
                     if (priModel === null) {
                       // --------------------------------------------------------
                       // The priority number was not found which means that the
                       // priority number does not exist.
                       // --------------------------------------------------------
-                      msg = req.gettext('The guard did not assign this priority number. Please choose a different one.');
+                      if (priorityBarcode.length <= 3) {
+                        msg = 'Sorry, the priority barcode was not found. Did you enter the priority number instead of the barcode?';
+                      }
+                      msg = req.gettext(msg);
                       req.flash('error', msg);
                       return reject(msg);
                     }
