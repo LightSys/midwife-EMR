@@ -62,7 +62,7 @@ html(lang="en")
                 li
                   a(href="/checkout") <i class="fa fa-fw fa-circle-o"></i>
                     = gettext('Check Out')
-              if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')
+              if roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor')
                 li
                   a(href="/report/form") <i class="fa fa-fw fa-file-text-o"></i>
                     = gettext('Reports')
