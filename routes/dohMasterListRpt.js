@@ -162,6 +162,7 @@ var getData = function(dateFrom, dateTo) {
         return new PrenatalExams().query()
           .column('prenatalExam.pregnancy_id', 'prenatalExam.date AS prenatalExamDate')
           .whereIn('prenatalExam.pregnancy_id', pregIds)
+          .andWhere('prenatalExam.date', '<=', dateTo)
           .orderBy('prenatalExam.date')
           .select();
       })
@@ -205,6 +206,7 @@ var getData = function(dateFrom, dateTo) {
           .column('labTestResult.testDate', 'labTestResult.result',
             'labTestResult.result2', 'labTestResult.pregnancy_id', 'labTest.name')
           .innerJoin('labTest', 'labTest.id', 'labTestResult.labTest_id')
+          .where('labTestResult.testDate', '<=', dateTo)
           .whereIn('labTestResult.pregnancy_id', pregIds)
           .whereIn('labTest.name', ['Hemoglobin', 'Blood Type', 'Red Blood Cells',
               'White Blood Cells', 'Gram negative (-) extracellular diplococci',
@@ -231,6 +233,7 @@ var getData = function(dateFrom, dateTo) {
           .innerJoin('medicationType', 'medication.medicationType',
             'medicationType.id')
           .whereIn('medication.pregnancy_id', pregIds)
+          .andWhere('medication.date', '<=', dateTo)
           .select();
       })
       .then(function(list) {
@@ -331,7 +334,10 @@ var doRowPage1 = function(doc, opts, rec, rowNum) {
     , tmpWidth
     , tmpHeight
     , tmpStr
+    , tmpDate
     , lmp
+    , dateFrom = moment(opts.fromDate)
+    , dateTo = moment(opts.toDate)
     , tri1 = []
     , tri2 = []
     , tri3 = []
@@ -503,22 +509,30 @@ var doRowPage1 = function(doc, opts, rec, rowNum) {
   // --------------------------------------------------------
   // Seen by doctor.
   // --------------------------------------------------------
-  tmpStr = rec.doctorConsultDate && rec.doctorConsultDate !== '0000-00-00' ?
-    moment(rec.doctorConsultDate).format('MM/DD/YYYY'): '';
-  doc
-    .font(FONTS.Helvetica)
-    .fontSize(smallFont);
-  centerInCol(doc, tmpStr, colPos[10], colPos[11], startY + colPadTop);
+  if (rec.doctorConsultDate && rec.doctorConsultDate !== '0000-00-00') {
+    tmpDate = moment(rec.doctorConsultDate);
+    if (tmpDate.isBefore(dateTo) || tmpDate.isSame(dateTo)) {
+      tmpStr = tmpDate.format('MM/DD/YYYY');
+      doc
+        .font(FONTS.Helvetica)
+        .fontSize(smallFont);
+      centerInCol(doc, tmpStr, colPos[10], colPos[11], startY + colPadTop);
+    }
+  }
 
   // --------------------------------------------------------
   // Seen by dentist.
   // --------------------------------------------------------
-  tmpStr = rec.dentistConsultDate && rec.dentistConsultDate !== '0000-00-00' ?
-    moment(rec.dentistConsultDate).format('MM/DD/YYYY'): '';
-  doc
-    .font(FONTS.Helvetica)
-    .fontSize(smallFont);
-  centerInCol(doc, tmpStr, colPos[11], colPos[12], startY + colPadTop);
+  if (rec.dentistConsultDate && rec.dentistConsultDate !== '0000-00-00') {
+    tmpDate = moment(rec.dentistConsultDate);
+    if (tmpDate.isBefore(dateTo) || tmpDate.isSame(dateTo)) {
+      tmpStr = tmpDate.format('MM/DD/YYYY');
+      doc
+        .font(FONTS.Helvetica)
+        .fontSize(smallFont);
+      centerInCol(doc, tmpStr, colPos[11], colPos[12], startY + colPadTop);
+    }
+  }
 };
 
 
@@ -558,6 +572,20 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
     , cntBT = 0
     , cntUri = 0
     , tmpRec
+    , dateFrom = moment(opts.fromDate)
+    , dateTo = moment(opts.toDate)
+    , convertVacToMoment = function(obj) {
+        if (obj.vacDate && moment(obj.vacDate).isValid()) {
+          return moment(obj.vacDate);
+        } else if (obj.vacYear) {
+          if (obj.vacMonth) {
+            return moment({year: obj.vacYear, month: obj.vacMonth});
+          } else {
+            return moment({year: obj.vacYear});
+          }
+        }
+        return void 0;
+      }
     ;
 
   // --------------------------------------------------------
@@ -669,20 +697,8 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
   if (tmpList.length > 0) {
     // Sort tmpList in place.
     tmpList.sort(function(a, b) {
-      function convertToMoment(obj) {
-        if (obj.vacDate && moment(obj.vacDate).isValid()) {
-          return moment(obj.vacDate);
-        } else if (obj.vacYear) {
-          if (obj.vacMonth) {
-            return moment({year: obj.vacYear, month: obj.vacMonth});
-          } else {
-            return moment({year: obj.vacYear});
-          }
-        }
-        return void 0;
-      }
-      var ma = convertToMoment(a)
-        , mb = convertToMoment(b)
+      var ma = convertVacToMoment(a)
+        , mb = convertVacToMoment(b)
         ;
       if (! ma) return 1;
       if (! mb) return -1;
@@ -693,6 +709,12 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
     // given, only report on the first 5 because that is all the space
     // on the report that there is.
     if (tmpList.length > 5) tmpList.splice(5);
+
+    // Make sure that no vaccinations are included after the opts.toDate.
+    tmpList = _.filter(tmpList, function(vac) {
+      var mDate = convertVacToMoment(vac);
+      return (mDate.isBefore(dateTo) || mDate.isSame(dateTo));
+    });
 
     // Write to the column but move down according to the
     // number of prior Tetanus shots given externally.
