@@ -157,7 +157,7 @@ VALUES
   ('internalExternal', 'Internal', 'Internal', 0, 1, NOW()),
   ('internalExternal', 'External', 'External', 0, 1, NOW()),
   ('location', 'Mercy', 'Mercy', 1, 1, NOW()),
-  ('location', 'Agadao', 'Agadao', 0, 1, NOW()),
+  ('location', 'Agdao', 'Agdao', 0, 1, NOW()),
   ('location', 'Isla Verda', 'Isla Verda', 0, 1, NOW()),
   ('location', 'Samal', 'Samal', 0, 1, NOW()),
   ('scheduleType', '', '', 1, 1, NOW()),
