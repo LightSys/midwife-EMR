@@ -834,6 +834,10 @@ var generalAddSave = function(req, res) {
   patFlds = _.extend(common, {dob: dob, dohID: doh});
   if (prenatalLoc && prenatalDay) {
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
+  } else {
+    if (prenatalLoc || prenatalDay) {
+      req.flash('warning', req.gettext('Both Prenatal Day and Location have to be specified.'));
+    }
   }
 
   // --------------------------------------------------------
@@ -1153,7 +1157,10 @@ var generalEditSave = function(req, res) {
               // --------------------------------------------------------
               // Create or update the schedule records as necessary.
               // --------------------------------------------------------
-              if (_.isNull(prenatalDay) || _.isNull(prenatalLoc)) return;
+              if (_.isNull(prenatalDay) || _.isNull(prenatalLoc)) {
+                req.flash('warning', req.gettext('Both Prenatal Day and Location have to be specified.'));
+                return;
+              }
               return Schedule
                 .forge(schFlds)
                 .setUpdatedBy(req.session.user.id)
