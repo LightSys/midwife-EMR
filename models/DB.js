@@ -95,13 +95,16 @@ var init = function(dbSettings) {
         }
 
         // Tables known to not set updatedAt so don't log when they don't.
-        var noLoggingTables = ['event'];
+        var noLoggingTables = ['event', 'customField'];
 
         // Set the updatedAt field to the current time whether creating
         // or updating unless noLogging is set.
         if (! this.noLogging) {
           this.set('updatedAt', moment().format('YYYY-MM-DD HH:mm:ss'));
         } else {
+          // TODO: Re-examine this logic. Why have noLogging attribute on the
+          // table model and then also require the noLoggingTables entry on
+          // the parent? Shouldn't noLogging on the child be enough?
           if (!_.contains(noLoggingTables, this.tableName)) {
             logInfo('updatedAt not set for ' + this.tableName);
           }
