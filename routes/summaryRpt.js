@@ -1453,7 +1453,7 @@ var doReport = function doReport(id, writable) {
         , size: 'letter'
         , info: {
             Title: 'Summary Report: '
-            , Author: 'Mercy Application'
+            , Author: 'Midwife-EMR Application'
             , Subject: 'Summary Report'
         }
       }
@@ -1521,7 +1521,7 @@ var run = function run(req, res) {
   // Set up the header correctly.
   // --------------------------------------------------------
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; MercyReport.pdf');
+  res.setHeader('Content-Disposition', 'inline; SummaryRpt.pdf');
 
   doReport(id, writable);
 };

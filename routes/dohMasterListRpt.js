@@ -2427,7 +2427,7 @@ var doReport = function(flds, writable) {
         , size: 'folio'     // folio is Asia Legal, 8.5"x13"
         , info: {
             Title: 'MASTERLIST FOR PRENATAL'
-            , Author: 'Mercy Application'
+            , Author: 'Midwife-EMR Application'
             , Subject: 'DOH Masterlist for Prenatal Report'
         }
       }
@@ -2515,7 +2515,7 @@ var run = function(req, res) {
   // Set up the header correctly.
   // --------------------------------------------------------
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; MercyReport.pdf');
+  res.setHeader('Content-Disposition', 'inline; DOH-MasterList.pdf');
 
   doReport(flds, writable);
 };

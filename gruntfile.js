@@ -22,7 +22,7 @@ module.exports = function(grunt) {
         }
         , footerTarget: {
             files: {
-              'static/js/mercy-footer.min.js': [
+              'static/js/midwife-emr-footer.min.js': [
                 'bower_components/jquery/dist/jquery.js'
                 , 'bower_components/bootstrap/dist/js/bootstrap.js'
                 , 'bower_components/underscore/underscore.js'
@@ -32,15 +32,15 @@ module.exports = function(grunt) {
                 , 'bower_components/jquery.are-you-sure/jquery.are-you-sure.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
-                , 'client/js/mercy.js'
-                , 'client/js/mercy-home.js'
+                , 'client/js/midwife-emr.js'
+                , 'client/js/midwife-emr-home.js'
                 , 'client/js/priorityList.js'
               ]
             }
           }
         , headerTarget: {
             files: {
-              'static/js/mercy-header.min.js': [
+              'static/js/midwife-emr-header.min.js': [
                 'client/js/html5shiv.js'
                 , 'client/js/respond.min.js'
               ]
@@ -53,14 +53,14 @@ module.exports = function(grunt) {
           // Note: we are not doing the font-awesome stuff because the css uses
           // relative urls to the images, etc. in the font-awesome package.
           files: {
-            'static/css/mercy-combined.css': [
+            'static/css/midwife-emr-combined.css': [
               'bower_components/bootstrap/dist/css/bootstrap.css'
               , 'client/css/sb-admin.css'
               , 'client/css/responsive-tables.css'
               , 'client/css/jquery-ui.min.css'
               , 'client/css/jquery-ui.structure.min.css'
               , 'client/css/jquery-ui.theme.min.css'
-              , 'client/css/mercy.css'
+              , 'client/css/midwife-emr.css'
             ]
           }
         }

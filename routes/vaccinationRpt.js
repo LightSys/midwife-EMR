@@ -791,7 +791,7 @@ var doReport = function(flds, writable, logisticsName) {
         , size: 'letter'
         , info: {
             Title: 'TT' + reportNum + ' Report'
-            , Author: 'Mercy Application'
+            , Author: 'Midwife-EMR Application'
             , Subject: 'Vaccination Given Report'
         }
       }
@@ -908,7 +908,7 @@ var run = function(req, res) {
   // Set up the header correctly.
   // --------------------------------------------------------
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; MercyReport.pdf');
+  res.setHeader('Content-Disposition', 'inline; VaccinationRpt.pdf');
 
   // --------------------------------------------------------
   // Get the displayName for the logistics in charge.

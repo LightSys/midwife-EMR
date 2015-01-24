@@ -420,7 +420,7 @@ var doReport = function(flds, writable, logisticsName) {
         , size: 'letter'
         , info: {
             Title: 'Deworming Report'
-            , Author: 'Mercy Application'
+            , Author: 'Midwife-EMR Application'
             , Subject: 'Deworming Report'
         }
       }
@@ -522,7 +522,7 @@ var run = function(req, res) {
   // Set up the header correctly.
   // --------------------------------------------------------
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; MercyReport.pdf');
+  res.setHeader('Content-Disposition', 'inline; DewormingRpt.pdf');
 
   // --------------------------------------------------------
   // Get the displayName for the logistics in charge.

@@ -422,7 +422,7 @@ var doReport = function(flds, writable, logisticsName) {
         , size: 'letter'
         , info: {
             Title: 'Iron Given Date ' + reportNum
-            , Author: 'Mercy Application'
+            , Author: 'Midwife-EMR Application'
             , Subject: 'Iron Given Report'
         }
       }
@@ -562,7 +562,7 @@ var run = function(req, res) {
   // Set up the header correctly.
   // --------------------------------------------------------
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; MercyReport.pdf');
+  res.setHeader('Content-Disposition', 'inline; IronRpt.pdf');
 
   // --------------------------------------------------------
   // Get the displayName for the logistics in charge.
