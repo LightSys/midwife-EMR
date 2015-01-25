@@ -300,8 +300,8 @@ User = Bookshelf.Model.extend({
      *
      * Returns a promise that returns a hash of users with
      * the keys being their user id as a string and the
-     * value being an object with three fields: username,
-     * firstname, and lastname.
+     * value being an object with four fields: username,
+     * firstname, lastname, and displayName.
      *
      * Note: if the application is run as a cluster, each
      * instance will retain it's own copy of the cache.
@@ -321,7 +321,7 @@ User = Bookshelf.Model.extend({
           logInfo('User.getUserIdMap() - Refreshing user id map cache.');
           knex('user')
             .orderBy('id', 'asc')
-            .select(['id', 'username', 'firstname', 'lastname'])
+            .select(['id', 'username', 'firstname', 'lastname', 'displayName'])
             .then(function(list) {
               var map = {};
               _.each(list, function(user) {
@@ -346,7 +346,8 @@ User = Bookshelf.Model.extend({
      * the fld are not found, returns undefined.
      *
      * Fields available are dependent upon getUserIdMap().
-     * Currently they are username, firstname, and lastname.
+     * Currently they are username, firstname, lastname, and
+     * displayName.
      *
      * param       id - the user id
      * param       fld - the field to retrieve

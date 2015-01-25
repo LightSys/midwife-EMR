@@ -179,8 +179,7 @@ var hasSuper = function(req, res, next) {
       // --------------------------------------------------------
       // Store the supervisor in app.locals for the templates.
       // --------------------------------------------------------
-      app.locals.supervisor = req.session.supervisor.lastname + ', ' +
-        req.session.supervisor.firstname;
+      app.locals.supervisor = req.session.supervisor.displayName;
       next();
     } else {
       res.redirect(cfg.path.setSuper);

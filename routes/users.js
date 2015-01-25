@@ -163,6 +163,7 @@ var saveSupervisor = function(req, res) {
             req.session.supervisor.username = rec.get('username');
             req.session.supervisor.firstname = rec.get('firstname');
             req.session.supervisor.lastname = rec.get('lastname');
+            req.session.supervisor.displayName = rec.get('displayName');
             req.session.save();
             req.flash('info', req.gettext('Your supervisor has been set.'));
 
