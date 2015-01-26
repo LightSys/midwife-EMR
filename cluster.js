@@ -8,10 +8,18 @@
 
 var fs = require('fs')
   , _ = require('underscore')
+  , cfg = require('./config')
   , config = {
       readyWhen: 'listening'
     }
   ;
+
+// --------------------------------------------------------
+// Adjust the CPU cores used if specified to do so.
+// --------------------------------------------------------
+if (cfg.cpu && cfg.cpu.workers && parseInt(cfg.cpu.workers) !== NaN) {
+  config.workers = cfg.cpu.workers;
+}
 
 var recluster = require('recluster')
   , path = require('path')

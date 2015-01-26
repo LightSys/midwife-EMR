@@ -40,6 +40,16 @@ cfg.site.debugLanguage = 'it-CH';
 cfg.site.tmpDir = 'tmp';
 
 // --------------------------------------------------------
+// CPU Settings.
+//
+// Explicitly specify the number of cluster workers to use.
+// The default uses the same number as the CPU cores detected.
+// Note that it is possible to set more workers than cores.
+// --------------------------------------------------------
+cfg.cpu = {};
+//cfg.cpu.workers = 3;
+
+// --------------------------------------------------------
 // Search settings.
 // --------------------------------------------------------
 cfg.search = {};
