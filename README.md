@@ -1,4 +1,4 @@
-# Mercy Maternal Care
+# Midwife EMR
 
 Custom patient management software for a large maternity clinic in the
 Philippines serving a low income community. This software is specifically
@@ -57,7 +57,7 @@ See the [wiki for more detailed user and system documentation](../../wiki).
   - Permissions and ACL based upon roles
   - Any number of users/staff allowed.
 - Web browser and mobile browser compatible
-  - Native Android client in early stages of development (separate)
+  - Android client in early stages of development (separate)
 - Full logging of all changes to the database
   - All historical changes reviewable by supervisor role or admin role as
     appropriate
@@ -68,11 +68,11 @@ See the [wiki for more detailed user and system documentation](../../wiki).
 
 ## Status
 
-Beta - development is ongoing as we are preparing for an on-site pilot.
+Beta - initial pilot is ongoing at this time.
 
 ## Technology
 
-- Nodejs - version v0.10.32 (or latest)
+- Nodejs - version v0.10.35 (or latest)
 - MySQL
 
 Web based and compatible with tablet browsers.
