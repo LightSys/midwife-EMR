@@ -46,7 +46,7 @@ block prenatal
           div(class='col-md-4 ')
             div
               span= gettext('EDD')
-              +datePicker('form-control', 7, 'edd', rec.edd, 'prenatal-edd', null, readonlyFields.edd, 'Unknown')
+              input(id='edd', class='form-control', type='text', autocomplete="off", name='edd', disabled=true, value=rec.edd)
           div(class='col-md-4 ')
             div
               span= gettext('Alternate EDD')

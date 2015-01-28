@@ -452,7 +452,6 @@ VALUES
   ('clerk', 'prenatalExam', 'returnDate'),
   ('clerk', 'pregnancy', 'lmp'),
   ('clerk', 'pregnancy', 'sureLMP'),
-  ('clerk', 'pregnancy', 'edd'),
   ('clerk', 'pregnancy', 'alternateEdd'),
   ('clerk', 'pregnancy', 'useAlternateEdd'),
   ('clerk', 'pregnancy', 'riskNote'),

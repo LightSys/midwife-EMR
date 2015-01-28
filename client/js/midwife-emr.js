@@ -23,37 +23,6 @@ $(function() {
     };
 
     /* --------------------------------------------------------
-    * calcEdd()
-    *
-    * Calculate the estimated due date based upon the date of
-    * the last mentral period passed. The returned date is a
-    * String in YYYY-MM-DD format unless an alternative date
-    * format is passed using Moment formatting rules.
-    *
-    * NOTE: this function is also included in util.js on the
-    * server side. Changes made here should also be made there.
-    *
-    * param       lmp - date of the last mentral period
-    * param       format - the alternative format string to use
-    * return      edd - due date as a String
-    * -------------------------------------------------------- */
-    var calcEdd = function(lmp, format) {
-      if (! lmp) throw new Error('calcEdd() must be called with the lmp date.');
-      var edd
-        ;
-
-      // --------------------------------------------------------
-      // Sanity check that we are passed a Date or Moment.
-      // --------------------------------------------------------
-      if (! _.isDate(lmp) && ! moment.isMoment(lmp)) {
-        throw new Error('calcEdd() must be called with a valid date.');
-      }
-      edd = moment(lmp).add(280, 'days');
-      if (format) return edd.format(format);
-      return edd.format('YYYY-MM-DD');
-    };
-
-    /* --------------------------------------------------------
     * disableOnChange()
     * enableOnChange()
     * visibleOnChange()
@@ -188,32 +157,6 @@ $(function() {
     // Medications
     $('.medicationsRow').click(onClickChangeLocation('/pregnancy/:pid/medication/:id'));
 
-
-    // --------------------------------------------------------
-    // Prenatal screen: automatically pre-fill the estimated
-    // due date based upon the lmp date if the edd is not
-    // already filled in.
-    // --------------------------------------------------------
-    $('#prenatal-lmp').on('change', function(evt) {
-      var val = evt.target.value
-        , eddFld = $('#prenatal-edd')
-        , lmp
-        ;
-      if (evt.target.value) {
-        lmp = moment(evt.target.value, 'MM/DD/YYYY');
-        if (eddFld.val().length == 0) {
-          try {
-            // --------------------------------------------------------
-            // Using the jQuery.UI.datepicker API to set the date.
-            // --------------------------------------------------------
-            eddFld.datepicker('setDate', calcEdd(lmp, 'MM/DD/YYYY'));
-          } catch (e) {
-            // Must not have contained a valid date.
-            console.log(e);
-          }
-        }
-      }
-    });
 
     // --------------------------------------------------------
     // Add and configure datepickers for all inputs that are

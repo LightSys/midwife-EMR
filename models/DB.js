@@ -51,6 +51,11 @@ var init = function(dbSettings) {
   Bookshelf.DB = Bookshelf(knex);
 
   // --------------------------------------------------------
+  // Add support for virtual columns on the tables if desired.
+  // --------------------------------------------------------
+  Bookshelf.DB.plugin('virtuals');
+
+  // --------------------------------------------------------
   // Define our base Model that all classes extend from.
   // --------------------------------------------------------
   Bookshelf.DB.Model = Bookshelf.DB.Model.extend({

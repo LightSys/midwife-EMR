@@ -1584,21 +1584,6 @@ var prenatalSave = function(req, res) {
     riskFlds = _.defaults(_.omit(req.body, _.union(['_csrf'], _.keys(pnFlds))), defaultRiskFlds);
 
     // --------------------------------------------------------
-    // If the edd is not filled in and the lmp is, calculate
-    // the edd if the useAlternateEdd is not selected. Note
-    // that the client side does the same thing when the user
-    // leaves the lmp field, but if <Enter> is pressed while
-    // in the lmp field, this will pick it up.
-    // --------------------------------------------------------
-    if (pnFlds.edd &&
-        pnFlds.edd.length === 0 &&
-        pnFlds.lmp &&
-        pnFlds.lmp.length !== 0 &&
-        pnFlds.useAlternateEdd === '0') {
-      pnFlds.edd = calcEdd(pnFlds.lmp);
-    }
-
-    // --------------------------------------------------------
     // For each potential risk, determine if the pregnancy had
     // previously had the risk assigned. If so and the new value
     // is '0' (unchecked), delete the record. If not and the

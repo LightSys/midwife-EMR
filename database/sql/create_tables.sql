@@ -110,7 +110,6 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   sureLMP BOOLEAN NULL DEFAULT 0,
   warning BOOLEAN NULL DEFAULT 0,
   riskNote VARCHAR(250) NULL,
-  edd DATE NULL,
   alternateEdd DATE NULL,
   useAlternateEdd BOOLEAN NULL DEFAULT 0,
   doctorConsultDate DATE NULL,

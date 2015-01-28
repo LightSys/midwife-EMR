@@ -9,6 +9,8 @@
 var moment = require('moment')
   , val = require('validator')
   , Promise = require('bluebird')
+  , moment = require('moment')
+  , _ = require('underscore')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
@@ -16,7 +18,7 @@ var moment = require('moment')
   ;
 
 /*
-CREATE TABLE `pregnancy` (
+pregnancy | CREATE TABLE `pregnancy` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `firstname` varchar(70) NOT NULL,
   `lastname` varchar(70) NOT NULL,
@@ -38,7 +40,6 @@ CREATE TABLE `pregnancy` (
   `sureLMP` tinyint(1) DEFAULT '0',
   `warning` tinyint(1) DEFAULT '0',
   `riskNote` varchar(250) DEFAULT NULL,
-  `edd` date DEFAULT NULL,
   `alternateEdd` date DEFAULT NULL,
   `useAlternateEdd` tinyint(1) DEFAULT '0',
   `doctorConsultDate` date DEFAULT NULL,
@@ -121,17 +122,29 @@ CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=10114 DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
   tableName: 'pregnancy'
 
+  , virtuals: {
+      // --------------------------------------------------------
+      // Calculate an estimated due date based upon the last
+      // menstrual period date. It is always 280 days later.
+      // --------------------------------------------------------
+      edd: function() {
+        var lmp = this.get('lmp');
+        if (_.isDate(lmp)) return moment(lmp).add(280, 'days').toDate();
+        return '';
+      }
+    }
+
   , permittedAttributes: ['id', 'firstname', 'lastname', 'maidenname', 'nickname',
       'religion', 'maritalStatus', 'telephone', 'work', 'education',
       'clientIncome', 'clientIncomePeriod', 'address', 'barangay', 'city',
       'postalCode', 'gravidaNumber', 'lmp', 'sureLMP', 'warning', 'riskNote',
-      'edd', 'alternateEdd', 'useAlternateEdd', 'doctorConsultDate',
+      'alternateEdd', 'useAlternateEdd', 'doctorConsultDate',
       'dentistConsultDate', 'mbBook', 'whereDeliver', 'fetuses', 'monozygotic',
       'pregnancyEndDate', 'pregnancyEndResult', 'iugr', 'note',
       'numberRequiredTetanus', 'invertedNipples', 'hasUS', 'wantsUS', 'gravida',
