@@ -677,7 +677,11 @@ var doPregnancyHistory = function(doc, data, opts, ypos) {
     data.push(row.birthWeight);
     data.push(row.episTear);
     data.push(row.repaired);
-    data.push(row.howLongBFed + ' ' + row.howLongBFedPeriod);
+    if (row.howLongBFed) {
+      data.push(row.howLongBFed + ' ' + row.howLongBFedPeriod);
+    } else {
+      data.push('');
+    }
     colData.push(data);
   });
 

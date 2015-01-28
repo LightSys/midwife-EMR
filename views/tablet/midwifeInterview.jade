@@ -82,7 +82,7 @@ block midwifeInterview
               -var pregHistId = 'pregnancyHistoryId-' + ph.id;
               tr(class='pregHistoryRow', id=pregHistId)
                 - var ga = ph.FT === 1? 'Full Term': ph.finalGA + ' ' + ph.finalGAPeriod;
-                - var bf = ph.howLongBFed + ' ' + ph.howLongBFedPeriod;
+                - var bf = ph.howLongBFed? ph.howLongBFed + ' ' + ph.howLongBFedPeriod: '';
                 - var theDate = ph.month + '-' + ph.day + '-' + ph.year;
                 - theDate = theDate.replace(/--/, '-');   // Make the display a little more pleasing to the eye.
                 - theDate = theDate.replace(/^-/, '');

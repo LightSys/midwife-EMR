@@ -81,6 +81,15 @@ var pregnancyHistorySave = function(req, res) {
     // --------------------------------------------------------
     flds = _.extend(defaultFlds, _.omit(flds, ['_csrf']));
 
+    // --------------------------------------------------------
+    // Allow nulls in numeric fields that user does not fill
+    // instead of database default of 0 which can be confused
+    // about whether the user meant 0 or no answer.
+    // --------------------------------------------------------
+    _.each(['lengthOfLabor', 'birthWeight', 'howLongBFed'], function(f) {
+      if (flds[f].length === 0) flds[f] = null;
+    });
+
     pregHistRec = new PregnancyHistory(flds);
     pregHistRec
       .setUpdatedBy(req.session.user.id)
