@@ -31,7 +31,8 @@ block midwifeInterview
             input(class='form-control', type='number', tabindex="5", autocomplete="off", name='ageOfMenarche', value=rec.patient.ageOfMenarche)
 
       div(class='form-group col-md-6')
-        span= gettext('Comments')
+        span= gettext('Comments ')
+        span(class="text-info")= gettext('**Flag a comment on it\'s own line.')
         textarea(class='form-control', rows='6', tabindex="6", spellcheck="off", autocomplete="off", wrap='soft', name='note')= rec.note
 
     div.row

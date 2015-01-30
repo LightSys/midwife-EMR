@@ -20,6 +20,11 @@ div#flash {
   border: 1px solid #CCCCCC;
 }
 
+.flags {
+  padding: 10px;
+  margin: 10px 0;
+}
+
 div.infomessage {
   padding: 10px;
   margin: 10px 0;

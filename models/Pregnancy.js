@@ -138,6 +138,19 @@ Pregnancy = Bookshelf.Model.extend({
         if (_.isDate(lmp)) return moment(lmp).add(280, 'days').toDate();
         return '';
       }
+      // --------------------------------------------------------
+      // Calculate "flags" for pregnancy by finding lines in note
+      // field that begin with double asterisks.
+      // --------------------------------------------------------
+      , flags: function() {
+          var flags = [];
+          var note = this.get('note');
+          if (! note || note.length === 0) return flags;
+          _.each(note.match(/\*\*.*$/gm), function(f, idx) {
+            flags.push(f.replace(/\*\*/g, ''));
+          });
+          return flags;
+        }
     }
 
   , permittedAttributes: ['id', 'firstname', 'lastname', 'maidenname', 'nickname',

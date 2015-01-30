@@ -9,3 +9,10 @@ mixin titleMsg(title)
   div.row
     div(class='col-xs-6')
       +flash(messages)
+      - if (rec && rec.flags && rec.flags.length > 0) {
+        div(class='flags alert alert-info')
+          - rec.flags.forEach(function(f) {
+            span &nbsp;
+            span(class='')= f
+          - });
+      - }

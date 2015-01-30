@@ -5,6 +5,13 @@ mixin titleMsg(title)
       h1= title
     div(class='col-md-4')
       +flash(messages)
+      - if (rec && rec.flags && rec.flags.length > 0) {
+        div(class='flags alert alert-info')
+          - rec.flags.forEach(function(f) {
+            span &nbsp;
+            span(class='')= f
+          - });
+      - }
     div(class='col-md-2')
       - if (pregId)
         a(type='button', class='btn btn-default', href='/report/summary/' + pregId)= gettext('Summary Rpt')
