@@ -29,10 +29,6 @@ block defaultLab
       div(class='col-xs-3')
         label= gettext('Date of these tests')
         input(id='testDate', type='date', class='form-control', tabindex='1', name='testDate', value=testDate)
-      div(class='form-group col-xs-2 col-xs-offset-7')
-        //- This label just causes everything on this row to line up better.
-        label &nbsp;
-        a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
     div.row
       div(class='col-xs-12')
         hr
@@ -56,12 +52,14 @@ block defaultLab
         +labTest('xs', 1, name, test.id, min, max, isRange, isText, test.values, result, result2, tabIndex, unit, normal, warn)
 
     div.row
-      div(class='col-xs-2')
-        input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+      div(class='col-xs-3')
+        input(class='btn btn-primary btn-block', type='submit', value=gettext('Save Changes'))
         input(type='hidden', name='_csrf', value=token)
+      div(class='col-xs-4')
+        a(href=labsMainPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to the Labs Page')
       - if (isUpdate) {
-      div(class='col-xs-2 col-xs-offset-8')
-        button(class='btn disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+      div(class='col-xs-2 col-xs-offset-3')
+        button(class='btn btn-block disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
       - }
 
   - if (isUpdate) {

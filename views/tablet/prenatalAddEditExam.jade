@@ -110,17 +110,17 @@ block prenatalAddEditExam
           textarea(id='note', class='form-control input-lg', tabindex="19", spellcheck="off", autocomplete="off", wrap="soft", rows="3", disabled=readonlyFields.note, name='note')= prenatalExam.note
 
       div.row
-        div(class='form-group col-xs-2')
-          - if (prenatalExamDeletePath) {
-          button(class='btn pull-right disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
-          - }
-        div(class='form-group col-xs-4 col-xs-offset-4')
-          a(href=prenatalPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Prenatal Page')
-        div(class='form-group col-xs-2')
-          button(class='btn btn-primary pull-right', type='submit')= gettext('Save')
+        div(class='col-xs-2')
+          button(class='btn btn-primary btn-block', type='submit')= gettext('Save')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
           input(type='hidden', name='id', value=prenatalExam.id)
+        div(class='col-xs-4')
+          a(href=prenatalPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to the Prenatal Page')
+        div(class='col-xs-2 col-xs-offset-4')
+          - if (prenatalExamDeletePath) {
+          button(class='btn btn-block pull-right disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+          - }
 
     - if (prenatalExamDeletePath) {
     div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')

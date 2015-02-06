@@ -29,10 +29,6 @@ block referralAddEditForm
         div(class='col-xs-4')
           label= gettext('Date of the referral')
           input(id='refDate', type='date', class='form-control', tabindex='1', name='date', value=referralDate)
-        div(class='form-group col-xs-2 col-xs-offset-6')
-          //- This label just causes everything on this row to line up better.
-          label &nbsp;
-          a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
       div.row
         div(class='col-xs-4')
           label= gettext('Type of referral')
@@ -46,13 +42,15 @@ block referralAddEditForm
         div(class='col-xs-4')
           span &nbsp;
       div.row
-        div(class='col-xs-2')
+        div(class='col-xs-3')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
-          button(type='submit', class='btn btn-primary')= gettext('Save Referral')
+          button(type='submit', class='btn btn-primary btn-block')= gettext('Save Referral')
+        div(class='col-xs-4')
+          a(href=labsMainPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to the Labs Page')
         - if (isUpdate) {
-        div(class='col-xs-2 col-xs-offset-8')
-          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+        div(class='col-xs-2 col-xs-offset-3')
+          button(class='btn btn-block disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
         - }
 
     - if (isUpdate) {

@@ -72,9 +72,9 @@ block midwifeInterviewAddPreg
           span= gettext('Comment')
           input(id='note', class='form-control', type='text', tabindex="115", spellcheck="off", autocomplete="off", name='note')
 
-        div(class='form-group col-xs-2 col-xs-offset-8')
-          a(href=midwifeInterviewPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to Midwife Interview')
-        div(class='form-group col-xs-2')
-          button(class='btn btn-primary pull-right', type='submit')= gettext('Save')
+        div(class='col-xs-3')
+          button(class='btn btn-primary btn-block', type='submit')= gettext('Save')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
+        div(class='col-xs-4')
+          a(href=midwifeInterviewPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to Midwife Interview')
