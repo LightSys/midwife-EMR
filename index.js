@@ -419,15 +419,15 @@ app.post(cfg.path.referralDelete, common, hasSuper,
 
 // Health Teachings
 app.get(cfg.path.teachingAdd, common, hasSuper,
-    inRoles(['attending', 'supervisor']), teaching.teachingAddForm);
+    inRoles(['attending', 'clerk', 'supervisor']), teaching.teachingAddForm);
 app.post(cfg.path.teachingAdd, common, hasSuper,
-    inRoles(['attending', 'supervisor']), teaching.teachingSave);
+    inRoles(['attending', 'clerk', 'supervisor']), teaching.teachingSave);
 app.get(cfg.path.teachingEdit, common, hasSuper,
-    inRoles(['attending', 'supervisor']), teaching.teachingEditForm);
+    inRoles(['attending', 'clerk', 'supervisor']), teaching.teachingEditForm);
 app.post(cfg.path.teachingEdit, common, hasSuper,
-    inRoles(['attending', 'supervisor']), teaching.teachingSave);
+    inRoles(['attending', 'clerk', 'supervisor']), teaching.teachingSave);
 app.post(cfg.path.teachingDelete, common, hasSuper,
-    inRoles(['attending', 'supervisor']), teaching.teachingDelete);
+    inRoles(['attending', 'clerk', 'supervisor']), teaching.teachingDelete);
 
 // Doctor and dentist consult dates
 app.post(cfg.path.docDenConsult, common, hasSuper,
