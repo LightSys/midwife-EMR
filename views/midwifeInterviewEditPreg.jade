@@ -71,15 +71,15 @@ block midwifeInterviewEditPreg
           input(id='note', class='form-control', type='text', tabindex="115", spellcheck="off", autocomplete="off", name='note', value=pregHist.note)
 
       div.row
-        div(class='form-group col-md-2')
-          button(class='btn disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
-        div(class='form-group col-md-2 col-md-offset-7')
-          a(href=midwifeInterviewPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to Midwife Interview')
-        div(class='form-group col-md-1')
-          button(class='btn btn-primary btn-block pull-right', type='submit')= gettext('Save')
+        div(class='col-md-1')
+          button(class='btn btn-primary btn-block ', type='submit')= gettext('Save')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
           input(type='hidden', name='id', value=pregHist.id)
+        div(class='col-md-2')
+          a(href=midwifeInterviewPath, class='btn btn-default disable-on-change', role='button')= gettext('Back to Midwife Interview')
+        div(class='col-md-2 col-md-offset-7')
+          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
 
     div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
       form(id='deletePregForm', role='form', name='pregnancyHistoryDeletePreg', action=pregHistDeletePath, method='post')

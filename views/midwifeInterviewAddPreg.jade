@@ -69,9 +69,9 @@ block midwifeInterviewAddPreg
           input(id='note', class='form-control', type='text', tabindex="115", spellcheck="off", autocomplete="off", name='note')
 
       div.row
-        div(class='form-group col-md-1 col-md-offset-10')
-          a(href=midwifeInterviewPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to Midwife Interview')
         div(class='form-group col-md-1')
-          button(class='btn btn-primary pull-right', type='submit')= gettext('Save')
+          button(class='btn btn-primary', type='submit')= gettext('Save')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
+        div(class='form-group col-md-2')
+          a(href=midwifeInterviewPath, class='btn btn-default disable-on-change', role='button')= gettext('Back to Midwife Interview')

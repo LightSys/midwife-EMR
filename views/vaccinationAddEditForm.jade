@@ -33,7 +33,6 @@ block vaccinationAddEditForm
       div.row
         div(class='col-md-4')
           label= gettext('Date of the vaccination')
-          //-input(id='vacDate', class='form-control', type='date', tabindex="1", autocomplete="off", name='vacDate', value=vaccinationDate)
           +datePicker('form-control', 1, 'vacDate', vaccinationDate, 'vacDate')
         div(class='col-md-2')
           label= gettext('or month')
@@ -41,10 +40,6 @@ block vaccinationAddEditForm
         div(class='col-md-2')
           label= gettext('and year')
           input(id='varYear', class='form-control', type='number', tabindex='2', autocomplete='off', name='vacYear', value=vaccinationYear)
-        div(class='form-group col-md-2 col-md-offset-2')
-          //- This label just causes everything on this row to line up better.
-          label &nbsp;
-          a(href=labsMainPath, class='btn btn-default pull-right disable-on-change', role='button')= gettext('Back to the Labs Page')
       div.row
         div(class='col-md-4')
           label= gettext('Type of vaccination')
@@ -68,8 +63,10 @@ block vaccinationAddEditForm
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
           button(type='submit', class='btn btn-primary')= gettext('Save Vaccination')
+        div(class='col-md-2')
+          a(href=labsMainPath, class='btn btn-default disable-on-change', role='button')= gettext('Back to the Labs Page')
         - if (isUpdate) {
-        div(class='col-md-2 col-md-offset-8')
+        div(class='col-md-2 col-md-offset-6')
           button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
         - }
 
