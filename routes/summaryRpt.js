@@ -710,6 +710,7 @@ var doLabResults = function(doc, data, opts, ypos) {
     ;
 
   y += 5;
+  colNames.push('Type      ');
   colNames.push('Exam                         ');
   colNames.push('Date      ');
   colNames.push('Result                                           ');
@@ -720,6 +721,7 @@ var doLabResults = function(doc, data, opts, ypos) {
       , result
       , warn = row.warn? 'Yes': ''
       ;
+    data.push(row.type);
     data.push(row.name);
     data.push(moment(row.testDate).format('MM-DD-YYYY'));
     result = row.result;
@@ -1417,7 +1419,8 @@ var getData = function(id) {
       .then(function() {
         return new LabTestResults().query(function(qb) {
           qb.innerJoin('labTest', 'labTestResult.labTest_id', 'labTest.id');
-          qb.select(['labTest.name', 'labTest.abbrev', 'labTest.unit'])
+          qb.innerJoin('labSuite', 'labTest.labSuite_id', 'labSuite.id');
+          qb.select(['labTest.name', 'labTest.abbrev', 'labTest.unit', 'labSuite.name as type']);
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
