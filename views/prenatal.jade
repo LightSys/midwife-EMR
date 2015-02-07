@@ -76,7 +76,8 @@ block prenatal
             div(id="readonlyRiskPresent" class="readonlyRisk")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'Present') {
-                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description.slice(0, 25)
+                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
+                  br
                 - }
             div(id="riskPresent" class="collapse")
               div.checkbox
@@ -107,7 +108,8 @@ block prenatal
             div(id="readonlyRiskObHx" class="readonlyRisk")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'ObHx') {
-                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description.slice(0, 25)
+                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
+                  br
                 - }
             div(id="riskObHx" class="collapse")
               div.checkbox
@@ -138,7 +140,8 @@ block prenatal
             div(id="readonlyRiskMedHx" class="readonlyRisk")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'MedHx') {
-                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description.slice(0, 25)
+                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
+                  br
                 - }
             div(id="riskMedHx" class="collapse")
               div.checkbox
@@ -172,7 +175,8 @@ block prenatal
             div(id="readonlyRiskLifestyle" class="readonlyRisk")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'Lifestyle') {
-                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description.slice(0, 25)
+                  div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
+                  br
                 - }
             div(id="riskLifestyle" class="collapse")
               div.checkbox

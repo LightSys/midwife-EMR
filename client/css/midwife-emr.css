@@ -158,5 +158,6 @@ span#dirty-notice-tablet {
 /* Risk factors on prenatal page */
 .readonlyRisk {
   margin-top: 10px;
+  margin-bottom: 10px;
   font-size: 14px;
 }
