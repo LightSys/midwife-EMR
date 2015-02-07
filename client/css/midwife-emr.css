@@ -155,3 +155,8 @@ span#dirty-notice-tablet {
   padding: 2px 5px;
 }
 
+/* Risk factors on prenatal page */
+.readonlyRisk {
+  margin-top: 10px;
+  font-size: 14px;
+}
