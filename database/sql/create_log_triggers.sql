@@ -1,5 +1,47 @@
  
 -- ---------------------------------------------------------------
+-- Trigger: customField_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS customField_after_insert;
+CREATE TRIGGER customField_after_insert AFTER INSERT ON customField
+FOR EACH ROW
+BEGIN
+  INSERT INTO customFieldLog
+  (id, customFieldType_id, pregnancy_id, booleanVal, intVal, decimalVal, textVAl, dateTimeVal, op, replacedAt)
+  VALUES (NEW.id, NEW.customFieldType_id, NEW.pregnancy_id, NEW.booleanVal, NEW.intVal, NEW.decimalVal, NEW.textVAl, NEW.dateTimeVal, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: customField_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS customField_after_update;
+CREATE TRIGGER customField_after_update AFTER UPDATE ON customField
+FOR EACH ROW
+BEGIN
+  INSERT INTO customFieldLog
+  (id, customFieldType_id, pregnancy_id, booleanVal, intVal, decimalVal, textVAl, dateTimeVal, op, replacedAt)
+  VALUES (NEW.id, NEW.customFieldType_id, NEW.pregnancy_id, NEW.booleanVal, NEW.intVal, NEW.decimalVal, NEW.textVAl, NEW.dateTimeVal, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: customField_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS customField_after_delete;
+CREATE TRIGGER customField_after_delete AFTER DELETE ON customField
+FOR EACH ROW
+BEGIN
+  INSERT INTO customFieldLog
+  (id, customFieldType_id, pregnancy_id, booleanVal, intVal, decimalVal, textVAl, dateTimeVal, op, replacedAt)
+  VALUES (OLD.id, OLD.customFieldType_id, OLD.pregnancy_id, OLD.booleanVal, OLD.intVal, OLD.decimalVal, OLD.textVAl, OLD.dateTimeVal, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: healthTeaching_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

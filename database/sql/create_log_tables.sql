@@ -189,3 +189,13 @@ ALTER TABLE scheduleLog DROP PRIMARY KEY;
 ALTER TABLE scheduleLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE scheduleLog DROP KEY pregnancy_id;
 --
+-- Creating customFieldLog
+SELECT 'customFieldLog' AS Creating FROM DUAL;
+CREATE TABLE customFieldLog LIKE customField;
+ALTER TABLE customFieldLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE customFieldLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE customFieldLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE customFieldLog DROP PRIMARY KEY;
+ALTER TABLE customFieldLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE customFieldLog DROP KEY customFieldType_id;
+--

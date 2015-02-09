@@ -13,7 +13,7 @@
 # -------------------------------------------
 
 # Don't create log tables for these tables.
-excludepat='doh\|session\|event\|eventType\|priority\|riskCode\|customField\|customFieldType\|roFieldsByRole'
+excludepat='doh\|session\|event\|eventType\|priority\|riskCode\|customFieldType\|roFieldsByRole'
 
 # Certain tables have unique constraints which do not allow proper logging
 # when they exist in the log tables. We have a hard-coded list of the 
@@ -23,6 +23,7 @@ uniq_username_tbls='userLog'
 uniq_labTestId_tbls='labTestValueLog'
 uniq_abbrev_tbls='labTestLog'
 uniq_pregnancy_tbls='scheduleLog riskLog'
+uniq_custom_field_tbls='customFieldLog'
 
 # Get the list of tables from the creation script.
 tbls=$(grep "CREATE TABLE" create_tables.sql |grep -v $excludepat |sed -e 's/CREATE TABLE IF NOT EXISTS `//' |sed -e 's/` (//'|tr '\n' " ")
@@ -71,6 +72,13 @@ do
     if [ $ut = $lt ]
     then
       echo "ALTER TABLE $lt DROP KEY pregnancy_id;"
+    fi
+  done
+  for ut in $uniq_custom_field_tbls
+  do
+    if [ $ut = $lt ]
+    then
+      echo "ALTER TABLE $lt DROP KEY customFieldType_id;"
     fi
   done
   echo "--"

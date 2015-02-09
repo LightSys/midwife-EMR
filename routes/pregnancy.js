@@ -1695,6 +1695,88 @@ var prenatalSave = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * pregnancyDelete()
+ *
+ * Delete a master pregnancy record and all records in the
+ * child tables. All deleted records are still available in
+ * the respective log tables due to the delete triggers on
+ * each table.
+ *
+ * The child tables are:
+ *    customField
+ *    healthTeaching
+ *    labTestResult
+ *    medication
+ *    pregnancyHistory
+ *    prenatalExam
+ *    referral
+ *    risk
+ *    schedule
+ *    vaccination
+ *
+ * We leave the patient table for now.
+ * -------------------------------------------------------- */
+var pregnancyDelete = function(req, res) {
+  var pregId
+    , knex = Bookshelf.DB.knex
+    ;
+
+  if (req.paramPregnancy &&
+      req.body &&
+      req.paramPregnancy.id &&
+      req.body.pregnancy_id &&
+      req.paramPregnancy.id == req.body.pregnancy_id) {
+
+    pregId = parseInt(req.paramPregnancy.id, 10);
+
+    logInfo('Deleting master and all child tables for pregnancy id ' + pregId);
+
+    Bookshelf.DB.knex.transaction(function(t) {
+      var tblNames = [
+          'customField'
+          , 'healthTeaching'
+          , 'labTestResult'
+          , 'medication'
+          , 'pregnancyHistory'
+          , 'prenatalExam'
+          , 'referral'
+          , 'risk'
+          , 'schedule'
+          , 'vaccination'
+          , 'pregnancy'
+        ]
+        ;
+
+      return Promise.all(_.map(tblNames, function(tblName) {
+        var fldName = 'pregnancy_id';
+        if (tblName === 'pregnancy') {
+          fldName = 'id';
+        }
+        return knex(tblName)
+          .transacting(t)
+          .where(fldName, pregId)
+          .del()
+          .then(function(numRows) {
+            logInfo(numRows + ' rows deleted from ' + tblName + '.');
+          });
+      }));
+
+    })   // end transaction
+    .then(function() {
+      logInfo('Pregnancy ' + pregId + ' was deleted.');
+      req.flash('info', req.gettext('Pregnancy was deleted.'));
+      res.redirect(cfg.path.search);
+    })
+    .caught(function(err) {
+      logError(err);
+      logError('The pregnancy and related records were not deleted.');
+      req.flash('error', req.gettext('Sorry, an error was encountered and the pregnancy was not deleted.'));
+      res.redirect(cfg.path.search);
+    });
+  }   // end if
+};
+
 
 /* --------------------------------------------------------
  * labsForm()
@@ -1919,6 +2001,7 @@ module.exports = {
   , midwifeSave: midwifeSave
   , prenatalForm: prenatalForm
   , prenatalSave: prenatalSave
+  , pregnancyDelete: pregnancyDelete
   , labsForm: labsForm
   , doctorDentistSave: doctorDentistSave
   , load: load

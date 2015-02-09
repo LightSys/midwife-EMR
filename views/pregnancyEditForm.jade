@@ -2,6 +2,9 @@ extends layouts/default_layout
 
 block pregnancyEdit
   +titleMsg(title)
+
+  - var deletePregnancyPath = '/pregnancy/' + rec.id + '/delete';
+
   div.row
     div(class='col-md-2 col-md-offset-10')
       if roleInfo.hasRole('supervisor')
@@ -128,8 +131,25 @@ block pregnancyEdit
           +select('form-control input-lg', 'mbBook', 28, mbBook)
 
       div.row
-        input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
-        input(type='hidden', name='_csrf', value=token)
-        input(type='hidden', name='id', value=rec.id)
-        input(type='hidden', name='scheduleId', value=rec.prenatalSchedule.id)
+        div(class='col-md-3')
+          input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='id', value=rec.id)
+          input(type='hidden', name='scheduleId', value=rec.prenatalSchedule.id)
+        div(class='col-md-3 col-md-offset-6')
+          if roleInfo.hasRole('supervisor')
+            button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete pregnancy')
 
+  div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+    form(id='deletePregnancyForm', role='form', name='deletePregnancyForm', action=deletePregnancyPath, method='post')
+      div(class='modal-dialog')
+        div(class='modal-content')
+          div(class='modal-header')
+            h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+          div(class='modal-body')
+            p(class='text-warning lead')= gettext('This deletes the whole pregnancy. Are you sure? Press Delete or Cancel.')
+          div(class='modal-footer')
+            input(type='hidden', name='_csrf', value=token)
+            input(type='hidden', name='pregnancy_id', value=rec.id)
+            button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+            button(type='submit', class='btn btn-primary')= gettext('Delete')
