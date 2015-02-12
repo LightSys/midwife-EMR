@@ -5,40 +5,51 @@ block pregnancyQuestionnaire
   +pregnancyTab('quesEdit')
   +patientWell(rec)
 
+  - var tabIdx = 1;
+  - var pComplaints = [];
+  - pComplaints.push({name: 'currentlyVomiting', label: 'Been vomiting?'});
+  - pComplaints.push({name: 'currentlyDizzy', label: 'Feeling dizzy?'});
+  - pComplaints.push({name: 'currentlyFainting', label: 'Have fainted?'});
+  - pComplaints.push({name: 'currentlyBleeding', label: 'Bleeding?'});
+  - pComplaints.push({name: 'currentlyUrinationPain', label: 'Pain in urinating?'});
+  - pComplaints.push({name: 'currentlyBlurryVision', label: 'Blurry vision?'});
+  - pComplaints.push({name: 'currentlySwelling', label: 'Swelling?'});
+  - pComplaints.push({name: 'currentlyVaginalPain', label: 'Vaginal pain?'});
+  - pComplaints.push({name: 'currentlyVaginalItching', label: 'Vaginal itching?'});
+  - pComplaints.push({name: 'currentlyNone', label: 'None of the above?'});
+
+  - var fHistory = [];
+  - fHistory.push({name: 'familyHistoryTwins', label: 'Twins?'});
+  - fHistory.push({name: 'familyHistoryHighBloodPressure', label: 'High blood pressure?'});
+  - fHistory.push({name: 'familyHistoryDiabetes', label: 'Diabetes?'});
+  - fHistory.push({name: 'familyHistoryHeartProblems', label: 'Heart problems?'});
+  - fHistory.push({name: 'familyHistoryTB', label: 'TB?'});
+  - fHistory.push({name: 'familyHistorySmoking', label: 'Smoking?'});
+  - fHistory.push({name: 'familyHistoryNone', label: 'None of the above?'});
+
+  - var pHistory = [];
+  - pHistory.push({name: 'historyFoodAllergy', label: 'Food allergy?'});
+  - pHistory.push({name: 'historyMedicineAllergy', label: 'Medicine allergy?'});
+  - pHistory.push({name: 'historyAsthma', label: 'Asthma?'});
+  - pHistory.push({name: 'historyHeartProblems', label: 'Heart problems?'});
+  - pHistory.push({name: 'historyKidneyProblems', label: 'Kidney problems?'});
+  - pHistory.push({name: 'historyHepatitis', label: 'Hepatitis?'});
+  - pHistory.push({name: 'historyGoiter', label: 'Goiter?'});
+  - pHistory.push({name: 'historyHighBloodPressure', label: 'High blood pressure?'});
+  - pHistory.push({name: 'historyHospitalOperation', label: 'Operation in the hospital?'});
+  - pHistory.push({name: 'historyBloodTransfusion', label: 'Blood transfusion?'});
+  - pHistory.push({name: 'historySmoking', label: 'Smoking?'});
+  - pHistory.push({name: 'historyDrinking', label: 'Drinking?'});
+  - pHistory.push({name: 'historyNone', label: 'None of the above?'});
+
   form(class='dirty-check', role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
       div(class='form-group col-xs-6')
         p(class='text-primary lead')= gettext('Present complaints')
-        div.checkbox
-          label= gettext('Been vomiting?')
-            input(type='checkbox', name='currentlyVomiting', tabindex="1", value=1, checked=rec.currentlyVomiting==true)
-        div.checkbox
-          label= gettext('Feeling dizzy?')
-            input(type='checkbox', name='currentlyDizzy', tabindex="2", value=1, checked=rec.currentlyDizzy==true)
-        div.checkbox
-          label= gettext('Have fainted?')
-            input(type='checkbox', name='currentlyFainting', tabindex="3", value=1, checked=rec.currentlyFainting==true)
-        div.checkbox
-          label= gettext('Bleeding?')
-            input(type='checkbox', name='currentlyBleeding', tabindex="4", value=1, checked=rec.currentlyBleeding==true)
-        div.checkbox
-          label= gettext('Pain in urinating?')
-            input(type='checkbox', name='currentlyUrinationPain', tabindex="5", value=1, checked=rec.currentlyUrinationPain==true)
-        div.checkbox
-          label= gettext('Blurry vision?')
-            input(type='checkbox', name='currentlyBlurryVision', tabindex="6", value=1, checked=rec.currentlyBlurryVision==true)
-        div.checkbox
-          label= gettext('Swelling?')
-            input(type='checkbox', name='currentlySwelling', tabindex="7", value=1, checked=rec.currentlySwelling==true)
-        div.checkbox
-          label= gettext('Vaginal pain?')
-            input(type='checkbox', name='currentlyVaginalPain', tabindex="8", value=1, checked=rec.currentlyVaginalPain==true)
-        div.checkbox
-          label= gettext('Vaginal itching?')
-            input(type='checkbox', name='currentlyVaginalItching', tabindex="9", value=1, checked=rec.currentlyVaginalItching==true)
-        div.checkbox
-          label= gettext('None of the above?')
-            input(type='checkbox', name='currentlyNone', tabindex="10", value=1, checked=rec.currentlyNone==true)
+        each cb in pComplaints
+          div.checkbox
+            label= gettext(cb.label)
+              input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
 
       div(class='form-group col-xs-6')
         p(class='text-primary lead')= gettext('Can you/plan to/do you?')
@@ -63,73 +74,22 @@ block pregnancyQuestionnaire
     div.row
       div(class='form-group col-xs-6')
         p.text-primary= gettext('Do you have a family history of?')
-        div.checkbox
-          label= gettext('Twins?')
-            input(type='checkbox', name='familyHistoryTwins', tabindex="18", value=1, checked=rec.familyHistoryTwins==true)
-        div.checkbox
-          label= gettext('High Blood Pressure?')
-            input(type='checkbox', name='familyHistoryHighBloodPressure', tabindex="19", value=1, checked=rec.familyHistoryHighBloodPressure==true)
-        div.checkbox
-          label= gettext('Diabetes?')
-            input(type='checkbox', name='familyHistoryDiabetes', tabindex="20", value=1, checked=rec.familyHistoryDiabetes==true)
-        div.checkbox
-          label= gettext('Heart problems?')
-            input(type='checkbox', name='familyHistoryHeartProblems', tabindex="21", value=1, checked=rec.familyHistoryHeartProblems==true)
-        div.checkbox
-          label= gettext('TB?')
-            input(type='checkbox', name='familyHistoryTB', tabindex="22", value=1, checked=rec.familyHistoryTB==true)
-        div.checkbox
-          label= gettext('Smoking?')
-            input(type='checkbox', name='familyHistorySmoking', tabindex="23", value=1, checked=rec.familyHistorySmoking==true)
-        div.checkbox
-          label= gettext('None of the above?')
-            input(type='checkbox', name='familyHistoryNone', tabindex="24", value=1, checked=rec.familyHistoryNone==true)
+        - tabIdx = 18;
+        each cb in fHistory
+          div.checkbox
+            label= gettext(cb.label)
+              input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+
         span= gettext('Notes')
-        textarea(id='questionnaireNote', class='form-control imput-sm', tabindex="38", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
+        textarea(id='questionnaireNote', class='form-control', tabindex="25", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
 
       div(class='form-group col-xs-6')
         p.text-primary= gettext('Do you have a history of?')
-        div.checkbox
-          label= gettext('Food allergy?')
-            input(type='checkbox', name='historyFoodAllergy', tabindex="25", value=1, checked=rec.historyFoodAllergy==true)
-        div.checkbox
-          label= gettext('Medicine allergy?')
-            input(type='checkbox', name='historyMedicineAllergy', tabindex="26", value=1, checked=rec.historyMedicineAllergy==true)
-        div.checkbox
-          label= gettext('Asthma?')
-            input(type='checkbox', name='historyAsthma', tabindex="27", value=1, checked=rec.historyAsthma==true)
-        div.checkbox
-          label= gettext('Heart problems?')
-            input(type='checkbox', name='historyHeartProblems', tabindex="28", value=1, checked=rec.historyHeartProblems==true)
-        div.checkbox
-          label= gettext('Kidney problems?')
-            input(type='checkbox', name='historyKidneyProblems', tabindex="29", value=1, checked=rec.historyKidneyProblems==true)
-        div.checkbox
-          label= gettext('Hepatitis?')
-            input(type='checkbox', name='historyHepatitis', tabindex="30", value=1, checked=rec.historyHepatitis==true)
-        div.checkbox
-          label= gettext('Goiter?')
-            input(type='checkbox', name='historyGoiter', tabindex="31", value=1, checked=rec.historyGoiter==true)
-        div.checkbox
-          label= gettext('High blood pressure?')
-            input(type='checkbox', name='historyHighBloodPressure', tabindex="32", value=1, checked=rec.historyHighBloodPressure==true)
-        div.checkbox
-          label= gettext('Operation in the hospital?')
-            input(type='checkbox', name='historyHospitalOperation', tabindex="33", value=1, checked=rec.historyHospitalOperation==true)
-        div.checkbox
-          label= gettext('Blood transfusion?')
-            input(type='checkbox', name='historyBloodTransfusion', tabindex="34", value=1, checked=rec.historyBloodTransfusion==true)
-        div.checkbox
-          label= gettext('Smoking?')
-            input(type='checkbox', name='historySmoking', tabindex="35", value=1, checked=rec.historySmoking==true)
-        div.checkbox
-          label= gettext('Drinking?')
-            input(type='checkbox', name='historyDrinking', tabindex="36", value=1, checked=rec.historyDrinking==true)
-        div.checkbox
-          label= gettext('None of the above?')
-            input(type='checkbox', name='historyNone', tabindex="37", value=1, checked=rec.historyNone==true)
-
-
+        - tabIdx = 26;
+        each cb in pHistory
+          div.checkbox
+            label= gettext(cb.label)
+              input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
 
     div.row
       input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))

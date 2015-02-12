@@ -75,7 +75,7 @@ block prenatal
           div(class='col-xs-6 ')
             a(class="btn btn-default" data-toggle="collapse" href="#riskPresent" data-parent="#readonlyRiskPresent" aria-expanded="false" aria-controls="riskPresent")= gettext('Risk Present')
             //- Only show the risks already selected be default.
-            div(id="readonlyRiskPresent" class="readonlyRisk")
+            div(id="readonlyRiskPresent" class="readonlyCheckmark")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'Present') {
                   div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
@@ -107,7 +107,7 @@ block prenatal
           div(class='col-xs-6 ')
             a(class="btn btn-default" data-toggle="collapse" href="#riskObHx" data-parent="#readonlyRiskObHx" aria-expanded="false" aria-controls="riskObHx")= gettext('Risk ObHx')
             //- Only show the risks already selected be default.
-            div(id="readonlyRiskObHx" class="readonlyRisk")
+            div(id="readonlyRiskObHx" class="readonlyCheckmark")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'ObHx') {
                   div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
@@ -140,7 +140,7 @@ block prenatal
           div(class='col-xs-6 ')
             a(class="btn btn-default" data-toggle="collapse" href="#riskMedHx" data-parent="#readonlyRiskMedHx" aria-expanded="false" aria-controls="riskMedHx")= gettext('Risk MedHx')
             //- Only show the risks already selected be default.
-            div(id="readonlyRiskMedHx" class="readonlyRisk")
+            div(id="readonlyRiskMedHx" class="readonlyCheckmark")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'MedHx') {
                   div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
@@ -175,7 +175,7 @@ block prenatal
           div(class='col-xs-6 ')
             a(class="btn btn-default" data-toggle="collapse" href="#riskLifestyle" data-parent="#readonlyRiskLifestyle" aria-expanded="false" aria-controls="riskLifestyle")= gettext('Risk Lifestyle')
             //- Only show the risks already selected be default.
-            div(id="readonlyRiskLifestyle" class="readonlyRisk")
+            div(id="readonlyRiskLifestyle" class="readonlyCheckmark")
               each r in rec.risk
                 - if (getRiskType(r.riskCode) === 'Lifestyle') {
                   div(class="fa fa-check")= ' ' + libs._.findWhere(riskCodes, {id: r.riskCode}).name + ': ' + libs._.findWhere(riskCodes, {id: r.riskCode}).description
