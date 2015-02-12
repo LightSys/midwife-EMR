@@ -45,11 +45,21 @@ block pregnancyQuestionnaire
   form(class='dirty-check', role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
       div(class='form-group col-xs-6')
-        p(class='text-primary lead')= gettext('Present complaints')
-        each cb in pComplaints
-          div.checkbox
-            label= gettext(cb.label)
-              input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+        a(class="btn btn-default" data-toggle="collapse" href="#presentComplaints" data-parent="#readonlyPresentComplaints" aria-expanded="false" aria-controls="presentComplaints")= gettext('Present Complaints')
+
+        //- Only show the risks already selected be default.
+        div(id="readonlyPresentComplaints" class="readonlyCheckmark")
+          each cb in pComplaints
+            - if (rec[cb.name] == true) {
+              div(class="fa fa-check")= ' ' + cb.label
+              br
+            - }
+
+        div(id="presentComplaints" class="collapse")
+          each cb in pComplaints
+            div.checkbox
+              label= gettext(cb.label)
+                input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
 
       div(class='form-group col-xs-6')
         p(class='text-primary lead')= gettext('Can you/plan to/do you?')
@@ -73,23 +83,43 @@ block pregnancyQuestionnaire
 
     div.row
       div(class='form-group col-xs-6')
-        p.text-primary= gettext('Do you have a family history of?')
+        a(class="btn btn-default" data-toggle="collapse" href="#familyHistory" data-parent="#readonlyFamilyHistory" aria-expanded="false" aria-controls="familyHistory")= gettext('Family History of?')
         - tabIdx = 18;
-        each cb in fHistory
-          div.checkbox
-            label= gettext(cb.label)
-              input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+
+        //- Only show the risks already selected be default.
+        div(id="readonlyFamilyHistory" class="readonlyCheckmark")
+          each cb in fHistory
+            - if (rec[cb.name] == true) {
+              div(class="fa fa-check")= ' ' + cb.label
+              br
+            - }
+
+        div(id="familyHistory" class="collapse")
+          each cb in fHistory
+            div.checkbox
+              label= gettext(cb.label)
+                input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
 
         span= gettext('Notes')
         textarea(id='questionnaireNote', class='form-control', tabindex="25", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
 
       div(class='form-group col-xs-6')
-        p.text-primary= gettext('Do you have a history of?')
+        a(class="btn btn-default" data-toggle="collapse" href="#personalHistory" data-parent="#readonlyPersonalHistory" aria-expanded="false" aria-controls="personalHistory")= gettext('Personal History of?')
         - tabIdx = 26;
-        each cb in pHistory
-          div.checkbox
-            label= gettext(cb.label)
-              input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+
+        //- Only show the risks already selected be default.
+        div(id="readonlyPersonalHistory" class="readonlyCheckmark")
+          each cb in pHistory
+            - if (rec[cb.name] == true) {
+              div(class="fa fa-check")= ' ' + cb.label
+              br
+            - }
+
+        div(id="personalHistory" class="collapse")
+          each cb in pHistory
+            div.checkbox
+              label= gettext(cb.label)
+                input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
 
     div.row
       input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
