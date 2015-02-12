@@ -207,7 +207,8 @@ VALUES
   ('Albendazole 400mg PO', 'Albendazole 400mg PO', 1, NOW()),
   ('Ferrous Sulfate', 'Ferrous Sulfate', 1, NOW()),
   ('Ferrous Fumarate', 'Ferrous Fumarate', 1, NOW()),
-  ('Multivitamin', 'Multivitamin', 1, NOW())
+  ('Multivitamin', 'Multivitamin', 1, NOW()),
+  ('Prenatal Vitamin', 'Prenatal Vitamin', 1, NOW())
 ;
 
 -- Load default tests per client specifications.
