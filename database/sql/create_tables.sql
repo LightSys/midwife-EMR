@@ -383,7 +383,7 @@ CREATE TABLE IF NOT EXISTS `prenatalExam` (
   risk VARCHAR(100) NULL,
   vitamin BOOLEAN NULL,
   pray BOOLEAN NULL,
-  note VARCHAR(100) NULL,
+  note VARCHAR(1000) NULL,
   returnDate DATE NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
