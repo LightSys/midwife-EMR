@@ -1813,7 +1813,7 @@ var labsForm = function(req, res) {
           suiteDefs.push({
             id: suite.get('id')
             , name: suite.get('name')
-            , tests: testNames
+            , tests: tests.toJSON()
           });
         });
       })
