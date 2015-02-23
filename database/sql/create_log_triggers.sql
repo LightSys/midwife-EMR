@@ -92,8 +92,8 @@ CREATE TRIGGER labSuite_after_insert AFTER INSERT ON labSuite
 FOR EACH ROW
 BEGIN
   INSERT INTO labSuiteLog
-  (id, name, description, category, viewTemplate, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.category, NEW.viewTemplate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, name, description, category, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.category, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -106,8 +106,8 @@ CREATE TRIGGER labSuite_after_update AFTER UPDATE ON labSuite
 FOR EACH ROW
 BEGIN
   INSERT INTO labSuiteLog
-  (id, name, description, category, viewTemplate, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.category, NEW.viewTemplate, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, name, description, category, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.category, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -120,8 +120,8 @@ CREATE TRIGGER labSuite_after_delete AFTER DELETE ON labSuite
 FOR EACH ROW
 BEGIN
   INSERT INTO labSuiteLog
-  (id, name, description, category, viewTemplate, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.name, OLD.description, OLD.category, OLD.viewTemplate, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, name, description, category, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.category, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
  

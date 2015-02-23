@@ -63,20 +63,29 @@ block labs
                   div(class='modal-dialog')
                     div(class='modal-content')
                       div(class='modal-header')
-                        h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab test that you want.')
+                        h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab tests to enter for a specific date.')
                       div(class='modal-body')
                         div.row
-                          div(class='col-xs-4')
-                            p(class='text-info lead')= gettext('Select the lab test that you want to add.')
-                            div.form-group
+                          div(class='col-xs-12')
+                            div(class='panel panel-default')
+                              div(class='panel-body')
+                                label= gettext('The date the tests were done')
+                                input(type='date', class='form-control input-lg', tabindex='3', name='labTestDate', value='', placeholder='Unknown')
+                        div.row
+                          div(class='col-xs-12')
+                            div(id='addLabsParent', class='panel-group', role='tablist', aria-multiselectable="true")
                               each suite in labTests
-                                label.radio= suite.name
-                                  input(type='radio', name='suite', value=suite.id)
-                          div(class='col-xs-8')
-                            each suite in labTests
-                              dl
-                                dt= suite.name
-                                dd= suite.tests.join(', ')
+                                div(class='panel panel-primary')
+                                  div(class='panel-heading', role='tab', id='addLabsSuite-' + suite.id)
+                                    h4(class='panel-title')
+                                      a(data-toggle='collapse', data-parent='#addLabsParent', href='#addLabsSuite-' + suite.id + '-Content', aria-expanded='false', aria-controls='addLabsSuite-' + suite.id + '-Content')= suite.name
+                                  div(id='addLabsSuite-' + suite.id + '-Content', class='panel-collapse collapse', role='tabpanel', aria-labelledby='addLabsSuite-' + suite.id)
+                                    div(class='panel-body')
+                                      each test in suite.tests
+                                        div.checkbox
+                                          label= test.name
+                                            input(type='checkbox', name='labtest' + '-' + test.id, value=1, checked=false)
+
                       div(class='modal-footer')
                         input(type='hidden', name='_csrf', value=token)
                         input(type='hidden', name='pregnancy_id', value=rec.id)

@@ -401,7 +401,6 @@ CREATE TABLE IF NOT EXISTS `labSuite` (
   name VARCHAR(30) NOT NULL,
   description VARCHAR(100) NULL,
   category VARCHAR(50) NULL,
-  viewTemplate VARCHAR(100) NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,

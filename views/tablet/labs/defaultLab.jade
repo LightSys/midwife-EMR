@@ -28,7 +28,13 @@ block defaultLab
     div.row
       div(class='col-xs-3')
         label= gettext('Date of these tests')
-        input(id='testDate', type='date', class='form-control', tabindex='1', name='testDate', value=testDate)
+        - if (! addLabsDate) {
+          input(id='testDate', type='date', class='form-control', tabindex='1', name='testDate', value=testDate)
+        - } else {
+          input(id='testDate', type='date', class='form-control', tabindex='1', name='testDateDisplay', value=addLabsDate, data-defaultDate=addLabsDate, disabled=true)
+          //- Wnen input is disabled, it does not submit the value so we do so with a hidden input.
+          input(type='hidden', name='testDate', value=testDate)
+        - }
     div.row
       div(class='col-xs-12')
         hr

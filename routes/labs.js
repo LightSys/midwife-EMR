@@ -42,52 +42,49 @@ var _ = require('underscore')
  * -------------------------------------------------------- */
 var labTestAddForm = function(req, res) {
   var data
-    , suiteId
-    , suiteName
-    , viewTemplate
-    , data
-    , qb
+    , testIds = []
+    , testDate
     ;
   if (req.paramPregnancy) {
-    suiteId = req.body.suite;
-    if (suiteId) {
-      LabSuite.forge({id: suiteId})
-        .fetch()
-        .then(function(suite) {
-          if (suite) {
-            viewTemplate = suite.get('viewTemplate');
-            suiteName = suite.get('name');
-            // --------------------------------------------------------
-            // Load the tests for this suite to pass to the form.
-            // --------------------------------------------------------
-            new LabTests().query(function(qb) {
-                qb.where('labSuite_id', '=', suiteId);
-              })
-              .fetch({withRelated: ['LabTestValue']})
-              .then(function(testList) {
-                var labTests = []
-                  , formData = {title: req.gettext('Add Lab Test: ') + suiteName}
-                  ;
+    // --------------------------------------------------------
+    // Get the test ids and the test date.
+    // --------------------------------------------------------
+    _.each(req.body, function(val, key) {
+      if (key.search(/^labtest-/) !== -1) {
+        testIds.push(parseInt(key.match(/\d+/), 10));
+      }
+    });
+    testDate = req.body.labTestDate || void 0;
 
-                // --------------------------------------------------------
-                // Prepare the test data by putting it into the format used
-                // by the Jade select mixins and sorting by value.
-                // --------------------------------------------------------
-                testList.each(function(test) {
-                  labTests.push(labTestFormat(test));
-                });
+    if (testDate && testIds.length > 0) {
+      new LabTests()
+        .query(function(qb) {
+          qb.whereIn('id', testIds);
+        })
+        .fetch({withRelated: ['LabTestValue']})
+        .then(function(testList) {
+          var labTests = []
+            , formData = {
+                title: req.gettext('Add Lab Tests')
+                , labTestResultDate: testDate
+                , addLabsDate: testDate
+              }
+            ;
 
-                data = getCommonFormData(req, _.extend(formData, {labTests: labTests}));
-                res.render('labs/' + viewTemplate, data);
-              });
-          } else {
-            logWarn('Suite id not found.');
-            res.redirect(cfg.path.search);
-          }
+          // --------------------------------------------------------
+          // Prepare the test data by putting it into the format used
+          // by the Jade select mixins and sorting by value.
+          // --------------------------------------------------------
+          testList.each(function(test) {
+            labTests.push(labTestFormat(test));
+          });
+
+          data = getCommonFormData(req, _.extend(formData, {labTests: labTests}));
+          res.render('labs/defaultLab', data);
         });
     } else {
-      logWarn('Suite id not passed.');
-      res.redirect(cfg.path.search);
+      req.flash('warning', req.gettext('You must specify a date and at least one test.'));
+      res.redirect(cfg.path.pregnancyLabsEdit.replace(/:id/, req.paramPregnancy.id));
     }
   } else {
     // Pregnancy not found.
@@ -119,8 +116,7 @@ var labTestEditForm = function(req, res) {
             LabSuite.forge({id: labTest.get('labSuite_id')})
               .fetch()
               .then(function(suite) {
-                var viewTemplate = suite.get('viewTemplate')
-                  , formData = {
+                  var formData = {
                     title: req.gettext('Edit Lab Test: ' + labTest.get('name'))
                     , labTestResultId: ltrId
                     , labTestResultDate: moment(testDate).format('YYYY-MM-DD')
@@ -129,7 +125,7 @@ var labTestEditForm = function(req, res) {
                   , ltf = labTestFormat(labTest, result, result2, warn)
                   ;
                 data = getCommonFormData(req, _.extend(formData, {labTests: [ltf]}));
-                res.render('labs/' + viewTemplate, data);
+                res.render('labs/defaultLab', data);
               });
           });
       })

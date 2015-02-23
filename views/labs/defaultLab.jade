@@ -28,7 +28,11 @@ block defaultLab
     div.row
       div(class='col-md-3')
         label= gettext('Date of these tests')
-        +datePicker('form-control', 1, 'testDate', testDate, 'testDate')
+        - if (! addLabsDate) {
+          +datePicker('form-control', 1, 'testDate', testDate, 'testDate')
+        - } else {
+          +datePicker('form-control', 1, 'testDate', addLabsDate, 'testDate', addLabsDate, true)
+        - }
     div.row
       div(class='col-md-12')
         hr
