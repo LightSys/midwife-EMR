@@ -650,11 +650,11 @@ var changeRoles = function(req, res) {
         if (_.contains(newRoles, rid)) {
           if (! _.contains(currRoles, rid)) {
             additions.push({
-            	user_id: req.paramUser.id,
-            	role_id: rid,
-            	updatedBy: req.session.user.id,
-            	supervisor: req.session.supervisor,	
-            	updatedAt: new Date()
+              user_id: req.paramUser.id,
+              role_id: rid,
+              updatedBy: req.session.user.id,
+              supervisor: req.session.supervisor,
+              updatedAt: new Date()
 	    });
           }
         } else {
