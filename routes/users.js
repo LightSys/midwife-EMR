@@ -649,13 +649,7 @@ var changeRoles = function(req, res) {
         rid = roles.at(i).get('id');
         if (_.contains(newRoles, rid)) {
           if (! _.contains(currRoles, rid)) {
-            additions.push({
-            	user_id: req.paramUser.id,
-            	role_id: rid,
-            	updatedBy: req.session.user.id,
-            	supervisor: req.session.supervisor,	
-            	updatedAt: new Date()
-	    });
+            additions.push(rid);
           }
         } else {
           if (_.contains(currRoles, rid)) {
@@ -667,6 +661,8 @@ var changeRoles = function(req, res) {
       // --------------------------------------------------------
       // Save the changes to the database.
       // --------------------------------------------------------
+      // TODO: updatedAt, updatedBy, and supervisor fields are
+      // not yet filled in for records in the user_role table.
       User.forge({id: req.paramUser.id})
         .related('roles')
         .detach(deletions)
