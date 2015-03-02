@@ -7,40 +7,40 @@ block pregnancyQuestionnaire
 
   - var tabIdx = 1;
   - var pComplaints = [];
-  - pComplaints.push({name: 'currentlyVomiting', label: 'Been vomiting?'});
-  - pComplaints.push({name: 'currentlyDizzy', label: 'Feeling dizzy?'});
-  - pComplaints.push({name: 'currentlyFainting', label: 'Have fainted?'});
-  - pComplaints.push({name: 'currentlyBleeding', label: 'Bleeding?'});
-  - pComplaints.push({name: 'currentlyUrinationPain', label: 'Pain in urinating?'});
-  - pComplaints.push({name: 'currentlyBlurryVision', label: 'Blurry vision?'});
-  - pComplaints.push({name: 'currentlySwelling', label: 'Swelling?'});
-  - pComplaints.push({name: 'currentlyVaginalPain', label: 'Vaginal pain?'});
-  - pComplaints.push({name: 'currentlyVaginalItching', label: 'Vaginal itching?'});
-  - pComplaints.push({name: 'currentlyNone', label: 'None of the above?'});
+  - pComplaints.push({name: 'currentlyVomiting', label: 'Vomiting'});
+  - pComplaints.push({name: 'currentlyDizzy', label: 'Dizzy'});
+  - pComplaints.push({name: 'currentlyFainting', label: 'Fainted'});
+  - pComplaints.push({name: 'currentlyBleeding', label: 'Bleeding'});
+  - pComplaints.push({name: 'currentlyUrinationPain', label: 'Pain in urinating'});
+  - pComplaints.push({name: 'currentlyBlurryVision', label: 'Blurry vision'});
+  - pComplaints.push({name: 'currentlySwelling', label: 'Swelling'});
+  - pComplaints.push({name: 'currentlyVaginalPain', label: 'Vaginal pain'});
+  - pComplaints.push({name: 'currentlyVaginalItching', label: 'Vaginal itching'});
+  - pComplaints.push({name: 'currentlyNone', label: 'None of the above'});
 
   - var fHistory = [];
-  - fHistory.push({name: 'familyHistoryTwins', label: 'Twins?'});
-  - fHistory.push({name: 'familyHistoryHighBloodPressure', label: 'High blood pressure?'});
-  - fHistory.push({name: 'familyHistoryDiabetes', label: 'Diabetes?'});
-  - fHistory.push({name: 'familyHistoryHeartProblems', label: 'Heart problems?'});
-  - fHistory.push({name: 'familyHistoryTB', label: 'TB?'});
-  - fHistory.push({name: 'familyHistorySmoking', label: 'Smoking?'});
-  - fHistory.push({name: 'familyHistoryNone', label: 'None of the above?'});
+  - fHistory.push({name: 'familyHistoryTwins', label: 'Twins'});
+  - fHistory.push({name: 'familyHistoryHighBloodPressure', label: 'High blood pressure'});
+  - fHistory.push({name: 'familyHistoryDiabetes', label: 'Diabetes'});
+  - fHistory.push({name: 'familyHistoryHeartProblems', label: 'Heart problems'});
+  - fHistory.push({name: 'familyHistoryTB', label: 'TB'});
+  - fHistory.push({name: 'familyHistorySmoking', label: 'Smoking'});
+  - fHistory.push({name: 'familyHistoryNone', label: 'None of the above'});
 
   - var pHistory = [];
-  - pHistory.push({name: 'historyFoodAllergy', label: 'Food allergy?'});
-  - pHistory.push({name: 'historyMedicineAllergy', label: 'Medicine allergy?'});
-  - pHistory.push({name: 'historyAsthma', label: 'Asthma?'});
-  - pHistory.push({name: 'historyHeartProblems', label: 'Heart problems?'});
-  - pHistory.push({name: 'historyKidneyProblems', label: 'Kidney problems?'});
-  - pHistory.push({name: 'historyHepatitis', label: 'Hepatitis?'});
-  - pHistory.push({name: 'historyGoiter', label: 'Goiter?'});
-  - pHistory.push({name: 'historyHighBloodPressure', label: 'High blood pressure?'});
-  - pHistory.push({name: 'historyHospitalOperation', label: 'Operation in the hospital?'});
-  - pHistory.push({name: 'historyBloodTransfusion', label: 'Blood transfusion?'});
-  - pHistory.push({name: 'historySmoking', label: 'Smoking?'});
-  - pHistory.push({name: 'historyDrinking', label: 'Drinking?'});
-  - pHistory.push({name: 'historyNone', label: 'None of the above?'});
+  - pHistory.push({name: 'historyFoodAllergy', label: 'Food allergy'});
+  - pHistory.push({name: 'historyMedicineAllergy', label: 'Medicine allergy'});
+  - pHistory.push({name: 'historyAsthma', label: 'Asthma'});
+  - pHistory.push({name: 'historyHeartProblems', label: 'Heart problems'});
+  - pHistory.push({name: 'historyKidneyProblems', label: 'Kidney problems'});
+  - pHistory.push({name: 'historyHepatitis', label: 'Hepatitis'});
+  - pHistory.push({name: 'historyGoiter', label: 'Goiter'});
+  - pHistory.push({name: 'historyHighBloodPressure', label: 'High blood pressure'});
+  - pHistory.push({name: 'historyHospitalOperation', label: 'Operation in the hospital'});
+  - pHistory.push({name: 'historyBloodTransfusion', label: 'Blood transfusion'});
+  - pHistory.push({name: 'historySmoking', label: 'Smoking'});
+  - pHistory.push({name: 'historyDrinking', label: 'Drinking'});
+  - pHistory.push({name: 'historyNone', label: 'None of the above'});
 
   form(class='dirty-check', role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
@@ -61,7 +61,7 @@ block pregnancyQuestionnaire
               label= gettext(cb.label)
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
 
-        a(class="btn btn-default" data-toggle="collapse" href="#familyHistory" data-parent="#readonlyFamilyHistory" aria-expanded="false" aria-controls="familyHistory")= gettext('Family History of?')
+        a(class="btn btn-default" data-toggle="collapse" href="#familyHistory" data-parent="#readonlyFamilyHistory" aria-expanded="false" aria-controls="familyHistory")= gettext('Family History')
         - tabIdx = 18;
 
         //- Only show the symptoms already selected be default.
@@ -78,7 +78,7 @@ block pregnancyQuestionnaire
               label= gettext(cb.label)
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
 
-        a(class="btn btn-default" data-toggle="collapse" href="#personalHistory" data-parent="#readonlyPersonalHistory" aria-expanded="false" aria-controls="personalHistory")= gettext('Personal History of?')
+        a(class="btn btn-default" data-toggle="collapse" href="#personalHistory" data-parent="#readonlyPersonalHistory" aria-expanded="false" aria-controls="personalHistory")= gettext('Personal History')
         - tabIdx = 26;
 
         //- Only show the symptoms already selected be default.
@@ -97,21 +97,21 @@ block pregnancyQuestionnaire
 
 
       div(class='form-group col-xs-6')
-        p(class='text-primary lead')= gettext('Can you/plan to/do you?')
-          p= gettext('Use iodized salt?')
+        p(class='text-primary lead')= gettext('Other')
+          p= gettext('Use iodized salt')
           +select('form-control', 'useIodizedSalt', 11, useIodizedSalt)
         div.checkbox
-          label= gettext('Taking medication?')
+          label= gettext('Taking medication')
             input(type='checkbox', name='takingMedication', tabindex="12", value=1, checked=rec.takingMedication==true)
         div.checkbox
-          label= gettext('Plan to breastfeed?')
+          label= gettext('Plan to breastfeed')
             input(type='checkbox', name='planToBreastFeed', tabindex="13", value=1, checked=rec.planToBreastFeed==true)
-        span= gettext('Where do you plan to give birth?')
+        span= gettext('Where do you plan to give birth')
         input(class='form-control', type='text', tabindex="14", autocomplete="off", name='whereDeliver', value=rec.whereDeliver)
-        span= gettext('Companion during childbirth?')
+        span= gettext('Companion during childbirth')
         input(class='form-control', type='text', tabindex="15", autocomplete="off", name='birthCompanion', value=rec.birthCompanion)
         div.checkbox
-          label= gettext('Have you ever practiced family planning?')
+          label= gettext('Practiced family planning')
             input(type='checkbox', name='practiceFamilyPlanning', tabindex="16", value=1, checked=rec.practiceFamilyPlanning==true)
         span= gettext('Family planning comments')
         input(class='form-control', type='text', tabindex="17", spellcheck="off", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
