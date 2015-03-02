@@ -113,6 +113,7 @@ VALUES
   ('education', 'Elem grad', 'Elem grad', 0, 1, NOW()),
   ('education', 'HS level', 'HS level', 0, 1, NOW()),
   ('education', 'HS grad', 'HS grad', 0, 1, NOW()),
+  ('education', 'Vocational', 'Vocational', 0, 1, NOW()),
   ('education', 'College level', 'College level', 0, 1, NOW()),
   ('education', 'College grad', 'College grad', 0, 1, NOW()),
   ('edema', 'none', 'None', 1, 1, NOW()),
