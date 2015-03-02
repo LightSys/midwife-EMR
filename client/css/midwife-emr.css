@@ -43,8 +43,13 @@ div.errormessage {
   margin-top: 5px;
 }
 
-h2.patient-well {
+h3.patient-well {
   margin-top: 0;
+}
+.patient-well-smallrow,
+.patient-well-smallrow strong {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .spacing {

@@ -7,8 +7,11 @@
 //- ---------------------------------------------------------
 mixin patientWell(record)
   - var name = record.lastname + ', ' + record.firstname;
+  - var nickname = record.nickname && record.nickname.length > 0? record.nickname: '';
   - var dob = libs.mmt(record.patient.dob).format('MM-DD-YYYY');
   - var age = libs.mmt().diff(dob, 'years');
+  - var edd = record.edd? libs.mmt(record.edd).format('MM-DD-YYYY'): '';
+  - var lmp = record.lmp? libs.mmt(record.lmp).format('MM-DD-YYYY'): '';
   - var doh = record.patient.dohID;
   - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): '';
   - var gravida = record.gravida || '0';
@@ -39,6 +42,17 @@ mixin patientWell(record)
           span(class='lead text-primary')= record.ga
     div(class='row')
       div(class='col-md-5')
+        div(class='lead')= gettext('Nickname: ')
+          span(class='lead text-primary')= nickname
+      div(class='col-md-3')
+        div(class='lead')= gettext('MMC: ')
+          span(class='lead text-primary')= dohFormatted
+      div(class='col-md-4')
+        div(class='lead')= gettext('Prenatal: ')
+          span(class='small text-primary')= prenatalDay
+          span(class='small text-primary')= prenatalSep + prenatalLoc
+    div(class='row')
+      div(class='col-md-5')
         span= gettext('G: ')
         strong(class='lead text-primary')= gravida
         span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -54,11 +68,10 @@ mixin patientWell(record)
         span= gettext('L: ')
         strong(class='lead text-primary')= living
       div(class='col-md-3')
-        div(class='lead')= gettext('MMC: ')
-          span(class='lead text-primary')= dohFormatted
-      div(class='col-md-4')
-        div(class='lead')= gettext('Prenatal: ')
-          span(class='small text-primary')= prenatalDay
-          span(class='small text-primary')= prenatalSep + prenatalLoc
+        span(class='lead')= gettext('LMP: ')
+        strong(class='lead text-primary')= lmp
+      div(class='col-md-3')
+        span(class='lead')= gettext('EDD: ')
+        strong(class='lead text-primary')= edd
 
 

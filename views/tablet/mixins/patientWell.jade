@@ -8,8 +8,11 @@
 mixin patientWell(record)
   - var priorityNumber = record && record.prenatalCheckinPriority? record.prenatalCheckinPriority: '';
   - var name = record.lastname + ', ' + record.firstname;
+  - var nickname = record.nickname && record.nickname.length > 0? record.nickname: '';
   - var dob = libs.mmt(record.patient.dob).format('MM-DD-YYYY');
   - var age = libs.mmt().diff(dob, 'years');
+  - var edd = record.edd? libs.mmt(record.edd).format('MM-DD-YYYY'): '';
+  - var lmp = record.lmp? libs.mmt(record.lmp).format('MM-DD-YYYY'): '';
   - var doh = record.patient.dohID;
   - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): '';
   - var gravida = record.gravida || '0';
@@ -17,7 +20,7 @@ mixin patientWell(record)
   - var abortions = record.abortions || '0';
   - var stillBirths = record.stillBirths || '0';
   - var living = record.living || '0';
-  - var gaText = gettext('Current GA: ') 
+  - var gaText = gettext('Curr GA: ')
   - if (! record.prenatalSchedule) record.prenatalSchedule = {};
   - var prenatalDay = record.prenatalSchedule.day || '';
   - var prenatalLoc = record.prenatalSchedule.location || '';
@@ -26,41 +29,54 @@ mixin patientWell(record)
   -   gaText = gettext('Final GA: ');
   - }
   div(class='pregName well well-sm')
-    div(class='row')
-      div(class='col-xs-10')
-        h2(class='patient-well')= name
-      div(class='col-xs-2')
-        div(class='lead text-right')
+    div(class='row patient-well-smallrow')
+      div(class='col-xs-7')
+        h3(class='patient-well')= name
+      div(class='col-xs-4')
+        div(class='row patient-well-smallrow')
+          div(class='col-xs-12')
+            div(class='')= gettext('Nick: ')
+              span(class='text-primary')= nickname
+        div(class='row patient-well-smallrow')
+          div(class='col-xs-12')
+            div(class='')= gettext('MMC: ')
+              span(class='text-primary')= dohFormatted
+      div(class='col-xs-1')
+        div(class='text-right')
           span(class='badge text-primary')= priorityNumber
-    div(class='row visible-xs visible-sm')
+    div(class='row visible-xs visible-sm patient-well-smallrow')
       div(class='col-xs-4')
-        div(class='lead')= gettext('Age: ')
-          span(class='lead text-primary')= age
-          span(class='lead text-primary') &nbsp;&nbsp;(
-          span(class='lead text-primary')= dob
-          span(class='lead text-primary') )
-      div(class='col-xs-4')
-        div(class='lead')= gaText
-          span(class='lead text-primary')= record.ga
-      div(class='col-xs-4')
-        div(class='lead')= gettext('Prenatal: ')
+        div(class='')= gettext('Age: ')
+          span(class='text-primary')= age
+          span(class='text-primary') &nbsp;&nbsp;(
+          span(class='text-primary')= dob
+          span(class='text-primary') )
+      div(class='col-xs-3')
+        div(class='')= gaText
+          span(class='text-primary')= record.ga
+      div(class='col-xs-5')
+        div(class='')= gettext('Prenatal: ')
           span(class='small text-primary')= prenatalDay
           span(class='small text-primary')= prenatalSep + prenatalLoc
-    div(class='row')
-      div(class='col-xs-6')
+    div(class='row patient-well')
+      div(class='col-xs-4')
         span= gettext('G: ')
-        strong(class='lead text-primary')= gravida
-        span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        strong(class='text-primary')= gravida
+        span &nbsp;&nbsp;
         span= gettext('P: ')
-        strong(class='lead text-primary')= para
-        span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        strong(class='text-primary')= para
+        span &nbsp;&nbsp;
         span= gettext('A: ')
-        strong(class='lead text-primary')= abortions
-        span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        strong(class='text-primary')= abortions
+        span &nbsp;&nbsp;
         span= gettext('S: ')
-        strong(class='lead text-primary')= stillBirths
-        span &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        strong(class='text-primary')= stillBirths
+        span &nbsp;&nbsp;
         span= gettext('L: ')
-        strong(class='lead text-primary')= living
-      div(class='col-xs-4 col-xs-offset-2')
-        div(class='lead')= gettext('MMC: ') + dohFormatted
+        strong(class='text-primary')= living
+      div(class='col-xs-3')
+        div(class='')= gettext('LMP: ')
+          span(class='text-primary')= lmp
+      div(class='col-xs-5')
+        div(class='')= gettext('EDD: ')
+          span(class='text-primary')= edd
