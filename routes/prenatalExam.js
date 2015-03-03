@@ -82,6 +82,8 @@ var prenatalExamSave = function(req, res) {
         , vitamin: '0'
         , pray: '0'
       }
+    , nbrFlds = ['weight', 'systolic', 'diastolic', 'cr', 'temperature',
+        'respiratoryRate', 'fh', 'fht']
     , saveOpts = {method: 'update'}
     , role = req.session.roleInfo.roleNames[0]
     ;
@@ -109,6 +111,16 @@ var prenatalExamSave = function(req, res) {
       delete flds.id;
       saveOpts.method = 'insert';
     }
+
+    // --------------------------------------------------------
+    // For number fields that have no value specified, force a
+    // null so that the ORM does not force a zero.
+    // --------------------------------------------------------
+    _.each(flds, function(val, key) {
+      if (val.length === 0 && _.find(nbrFlds, function(k) {return k === key;})) {
+        flds[key] = null;
+      }
+    });
 
     // --------------------------------------------------------
     // Store data in the position field all capitals.

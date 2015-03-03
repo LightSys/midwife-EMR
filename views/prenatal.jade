@@ -247,7 +247,12 @@ block prenatal
               - returnDate = pe.returnDate? libs.mmt(pe.returnDate).format('MM-DD-YYYY'): '';
               //- If database has all zeros, will be invalid date.
               - if (returnDate == 'Invalid date') returnDate = '';
-              - var bp = pe.systolic + ' / ' + pe.diastolic;
+              - var bp;
+              - if (pe.systolic && pe.diastolic) {
+              -   bp = pe.systolic + ' / ' + pe.diastolic;
+              - } else {
+              -   bp = '';
+              - }
               - var mvmt = pe.mvmt === 1? 'Y': '';
               - var edema = pe.edema === 'none'? 'None': pe.edema;
               - var vitamin = pe.vitamin === 1? 'Y': '';
