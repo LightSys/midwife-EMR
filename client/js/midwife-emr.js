@@ -209,7 +209,7 @@ $(function() {
         , val = $fld.val()
         ;
       $fld.datepicker(initDpOpts);  // For initial load of date from field.
-      if (val) {
+      if (val && val !== 'Invalid date') {
         $fld.datepicker('option', 'defaultDate', moment(val, 'YYYY-MM-DD').toDate());
       } else {
         if (defaultDate) {
