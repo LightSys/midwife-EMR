@@ -8,8 +8,7 @@ mixin titleMsg(title)
       - if (rec && rec.flags && rec.flags.length > 0) {
         div(class='flags alert alert-info')
           - rec.flags.forEach(function(f) {
-            span &nbsp;
-            span(class='')= f
+            p(class='')= f
           - });
       - }
     div(class='col-md-2')
