@@ -66,11 +66,16 @@ var logException = function(err, req, res, next) {
  * -------------------------------------------------------- */
 var displayError = function(err, req, res, next) {
   var title = req.gettext("Oops!")
-    , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again.";
+    , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again."
     ;
   if (err.status === 403) {
     res.status(403);
-    text = 'It seems that you are not authorized for that page. Sorry.';
+    if (req.url === cfg.path.login) {
+      req.flash('warning', req.gettext('Sorry, you tried to login using a stale login page. Please try again using this one.'));
+      return res.redirect(cfg.path.login);
+    } else {
+      text = 'It seems that you are not authorized for that page. Sorry.';
+    }
   }
   res.render('errorPage', {title: title, text: text});
   next(err);

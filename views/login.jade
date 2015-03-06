@@ -7,6 +7,7 @@ block login
     //- index.js in the Passport section does not have access to the req object.
     p.text-warning
       = message
+    +flash(messages)
     form(role='form', name='login', action='/login', method='post')
       div.form-group
         span= gettext('Username')

@@ -274,6 +274,8 @@ var login = function(req, res) {
   var data = {
     title: req.gettext('Please log in')
     , message: req.session.messages
+    , messages: req.flash()
+    , siteTitle: cfg.site.title
   };
   res.render('login', data);
 };
@@ -319,19 +321,35 @@ var loginPost = function(req, res, next) {
   })(req, res, next);
 };
 
+/* --------------------------------------------------------
+ * logout()
+ *
+ * Logs the user out of the system by regenerating the
+ * session object and rendering the logout page, which is
+ * used to "park" the browser until the user is ready to
+ * login again. This helps the CSRF token on the login
+ * page from expiring while the user is logged out.
+ *
+ * Note: this is meant to be used with the clearRoleInfo()
+ * method that clears sensitive role information from the
+ * data that is made available to the template system.
+ * -------------------------------------------------------- */
 var logout = function(req, res) {
   var options = {}
+    , data = {
+        title: 'You are now logged out'
+    }
     ;
   if (req.session.user && req.session.user.id) {
     options.sid = req.sessionID;
     options.user_id = req.session.user.id;
     Event.logoutEvent(options).then(function() {
-      req.session.destroy(function(err) {
-        res.redirect(loginRoute);
+      req.session.regenerate(function(err) {
+        res.render('logout', data);
       });
     });
   } else {
-    res.redirect(loginRoute);
+    res.render('logout', data);
   }
 };
 

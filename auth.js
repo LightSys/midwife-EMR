@@ -69,6 +69,23 @@ var setRoleInfo = function(app) {
 };
 
 /* --------------------------------------------------------
+ * clearRoleInfo()
+ *
+ * Remove the roleInfo information from the app.locals that
+ * is used in the templates. This makes sense to do when the
+ * user is logging out.
+ *
+ * param       app - the application object
+ * return      function to be used in an Express route.
+ * -------------------------------------------------------- */
+var clearRoleInfo = function(app) {
+  return function(req, res, next) {
+    delete app.locals.roleInfo;
+    next();
+  };
+};
+
+/* --------------------------------------------------------
  * hasRole()
  *
  * Returns true if the passed role is found in the list of
@@ -135,6 +152,7 @@ function auth(req, res, next) {
 module.exports = {
   inRoles: inRoles
   , setRoleInfo: setRoleInfo
+  , clearRoleInfo: clearRoleInfo
   , auth: auth
   , hasRole: hasRole
 };

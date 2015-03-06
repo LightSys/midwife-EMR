@@ -19,6 +19,7 @@ var express = require('express')
   , app = express()
   , inRoles = require('./auth').inRoles
   , setRoleInfo = require('./auth').setRoleInfo(app)    // requires the app object
+  , clearRoleInfo = require('./auth').clearRoleInfo(app)    // requires the app object
   , auth = require('./auth').auth
   , SessionStore = require('connect-mysql')(express)
   , MySQL = require('mysql')                            // for conn pool for sessions
@@ -279,7 +280,7 @@ common.push(logDevice, auth, setRoleInfo, i18nLocals);
 // --------------------------------------------------------
 app.get(cfg.path.login, setRoleInfo, home.login);
 app.post(cfg.path.login, setRoleInfo, home.loginPost);
-app.get(cfg.path.logout, setRoleInfo, home.logout);
+app.get(cfg.path.logout, clearRoleInfo, home.logout);
 
 // --------------------------------------------------------
 // Home
