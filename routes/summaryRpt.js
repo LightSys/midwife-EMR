@@ -641,6 +641,7 @@ var doPregnancyHistory = function(doc, data, opts, ypos) {
     , y = ypos
     , colNames = []
     , colData = []
+    , bottomNote = []
     ;
 
   colNames.push('Date       ');
@@ -682,12 +683,13 @@ var doPregnancyHistory = function(doc, data, opts, ypos) {
     } else {
       data.push('');
     }
+    bottomNote.push(row.note? row.note: '');
     colData.push(data);
   });
 
   doLabel(doc, 'Pregnancy History', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y);
+  y = doTable(doc, colNames, colData, opts, y, void 0, false, bottomNote);
 
 };
 
@@ -1054,7 +1056,7 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * the columns passed unless position parameter is passed.
  * Position parameter can be 'left' or 'right' to create the
  * table on the left half or right half of the page accordingly.
- * Assumes that the columns header tites represent the width
+ * Assumes that the columns header titles represent the width
  * of the column. In other words, pad columns with extra
  * spaces should they need to be wider.
  *
@@ -1064,6 +1066,13 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * that has explicit line feeds in it will be split to different
  * lines on those line feeds.
  *
+ * If the bottomNote option is set, it is expected to be an
+ * array of the same length as the rows array divided by the
+ * length of the columns array. In other words, an entry for each
+ * record, even if a particular entry is a blank string. Entries
+ * are written at the bottom of the table row. This is good for long
+ * notes that don't need a column header.
+ *
  * param      doc
  * param      columns - list of column names
  * param      rows
@@ -1071,9 +1080,10 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * param      ypos
  * param      position - default is full width, 'left', 'right'
  * param      wrap - whether to wrap data if too long for column
+ * param      bottomNote - an array of notes, one per record, to write at bottom
  * return     y - final y
  * -------------------------------------------------------- */
-var doTable = function(doc, columns, rows, opts, ypos, position, wrap) {
+var doTable = function(doc, columns, rows, opts, ypos, position, wrap, bottomNote) {
   var x = opts.margins.left
     , left = x
     , y = ypos
@@ -1133,9 +1143,13 @@ var doTable = function(doc, columns, rows, opts, ypos, position, wrap) {
     .font(FONTS.Helvetica)
     .fontSize(9);
   x = left;
-  _.each(rows, function(row) {
+  _.each(rows, function(row, rowNum) {
     var linesUsed = 1
       , maxLinesUsed = linesUsed
+      , maxBtmLineLen = 140
+      , btmLine
+      , numBtmLines
+      , btmTmp
       ;
     _.each(row, function(val, idx) {
       if (_.isNull(val)) val = '';
@@ -1174,6 +1188,22 @@ var doTable = function(doc, columns, rows, opts, ypos, position, wrap) {
     });
     x = left;
     y += maxLinesUsed * 10;      // Move down the number of lines used.
+
+    if (bottomNote && rowNum < bottomNote.length) {
+      if (bottomNote[rowNum]) {
+        // --------------------------------------------------------
+        // We hard-wrap without special processing at a certain
+        // number of characters. This isn't pretty nor graceful.
+        // --------------------------------------------------------
+        numBtmLines = Math.ceil(bottomNote[rowNum].length / maxBtmLineLen);
+        for (btmLine = 0; btmLine < numBtmLines; btmLine++) {
+          btmTmp = bottomNote[rowNum].slice(btmLine * maxBtmLineLen, (btmLine * maxBtmLineLen) + maxBtmLineLen);
+          doc.text(btmTmp, left, y);
+          y += 10;
+        }
+      }
+    }
+
     doSep(doc, opts, y, greyLightColor, position);
     y += 10;
   });
@@ -1389,6 +1419,7 @@ var getData = function(id) {
       .then(function() {
         return new PregnancyHistories().query(function(qb) {
           qb.where('pregnancy_id', '=', data.pregnancy.id);
+          qb.orderBy('pregnancyHistory.year', 'pregnancyHistory.month');
         })
         .fetch();
       })
