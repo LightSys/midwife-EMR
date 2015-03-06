@@ -49,7 +49,7 @@ block prenatal
           div(class='col-xs-12')
             div
               span= gettext('EDD')
-              input(id='edd', class='form-control', type='text', autocomplete="off", name='edd', disabled=true, value=rec.edd)
+              input(id='edd', class='form-control', type='text', autocomplete="off", name='edd', disabled=true, value=libs.mmt(rec.edd).format('MM-DD-YYYY'))
 
       div(class='col-xs-4')
         p(class='text-primary lead') &nbsp;

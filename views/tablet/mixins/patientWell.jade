@@ -13,6 +13,9 @@ mixin patientWell(record)
   - var age = libs.mmt().diff(dob, 'years');
   - var edd = record.edd? libs.mmt(record.edd).format('MM-DD-YYYY'): '';
   - var lmp = record.lmp? libs.mmt(record.lmp).format('MM-DD-YYYY'): '';
+  - if (record.useAlternateEdd && record.alternateEdd && libs.mmt(record.alternateEdd).isValid()) {
+  -   edd = libs.mmt(record.alternateEdd).format('MM-DD-YYYY');
+  - }
   - var doh = record.patient.dohID;
   - var dohFormatted = doh? doh.slice(0,2) + '-' + doh.slice(2,4) + '-' + doh.slice(4): '';
   - var gravida = record.gravida || '0';
