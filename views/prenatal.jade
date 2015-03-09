@@ -16,6 +16,8 @@ block prenatal
   -   return rec.riskType? rec.riskType: undefined;
   - }
 
+  - var edd = rec.edd? libs.mmt(rec.edd).format('MM-DD-YYYY'): '';
+
   - var prenatalExamAddFormPath = '/pregnancy/' + rec.id + '/prenatalexam';
   form(id='prenatalForm', class='dirty-check', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')
     div.row
@@ -50,7 +52,7 @@ block prenatal
           div(class='col-md-4 ')
             div
               span= gettext('EDD')
-              input(id='edd', class='form-control', type='text', autocomplete="off", name='edd', disabled=true, value=libs.mmt(rec.edd).format('MM-DD-YYYY'))
+              input(id='edd', class='form-control', type='text', autocomplete="off", name='edd', disabled=true, value=edd)
           div(class='col-md-4 ')
             div
               span= gettext('Alternate EDD')
