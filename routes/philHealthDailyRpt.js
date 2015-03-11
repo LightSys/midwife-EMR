@@ -452,23 +452,77 @@ var getColXpos = function(opts) {
     ;
   x = opts.margins.left; xPos.push(x);  // left margin
   x += 45; xPos.push(x);                // MMC ID
-  x += 55; xPos.push(x);                // Date of Adm
+  x += 57; xPos.push(x);                // Date of Adm
   x += 50; xPos.push(x);                // Time of Adm
   x += 100; xPos.push(x);               // Last name
   x += 100; xPos.push(x);               // First name
   x += 85; xPos.push(x);                // Middle Name
-  x += 55; xPos.push(x);                // Date of Birth
+  x += 57; xPos.push(x);                // Date of Birth
   x += 155; xPos.push(x);               // Address
   x += 85; xPos.push(x);                // Brgy
   x += 53; xPos.push(x);                // District
   x += 20; xPos.push(x);                // NN / NH
   x += 55; xPos.push(x);                // Adm DX
-  x += 55; xPos.push(x);                // Date of D/C
+  x += 57; xPos.push(x);                // Date of D/C
   x += 50; xPos.push(x);                // Time of D/C
 
   return xPos;
 };
 
+/* --------------------------------------------------------
+ * doFromTo()
+ *
+ * Write the from and to dates that the report covers on
+ * the report.
+ *
+ * param      doc
+ * param      from
+ * param      to
+ * return     undefined
+ * -------------------------------------------------------- */
+var doFromTo = function(doc, from, to) {
+  var fromDate = moment(from, 'YYYY-MM-DD').format('MM/DD/YYYY')
+    , toDate = moment(to, 'YYYY-MM-DD').format('MM/DD/YYYY')
+    , y = 560
+    ;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(11)
+    .text('Reporting Period: ', 18, y)
+    .font(FONTS.Helvetica)
+    .fontSize(11)
+    .text(fromDate + ' to ' + toDate, 18, y + 14);
+};
+
+/* --------------------------------------------------------
+ * doPageNums()
+ *
+ * Print the page number at the bottom of the report.
+ *
+ * param      doc
+ * param      pageNum
+ * param      totalPages
+ * param      opts
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPageNums = function(doc, pageNum, totalPages, opts) {
+  var str
+    , len
+    , largeFont = 11
+    , x
+    , paddingRight = 4
+    , y = 560
+    ;
+
+  doc.font(FONTS.HelveticaBold).fontSize(largeFont);
+  str =  'Page ' + pageNum + ' of ' + totalPages;
+  len = doc.widthOfString(str);
+  x = doc.page.width - opts.margins.right - len - paddingRight;
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont)
+    .text(str, x, y);
+};
 
 /* --------------------------------------------------------
  * doPages()
@@ -492,6 +546,8 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   // data, still create a page with no data.
   // --------------------------------------------------------
   doReportTitle(doc, opts.title);
+  doFromTo(doc, opts.fromDate, opts.toDate);
+  doPageNums(doc, pageNum, totalPages, opts);
   doColumnHeader(doc, opts);
   _.each(data, function(rec) {
     doRow(doc, rec, opts, currentRow, 30);
@@ -501,6 +557,8 @@ var doPages = function(doc, data, rowsPerPage, opts) {
       currentRow = 0;
       pageNum++;
       doReportTitle(doc, opts.title);
+      doFromTo(doc, opts.fromDate, opts.toDate);
+      doPageNums(doc, pageNum, totalPages, opts);
       doColumnHeader(doc, opts);
     }
   });
@@ -532,7 +590,7 @@ var doReport = function(flds, writable) {
         }
       }
     , doc = new PDFDocument(options)
-    , rowsPerPage = 16    // Number of rows per page of this report.
+    , rowsPerPage = 15    // Number of rows per page of this report.
     , opts = {}
     ;
 
