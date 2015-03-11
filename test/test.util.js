@@ -153,6 +153,62 @@ describe('Util', function(done) {
       done();
     });
 
+    it('should not change first parameter passed by reference as a moment instance', function(done) {
+      var edd = moment().subtract(100, 'days')
+        , rDate = edd.clone().add(23, 'days')
+        , eddSecs = edd.unix()
+        , result1
+        , result2
+        ;
+      result1 = util.getGA(edd, rDate);
+      should(edd.unix()).equal(eddSecs);
+      result2 = util.getGA(edd, rDate);
+      result1.should.equal(result2);
+      done();
+    });
+
+    it('should not change second parameter passed by reference as a moment instance', function(done) {
+      var edd = moment().subtract(100, 'days')
+        , rDate = edd.clone().add(23, 'days')
+        , rDateSecs = rDate.unix()
+        , result1
+        , result2
+        ;
+      result1 = util.getGA(edd, rDate);
+      should(rDate.unix()).equal(rDateSecs);
+      result2 = util.getGA(edd, rDate);
+      result1.should.equal(result2);
+      done();
+    });
+
+    it('should not change first parameter passed by reference as a Date instance', function(done) {
+      var edd = new Date(2013, 10, 23)
+        , rDate = new Date(2013, 11, 28)
+        , eddSecs = edd.getTime()
+        , result1
+        , result2
+        ;
+      result1 = util.getGA(edd, rDate);
+      should(edd.getTime()).equal(eddSecs);
+      result2 = util.getGA(edd, rDate);
+      result1.should.equal(result2);
+      done();
+    });
+
+    it('should not change second parameter passed by reference as a Date instance', function(done) {
+      var edd = new Date(2013, 10, 23)
+        , rDate = new Date(2013, 11, 28)
+        , rDateSecs = rDate.getTime()
+        , result1
+        , result2
+        ;
+      result1 = util.getGA(edd, rDate);
+      should(rDate.getTime()).equal(rDateSecs);
+      result2 = util.getGA(edd, rDate);
+      result1.should.equal(result2);
+      done();
+    });
+
   });
 
   describe('calcEdd', function(done) {

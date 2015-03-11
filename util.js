@@ -101,7 +101,7 @@ var getGA = function(edd, rDate) {
   if (typeof edd === 'string' && /....-..-../.test(edd)) {
     estDue = moment(edd, 'YYYY-MM-DD');
   }
-  if (moment.isMoment(edd)) estDue = edd;
+  if (moment.isMoment(edd)) estDue = edd.clone();
   if (_.isDate(edd)) estDue = moment(edd);
   if (! estDue) return '';
 
@@ -110,7 +110,7 @@ var getGA = function(edd, rDate) {
     if (typeof rDate === 'string' && /....-..-../.test(rDate)) {
       refDate = moment(rDate, 'YYYY-MM-DD');
     }
-    if (moment.isMoment(rDate)) refDate = rDate;
+    if (moment.isMoment(rDate)) refDate = rDate.clone();
     if (_.isDate(rDate)) refDate = moment(rDate);
     if (! refDate) return '';
   } else {
