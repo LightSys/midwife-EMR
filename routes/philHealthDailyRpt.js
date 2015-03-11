@@ -363,7 +363,7 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
     .font(FONTS.Helvetica)
     .fontSize(fontSize);
   // MMC ID
-  tmpStr = formatDohID(data.patient.dohID);
+  tmpStr = formatDohID(data.patient.dohID, true);
   centerInCol(doc, tmpStr, colPos[0], colPos[1], textY);
 
   // Date of Adm

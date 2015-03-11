@@ -25,13 +25,22 @@ var moment = require('moment')
 /* --------------------------------------------------------
  * formatDohID()
  *
- * Return the specified dohID formatted per the usual spec.
+ * Return the specified dohID formatted per the usual spec,
+ * which is xx-xx-xx.
+ *
+ * If useAltFormat is true, the alternate format for Phil
+ * Health is used which is xx-xxxx.
  *
  * param      dohID
+ * param      useAltFormat  - boolean
  * return     formatted string
  * -------------------------------------------------------- */
-var formatDohID = function(dohID) {
-  return dohID? dohID.slice(0,2) + '-' + dohID.slice(2,4) + '-' + dohID.slice(4): '';
+var formatDohID = function(dohID, useAltFormat) {
+  if (! useAltFormat) {
+    return dohID? dohID.slice(0,2) + '-' + dohID.slice(2,4) + '-' + dohID.slice(4): '';
+  } else {
+    return dohID? dohID.slice(0,2) + '-' + dohID.slice(2): '';
+  }
 };
 
 var writeLog = function(msg, logType) {
