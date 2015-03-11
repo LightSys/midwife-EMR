@@ -15,6 +15,7 @@ var _ = require('underscore')
   , vaccine = require('./vaccinationRpt')
   , summaryRpt = require('./summaryRpt')
   , dohMasterList = require('./dohMasterListRpt')
+  , philHealthDailyRpt = require('./philHealthDailyRpt')
   ;
 
 
@@ -81,6 +82,11 @@ var form = function(req, res) {
     selectKey: 'dohmasterlist'
     , selected: false
     , label: 'DOH Master List'
+  }
+  , {
+    selectKey: 'philHealthDaily'
+    , selected: false
+    , label: 'PhilHealth Daily'
   }
   , {
     selectKey: 'vaccine1'
@@ -152,6 +158,7 @@ var run = function(req, res) {
   if (report === 'vaccine4') vaccine.run(req, res);
   if (report === 'vaccine5') vaccine.run(req, res);
   if (report === 'dohmasterlist') dohMasterList.run(req, res);
+  if (report === 'philHealthDaily') philHealthDailyRpt.run(req, res);
 };
 
 module.exports = {
