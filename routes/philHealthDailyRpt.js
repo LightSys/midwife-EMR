@@ -50,6 +50,7 @@ var getData = function(dateFrom, dateTo) {
     , pregRecs
     , patRecs
     , data = []
+    , msg
     ;
 
   // --------------------------------------------------------
@@ -105,6 +106,10 @@ var getData = function(dateFrom, dateTo) {
       // --------------------------------------------------------
       .then(function() {
         var pregIds = _.uniq(_.pluck(checkInRecs, 'pregnancyId'))
+        if (pregIds.length === 0) {
+          msg = 'No records found using the dates specified.';
+          return [];
+        }
         return new Pregnancy().query()
           .whereIn('id', pregIds)
           .select(['id', 'firstname', 'lastname', 'address', 'barangay', 'city',
@@ -118,6 +123,10 @@ var getData = function(dateFrom, dateTo) {
       // Get the patient data for the affected pregnancies.
       // --------------------------------------------------------
       .then(function() {
+        if (pregRecs.length === 0) {
+          // No records found.
+          return [];
+        }
         var patIds = _.uniq(_.pluck(pregRecs, 'patient_id'));
         return new Patient().query()
           .whereIn('id', patIds)
@@ -165,7 +174,11 @@ var getData = function(dateFrom, dateTo) {
         });
       })
       .then(function() {
-        resolve(data);
+        if (data.length > 0) {
+          resolve(data);
+        } else {
+          reject(msg);
+        }
       })
       .caught(function(err) {
         logError(err);
@@ -571,9 +584,11 @@ var doPages = function(doc, data, rowsPerPage, opts) {
  *
  * param      flds
  * param      writable
+ * param      req
+ * param      res
  * return     undefined
  * -------------------------------------------------------- */
-var doReport = function(flds, writable) {
+var doReport = function(flds, writable, req, res) {
   var options = {
         margins: {
           top: 18
@@ -599,11 +614,6 @@ var doReport = function(flds, writable) {
   opts.title = options.info.Title;
   opts.margins = options.margins;
 
-  // --------------------------------------------------------
-  // Write the report to the writable stream passed.
-  // --------------------------------------------------------
-  doc.pipe(writable);
-
   // Build the parts of the document.
   getData(opts.fromDate, opts.toDate)
     .then(function(data) {
@@ -611,11 +621,21 @@ var doReport = function(flds, writable) {
         , tDate = moment(opts.toDate, 'YYYY-MM-DD')
         ;
 
+      // --------------------------------------------------------
+      // Write the report to the writable stream passed.
+      // --------------------------------------------------------
+      doc.pipe(writable);
+
       doPages(doc, data, rowsPerPage, opts);
 
     })
     .then(function() {
       doc.end();
+    })
+    .caught(function(err) {
+      logError(err);
+      req.flash('warning', err);
+      res.redirect(cfg.path.reportForm);
     });
 };
 
@@ -666,7 +686,7 @@ var run = function run(req, res) {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; PhilHealthDaily.pdf');
 
-  doReport(flds, writable);
+  doReport(flds, writable, req, res);
 };
 
 module.exports = {
