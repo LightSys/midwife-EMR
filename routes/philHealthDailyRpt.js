@@ -29,6 +29,8 @@ var _ = require('underscore')
   , EventType = require('../models').EventType
   , Pregnancy = require('../models').Pregnancy
   , Patient = require('../models').Patient
+  , dateDisplayFormat = 'MM/DD/YYYY'  // TODO: localization
+  , timeDisplayFormat = 'HH:mm A'
   , prenatalCheckInId         // set in getData()
   , prenatalCheckOutId
   ;
@@ -153,10 +155,10 @@ var getData = function(dateFrom, dateTo) {
                   patRec = _.findWhere(patRecs, {id: dataRec.patient_id});
                   if (patRec) {
                     dataRec.pregnancyId = cin.pregnancyId;
-                    dataRec.checkInDate = moment(cin.checkIn).format('MM/DD/YYYY');
-                    dataRec.checkInTime = moment(cin.checkIn).format('HH:mm A');
-                    dataRec.checkOutDate = moment(cout.checkOut).format('MM/DD/YYYY');
-                    dataRec.checkOutTime = moment(cout.checkOut).format('HH:mm A');
+                    dataRec.checkInDate = moment(cin.checkIn);
+                    dataRec.checkInTime = moment(cin.checkIn);
+                    dataRec.checkOutDate = moment(cout.checkOut);
+                    dataRec.checkOutTime = moment(cout.checkOut);
                     dataRec.patient = patRec;
                     data.push(dataRec);
                     cout.used = true;   // flag this checkout record as already used.
@@ -344,6 +346,9 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
     , colPos = getColXpos(opts)
     , tmpStr
     , tmpStr2
+    , edd
+    , ga
+    , refDate
     , tmpFld
     , tmpWidth
     , tmpWidth2
@@ -380,11 +385,11 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   centerInCol(doc, tmpStr, colPos[0], colPos[1], textY);
 
   // Date of Adm
-  tmpStr = data.checkInDate;
+  tmpStr = data.checkInDate.format(dateDisplayFormat);
   centerInCol(doc, tmpStr, colPos[1], colPos[2], textY);
 
   // Time of Adm
-  tmpStr = data.checkInTime;
+  tmpStr = data.checkInTime.format(timeDisplayFormat);
   centerInCol(doc, tmpStr, colPos[2], colPos[3], textY);
 
   // Lastname
@@ -430,23 +435,32 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   centerInCol(doc, tmpStr, colPos[10], colPos[11], textY);
 
   // Adm Dx (GA calculation)
+  // Anything 37 weeks GA or over is considered pregnancy uterine full term (PUFT),
+  // otherwise just pregnancy uterine (PU).
+  tmpStr2 = 'PU ';
+  refDate = data.checkInDate;
   if (data.useAlternateEdd && _.isDate(data.alternateEdd)) {
-    tmpStr = 'PU ' + getGA(moment(data.alternateEdd), moment(data.checkInDate));
+    edd = moment(data.alternateEdd);
   } else {
     if (data.lmp && _.isDate(data.lmp)) {
-      tmpStr = 'PU ' + getGA(moment(calcEdd(data.lmp)), moment(data.checkInDate));
-    } else {
-      tmpStr = '';
+      edd = moment(data.lmp).add(280, 'days');
     }
   }
-  centerInCol(doc, tmpStr, colPos[11], colPos[12], textY);
+  if (edd) {
+    ga = getGA(edd, refDate);
+    if (ga && ga.length > 0 && parseInt(ga.split(' ')[0], 10) > 36) {
+      tmpStr2 = 'PUFT ';
+    }
+    tmpStr = tmpStr2 + ga;
+    centerInCol(doc, tmpStr, colPos[11], colPos[12], textY);
+  }
 
   // Date of Adm
-  tmpStr = data.checkOutDate;
+  tmpStr = data.checkOutDate.format(dateDisplayFormat);
   centerInCol(doc, tmpStr, colPos[12], colPos[13], textY);
 
   // Time of Adm
-  tmpStr = data.checkOutTime;
+  tmpStr = data.checkOutTime.format(timeDisplayFormat);
   centerInCol(doc, tmpStr, colPos[13], colPos[14], textY);
 };
 
@@ -469,13 +483,13 @@ var getColXpos = function(opts) {
   x += 50; xPos.push(x);                // Time of Adm
   x += 100; xPos.push(x);               // Last name
   x += 100; xPos.push(x);               // First name
-  x += 85; xPos.push(x);                // Middle Name
+  x += 78; xPos.push(x);                // Middle Name
   x += 57; xPos.push(x);                // Date of Birth
   x += 155; xPos.push(x);               // Address
   x += 85; xPos.push(x);                // Brgy
   x += 53; xPos.push(x);                // District
   x += 20; xPos.push(x);                // NN / NH
-  x += 55; xPos.push(x);                // Adm DX
+  x += 62; xPos.push(x);                // Adm DX
   x += 57; xPos.push(x);                // Date of D/C
   x += 50; xPos.push(x);                // Time of D/C
 
