@@ -30,6 +30,7 @@ var cfg = require('./config.global')
 // in index.js.
 // --------------------------------------------------------
 cfg.site.title = gettext('Your Site Name');
+cfg.site.titleLong = gettext('Mercy Maternity Center');    // Used for certain reports, etc.
 cfg.site.languagesMap = {
   'en-US': 'English - Unites States'
   , 'it-CH': 'Debugging language'

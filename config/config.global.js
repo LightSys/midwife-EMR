@@ -36,6 +36,7 @@ var cfg = {}
 // --------------------------------------------------------
 cfg.site = {};
 cfg.site.title = gettext('Your Site Name');
+cfg.site.titleLong = gettext('Your Longer Site Name');    // Used for certain reports, etc.
 cfg.site.languagesMap = {'en-US': 'English - Unites States', 'it-CH': 'Debugging language'};
 cfg.site.languages = _.keys(cfg.site.languagesMap);
 cfg.site.defaultLanguage = 'en-US';

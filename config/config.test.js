@@ -41,6 +41,7 @@ cfg.users = {
 // --------------------------------------------------------
 cfg.site = {};
 cfg.site.title = gettext('Mercy Maternity');
+cfg.site.titleLong = gettext('Mercy Maternity Center');    // Used for certain reports, etc.
 cfg.site.tmpDir = 'tmp';
 
 // --------------------------------------------------------
