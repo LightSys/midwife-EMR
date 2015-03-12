@@ -582,8 +582,10 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   centerInCol(doc, tmpStr, colPos[3], colPos[4], textY);
 
   // LMP
-  tmpStr = moment(data.lmp).format('MM/DD/YYYY');
-  centerInCol(doc, tmpStr, colPos[4], colPos[5], textY);
+  if (_.isDate(data.lmp)) {
+    tmpStr = moment(data.lmp).format('MM/DD/YYYY');
+    centerInCol(doc, tmpStr, colPos[4], colPos[5], textY);
+  }
 
   // GP
   tmpStr = _.isNull(data.gravida)? '0': data.gravida;
@@ -614,9 +616,14 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   }
   doc.text(tmpStr, colPos[6] + colPadLeft, textY);
 
-  // AOG calculated as of the from date of the report.
-  // TODO: find out what the "PU" is on the sample report.
-  tmpStr = 'PU ' + getGA(calcEdd(data.lmp), opts.fromDate);
+  // AOG calculated as of the from date of the report
+  // TODO: does this need to be PUFT if 37 weeks or more like on the Phil Health
+  // daily report?
+  tmpStr = '';
+  try {
+    // Don't lose our heads if lmp field contains no date.
+    tmpStr = 'PU ' + getGA(calcEdd(data.lmp), opts.fromDate);
+  } catch (err) { }
   if (tmpStr.length > 2) {
     // Only print if we have actual data.
     centerInCol(doc, tmpStr, colPos[7], colPos[8], textY);
