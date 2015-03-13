@@ -39,6 +39,7 @@ var _ = require('underscore')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , calcEdd = require('../util').calcEdd
   , FONTS = require('./reportGeneral').FONTS
   , centerText = require('./reportGeneral').centerText
   , doSiteTitle = require('./reportGeneral').doSiteTitle
@@ -83,7 +84,7 @@ var getData = function(dateFrom, dateTo) {
           .column('pregnancy.id', 'pregnancy.firstname','pregnancy.lastname',
            'pregnancy.address1', 'pregnancy.address3', 'pregnancy.city',
            'pregnancy.gravida', 'pregnancy.para', 'pregnancy.abortions',
-           'pregnancy.stillBirths', 'pregnancy.edd', 'pregnancy.alternateEdd',
+           'pregnancy.stillBirths', 'pregnancy.alternateEdd',
            'pregnancy.useAlternateEdd', 'pregnancy.doctorConsultDate',
            'pregnancy.dentistConsultDate', 'pregnancy.mbBook', 'pregnancy.lmp',
            'pregnancy.whereDeliver', 'pregnancy.birthCompanion',
@@ -426,8 +427,8 @@ var doRowPage1 = function(doc, opts, rec, rowNum) {
   if (rec.useAlternateEdd && rec.alternateEdd) {
     tmpStr = moment(rec.alternateEdd).format('MM/DD/YYYY');
   } else {
-    if (rec.edd) {
-      tmpStr = moment(rec.edd).format('MM/DD/YYYY');
+    if (rec.lmp) {
+      tmpStr = calcEdd(rec.lmp, 'MM/DD/YYYY');
     } else {
       tmpStr = '';
     }
