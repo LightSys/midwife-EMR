@@ -114,7 +114,7 @@ var getData = function(dateFrom, dateTo) {
         }
         return new Pregnancy().query()
           .whereIn('id', pregIds)
-          .select(['id', 'firstname', 'lastname', 'address', 'barangay', 'city',
+          .select(['id', 'firstname', 'lastname', 'address1', 'address3', 'city',
             'lmp', 'sureLMP', 'alternateEdd', 'useAlternateEdd', 'philHealthMCP',
             'philHealthNCP', 'philHealthID', 'philHealthApproved', 'patient_id']);
       })
@@ -409,8 +409,8 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   centerInCol(doc, tmpStr, colPos[6], colPos[7], textY);
 
   // Address
-  tmpStr = data.address + ', ' + data.city;
-  tmpWidth = doc.widthOfString(tmpStr);   // address length
+  tmpStr = data.address1 + ', ' + data.city;
+  tmpWidth = doc.widthOfString(tmpStr);   // address1 length
   tmpWidth2 = colPos[8] - colPos[7];      // column width
   if (tmpWidth > tmpWidth2) {
     tmpStr2 = tmpStr.slice(((tmpStr.length * tmpWidth2)/tmpWidth) - 1);
@@ -422,7 +422,7 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   }
 
   // Barangay
-  tmpStr = data.barangay;
+  tmpStr = data.address3;
   doc.text(tmpStr, colPos[8] + colPadLeft, textY);
 
   // District

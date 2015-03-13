@@ -18,7 +18,7 @@ var moment = require('moment')
   ;
 
 /*
-pregnancy | CREATE TABLE `pregnancy` (
+CREATE TABLE `pregnancy` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `firstname` varchar(70) NOT NULL,
   `lastname` varchar(70) NOT NULL,
@@ -31,10 +31,14 @@ pregnancy | CREATE TABLE `pregnancy` (
   `education` varchar(70) DEFAULT NULL,
   `clientIncome` int(11) DEFAULT NULL,
   `clientIncomePeriod` varchar(15) DEFAULT NULL,
-  `address` varchar(150) NOT NULL,
-  `barangay` varchar(50) DEFAULT NULL,
+  `address1` varchar(150) DEFAULT NULL,
+  `address2` varchar(150) DEFAULT NULL,
+  `address3` varchar(150) DEFAULT NULL,
+  `address4` varchar(150) DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
-  `postalCode` varchar(20) DEFAULT NULL,
+  `state` varchar(150) DEFAULT NULL,
+  `postalCode` varchar(50) DEFAULT NULL,
+  `country` varchar(150) DEFAULT NULL,
   `gravidaNumber` tinyint(4) DEFAULT NULL,
   `lmp` date DEFAULT NULL,
   `sureLMP` tinyint(1) DEFAULT '0',
@@ -122,7 +126,7 @@ pregnancy | CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=10114 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=10116 DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
@@ -155,13 +159,13 @@ Pregnancy = Bookshelf.Model.extend({
 
   , permittedAttributes: ['id', 'firstname', 'lastname', 'maidenname', 'nickname',
       'religion', 'maritalStatus', 'telephone', 'work', 'education',
-      'clientIncome', 'clientIncomePeriod', 'address', 'barangay', 'city',
-      'postalCode', 'gravidaNumber', 'lmp', 'sureLMP', 'warning', 'riskNote',
-      'alternateEdd', 'useAlternateEdd', 'doctorConsultDate',
-      'dentistConsultDate', 'mbBook', 'whereDeliver', 'fetuses', 'monozygotic',
-      'pregnancyEndDate', 'pregnancyEndResult', 'iugr', 'note',
-      'numberRequiredTetanus', 'invertedNipples', 'hasUS', 'wantsUS', 'gravida',
-      'stillBirths', 'abortions', 'living', 'para', 'term', 'preterm',
+      'clientIncome', 'clientIncomePeriod', 'address1', 'address2', 'address3',
+      'address4', 'city', 'state', 'postalCode', 'country', 'gravidaNumber', 'lmp',
+      'sureLMP', 'warning', 'riskNote', 'alternateEdd', 'useAlternateEdd',
+      'doctorConsultDate', 'dentistConsultDate', 'mbBook', 'whereDeliver',
+      'fetuses', 'monozygotic', 'pregnancyEndDate', 'pregnancyEndResult', 'iugr',
+      'note', 'numberRequiredTetanus', 'invertedNipples', 'hasUS', 'wantsUS',
+      'gravida', 'stillBirths', 'abortions', 'living', 'para', 'term', 'preterm',
       'philHealthMCP', 'philHealthNCP', 'philHealthID', 'philHealthApproved',
       'currentlyVomiting', 'currentlyDizzy', 'currentlyFainting',
       'currentlyBleeding', 'currentlyUrinationPain', 'currentlyBlurryVision',

@@ -327,9 +327,9 @@ var doClientGeneral = function(doc, data, opts, ypos) {
   // Second line
   x = opts.margins.left;
   y += 30;
-  doVertFldVal(doc, 'Address', data.pregnancy.address, x, y, true);
+  doVertFldVal(doc, 'Address', data.pregnancy.address1, x, y, true);
   x += 200;
-  doVertFldVal(doc, 'Barangay', data.pregnancy.barangay, x, y, true);
+  doVertFldVal(doc, 'Barangay', data.pregnancy.address3, x, y, true);
   x += 100;
   doVertFldVal(doc, 'City', data.pregnancy.city, x, y, true);
   x += 100;

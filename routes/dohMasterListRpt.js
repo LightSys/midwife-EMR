@@ -81,7 +81,7 @@ var getData = function(dateFrom, dateTo) {
         // --------------------------------------------------------
         return new Pregnancies().query()
           .column('pregnancy.id', 'pregnancy.firstname','pregnancy.lastname',
-           'pregnancy.address', 'pregnancy.barangay', 'pregnancy.city',
+           'pregnancy.address1', 'pregnancy.address3', 'pregnancy.city',
            'pregnancy.gravida', 'pregnancy.para', 'pregnancy.abortions',
            'pregnancy.stillBirths', 'pregnancy.edd', 'pregnancy.alternateEdd',
            'pregnancy.useAlternateEdd', 'pregnancy.doctorConsultDate',
@@ -390,7 +390,7 @@ var doRowPage1 = function(doc, opts, rec, rowNum) {
   // --------------------------------------------------------
   tmpWidth = colPos[3] - colPos[2] - colPadLeft;
   tmpHeight = rowHeight - colPadTop;
-  tmpStr = rec.address + ', ' + rec.city + '  ' + rec.barangay;
+  tmpStr = rec.address1 + ', ' + rec.city + '  ' + rec.address3;
   doc
     .font(FONTS.Helvetica)
     .fontSize(smallFont)

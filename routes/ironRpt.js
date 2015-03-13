@@ -206,7 +206,7 @@ var getData = function(dateFrom, dateTo) {
           .join('medicationType', 'medication.medicationType', '=', 'medicationType.id')
           .column('medicationType.name', 'medicationType.description')
           .join('pregnancy', 'medication.pregnancy_id', '=', 'pregnancy.id')
-          .column('pregnancy.lastname', 'pregnancy.firstname', 'pregnancy.lmp', 'pregnancy.gravida', 'pregnancy.para', 'pregnancy.address', 'pregnancy.city')
+          .column('pregnancy.lastname', 'pregnancy.firstname', 'pregnancy.lmp', 'pregnancy.gravida', 'pregnancy.para', 'pregnancy.address1', 'pregnancy.city')
           .join('patient', 'pregnancy.patient_id', '=', 'patient.id')
           .column('patient.dob')
           .whereIn('medication.medicationType', medTypeIds)
@@ -343,7 +343,7 @@ var doRow = function(doc, data, rowNum, rowHeight) {
   // Address
   doc
     .fontSize(8)
-    .text(data.address.slice(0, 28), startX + 336, startY + 3)
+    .text(data.address1.slice(0, 28), startX + 336, startY + 3)
     .text(data.city, startX + 336, startY + 11);
   // Pcs
   doc

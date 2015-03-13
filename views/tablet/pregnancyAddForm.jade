@@ -31,14 +31,14 @@ block pregnancyAdd
           +select('form-control input-lg', 'maritalStatus', 7, marital)
         div(class='form-group col-xs-4')
           span= gettext('Address')
-          input(class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='address')
+          input(class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='address1')
         div(class='form-group col-xs-4')
           span= gettext('City')
           input(class='form-control input-lg', type='text', tabindex="9", autocomplete="off", name='city', value=defaultCity)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Barangay')
-          input(class='form-control input-lg', type='text', tabindex="10", autocomplete="off", name='barangay')
+          input(class='form-control input-lg', type='text', tabindex="10", autocomplete="off", name='address3')
         div(class='form-group col-xs-4')
           //- We move the logic for a custom field out of the core route to the
           //- view so that the routes can deal with custom fields at a generic level.

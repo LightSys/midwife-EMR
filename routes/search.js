@@ -98,8 +98,8 @@ var execute = function(req, res) {
         , 'pregnancy.id'
         , 'pregnancy.firstname'
         , 'pregnancy.lastname'
-        , 'pregnancy.address'
-        , 'pregnancy.barangay'
+        , 'pregnancy.address1'
+        , 'pregnancy.address3'
         , 'priority.priority'
       ]
     , fnOp = '='
@@ -180,7 +180,7 @@ var execute = function(req, res) {
     .orderBy('priority', 'desc')    // hack to get recs with priority numbers to top, though not correct order
     .then(function(list) {
       _.each(list, function(rec) {
-        var r = _.pick(rec, 'priority', 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address', 'barangay');
+        var r = _.pick(rec, 'priority', 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address1', 'address3');
         r.dob = moment(r.dob).format('MM-DD-YYYY');
         results.push(r);
       });

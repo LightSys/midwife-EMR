@@ -402,7 +402,7 @@ var getData = function(dateFrom, dateTo) {
           .join('vaccinationType', 'vaccination.vaccinationType', '=', 'vaccinationType.id')
           .column('vaccinationType.name', 'vaccinationType.description')
           .join('pregnancy', 'vaccination.pregnancy_id', '=', 'pregnancy.id')
-          .column('pregnancy.lastname', 'pregnancy.firstname', 'pregnancy.lmp', 'pregnancy.gravida', 'pregnancy.para', 'pregnancy.address', 'pregnancy.city')
+          .column('pregnancy.lastname', 'pregnancy.firstname', 'pregnancy.lmp', 'pregnancy.gravida', 'pregnancy.para', 'pregnancy.address1', 'pregnancy.city')
           .join('patient', 'pregnancy.patient_id', '=', 'patient.id')
           .column('patient.dob')
           .whereIn('vaccination.vaccinationType', vacTypeIds)
@@ -608,8 +608,8 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   }
 
   // Address
-  tmpStr = data.address + ', ' + data.city;
-  tmpWidth = doc.widthOfString(tmpStr);   // address length
+  tmpStr = data.address1 + ', ' + data.city;
+  tmpWidth = doc.widthOfString(tmpStr);   // address1 length
   tmpWidth2 = colPos[7] - colPos[6];      // column width
   if (tmpWidth > tmpWidth2) {
     tmpStr = tmpStr.slice(0, ((tmpStr.length * tmpWidth2)/tmpWidth) - 1);
