@@ -39,6 +39,10 @@ block pregnancyAdd
           span= gettext('Barangay')
           input(class='form-control input-lg', type='text', tabindex="10", autocomplete="off", name='address3')
         div(class='form-group col-md-3')
+          span= gettext('District')
+          input(class='form-control input-lg', type='text', tabindex="11", autocomplete="off", name='address4')
+      div.row
+        div(class='form-group col-md-3')
           //- We move the logic for a custom field out of the core route to the
           //- view so that the routes can deal with custom fields at a generic level.
           //- This is obtuse but it means that we can add/modify a custom field in
@@ -52,57 +56,56 @@ block pregnancyAdd
           - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "Y"}', label: 'Yes', selected: false});
           - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "N"}', label: 'No', selected: false});
           span= gettext(cusFldType.label)
-          +select('form-control input-lg', 'customField', 11, value=agdaoSelectValue)
-      div.row
+          +select('form-control input-lg', 'customField', 12, value=agdaoSelectValue)
         div(class='form-group col-md-3')
           span= gettext('Work')
-          input(class='form-control input-lg', type='text', tabindex="12", autocomplete="off", name='work')
+          input(class='form-control input-lg', type='text', tabindex="13", autocomplete="off", name='work')
         div(class='form-group col-md-3')
           span= gettext('Education')
-          +select('form-control input-lg', 'education', 13, education)
+          +select('form-control input-lg', 'education', 14, education)
         div(class='form-group col-md-3')
           span= gettext('Telephone')
-          input(class='form-control input-lg', type='tel', tabindex="14", autocomplete="off", name='telephone')
+          input(class='form-control input-lg', type='tel', tabindex="15", autocomplete="off", name='telephone')
       hr
       div.row
         div(class='form-group col-md-3')
           span= gettext('Partner last name')
-          input(class='form-control input-lg', type='text', tabindex="15", autocomplete="off", name='partnerLastname')
+          input(class='form-control input-lg', type='text', tabindex="16", autocomplete="off", name='partnerLastname')
         div(class='form-group col-md-3')
           span= gettext('Partner first name')
-          input(class='form-control input-lg', type='text', tabindex="16", autocomplete="off", name='partnerFirstname')
+          input(class='form-control input-lg', type='text', tabindex="17", autocomplete="off", name='partnerFirstname')
         div(class='form-group col-md-3')
           span= gettext('Partner age')
-          input(class='form-control input-lg', type='number', tabindex="17", autocomplete="off", name='partnerAge')
+          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='partnerAge')
       div.row
         div(class='form-group col-md-3')
           span= gettext('Partner work')
-          input(class='form-control input-lg', type='text', tabindex="18", autocomplete="off", name='partnerWork')
+          input(class='form-control input-lg', type='text', tabindex="19", autocomplete="off", name='partnerWork')
         div(class='form-group col-md-3')
           span= gettext('Partner education')
-          +select('form-control input-lg', 'partnerEducation', 19, education)
+          +select('form-control input-lg', 'partnerEducation', 20, education)
       hr
       div.row
         div(class='form-group col-md-3')
           span= gettext('Client income')
-          input(class='form-control input-lg', type='number', tabindex="20", autocomplete="off", name='clientIncome')
+          input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='clientIncome')
         div(class='form-group col-md-3')
           span= gettext('Income period')
-          +select('form-control input-lg', 'clientIncomePeriod', 21, clientIncomePeriod)
+          +select('form-control input-lg', 'clientIncomePeriod', 22, clientIncomePeriod)
         div(class='form-group col-md-3')
           span= gettext('Partner income')
-          input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='partnerIncome')
+          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='partnerIncome')
         div(class='form-group col-md-3')
           span= gettext('Income period')
-          +select('form-control input-lg', 'partnerIncomePeriod', 23, partnerIncomePeriod)
+          +select('form-control input-lg', 'partnerIncomePeriod', 24, partnerIncomePeriod)
       hr
       div.row
         div(class='form-group col-md-3')
           span= gettext('MMC #')
-          input(class='form-control input-lg', type='number', tabindex="24", autocomplete="off", name='doh')
+          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='doh')
         div(class='form-group col-md-3')
           span= gettext('Priority Barcode #')
-          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='priorityBarcode')
+          input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='priorityBarcode')
         div(class='form-group col-md-3')
           span= gettext('Prenatal Day')
           +select('form-control input-lg', 'prenatalDay', 26, prenatalDay)

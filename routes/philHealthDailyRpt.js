@@ -114,9 +114,10 @@ var getData = function(dateFrom, dateTo) {
         }
         return new Pregnancy().query()
           .whereIn('id', pregIds)
-          .select(['id', 'firstname', 'lastname', 'address1', 'address3', 'city',
-            'lmp', 'sureLMP', 'alternateEdd', 'useAlternateEdd', 'philHealthMCP',
-            'philHealthNCP', 'philHealthID', 'philHealthApproved', 'patient_id']);
+          .select(['id', 'firstname', 'lastname', 'address1', 'address3',
+            'address4', 'city', 'lmp', 'sureLMP', 'alternateEdd', 'useAlternateEdd',
+            'philHealthMCP', 'philHealthNCP', 'philHealthID', 'philHealthApproved',
+            'patient_id']);
       })
       .then(function(pregs) {
         pregRecs = pregs;
@@ -426,8 +427,8 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   doc.text(tmpStr, colPos[8] + colPadLeft, textY);
 
   // District
-  // TODO: there is not yet a data field for district
-
+  tmpStr = data.address4 || '';
+  doc.text(tmpStr, colPos[9] + colPadLeft, textY);
 
   // NN / NH
   tmpStr = 'NN';
