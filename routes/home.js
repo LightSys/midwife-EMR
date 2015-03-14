@@ -225,6 +225,11 @@ var getPrenatalHistory = function(cb) {
   });
 };
 
+/* --------------------------------------------------------
+ * home()
+ *
+ * Render the home page which has charts and stats on it.
+ * -------------------------------------------------------- */
 var home = function(req, res) {
   getPrenatalHistory(function(err, ph) {
     var prenatalHistoryData = {}
@@ -262,14 +267,16 @@ var home = function(req, res) {
           , prenatalHistoryByWeekData: prenatalHistoryByWeekData
           , prenatalHistoryByWeekOptions: ''
         });
-
-
       });
-
     });
   });
 };
 
+/* --------------------------------------------------------
+ * login()
+ *
+ * Render the login page.
+ * -------------------------------------------------------- */
 var login = function(req, res) {
   var data = {
     title: req.gettext('Please log in')
@@ -280,6 +287,12 @@ var login = function(req, res) {
   res.render('login', data);
 };
 
+/* --------------------------------------------------------
+ * loginPost()
+ *
+ * Process the user's authentication attempt from the login
+ * page.
+ * -------------------------------------------------------- */
 var loginPost = function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) {

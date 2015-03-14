@@ -226,6 +226,12 @@ var vaccinationDelete = function(req, res) {
 
 };
 
+/* --------------------------------------------------------
+ * requiredTetanusSave()j
+ *
+ * Save the number of required tetanus shots that a specific
+ * patient needs as determined by the staff.
+ * -------------------------------------------------------- */
 var requiredTetanusSave = function(req, res) {
   var flds = _.omit(req.body, ['_csrf'])
     , supervisor
