@@ -13,7 +13,6 @@
     "express": "~3.4.7",
     "express-device": "^0.3.11",
     "express-flash": "0.0.2",
-    "git-history": "0.0.2",
     "heapdump": "^0.2.9",
     "i18n-abide": "0.0.16",
     "jade": "~1.7.0",

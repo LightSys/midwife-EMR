@@ -26,7 +26,6 @@ var express = require('express')
   , i18n = require('i18n-abide')
   , _ = require('underscore')
   , moment = require('moment')
-  , gitHistory = require('git-history')
   , cfg = require('./config')
   , path = require('path')
   , fs = require('fs')
@@ -205,19 +204,14 @@ app.use(function(req, res, next) {
 });
 
 // --------------------------------------------------------
-// Get the git revision as the number of commits then save
-// to app locals for use in the templates if we are running
-// within a git repository.
+// Make the application revision available to the templates.
 // --------------------------------------------------------
-if (fs.existsSync('./.git')) {
-  gitHistory().on('data', function(commit) {
-    tmpRevision++;
-  });
-  gitHistory().on('end', function() {
-    revision = tmpRevision;
-  });
+if (fs.existsSync('./VERSION')) {
+  tmpRevision = fs.readFileSync('./VERSION', {encoding: 'utf8'});
+  tmpRevision = tmpRevision.trim();
+  logInfo('Version: ' + tmpRevision);
   app.use(function(req, res, next) {
-    if (revision != 0) app.locals.applicationRevision = revision;
+    app.locals.applicationRevision = tmpRevision? tmpRevision: '';
     next();
   });
 } else {
