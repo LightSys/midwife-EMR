@@ -1044,6 +1044,11 @@ var generalAddSave = function(req, res) {
           .caught(function(e) {
             logError('Error saving pregnancy record. Rolling back transaction.');
             logError(e);
+            if (e.code && e.code === 'ER_DUP_ENTRY') {
+              req.flash('error', 'Error: A patient with this MMC # already exists.');
+            } else {
+              req.flash('error', 'Error: Sorry an error occurred with error code ' + e.code);
+            }
             t.rollback();
             return e;
           });
@@ -1359,7 +1364,11 @@ var generalEditSave = function(req, res) {
             })
             .caught(function(err) {
               logError(err);
-              req.flash('error', err);
+              if (err.code && err.code === 'ER_DUP_ENTRY') {
+                req.flash('error', 'Error: A patient with this MMC # already exists.');
+              } else {
+                req.flash('error', 'Error: Sorry an error occurred with error code ' + err.code);
+              }
             });
           // --------------------------------------------------------
           // returns a transaction - commit() or rollback() is called

@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS `patient` (
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
+  UNIQUE patient_dohid_idx (dohID),
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
