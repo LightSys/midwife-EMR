@@ -75,6 +75,9 @@ html(lang="en")
 
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
+            - var appRev = applicationRevision? gettext('version') + ': ' + applicationRevision: '';
+            li
+              span= appRev
             if roleInfo && roleInfo.hasRole('attending')
               - var superV = (supervisor || gettext('Not yet set'))
               li

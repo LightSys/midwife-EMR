@@ -166,3 +166,15 @@ span#dirty-notice-tablet {
   margin-bottom: 10px;
   font-size: 14px;
 }
+
+/* Application Revision in the header */
+.nav > li span {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-right: 50px;
+  line-height: 20px;
+  position: relative;
+  display: block;
+  color: white;
+  font-style: oblique;
+}
