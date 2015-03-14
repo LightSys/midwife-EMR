@@ -43,6 +43,15 @@ var formatDohID = function(dohID, useAltFormat) {
   }
 };
 
+/* --------------------------------------------------------
+ * writeLog()
+ *
+ * Writes a log message to the console.
+ *
+ * param      msg
+ * param      logType
+ * return     undefined
+ * -------------------------------------------------------- */
 var writeLog = function(msg, logType) {
   var fn = 'info'
     , id = process.env.WORKER_ID? process.env.WORKER_ID: 0
@@ -51,14 +60,38 @@ var writeLog = function(msg, logType) {
   console[fn]('%d|%s: %s', id, moment().format('YYYY-MM-DD HH:mm:ss.SSS'), msg);
 };
 
+/* --------------------------------------------------------
+ * logInfo()
+ *
+ * Writes an informative message to the console.
+ *
+ * param      msg
+ * return     undefined
+ * -------------------------------------------------------- */
 var logInfo = function(msg) {
   writeLog(msg, INFO);
 };
 
+/* --------------------------------------------------------
+ * logWarn()
+ *
+ * Writes a warning message to the console.
+ *
+ * param      msg
+ * return     undefined
+ * -------------------------------------------------------- */
 var logWarn = function(msg) {
   writeLog(msg, WARN);
 };
 
+/* --------------------------------------------------------
+ * logError()
+ *
+ * Writes an error message to the console.
+ *
+ * param      msg
+ * return     undefined
+ * -------------------------------------------------------- */
 var logError = function(msg) {
   writeLog(msg, ERROR);
 };

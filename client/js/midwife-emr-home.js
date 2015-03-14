@@ -24,6 +24,18 @@ $(function() {
       , warn: function() {}
     };
 
+    /* --------------------------------------------------------
+     * writeDataValue()
+     *
+     * Writes the data value at the top of the bar chart.
+     *
+     * param      $el - element to append to
+     * param      po - point offset
+     * param      leftOffset
+     * param      topOffset
+     * param      val
+     * return     undefined
+     * -------------------------------------------------------- */
     var writeDataValue = function writeDataValue($el, po, leftOffset, topOffset, val) {
       var left = po.left + leftOffset
         , top = po.top + topOffset

@@ -173,6 +173,13 @@ var i18nLocals = function(req, res, next) {
   next();
 };
 
+/* --------------------------------------------------------
+ * hasSuper()
+ *
+ * Forces the user in the attending role to choose a supervisor
+ * before continuing. Also populates the supervisor variable
+ * for use in the templates.
+ * -------------------------------------------------------- */
 var hasSuper = function(req, res, next) {
   if (_.contains(req.session.roleInfo.roleNames, 'attending')) {
     if (req.session.supervisor) {
@@ -189,6 +196,11 @@ var hasSuper = function(req, res, next) {
   }
 };
 
+/* --------------------------------------------------------
+ * logDevice()
+ *
+ * Logs the device the client is using to the console.
+ * -------------------------------------------------------- */
 var logDevice = function(req, res, next) {
   //console.dir(req.device);
   next();
