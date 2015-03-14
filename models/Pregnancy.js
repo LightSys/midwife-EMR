@@ -256,7 +256,7 @@ Pregnancy = Bookshelf.Model.extend({
    * promise whether they are sufficient or not.
    *
    * param       flds - object containing field keys and values
-   * return      undefined
+   * return      promise
    * -------------------------------------------------------- */
   checkFields: function(flds) {
     return new Promise(function(resolve, reject) {
@@ -273,6 +273,15 @@ Pregnancy = Bookshelf.Model.extend({
     });
   }
 
+    /* --------------------------------------------------------
+     * checkMidwifeInterviewFields()
+     *
+     * Check the validity of the passed fields and return a
+     * promise whether they are sufficient or not.
+     *
+     * param      flds - object containing field keys and values
+     * return     promise
+     * -------------------------------------------------------- */
   , checkMidwifeInterviewFields: function(flds) {
       return new Promise(function(resolve, reject) {
         var msgs = []

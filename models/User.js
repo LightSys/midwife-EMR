@@ -26,6 +26,16 @@ var moment = require('moment')
   , teachersCacheKey = 'teachers'
   ;
 
+/* --------------------------------------------------------
+ * hashPassword()
+ *
+ * Hash the password passed and return the hash as the
+ * second parameter of the callback.
+ *
+ * param      pw
+ * param      cb
+ * return     undefined
+ * -------------------------------------------------------- */
 var hashPassword = function(pw, cb) {
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(pw, salt, function(er2, hash) {
@@ -34,6 +44,17 @@ var hashPassword = function(pw, cb) {
   });
 };
 
+/* --------------------------------------------------------
+ * checkPassword()
+ *
+ * Check the password against the hash and return the results
+ * via the callback.
+ *
+ * param      pw
+ * param      hash
+ * param      cb
+ * return     undefined
+ * -------------------------------------------------------- */
 var checkPassword = function(pw, hash, cb) {
   bcrypt.compare(pw, hash, function(err, same) {
     if (err) return cb(err);
@@ -135,6 +156,12 @@ User = Bookshelf.Model.extend({
   // --------------------------------------------------------
   // Class properties.
   // --------------------------------------------------------
+
+  /* --------------------------------------------------------
+   * findById()
+   *
+   * Find the user by id.
+   * -------------------------------------------------------- */
   findById: function(id, cb) {
     this.forge({id: id})
       .fetch({withRelated: ['roles']})
@@ -144,6 +171,12 @@ User = Bookshelf.Model.extend({
       });
   }
 
+    /* --------------------------------------------------------
+     * findDisplayNameById()
+     *
+     * Find and return the display name of the user by the user's
+     * id.
+     * -------------------------------------------------------- */
   , findDisplayNameById: function(id, cb) {
       User.findById(id, function(err, user) {
         if (err) throw err;
@@ -151,6 +184,11 @@ User = Bookshelf.Model.extend({
       });
     }
 
+    /* --------------------------------------------------------
+     * findByUsername()
+     *
+     * Find the user by username.
+     * -------------------------------------------------------- */
   , findByUsername: function(username, cb) {
       this.forge({username: username})
         .fetch({withRelated: ['roles']})
@@ -160,6 +198,12 @@ User = Bookshelf.Model.extend({
         });
     }
 
+    /* --------------------------------------------------------
+     * checkProfileFields()
+     *
+     * Check the validity of the profile fields and return the
+     * results in the callback.
+     * -------------------------------------------------------- */
   , checkProfileFields: function(rec, checkPasswords, cb) {
       var result = {
         success: true
