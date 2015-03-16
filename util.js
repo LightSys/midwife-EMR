@@ -278,6 +278,32 @@ var getAbbr = function(key) {
   return key;
 };
 
+
+/* --------------------------------------------------------
+ * isValidDate()
+ *
+ * Returns true if the "date" passed is valid, otherwise
+ * false. The "date" field can be a JS Date object, a
+ * Moment instance, or a String. If it is a string, a second
+ * parameter is required that specifies the format of the
+ * string. Formats accepted are the same as the Moment library.
+ *
+ * param      dte
+ * param      format
+ * return     boolean 
+ * -------------------------------------------------------- */
+var isValidDate = function(dte, format) {
+  var m;
+  if (dte && _.isDate(dte)) return true;
+  if (dte && moment.isMoment(dte) && dte.isValid()) return true;
+  if (dte && _.isString(dte) && format && _.isString(format)) {
+    m = moment(dte, format, true);    // strict parsing mode is true
+    return m.isValid();
+  }
+
+  return false;
+};
+
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
@@ -288,6 +314,7 @@ module.exports = {
   , addBlankSelectData: addBlankSelectData
   , getAbbr: getAbbr
   , formatDohID: formatDohID
+  , isValidDate: isValidDate
 };
 
 

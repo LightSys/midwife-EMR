@@ -28,6 +28,65 @@ var should = require('should')
 describe('Util', function(done) {
   this.timeout(5000);
 
+  describe('isValidDate', function(done) {
+    it('should pass with a JS Date', function(done) {
+      var pass
+        ;
+      pass = util.isValidDate(new Date());
+      should(pass).equal(true);
+      done();
+    });
+
+    it('should not pass with a non-Date object', function(done) {
+      var pass
+        ;
+      pass = util.isValidDate({something: true});
+      should(pass).equal(false);
+      done();
+    });
+
+    it('should pass with a valid Moment object', function(done) {
+      var pass
+        ;
+      pass = util.isValidDate(moment());
+      should(pass).equal(true);
+      done();
+    });
+
+    it('should not pass with an invalid Moment object', function(done) {
+      var pass
+        ;
+      pass = util.isValidDate(moment.invalid());
+      should(pass).equal(false);
+      done();
+    });
+
+    it('should pass with a String that matches a passed format', function(done) {
+      var pass
+        ;
+      pass = util.isValidDate('2014-03-11', 'YYYY-MM-DD');
+      should(pass).equal(true);
+      done();
+    });
+
+    it('should not pass with a String that does not match a passed format', function(done) {
+      var pass
+        ;
+      pass = util.isValidDate('02-11-2013', 'YYYY-MM-DD');
+      should(pass).equal(false);
+      done();
+    });
+
+    it('should not pass with a String without a passed format', function(done) {
+      var pass
+        ;
+      pass = util.isValidDate('02-11-2013');
+      should(pass).equal(false);
+      done();
+    });
+
+  });
+
   describe('getGA', function(done) {
     it('should throw exception if called with no parameters', function(done) {
       (function() {
