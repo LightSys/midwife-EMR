@@ -48,7 +48,7 @@ var medicationAddForm = function(req, res) {
           obj.selected = false;
           medTypes.push(obj);
         });
-        data.medicationType = medTypes;
+        data.medicationType = _.sortBy(medTypes, 'label');
         res.render('medicationAddEditForm', getCommonFormData(req, data));
       });
   } else {
