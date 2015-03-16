@@ -26,4 +26,5 @@ module.exports = {
   , dohMasterListRpt: require('./dohMasterListRpt')
   , philHealthDailyRpt: require('./philHealthDailyRpt')
   , teaching: require('./teaching')
+  , inactiveRpt: require('./inactiveRpt')
 };

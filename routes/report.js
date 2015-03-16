@@ -16,6 +16,7 @@ var _ = require('underscore')
   , summaryRpt = require('./summaryRpt')
   , dohMasterList = require('./dohMasterListRpt')
   , philHealthDailyRpt = require('./philHealthDailyRpt')
+  , inactiveRpt = require('./inactiveRpt')
   ;
 
 
@@ -113,6 +114,11 @@ var form = function(req, res) {
     , selected: false
     , label: 'Tetanus Given Date 5'
   }
+  , {
+    selectKey: 'inactive'
+    , selected: false
+    , label: 'Inactive Report'
+  }
   ];
 
   new Users()
@@ -159,6 +165,7 @@ var run = function(req, res) {
   if (report === 'vaccine5') vaccine.run(req, res);
   if (report === 'dohmasterlist') dohMasterList.run(req, res);
   if (report === 'philHealthDaily') philHealthDailyRpt.run(req, res);
+  if (report === 'inactive') inactiveRpt.run(req, res);
 };
 
 module.exports = {
