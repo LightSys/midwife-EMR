@@ -34,6 +34,7 @@ var _ = require('underscore')
   , logError = require('../util').logError
   , calcEdd = require('../util').calcEdd
   , getGA = require('../util').getGA
+  , isValidDate = require('../util').isValidDate
   , FONTS = require('./reportGeneral').FONTS
   , centerText = require('./reportGeneral').centerText
   , doSiteTitle = require('./reportGeneral').doSiteTitle
@@ -885,11 +886,11 @@ var run = function(req, res) {
   // --------------------------------------------------------
   // Check that required fields are in place.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! moment(flds.dateFrom, 'YYYY-MM-DD').isValid()) {
+  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! isValidDate(flds.dateFrom, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! moment(flds.dateTo, 'YYYY-MM-DD').isValid()) {
+  if (! flds.dateTo || flds.dateTo.length == 0 || ! isValidDate(flds.dateTo, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }
