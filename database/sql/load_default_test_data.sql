@@ -215,13 +215,13 @@ VALUES
 -- Load default tests per client specifications.
 SELECT 'labSuite' AS 'Loading' FROM DUAL;
 INSERT INTO `labSuite`
-  (name, description, category, viewTemplate, updatedBy, updatedAt)
+  (name, description, category, updatedBy, updatedAt)
 VALUES
-  ('Blood', '', 'Blood', 'defaultLab', 1, NOW()),
-  ('Urinalysis', '', 'Urinalysis', 'defaultLab', 1, NOW()),
-  ('Wet mount', '', 'Wet mount', 'defaultLab', 1, NOW()),
-  ('Gram stain', '', 'Gram stain', 'defaultLab', 1, NOW()),
-  ('UltraSound', '', 'UltraSound', 'defaultLab', 1, NOW())
+  ('Blood', '', 'Blood',  1, NOW()),
+  ('Urinalysis', '', 'Urinalysis', 1, NOW()),
+  ('Wet mount', '', 'Wet mount', 1, NOW()),
+  ('Gram stain', '', 'Gram stain', 1, NOW()),
+  ('UltraSound', '', 'UltraSound', 1, NOW())
 ;
 
 SELECT 'labTest' AS 'Loading' FROM DUAL;
