@@ -1710,9 +1710,10 @@ var prenatalSave = function(req, res) {
  * Delete a master pregnancy record and all records in the
  * child tables. All deleted records are still available in
  * the respective log tables due to the delete triggers on
- * each table.
+ * each table. Finally deletes the patient record itself
+ * which is master to the pregnancy record.
  *
- * The child tables are:
+ * Records in these tables are deleted, if available:
  *    customField
  *    healthTeaching
  *    labTestResult
@@ -1723,11 +1724,18 @@ var prenatalSave = function(req, res) {
  *    risk
  *    schedule
  *    vaccination
+ *    patient
  *
- * We leave the patient table for now.
+ * NOTE: The patient record is deleted for the time being until
+ * the database schema is refactored. Right now the patient to
+ * pregnancy relationship is one to one instead of one to many.
+ * When this is refactored, the patient record will need to
+ * survive a pregnancy delete. There will need to be a separate
+ * patient delete that handles the patient and child tables.
  * -------------------------------------------------------- */
 var pregnancyDelete = function(req, res) {
   var pregId
+    , patId = -1
     , knex = Bookshelf.DB.knex
     ;
 
@@ -1741,48 +1749,79 @@ var pregnancyDelete = function(req, res) {
 
     logInfo('Deleting master and all child tables for pregnancy id ' + pregId);
 
-    Bookshelf.DB.knex.transaction(function(t) {
-      var tblNames = [
-          'customField'
-          , 'healthTeaching'
-          , 'labTestResult'
-          , 'medication'
-          , 'pregnancyHistory'
-          , 'prenatalExam'
-          , 'referral'
-          , 'risk'
-          , 'schedule'
-          , 'vaccination'
-          , 'pregnancy'
-        ]
-        ;
+    // --------------------------------------------------------
+    // Get the patient id in order to delete the patient record
+    // at the end.
+    // --------------------------------------------------------
+    Pregnancy.forge({id: pregId})
+      .fetch()
+      .then(function(preg) {
+        patId = preg.get('patient_id');
+      })
+      .then(function() {
+        if (patId !== -1) {
+          Bookshelf.DB.knex.transaction(function(t) {
+            var tblNames = [
+                'customField'
+                , 'healthTeaching'
+                , 'labTestResult'
+                , 'medication'
+                , 'pregnancyHistory'
+                , 'prenatalExam'
+                , 'referral'
+                , 'risk'
+                , 'schedule'
+                , 'vaccination'
+                , 'pregnancy'
+              ]
+              ;
 
-      return Promise.all(_.map(tblNames, function(tblName) {
-        var fldName = 'pregnancy_id';
-        if (tblName === 'pregnancy') {
-          fldName = 'id';
-        }
-        return knex(tblName)
-          .transacting(t)
-          .where(fldName, pregId)
-          .del()
-          .then(function(numRows) {
-            logInfo(numRows + ' rows deleted from ' + tblName + '.');
+            return Promise.all(_.map(tblNames, function(tblName) {
+              var fldName = 'pregnancy_id';
+              if (tblName === 'pregnancy') {
+                fldName = 'id';
+              }
+              return knex(tblName)
+                .transacting(t)
+                .where(fldName, pregId)
+                .del()
+                .then(function(numRows) {
+                  logInfo(numRows + ' rows deleted from ' + tblName + '.');
+                });
+            }));
+
+          })   // end transaction
+          .then(function() {
+            // --------------------------------------------------------
+            // Clean up the orphaned patient record.
+            // --------------------------------------------------------
+            return Patient.forge({id: patId})
+              .destroy()
+              .then(function(result) {
+                return true;
+              });
+          })
+          .then(function() {
+            logInfo('Pregnancy ' + pregId + ' was deleted.');
+            req.flash('info', req.gettext('Pregnancy was deleted.'));
+            res.redirect(cfg.path.search);
+          })
+          .caught(function(err) {
+            logError(err);
+            logError('The pregnancy and related records were not deleted.');
+            req.flash('error', req.gettext('Sorry, an error was encountered and the pregnancy was not deleted.'));
+            res.redirect(cfg.path.search);
           });
-      }));
+        } else {
+          // --------------------------------------------------------
+          // Patient id was not found, so do nothing.
+          // --------------------------------------------------------
+          logError('There was a problem so we did not do anything. The pregnancy record is unchanged.');
+          req.flash('error', req.gettext('Sorry, an error was encountered and the pregnancy was not deleted.'));
+          res.redirect(cfg.path.search);
+        }
+      });   // end then
 
-    })   // end transaction
-    .then(function() {
-      logInfo('Pregnancy ' + pregId + ' was deleted.');
-      req.flash('info', req.gettext('Pregnancy was deleted.'));
-      res.redirect(cfg.path.search);
-    })
-    .caught(function(err) {
-      logError(err);
-      logError('The pregnancy and related records were not deleted.');
-      req.flash('error', req.gettext('Sorry, an error was encountered and the pregnancy was not deleted.'));
-      res.redirect(cfg.path.search);
-    });
   }   // end if
 };
 
