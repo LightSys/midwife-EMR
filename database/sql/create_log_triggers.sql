@@ -302,8 +302,8 @@ CREATE TRIGGER medicationType_after_insert AFTER INSERT ON medicationType
 FOR EACH ROW
 BEGIN
   INSERT INTO medicationTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, name, description, sortOrder, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.sortOrder, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -316,8 +316,8 @@ CREATE TRIGGER medicationType_after_update AFTER UPDATE ON medicationType
 FOR EACH ROW
 BEGIN
   INSERT INTO medicationTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, name, description, sortOrder, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.sortOrder, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -330,8 +330,8 @@ CREATE TRIGGER medicationType_after_delete AFTER DELETE ON medicationType
 FOR EACH ROW
 BEGIN
   INSERT INTO medicationTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.name, OLD.description, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, name, description, sortOrder, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.sortOrder, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -848,8 +848,8 @@ CREATE TRIGGER vaccinationType_after_insert AFTER INSERT ON vaccinationType
 FOR EACH ROW
 BEGIN
   INSERT INTO vaccinationTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+  (id, name, description, sortOrder, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.sortOrder, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -862,8 +862,8 @@ CREATE TRIGGER vaccinationType_after_update AFTER UPDATE ON vaccinationType
 FOR EACH ROW
 BEGIN
   INSERT INTO vaccinationTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+  (id, name, description, sortOrder, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.sortOrder, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -876,7 +876,7 @@ CREATE TRIGGER vaccinationType_after_delete AFTER DELETE ON vaccinationType
 FOR EACH ROW
 BEGIN
   INSERT INTO vaccinationTypeLog
-  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
-  VALUES (OLD.id, OLD.name, OLD.description, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+  (id, name, description, sortOrder, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.sortOrder, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
 END;$$
 DELIMITER ;

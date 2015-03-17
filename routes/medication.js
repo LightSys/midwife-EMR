@@ -41,14 +41,14 @@ var medicationAddForm = function(req, res) {
         // --------------------------------------------------------
         var medTypes = []
           ;
-        _.each(list.toJSON(), function(mType) {
+        _.each(_.sortBy(list.toJSON(), 'sortOrder'), function(mType) {
           var obj = {};
           obj.selectKey = mType.id;
           obj.label = mType.name;
           obj.selected = false;
           medTypes.push(obj);
         });
-        data.medicationType = _.sortBy(medTypes, 'label');
+        data.medicationType = medTypes;
         res.render('medicationAddEditForm', getCommonFormData(req, data));
       });
   } else {

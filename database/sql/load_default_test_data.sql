@@ -195,21 +195,21 @@ VALUES
 
 SELECT 'vaccinationType' AS 'Loading' FROM DUAL;
 INSERT INTO `vaccinationType`
-  (name, description, updatedBy, updatedAt)
+  (name, description, sortOrder, updatedBy, updatedAt)
 VALUES
-  ('Tetanus Toxoid', 'Tetanus Toxoid', 1, NOW())
+  ('Tetanus Toxoid', 'Tetanus Toxoid', 0, 1, NOW())
 ;
 
 SELECT 'medicationType' AS 'Loading' FROM DUAL;
 INSERT INTO `medicationType`
-  (name, description, updatedBy, updatedAt)
+  (name, description, sortOrder, updatedBy, updatedAt)
 VALUES
-  ('Mebendazole 500mg PO', 'Mebendazole 500mg PO', 1, NOW()),
-  ('Albendazole 400mg PO', 'Albendazole 400mg PO', 1, NOW()),
-  ('Ferrous Sulfate', 'Ferrous Sulfate', 1, NOW()),
-  ('Ferrous Fumarate', 'Ferrous Fumarate', 1, NOW()),
-  ('Multivitamin', 'Multivitamin', 1, NOW()),
-  ('Prenatal Vitamin', 'Prenatal Vitamin', 1, NOW())
+  ('Mebendazole 500mg PO', 'Mebendazole 500mg PO', 5, 1, NOW()),
+  ('Albendazole 400mg PO', 'Albendazole 400mg PO', 0, 1, NOW()),
+  ('Ferrous Sulfate', 'Ferrous Sulfate', 1, 1, NOW()),
+  ('Ferrous Fumarate', 'Ferrous Fumarate', 2, 1, NOW()),
+  ('Multivitamin', 'Multivitamin', 3, 1, NOW()),
+  ('Prenatal Vitamin', 'Prenatal Vitamin', 4, 1, NOW())
 ;
 
 -- Load default tests per client specifications.
