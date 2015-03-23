@@ -428,7 +428,7 @@ var doRowPage1 = function(doc, opts, rec, rowNum) {
   if (rec.useAlternateEdd && rec.alternateEdd) {
     tmpStr = moment(rec.alternateEdd).format('MM/DD/YYYY');
   } else {
-    if (rec.lmp) {
+    if (rec.lmp && isValidDate(rec.lmp)) {
       tmpStr = calcEdd(rec.lmp, 'MM/DD/YYYY');
     } else {
       tmpStr = '';
@@ -607,7 +607,7 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
   doc
     .font(FONTS.Helvetica)
     .fontSize(smallFont);
-  tmpStr = rec.whereDeliver.slice(0, 10);
+  tmpStr = rec.whereDeliver? rec.whereDeliver.slice(0, 10): '';
   centerInCol(doc, tmpStr, colPos[1], colPos[2], startY + colPadTop);
 
   // --------------------------------------------------------
@@ -616,7 +616,7 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
   doc
     .font(FONTS.Helvetica)
     .fontSize(smallFont);
-  tmpStr = rec.birthCompanion.slice(0, 10);
+  tmpStr = rec.birthCompanion? rec.birthCompanion.slice(0, 10): '';
   centerInCol(doc, tmpStr, colPos[2], colPos[3], startY + colPadTop);
 
   // --------------------------------------------------------
@@ -943,7 +943,11 @@ var doRowPage2 = function(doc, opts, rec, rowNum) {
       return med.name.toLowerCase().indexOf('ferrous') !== -1;
     });
     tmpList = _.pluck(tmpList, 'numberDispensed');
-    cntIron = _.reduce(tmpList, function(memo, val) {return memo + val;});
+    if (tmpList.length > 0) {
+      cntIron = _.reduce(tmpList, function(memo, val) {return memo + val;});
+    } else {
+      cntIron = 0;
+    }
 
     // Determine if the proper labs were done.
     cntHemo = _.filter(rec.labTests, function(lt) {
@@ -2359,12 +2363,9 @@ var doStaticPage2 = function(doc, opts, currPage) {
 var doPages = function(doc, data, rowsPerPage, opts) {
   var currentRow = 1
     , pageNum = 1
-    , totalPcs = _.reduce(_.pluck(data, 'numberDispensed'),
-        function(memo, num) {return memo + num;}, 0)
     , totalPages = Math.ceil(data.length / rowsPerPage) * 2
     , dataPage2 = []
     ;
-
 
   // --------------------------------------------------------
   // Do each row, adding pages as necessary.
@@ -2415,9 +2416,11 @@ var doPages = function(doc, data, rowsPerPage, opts) {
  *
  * param      flds
  * param      writable
+ * param      req
+ * param      res
  * return     undefined
  * -------------------------------------------------------- */
-var doReport = function(flds, writable) {
+var doReport = function(flds, writable, req, res) {
   var options = {
         margins: {
           top: 18
@@ -2443,17 +2446,13 @@ var doReport = function(flds, writable) {
   opts.title = options.info.Title;
   opts.margins = options.margins;
 
-  // --------------------------------------------------------
-  // Write the report to the writable stream passed.
-  // --------------------------------------------------------
-  doc.pipe(writable);
-
   // Build the parts of the document.
   getData(opts.fromDate, opts.toDate)
     .then(function(list) {
       var partitioned
         , data
         ;
+
       // --------------------------------------------------------
       // Sort all of the custom field 'Agdao' records to the front.
       // The getData() function already returns records in
@@ -2467,10 +2466,20 @@ var doReport = function(flds, writable) {
       data = partitioned[0];
       _.each(partitioned[1], function(rec) { data.push(rec); });
 
+      // --------------------------------------------------------
+      // Write the report to the writable stream passed.
+      // --------------------------------------------------------
+      doc.pipe(writable);
+
       doPages(doc, data, rowsPerPage, opts);
     })
     .then(function() {
       doc.end();
+    })
+    .caught(function(err) {
+      logError(err);
+      req.flash('warning', err);
+      res.redirect(cfg.path.reportForm);
     });
 };
 
@@ -2519,7 +2528,7 @@ var run = function(req, res) {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; DOH-MasterList.pdf');
 
-  doReport(flds, writable);
+  doReport(flds, writable, req, res);
 };
 
 
