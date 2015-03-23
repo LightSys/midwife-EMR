@@ -17,7 +17,7 @@ var fs = require('fs')
 // --------------------------------------------------------
 // Adjust the CPU cores used if specified to do so.
 // --------------------------------------------------------
-if (cfg.cpu && cfg.cpu.workers && parseInt(cfg.cpu.workers) !== NaN) {
+if (cfg.cpu && cfg.cpu.workers && ! isNaN(parseInt(cfg.cpu.workers))) {
   config.workers = cfg.cpu.workers;
 }
 

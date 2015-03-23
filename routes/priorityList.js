@@ -65,7 +65,7 @@ var load = function load(req, res, next) {
     return next(new Error('Invalid parameters.'));
   }
 
-  isChecked = JSON.parse(req.body.isChecked)
+  isChecked = JSON.parse(req.body.isChecked);
   req.paramPregnancy = {};
   req.paramPregnancy.id = pregId;
   req.paramPregnancy.isChecked = isChecked;

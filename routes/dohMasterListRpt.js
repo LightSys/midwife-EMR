@@ -139,7 +139,7 @@ var getData = function(dateFrom, dateTo) {
         _.each(list[0], function(rec) {
           data2.push(_.extend(_.findWhere(data, {id: rec.id}),
               {registeredDate: rec.registeredDate}));
-        })
+        });
         data = data2;
       })
       .then(function() {
@@ -2508,11 +2508,11 @@ var run = function(req, res) {
   // Check that required fields are in place.
   // Note: logistics in charge is not necessary for this report.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! isValidDate(flds.dateFrom, 'YYYY-MM-DD')) {
+  if (! flds.dateFrom || flds.dateFrom.length === 0 || ! isValidDate(flds.dateFrom, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! isValidDate(flds.dateTo, 'YYYY-MM-DD')) {
+  if (! flds.dateTo || flds.dateTo.length === 0 || ! isValidDate(flds.dateTo, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }

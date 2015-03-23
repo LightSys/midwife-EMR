@@ -253,7 +253,7 @@ var saveProfile = function(req, res) {
   if (req.body &&
       req.body.id &&
       req.body.id == req.session.user.id) {
-    if (req.body.password.length == 0 || req.body.password2.length == 0) {
+    if (req.body.password.length === 0 || req.body.password2.length === 0) {
       processPw = false;
     }
     User.checkProfileFields(req.body, processPw, function(err, result) {
@@ -502,7 +502,7 @@ var update = function(req, res) {
       req.paramUser.id &&
       req.body.id &&
       req.paramUser.id == req.body.id) {
-    if (req.body.password.length == 0 || req.body.password2.length == 0) {
+    if (req.body.password.length === 0 || req.body.password2.length === 0) {
       processPw = false;
     }
     User.checkFields(req.body, false, processPw, function(err, result) {

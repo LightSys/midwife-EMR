@@ -434,7 +434,7 @@ var doPrenatal = function(doc, data, opts, ypos) {
 
   y = doc.y + 10;
   return y;
-}
+};
 
 /* --------------------------------------------------------
  * doMidwifeInterview()

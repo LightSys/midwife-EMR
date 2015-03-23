@@ -73,8 +73,8 @@ var getData = function(dateFrom, dateTo) {
       .then(function(evtTypes) {
         var list = evtTypes.toJSON();
         // Stored at the module level.
-        prenatalCheckInId = _.findWhere(list, {name: 'prenatalCheckIn'})['id']
-        prenatalCheckOutId = _.findWhere(list, {name: 'prenatalCheckOut'})['id']
+        prenatalCheckInId = _.findWhere(list, {name: 'prenatalCheckIn'}).id;
+        prenatalCheckOutId = _.findWhere(list, {name: 'prenatalCheckOut'}).id;
       })
       // --------------------------------------------------------
       // Get the checkin records.
@@ -109,6 +109,7 @@ var getData = function(dateFrom, dateTo) {
       // --------------------------------------------------------
       .then(function() {
         var pregIds = _.uniq(_.pluck(checkInRecs, 'pregnancyId'))
+          ;
         if (pregIds.length === 0) {
           msg = 'No records found using the dates specified.';
           return [];
@@ -674,11 +675,11 @@ var run = function run(req, res) {
   // --------------------------------------------------------
   // Check that required fields are in place.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! isValidDate(flds.dateFrom, 'YYYY-MM-DD')) {
+  if (! flds.dateFrom || flds.dateFrom.length === 0 || ! isValidDate(flds.dateFrom, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! isValidDate(flds.dateTo, 'YYYY-MM-DD')) {
+  if (! flds.dateTo || flds.dateTo.length === 0 || ! isValidDate(flds.dateTo, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }

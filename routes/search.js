@@ -54,7 +54,7 @@ var view = function(req, res) {
       // Insert an empty record as a default after unsetting the
       // current default.
       // --------------------------------------------------------
-      l = _.map(list, function(obj) {obj.selected = false; return obj;})
+      l = _.map(list, function(obj) {obj.selected = false; return obj;});
       l.unshift({ selectKey: '', label: '', selected: true });
       location = l;
     })
@@ -89,7 +89,7 @@ var execute = function(req, res) {
   var flds = _.omit(req.body, ['_csrf', 'searchType', 'next', 'previous'])
     , pageNum = 1
     , rowsPerPage = parseInt(cfg.search.rowsPerPage, 10)
-    , priorityQry = flds.priority && flds.priority.length > 0 && parseInt(flds.priority, 10) !== NaN
+    , priorityQry = flds.priority && flds.priority.length > 0 && ! isNaN(parseInt(flds.priority, 10))
     , qb
     , results = []
     , cols = [

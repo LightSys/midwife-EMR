@@ -349,11 +349,11 @@ var doRow = function(doc, data, rowNum, rowHeight) {
   // Pcs
   doc
     .fontSize(11)
-    .text(data.numberDispensed, startX + 490, startY + 9)
+    .text(data.numberDispensed, startX + 490, startY + 9);
   // Date
   doc
     .fontSize(10)
-    .text(moment(data.date).format('MM/DD/YYYY'), startX + 522, startY + 9)
+    .text(moment(data.date).format('MM/DD/YYYY'), startX + 522, startY + 9);
 
 };
 
@@ -533,15 +533,15 @@ var run = function(req, res) {
   // --------------------------------------------------------
   // Check that required fields are in place.
   // --------------------------------------------------------
-  if (! flds.dateFrom || flds.dateFrom.length == 0 || ! isValidDate(flds.dateFrom, 'YYYY-MM-DD')) {
+  if (! flds.dateFrom || flds.dateFrom.length === 0 || ! isValidDate(flds.dateFrom, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a FROM date for the report.'));
   }
-  if (! flds.dateTo || flds.dateTo.length == 0 || ! isValidDate(flds.dateTo, 'YYYY-MM-DD')) {
+  if (! flds.dateTo || flds.dateTo.length === 0 || ! isValidDate(flds.dateTo, 'YYYY-MM-DD')) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }
-  if (! flds.inCharge || flds.inCharge.length == 0) {
+  if (! flds.inCharge || flds.inCharge.length === 0) {
     fieldsReady = false;
     req.flash('error', req.gettext('You must choose an In Charge person for the report.'));
   }

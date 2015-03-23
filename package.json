@@ -39,6 +39,9 @@
   "scripts": {
     "test": "mocha"
   },
+  "jshintConfig": {
+    "laxcomma": true
+  },
   "author": "Kurt Symanzik",
   "license": "BSD-2-Clause"
 }

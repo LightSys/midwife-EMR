@@ -133,7 +133,7 @@ var vaccinationSave = function(req, res) {
     } else {
       flds.vacDate = null;
       if (flds.vacYear.length === 0) {
-        var path = req.paramVaccinationId? cfg.path.vaccinationEdit: cfg.path.vaccinationAdd;
+        var path = req.paramVaccinationId? cfg.path.vaccinationEdit: cfg.path.vaccinationAdd
           ;
         path = path.replace(/:id/, flds.pregnancy_id);
         if (req.paramVaccinationId) {

@@ -258,7 +258,7 @@ var load = function(req, res, next) {
         // --------------------------------------------------------
         rec.risk = _.map(rec.risk, function(risk) {
           return _.omit(risk, 'pregnancy_id', 'updatedBy', 'updatedAt', 'supervisor');
-        })
+        });
 
         // --------------------------------------------------------
         // Fix the dates for the screen in the format that the
@@ -1052,7 +1052,7 @@ var generalAddSave = function(req, res) {
             t.rollback();
             return e;
           });
-      })    // end of transaction
+      });    // end of transaction
     })
     .then(function() {
       // --------------------------------------------------------
@@ -1105,7 +1105,7 @@ var generalEditSave = function(req, res) {
     , prenatalDay = req.body.prenatalDay.length > 0? req.body.prenatalDay: null
     , scheduleId = req.body.scheduleId.length > 0? req.body.scheduleId: null
     , priorityBarcode = req.body.priorityBarcode.length > 0? req.body.priorityBarcode: null
-    , supervisor = null;
+    , supervisor = null
     ;
   if (req.paramPregnancy &&
       req.body &&
@@ -1276,7 +1276,7 @@ var generalEditSave = function(req, res) {
                           console.log('Unknown priority number situation. Aborting.');
                           return reject();
                         }
-                      })
+                      });
                 });
               });   // end Promise
             })
@@ -1474,7 +1474,7 @@ var midwifeSave = function(req, res) {
                       logError(err);
                       res.redirect(cfg.path.search);
                     });
-                })
+                });
             })
             .caught(function(err) {
               logError(err);

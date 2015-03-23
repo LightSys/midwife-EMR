@@ -26,7 +26,7 @@ var logInfo = require('../util').logInfo
  * -------------------------------------------------------- */
 isClientError = function isClientError(status) {
   return (status >= 400 && status <= 499);
-}
+};
 
 /* --------------------------------------------------------
  * notFoundError()
@@ -35,7 +35,7 @@ isClientError = function isClientError(status) {
  * -------------------------------------------------------- */
 var notFoundError = function(req, res) {
   var title = req.gettext("Oops! Couldn't find that page.")
-    , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again.";
+    , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again."
     ;
   logInfo('Not found - User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method);
   res.render('errorPage', {title: title, text: text});

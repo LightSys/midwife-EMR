@@ -312,7 +312,7 @@ var loginPost = function(req, res, next) {
       // --------------------------------------------------------
       // Store user information in the session sans sensitive info.
       // --------------------------------------------------------
-      req.session.user = _.omit(user.toJSON(), 'password');;
+      req.session.user = _.omit(user.toJSON(), 'password');
 
       // --------------------------------------------------------
       // Record the event and redirect to the home page.
