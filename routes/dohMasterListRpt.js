@@ -70,31 +70,36 @@ var getData = function(dateFrom, dateTo) {
     // which consists of the clients that came for prenatal
     // exams during the dates specified.
     // --------------------------------------------------------
-    new PrenatalExams().query()
+    return new PrenatalExams().query()
       .select(['pregnancy_id'])
       .where('date', '>=', dateFrom)
       .andWhere('date', '<=', dateTo)
       .then(function(list) {
         pregIds = _.pluck(list, 'pregnancy_id');
 
-        // --------------------------------------------------------
-        // Get the relevant information from the pregnancy and
-        // patient tables.
-        // --------------------------------------------------------
-        return new Pregnancies().query()
-          .column('pregnancy.id', 'pregnancy.firstname','pregnancy.lastname',
-           'pregnancy.address1', 'pregnancy.address3', 'pregnancy.city',
-           'pregnancy.gravida', 'pregnancy.para', 'pregnancy.abortions',
-           'pregnancy.stillBirths', 'pregnancy.alternateEdd',
-           'pregnancy.useAlternateEdd', 'pregnancy.doctorConsultDate',
-           'pregnancy.dentistConsultDate', 'pregnancy.mbBook', 'pregnancy.lmp',
-           'pregnancy.whereDeliver', 'pregnancy.birthCompanion',
-           'pregnancy.philHealthMCP', 'pregnancy.philHealthNCP',
-           'pregnancy.useIodizedSalt', 'patient.dohID', 'patient.dob',
-           'patient.generalInfo', 'patient.ageOfMenarche')
-          .innerJoin('patient', 'patient.id', 'pregnancy.patient_id')
-          .whereIn('pregnancy.id', pregIds)
-          .select();
+        if (pregIds.length === 0) {
+          throw new Error('No records found.');
+        } else {
+
+          // --------------------------------------------------------
+          // Get the relevant information from the pregnancy and
+          // patient tables.
+          // --------------------------------------------------------
+          return new Pregnancies().query()
+            .column('pregnancy.id', 'pregnancy.firstname','pregnancy.lastname',
+            'pregnancy.address1', 'pregnancy.address3', 'pregnancy.city',
+            'pregnancy.gravida', 'pregnancy.para', 'pregnancy.abortions',
+            'pregnancy.stillBirths', 'pregnancy.alternateEdd',
+            'pregnancy.useAlternateEdd', 'pregnancy.doctorConsultDate',
+            'pregnancy.dentistConsultDate', 'pregnancy.mbBook', 'pregnancy.lmp',
+            'pregnancy.whereDeliver', 'pregnancy.birthCompanion',
+            'pregnancy.philHealthMCP', 'pregnancy.philHealthNCP',
+            'pregnancy.useIodizedSalt', 'patient.dohID', 'patient.dob',
+            'patient.generalInfo', 'patient.ageOfMenarche')
+            .innerJoin('patient', 'patient.id', 'pregnancy.patient_id')
+            .whereIn('pregnancy.id', pregIds)
+            .select();
+        }
       })
       .then(function(pregs) {
         data = pregs;
@@ -280,6 +285,9 @@ var getData = function(dateFrom, dateTo) {
         // --------------------------------------------------------
 
         return resolve(data);
+      })
+      .caught(function(err) {
+        return reject(err.message);
       });
   });
 };
