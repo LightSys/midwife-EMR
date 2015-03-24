@@ -121,7 +121,7 @@ var medicationSave = function(req, res) {
     // --------------------------------------------------------
     // Handle date, year, and month combinations.
     // --------------------------------------------------------
-    if (flds.date.length = 0 || ! moment(flds.date, 'YYYY-MM-DD').isValid()) {
+    if (flds.date.length === 0 || ! moment(flds.date, 'YYYY-MM-DD').isValid()) {
       var path = req.paramMedicationId? cfg.path.medicationEdit: cfg.path.medicationAdd
         ;
       path = path.replace(/:id/, flds.pregnancy_id);
