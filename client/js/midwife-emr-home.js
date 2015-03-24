@@ -11,9 +11,9 @@
 // --------------------------------------------------------
 $(function() {
   (function(window, $, _, moment) {
+    "use strict";
     var data
       ;
-    "use strict";
 
     // --------------------------------------------------------
     // Some versions of IE do not have a console so do nothing.
