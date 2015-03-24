@@ -62,7 +62,7 @@ var LOGIN = 1
  * -------------------------------------------------------- */
 var recordEvent = function(eventType, options, transaction) {
   return new Promise(function(resolve, reject) {
-    options.eDateTime = options.eDateTime || moment().format('YYYY-MM-DD HH:mm:ss')
+    options.eDateTime = options.eDateTime || moment().format('YYYY-MM-DD HH:mm:ss');
     Event.forge(_.extend({eventType: eventType}, options))
       .save(null, {transacting: transaction})
       .then(function(evt) {

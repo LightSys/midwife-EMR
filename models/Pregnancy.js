@@ -265,7 +265,7 @@ Pregnancy = Bookshelf.Model.extend({
       if (! val.isLength(flds.firstname, 1)) msgs.push('Firstname must be specified.');
       if (! val.isLength(flds.lastname, 1)) msgs.push('Lastname must be specified.');
 
-      if (msgs.length != 0) {
+      if (msgs.length !== 0) {
         reject(msgs.join(' '));
       } else {
         resolve(flds);
@@ -291,7 +291,7 @@ Pregnancy = Bookshelf.Model.extend({
             flds.wantsUS == '0' &&
             flds.noneOfAbove == '0') msgs.push('Choose at least one checkbox.');
 
-        if (msgs.length != 0) {
+        if (msgs.length !== 0) {
           reject(msgs.join(' '));
         } else {
           resolve(flds);

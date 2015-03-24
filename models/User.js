@@ -228,7 +228,7 @@ User = Bookshelf.Model.extend({
         if (! val.isEmail(rec.email)) result.messages.push('Email must be valid.');
       }
 
-      if (result.messages.length != 0) {
+      if (result.messages.length !== 0) {
         result.success = false;
       }
       return cb(null, result);
@@ -270,7 +270,7 @@ User = Bookshelf.Model.extend({
         if (! val.isEmail(rec.email)) result.messages.push('Email must be valid.');
       }
 
-      if (result.messages.length != 0) {
+      if (result.messages.length !== 0) {
         result.success = false;
       }
 

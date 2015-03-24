@@ -79,7 +79,7 @@ Patient = Bookshelf.Model.extend({
         ;
       if (! val.isDate(flds.dob)) msgs.push('Date of birth must be specified.');
 
-      if (msgs.length != 0) {
+      if (msgs.length !== 0) {
         reject(msgs.join(' '));
       } else {
         resolve(flds);

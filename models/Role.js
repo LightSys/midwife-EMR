@@ -65,7 +65,7 @@ Role = Bookshelf.Model.extend({
     if (! val.isLength(rec.name, 1)) result.messages.push('Role name must be provided.');
     if (! val.isLength(rec.description, 1)) result.messages.push('Role description must be provided.');
 
-    if (result.messages.length != 0) {
+    if (result.messages.length !== 0) {
       result.success = false;
     }
 

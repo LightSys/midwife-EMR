@@ -80,7 +80,7 @@ Referral = Bookshelf.Model.extend({
       if (! val.isLength(flds.referral, 1)) msgs.push('Referral type must be specified.');
       if (! val.isDate(flds.date)) msgs.push('Referral date is not a date.');
 
-      if (msgs.length != 0) {
+      if (msgs.length !== 0) {
         reject(msgs.join(' '));
       } else {
         resolve(flds);
