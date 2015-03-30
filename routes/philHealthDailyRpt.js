@@ -116,10 +116,10 @@ var getData = function(dateFrom, dateTo) {
         }
         return new Pregnancy().query()
           .whereIn('id', pregIds)
-          .select(['id', 'firstname', 'lastname', 'address1', 'address3',
-            'address4', 'city', 'lmp', 'sureLMP', 'alternateEdd', 'useAlternateEdd',
-            'philHealthMCP', 'philHealthNCP', 'philHealthID', 'philHealthApproved',
-            'patient_id']);
+          .select(['id', 'firstname', 'lastname', 'maidenname', 'address1',
+            'address3', 'address4', 'city', 'lmp', 'sureLMP', 'alternateEdd',
+            'useAlternateEdd', 'philHealthMCP', 'philHealthNCP', 'philHealthID',
+            'philHealthApproved', 'patient_id']);
       })
       .then(function(pregs) {
         pregRecs = pregs;
@@ -400,11 +400,11 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   doc.text(tmpStr, colPos[3] + colPadLeft, textY);
 
   // Firstname
-  tmpStr = data.firstname.split(' ')[0];
+  tmpStr = data.firstname;
   doc.text(tmpStr, colPos[4] + colPadLeft, textY);
 
-  // Middle name
-  tmpStr = _.rest(data.firstname.split(' ')).join(' ');
+  // Middle name (this is really the maidenname)
+  tmpStr = data.maidenname;
   if (tmpStr) doc.text(tmpStr, colPos[5] + colPadLeft, textY);
 
   // Date of birth
