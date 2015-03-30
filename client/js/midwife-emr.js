@@ -251,6 +251,26 @@ $(function() {
       return true;
     });
 
+    // --------------------------------------------------------
+    // Watch for form submission and sanity check field values
+    // of the general page in regard to date of birth. We don't
+    // prevent the user from entering dates outside the expected
+    // range, nor even prevent the submission. We just alert the
+    // user so that it can be corrected if necessary.
+    // --------------------------------------------------------
+    $('form[name="pregnancyForm"]').on('submit', function(evt) {
+      var $dob = $('input[name="dob"]')
+        , dobDate
+        , age
+        ;
+      if ($dob && $dob.val()) {
+        dobDate = moment($dob.val(), 'YYYY-MM-DD');
+        age = moment().diff(dobDate, 'years');
+        if (dobDate && dobDate.isValid() && (age < 11 || age > 50)) {
+          alert('Are you sure about the date of birth?');
+        }
+      }
+    });
 
   })(window, jQuery, _, moment);
 });
