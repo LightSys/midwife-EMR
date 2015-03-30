@@ -28,6 +28,9 @@ block search
           span= gettext('Email')
           input(class='form-control input-lg', type='text', autocomplete="off", name='email', value=editUser.email)
         div.form-group
+          span= gettext('Short name or initials')
+          input(class='form-control input-lg', type='text', tabindex=7, autocomplete="off", name='shortName', value=editUser.shortName)
+        div.form-group
           span= gettext('Display name')
           input(class='form-control input-lg', type='text', autocomplete="off", name='displayName', value=editUser.displayName)
         div.form-group

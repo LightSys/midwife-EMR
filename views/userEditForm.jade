@@ -28,20 +28,23 @@ block search
           span= gettext('Email')
           input(class='form-control input-lg', type='text', tabindex=6, autocomplete="off", name='email', value=editUser.email)
         div.form-group
-          span= gettext('Display name')
-          input(class='form-control input-lg', type='text', tabindex=7, autocomplete="off", name='displayName', value=editUser.displayName)
+          span= gettext('Short name or initials')
+          input(class='form-control input-lg', type='text', tabindex=7, autocomplete="off", name='shortName', value=editUser.shortName)
         div.form-group
-          input(type='checkbox', name='isCurrentTeacher', tabindex="8", value=1, checked=editUser.isCurrentTeacher==true)
+          span= gettext('Display name')
+          input(class='form-control input-lg', type='text', tabindex=8, autocomplete="off", name='displayName', value=editUser.displayName)
+        div.form-group
+          input(type='checkbox', name='isCurrentTeacher', tabindex="9", value=1, checked=editUser.isCurrentTeacher==true)
           span &nbsp;&nbsp;
           span= gettext(' Is currently a teacher? ')
         div.form-group
           label.radio-inline= gettext('Active')
-            input(type='radio', name='status', value='1', tabindex=9, checked=editUser.status==1)
+            input(type='radio', name='status', value='1', tabindex=10, checked=editUser.status==1)
           label.radio-inline= gettext('Inactive')
-            input(type='radio', name='status', value='0', tabindex=10, checked=editUser.status==0)
+            input(type='radio', name='status', value='0', tabindex=11, checked=editUser.status==0)
         div.form-group
           span= gettext('Comment')
-          input(class='form-control input-lg', type='text', tabindex=11, autocomplete="off", name='note', value=editUser.note)
+          input(class='form-control input-lg', type='text', tabindex=12, autocomplete="off", name='note', value=editUser.note)
 
         input(class='btn btn-default btn-primary', type='submit', value=gettext('Save'))
 

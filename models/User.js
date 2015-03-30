@@ -86,6 +86,7 @@ CREATE TABLE `user` (
   `password` varchar(60) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   `lang` varchar(10) DEFAULT NULL,
+  `shortName` varchar(100) DEFAULT NULL,
   `displayName` varchar(100) DEFAULT NULL,
   `status` tinyint(1) NOT NULL DEFAULT '1',
   `note` varchar(300) DEFAULT NULL,
@@ -99,7 +100,7 @@ CREATE TABLE `user` (
   KEY `supervisor` (`supervisor`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `user_ibfk_2` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=latin1
  */
 User = Bookshelf.Model.extend({
   // --------------------------------------------------------
@@ -108,8 +109,8 @@ User = Bookshelf.Model.extend({
   tableName: 'user'
 
   , permittedAttributes: ['id', 'username', 'firstname', 'lastname', 'password',
-      'email', 'lang', 'displayName', 'status', 'note', 'isCurrentTeacher',
-     'updatedBy', 'updatedAt', 'supervisor']
+      'email', 'lang', 'shortName', 'displayName', 'status', 'note',
+     'isCurrentTeacher', 'updatedBy', 'updatedAt', 'supervisor']
   , initialize: function() {
     this.on('saving', this.saving, this);
     this.on('saved', this.saved, this);
@@ -170,6 +171,19 @@ User = Bookshelf.Model.extend({
         return cb(null, u);
       });
   }
+
+    /* --------------------------------------------------------
+     * findShortNameById()
+     *
+     * Find and return the short name of the user by the user's
+     * id.
+     * -------------------------------------------------------- */
+  , findShortNameById: function(id, cb) {
+      User.findById(id, function(err, user) {
+        if (err) throw err;
+        return cb(null, user.get('shortName'));
+      });
+    }
 
     /* --------------------------------------------------------
      * findDisplayNameById()
@@ -344,8 +358,8 @@ User = Bookshelf.Model.extend({
      *
      * Returns a promise that returns a hash of users with
      * the keys being their user id as a string and the
-     * value being an object with four fields: username,
-     * firstname, lastname, and displayName.
+     * value being an object with five fields: username,
+     * firstname, lastname, shortName and displayName.
      *
      * Note: if the application is run as a cluster, each
      * instance will retain it's own copy of the cache.
@@ -365,7 +379,7 @@ User = Bookshelf.Model.extend({
           logInfo('User.getUserIdMap() - Refreshing user id map cache.');
           knex('user')
             .orderBy('id', 'asc')
-            .select(['id', 'username', 'firstname', 'lastname', 'displayName'])
+            .select(['id', 'username', 'firstname', 'lastname', 'shortName', 'displayName'])
             .then(function(list) {
               var map = {};
               _.each(list, function(user) {
@@ -390,8 +404,8 @@ User = Bookshelf.Model.extend({
      * the fld are not found, returns undefined.
      *
      * Fields available are dependent upon getUserIdMap().
-     * Currently they are username, firstname, lastname, and
-     * displayName.
+     * Currently they are username, firstname, lastname,
+     * shortName and displayName.
      *
      * param       id - the user id
      * param       fld - the field to retrieve
