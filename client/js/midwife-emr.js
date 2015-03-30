@@ -263,11 +263,15 @@ $(function() {
         , dobDate
         , age
         ;
-      if ($dob && $dob.val()) {
-        dobDate = moment($dob.val(), 'YYYY-MM-DD');
-        age = moment().diff(dobDate, 'years');
-        if (dobDate && dobDate.isValid() && (age < 11 || age > 50)) {
-          alert('Are you sure about the date of birth?');
+      if ($dob) {
+        if ($dob.val()) {
+          dobDate = moment($dob.val(), 'YYYY-MM-DD');
+          age = moment().diff(dobDate, 'years');
+          if (dobDate && dobDate.isValid() && (age < 11 || age > 50)) {
+            alert('Are you sure about the date of birth?');
+          }
+        } else {
+          alert('Did you forget to enter the date of birth?');
         }
       }
     });

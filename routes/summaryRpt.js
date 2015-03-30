@@ -294,11 +294,11 @@ var doCheckbox = function(doc, label, value, x, y) {
 var doClientGeneral = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
-    , age = moment().diff(moment(data.patient.dob), 'years')
-    , dob = moment(data.patient.dob).format('MM/DD/YYYY')
     , dohID = formatDohID(data.patient.dohID)
     , clientIncome = ''
     , partnerIncome = ''
+    , age
+    , dob
     ;
   if (data.pregnancy.clientIncome && data.pregnancy.clientIncomePeriod) {
     clientIncome = data.pregnancy.clientIncome + ' / ' +
@@ -307,6 +307,11 @@ var doClientGeneral = function(doc, data, opts, ypos) {
   if (data.pregnancy.partnerIncome && data.pregnancy.partnerIncomePeriod) {
     partnerIncome = data.pregnancy.partnerIncome + ' / ' +
       data.pregnancy.partnerIncomePeriod;
+  }
+
+  if (data.patient.dob && moment(data.patient.dob).isValid()) {
+    age = moment().diff(moment(data.patient.dob), 'years');
+    dob = moment(data.patient.dob).format('MM/DD/YYYY');
   }
 
   doSep(doc, opts, y, greyLightColor);
@@ -321,7 +326,11 @@ var doClientGeneral = function(doc, data, opts, ypos) {
   x += 100;
   doVertFldVal(doc, 'Nickname', data.pregnancy.nickname, x, y, true);
   x += 100;
-  doVertFldVal(doc, 'DOB (Age)', dob + ' (' + age + ')', x, y, true);
+  if (age) {
+    doVertFldVal(doc, 'DOB (Age)', dob + ' (' + age + ')', x, y, true);
+  } else {
+    doVertFldVal(doc, 'DOB (Age)', '', x, y, true);
+  }
   x += 100;
   doVertFldVal(doc, 'MMC', dohID, x, y, true);
   // Second line

@@ -25,12 +25,13 @@ block searchResults
               th.header= gettext('ID')
           tbody
             each rec in results
-              -var searchResultsId = 'searchResultsId-' + rec.id;
+              - var searchResultsId = 'searchResultsId-' + rec.id;
+              - var dob = rec.dob && libs.mmt(rec.dob).isValid()? rec.dob: '';
               tr(class=rowClass, id=searchResultsId)
                 td= rec.priority
                 td= rec.lastname
                 td= rec.firstname
-                td= rec.dob
+                td= dob
                 td= rec.address1
                 td= rec.address3
                 td= rec.dohID

@@ -317,7 +317,9 @@ var doRow = function(doc, data, rowNum, rowHeight) {
   // Firstname
   doc.text(data.firstname.toUpperCase(), startX + 132, startY + 9);
   // Age
-  doc.text(moment().diff(data.dob, 'years'), startX + 225, startY + 9);
+  if (data.dob && moment(data.dob).isValid()) {
+    doc.text(moment().diff(data.dob, 'years'), startX + 225, startY + 9);
+  }
   // LMP
   doc
     .fontSize(10)

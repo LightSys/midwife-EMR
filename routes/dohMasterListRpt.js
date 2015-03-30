@@ -413,11 +413,13 @@ var doRowPage1 = function(doc, opts, rec, rowNum) {
   doc
     .font(FONTS.Helvetica)
     .fontSize(smallFont);
-  tmpStr = moment().diff(moment(rec.dob), 'years');
-  centerInCol(doc, tmpStr, colPos[3], colPos[4], startY + colPadTop);
-  tmpStr = moment(rec.dob).format('MM/DD/YYYY');
-  centerInCol(doc, tmpStr, colPos[3], colPos[4],
-      startY + colPadTop + smallLineHgt);
+  if (rec.dob && moment(rec.dob).isValid()) {
+    tmpStr = moment().diff(moment(rec.dob), 'years');
+    centerInCol(doc, tmpStr, colPos[3], colPos[4], startY + colPadTop);
+    tmpStr = moment(rec.dob).format('MM/DD/YYYY');
+    centerInCol(doc, tmpStr, colPos[3], colPos[4],
+        startY + colPadTop + smallLineHgt);
+  }
 
   // --------------------------------------------------------
   // LMP and GPAS

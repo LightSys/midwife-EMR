@@ -9,8 +9,10 @@ mixin patientWell(record)
   - var priorityNumber = record && record.prenatalCheckinPriority? record.prenatalCheckinPriority: '';
   - var name = record.lastname + ', ' + record.firstname;
   - var nickname = record.nickname && record.nickname.length > 0? record.nickname: '';
-  - var dob = libs.mmt(record.patient.dob).format('MM-DD-YYYY');
-  - var age = libs.mmt().diff(dob, 'years');
+  - var dob;
+  - dob = record.patient.dob? libs.mmt(record.patient.dob): '';
+  - dob = dob && dob.isValid()? dob.format('MM-DD-YYYY'): '';
+  - var age = dob? libs.mmt().diff(dob, 'years'): '';
   - var edd = record.edd? libs.mmt(record.edd).format('MM-DD-YYYY'): '';
   - var lmp = record.lmp? libs.mmt(record.lmp).format('MM-DD-YYYY'): '';
   - if (record.useAlternateEdd && record.alternateEdd && libs.mmt(record.alternateEdd).isValid()) {
@@ -51,9 +53,11 @@ mixin patientWell(record)
       div(class='col-xs-4')
         div(class='')= gettext('Age: ')
           span(class='text-primary')= age
-          span(class='text-primary') &nbsp;&nbsp;(
-          span(class='text-primary')= dob
-          span(class='text-primary') )
+          - if (dob) {
+            span(class='text-primary') &nbsp;&nbsp;(
+            span(class='text-primary')= dob
+            span(class='text-primary') )
+          - }
       div(class='col-xs-3')
         div(class='')= gaText
           span(class='text-primary')= record.ga

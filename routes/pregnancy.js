@@ -850,7 +850,7 @@ var generalAddSave = function(req, res) {
   // --------------------------------------------------------
   // Validate the fields.
   // --------------------------------------------------------
-  Promise.all([Patient.checkFields(patFlds), Pregnancy.checkFields(pregFlds)])
+  Promise.all([patFlds, Pregnancy.checkFields(pregFlds)])
     .then(function(result) {
       return _.object(['patFlds', 'pregFlds'], result);
     })

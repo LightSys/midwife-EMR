@@ -408,8 +408,10 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   if (tmpStr) doc.text(tmpStr, colPos[5] + colPadLeft, textY);
 
   // Date of birth
-  tmpStr = moment(data.patient.dob).format('MM/DD/YYYY');
-  centerInCol(doc, tmpStr, colPos[6], colPos[7], textY);
+  if (data.patient.dob && moment(data.patient.dob).isValid()) {
+    tmpStr = moment(data.patient.dob).format('MM/DD/YYYY');
+    centerInCol(doc, tmpStr, colPos[6], colPos[7], textY);
+  }
 
   // Address
   tmpStr = data.address1 + ', ' + data.city;

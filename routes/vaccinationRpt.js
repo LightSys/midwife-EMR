@@ -579,8 +579,10 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   doc.text(data.firstname.toUpperCase(), colPos[2] + colPadLeft, textY);
 
   // Age
-  tmpStr = moment().diff(moment(data.dob), 'years');
-  centerInCol(doc, tmpStr, colPos[3], colPos[4], textY);
+  if (data.dob && moment(data.dob).isValid()) {
+    tmpStr = moment().diff(moment(data.dob), 'years');
+    centerInCol(doc, tmpStr, colPos[3], colPos[4], textY);
+  }
 
   // LMP
   if (_.isDate(data.lmp)) {
@@ -923,6 +925,8 @@ var run = function(req, res) {
   // --------------------------------------------------------
   User.findDisplayNameById(Number(flds.inCharge), function(err, name) {
     if (err) throw err;
+    // If the user has not set their displayName, don't die.
+    if (! name) name = '';
     doReport(flds, writable, name);
   });
 };
