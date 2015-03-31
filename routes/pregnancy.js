@@ -674,6 +674,17 @@ var questionaireSave = function(req, res) {
 var generalAddForm = function(req, res) {
   var data = {title: req.gettext('New Client Record') }
     ;
+
+  // --------------------------------------------------------
+  // If the user previously submitted the form but it was
+  // rejected for some reason, pre-fill the data again for
+  // the user so they don't have to re-enter everything.
+  // --------------------------------------------------------
+  if (req.session.priorRec) {
+    data.priorRec = _.clone(req.session.priorRec);
+    // Use the saved information only once.
+    delete req.session.priorRec;
+  }
   res.render('pregnancyAddForm', getEditFormData(req, data));
 };
 
@@ -692,25 +703,40 @@ var generalAddForm = function(req, res) {
  * return      Object
  * -------------------------------------------------------- */
 var getEditFormData = function(req, addData) {
-  var ms = adjustSelectData(maritalStatus,
-        req.paramPregnancy? req.paramPregnancy.maritalStatus: void(0))
-    , rel = adjustSelectData(religion,
-        req.paramPregnancy? req.paramPregnancy.religion: void(0))
-    , edu = adjustSelectData(education,
-        req.paramPregnancy? req.paramPregnancy.education: void(0))
-    , partEdu = adjustSelectData(education,
-        req.paramPregnancy? req.paramPregnancy.partnerEducation: void(0))
-    , clientInc = adjustSelectData(incomePeriod,
-        req.paramPregnancy? req.paramPregnancy.clientIncomePeriod: void(0))
-    , partnerInc = adjustSelectData(incomePeriod,
-        req.paramPregnancy? req.paramPregnancy.partnerIncomePeriod: void(0))
-    , cf = req.paramPregnancy? req.paramPregnancy.customField: void(0)
+  var preData
+    , ms
+    , rel
+    , edu
+    , partEdu
+    , clientInc
+    , partnerInc
+    , cf
     , schRec
     , priRec
-    , prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
-    , prenatalLoc = _.map(location, function(obj) {return _.clone(obj);})
-    , defaultCity = cfg.client.defaultCity.length > 0? cfg.client.defaultCity: ''
-    , mb = adjustSelectData(yesNoUnanswered, '')
+    , prenatalDay
+    , prenatalLog
+    , defaultCity
+    , mb
+    ;
+
+  // --------------------------------------------------------
+  // Where is the pre-existing data coming from, a form that
+  // was rejected or the database?
+  // --------------------------------------------------------
+  if (addData.priorRec) preData = addData.priorRec;
+  if (req.paramPregnancy) preData = req.paramPregnancy;
+
+  ms = adjustSelectData(maritalStatus, preData? preData.maritalStatus: void(0))
+  rel = adjustSelectData(religion, preData? preData.religion: void(0))
+  edu = adjustSelectData(education, preData? preData.education: void(0))
+  partEdu = adjustSelectData(education, preData? preData.partnerEducation: void(0))
+  clientInc = adjustSelectData(incomePeriod, preData? preData.clientIncomePeriod: void(0))
+  partnerInc = adjustSelectData(incomePeriod, preData? preData.partnerIncomePeriod: void(0))
+  cf = preData? preData.customField: void(0)
+  prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
+  prenatalLoc = _.map(location, function(obj) {return _.clone(obj);})
+  defaultCity = cfg.client.defaultCity.length > 0? cfg.client.defaultCity: ''
+  mb = adjustSelectData(yesNoUnanswered, '')
     ;
 
   // --------------------------------------------------------
@@ -718,6 +744,20 @@ var getEditFormData = function(req, addData) {
   // --------------------------------------------------------
   addBlankSelectData(prenatalDay);
   addBlankSelectData(prenatalLoc);
+
+  // --------------------------------------------------------
+  // If the user already filled these fields in a prior
+  // rejected form, retain the user's selections.
+  // --------------------------------------------------------
+  if (preData && preData.prenatalDay) {
+    prenatalDay = adjustSelectData(prenatalDay, preData.prenatalDay);
+  }
+  if (preData && preData.prenatalLocation) {
+    prenatalLoc = adjustSelectData(prenatalLoc, preData.prenatalLocation);
+  }
+  if (preData && preData.mbBook) {
+    mb = adjustSelectData(yesNoUnanswered, preData.mbBook);
+  }
 
   if (req.paramPregnancy) {
     // --------------------------------------------------------
@@ -1063,11 +1103,6 @@ var generalAddSave = function(req, res) {
     })
     .caught(function(err) {
       // --------------------------------------------------------
-      // A problem was encountered, return a new blank form with
-      // an error message.
-      // --------------------------------------------------------
-
-      // --------------------------------------------------------
       // If the error is a string, it came from the fields check
       // so we log it appropriately. Otherwise, it was already
       // logged before.
@@ -1077,7 +1112,11 @@ var generalAddSave = function(req, res) {
         logError(err);
       }
 
-      // TODO: return a form with the user's changes preserved excepting the priority number.
+      // --------------------------------------------------------
+      // Store the form to allow it to be filled for the user to
+      // try again rather than losing all of their work.
+      // --------------------------------------------------------
+      req.session.priorRec = _.omit(req.body, ['_csrf']);
       res.redirect(cfg.path.pregnancyNewForm);
     });
 };
