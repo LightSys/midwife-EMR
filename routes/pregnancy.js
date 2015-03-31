@@ -301,8 +301,8 @@ var load = function(req, res, next) {
             } else {
               peRec.ga = '';
             }
-            peRec.examiner = userMap[""+peRec.updatedBy]['username'];
-            if (peRec.supervisor) peRec.examiner += '/' + userMap[""+peRec.supervisor]['username'];
+            peRec.examiner = userMap[""+peRec.updatedBy]['shortName'];
+            if (peRec.supervisor) peRec.examiner += '/' + userMap[""+peRec.supervisor]['shortName'];
           });
         }
 
