@@ -47,10 +47,11 @@ describe('Pregnancy', function(done) {
   before(function(done) {
     utils.loginManyAsync(request, allUserNames, allUserAgents)
       .then(function(success) {
-        utils.setSuperAsync(request, attendingWithSuper);
-      })
-      .then(function() {
-        done();
+        utils.setSuperAsync(request, attendingWithSuper, function(err, success) {
+          if (err) return done(err);
+          if (! success) return done('setSuper() failed');
+          done();
+        });
       })
       .caught(function(e) {
         done(e);

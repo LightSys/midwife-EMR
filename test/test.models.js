@@ -50,32 +50,6 @@ describe('Models', function(done) {
           done();
         });
     });
-
-    it('checkFields() should detect invalid fields', function(done) {
-      var flds = {
-            dob: 'sdfsdfs'  // invalid date
-        }
-        ;
-      Patient.checkFields(flds).then(function(flds) {
-        done(new Error('checkFields did not catch invalid field.'));
-      })
-      .caught(function(reasons) {
-        done();
-      });
-    });
-
-    it('checkFields() should allow valid fields', function(done) {
-      var flds = {
-            dob: '1988-12-03'  // a date
-        }
-        ;
-      Patient.checkFields(flds).then(function(flds) {
-        done();
-      })
-      .caught(function(reasons) {
-        done(new Error('checkFields() did not allow valid fields.'));
-      });
-    });
   });
 
   describe('Pregnancy', function(done) {
