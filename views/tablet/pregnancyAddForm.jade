@@ -8,40 +8,40 @@ block pregnancyAdd
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Last name')
-          input(class='form-control input-lg', type='text', tabindex="1", autocomplete="off", name='lastname', autofocus)
+          input(class='form-control input-lg', type='text', tabindex="1", autocomplete="off", name='lastname', autofocus, value=priorRec.lastname)
         div(class='form-group col-xs-4')
           span= gettext('First name')
-          input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname')
+          input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname', value=priorRec.firstname)
         div(class='form-group col-xs-4')
           span= gettext('Date of Birth')
-          input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob')
+          input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob', value=priorRec.dob)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Religion')
           +select('form-control input-lg', 'religion', 4, religion)
         div(class='form-group col-xs-4')
           span= gettext('Maiden name')
-          input(class='form-control input-lg', type='text', tabindex="5", autocomplete="off", name='maidenname')
+          input(class='form-control input-lg', type='text', tabindex="5", autocomplete="off", name='maidenname', value=priorRec.maidenname)
         div(class='form-group col-xs-4')
           span= gettext('Nick name')
-          input(class='form-control input-lg', type='text', tabindex="6", autocomplete="off", name='nickname')
+          input(class='form-control input-lg', type='text', tabindex="6", autocomplete="off", name='nickname', value=priorRec.nickname)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Marital status')
           +select('form-control input-lg', 'maritalStatus', 7, marital)
         div(class='form-group col-xs-4')
           span= gettext('Address')
-          input(class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='address1')
+          input(class='form-control input-lg', type='text', tabindex="8", autocomplete="off", name='address1', value=priorRec.address1)
         div(class='form-group col-xs-4')
           span= gettext('City')
-          input(class='form-control input-lg', type='text', tabindex="9", autocomplete="off", name='city', value=defaultCity)
+          input(class='form-control input-lg', type='text', tabindex="9", autocomplete="off", name='city', value=priorRec.city || defaultCity)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Barangay')
-          input(class='form-control input-lg', type='text', tabindex="10", autocomplete="off", name='address3')
+          input(class='form-control input-lg', type='text', tabindex="10", autocomplete="off", name='address3', value=priorRec.address3)
         div(class='form-group col-xs-4')
           span= gettext('District')
-          input(class='form-control input-lg', type='text', tabindex="11", autocomplete="off", name='address4')
+          input(class='form-control input-lg', type='text', tabindex="11", autocomplete="off", name='address4', value=priorRec.address4)
         div(class='form-group col-xs-4')
           //- We move the logic for a custom field out of the core route to the
           //- view so that the routes can deal with custom fields at a generic level.
@@ -55,33 +55,40 @@ block pregnancyAdd
           - agdaoSelectValue.push({selectKey: '', label: '', selected: true});
           - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "Y"}', label: 'Yes', selected: false});
           - agdaoSelectValue.push({selectKey: '{"customFieldType_id": ' + cusFldType.id + ', "value": "N"}', label: 'No', selected: false});
+          //- If the form was rejected for some reason, retain the user's choice
+          //- in this field when the form is redisplayed.
+          - if (priorRec && priorRec.customField && priorRec.customField.length > 0) {
+          -   var custFld = JSON.parse(priorRec.customField);
+          -   if (custFld.customFieldType_id === cusFldType.id && custFld.value === 'Y') agdaoSelectValue[1].selected = true;
+          -   if (custFld.customFieldType_id === cusFldType.id && custFld.value === 'N') agdaoSelectValue[2].selected = true;
+          - }
           span= gettext(cusFldType.label)
           +select('form-control input-lg', 'customField', 12, value=agdaoSelectValue)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Work')
-          input(class='form-control input-lg', type='text', tabindex="13", autocomplete="off", name='work')
+          input(class='form-control input-lg', type='text', tabindex="13", autocomplete="off", name='work', value=priorRec.work)
         div(class='form-group col-xs-4')
           span= gettext('Education')
           +select('form-control input-lg', 'education', 14, education)
         div(class='form-group col-xs-4')
           span= gettext('Telephone')
-          input(class='form-control input-lg', type='tel', tabindex="15", autocomplete="off", name='telephone')
+          input(class='form-control input-lg', type='tel', tabindex="15", autocomplete="off", name='telephone', value=priorRec.telephone)
       hr
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Partner last name')
-          input(class='form-control input-lg', type='text', tabindex="16", autocomplete="off", name='partnerLastname')
+          input(class='form-control input-lg', type='text', tabindex="16", autocomplete="off", name='partnerLastname', value=priorRec.partnerLastname)
         div(class='form-group col-xs-4')
           span= gettext('Partner first name')
-          input(class='form-control input-lg', type='text', tabindex="17", autocomplete="off", name='partnerFirstname')
+          input(class='form-control input-lg', type='text', tabindex="17", autocomplete="off", name='partnerFirstname', value=priorRec.partnerFirstname)
         div(class='form-group col-xs-4')
           span= gettext('Partner age')
-          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='partnerAge')
+          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='partnerAge', value=priorRec.partnerAge)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Partner work')
-          input(class='form-control input-lg', type='text', tabindex="19", autocomplete="off", name='partnerWork')
+          input(class='form-control input-lg', type='text', tabindex="19", autocomplete="off", name='partnerWork', value=priorRec.partnerWork)
         div(class='form-group col-xs-4')
           span= gettext('Partner education')
           +select('form-control input-lg', 'partnerEducation', 20, education)
@@ -89,14 +96,14 @@ block pregnancyAdd
       div.row
         div(class='form-group col-xs-3')
           span= gettext('Client income')
-          input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='clientIncome')
+          input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='clientIncome', value=priorRec.clientIncome)
         div(class='form-group col-xs-5')
           span= gettext('Income period')
           +select('form-control input-lg', 'clientIncomePeriod', 22, clientIncomePeriod)
       div.row
         div(class='form-group col-xs-3')
           span= gettext('Partner income')
-          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='partnerIncome')
+          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='partnerIncome', value=priorRec.partnerIncome)
         div(class='form-group col-xs-5')
           span= gettext('Income period')
           +select('form-control input-lg', 'partnerIncomePeriod', 24, partnerIncomePeriod)
@@ -104,17 +111,17 @@ block pregnancyAdd
       div.row
         div(class='form-group col-xs-4')
           span= gettext('MMC #')
-          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='doh')
+          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='doh', value=priorRec.doh)
         div(class='form-group col-xs-4')
           span= gettext('Priority #')
-          input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='priority')
+          input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='priorityBarcode', value=priorRec.priorityBarcode)
         div(class='form-group col-xs-4')
           span= gettext('Prenatal Day')
-          +select('form-control input-lg', 'prenatalDay', 26, value=prenatalDay)
+          +select('form-control input-lg', 'prenatalDay', 26, prenatalDay)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Prenatal Location')
-          +select('form-control input-lg', 'prenatalLocation', 27, value=prenatalLocation)
+          +select('form-control input-lg', 'prenatalLocation', 27, prenatalLocation)
         div(class='form-group col-xs-4')
           span= gettext('Mother/Baby Book?')
           +select('form-control input-lg', 'mbBook', 28, mbBook)
