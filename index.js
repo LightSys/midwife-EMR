@@ -181,12 +181,20 @@ var i18nLocals = function(req, res, next) {
  * for use in the templates.
  * -------------------------------------------------------- */
 var hasSuper = function(req, res, next) {
+  var superName
+    ;
   if (_.contains(req.session.roleInfo.roleNames, 'attending')) {
     if (req.session.supervisor) {
       // --------------------------------------------------------
       // Store the supervisor in app.locals for the templates.
+      // Not all supervisors have their displayName field
+      // populated so fall back to first and last if necessary.
       // --------------------------------------------------------
-      app.locals.supervisor = req.session.supervisor.displayName;
+      superName = req.session.supervisor.displayName;
+      if (! superName) {
+        superName = req.session.supervisor.firstname + ' ' + req.session.supervisor.lastname;
+      }
+      app.locals.supervisor = superName;
       next();
     } else {
       res.redirect(cfg.path.setSuper);

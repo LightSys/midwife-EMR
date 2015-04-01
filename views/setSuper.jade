@@ -4,7 +4,7 @@ block setSuper
   +titleMsg(title)
 
   if supervisor
-    p= gettext('Your current supervisor is: ')
+    h4= gettext('Your current supervisor is: ')
       span.text-primary= supervisor
   else
     p= gettext('Please choose your supervisor from the dropdown menu before proceeding.')
@@ -15,6 +15,7 @@ block setSuper
         if supervisor
           p= gettext('Choose a different supervisor')
         select(class='form-control input-lg', name="supervisor")
+          option(value='')= ''
           each u in userList
             option(value=u.id)= u.lastname + ', ' + u.firstname + ' (' + u.username + ')'
 
