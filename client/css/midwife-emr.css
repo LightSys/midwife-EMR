@@ -143,6 +143,8 @@ h4.charts {
 }
 #prenatalThisWeek,
 #prenatalHistory,
+#prenatalScheduled,
+#prenatalHistoryByMonth,
 #prenatalHistoryByWeek {
   height: 300px;
 }

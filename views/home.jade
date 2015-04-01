@@ -4,16 +4,12 @@ block home
   +titleMsg(title)
 
   div.row
-    div(class='col-md-6')
-      h3(class='charts')= gettext('Prenatal Exams This Week')
-      div(id='prenatalThisWeek', data-data=prenatalThisWeekData, data-options=prenatalThisWeekOptions)
-    div(class='col-md-6')
-      h3(class='charts')= gettext('Prenatal History')
-      div(id='prenatalHistory', data-data=prenatalHistoryData, data-options=prenatalHistoryOptions)
+    div(class='col-md-12')
+      h3(class='charts')= gettext('Scheduled Prenatal Exams')
+      div(id='prenatalScheduled', data-data=prenatalScheduled, data-options=prenatalScheduledOptions)
   div.row
     div(class='col-md-12')
-      h3(class='charts')= gettext('Prenatal History By Week')
-      - prenatalHistoryByWeekData.label = 'year-week (yy-wk)';
-      div(id='prenatalHistoryByWeek', data-data=prenatalHistoryByWeekData, data-options=prenatalHistoryByWeekOptions)
+      h3(class='charts')= gettext('Prenatal History By Month')
+      div(id='prenatalHistoryByMonth', data-data=prenatalHistoryByMonthData, data-options=prenatalHistoryByMonthOptions)
 
   hr

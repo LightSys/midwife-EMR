@@ -63,10 +63,10 @@ $(function() {
      * return     undefined 
      * -------------------------------------------------------- */
     var doChart = function doChart(el, line, legend) {
-      var $prenatalThisWeek = $(el)
-        , data = $prenatalThisWeek.attr('data-data')
-        , options = $prenatalThisWeek.attr('data-options')
-        , divWidth = parseInt($prenatalThisWeek.css('width'), 10)
+      var $theEl = $(el)
+        , data = $theEl.attr('data-data')
+        , options = $theEl.attr('data-options')
+        , divWidth = parseInt($theEl.css('width'), 10)
         , doLine = line? true: false
         , doLegend = legend? true: false
         , ticks = null
@@ -143,7 +143,7 @@ $(function() {
           , leftOffset = -6
           , topOffset = -15
           ;
-        writeDataValue($prenatalThisWeek, o, leftOffset, topOffset, value);
+        writeDataValue($theEl, o, leftOffset, topOffset, value);
       });
     };
 
@@ -154,9 +154,8 @@ $(function() {
       // --------------------------------------------------------
       // Instantiate the prenatal exams this week chart.
       // --------------------------------------------------------
-      doChart('#prenatalThisWeek');
-      doChart('#prenatalHistory');
-      doChart('#prenatalHistoryByWeek', true, true);
+      doChart('#prenatalScheduled');
+      doChart('#prenatalHistoryByMonth', true, true);
     }
 
 

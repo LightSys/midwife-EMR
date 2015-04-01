@@ -24,6 +24,8 @@ var passport = require('passport')
   , prenatalHistory = 'stats:prenatalHistory'
   , prenatalRecentHistory = 'stats:prenatalRecentHistory'
   , prenatalHistoryByWeek = 'stats:prenatalHistoryByWeek'
+  , prenatalHistoryByMonth = 'stats:prenatalHistoryByMonth'
+  , prenatalScheduled = 'stats:prenatalScheduled'
   , prenatalCheckInId
   , prenatalCheckOutId
   ;
@@ -65,6 +67,37 @@ process.on('message', function(msg) {
     });
   }
 });
+
+var getScheduledPrenatalExams = function(days, cb) {
+  var stats = {}
+    ;
+  longCache.get(prenatalScheduled, function(err, recs) {
+    if (err) logError(err);
+    if (_.isEmpty(recs)) {
+      var knex
+        , sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(returnDate, "%m-%d") AS scheduled ' +
+          'FROM prenatalExam WHERE returnDate > CURDATE() ' +
+          'AND returnDate < DATE_ADD(CURDATE(), INTERVAL ' + days + ' day) ' +
+          'GROUP BY returnDate ORDER BY returnDate';
+      knex = Bookshelf.DB.knex;
+      knex
+        .raw(sql)
+        .then(function(data) {
+          stats.prenatalScheduled = data[0];
+        })
+        .then(function() {
+          // Distribute results to all worker processes.
+          //
+          // NOTE: no idea why I need this check but sometimes the
+          // send() method is not there.
+          if (process.send) process.send({cmd: prenatalScheduled, stats: stats});
+          return cb(null, stats);
+        });
+    } else {
+      return cb(null, recs[prenatalScheduled]);
+    }
+  });
+};
 
 /* --------------------------------------------------------
  * getRecentPrenatalHistory()
@@ -154,9 +187,52 @@ var getPrenatalHistoryByWeek = function(numWeeks, cb) {
       return cb(null, recs[cacheKey]);
     }
   });
+};
 
-
-
+/* --------------------------------------------------------
+ * getPrenatalHistoryByMonth()
+ *
+ * Return the count of prenatal exams by months for the
+ * past number of months specified.
+ *
+ * param      numMonths
+ * param      cb
+ * return     undefined
+ * -------------------------------------------------------- */
+var getPrenatalHistoryByMonth = function(numMonths, cb) {
+  var stats = []
+    , cacheKey = prenatalHistoryByMonth + ':' + numMonths
+    ;
+  longCache.get(cacheKey, function(err, recs) {
+    var knex
+      , sql
+      ;
+    sql = 'SELECT COUNT(*) AS cnt, SUBSTR(MONTHNAME(date), 1, 3) AS month ' +
+          'FROM prenatalExam ' +
+          'WHERE date > DATE_SUB(CURDATE(), INTERVAL ? MONTH) ' +
+          'GROUP BY MONTHNAME(date) ' +
+          'ORDER BY date';
+    if (err) logError(err);
+    if (_.isEmpty(recs)) {
+      knex = Bookshelf.DB.knex;
+      knex
+        .raw(sql, numMonths)
+        .then(function(data) {
+          stats.historyByMonth = data[0];
+        })
+        .then(function() {
+          // Distribute results to all worker processes.
+          //
+          // NOTE: no idea why I need this check but sometimes the
+          // send() method is not there.
+          if (process.send) process.send({cmd: cacheKey, stats: stats});
+          return cb(null, stats);
+        });
+    } else {
+      // Return the cached results.
+      return cb(null, recs[cacheKey]);
+    }
+  });
 };
 
 /* --------------------------------------------------------
@@ -228,45 +304,38 @@ var getPrenatalHistory = function(cb) {
 /* --------------------------------------------------------
  * home()
  *
+ * TODO: get number of months or days from config file.
+ *
  * Render the home page which has charts and stats on it.
  * -------------------------------------------------------- */
 var home = function(req, res) {
-  getPrenatalHistory(function(err, ph) {
-    var prenatalHistoryData = {}
-      ;
-    prenatalHistoryData.data = [];
-    prenatalHistoryData.data.push(['Last Week', ph.lastWeek]);
-    prenatalHistoryData.data.push(['Last Month', ph.lastMonth]);
-    prenatalHistoryData.data.push(['Last Year', ph.lastYear]);
-    getRecentPrenatalHistory(function(err, rph) {
-      // --------------------------------------------------------
-      // Put the data in the format expected by the chart library.
-      // --------------------------------------------------------
-      var prenatalThisWeekData = {}
-        ;
-      prenatalThisWeekData.data = [];
-      _.each(rph.currWeek, function(rec) {
-        prenatalThisWeekData.data.push([rec.day, rec.cnt]);
+  // --------------------------------------------------------
+  // Get the number of prenatal exams performed in the last year.
+  // --------------------------------------------------------
+  getPrenatalHistoryByMonth(12, function(err, hbm) {
+    var prenatalHistoryByMonthData = {};
+    prenatalHistoryByMonthData.data = [];
+    _.each(hbm.historyByMonth, function(rec) {
+      prenatalHistoryByMonthData.data.push([rec.month, rec.cnt]);
+    });
+
+    // --------------------------------------------------------
+    // Get the scheduled prenatal exams for the next 30 days.
+    // --------------------------------------------------------
+    getScheduledPrenatalExams(30, function(err, spe) {
+      var prenatalScheduled = {};
+      prenatalScheduled.data = [];
+      _.each(spe.prenatalScheduled, function(sch) {
+        prenatalScheduled.data.push([sch.scheduled, sch.cnt]);
       });
 
-      // TODO: put hard-coded number of weeks in a config file, etc.
-      getPrenatalHistoryByWeek(52, function(err, hbw) {
-        var prenatalHistoryByWeekData = {};
-        prenatalHistoryByWeekData.data = [];
-        _.each(hbw.historyByWeek, function(rec) {
-          prenatalHistoryByWeekData.data.push([rec.yearweek, rec.cnt]);
-        });
-
-        res.render('home', {
-          title: req.gettext('At a Glance')
-          , user: req.session.user
-          , prenatalThisWeekData: prenatalThisWeekData
-          , prenatalThisWeekOptions: ''
-          , prenatalHistoryData: prenatalHistoryData
-          , prenatalHistoryOptions: ''
-          , prenatalHistoryByWeekData: prenatalHistoryByWeekData
-          , prenatalHistoryByWeekOptions: ''
-        });
+      res.render('home', {
+        title: req.gettext('At a Glance')
+        , user: req.session.user
+        , prenatalScheduled: prenatalScheduled
+        , prenatalScheduledOptions: ''
+        , prenatalHistoryByMonthData: prenatalHistoryByMonthData
+        , prenatalHistoryByWeekOptions: ''
       });
     });
   });
