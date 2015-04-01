@@ -1165,27 +1165,22 @@ var doTable = function(doc, columns, rows, opts, ypos, position, wrap, bottomNot
       var currColWidth = colWidth[columns[idx]]
         , textWidth = doc.widthOfString(val)
         , colStart
-        , lines = String(val).split(/\n/)   // Detect a manual split.
         , currY = y
         ;
+
+      // Remove the new lines for the purposes of this report.
+      val = String(val).replace(/$/g, ' ');
+
       if (idx > 0) x += colWidth[columns[idx-1]];
       colStart = x;
       if (wrap) {
-        if (lines.length > 1) {
-          // --------------------------------------------------------
-          // Line splits were manually set.
-          // --------------------------------------------------------
-          linesUsed = lines.length;
-          _.each(lines, function(line) {
-            doc.text(line, x, currY);
-            currY += 10;
-          });
-        } else if (textWidth > currColWidth) {
+        if (textWidth > currColWidth) {
           // --------------------------------------------------------
           // Will wrap in column automatically but estimate how many
           // lines so that the separator can be placed accordingly.
+          // Longer notes need a little help to fit so we add a bit.
           // --------------------------------------------------------
-          linesUsed = Math.ceil(textWidth / currColWidth);
+          linesUsed = Math.ceil((textWidth / currColWidth) * 1.15);
           doc.text(val, x, y, {width: currColWidth});
         } else {
           doc.text(val, x, y);
