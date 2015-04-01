@@ -132,9 +132,16 @@ var execute = function(req, res) {
     // --------------------------------------------------------
     // A Priority number was specified in the query so that
     // overrides all other parameters.
+    //
+    // Handles priority number or the priority barcode as
+    // search criteria.
     // --------------------------------------------------------
     qb.join('priority', 'priority.pregnancy_id', 'pregnancy.id');
-    qb.where('priority.priority', '=', flds.priority);
+    if (flds.priority > 99999) {
+      qb.where('priority.barcode', '=', flds.priority);
+    } else {
+      qb.where('priority.priority', '=', flds.priority);
+    }
   } else {
     // --------------------------------------------------------
     // Get all records matching the query parameters but make
