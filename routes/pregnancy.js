@@ -876,7 +876,7 @@ var generalAddSave = function(req, res) {
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
   } else {
     if (prenatalLoc || prenatalDay) {
-      req.flash('warning', req.gettext('Both Prenatal Day and Location have to be specified.'));
+      req.flash('info', req.gettext('Both Prenatal Day and Location have to be specified together or not at all.'));
     }
   }
 
@@ -1199,17 +1199,21 @@ var generalEditSave = function(req, res) {
             })
             .then(function() {
               // --------------------------------------------------------
-              // Create or update the schedule records as necessary.
+              // Create or update the schedule records as necessary but
+              // skip any update if they are not both present. Either
+              // way, the transaction continues and is not aborted.
               // --------------------------------------------------------
-              if (_.isNull(prenatalDay) || _.isNull(prenatalLoc)) {
-                req.flash('warning', req.gettext('Both Prenatal Day and Location have to be specified.'));
-                return;
+              if ((_.isNull(prenatalDay) && ! _.isNull(prenatalLoc)) ||
+                 (! _.isNull(prenatalDay) && _.isNull(prenatalLoc))) {
+                req.flash('info', req.gettext('Both prenatal day and location must be specified together or not at all.'));
+              } else {
+                console.log('Updating schedule');
+                return Schedule
+                  .forge(schFlds)
+                  .setUpdatedBy(req.session.user.id)
+                  .setSupervisor(supervisor)
+                  .save(null, {transacting: t});
               }
-              return Schedule
-                .forge(schFlds)
-                .setUpdatedBy(req.session.user.id)
-                .setSupervisor(supervisor)
-                .save(null, {transacting: t});
             })
             .then(function() {
               return new Promise(function(resolve, reject) {
