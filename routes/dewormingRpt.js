@@ -318,9 +318,11 @@ var doRow = function(doc, data, rowNum, rowHeight) {
     doc.text(moment().diff(data.dob, 'years'), startX + 185, startY + 9);
   }
   // LMP
-  doc
-    .fontSize(10)
-    .text(moment(data.lmp).format('MM/DD/YYYY'), startX + 207, startY + 9);
+  if (data.lmp && moment(data.lmp).isValid()) {
+    doc
+      .fontSize(10)
+      .text(moment(data.lmp).format('MM/DD/YYYY'), startX + 207, startY + 9);
+  }
   // GP
   doc
     .fontSize(12)
