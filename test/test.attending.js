@@ -92,8 +92,8 @@ describe('attending roles', function(done) {
           // --------------------------------------------------------
           // Get the id of the first supervisor that is available.
           // --------------------------------------------------------
-          if (opts && opts['0'] && opts['0'].attribs && opts['0'].attribs.value) {
-            superId = opts['0'].attribs.value;
+          if (opts && opts['1'] && opts['1'].attribs && opts['1'].attribs.value) {
+            superId = opts['1'].attribs.value;
 
             // --------------------------------------------------------
             // Set the supervisor.

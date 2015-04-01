@@ -57,10 +57,12 @@ var setSuper = function(request, attending, cb) {
       if (err) return cb(err);
 
       // --------------------------------------------------------
-      // Get the id of the first supervisor that is available.
+      // Get the id of the first supervisor that is available,
+      // which is the second in the list because the first is an
+      // empty record.
       // --------------------------------------------------------
-      if (opts && opts['0'] && opts['0'].attribs && opts['0'].attribs.value) {
-        superId = opts['0'].attribs.value;
+      if (opts && opts['1'] && opts['1'].attribs && opts['1'].attribs.value) {
+        superId = opts['1'].attribs.value;
 
         // --------------------------------------------------------
         // Set the supervisor.
