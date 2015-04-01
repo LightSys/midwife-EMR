@@ -772,8 +772,8 @@ var getEditFormData = function(req, addData) {
         , day: getAbbr(schRec.day)
         , location: schRec.location
       };
-      prenatalDay = adjustSelectData(dayOfWeek, schRec.day);
-      prenatalLoc = adjustSelectData(location, req.paramPregnancy.prenatalSchedule.location);
+      prenatalDay = adjustSelectData(prenatalDay, schRec.day);
+      prenatalLoc = adjustSelectData(prenatalLoc, req.paramPregnancy.prenatalSchedule.location);
     } else {req.paramPregnancy.prenatalSchedule = {};}
 
     // --------------------------------------------------------
