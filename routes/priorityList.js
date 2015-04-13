@@ -112,9 +112,9 @@ var data = function data(req, res) {
     'LEFT OUTER JOIN priority pri ' +
     'ON pri.pregnancy_id = preg.id ' +
     'LEFT OUTER JOIN event e2 ' +
-    'ON e2.eventType = ? AND e2.pregnancy_id = preg.id ' +
+    'ON e2.eventType = ? AND e2.pregnancy_id = preg.id AND DATE(e2.eDateTime) = DATE(NOW())' +
     'LEFT OUTER JOIN event e3 ' +
-    'ON e3.eventType = ? AND e3.pregnancy_id = preg.id ' +
+    'ON e3.eventType = ? AND e3.pregnancy_id = preg.id AND DATE(e3.eDateTime) = DATE(NOW())' +
     'LEFT OUTER JOIN prenatalExam pe ' +
     'ON pe.pregnancy_id = preg.id ' +
     'AND pe.date = DATE(e1.eDateTime) ' +
