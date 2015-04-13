@@ -225,12 +225,12 @@ var getColXpos = function(opts) {
     ;
   x = opts.margins.left; xPos.push(x);  // left margin
   x += 45; xPos.push(x);                // Date
-  x += 60; xPos.push(x);                // Lastname
-  x += 68; xPos.push(x);                // Firstname
+  x += 100; xPos.push(x);               // Lastname
+  x += 120; xPos.push(x);               // Firstname
   x += 15; xPos.push(x);                // Age
   x += 45; xPos.push(x);                // LMP
   x += 16; xPos.push(x);                // GP
-  x += 158; xPos.push(x);               // Address
+  x += 192; xPos.push(x);               // Address
   x += 42; xPos.push(x);                // AOG
   x += 22; xPos.push(x);                // Weight
   x += 32; xPos.push(x);                // Blood Pressure
@@ -257,21 +257,20 @@ var getColXpos = function(opts) {
  * the report.
  *
  * param      doc
- * param      from
- * param      to
+ * param      opts
  * return     undefined
  * -------------------------------------------------------- */
-var doFromTo = function(doc, from, to) {
-  var fromDate = moment(from, 'YYYY-MM-DD').format('MM/DD/YYYY')
-    , toDate = moment(to, 'YYYY-MM-DD').format('MM/DD/YYYY')
+var doFromTo = function(doc, opts) {
+  var fromDate = moment(opts.fromDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
+    , toDate = moment(opts.toDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
     ;
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(11)
-    .text('Reporting Period:', 18, 24)
+    .text('Reporting Period:', opts.margins.left, 24)
     .font(FONTS.Helvetica)
     .fontSize(10)
-    .text(fromDate + ' to ' + toDate, 18, 38);
+    .text(opts.fromDate + ' to ' + opts.toDate, opts.margins.left, 38);
 };
 
 /* --------------------------------------------------------
@@ -759,7 +758,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   // --------------------------------------------------------
   doSiteTitle(doc, 24);
   doReportName(doc, opts.title, 48);
-  doFromTo(doc, opts.fromDate, opts.toDate);
+  doFromTo(doc, opts);
   doColumnHeader(doc, opts);
   doFooter(doc, pageNum, totalPages, totalVaccinations, opts);
   _.each(data, function(rec) {
@@ -771,7 +770,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
       pageNum++;
       doSiteTitle(doc, 24);
       doReportName(doc, opts.title, 48);
-      doFromTo(doc, opts.fromDate, opts.toDate);
+      doFromTo(doc, opts);
       doColumnHeader(doc, opts);
       doFooter(doc, pageNum, totalPages, totalVaccinations, opts);
     }
@@ -793,12 +792,12 @@ var doReport = function(flds, writable, logisticsName) {
     , options = {
         margins: {
           top: 18
-          , right: 18
-          , left: 18
+          , right: 28
+          , left: 28
           , bottom: 18
         }
         , layout: 'landscape'
-        , size: 'letter'
+        , size: 'folio'
         , info: {
             Title: 'TT' + reportNum + ' Report'
             , Author: 'Midwife-EMR Application'
