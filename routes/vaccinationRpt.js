@@ -864,6 +864,11 @@ var doReport = function(flds, writable, logisticsName) {
         }
       });
 
+      // --------------------------------------------------------
+      // Sort the final data set by date of the vaccination.
+      // --------------------------------------------------------
+      data = _.sortBy(data, 'vacDate');
+
       doPages(doc, data, rowsPerPage, opts);
 
     })
