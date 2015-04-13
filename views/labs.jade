@@ -240,7 +240,7 @@ block labs
                       td= vacDate
                       td= by
           div.row
-            div(class='col-md-12')
+            div(class='col-md-8')
               //- Note that the save for this is handled via AJAX.
               label= gettext('Number of required tetanus ')
                 label(class='radio-inline')= gettext('0')
@@ -249,6 +249,24 @@ block labs
                   input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='1', checked=rec.numberRequiredTetanus==1)
                 label(class='radio-inline')= gettext('2')
                   input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='2', checked=rec.numberRequiredTetanus==2)
+            div(class='col-md-4')
+              - var tetMsg;
+              - var tetGood = false;
+              - if (libs._.isNull(rec.lmp) || rec.lmp.length === 0 || rec.lmp === '0000-00-00') {
+              -   tetMsg = 'Set LMP';
+              - } else {
+              -   if (tetanusComplete === 1) {
+              -     tetMsg = 'Tetanus Complete';
+              -     tetGood = true;
+              -   } else {
+              -     tetMsg = 'Tetanus Inomplete';
+              -   }
+              - }
+              - if (tetGood) {
+                strong(class='text-primary fa fa-check')= gettext(tetMsg)
+              - } else {
+                strong(class='text-warning')= gettext(tetMsg)
+              - }
 
           div.row
             div(class='col-md-12')

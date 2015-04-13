@@ -1883,6 +1883,7 @@ var labsForm = function(req, res) {
     , teachings = []
     , vaccinations = []
     , medications = []
+    , tetanusComplete
     ;
 
   if (req.paramPregnancy) {
@@ -1996,6 +1997,25 @@ var labsForm = function(req, res) {
         vacList = _.sortBy(vacList, 'sortDate');
         vaccinations = vacList;
       })
+      // Determine if the number of vaccinations has already been administered.
+      .then(function() {
+        var sql
+          , knex
+          , pid = req.paramPregnancy.id
+          ;
+        sql =  'SELECT IF(IFNULL(p.numberRequiredTetanus <= ';
+        sql += '(SELECT COUNT(*) FROM vaccination v ';
+        sql += 'WHERE v.pregnancy_id = ' + pid + ' AND v.vaccinationType IN ';
+        sql += '(SELECT id FROM vaccinationType WHERE name LIKE "Tetanus%") ';
+        sql += 'AND v.administeredInternally = 1 AND v.vacDate > p.lmp), 0), 1, 0) ';
+        sql += 'AS tetanusComplete FROM pregnancy p WHERE p.id = ' + pid;
+        knex = Bookshelf.DB.knex;
+        return knex
+          .raw(sql)
+          .then(function(ans) {
+            tetanusComplete = ans[0][0].tetanusComplete;
+          });
+      })
       // Get the medications
       .then(function() {
         return new Medications().query()
@@ -2026,6 +2046,7 @@ var labsForm = function(req, res) {
                     , vaccinations: vaccinations
                     , medications: medications
                     , teachings: teachings
+                    , tetanusComplete: tetanusComplete? tetanusComplete: 0
                 })
         );
         return res.render('labs', data);
