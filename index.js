@@ -214,6 +214,22 @@ var logDevice = function(req, res, next) {
   next();
 };
 
+/* --------------------------------------------------------
+ * logRoute()
+ *
+ * Logs a bit about the route being accessed by the user.
+ * -------------------------------------------------------- */
+var logRoute = function(req, res, next) {
+  var msg = ''
+    ;
+  if (req.session && req.session.user && req.session.user.username) {
+    msg += req.session.user.username + ': ';
+  }
+  msg += '[' + req.method + '] ' + req.url;
+  logInfo(msg);
+  next();
+};
+
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
 // --------------------------------------------------------
@@ -287,14 +303,14 @@ app.configure('production', function() {
 // common: populates the request with info for protected routes.
 // attending: routes a attending can use without a supervisor set.
 // --------------------------------------------------------
-common.push(logDevice, auth, setRoleInfo, i18nLocals);
+common.push(logRoute, logDevice, auth, setRoleInfo, i18nLocals);
 
 // --------------------------------------------------------
 // Login and logout
 // --------------------------------------------------------
-app.get(cfg.path.login, setRoleInfo, home.login);
-app.post(cfg.path.login, setRoleInfo, home.loginPost);
-app.get(cfg.path.logout, clearRoleInfo, home.logout);
+app.get(cfg.path.login, logRoute, setRoleInfo, home.login);
+app.post(cfg.path.login, logRoute, setRoleInfo, home.loginPost);
+app.get(cfg.path.logout, logRoute, clearRoleInfo, home.logout);
 
 // --------------------------------------------------------
 // Home

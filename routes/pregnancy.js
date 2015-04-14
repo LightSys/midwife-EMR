@@ -113,7 +113,6 @@ var init = function() {
     return new Promise(function(resolve, reject) {
       SelectData.getSelect(dataName)
         .then(function(list) {
-          logInfo('Refreshed ' + dataName + ' with ' + list.length + ' records.');
           resolve(list);
         })
         .caught(function(err) {

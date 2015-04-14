@@ -327,7 +327,6 @@ User = Bookshelf.Model.extend({
             return resolve(map[teachersCacheKey]);
           }
 
-          logInfo('User.getTeachersSelectData() - Refreshing cache.');
           knex('user')
             .where('isCurrentTeacher', true)
             .orderBy('lastname', 'asc')
@@ -376,7 +375,6 @@ User = Bookshelf.Model.extend({
             return resolve(map[userCacheKey]);
           }
 
-          logInfo('User.getUserIdMap() - Refreshing user id map cache.');
           knex('user')
             .orderBy('id', 'asc')
             .select(['id', 'username', 'firstname', 'lastname', 'shortName', 'displayName'])

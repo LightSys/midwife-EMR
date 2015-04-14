@@ -62,11 +62,9 @@ RoFieldsByRole = Bookshelf.Model.extend({
       fieldsCache.get(key, function(err, map) {
         if (err) return reject(err);
         if (map && _.size(map) > 0) {
-          logInfo('Resolving ' + key + ' using cache.');
           return resolve(map[key]);
         }
 
-        logInfo('RoFieldsByRole.getTableFieldsByRole() - Refreshing ro fields map cache.');
         knex('roFieldsByRole')
           .where('roleName', '=', role)
           .andWhere('tableName', '=', table)
