@@ -95,6 +95,7 @@ var teachingEditForm = function(req, res) {
 var teachingSave = function(req, res) {
   var supervisor = null
     , flds = _.omit(req.body, ['_csrf'])
+    , msg = []
     ;
 
   if (req.paramPregnancy && req.body &&
@@ -112,23 +113,37 @@ var teachingSave = function(req, res) {
     }
 
     // --------------------------------------------------------
-    // Insert into database after sanity check.
+    // Sanity check that we have all of the fields we need.
     // --------------------------------------------------------
-    Teaching.forge(flds)
-      .setUpdatedBy(req.session.user.id)
-      .setSupervisor(supervisor)
-      .save()
-      .then(function(model) {
-        var path = cfg.path.pregnancyLabsEdit
-          ;
-        path = path.replace(/:id/, flds.pregnancy_id);
-        req.flash('info', req.gettext('Health teaching was saved.'));
-        res.redirect(path);
-      })
-      .caught(function(err) {
-        logError(err);
-        res.redirect(cfg.path.search);
+    if (! flds.teacher) msg.push('Please choose a teacher.');
+    if (! flds.topic) msg.push('Please choose a topic.');
+    if (! flds.date) msg.push('Please set the date.');
+    if (msg.length > 0) {
+      _.each(msg, function(m) {
+        logError(m);
+        req.flash('warning', req.gettext(m));
       });
+      res.redirect(req.url);
+    } else {
+      // --------------------------------------------------------
+      // Insert into database after sanity check.
+      // --------------------------------------------------------
+      Teaching.forge(flds)
+        .setUpdatedBy(req.session.user.id)
+        .setSupervisor(supervisor)
+        .save()
+        .then(function(model) {
+          var path = cfg.path.pregnancyLabsEdit
+            ;
+          path = path.replace(/:id/, flds.pregnancy_id);
+          req.flash('info', req.gettext('Health teaching was saved.'));
+          res.redirect(path);
+        })
+        .caught(function(err) {
+          logError(err);
+          res.redirect(cfg.path.search);
+        });
+    }
   } else {
     logError('Error in update of teachingSave(): pregnancy not found.');
     // TODO: handle this better.
