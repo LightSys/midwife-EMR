@@ -1074,7 +1074,7 @@ var generalAddSave = function(req, res) {
                 logError(e);
               }
             } else {
-              console.log('No custom fields submitted.');
+              logInfo('No custom fields submitted.');
             }
           })
           .then(function() {
@@ -1197,6 +1197,7 @@ var generalEditSave = function(req, res) {
                 .save(null, {transacting: t});
             })
             .then(function() {
+              var msg;
               // --------------------------------------------------------
               // Create or update the schedule records as necessary but
               // skip any update if they are not both present. Either
@@ -1204,14 +1205,19 @@ var generalEditSave = function(req, res) {
               // --------------------------------------------------------
               if ((_.isNull(prenatalDay) && ! _.isNull(prenatalLoc)) ||
                  (! _.isNull(prenatalDay) && _.isNull(prenatalLoc))) {
-                req.flash('info', req.gettext('Both prenatal day and location must be specified together or not at all.'));
+                msg = 'Both prenatal day and location must be specified together or not at all.';
+                req.flash('warning', req.gettext(msg));
+                logWarn(msg);
               } else {
-                console.log('Updating schedule');
-                return Schedule
-                  .forge(schFlds)
-                  .setUpdatedBy(req.session.user.id)
-                  .setSupervisor(supervisor)
-                  .save(null, {transacting: t});
+                // If they are both populated, update the schedule, otherwise ignore.
+                if (! (_.isNull(prenatalDay) && _.isNull(prenatalLoc))) {
+                  logInfo('Updating schedule');
+                  return Schedule
+                    .forge(schFlds)
+                    .setUpdatedBy(req.session.user.id)
+                    .setSupervisor(supervisor)
+                    .save(null, {transacting: t});
+                }
               }
             })
             .then(function() {
@@ -1315,7 +1321,7 @@ var generalEditSave = function(req, res) {
                           // --------------------------------------------------------
                           // This is an unaccounted for situation - abort.
                           // --------------------------------------------------------
-                          console.log('Unknown priority number situation. Aborting.');
+                          logError('Unknown priority number situation. Aborting.');
                           return reject();
                         }
                       });
@@ -1397,7 +1403,7 @@ var generalEditSave = function(req, res) {
                   logError(e);
                 }
               } else {
-                console.log('No custom fields submitted.');
+                logInfo('No custom fields submitted.');
               }
             })
             .then(function() {
