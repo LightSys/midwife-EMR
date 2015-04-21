@@ -9,7 +9,7 @@ block midwifeInterviewEditPreg
   - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
 
   div
-    form(id='editPregForm', class='dirty-check', role='form', name='pregnancyHistoryEditPreg', action=pregHistEditPath, method='post')
+    form(id='editPregForm', class='dirty-check disable-on-submit', role='form', name='pregnancyHistoryEditPreg', action=pregHistEditPath, method='post')
       div.row
         div(class='form-group col-md-2')
           span= gettext('Month')

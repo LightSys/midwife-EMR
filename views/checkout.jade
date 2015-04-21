@@ -5,7 +5,7 @@ block checkout
 
   - var action = '/checkout';
   - var btnText = 'Check Out';
-  form(role='form', name='checkout', action=action, method='post')
+  form(role='form', class='disable-on-submit', name='checkout', action=action, method='post')
     div.row
       div(class='form-group col-sm-2')
         label= gettext('6 Digit Priority #')

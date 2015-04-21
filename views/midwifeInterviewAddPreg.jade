@@ -7,7 +7,7 @@ block midwifeInterviewAddPreg
   - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
 
   div
-    form(id='addPregForm', class='dirty-check', role='form', name='pregnancyHistoryAddPreg', action=pregHistAddPath, method='post')
+    form(id='addPregForm', class='dirty-check disable-on-submit', role='form', name='pregnancyHistoryAddPreg', action=pregHistAddPath, method='post')
       div.row
         div(class='form-group col-md-2')
           span= gettext('Month')

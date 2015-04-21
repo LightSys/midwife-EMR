@@ -42,7 +42,7 @@ block pregnancyQuestionnaire
   - pHistory.push({name: 'historyDrinking', label: 'Drinking'});
   - pHistory.push({name: 'historyNone', label: 'None of the above'});
 
-  form(class='dirty-check', role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
+  form(class='dirty-check disable-on-submit', role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
     div.row
       div(class='form-group col-sm-3')
         a(class="btn btn-default" data-toggle="collapse" href="#presentComplaints" data-parent="#readonlyPresentComplaints" aria-expanded="false" aria-controls="presentComplaints")= gettext('Present Complaints')

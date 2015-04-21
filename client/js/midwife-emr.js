@@ -276,5 +276,14 @@ $(function() {
       }
     });
 
+    // --------------------------------------------------------
+    // Disable inputs with the disable-on-submit class to help
+    // prevent users from double tapping buttons to submit, or
+    // worse, pressing repeatedly for reasons unknown.
+    // --------------------------------------------------------
+    $('.disable-on-submit').on('submit', function(evt) {
+      $('.disable-on-submit input[type="submit"], .disable-on-submit button[type="submit"]').prop('disabled', true);
+    });
+
   })(window, jQuery, _, moment);
 });

@@ -19,7 +19,7 @@ block prenatal
   - var edd = rec.edd? libs.mmt(rec.edd).format('MM-DD-YYYY'): '';
 
   - var prenatalExamAddFormPath = '/pregnancy/' + rec.id + '/prenatalexam';
-  form(id='prenatalForm', class='dirty-check', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')
+  form(id='prenatalForm', class='dirty-check disable-on-submit', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')
     div.row
       div(class='form-group col-md-4 box')
         p(class='text-primary lead')= gettext('Phil Health')

@@ -17,7 +17,7 @@ block checkinout
   -   action = '/pregnancy/' + rec.id + '/' + lastPathSegment;
   - }
 
-  form(role='form', name='checkinout', action=action, method='post')
+  form(role='form', class='disable-on-submit', name='checkinout', action=action, method='post')
     div.row
       div(class='form-group col-sm-2')
         label= gettext('6 Digit Priority #')
