@@ -5,7 +5,7 @@ block reportsForm
 
   - var reportPath = '/report/run';
 
-  form(id='reportsForm', role='form', name='reportsForm', action=reportPath, method='post')
+  form(id='reportsForm', class='disable-on-submit', role='form', name='reportsForm', action=reportPath, method='post')
     div.row
       div(class='col-xs-6')
         label= gettext('Report from:')
@@ -22,7 +22,7 @@ block reportsForm
         +select('form-control input-lg', 'inCharge', 4, inCharge)
     div.row
       div(class='col-xs-12')
-        &nbsp;
+        <span>&nbsp;</span>
     div.row
       div(class='col-xs-6')
         input(class='btn btn-primary', type='submit', value=gettext('Run Report'))

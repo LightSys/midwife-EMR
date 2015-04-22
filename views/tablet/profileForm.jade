@@ -4,7 +4,7 @@ block profileEditForm
   +titleMsg(title)
   div.userEditBox
     - var action = '/profile';
-      form(class='dirty-check', role='form', name='profileForm', action=action, method='post')
+      form(class='dirty-check', class='disable-on-submit', role='form', name='profileForm', action=action, method='post')
 
         div.form-group
           span= gettext('Id: ') + profile.id

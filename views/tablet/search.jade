@@ -6,7 +6,7 @@ block search
   p= gettext('Search by one or more fields.')
 
   div.searchbox
-    form(role='form', name='search', action='/search', method='post')
+    form(role='form', class='disable-on-submit', name='search', action='/search', method='post')
       div.row
         div(class='form-group')
           div(class='col-xs-12')
