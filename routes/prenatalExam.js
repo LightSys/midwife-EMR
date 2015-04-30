@@ -145,7 +145,12 @@ var prenatalExamSave = function(req, res) {
           .save(flds, saveOpts).then(function(model) {
             var path = cfg.path.pregnancyPrenatalEdit
               ;
-            path = path.replace(/:id/, flds.pregnancy_id);
+            if (req.session.jumpTo) {
+              path = req.session.jumpTo;
+              delete req.session.jumpTo;
+            } else {
+              path = path.replace(/:id/, flds.pregnancy_id);
+            }
             req.flash('info', req.gettext('Prenatal Exam was saved.'));
             res.redirect(path);
           })
@@ -207,11 +212,49 @@ var prenatalExamDelete = function(req, res) {
   }
 };
 
+/* --------------------------------------------------------
+ * prenatalExamLatest()
+ *
+ * Determines the most recent prenatal exam for the pregnancy
+ * and redirects to it.
+ * -------------------------------------------------------- */
+var prenatalExamLatest = function(req, res) {
+  if (req.paramPregnancy) {
+    return new PrenatalExams()
+      .query(function(qb) {
+        qb.where('pregnancy_id', '=', req.paramPregnancy.id);
+      })
+      .fetch()
+      .then(function(exams) {
+        var path
+          , exam
+          ;
+        if (exams.length > 0) {
+          exam = _.max(exams.toJSON(), function(e) {return e.date;});
+          path = cfg.path.pregnancyPrenatalExamEdit;
+          path = path.replace(/:id/, req.paramPregnancy.id);
+          path = path.replace(/:id2/, exam.id);
+          res.redirect(path);
+        } else {
+          // Go to prenatal page instead.
+          path = cfg.path.pregnancyPrenatalEdit;
+          path = path.replace(/:id/, req.paramPregnancy.id);
+          res.redirect(path);
+        }
+      });
+  } else {
+    logError('Error in prenatalExamLatest: pregnancy not found.');
+    // TODO: handle this better.
+    res.redirect(cfg.path.search);
+  }
+};
+
 module.exports = {
   prenatalExamAddForm: prenatalExamAddForm
   , prenatalExamEditForm: prenatalExamEditForm
   , prenatalExamSave: prenatalExamSave
   , prenatalExamDelete: prenatalExamDelete
+  , prenatalExamLatest: prenatalExamLatest
 };
 
 

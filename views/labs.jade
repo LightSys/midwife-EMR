@@ -21,6 +21,9 @@ block labs
   //- Medications
   - var addMedicationFormPath = '/pregnancy/' + rec.id + '/medication';
 
+  //- Latest prenatal exam
+  - var latestPrenatalExamPath = '/pregnancy/' + rec.id + '/prenatalexamlatest';
+
   div.row
     //- -------------------------------------------------
     //- All sections on the left of the screen.
@@ -278,4 +281,6 @@ block labs
                   - } else {
                       a(class='btn btn-primary pull-right', href=addVaccinationFormPath)= gettext('Add Vaccination')
                   - }
-
+        div.row
+          div(class='col-md-12')
+            a(href=latestPrenatalExamPath, class='btn btn-primary')= gettext('Go to latest prenatal exam')

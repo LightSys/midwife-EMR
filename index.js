@@ -230,6 +230,33 @@ var logRoute = function(req, res, next) {
   next();
 };
 
+/* --------------------------------------------------------
+ * Records in the session the jumpTo URL per the value of
+ * the jumpTo field passed in the request body. The value
+ * of the field corresponds to a lookup in the configuration
+ * to ascertain the proper URL for the key passed. The
+ * pregnancy id is ascertained by checking the session for
+ * the current pregnancy id and replaced if there is a
+ * placeholder for it.
+ * -------------------------------------------------------- */
+app.use(function(req, res, next) {
+  var url
+    ;
+  if (req.method === 'POST' &&
+      req.body &&
+      req.body.jumpTo) {
+    if (_.has(cfg.jumpTo, req.body.jumpTo)) {
+      url = cfg.jumpTo[req.body.jumpTo];
+      if (req.session.currentPregnancyId && /:id/.test(url)) {
+        url = url.replace(/:id/, req.session.currentPregnancyId);
+      }
+      req.session.jumpTo = url;
+      logInfo(req.session.user.username + ': <JumpTo> ' + url);
+    }
+  }
+  next();
+});
+
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
 // --------------------------------------------------------
@@ -421,6 +448,8 @@ app.post(cfg.path.pregnancyPrenatalExamEdit, common, hasSuper,
     inRoles(['clerk','attending','supervisor']), prenatalExam.prenatalExamSave);
 app.post(cfg.path.pregnancyPrenatalExamDelete, common, hasSuper,
     inRoles(['attending','supervisor']), prenatalExam.prenatalExamDelete);
+app.get(cfg.path.pregnancyPrenatalExamLatest, common, hasSuper,
+    inRoles(['attending','supervisor']), prenatalExam.prenatalExamLatest);
 
 // Labs main page
 app.get(cfg.path.pregnancyLabsEditForm, common, hasSuper,

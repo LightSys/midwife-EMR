@@ -193,7 +193,8 @@ var init = function() {
  *
  * Loads the pregnancy record from the database based upon the id
  * as specified in the path. Places the pregnancy record in the
- * request as paramPregnancy.
+ * request as paramPregnancy and the pregnancy id in the
+ * session as currentPregnancyId.
  *
  * param       req
  * param       res
@@ -318,7 +319,14 @@ var load = function(req, res, next) {
         // --------------------------------------------------------
         req.paramUserMap = userMap;
 
-        if (rec) req.paramPregnancy = rec;
+        // --------------------------------------------------------
+        // Store the pregnancy record in the request and the
+        // pregnancy id in the session.
+        // --------------------------------------------------------
+        if (rec) {
+          req.paramPregnancy = rec;
+          req.session.currentPregnancyId = rec.id;
+        }
 
         // --------------------------------------------------------
         // Assign detail record in the master-detail relationship

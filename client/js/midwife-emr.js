@@ -285,5 +285,32 @@ $(function() {
       $('.disable-on-submit input[type="submit"], .disable-on-submit button[type="submit"]').prop('disabled', true);
     });
 
+    // --------------------------------------------------------
+    // Hande jump to inputs denoted by the jump-to-input class.
+    // Read the value of the data-jump-to attribute to determine
+    // the value to set on the element pointed to by the
+    // data-jump-hidden attribute. Finally, submit the form which
+    // will include the name/value pair with the name as specified
+    // in the hidden field and the value as specified in the
+    // data-jump-to attribute.
+    // --------------------------------------------------------
+    $('.jump-to-input').on('click', function(evt) {
+      var btn = $(this)
+        , jumpTo
+        , hidden
+        , form
+        ;
+      jumpTo = btn.attr('data-jump-to');
+      hidden = btn.attr('data-jump-hidden');
+      if (jumpTo && hidden) {
+        $(hidden).val(jumpTo);
+        form = btn.parents('form')[0];
+        // Prevent the 'are you sure' message since we are doing a submit
+        // and not just leaving the page with unsaved changes.
+        $(form).trigger('reinitialize.areYouSure');
+        form.submit();
+      }
+    });
+
   })(window, jQuery, _, moment);
 });

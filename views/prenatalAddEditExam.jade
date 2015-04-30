@@ -105,16 +105,18 @@ block prenatalAddEditExam
 
       div.row
         div(class='form-group col-md-1')
-          button(class='btn btn-primary', type='submit')= gettext('Save')
+          button(id='saveBtn', class='btn btn-primary', name='saveBtn', value='save', type='submit')= gettext('Save')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
           input(type='hidden', name='id', value=prenatalExam.id)
         div(class='form-group col-md-2')
+          +jumpto(['labs', 'medicationAdd', 'vaccinationAdd'], ['labs page', 'add medication', 'add vaccination'], 'Save then ...', true)
+
+        div(class='form-group col-md-2')
           a(href=prenatalPath, class='btn btn-default disable-on-change', role='button')= gettext('Back to the Prenatal Page')
 
-        - var deleteOffset = 'col-md-offset-9';
         - if (prenatalExamDeletePath) {
-        - var deleteOffset = 'col-md-offset-7';
+        - var deleteOffset = 'col-md-offset-5';
         div(class='form-group col-md-2 ' + deleteOffset)
           button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
         - }

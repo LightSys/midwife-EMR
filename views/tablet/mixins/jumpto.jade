@@ -1,0 +1,25 @@
+//- ---------------------------------------------------------
+//- jumpto()
+//-
+//- Builds a drop up or drop down selection.
+//-
+//- @param    jumps - an array of values for data-jump-to attributes
+//- @param    labels - an array of labels for the selections
+//- @param    topLabel - the label of the top button
+//- @param    isUp - boolean, whether the menu drops up or not
+//- ---------------------------------------------------------
+mixin jumpto(jumps, labels, topLabel, isUp)
+  - var hiddenId = Math.round(Math.random() * 99999);
+  - var dropType = isUp? 'dropup': 'dropdown';
+  - var loopCnt = 0;
+  - if (jumps.length !== labels.length) throw new Error('jumpto mixin: jumps and labels arrays are not the same length.')
+
+  input(id=hiddenId, class='ays-ignore', type='hidden', name='jumpTo', value='')
+  div(class='btn-group ' + dropType)
+    button(class='btn btn-primary dropdown-toggle' data-toggle='dropdown')= topLabel
+      span(class='caret')
+    ul(class='dropdown-menu', role='menu')
+      for jump in jumps
+        li
+          a(class='jump-to-input', href='#', data-jump-to=jump, data-jump-hidden='#' + hiddenId)= labels[loopCnt++]
+

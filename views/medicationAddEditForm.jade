@@ -54,9 +54,11 @@ block medicationAddEditForm
           input(type='hidden', name='pregnancy_id', value=rec.id)
           button(type='submit', class='btn btn-primary')= gettext('Save Medication')
         div(class='col-md-2')
+          +jumpto(['prenatalLatest'], ['Latest prenatal exam'], 'Save then ...', true)
+        div(class='col-md-2')
           a(href=labsMainPath, class='btn btn-default disable-on-change', role='button')= gettext('Back to the Labs Page')
         - if (isUpdate) {
-        div(class='col-md-2 col-md-offset-6')
+        div(class='col-md-2 col-md-offset-4')
           button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
         - }
 

@@ -225,6 +225,7 @@ cfg.path.pregnancyPrenatalUpdate = '/pregnancy/:id/prenatal'; // POST
 cfg.path.pregnancyPrenatalExamAdd = '/pregnancy/:id/prenatalexam'; // GET/POST
 cfg.path.pregnancyPrenatalExamEdit = '/pregnancy/:id/prenatalexam/:id2'; // GET/POST
 cfg.path.pregnancyPrenatalExamDelete = '/pregnancy/:id/prenatalexam/:id2/delete'; // POST
+cfg.path.pregnancyPrenatalExamLatest = '/pregnancy/:id/prenatalexamlatest'; // GET
 // TODO: Are both of these routes used?
 cfg.path.pregnancyLabsEditForm = '/pregnancy/:id/labs';     // GET
 cfg.path.pregnancyLabsEdit = '/pregnancy/:id/labs';         // POST
@@ -272,6 +273,14 @@ cfg.path.priorityList = '/priorityList';         // GET/POST page and AJAX data
 cfg.path.priorityListSave = '/priorityList/:id/save';      // POST to save data
 
 
+// --------------------------------------------------------
+// JumpTo Settings.
+// --------------------------------------------------------
+cfg.jumpTo = {};
+cfg.jumpTo.labs = cfg.path.pregnancyLabsEditForm;
+cfg.jumpTo.vaccinationAdd = cfg.path.vaccinationAdd;
+cfg.jumpTo.medicationAdd = cfg.path.medicationAdd;
+cfg.jumpTo.prenatalLatest = cfg.path.pregnancyPrenatalExamLatest;
 
 module.exports = cfg;
 

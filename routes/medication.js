@@ -142,7 +142,12 @@ var medicationSave = function(req, res) {
       .then(function(model) {
         var path = cfg.path.pregnancyLabsEdit
           ;
-        path = path.replace(/:id/, flds.pregnancy_id);
+        if (req.session.jumpTo) {
+          path = req.session.jumpTo;
+          delete req.session.jumpTo;
+        } else {
+          path = path.replace(/:id/, flds.pregnancy_id);
+        }
         req.flash('info', req.gettext('Medication was saved.'));
         res.redirect(path);
       })
