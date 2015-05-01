@@ -188,3 +188,7 @@ span#dirty-notice-tablet {
   color: white;
   font-style: oblique;
 }
+
+.separate-section {
+  padding: 0 0 10px 0;
+}

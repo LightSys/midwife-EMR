@@ -449,6 +449,8 @@ var getCommonFormData = function(req, addData) {
    , schRec
    , ed   // edema
    , us   // useIodizedSalt
+   , tm   // takingMedication
+   , ptbf // planToBreastFeed
    , fg   // finalGAPeriod
    , et   // episTear
    , er   // repaired (referring to the epis)
@@ -517,6 +519,10 @@ var getCommonFormData = function(req, addData) {
     if (path === cfg.path.pregnancyQuesEdit) {
       us = adjustSelectData(yesNoUnanswered, req.paramPregnancy.useIodizedSalt);
       if (_.isUndefined(req.paramPregnancy.useIodizedSalt)) req.paramPregnancy.useIodizedSalt = '';
+      tm = adjustSelectData(yesNoUnanswered, req.paramPregnancy.takingMedication);
+      if (_.isUndefined(req.paramPregnancy.takingMedication)) req.paramPregnancy.takingMedication = '';
+      ptbf = adjustSelectData(yesNoUnanswered, req.paramPregnancy.planToBreastFeed);
+      if (_.isUndefined(req.paramPregnancy.planToBreastFeed)) req.paramPregnancy.planToBreastFeed = '';
     }
 
     // Add or edit pregnancy histories.
@@ -550,6 +556,8 @@ var getCommonFormData = function(req, addData) {
     , prenatalExam: req.paramPrenatalExam || void(0)
     , edema: ed
     , useIodizedSalt: us
+    , takingMedication: tm
+    , planToBreastFeed: ptbf
     , finalGAPeriod: fg
     , episTear: et
     , repaired: er
@@ -597,7 +605,6 @@ var questionaireSave = function(req, res) {
         currentlySwelling: '0', currentlyVaginalPain: '0',
         currentlyVaginalItching: '0',
         currentlyNone: '0', useIodizedSalt: '',
-        takingMedication: '0', planToBreastFeed: '0',
         whereDeliver: '', birthCompanion: '',
         practiceFamilyPlanning: '0', practiceFamilyPlanningDetails: '',
         familyHistoryTwins: '0', familyHistoryHighBloodPressure: '0',
