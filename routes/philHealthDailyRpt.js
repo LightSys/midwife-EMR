@@ -687,7 +687,7 @@ var run = function run(req, res) {
   }
   if (! fieldsReady) {
     logWarn('PhilHealth Daily report: not all fields supplied.');
-    res.redirect(cfg.path.reportForm);
+    return res.redirect(cfg.path.reportForm);
   }
 
   // --------------------------------------------------------

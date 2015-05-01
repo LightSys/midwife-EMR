@@ -455,7 +455,7 @@ var run = function run(req, res) {
   }
   if (! fieldsReady) {
     logWarn('Inactives report: not all fields supplied.');
-    res.redirect(cfg.path.reportForm);
+    return res.redirect(cfg.path.reportForm);
   }
 
   // --------------------------------------------------------

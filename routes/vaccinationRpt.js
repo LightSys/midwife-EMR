@@ -905,8 +905,8 @@ var run = function(req, res) {
     req.flash('error', req.gettext('You must choose an In Charge person for the report.'));
   }
   if (! fieldsReady) {
-    console.log('Vaccination report: not all fields supplied.');
-    res.redirect(cfg.path.reportForm);
+    logWarn('Vaccination report: not all fields supplied.');
+    return res.redirect(cfg.path.reportForm);
   }
 
   // --------------------------------------------------------

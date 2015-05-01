@@ -2519,8 +2519,8 @@ var run = function(req, res) {
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }
   if (! fieldsReady) {
-    console.log('Iron report: not all fields supplied.');
-    res.redirect(cfg.path.reportForm);
+    logWarn('DOH Master List report: not all fields supplied.');
+    return res.redirect(cfg.path.reportForm);
   }
 
   // --------------------------------------------------------
