@@ -232,6 +232,11 @@ var load = function(req, res, next) {
     ;
 
   // --------------------------------------------------------
+  // If the url is 'pregnancy/new', we don't have anything to load.
+  // --------------------------------------------------------
+  if (id === 'new') return next();
+
+  // --------------------------------------------------------
   // Add tables to fetch depending upon the URL.
   // --------------------------------------------------------
   if (op === 'midwifeinterview' || op === 'preghistory') {
@@ -255,7 +260,6 @@ var load = function(req, res, next) {
     Pregnancy.forge({id: id})
       .fetch(fetchObject)
       .then(function(pregRec) {
-        if (! pregRec) return next();
         rec = pregRec.toJSON();
       })
       .then(function() {
