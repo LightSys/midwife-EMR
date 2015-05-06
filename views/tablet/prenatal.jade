@@ -289,8 +289,8 @@ block prenatal
                 td= returnDate
               - if (isNote) {
               tr(class='prenatalExamRow', id=prenatalExamNoteId)
-                td= peDate
-                td(colspan='16')= pe.note
+                td(class='table-cell-subrow')
+                td(class='table-cell-subrow', colspan='16')= pe.note
               - }
     div.row
       div(class='col-xs-4 col-xs-offset-4')
