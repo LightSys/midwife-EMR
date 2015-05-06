@@ -252,6 +252,7 @@ block prenatal
           tbody(id=pregId)
             each pe in rec.prenatalExam
               - var prenatalExamId = 'prenatalExamId-' + pe.id;
+              - var prenatalExamNoteId = 'prenatalExamNoteId-' + pe.id;
               - var examiner = pe.examiner
               - peDate = pe.date? libs.mmt(pe.date).format('MM-DD-YYYY'): '';
               - returnDate = pe.returnDate? libs.mmt(pe.returnDate).format('MM-DD-YYYY'): '';
@@ -267,6 +268,7 @@ block prenatal
               - var edema = pe.edema === 'none'? 'None': pe.edema;
               - var vitamin = pe.vitamin === 1? 'Y': '';
               - var pray = pe.pray === 1? 'Y': '';
+              - var isNote = pe.note && pe.note.length > 0? true: false;
               tr(class='prenatalExamRow', id=prenatalExamId)
                 td= peDate
                 td= pe.weight
@@ -285,6 +287,11 @@ block prenatal
                 td= pray
                 td= examiner
                 td= returnDate
+              - if (isNote) {
+              tr(class='prenatalExamRow', id=prenatalExamNoteId)
+                td= peDate
+                td(colspan='16')= pe.note
+              - }
     div.row
       div(class='col-xs-4 col-xs-offset-4')
         p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding a prenatal exam.')
