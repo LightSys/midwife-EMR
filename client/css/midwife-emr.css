@@ -94,6 +94,10 @@ td.table-cell-date {
   min-width: 6em;
 }
 
+td.table-cell-subrow {
+  color: #3276B1;
+}
+
 /* Displays the priority
  * number, if applicable,
  * in the lower left corner

@@ -184,7 +184,7 @@ Pregnancy = Bookshelf.Model.extend({
       'updatedBy', 'updatedAt', 'supervisor', 'patient_id']
 
   , initialize: function() {
-    this.on('saving', this.saving, this);
+      this.on('saving', this.saving, this);
     }
 
   , saving: function(model) {

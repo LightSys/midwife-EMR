@@ -206,6 +206,7 @@ var load = function(req, res, next) {
     , id2 = parseInt(req.params.id2, 10)
     , op = req.params.op
     , op2 = req.params.op2
+    , rec
     , formatDate = function(val) {
         var d
           , formatted
@@ -254,12 +255,29 @@ var load = function(req, res, next) {
     Pregnancy.forge({id: id})
       .fetch(fetchObject)
       .then(function(pregRec) {
-        var rec
-          ;
         if (! pregRec) return next();
-
         rec = pregRec.toJSON();
-
+      })
+      .then(function() {
+        var knex = Bookshelf.DB.knex
+          , sql
+          ;
+        // --------------------------------------------------------
+        // Retrieve the prenatalExamLog data if needed.
+        // --------------------------------------------------------
+        if (op === 'prenatal') {
+          sql =  'SELECT * FROM prenatalExamLog WHERE pregnancy_id = ? ';
+          sql += 'ORDER BY id, replacedAt';
+          return knex.raw(sql, id);
+        } else {return void 0;}
+      })
+      .then(function(data) {
+        rec.prenatalExamLog = [];
+        if (data && data[0] && data[0].length > 0) {
+          rec.prenatalExamLog = data[0];
+        }
+      })
+      .then(function() {
         // --------------------------------------------------------
         // Set only the required information for risk.
         // --------------------------------------------------------
@@ -295,11 +313,14 @@ var load = function(req, res, next) {
         }
 
         // --------------------------------------------------------
-        // Calculate the gestational age for each prenatal exam and
-        // get a user friendly name for the examiner.
+        // 1) Calculate the gestational age for each prenatal exam.
+        // 2) Build a string representing the staff that have modified
+        //    each prenatal exam record so this can be displayed.
         // --------------------------------------------------------
         if (rec.prenatalExam) {
           _.each(rec.prenatalExam, function(peRec) {
+            var examiners = ''
+              ;
             // Favor the alternateEdd if the useAlternateEdd is specified.
             if (rec.useAlternateEdd && rec.alternateEdd) {
               peRec.ga = getGA(rec.alternateEdd, moment(peRec.date).format('YYYY-MM-DD'));
@@ -308,8 +329,19 @@ var load = function(req, res, next) {
             } else {
               peRec.ga = '';
             }
-            peRec.examiner = userMap[""+peRec.updatedBy]['shortName'];
-            if (peRec.supervisor) peRec.examiner += '/' + userMap[""+peRec.supervisor]['shortName'];
+
+            // Get the examiners and supervisors from the prenatalExamLog data
+            // for each prenatal exam.
+            _.each(rec.prenatalExamLog, function(pel) {
+              if (pel.id === peRec.id) {
+                if (examiners) examiners += ',';
+                examiners += userMap[""+pel.updatedBy]['shortName'];
+                if (pel.supervisor && pel.supervisor !== null) {
+                  examiners += '/' + userMap[""+pel.supervisor]['shortName'];
+                }
+              }
+            });
+            peRec.examiner = examiners;
           });
         }
 

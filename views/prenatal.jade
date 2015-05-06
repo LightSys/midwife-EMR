@@ -223,7 +223,7 @@ block prenatal
         table(id='prenatalExaminations', class='table table-striped table-bordered table-hover table-condensed responsive')
           thead
             tr
-              td= gettext('Date')
+              td(class='table-cell-date')= gettext('Date')
               td= gettext('Weight')
               td= gettext('B/P')
               td= gettext('CR')
@@ -238,8 +238,8 @@ block prenatal
               td= gettext('Risk')
               td= gettext('Vit')
               td= gettext('Pray')
-              td= gettext('Examiner')
-              td= gettext('Return')
+              td= gettext('Examiners')
+              td(class='table-cell-date')= gettext('Return')
           -var pregId = 'pregnancyId-' + rec.id;
           tbody(id=pregId)
             each pe in rec.prenatalExam
