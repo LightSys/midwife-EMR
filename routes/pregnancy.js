@@ -222,30 +222,37 @@ var load = function(req, res, next) {
         if (! d.isValid()) return '';
         return d.format('YYYY-MM-DD');
       }
+    , fetchObject = {withRelated: [
+        'patient'
+        , 'priority'
+        , 'schedule'
+        , 'customField']
+      }
     ;
+
+  // --------------------------------------------------------
+  // Add tables to fetch depending upon the URL.
+  // --------------------------------------------------------
+  if (op === 'midwifeinterview' || op === 'preghistory') {
+    fetchObject.withRelated.push('pregnancyHistory');
+    fetchObject.withRelated.push({pregnancyHistory: function(qb) {
+        qb.orderBy('year', 'asc');
+        qb.orderBy('month', 'asc');
+      }
+    });
+  }
+  if (op === 'prenatal' || op === 'prenatalexam') {
+    fetchObject.withRelated.push('risk');
+    fetchObject.withRelated.push('prenatalExam');
+    fetchObject.withRelated.push({prenatalExam: function(qb) {
+        qb.orderBy('date', 'asc');
+      }
+    });
+  }
 
   User.getUserIdMap().then(function(userMap) {
     Pregnancy.forge({id: id})
-      .fetch({withRelated: [
-        'patient'
-        , 'pregnancyHistory'
-        , {
-            pregnancyHistory: function(qb) {
-              qb.orderBy('year', 'asc');
-              qb.orderBy('month', 'asc');
-            }
-          }
-        , 'prenatalExam'
-        , {
-            prenatalExam: function(qb) {
-              qb.orderBy('date', 'asc');
-            }
-        }
-        , 'priority'
-        , 'risk'
-        , 'schedule'
-        , 'customField']
-      })
+      .fetch(fetchObject)
       .then(function(pregRec) {
         var rec
           ;
