@@ -22,7 +22,6 @@ CREATE TABLE `labSuite` (
   `name` varchar(30) NOT NULL,
   `description` varchar(100) DEFAULT NULL,
   `category` varchar(50) DEFAULT NULL,
-  `viewTemplate` varchar(100) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
   `supervisor` int(11) DEFAULT NULL,
@@ -32,14 +31,14 @@ CREATE TABLE `labSuite` (
   KEY `supervisor` (`supervisor`),
   CONSTRAINT `labSuite_ibfk_1` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `labSuite_ibfk_2` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1
 */
 
 LabSuite = Bookshelf.Model.extend({
   tableName: 'labSuite'
 
-  , permittedAttributes: ['id', 'name', 'description', 'category', 'viewTemplate',
-        'updatedBy', 'updatedAt', 'supervisor']
+  , permittedAttributes: ['id', 'name', 'description', 'category', 'updatedBy',
+         'updatedAt', 'supervisor']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
