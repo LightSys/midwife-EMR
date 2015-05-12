@@ -75,10 +75,12 @@ var getScheduledPrenatalExams = function(days, cb) {
     if (err) logError(err);
     if (_.isEmpty(recs)) {
       var knex
-        , sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(returnDate, "%m-%d") AS scheduled ' +
-          'FROM prenatalExam WHERE returnDate > CURDATE() ' +
-          'AND returnDate < DATE_ADD(CURDATE(), INTERVAL ' + days + ' day) ' +
-          'GROUP BY returnDate ORDER BY returnDate';
+        , sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(e.returnDate, "%m-%d") AS scheduled ' +
+          'FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id ' +
+          'WHERE e.returnDate > CURDATE() ' +
+          'AND e.returnDate < DATE_ADD(CURDATE(), INTERVAL ' + days + ' day) ' +
+          'AND p.transferOfCare IS NULL ' +
+          'GROUP BY e.returnDate ORDER BY e.returnDate';
       knex = Bookshelf.DB.knex;
       knex
         .raw(sql)
