@@ -33,10 +33,15 @@ mixin patientWell(record)
   - if (record.pregnancyEndDate && record.pregnancyEndDate !== '0000-00-00') {
   -   gaText = gettext('Final GA: ');
   - }
+  - var isCareTransferred = record.transferOfCare && record.transferOfCareTime? true: false;
   div(class='pregName well well-sm')
     div(class='row patient-well-smallrow')
       div(class='col-xs-7')
         h3(class='patient-well')= name
+          - if (isCareTransferred) {
+              span &nbsp;
+              span(class='label label-danger')= gettext('TfrCare')
+          - }
       div(class='col-xs-4')
         div(class='row patient-well-smallrow')
           div(class='col-xs-12')

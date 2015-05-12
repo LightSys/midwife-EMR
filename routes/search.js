@@ -106,6 +106,8 @@ var execute = function(req, res) {
     , lnOp = '='
     , otherOp = '='
     , renderData
+    , transferAfter
+    , transferBefore
     ;
 
   // --------------------------------------------------------
@@ -178,6 +180,21 @@ var execute = function(req, res) {
       qb.where('schedule.scheduleType', '=', 'Prenatal');
       if (flds.prenatalDay.length > 0) qb.andWhere('schedule.day', '=', flds.prenatalDay);
       if (flds.prenatalLocation.length > 0) qb.andWhere('schedule.location', '=', flds.prenatalLocation);
+    }
+    if (flds.transferOfCare && flds.transferOfCare === '1') {
+      qb.whereNotNull('pregnancy.transferOfCare');
+      if (flds.transferAfter) {
+        transferAfter = moment(flds.transferAfter, 'YYYY-MM-DD');
+        if (transferAfter.isValid()) {
+          qb.where('pregnancy.transferOfCare', '>=', flds.transferAfter);
+        }
+      }
+      if (flds.transferBefore) {
+        transferBefore = moment(flds.transferBefore, 'YYYY-MM-DD');
+        if (transferBefore.isValid()) {
+          qb.where('pregnancy.transferOfCare', '<=', transferBefore.add(1, 'days').format('YYYY-MM-DD'));
+        }
+      }
     }
   }
 

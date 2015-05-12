@@ -49,6 +49,19 @@ block search
           div.form-group
             span= gettext('Prental Location')
             +select('form-control input-lg', 'prenatalLocation', 8, prenatalLocation)
+      div.row
+        div(class='col-xs-6')
+          div.checkbox
+            label= gettext('Include only Transfer of Care clients')
+              input(type='checkbox', name='transferOfCare', tabindex="9", value=1)
+        div(class='col-xs-3')
+          div.form-group
+            span= gettext('Transferred After')
+            input(class='form-control', type='date', tabindex='10', name='transferAfter')
+        div(class='col-xs-3')
+          div.form-group
+            span= gettext('Transferred Before')
+            input(class='form-control', type='date', tabindex='11', name='transferBefore')
 
       div.row
         div.col-xs-12 &nbsp;

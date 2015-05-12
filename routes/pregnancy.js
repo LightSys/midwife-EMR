@@ -207,6 +207,22 @@ var load = function(req, res, next) {
     , op = req.params.op
     , op2 = req.params.op2
     , rec
+    , formatTime = function(val) {
+        var d
+          , formatted
+          ;
+        if (val === null) return '';
+        if (val === '00:00') return '';
+        if (_.isDate(val)) {
+          d = moment(val);
+        } else if (typeof val === 'string' && /..:../.test(val)) {
+          d = moment(val, 'HH:mm');
+        } else {
+          return '';
+        }
+        if (! d.isValid()) return '';
+        return d.format('HH:mm');
+      }
     , formatDate = function(val) {
         var d
           , formatted
@@ -300,6 +316,17 @@ var load = function(req, res, next) {
         rec.pregnancyEndDate = formatDate(rec.pregnancyEndDate);
         rec.dentistConsultDate = formatDate(rec.dentistConsultDate);
         rec.doctorConsultDate = formatDate(rec.doctorConsultDate);
+
+        // --------------------------------------------------------
+        // transferOfCareTime is a psuedo field that is stored in
+        // the database as a DATETIME in pregnancy.transferOfCare.
+        // Populate the transferOfCareTime field for the form.
+        // prenatalSave() does the reverse.
+        // Note: handle transferOfCareTime first because the
+        // source field is changed when the date portion is processed.
+        // --------------------------------------------------------
+        rec.transferOfCareTime = formatTime(rec.transferOfCare);
+        rec.transferOfCare = formatDate(rec.transferOfCare);
 
         // --------------------------------------------------------
         // Calculate the gestational age at this point or at the
@@ -1697,6 +1724,25 @@ var prenatalSave = function(req, res) {
     // --------------------------------------------------------
     pnFlds = _.defaults(_.omit(req.body, _.union(['_csrf'], _.keys(defaultRiskFlds))), defaultFlds);
     riskFlds = _.defaults(_.omit(req.body, _.union(['_csrf'], _.keys(pnFlds))), defaultRiskFlds);
+
+    // --------------------------------------------------------
+    // transferOfCare and transferOfCareTime actually are all
+    // stored in transferOfCare as a DATETIME. But if they are
+    // not both specified, we reject both of these fields.
+    // --------------------------------------------------------
+    if (pnFlds.transferOfCare || pnFlds.transferOfCareTime) {
+      if (! pnFlds.transferOfCare || ! pnFlds.transferOfCareTime) {
+        req.flash('warning', 'Transfer of care date and time must be specified. Transfer of care change not saved.');
+        delete pnFlds.transferOfCareTime;
+        delete pnFlds.transferOfCare;
+      } else {
+        pnFlds.transferOfCare = moment(pnFlds.transferOfCare + ' ' + pnFlds.transferOfCareTime, 'YYYY-MM-DD HH:mm').toDate();
+        delete pnFlds.transferOfCareTime;
+      }
+    } else {
+      // Clear field of content, if any.
+      pnFlds.transferOfCare = null;
+    }
 
     // --------------------------------------------------------
     // For each potential risk, determine if the pregnancy had

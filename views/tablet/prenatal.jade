@@ -208,7 +208,7 @@ block prenatal
           div(class='col-xs-6')
             div
               span.text-primary= gettext('Risk Notes')
-              textarea(class='form-control', tabindex="14", spellcheck="off", autocomplete="off", rows=4, disabled=readonlyFields.riskNote, name='riskNote')= rec.riskNote
+              textarea(class='form-control', tabindex="14", spellcheck="off", autocomplete="off", rows=5, disabled=readonlyFields.riskNote, name='riskNote')= rec.riskNote
 
           div(class='form-group col-xs-4 box')
             p(class='text-primary lead')= gettext('Pregnancy End Result')
@@ -222,6 +222,22 @@ block prenatal
                 div
                   span= gettext('End Result')
                   input(class='form-control', type='text', size=20, tabindex="16", autocomplete="off", name='pregnancyEndResult', disabled=readonlyFields.pregnancyEndResult, value=rec.pregnancyEndResult)
+
+          div(class='form-group col-xs-12 box')
+            p(class='text-primary lead')= gettext('Transfer of Care')
+            div(class='row')
+              div(class='col-xs-4')
+                div
+                  span= gettext('Transfer Date')
+                  input(class='form-control', type='date', name='transferOfCare', value=rec.transferOfCare)
+              div(class='col-xs-3')
+                div
+                  span= gettext('Time (hh:mm)')
+                  input(class='form-control', type='text', title="hh:mm, eg. 08:44 or 17:09", pattern="(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9])", name='transferOfCareTime', value=rec.transferOfCareTime)
+              div(class='col-xs-5')
+                div
+                  span= gettext('Transfer of Care Note')
+                  textarea(class='form-control', tabindex="42", spellcheck="off", autocomplete="off", rows=2, disabled=readonlyFields.transferOfCareNote, name='transferOfCareNote')= rec.transferOfCareNote
 
     hr
     p(class='text-primary lead')= gettext('Prenatal Exams')

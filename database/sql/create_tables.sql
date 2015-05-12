@@ -143,6 +143,8 @@ CREATE TABLE IF NOT EXISTS `pregnancy` (
   philHealthNCP BOOLEAN NULL DEFAULT 0,
   philHealthID VARCHAR(12) NULL,
   philHealthApproved BOOLEAN NULL DEFAULT 0,
+  transferOfCare DATETIME NULL,
+  transferOfCareNote VARCHAR(1000) NULL DEFAULT '',
   currentlyVomiting BOOLEAN NULL,
   currentlyDizzy BOOLEAN NULL,
   currentlyFainting BOOLEAN NULL,
