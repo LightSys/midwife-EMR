@@ -2116,7 +2116,7 @@ var labsForm = function(req, res) {
         sql += '(SELECT COUNT(*) FROM vaccination v ';
         sql += 'WHERE v.pregnancy_id = ' + pid + ' AND v.vaccinationType IN ';
         sql += '(SELECT id FROM vaccinationType WHERE name LIKE "Tetanus%") ';
-        sql += 'AND v.administeredInternally = 1 AND v.vacDate > p.lmp), 0), 1, 0) ';
+        sql += 'AND v.vacDate > p.lmp), 0), 1, 0) ';
         sql += 'AS tetanusComplete FROM pregnancy p WHERE p.id = ' + pid;
         knex = Bookshelf.DB.knex;
         return knex
