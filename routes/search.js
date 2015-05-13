@@ -173,7 +173,7 @@ var execute = function(req, res) {
     }
     if (flds.dob && flds.dob.length > 0) qb.where('dob', otherOp, flds.dob);
     if (flds.doh && flds.doh.length > 0) qb.orWhere('dohID', otherOp, flds.doh);
-    if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('philHealth', otherOp, flds.philHealth);
+    if (flds.philHealth && flds.philHealth.length > 0) qb.orWhere('pregnancy.philHealthID', otherOp, flds.philHealth);
     if ((flds.prenatalDay && flds.prenatalDay.length > 0) ||
         (flds.prenatalLocation && flds.prenatalLocation.length > 0)) {
       qb.join('schedule', 'schedule.pregnancy_id', 'pregnancy.id');
