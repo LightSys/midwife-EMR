@@ -376,11 +376,154 @@ var doClientGeneral = function(doc, data, opts, ypos) {
   return y;
 };
 
+/* --------------------------------------------------------
+ * doPrenatalRisk()
+ *
+ * Write out the prenatal risk factors in the four key areas
+ * of Present, ObHx, MedHx, and Lifestyle.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doPrenatalRisk = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , colNames = []
+    , colData = []
+    ;
+
+  colNames.push('Risk type');
+  colNames.push('Code');
+  colNames.push('Description                                 ');
+
+  _.each(data.risks, function(risk) {
+    var rptData = []
+      , riskCode
+      ;
+
+    // get the riskCode for this risk
+    riskCode = _.find(data.riskCodes, function(rc) {
+      return risk.riskCode === rc.id;
+    });
+
+    if (riskCode) {
+      rptData.push(riskCode.riskType);
+      rptData.push(riskCode.name);
+      rptData.push(riskCode.description);
+      colData.push(rptData);
+    }
+  });
+
+  // Sort by the riskCode.
+  // E.g. [ 'Present', 'A2', 'Age < 18' ]
+  colData = _.sortBy(colData, function(row) {
+    return row[1];
+  });
+
+  doLabel(doc, 'Prenatal Risks', x, y);
+  y += 10;
+  y = doTable(doc, colNames, colData, opts, y, 'left', true);
+
+  return y + 10;
+};
+
+
+/* --------------------------------------------------------
+ * doTransferOfCare()
+ *
+ * Write out the relevant tranfer of care information if
+ * it is available. If the pregnancy.transferOfCare is
+ * not filled, this section of the report is not written out.
+ *
+ * NOTE: doTransferOfCare() and doPregnancyResult() might
+ * be refactored into a common function.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doTransferOfCare = function(doc, data, opts, ypos) {
+  var x = (doc.page.width / 2) + 10
+    , y = ypos
+    , tDate
+    , tDateFmt
+    , tNote
+    ;
+
+  if (data.pregnancy.transferOfCare) {
+    tDate = moment(data.pregnancy.transferOfCare);
+    if (tDate.isValid()) {
+      tDateFmt = tDate.format('MM-DD-YYYY HH:mm');
+      tNote = data.pregnancy.transferOfCareNote;
+    } else {
+    }
+  }
+
+  if (tDateFmt) {
+    y += 10;
+    doShortAnswer(doc, 'Transfer of Care:', tDateFmt, x, y, true);
+    if (tNote) {
+      y = doVertFldVal(doc, '', tNote, x, y, true);
+    }
+    return y + 10;
+  } else {
+    return y;
+  }
+};
+
+
+/* --------------------------------------------------------
+ * doPregnancyResult()
+ *
+ * Write out the result of the pregnancy, if recorded.
+ *
+ * NOTE: doTransferOfCare() and doPregnancyResult() might
+ * be refactored into a common function.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     y - new y position
+ * -------------------------------------------------------- */
+var doPregnancyResult = function(doc, data, opts, ypos) {
+  var x = (doc.page.width / 2) + 10
+    , y = ypos
+    , rDate
+    , rDateFmt
+    , rNote
+    ;
+
+  if (data.pregnancy.pregnancyEndDate) {
+    rDate = moment(data.pregnancy.pregnancyEndDate);
+    if (rDate.isValid()) {
+      rDateFmt = rDate.format('MM-DD-YYYY');
+      rNote = data.pregnancy.pregnancyEndResult;
+    } else {
+    }
+  }
+
+  if (rDateFmt) {
+    y += 10;
+    doShortAnswer(doc, 'Pregnancy Result:', rDateFmt, x, y, true);
+    if (rNote) {
+      y = doVertFldVal(doc, '', rNote, x, y, true);
+    }
+    return y + 10;
+  } else {
+    return y;
+  }
+};
 
 /* --------------------------------------------------------
  * doPrenatal()
  *
- * Creates the prental section.
+ * Creates the prenatal section.
  *
  * param      doc
  * param      data
@@ -1328,6 +1471,10 @@ var doPage3 = function doPage2(doc, data, opts) {
     ;
   doc.addPage();
   doPageCommon(doc, data, opts);
+  y1 = doPrenatalRisk(doc, data, opts, y);
+  y2 = doTransferOfCare(doc, data, opts, y);
+  y2 = doPregnancyResult(doc, data, opts, y2);
+  y = y1 >= y2? y1: y2;
   y = doPrenatalExams(doc, data, opts, y);
   y = doPrenatalNotes(doc, data, opts, y);
 
@@ -1449,6 +1596,13 @@ var getData = function(id) {
       })
       .then(function(risks) {
         data.risks = risks.toJSON();
+      })
+      // RiskCodes - get them all
+      .then(function() {
+        return new RiskCodes().fetch();
+      })
+      .then(function(rcodes) {
+        data.riskCodes = rcodes.toJSON();
       })
       // Lab Test Results
       .then(function() {
