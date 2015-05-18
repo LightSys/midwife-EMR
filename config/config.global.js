@@ -238,6 +238,10 @@ cfg.path.labTestDelete = '/pregnancy/:id/labtest/:id2/delete';   // POST
 cfg.path.referralAdd = '/pregnancy/:id/referral';       // GET/POST - create/save new referral
 cfg.path.referralEdit = '/pregnancy/:id/referral/:id2'; // GET/POST - edit/save referral
 cfg.path.referralDelete = '/pregnancy/:id/referral/:id2/delete'; // POST - delete referral
+// Progress Notes (a type of pregnancy note)
+cfg.path.pregnoteAdd = '/pregnancy/:id/pregnote';       // GET/POST - create/save new pregnancy note
+cfg.path.pregnoteEdit = '/pregnancy/:id/pregnote/:id2'; // GET/POST - edit/save pregnancy note
+cfg.path.pregnoteDelete = '/pregnancy/:id/pregnote/:id2/delete'; // POST - delete pregnancy note
 // Doctor/Dentist Consult dates
 cfg.path.docDenConsult = '/pregnancy/:id/doctordentist';  // POST
 // Vaccinations

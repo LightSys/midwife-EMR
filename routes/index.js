@@ -13,6 +13,7 @@ module.exports = {
   , roles: require('./roles')
   , pregnancy: require('./pregnancy')
   , referral: require('./referral')
+  , pregnote: require('./pregnote')
   , labs: require('./labs')
   , pregnancyHistory: require('./pregnancyHistory')
   , prenatalExam: require('./prenatalExam')

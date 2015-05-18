@@ -59,5 +59,9 @@ module.exports = {
   , RoFieldsByRoles: require('./RoFieldsByRole').RoFieldsByRoles
   , Teaching: require('./Teaching').Teaching
   , Teachings: require('./Teaching').Teachings
+  , Pregnote: require('./Pregnote').Pregnote
+  , Pregnotes: require('./Pregnote').Pregnotes
+  , PregnoteType: require('./PregnoteType').PregnoteType
+  , PregnoteTypes: require('./PregnoteType').PregnoteTypes
 };
 

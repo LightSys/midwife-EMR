@@ -47,6 +47,10 @@ var _ = require('underscore')
   , RoFieldsByRole = require('../models').RoFieldsByRole
   , Teaching = require('../models').Teaching
   , Teachings = require('../models').Teachings
+  , Pregnote = require('../models').Pregnote
+  , Pregnotes = require('../models').Pregnotes
+  , PregnoteType = require('../models').PregnoteType
+  , PregnoteTypes = require('../models').PregnoteTypes
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -76,6 +80,7 @@ var _ = require('underscore')
   , prenatalCheckOutId
   , riskCodes = {}
   , customFieldTypes   // Not associated with select data but custom fields.
+  , pregnoteTypes          // Custom fields
   ;
 
 /* --------------------------------------------------------
@@ -186,6 +191,15 @@ var init = function() {
     .then(function(list) {
       riskCodes = list.toJSON();
     });
+
+  // --------------------------------------------------------
+  // Do a one time load of note types.
+  // --------------------------------------------------------
+  new PregnoteTypes()
+    .fetch()
+    .then(function(list) {
+      pregnoteTypes = list.toJSON();
+    });
 };
 
 /* --------------------------------------------------------
@@ -268,6 +282,19 @@ var load = function(req, res, next) {
     fetchObject.withRelated.push('prenatalExam');
     fetchObject.withRelated.push({prenatalExam: function(qb) {
         qb.orderBy('date', 'asc');
+      }
+    });
+  }
+  // --------------------------------------------------------
+  // Fetches progress notes here instead of in labsForm()
+  // for in the case where progress notes are accessed from
+  // more than one screen.
+  // --------------------------------------------------------
+  if (op === 'labs') {
+    fetchObject.withRelated.push('pregnote');
+    fetchObject.withRelated.push({pregnote: function(qb) {
+        qb.where('pregnote.pregnoteType', '=', _.findWhere(pregnoteTypes, {name: 'prenatalProgress'}).id);
+        qb.orderBy('noteDate', 'asc');
       }
     });
   }
@@ -440,6 +467,12 @@ var load = function(req, res, next) {
           // --------------------------------------------------------
           if (op === 'referral') {
             req.paramReferralId = id2;
+          }
+          // --------------------------------------------------------
+          // Progress notes
+          // --------------------------------------------------------
+          if (op === 'pregnote') {
+            req.paramPregnoteId = id2;
           }
           // --------------------------------------------------------
           // Health Teachings
@@ -1983,6 +2016,10 @@ var pregnancyDelete = function(req, res) {
  *
  * Displays the main labs page that contains many sub-sections
  * covering labs, etc.
+ *
+ * Note: progress notes are retrieved in load() instead of
+ * here on the chance that they may likely be available on
+ * more than one screen.
  * -------------------------------------------------------- */
 var labsForm = function(req, res) {
   var data

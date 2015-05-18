@@ -1,0 +1,66 @@
+extends layouts/default_layout
+
+block pregnoteAddEditForm
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var formId = 'pregnoteAddEdit';
+  - var formName = 'pregnoteAddEditForm';
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  //- Default of adding a referral
+  - var formAction = '/pregnancy/' + rec.id + '/pregnote';
+  - var pregnoteDate = libs.mmt().format('YYYY-MM-DD');
+  - var referral = '';
+  - var isUpdate = false;
+  - var pregnoteDeletePath;
+  - var note = '';
+  //- If editing a referral
+  - if (pregnoteRec && pregnoteRec.id) {
+  -   formAction ='/pregnancy/' + rec.id + '/pregnote/' + pregnoteRec.id;
+  -   pregnoteDate = pregnoteRec.noteDate || pregnoteDate;
+  -   note = pregnoteRec.note;
+  -   isUpdate = true;
+  -   pregnoteDeletePath = '/pregnancy/' + rec.id + '/pregnote/' + pregnoteRec.id + '/delete';
+  - }
+  div
+    form(id=formId, class='dirty-check disable-on-submit', role='form', name=formName, action=formAction, method='post')
+      div.row
+        div(class='col-md-4')
+          label= gettext('Date of the progress note')
+          +datePicker('form-control', 1, 'noteDate', pregnoteDate, 'noteDate')
+      div.row
+      div.row
+        div(class='col-md-6')
+          label= gettext('Progress Note')
+          textarea(id='refProgressNote', class='form-control', type='text', rows='5', tabindex='2', autocomplete='on', name='note')= note
+      div.row
+        div(class='col-md-4')
+          span &nbsp;
+      div.row
+        div(class='col-md-2')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          button(type='submit', class='btn btn-primary')= gettext('Save Progress Note')
+        div(class='col-md-2')
+          a(href=labsMainPath, class='btn btn-default disable-on-change', role='button')= gettext('Back to the Labs Page')
+        - if (isUpdate) {
+        div(class='col-md-2 col-md-offset-6')
+          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+        - }
+
+    - if (isUpdate) {
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deletePregnoteEditForm', role='form', name='PregnoteEditForm', action=pregnoteDeletePath, method='post')
+        div(class='modal-dialog')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='pregnoteId', value=pregnoteRec.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')
+    - }

@@ -148,6 +148,9 @@ $(function() {
     // Referrals
     $('.referralsRow').click(onClickChangeLocation('/pregnancy/:pid/referral/:id'));
 
+    // Progress Notes
+    $('.pregnoteRow').click(onClickChangeLocation('/pregnancy/:pid/pregnote/:id'));
+
     // health teachings
     $('.teachingsRow').click(onClickChangeLocation('/pregnancy/:pid/teaching/:id'));
 

@@ -465,3 +465,9 @@ VALUES
   ('clerk', 'pregnancy', 'pregnancyEndResult'),
   ('clerk', 'risk', 'riskCode');
 
+SELECT 'pregnoteType' AS 'Loading' FROM DUAL;
+INSERT INTO `pregnoteType`
+  (name, description)
+VALUES
+  ('prenatalProgress', 'Progress notes for prenatal exams.');
+

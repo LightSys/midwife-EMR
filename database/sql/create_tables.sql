@@ -558,6 +558,29 @@ CREATE TABLE IF NOT EXISTS `roFieldsByRole` (
   UNIQUE (roleName, tableName, fieldName)
 );
 
+CREATE TABLE IF NOT EXISTS `pregnoteType` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(20) NOT NULL,
+  description VARCHAR(250) NULL,
+  UNIQUE(name)
+);
+SHOW WARNINGS;
+
+CREATE TABLE IF NOT EXISTS `pregnote` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pregnoteType INT NOT NULL,
+  noteDate DATE NOT NULL,
+  note TEXT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  pregnancy_id INT NOT NULL,
+  FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (pregnoteType) REFERENCES pregnoteType (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
 SET foreign_key_checks = 1;
 
 

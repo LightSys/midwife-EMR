@@ -36,6 +36,7 @@ var express = require('express')
   , roles = require('./routes').roles
   , pregnancy = require('./routes').pregnancy
   , referral = require('./routes').referral
+  , pregnote = require('./routes').pregnote
   , teaching = require('./routes').teaching
   , vaccination = require('./routes').vaccination
   , medication = require('./routes').medication
@@ -478,6 +479,18 @@ app.post(cfg.path.referralEdit, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralSave);
 app.post(cfg.path.referralDelete, common, hasSuper,
     inRoles(['attending', 'supervisor']), referral.referralDelete);
+
+// Progress Notes
+app.get(cfg.path.pregnoteAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnote.pregnoteAddForm);
+app.post(cfg.path.pregnoteAdd, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnote.pregnoteSave);
+app.get(cfg.path.pregnoteEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnote.pregnoteEditForm);
+app.post(cfg.path.pregnoteEdit, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnote.pregnoteSave);
+app.post(cfg.path.pregnoteDelete, common, hasSuper,
+    inRoles(['attending', 'supervisor']), pregnote.pregnoteDelete);
 
 // Health Teachings
 app.get(cfg.path.teachingAdd, common, hasSuper,

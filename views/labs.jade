@@ -12,6 +12,9 @@ block labs
   //- Referrals
   - var addReferralFormPath = '/pregnancy/' + rec.id + '/referral';
 
+  //- Progress Notes
+  - var addProgressNotePath = '/pregnancy/' + rec.id + '/pregnote';
+
   // Health Teachings
   - var addTeachingFormPath = '/pregnancy/' + rec.id + '/teaching';
 
@@ -159,6 +162,38 @@ block labs
     //- -------------------------------------------------
     div(class='col-md-6')
       div.row
+        //- Progress Notes
+        div(class='col-md-12 panel panel-default spacing')
+          div.row
+            div(class='col-md-12')
+              label= gettext('Progress Notes')
+              table(id='ProgressNotes', class='table table-striped table-bordered table-hover table-condensed responsive')
+                thead
+                  tr
+                    td(class='table-cell-date')= gettext('Date')
+                    td= gettext('Note')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each note in rec.pregnote
+                    - var noteDate = '';
+                    - if (libs.mmt(note.noteDate).isValid()) {
+                    -   noteDate = libs.mmt(note.noteDate).format('MM-DD-YYYY');
+                    - }
+                    tr(class='pregnoteRow', id='pregnote-'+note.id)
+                      td(class='table-cell-date')= noteDate
+                      td= note.note
+
+          div.row
+            div(class='col-md-12')
+              //- Add Progress Notes button
+              div.row
+                div(class='col-md-4 col-md-offset-8')
+                  - if (roleInfo.hasRole('clerk')) {
+                      a(class='btn btn-primary pull-right', disabled=true, href=addProgressNotePath)= gettext('Add Progress Note')
+                  - } else {
+                      a(class='btn btn-primary pull-right', href=addProgressNotePath)= gettext('Add Progress Note')
+                  - }
+
         //- Referrals
         div(class='col-md-12 panel panel-default spacing')
           div.row

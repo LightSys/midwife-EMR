@@ -130,6 +130,7 @@ var referralSave = function(req, res) {
 var referralDelete = function(req, res) {
   var supervisor = null
     , flds = req.body
+    , ref
     ;
 
   if (req.paramPregnancy && req.body &&

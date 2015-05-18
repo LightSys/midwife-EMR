@@ -247,6 +247,10 @@ Pregnancy = Bookshelf.Model.extend({
       return this.hasMany(require('./Referral').Referral, 'pregnancy_id');
     }
 
+  , pregnote: function() {
+      return this.hasMany(require('./Pregnote').Pregnote, 'pregnancy_id');
+    }
+
 }, {
   // --------------------------------------------------------
   // Class Properties.
