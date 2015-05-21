@@ -1081,7 +1081,7 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
   colNames.push('GA   ');
   colNames.push('FH');
   colNames.push('FHT');
-  colNames.push('POS');
+  colNames.push('POS   ');
   colNames.push('Mvmt');
   colNames.push('Edema');
   colNames.push('Vit');
@@ -1121,7 +1121,126 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Prenatal Examinations', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, null, true);
+  y = doTable(doc, colNames, colData, opts, y, null, true, void 0,
+    function(doc, x, y, row, rowIdx) {
+      // --------------------------------------------------------
+      // The post row callback for the prenatal table which allows
+      // the inclusion of the various note fields associated with
+      // the prenatal exams, including the progress notes which are
+      // not specific to any particular prenatal exam, but per
+      // client request should be included in with the prenatal
+      // results. Implemented as a closure in order to access the
+      // data object as well as other variables in the outer function.
+      // --------------------------------------------------------
+      var origX = x;
+
+      // --------------------------------------------------------
+      // Get the prenatal exam for this row as well as
+      // the next one for determining which progress notes
+      // to print under this exam.
+      // --------------------------------------------------------
+      var pExam = data.prenatalExams[rowIdx];
+      var pNextExam = data.prenatalExams[rowIdx+1]? data.prenatalExams[rowIdx+1]: void 0;
+
+      // --------------------------------------------------------
+      // Convenience assignments.
+      // --------------------------------------------------------
+      var fhNote = pExam.fhNote? pExam.fhNote: '';
+      var fhtNote = pExam.fhtNote? pExam.fhtNote: '';
+      var riskNote = pExam.risk? pExam.risk: '';
+      var otherNote = pExam.note? pExam.note: '';
+      var riskOtherWidth = 240;
+      var riskLines = Math.ceil(doc.widthOfString(riskNote) / riskOtherWidth);
+      var otherLines = Math.ceil(doc.widthOfString(otherNote) / riskOtherWidth);
+
+      // --------------------------------------------------------
+      // Select the progress notes that should be printed along
+      // with this prenatal exam. These progress notes are stored
+      // in the pnotes array.
+      // --------------------------------------------------------
+      var pnotes = [];
+      var peDate;
+      var peNextDate;
+      peDate = moment(pExam.date);
+      // If there is no next prenatal exam, choose a date so far in future
+      // that all remaining progress notes are included.
+      peNextDate = pNextExam? moment(pNextExam.date): moment('2200-01-01', 'YYYY-MM-DD');
+      pnotes = _.clone(_.filter(data.pnotes, function(note) {
+        var nDate = moment(note.noteDate);
+        if (nDate.isSame(peDate)) {
+          return true;
+        } else {
+          if (nDate.isAfter(peDate) && nDate.isBefore(peNextDate)) {
+            return true;
+          } else if (nDate.isBefore(peDate) && rowIdx === 0) {
+            // If this is the first prenatal exam, include progress notes
+            // for earlier dates.
+            return true;
+          }
+        }
+      }));
+
+      // --------------------------------------------------------
+      // Position fhNote and fhtNote beside the midwife name
+      // with bolded field labels.
+      // --------------------------------------------------------
+      y -= 10;
+      x = 104;
+      doc.font(FONTS.HelveticaBold).fontSize(9);
+      doc.text('FH Note: ', x, y);
+      x = 305;
+      doc.text('FHT Note: ', x, y);
+      doc.font(FONTS.Helvetica).fontSize(9);
+      x = 148;
+      doc.text(fhNote, x, y);
+      x = 355;
+      doc.text(fhtNote, x, y);
+
+      // --------------------------------------------------------
+      // Position the risk and other notes on the next line.
+      // --------------------------------------------------------
+      y += 10;
+      if (otherLines > 0) {
+        x = origX;
+        doc.font(FONTS.HelveticaBold).fontSize(9);
+        doc.text('Risk: ', x, y);
+        x = 305;
+        doc.text('Other: ', x, y);
+        doc.font(FONTS.Helvetica).fontSize(9);
+        x = 48;
+        doc.text(riskNote, x, y, {width: riskOtherWidth});
+        x = 340;
+        doc.text(otherNote, x, y, {width: riskOtherWidth});
+
+        // Add the additional lines used.
+        y += (Math.max(riskLines, otherLines) * 10);
+      }
+
+      // --------------------------------------------------------
+      // Progresss notes dated between current prenatal exam
+      // and the next one, if any. pnotes contains the progress
+      // notes to print for this prenatal exam.
+      // --------------------------------------------------------
+      _.each(pnotes, function(note) {
+        var noteDate = moment(note.noteDate).format('MM-DD-YYYY') + ': ';
+        var noteStartX = 70;
+        var noteWidth = opts.pageWidth - opts.margins.left - opts.margins.right - noteStartX;
+        var noteLines = Math.ceil(doc.widthOfString(note.note) / noteWidth);
+        x = origX;
+        doc.font(FONTS.HelveticaBold).fontSize(9);
+        doc.text(noteDate, x, y);
+        doc.font(FONTS.Helvetica).fontSize(9);
+        x = noteStartX;
+        doc.text(note.note, x, y);
+        y += (noteLines * 10);
+      });
+
+      // Put the settings back.
+      doc.font(FONTS.Helvetica).fontSize(9);
+
+      // Requirement: return the new y position to the caller.
+      return y;
+    });
 
   return y + 10;
 };
@@ -1225,6 +1344,20 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * are written at the bottom of the table row. This is good for long
  * notes that don't need a column header.
  *
+ * If postRowCB is a function, it will be called after each row has
+ * been printed. The function has to be syncronous, should return the
+ * new y position, and is passed the following parameters:
+ *
+ *  doc
+ *  x
+ *  y
+ *  row
+ *  rowIndex
+ *
+ *  The postRowCB callback allows additional information to be written
+ *  out after the row proper. The postRowCB is called after the
+ *  bottomNote, if present, is printed.
+ *
  * param      doc
  * param      columns - list of column names
  * param      rows
@@ -1233,9 +1366,11 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * param      position - default is full width, 'left', 'right'
  * param      wrap - whether to wrap data if too long for column
  * param      bottomNote - an array of notes, one per record, to write at bottom
+ * param      postRowCB - callback called after each row
  * return     y - final y
  * -------------------------------------------------------- */
-var doTable = function(doc, columns, rows, opts, ypos, position, wrap, bottomNote) {
+var doTable = function(doc, columns, rows, opts, ypos,
+    position, wrap, bottomNote, postRowCB) {
   var x = opts.margins.left
     , left = x
     , y = ypos
@@ -1349,6 +1484,13 @@ var doTable = function(doc, columns, rows, opts, ypos, position, wrap, bottomNot
           y += 10;
         }
       }
+    }
+
+    // --------------------------------------------------------
+    // Post row callback, if present.
+    // --------------------------------------------------------
+    if (postRowCB && _.isFunction(postRowCB)) {
+      y = postRowCB(doc, x, y, row, rowNum);
     }
 
     doSep(doc, opts, y, greyLightColor, position);
@@ -1476,7 +1618,6 @@ var doPage3 = function doPage2(doc, data, opts) {
   y2 = doPregnancyResult(doc, data, opts, y2);
   y = y1 >= y2? y1: y2;
   y = doPrenatalExams(doc, data, opts, y);
-  y = doPrenatalNotes(doc, data, opts, y);
 
   doFooter(doc, 'Summary Report', 'Page 3 of 3', moment().format('MMM DD, YYYY h:mm a'), opts);
 };
@@ -1586,6 +1727,18 @@ var getData = function(id) {
       })
       .then(function(referrals) {
         data.referrals = referrals.toJSON();
+      })
+      // Progress Notes
+      .then(function() {
+        return new Pregnotes().query(function(qb) {
+          qb.where('pregnancy_id', '=', data.pregnancy.id);
+          qb.andWhere('pregnoteType', '=', 1);  // TODO: fix this hard-code
+          qb.orderBy('noteDate');
+        })
+        .fetch();
+      })
+      .then(function(pnotes) {
+        data.pnotes = pnotes.toJSON();
       })
       // Risks
       .then(function() {
