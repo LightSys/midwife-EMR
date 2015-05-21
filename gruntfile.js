@@ -30,6 +30,7 @@ module.exports = function(grunt) {
                 , 'bower_components/flot/jquery.flot.js'
                 , 'bower_components/flot/jquery.flot.categories.js'
                 , 'bower_components/jquery.are-you-sure/jquery.are-you-sure.js'
+                , 'bower_components/angular/angular.min.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
                 , 'client/js/midwife-emr.js'
