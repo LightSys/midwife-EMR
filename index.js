@@ -40,6 +40,7 @@ var express = require('express')
   , teaching = require('./routes').teaching
   , vaccination = require('./routes').vaccination
   , medication = require('./routes').medication
+  , api = require('./routes/api')
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
@@ -564,6 +565,11 @@ app.post(cfg.path.reportRun, common, hasSuper,
     inRoles(['supervisor', 'clerk']), report.run);
 app.get(cfg.path.reportSummary, common, hasSuper,
     inRoles(['supervisor', 'clerk', 'attending']), report.summary);
+
+// History API
+app.get(cfg.path.apiLoad, api.params);    // parameter handling
+app.get(cfg.path.apiHistory, common,
+    inRoles(['supervisor']), api.history.get);
 
 // --------------------------------------------------------
 // The last resort.
