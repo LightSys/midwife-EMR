@@ -8,9 +8,13 @@ var cfg = require('../../config')
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
   , logError = require('../../util').logError
+  , collateRecs = require('../../util').collateRecs
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
+  , _ = require('underscore')
   ;
+
+
 
 /* --------------------------------------------------------
  * prenatalFormatted()
@@ -33,7 +37,7 @@ var prenatalFormatted = function(req, res) {
     .then(function(data) {
       // Adjust the data per caller requirements.
 
-
+      data = collateRecs(data, 'replacedAt');
 
       res.end(JSON.stringify(data));
     });
@@ -63,9 +67,9 @@ var prenatal = function(pregId) {
   // but since this is historical, the respective log tables
   // are used.
   // --------------------------------------------------------
-  sqlPreg = 'SELECT * FROM pregnancyLog WHERE id = ?';
-  sqlPat = 'SELECT * FROM patientLog WHERE id = ?';
-  sqlRisk = 'SELECT * FROM riskLog WHERE id = ?';
+  sqlPreg = 'SELECT * FROM pregnancyLog WHERE id = ? ORDER BY replacedAt';
+  sqlPat  = 'SELECT * FROM patientLog WHERE id = ? ORDER BY replacedAt';
+  sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
 
   return new Promise(function(resolve, reject) {
     knex = Bookshelf.DB.knex;

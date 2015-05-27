@@ -304,6 +304,114 @@ var isValidDate = function(dte, format) {
   return false;
 };
 
+/* --------------------------------------------------------
+ * collateRecs()
+ *
+ * Build an array of objects within objects aligned by the
+ * passed sortFld.
+ *
+ * Expected input is an object with elements that are arrays.
+ * Each of the arrays contain homogeneous objects, each of
+ * which contain the sortFld element, the name of which is the
+ * second parameter passed. The sortFld can be a number or Date.
+ * Each of the arrays are expected to already by sorted by
+ * the sortFld in ascending order.
+ *
+ *   input = {
+ *    a: [{..., sortFld: 11}, {..., sortFld: 12}],
+ *    b: [{..., sortFld: 9}, {..., sortFld: 10}],
+ *    c: [{..., sortFld: 17}, {..., sortFld: 18}],
+ *    ...
+ *   }
+ *
+ * The output will consist of an array of records (objects),
+ * each of which contains the combined state of all of the
+ * input elements (arrays) based upon the sortFld match.
+ *
+ *   output = [
+ *    {sortFld: 1, a: {...}, b: {...}, c: {...}},
+ *    {sortFld: 2, a: {...}, b: {...}, c: {...}},
+ *    {sortFld: 3, a: {...}, b: {...}, c: {...}},
+ *    ...
+ *    {sortFld: 18, a: {...}, b: {...}, c: {...}},
+ *   ]
+ *
+ * Some input arrays may not have representations at certain
+ * values of the sortFld. In that case, the object used for the
+ * missing value will be an empty object.
+ *
+ * param      data    - input object
+ * param      sortFld - name of the sort field
+ * return     data    - output object
+ * -------------------------------------------------------- */
+var collateRecs = function(data, sortFld) {
+  var output = []
+    , flds = _.keys(data)
+    , makeRec = function(fields, vals, sFldVal) {
+        var obj = {};
+        obj[sortFld] = sFldVal;
+        _.each(fields, function(f, idx) {
+          obj[f] = vals[idx];
+        });
+        return obj;
+      }
+    , inProcess = true
+    , sortVal
+    , recIdx = {}
+    , tmpRecs = []
+    , moreRecs = true
+    , isSortFldDate
+    ;
+
+  // --------------------------------------------------------
+  // Set up the recIdx object to hold how far we have progressed
+  // through each array.
+  // --------------------------------------------------------
+  _.each(flds, function(f) {
+    recIdx[f] = 0;
+  });
+
+  while (inProcess) {
+    // --------------------------------------------------------
+    // Get the initial minimum sort field value for this round.
+    // --------------------------------------------------------
+    moreRecs = false;
+    _.each(flds, function(f) {
+      if (data[f][recIdx[f]]) {
+        tmpRecs.push(data[f][recIdx[f]][sortFld]);
+        moreRecs = true;
+      }
+    });
+    if (! moreRecs) {
+      inProcess = false;
+    } else {
+      sortVal = _.min(tmpRecs);
+      isSortFldDate = _.isDate(sortVal);
+
+      tmpRecs = [];
+      _.each(flds, function(f) {
+        var rec = _.find(data[f], function(o) {
+          if (isSortFldDate) {
+            return o[sortFld].getTime() === sortVal.getTime();
+          } else {
+            return o[sortFld] === sortVal;
+          }
+        });
+        if (rec) {
+          tmpRecs.push(rec);
+          recIdx[f]++;  // We have used a record, so move on.
+        } else {
+          tmpRecs.push({});
+        }
+      });
+      output.push(makeRec(flds, tmpRecs, sortVal));
+    }
+  }   // end while(inProcess)
+
+  return output;
+};
+
+
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
@@ -315,6 +423,7 @@ module.exports = {
   , getAbbr: getAbbr
   , formatDohID: formatDohID
   , isValidDate: isValidDate
+  , collateRecs: collateRecs
 };
 
 

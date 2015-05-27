@@ -486,6 +486,114 @@ describe('Util', function(done) {
     });
 
   });
+
+  describe('collateRecs()', function(done) {
+    var sortFldName = 'sf'
+      , input1
+      , input2
+      ;
+
+    beforeEach(function(done) {
+      var theDate = moment();
+      input1 = {};
+      input2 = {};
+      input1.a = [{sf: 1, a1: 'A1', a2: 'AA1'},{sf: 2, a1: 'A2', a2: 'AA2'},{sf: 4, a1: 'A3', a2: 'AA3'}];
+      input1.b = [{sf: 2, b1: 'B1', b2: 'BB1'},{sf: 3, b1: 'B2', b2: 'BB2'},{sf: 4, b1: 'B3', b2: 'BB3'}];
+      input1.c = [{sf: 1, c1: 'C1', c2: 'CC1'},{sf: 4, c1: 'C3', c2: 'CC3'}];
+      input2.a = [
+        {sf: theDate.clone().add(1, 'days').toDate(), a1: 'A1', a2: 'AA1'},
+        {sf: theDate.clone().add(2, 'days').toDate(), a1: 'A2', a2: 'AA2'},
+        {sf: theDate.clone().add(4, 'days').toDate(), a1: 'A3', a2: 'AA3'}];
+      input2.b = [
+        {sf: theDate.clone().add(2, 'days').toDate(), b1: 'B1', b2: 'BB1'},
+        {sf: theDate.clone().add(3, 'days').toDate(), b1: 'B2', b2: 'BB2'},
+        {sf: theDate.clone().add(4, 'days').toDate(), b1: 'B3', b2: 'BB3'}];
+      input2.c = [
+        {sf: theDate.clone().add(1, 'days').toDate(), c1: 'C1', c2: 'CC1'},
+        {sf: theDate.clone().add(4, 'days').toDate(), c1: 'C3', c2: 'CC3'}];
+      done();
+    });
+
+    it('should return an non-empty array', function(done) {
+      var output = util.collateRecs(input1, sortFldName);
+      output.should.be.an.Array;
+      should(output.length).equal(4);
+      done();
+    });
+
+    it('meta structure of output using number sort field', function(done) {
+      var output = util.collateRecs(input1, sortFldName);
+      var lastSort;
+      _.each(output, function(o) {
+        // Each rec has a sort field of type Number or Date.
+        o.should.have.property(sortFldName);
+        (_.isDate(o[sortFldName]) || _.isNumber(o[sortFldName])).should.be.true;
+
+        // The records are ordered in ascending order by sort field.
+        if (! lastSort) {
+          lastSort = o[sortFldName];
+        } else {
+          o[sortFldName].should.be.greaterThan(lastSort);
+          lastSort = o[sortFldName];
+        }
+
+        // Each rec has required sub-recs, each with a sort field if not empty.
+        o.should.have.property('a');
+        o.should.have.property('b');
+        o.should.have.property('c');
+        if (! _.isEmpty(o.a)) {
+          o.a.should.have.property(sortFldName);
+          o.a[sortFldName].should.eql(o[sortFldName]);
+        }
+        if (! _.isEmpty(o.b)) {
+          o.b.should.have.property(sortFldName);
+          o.b[sortFldName].should.eql(o[sortFldName]);
+        }
+        if (! _.isEmpty(o.c)) {
+          o.c.should.have.property(sortFldName);
+          o.c[sortFldName].should.eql(o[sortFldName]);
+        }
+      });
+      done();
+    });
+
+    it('meta structure of output using Date sort field', function(done) {
+      var output = util.collateRecs(input2, sortFldName);
+      var lastSort;
+      _.each(output, function(o) {
+        // Each rec has a sort field of type Number or Date.
+        o.should.have.property(sortFldName);
+        (_.isDate(o[sortFldName]) || _.isNumber(o[sortFldName])).should.be.true;
+
+        // The records are ordered in ascending order by sort field.
+        if (! lastSort) {
+          lastSort = o[sortFldName];
+        } else {
+          o[sortFldName].should.be.greaterThan(lastSort);
+          lastSort = o[sortFldName];
+        }
+
+        // Each rec has required sub-recs, each with a sort field if not empty.
+        o.should.have.property('a');
+        o.should.have.property('b');
+        o.should.have.property('c');
+        if (! _.isEmpty(o.a)) {
+          o.a.should.have.property(sortFldName);
+          o.a[sortFldName].should.eql(o[sortFldName]);
+        }
+        if (! _.isEmpty(o.b)) {
+          o.b.should.have.property(sortFldName);
+          o.b[sortFldName].should.eql(o[sortFldName]);
+        }
+        if (! _.isEmpty(o.c)) {
+          o.c.should.have.property(sortFldName);
+          o.c[sortFldName].should.eql(o[sortFldName]);
+        }
+      });
+      done();
+    });
+  });
+
 });
 
 
