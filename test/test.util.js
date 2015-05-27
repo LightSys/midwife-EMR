@@ -487,7 +487,7 @@ describe('Util', function(done) {
 
   });
 
-  describe('collateRecs()', function(done) {
+  describe('collateRecs()/mergeRecs()', function(done) {
     var sortFldName = 'sf'
       , input1
       , input2
@@ -592,6 +592,27 @@ describe('Util', function(done) {
       });
       done();
     });
+
+    it('mergeRecs() using number sort field ', function(done) {
+      var output = util.collateRecs(input1, sortFldName);
+      util.mergeRecs(output, sortFldName);
+      output[0].b.should.be.empty;
+      output[1].c.should.eql(input1.c[0]);
+      output[2].c.should.eql(input1.c[0]);
+      output[2].a.should.eql(input1.a[1]);
+      done();
+    });
+
+    it('mergeRecs() using Date sort field ', function(done) {
+      var output = util.collateRecs(input2, sortFldName);
+      util.mergeRecs(output, sortFldName);
+      output[0].b.should.be.empty;
+      output[1].c.should.eql(input2.c[0]);
+      output[2].c.should.eql(input2.c[0]);
+      output[2].a.should.eql(input2.a[1]);
+      done();
+    });
+
   });
 
 });

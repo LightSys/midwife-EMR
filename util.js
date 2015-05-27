@@ -412,6 +412,65 @@ var collateRecs = function(data, sortFld) {
 };
 
 
+/* --------------------------------------------------------
+ * mergeRecs()
+ *
+ * Take the output of collateRecs and merge populated records
+ * "up" the data structure filling in elements with empty
+ * objects along the way.
+ *
+ *   input = [
+ *    {sortFld: 1, a: {...}, b: {}, c: {...}},
+ *    {sortFld: 2, a: {}, b: {...}, c: {}},
+ *    {sortFld: 3, a: {}, b: {...}, c: {...}},
+ *    {sortFld: 4, a: {...}, b: {...}, c: {...}},
+ *   ]
+ *
+ * In the above example, empty objects would be "filled" with
+ * the prior objects of that record type, but only if they
+ * existed prior. sortFld 2 record "a" is an empty object but
+ * the prior record in sortFld 1 record "a" was not empty.
+ * Therefore populate sortFld 2 record "a" with the contents
+ * of sortFld 1 record "a". The same holds true for sortFld 2
+ * record "c" and sortFld 3 record "a".
+ *
+ * But sortFld 1 record "b" is not changed because there is no
+ * prior record to model after.
+ *
+ * Note: the input data structure is modified by this function.
+ *
+ * param       data - output from collateRecs is expected
+ * return      undefined
+ * -------------------------------------------------------- */
+var mergeRecs = function(data, sortFld) {
+  var flds = _.omit(_.keys(data[0]), sortFld)
+    , lastRecs = {}
+    , output = []
+    ;
+
+  // --------------------------------------------------------
+  // Populate lastRecs with the initial elements we are tracking.
+  // --------------------------------------------------------
+  _.each(flds, function(f) {lastRecs[f] = {};});
+
+  // --------------------------------------------------------
+  // Merge "up" the records filling in empty objects with prior
+  // non-empty objects for corresponding elements.
+  // --------------------------------------------------------
+  _.each(data, function(row) {
+    _.each(lastRecs, function(val, key) {
+      if (_.isEmpty(row[key])) {
+        if (! _.isEmpty(lastRecs[key])) {
+          row[key] = lastRecs[key];
+        }
+      } else {
+        lastRecs[key] = row[key];
+      }
+    });
+  });
+};
+
+
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
@@ -424,6 +483,7 @@ module.exports = {
   , formatDohID: formatDohID
   , isValidDate: isValidDate
   , collateRecs: collateRecs
+  , mergeRecs: mergeRecs
 };
 
 

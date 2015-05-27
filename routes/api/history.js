@@ -9,6 +9,7 @@ var cfg = require('../../config')
   , logWarn = require('../../util').logWarn
   , logError = require('../../util').logError
   , collateRecs = require('../../util').collateRecs
+  , mergeRecs = require('../../util').mergeRecs
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
   , _ = require('underscore')
@@ -38,6 +39,7 @@ var prenatalFormatted = function(req, res) {
       // Adjust the data per caller requirements.
 
       data = collateRecs(data, 'replacedAt');
+      mergeRecs(data, 'replacedAt');
 
       res.end(JSON.stringify(data));
     });
