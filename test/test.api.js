@@ -38,6 +38,7 @@ var should = require('should')
 describe('api', function(done) {
   var pregId = 422;
   var prenatalUrl = '/api/history/pregnancy/' + pregId + '/prenatal';
+  var coreUrl = '/api/history/pregnancy/' + pregId + '/core';
 
   describe('history', function(done) {
     this.timeout(7000);
@@ -86,6 +87,33 @@ describe('api', function(done) {
           .expect(200, done);
       });
     }); // end access
+
+    describe('core', function(done) {
+      it('JSON', function(done) {
+        var req = request.get(coreUrl)
+          ;
+        supervisor.attachCookies(req);
+        req
+          .expect(200)
+          .end(function(err, res) {
+            var json;
+            if (err) return done(err);
+            if (! res || ! res.text) return done('No Response');
+            try {
+              json = JSON.parse(res.text);
+            } catch (e) {
+              return done(e);
+            }
+            json.should.be.an.Array;
+            json[0].should.have.a.property('pregnancyLog');
+            json[0].should.have.a.property('patientLog');
+            json[0].should.have.a.property('replacedAt');
+            json[0].pregnancyLog.should.be.an.Object;
+            json[0].patientLog.should.be.an.Object;
+            done();
+          });
+      });
+    }); // end core
 
     describe('prenatal', function(done) {
       it('JSON', function(done) {

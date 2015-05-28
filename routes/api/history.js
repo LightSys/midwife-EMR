@@ -45,6 +45,36 @@ var prenatalFormatted = function(req, res) {
     });
 };
 
+
+/* --------------------------------------------------------
+ * coreFormatted()
+ *
+ * Return all of the historical records for a specfic
+ * pregnancy formatted for the front-end.
+ * -------------------------------------------------------- */
+var coreFormatted = function(req, res) {
+  var pregId;
+
+  if (req.parameters && req.parameters.id1) {
+    pregId = req.parameters.id1;
+  } else {
+    // Bad request since the proper parameter not specified.
+    res.statusCode = 400;
+    return res.end();
+  }
+
+  return core(pregId)
+    .then(function(data) {
+      // Adjust the data per caller requirements.
+
+      data = collateRecs(data, 'replacedAt');
+      mergeRecs(data, 'replacedAt');
+
+      res.end(JSON.stringify(data));
+    });
+};
+
+
 /* --------------------------------------------------------
  * prenatal()
  *
@@ -54,24 +84,55 @@ var prenatalFormatted = function(req, res) {
  * -------------------------------------------------------- */
 var prenatal = function(pregId) {
   var knex
+    , sqlRisk
+    , riskData
+    ;
+
+  // --------------------------------------------------------
+  // Historical tables for the prenatal page include:
+  //    pregnancyLog, patientLog, riskLog
+  // --------------------------------------------------------
+  sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
+
+  return new Promise(function(resolve, reject) {
+    knex = Bookshelf.DB.knex;
+
+    return core(pregId)
+      .then(function(data) {
+        return knex
+          .raw(sqlRisk, pregId)
+          .then(function(data) {
+            riskData = data[0];
+          })
+          .then(function() {
+            // Merge the data into one object.
+            data.riskLog = riskData;
+            return resolve(data);
+          });
+      });
+  });
+};
+
+/* --------------------------------------------------------
+ * core()
+ *
+ * Return the core historical records for the pregnancy.
+ * This information will be used across nearly all pages.
+ * -------------------------------------------------------- */
+var core = function(pregId) {
+  var knex
     , sqlPreg
     , sqlPat
-    , sqlRisk
     , pregData
     , patData
-    , riskData
     , allData = {}
     ;
 
   // --------------------------------------------------------
-  // Tables for the prenatal page include:
-  //    pregnancy, patient, risk
-  // but since this is historical, the respective log tables
-  // are used.
+  // Historical tables: pregnancyLog and patientLog.
   // --------------------------------------------------------
   sqlPreg = 'SELECT * FROM pregnancyLog WHERE id = ? ORDER BY replacedAt';
   sqlPat  = 'SELECT * FROM patientLog WHERE id = ? ORDER BY replacedAt';
-  sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
 
   return new Promise(function(resolve, reject) {
     knex = Bookshelf.DB.knex;
@@ -87,16 +148,9 @@ var prenatal = function(pregId) {
         patData = data[0];
       })
       .then(function() {
-        return knex.raw(sqlRisk, pregId);
-      })
-      .then(function(data) {
-        riskData = data[0];
-      })
-      .then(function() {
         // Merge the data into one object.
         allData.pregnancyLog = pregData;
         allData.patientLog = patData;
-        allData.riskLog = riskData;
         return resolve(allData);
       });
   });
@@ -112,6 +166,9 @@ var get = function(req, res) {
   switch(req.parameters.op2) {
     case 'pregnancy':
       switch(req.parameters.op3) {
+        case 'core':
+          return coreFormatted(req, res);
+          break;
         case 'prenatal':
           return prenatalFormatted(req, res);
           break;
