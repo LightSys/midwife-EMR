@@ -47,12 +47,12 @@ var prenatalFormatted = function(req, res) {
 
 
 /* --------------------------------------------------------
- * coreFormatted()
+ * pregnancyFormatted()
  *
  * Return all of the historical records for a specfic
  * pregnancy formatted for the front-end.
  * -------------------------------------------------------- */
-var coreFormatted = function(req, res) {
+var pregnancyFormatted = function(req, res) {
   var pregId;
 
   if (req.parameters && req.parameters.id1) {
@@ -63,7 +63,7 @@ var coreFormatted = function(req, res) {
     return res.end();
   }
 
-  return core(pregId)
+  return pregnancy(pregId)
     .then(function(data) {
       // Adjust the data per caller requirements.
 
@@ -97,7 +97,7 @@ var prenatal = function(pregId) {
   return new Promise(function(resolve, reject) {
     knex = Bookshelf.DB.knex;
 
-    return core(pregId)
+    return pregnancy(pregId)
       .then(function(data) {
         return knex
           .raw(sqlRisk, pregId)
@@ -114,12 +114,13 @@ var prenatal = function(pregId) {
 };
 
 /* --------------------------------------------------------
- * core()
+ * pregnancy()
  *
- * Return the core historical records for the pregnancy.
- * This information will be used across nearly all pages.
+ * Return the pregnancy historical records for the pregnancy.
+ * This information will be used across nearly all pages. This
+ * includes the patient information as well.
  * -------------------------------------------------------- */
-var core = function(pregId) {
+var pregnancy = function(pregId) {
   var knex
     , sqlPreg
     , sqlPat
@@ -166,8 +167,8 @@ var get = function(req, res) {
   switch(req.parameters.op2) {
     case 'pregnancy':
       switch(req.parameters.op3) {
-        case 'core':
-          return coreFormatted(req, res);
+        case void 0:
+          return pregnancyFormatted(req, res);
           break;
         case 'prenatal':
           return prenatalFormatted(req, res);
