@@ -26,7 +26,7 @@ html(lang="en")
     //- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries.
     //- WARNING: Respond.js doesn't work if you view the page via file.
     script(src='/js/midwife-emr-header.min.js')
-  body
+  body(ng-app='midwifeEmr')
     div#wrapper
       //- Header
       nav(class='navbar navbar-inverse navbar-fixed-top')
@@ -81,6 +81,17 @@ html(lang="en")
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
             - var appRev = applicationRevision? gettext('version') + ': ' + applicationRevision: '';
+            //- =========================================
+            //- TODO: this is hard-code - fix it.
+            - var historyUrl;
+            - if (rec && rec.id) {
+            -   historyUrl = '/spa/history/pregnancy/' + rec.id + '/prenatal';
+            - }
+            - if (historyUrl) {
+            li
+              a(href=historyUrl)= gettext('View History')
+            - }
+            //- =========================================
             li
               span= appRev
             if roleInfo && roleInfo.hasRole('attending')

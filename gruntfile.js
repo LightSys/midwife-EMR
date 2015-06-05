@@ -30,12 +30,18 @@ module.exports = function(grunt) {
                 , 'bower_components/flot/jquery.flot.js'
                 , 'bower_components/flot/jquery.flot.categories.js'
                 , 'bower_components/jquery.are-you-sure/jquery.are-you-sure.js'
-                , 'bower_components/angular/angular.min.js'
+                , 'bower_components/angular/angular.js'
+                , 'bower_components/angular-resource/angular-resource.js'
+                , 'bower_components/angular-moment/angular-moment.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
                 , 'client/js/midwife-emr.js'
                 , 'client/js/midwife-emr-home.js'
                 , 'client/js/priorityList.js'
+                , 'client/js/angular/app.js'
+                , 'client/js/angular/services/historyService/historyService.js'
+                , 'client/js/angular/components/historyControl/historyControl.js'
+                , 'client/js/angular/components/patientWell/patientWell.js'
               ]
             }
           }
@@ -74,6 +80,12 @@ module.exports = function(grunt) {
           , src: 'images/*'
           , dest: 'static/css/'
         }
+        , angular: {
+            expand: true
+            , cwd: 'client/js/angular/'
+            , src: 'components/*/*.tmpl'
+            , dest: 'static/angular/'
+          }
       }
   });
 

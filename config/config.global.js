@@ -276,10 +276,12 @@ cfg.path.priorityListLoad = '/priorityList/:id/:op';  // parameter handling
 cfg.path.priorityList = '/priorityList';         // GET/POST page and AJAX data
 cfg.path.priorityListSave = '/priorityList/:id/save';      // POST to save data
 
-// API calls
+// SPA and API calls
 // E.g.
 // /api/history/pregnancy/423/prenatal
 // /api/history/pregnancy/423/preghistory/788
+cfg.path.spaLoad = '/spa/:op1/:op2/:id1/:op3?/:id2?';       // parameter handling
+cfg.path.spa = '/spa/*';                                    // GET - load the SPA page
 cfg.path.apiLoad = '/api/:op1/:op2/:id1/:op3?/:id2?';       // parameter handling
 cfg.path.apiHistory = '/api/history/*';                     // GET
 

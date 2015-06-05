@@ -207,3 +207,14 @@ span#dirty-notice-tablet {
 .separate-section {
   padding: 0 0 10px 0;
 }
+
+/* Angular components */
+historyControlNavBtnLeft {
+  padding-right: 5px;
+}
+historyControlNavBtnRight {
+  padding-left: 5px;
+}
+
+
+

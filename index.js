@@ -566,6 +566,17 @@ app.post(cfg.path.reportRun, common, hasSuper,
 app.get(cfg.path.reportSummary, common, hasSuper,
     inRoles(['supervisor', 'clerk', 'attending']), report.summary);
 
+// ========================================================
+// ========================================================
+// SPA related routes and data calls below.
+// ========================================================
+// ========================================================
+
+// SPA page
+app.get(cfg.path.spaLoad, api.params);    // parameter handling
+app.get(cfg.path.spa, common,
+    inRoles(['supervisor', 'clerk', 'attending']), api.spa.main);
+
 // History API
 app.get(cfg.path.apiLoad, api.params);    // parameter handling
 app.get(cfg.path.apiHistory, common,

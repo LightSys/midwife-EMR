@@ -26,4 +26,5 @@ var params = function(req, res, next) {
 module.exports = {
   params: params
   , history: require('./history')
+  , spa: require('./spa')
 };
