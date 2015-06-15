@@ -16,15 +16,11 @@ var cfg = require('../../config')
   ;
 
 
-
-/* --------------------------------------------------------
- * prenatalFormatted()
- *
- * Return all of the historical records as shown on the
- * prenatal page in the format expected by the front-end.
- * -------------------------------------------------------- */
-var prenatalFormatted = function(req, res) {
-  var pregId;
+var getAllData = function(req, res) {
+  var sqlPreg
+    , sqlPat
+    , sqlRisk
+    ;
 
   if (req.parameters && req.parameters.id1) {
     pregId = req.parameters.id1;
@@ -34,16 +30,86 @@ var prenatalFormatted = function(req, res) {
     return res.end();
   }
 
-  return prenatal(pregId)
-    .then(function(data) {
-      // Adjust the data per caller requirements.
+  // PregnancyLog
+  sqlPreg = 'SELECT * FROM pregnancyLog WHERE id = ? ORDER BY replacedAt';
 
-      data = collateRecs(data, 'replacedAt');
-      mergeRecs(data, 'replacedAt');
+  // PatientLog
+  sqlPat  = 'SELECT pa.* FROM patientLog pa INNER JOIN pregnancy pr ';
+  sqlPat += 'ON pr.patient_id = pa.id WHERE pr.id = ? ORDER BY pa.replacedAt';
 
-      res.end(JSON.stringify(data));
-    });
+  // riskLog
+  sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
+
+  return Promise.all([
+    getData(sqlPreg, pregId),
+    getData(sqlPat, pregId),
+    getData(sqlRisk, pregId),
+  ]).then(function(results) {
+    var data = _.object([
+        'pregnancyLog',
+        'patientLog',
+        'riskLog'],
+      results);
+    data = collateRecs(data, 'replacedAt');
+    mergeRecs(data, 'replacedAt');
+    res.end(JSON.stringify(data));
+  });
 };
+
+/* --------------------------------------------------------
+ * getData()
+ *
+ * Return a promise which will resolve to the data for the
+ * specified query.
+ *
+ * param       sql
+ * param       pregId
+ * return      promise
+ * -------------------------------------------------------- */
+var getData = function(sql, pregId) {
+  var knex
+    , sqlRisk
+    , results
+    ;
+
+  return new Promise(function(resolve, reject) {
+    knex = Bookshelf.DB.knex;
+    return knex
+      .raw(sql, pregId)
+      .then(function(data) {
+        results = data[0];
+        return resolve(results);
+      });
+  });
+};
+
+/* --------------------------------------------------------
+ * prenatalFormatted()
+ *
+ * Return all of the historical records as shown on the
+ * prenatal page in the format expected by the front-end.
+ * -------------------------------------------------------- */
+//var prenatalFormatted = function(req, res) {
+  //var pregId;
+
+  //if (req.parameters && req.parameters.id1) {
+    //pregId = req.parameters.id1;
+  //} else {
+    //// Bad request since the proper parameter not specified.
+    //res.statusCode = 400;
+    //return res.end();
+  //}
+
+  //return prenatal(pregId)
+    //.then(function(data) {
+      //// Adjust the data per caller requirements.
+
+      //data = collateRecs(data, 'replacedAt');
+      //mergeRecs(data, 'replacedAt');
+
+      //res.end(JSON.stringify(data));
+    //});
+//};
 
 
 /* --------------------------------------------------------
@@ -52,27 +118,27 @@ var prenatalFormatted = function(req, res) {
  * Return all of the historical records for a specfic
  * pregnancy formatted for the front-end.
  * -------------------------------------------------------- */
-var pregnancyFormatted = function(req, res) {
-  var pregId;
+//var pregnancyFormatted = function(req, res) {
+  //var pregId;
 
-  if (req.parameters && req.parameters.id1) {
-    pregId = req.parameters.id1;
-  } else {
-    // Bad request since the proper parameter not specified.
-    res.statusCode = 400;
-    return res.end();
-  }
+  //if (req.parameters && req.parameters.id1) {
+    //pregId = req.parameters.id1;
+  //} else {
+    //// Bad request since the proper parameter not specified.
+    //res.statusCode = 400;
+    //return res.end();
+  //}
 
-  return pregnancy(pregId)
-    .then(function(data) {
-      // Adjust the data per caller requirements.
+  //return pregnancy(pregId)
+    //.then(function(data) {
+      //// Adjust the data per caller requirements.
 
-      data = collateRecs(data, 'replacedAt');
-      mergeRecs(data, 'replacedAt');
+      //data = collateRecs(data, 'replacedAt');
+      //mergeRecs(data, 'replacedAt');
 
-      res.end(JSON.stringify(data));
-    });
-};
+      //res.end(JSON.stringify(data));
+    //});
+//};
 
 
 /* --------------------------------------------------------
@@ -82,36 +148,36 @@ var pregnancyFormatted = function(req, res) {
  * prenatal page for the various tables per the pregnancy id
  * specified.
  * -------------------------------------------------------- */
-var prenatal = function(pregId) {
-  var knex
-    , sqlRisk
-    , riskData
-    ;
+//var prenatal = function(pregId) {
+  //var knex
+    //, sqlRisk
+    //, riskData
+    //;
 
-  // --------------------------------------------------------
-  // Historical tables for the prenatal page include:
-  //    pregnancyLog, patientLog, riskLog
-  // --------------------------------------------------------
-  sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
+  //// --------------------------------------------------------
+  //// Historical tables for the prenatal page include:
+  ////    pregnancyLog, patientLog, riskLog
+  //// --------------------------------------------------------
+  //sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
 
-  return new Promise(function(resolve, reject) {
-    knex = Bookshelf.DB.knex;
+  //return new Promise(function(resolve, reject) {
+    //knex = Bookshelf.DB.knex;
 
-    return pregnancy(pregId)
-      .then(function(data) {
-        return knex
-          .raw(sqlRisk, pregId)
-          .then(function(data) {
-            riskData = data[0];
-          })
-          .then(function() {
-            // Merge the data into one object.
-            data.riskLog = riskData;
-            return resolve(data);
-          });
-      });
-  });
-};
+    //return pregnancy(pregId)
+      //.then(function(data) {
+        //return knex
+          //.raw(sqlRisk, pregId)
+          //.then(function(data) {
+            //riskData = data[0];
+          //})
+          //.then(function() {
+            //// Merge the data into one object.
+            //data.riskLog = riskData;
+            //return resolve(data);
+          //});
+      //});
+  //});
+//};
 
 /* --------------------------------------------------------
  * pregnancy()
@@ -120,42 +186,42 @@ var prenatal = function(pregId) {
  * This information will be used across nearly all pages. This
  * includes the patient information as well.
  * -------------------------------------------------------- */
-var pregnancy = function(pregId) {
-  var knex
-    , sqlPreg
-    , sqlPat
-    , pregData
-    , patData
-    , allData = {}
-    ;
+//var pregnancy = function(pregId) {
+  //var knex
+    //, sqlPreg
+    //, sqlPat
+    //, pregData
+    //, patData
+    //, allData = {}
+    //;
 
-  // --------------------------------------------------------
-  // Historical tables: pregnancyLog and patientLog.
-  // --------------------------------------------------------
-  sqlPreg = 'SELECT * FROM pregnancyLog WHERE id = ? ORDER BY replacedAt';
-  sqlPat  = 'SELECT * FROM patientLog WHERE id = ? ORDER BY replacedAt';
+  //// --------------------------------------------------------
+  //// Historical tables: pregnancyLog and patientLog.
+  //// --------------------------------------------------------
+  //sqlPreg = 'SELECT * FROM pregnancyLog WHERE id = ? ORDER BY replacedAt';
+  //sqlPat  = 'SELECT * FROM patientLog WHERE id = ? ORDER BY replacedAt';
 
-  return new Promise(function(resolve, reject) {
-    knex = Bookshelf.DB.knex;
-    return knex
-      .raw(sqlPreg, pregId)
-      .then(function(data) {
-        pregData = data[0];
-      })
-      .then(function() {
-        return knex.raw(sqlPat, pregData[0].patient_id);
-      })
-      .then(function(data) {
-        patData = data[0];
-      })
-      .then(function() {
-        // Merge the data into one object.
-        allData.pregnancyLog = pregData;
-        allData.patientLog = patData;
-        return resolve(allData);
-      });
-  });
-};
+  //return new Promise(function(resolve, reject) {
+    //knex = Bookshelf.DB.knex;
+    //return knex
+      //.raw(sqlPreg, pregId)
+      //.then(function(data) {
+        //pregData = data[0];
+      //})
+      //.then(function() {
+        //return knex.raw(sqlPat, pregData[0].patient_id);
+      //})
+      //.then(function(data) {
+        //patData = data[0];
+      //})
+      //.then(function() {
+        //// Merge the data into one object.
+        //allData.pregnancyLog = pregData;
+        //allData.patientLog = patData;
+        //return resolve(allData);
+      //});
+  //});
+//};
 
 /* --------------------------------------------------------
  * get()
@@ -168,10 +234,7 @@ var get = function(req, res) {
     case 'pregnancy':
       switch(req.parameters.op3) {
         case void 0:
-          return pregnancyFormatted(req, res);
-          break;
-        case 'prenatal':
-          return prenatalFormatted(req, res);
+          return getAllData(req, res);
           break;
         default:
           logError('Unsupported API call: ' + req.path);
