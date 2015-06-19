@@ -24,7 +24,8 @@
     "jquery.are-you-sure": "~1.9.0",
     "angular": "~1.4.0",
     "angular-resource": "~1.4.0",
-    "angular-moment": "~0.10.1"
+    "angular-moment": "~0.10.1",
+    "angular-ui-router": "~0.2.15"
   },
   "resolutions": {
     "bootstrap": "~3.3.5"

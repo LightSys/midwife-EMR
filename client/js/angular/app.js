@@ -102,11 +102,155 @@
   angular.module('midwifeEmr', [
     'ngResource',
     'angularMoment',
+    'ui.router',
     'historyControlModule',
     'historyServiceModule',
     'patientWellModule'
   ]);
 
+  // --------------------------------------------------------
+  // UI-Router
+  // --------------------------------------------------------
+  angular.module('midwifeEmr')
+    .config(['$stateProvider', '$urlRouterProvider', '$locationProvider',
+        function($stateProvider, $urlRouterProvider, $locationProvider) {
+      $urlRouterProvider.otherwise('/'); // TODO: this takes out of SPA, correct?
+
+      $stateProvider
+        .state('pregnancy', {
+          url: '/spa/history/pregnancy/:id',
+          resolve: {
+            pregId: ['$stateParams', function($stateParams) {
+              return $stateParams.id;
+            }]
+          },
+          views: {
+            'tabs': {
+              templateUrl: '/angular/views/pregnancy-tab.html'
+            },
+            'patientWell': {
+              templateUrl: '/angular/views/history-header.html',
+              controller: function($scope, $stateParams) {
+                $scope.pregId = $stateParams.id;
+              }
+            },
+            'content': {
+              template: '<p>pregnancy state</p>'
+            }
+          }
+        })
+        .state('pregnancy.prenatal', {
+          url: '/prenatal',
+          views: {
+            'title@': {
+              template: '<h1>{{title}}</h1>',
+              controller: function($scope) {
+                $scope.title = 'Prenatal';
+              }
+            },
+            'content@': {
+              template: '<p>This is the prenatal content for pregnancy id: {{pregId}}.</p>',
+              controller: function($scope, pregId) {
+                $scope.pregId = pregId;
+              }
+            }
+          }
+        })
+        .state('pregnancy.labs', {
+          url: '/labs',
+          views: {
+            'title@': {
+              template: '<h1>{{title}}</h1>',
+              controller: function($scope) {
+                $scope.title = 'Labs';
+              }
+            },
+            'content@': {
+              template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
+              controller: function($scope, pregId) {
+                $scope.pregId = pregId;
+              }
+            }
+          }
+        })
+        .state('pregnancy.questionnaire', {
+          url: '/quesEdit',
+          views: {
+            'title@': {
+              template: '<h1>{{title}}</h1>',
+              controller: function($scope) {
+                $scope.title = 'Pregnancy Questionnaire';
+              }
+            },
+            'content@': {
+              template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
+              controller: function($scope, pregId) {
+                $scope.pregId = pregId;
+              }
+            }
+          }
+        })
+        .state('pregnancy.midwife', {
+          url: '/midwifeinterview',
+          views: {
+            'title@': {
+              template: '<h1>{{title}}</h1>',
+              controller: function($scope) {
+                $scope.title = 'Midwife Interview';
+              }
+            },
+            'content@': {
+              template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
+              controller: function($scope, pregId) {
+                $scope.pregId = pregId;
+              }
+            }
+          }
+        })
+        .state('pregnancy.general', {
+          url: '/edit',
+          views: {
+            'title@': {
+              template: '<h1>{{title}}</h1>',
+              controller: function($scope) {
+                $scope.title = 'Edit Client';
+              }
+            },
+            'content@': {
+              template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
+              controller: function($scope, pregId) {
+                $scope.pregId = pregId;
+              }
+            }
+          }
+        });
+
+      $locationProvider.html5Mode(true);
+
+    }]);
+
+  // --------------------------------------------------------
+  // Debugging for UI Router.
+  // --------------------------------------------------------
+  angular.module('midwifeEmr')
+    .run(function($rootScope) {
+      $rootScope.$on("$stateChangeError", console.log.bind(console));
+
+      $rootScope.$on('$stateChangeStart',
+        function(event, toState, toParams, fromState, fromParams){
+          //console.dir(event);
+          //console.dir(toState);
+          //console.dir(toParams);
+          //console.dir(fromState);
+          //console.dir(fromParams);
+          //event.preventDefault();
+      });
+
+    });
+
+  // --------------------------------------------------------
+  // Various filters.
+  // --------------------------------------------------------
   angular.module('midwifeEmr')
     // --------------------------------------------------------
     // abs filter

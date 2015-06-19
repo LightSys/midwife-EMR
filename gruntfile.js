@@ -33,6 +33,7 @@ module.exports = function(grunt) {
                 , 'bower_components/angular/angular.js'
                 , 'bower_components/angular-resource/angular-resource.js'
                 , 'bower_components/angular-moment/angular-moment.js'
+                , 'bower_components/angular-ui-router/release/angular-ui-router.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
                 , 'client/js/midwife-emr.js'
@@ -80,10 +81,18 @@ module.exports = function(grunt) {
           , src: 'images/*'
           , dest: 'static/css/'
         }
-        , angular: {
+        , angularComponents: {
+            // The templates associated with the Angular components (directives).
             expand: true
             , cwd: 'client/js/angular/'
             , src: 'components/*/*.tmpl'
+            , dest: 'static/angular/'
+          }
+        , angularViews: {
+            // The templates associated with the views (Angular UI Router).
+            expand: true
+            , cwd: 'client/js/angular/'
+            , src: 'views/*.html'
             , dest: 'static/angular/'
           }
       }
