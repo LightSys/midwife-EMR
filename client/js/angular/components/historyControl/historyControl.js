@@ -138,7 +138,9 @@
 
           // --------------------------------------------------------
           // Load the pregnancy automatically if the pregnancy id is
-          // passed into the template.
+          // passed into the template. If the pregnancy id is not
+          // passed in, the control will still work as expected
+          // assuming that another entity has run historyService.load().
           // --------------------------------------------------------
           if ($scope.hcPregId) {
             pregId = parseInt($scope.hcPregId, 10);

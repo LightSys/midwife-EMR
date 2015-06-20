@@ -114,9 +114,22 @@
   angular.module('midwifeEmr')
     .config(['$stateProvider', '$urlRouterProvider', '$locationProvider',
         function($stateProvider, $urlRouterProvider, $locationProvider) {
+
+      // --------------------------------------------------------
+      // historyService callbacks for cleanup when leaving states.
+      // --------------------------------------------------------
+      var hsPrenatalCB;
+      var hsLabsCB;
+      var hsQuestionnaireCB;
+      var hsMidwifeCB;
+      var hsGeneralCB;
+
       $urlRouterProvider.otherwise('/'); // TODO: this takes out of SPA, correct?
 
       $stateProvider
+        // --------------------------------------------------------
+        // Base state for all historical information on a pregnancy.
+        // --------------------------------------------------------
         .state('pregnancy', {
           url: '/spa/history/pregnancy/:id',
           resolve: {
@@ -139,6 +152,9 @@
             }
           }
         })
+        // --------------------------------------------------------
+        // Prenatal tab.
+        // --------------------------------------------------------
         .state('pregnancy.prenatal', {
           url: '/prenatal',
           views: {
@@ -149,13 +165,29 @@
               }
             },
             'content@': {
-              template: '<p>This is the prenatal content for pregnancy id: {{pregId}}.</p>',
-              controller: function($scope, pregId) {
+              templateUrl: '/angular/views/prenatal.html',
+              controller: ['$scope', 'historyService', 'pregId', function($scope, historyService, pregId) {
+                historyService.load(pregId);
+                hsPrenatalCB = historyService.register(function(data) {
+                  console.log(data);
+                  $scope.hd = data;
+                });
                 $scope.pregId = pregId;
-              }
+              }],
+              controllerAs: 'ctrl'
             }
-          }
+          },
+          onExit: ['historyService', function(historyService) {
+            // --------------------------------------------------------
+            // Clean up the callback for the history service.
+            // --------------------------------------------------------
+            console.log('State: pregnancy, onExit');
+            historyService.unregister(hsPrenatalCB);
+          }]
         })
+        // --------------------------------------------------------
+        // Labs tab.
+        // --------------------------------------------------------
         .state('pregnancy.labs', {
           url: '/labs',
           views: {
@@ -173,6 +205,9 @@
             }
           }
         })
+        // --------------------------------------------------------
+        // Questionnaire tab.
+        // --------------------------------------------------------
         .state('pregnancy.questionnaire', {
           url: '/quesEdit',
           views: {
@@ -190,6 +225,9 @@
             }
           }
         })
+        // --------------------------------------------------------
+        // Midwife tab.
+        // --------------------------------------------------------
         .state('pregnancy.midwife', {
           url: '/midwifeinterview',
           views: {
@@ -207,6 +245,9 @@
             }
           }
         })
+        // --------------------------------------------------------
+        // General tab.
+        // --------------------------------------------------------
         .state('pregnancy.general', {
           url: '/edit',
           views: {
