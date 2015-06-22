@@ -167,11 +167,11 @@
             'content@': {
               templateUrl: '/angular/views/prenatal.html',
               controller: ['$scope', 'historyService', 'pregId', function($scope, historyService, pregId) {
-                historyService.load(pregId);
+                historyService.loadAsNeeded(pregId);
                 hsPrenatalCB = historyService.register(function(data) {
-                  console.log(data);
                   $scope.hd = data;
                 });
+                historyService.curr();
                 $scope.pregId = pregId;
               }],
               controllerAs: 'ctrl'
@@ -181,7 +181,7 @@
             // --------------------------------------------------------
             // Clean up the callback for the history service.
             // --------------------------------------------------------
-            console.log('State: pregnancy, onExit');
+            console.log('State: pregnancy.prenatal, onExit');
             historyService.unregister(hsPrenatalCB);
           }]
         })
@@ -199,11 +199,23 @@
             },
             'content@': {
               template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
-              controller: function($scope, pregId) {
+              controller: ['$scope', 'historyService', 'pregId', function($scope, historyService, pregId) {
+                historyService.loadAsNeeded(pregId);
+                hsLabsCB = historyService.register(function(data) {
+                  $scope.hd = data;
+                });
+                historyService.curr();
                 $scope.pregId = pregId;
-              }
+              }]
             }
-          }
+          },
+          onExit: ['historyService', function(historyService) {
+            // --------------------------------------------------------
+            // Clean up the callback for the history service.
+            // --------------------------------------------------------
+            console.log('State: pregnancy.labs, onExit');
+            historyService.unregister(hsLabsCB);
+          }]
         })
         // --------------------------------------------------------
         // Questionnaire tab.
@@ -219,11 +231,23 @@
             },
             'content@': {
               template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
-              controller: function($scope, pregId) {
+              controller: ['$scope', 'historyService', 'pregId', function($scope, historyService, pregId) {
+                historyService.loadAsNeeded(pregId);
+                hsQuestionnaireCB = historyService.register(function(data) {
+                  $scope.hd = data;
+                });
+                historyService.curr();
                 $scope.pregId = pregId;
-              }
+              }]
             }
-          }
+          },
+          onExit: ['historyService', function(historyService) {
+            // --------------------------------------------------------
+            // Clean up the callback for the history service.
+            // --------------------------------------------------------
+            console.log('State: pregnancy.questionnaire, onExit');
+            historyService.unregister(hsQuestionnaireCB);
+          }]
         })
         // --------------------------------------------------------
         // Midwife tab.
@@ -239,11 +263,23 @@
             },
             'content@': {
               template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
-              controller: function($scope, pregId) {
+              controller: ['$scope', 'historyService', 'pregId', function($scope, historyService, pregId) {
+                historyService.loadAsNeeded(pregId);
+                hsMidwifeCB = historyService.register(function(data) {
+                  $scope.hd = data;
+                });
+                historyService.curr();
                 $scope.pregId = pregId;
-              }
+              }]
             }
-          }
+          },
+          onExit: ['historyService', function(historyService) {
+            // --------------------------------------------------------
+            // Clean up the callback for the history service.
+            // --------------------------------------------------------
+            console.log('State: pregnancy.midwife, onExit');
+            historyService.unregister(hsMidwifeCB);
+          }]
         })
         // --------------------------------------------------------
         // General tab.
@@ -259,11 +295,23 @@
             },
             'content@': {
               template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
-              controller: function($scope, pregId) {
+              controller: ['$scope', 'historyService', 'pregId', function($scope, historyService, pregId) {
+                historyService.loadAsNeeded(pregId);
+                hsGeneralCB = historyService.register(function(data) {
+                  $scope.hd = data;
+                });
+                historyService.curr();
                 $scope.pregId = pregId;
-              }
+              }]
             }
-          }
+          },
+          onExit: ['historyService', function(historyService) {
+            // --------------------------------------------------------
+            // Clean up the callback for the history service.
+            // --------------------------------------------------------
+            console.log('State: pregnancy.general, onExit');
+            historyService.unregister(hsGeneralCB);
+          }]
         });
 
       $locationProvider.html5Mode(true);

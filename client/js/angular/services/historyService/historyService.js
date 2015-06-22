@@ -23,12 +23,14 @@
      *
      * Methods exposed by historyService:
      *  - load(pregId)    - loads pregnancy data for the id passed
+     *  - loadAsNeeded(pregId) - loads pregnancy data if preg id different
      *  - register(func)  - registers a callback for data changes
      *  - unregister(id)  - unregisters a callback
-     *  - first()         - moves pointer to first record
-     *  - next()          - moves pointer to next record
-     *  - prev()          - moves pointer to previous record
-     *  - last()          - moves pointer to last record
+     *  - first()         - moves pointer to first record/forces cb/returns info
+     *  - next()          - moves pointer to next record/forces cb/returns info
+     *  - prev()          - moves pointer to previous record/forces cb/returns info
+     *  - last()          - moves pointer to last record/forces cb/returns info
+     *  - curr()          - forces callback/returns info
      *  - info()          - returns information about current record
      * -------------------------------------------------------- */
     .factory('historyService', [
@@ -85,17 +87,36 @@
       };
 
       /* --------------------------------------------------------
+       * loadAsNeeded()
+       *
+       * Loads a different pregnancy from the server if the load
+       * has not yet occurred or if the pregnancy id passed is
+       * different than the one already loaded.
+       *
+       * param       pregId
+       * return      undefined
+       * -------------------------------------------------------- */
+      var loadAsNeeded = function(pregId) {
+        if (! pregnancyId || pregnancyId !== pregId) {
+          load(pregId);
+        }
+      };
+
+      /* --------------------------------------------------------
        * notifyCallbacks()
        *
        * Notify all of the registered callbacks that the pregnancy
-       * information has changed.
+       * information has changed. If called before initial load(),
+       * does nothing.
        * -------------------------------------------------------- */
       var notifyCallbacks = function() {
         var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
-        var rec = json[currRecNum];
-        _.each(registeredCallbacks, function(cbObj) {
-          cbObj.func(rec);
-        });
+        if (json) {
+          var rec = json[currRecNum];
+          _.each(registeredCallbacks, function(cbObj) {
+            cbObj.func(rec);
+          });
+        }
       };
 
       /* --------------------------------------------------------
@@ -126,6 +147,7 @@
         };
         if (func && _.isFunction(func)) {
           registeredCallbacks.push(funcObj);
+          console.log('Register: ' + funcObj.id);
           return funcObj.id;
         }
         return void 0;
@@ -143,6 +165,7 @@
        * return      boolean for success
        * -------------------------------------------------------- */
       var unregister = function(id) {
+        console.log('Unregister: ' + id);
         var len = registeredCallbacks.length;
         // Better way to do this?
         registeredCallbacks = _.reject(registeredCallbacks, function(c) {
@@ -185,6 +208,11 @@
         notifyCallbacks();
         return info();
       };
+      var curr = function() {
+        notifyCallbacks();
+        console.log('curr()');
+        return info();
+      };
 
       /* --------------------------------------------------------
        * info()
@@ -208,12 +236,14 @@
       // ========================================================
       return {
         load: load,
+        loadAsNeeded: loadAsNeeded,
         register: register,
         unregister: unregister,
         next: next,
         prev: prev,
         first: first,
         last: last,
+        curr: curr,
         info: info
       };
 
