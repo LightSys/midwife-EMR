@@ -18,9 +18,7 @@
           // Register the historyService callback.
           // --------------------------------------------------------
           hsCallback = historyService.register(function(data) {
-            $scope.ctrl.pregnancy = data.pregnancyLog;
-            $scope.ctrl.patient = data.patientLog;
-            $scope.ctrl.replacedAt = data.replacedAt;
+            $scope.ctrl = data;
           });
 
           // --------------------------------------------------------

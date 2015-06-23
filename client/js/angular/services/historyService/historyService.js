@@ -34,16 +34,13 @@
      *  - info()          - returns information about current record
      * -------------------------------------------------------- */
     .factory('historyService', [
-        '$resource',
+        '$http',
         '$cacheFactory',
-        function($resource, $cacheFactory) {
+        function($http, $cacheFactory) {
 
       // Paths
       var baseUrl = '/api/history';;
       var pregnancyPath = 'pregnancy/:pregId';
-
-      // Resources
-      var pregnancyResource;
 
       // Caches and cache keys
       var PREGNANCY_CACHE = 'pregnancyCache';
@@ -73,16 +70,17 @@
         var path;
         pregnancyId = pregId;
         pregnancyCache.removeAll();
-        path = baseUrl + '/' + pregnancyPath;
-        pregnancyResource = $resource(path, {pregId: '@pregId'});
-        pregnancyResource
-          .query({pregId: pregnancyId}, function(data) {
-            var json = angular.fromJson(data);
-            numRecs = json.length;
-            currRecNum = numRecs - 1; // Set to last rec, zero based.
-            pregnancyCache.put(PREGNANCY_CACHE_KEY, json);
+        path = baseUrl + '/' + pregnancyPath.replace(/:pregId/, pregId);
+        $http.get(path, {responseType: 'json'})
+          .success(function(data, sts, headers, config) {
+            numRecs = data[0].length;
+            currRecNum = numRecs - 1;   // zero-based
+            pregnancyCache.put(PREGNANCY_CACHE_KEY, data);
             console.log('Loaded ' + numRecs + ' records.');
             notifyCallbacks();
+          })
+          .error(function(data, sts, headers, config) {
+            console.log('Error: ' + sts);
           });
       };
 
@@ -103,16 +101,43 @@
       };
 
       /* --------------------------------------------------------
+       * formatData()
+       *
+       * Format the data to conform to the expected format.
+       *
+       * param       data
+       * return      rec
+       * -------------------------------------------------------- */
+      var formatData = function(data) {
+        var rec = {};
+        // First record in array are main tables collated/merged.
+        // Rename table names to not reference "Log".
+        rec.pregnancy = data[0][currRecNum].pregnancyLog;
+        rec.patient = data[0][currRecNum].patientLog;
+        rec.replacedAt = data[0][currRecNum].replacedAt;
+
+        // Secondary tables which are not collated/merged.
+        rec.secondary = {};
+        rec.secondary.risk = data[1].riskLog
+        return rec;
+      };
+
+      /* --------------------------------------------------------
        * notifyCallbacks()
        *
        * Notify all of the registered callbacks that the pregnancy
        * information has changed. If called before initial load(),
        * does nothing.
+       *
+       * Note that we map the *Log table names to their non-log
+       * variants so that downstream views can be used interchangeably
+       * with history records and regular CRUD records.
        * -------------------------------------------------------- */
       var notifyCallbacks = function() {
         var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
+        var rec;
         if (json) {
-          var rec = json[currRecNum];
+          rec = formatData(json);   //json[0][currRecNum];
           _.each(registeredCallbacks, function(cbObj) {
             cbObj.func(rec);
           });
@@ -210,7 +235,6 @@
       };
       var curr = function() {
         notifyCallbacks();
-        console.log('curr()');
         return info();
       };
 

@@ -16,6 +16,12 @@ var cfg = require('../../config')
   ;
 
 
+/* --------------------------------------------------------
+ * getAllData()
+ *
+ * Returns all of the historical data for a specific patient
+ * to the caller in one JSON data structure.
+ * -------------------------------------------------------- */
 var getAllData = function(req, res) {
   var sqlPreg
     , sqlPat
@@ -38,20 +44,41 @@ var getAllData = function(req, res) {
   sqlPat += 'ON pr.patient_id = pa.id WHERE pr.id = ? ORDER BY pa.replacedAt';
 
   // riskLog
-  sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
+  sqlRisk =  'SELECT rl.*, rc.name, rc.riskType, rc.description FROM riskLog rl ';
+  sqlRisk += 'INNER JOIN riskCode rc ON rl.riskCode = rc.id WHERE pregnancy_id = ? ';
+  sqlRisk += 'ORDER BY replacedAt';
 
   return Promise.all([
     getData(sqlPreg, pregId),
     getData(sqlPat, pregId),
     getData(sqlRisk, pregId),
   ]).then(function(results) {
-    var data = _.object([
+    // --------------------------------------------------------
+    // The Angular client expects an array. The first record
+    // of the array will be the collated/merged main tables.
+    // --------------------------------------------------------
+    var data = [];
+    var main;
+    var secondary = {};
+
+    // --------------------------------------------------------
+    // The main tables which are collated/merged.
+    // --------------------------------------------------------
+    main = _.object([
         'pregnancyLog',
-        'patientLog',
-        'riskLog'],
+        'patientLog'],
       results);
-    data = collateRecs(data, 'replacedAt');
-    mergeRecs(data, 'replacedAt');
+    main = collateRecs(main, 'replacedAt');
+    mergeRecs(main, 'replacedAt');
+    data.push(main);
+
+    // --------------------------------------------------------
+    // The secondary tables which are provided to the client raw
+    // as the second record of the array.
+    // --------------------------------------------------------
+    secondary.riskLog = results[2];      // riskLog
+    // Add more secondary tables here as the come online.
+    data.push(secondary);
     res.end(JSON.stringify(data));
   });
 };
