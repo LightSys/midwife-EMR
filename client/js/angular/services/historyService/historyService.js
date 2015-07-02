@@ -77,6 +77,7 @@
             currRecNum = numRecs - 1;   // zero-based
             pregnancyCache.put(PREGNANCY_CACHE_KEY, data);
             console.log('Loaded ' + numRecs + ' records.');
+            console.dir(data);
             notifyCallbacks();
           })
           .error(function(data, sts, headers, config) {
@@ -111,14 +112,41 @@
       var formatData = function(data) {
         var rec = {};
         // First record in array are main tables collated/merged.
-        // Rename table names to not reference "Log".
-        rec.pregnancy = data[0][currRecNum].pregnancyLog;
-        rec.patient = data[0][currRecNum].patientLog;
+        rec.pregnancy = data[0][currRecNum].pregnancy;
+        rec.patient = data[0][currRecNum].patient;
+        rec.prenatalExam = data[0][currRecNum].prenatalExam;
+
+        rec.whatChanged = data[0][currRecNum].whatChanged;  // Table level what changed.
         rec.replacedAt = data[0][currRecNum].replacedAt;
 
+        // --------------------------------------------------------
+        // Flag changed records at the field level - PROOF of Concept.
+        // TODO: clean this up.
+        // TODO: figure out how to handle secondary tables.
+        // TODO: determine if this is worth the effort.
+        //
+        // Note: table-level changes are recorded in the whatChanged
+        // field by mergeRecs in util.js on the server. Maybe both
+        // of these are not necessary or table level change information
+        // could be leveraged here to improve performance. Or all of
+        // this could be done on the server.
+        // --------------------------------------------------------
+        rec.changed = {};
+        rec.changed.pregnancy = {};
+        rec.changed.patient = {};
+        if (currRecNum > 0) {
+          _.each(['pregnancy', 'patient'], function(table) {
+            var pRec = data[0][currRecNum - 1][table];
+            var cRec = data[0][currRecNum][table];
+            _.each(cRec, function(val, fld) {
+              if (val !== pRec[fld]) rec.changed[table][fld] = true;
+            });
+          });
+        }
+
         // Secondary tables which are not collated/merged.
-        rec.secondary = {};
-        rec.secondary.risk = data[1].riskLog
+        rec.secondary = data[1];
+
         return rec;
       };
 
@@ -128,10 +156,6 @@
        * Notify all of the registered callbacks that the pregnancy
        * information has changed. If called before initial load(),
        * does nothing.
-       *
-       * Note that we map the *Log table names to their non-log
-       * variants so that downstream views can be used interchangeably
-       * with history records and regular CRUD records.
        * -------------------------------------------------------- */
       var notifyCallbacks = function() {
         var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
@@ -253,6 +277,33 @@
         };
       };
 
+      /* --------------------------------------------------------
+       * lookup()
+       *
+       * Return the record as specified per the table, key field
+       * name, and key field value passed. Returns undefined if
+       * the record is not found or if anything else does not
+       * align as expected.
+       *
+       * param      table
+       * param      key
+       * param      val
+       * return     record or undefined
+       * -------------------------------------------------------- */
+      var lookup = function(table, key, val) {
+        var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
+        var search = {};
+        var lookups;
+        if (json) {
+          lookups = json[2];
+          if (_.has(lookups, table)) {
+            search[key] = val;
+            return _.findWhere(lookups[table], search);
+          }
+        }
+        return undefined;
+      };
+
       // ========================================================
       // ========================================================
       // Public API of historyService.
@@ -268,7 +319,8 @@
         first: first,
         last: last,
         curr: curr,
-        info: info
+        info: info,
+        lookup: lookup
       };
 
     }]);

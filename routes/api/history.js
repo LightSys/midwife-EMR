@@ -26,6 +26,14 @@ var getAllData = function(req, res) {
   var sqlPreg
     , sqlPat
     , sqlRisk
+    , sqlPreExam
+    , sqlMed
+    , sqlVac
+    , sqlUser
+    , sqlVacType
+    , sqlMedType
+    , start = Date.now()
+    , end
     ;
 
   if (req.parameters && req.parameters.id1) {
@@ -48,10 +56,40 @@ var getAllData = function(req, res) {
   sqlRisk += 'INNER JOIN riskCode rc ON rl.riskCode = rc.id WHERE pregnancy_id = ? ';
   sqlRisk += 'ORDER BY replacedAt';
 
+  // prenatalExamLog
+  sqlPreExam =  'SELECT * FROM prenatalExamLog WHERE pregnancy_id = ?';
+
+  // medicationLog
+  sqlMed =  'SELECT * FROM medicationLog WHERE pregnancy_id = ?';
+
+  // vaccinationLog
+  sqlVac =  'SELECT * FROM vaccinationLog WHERE pregnancy_id = ?';
+
+  // --------------------------------------------------------
+  // Lookup Tables. These do not reference Log tables nor
+  // need to reference pregnancy id.
+  // --------------------------------------------------------
+  sqlUser =  'SELECT u.id, u.username, u.firstname, u.lastname, u.shortName, ';
+  sqlUser += 'u.displayName, u.status, u.isCurrentTeacher, r.name AS rolename ';
+  sqlUser += 'FROM user u INNER JOIN user_role ur ON u.id = ur.user_id ';
+  sqlUser += 'INNER JOIN role r ON ur.role_id = r.id';
+
+  sqlVacType =  'SELECT * FROM vaccinationType';
+
+  sqlMedType =  'SELECT * FROM medicationType';
+
   return Promise.all([
-    getData(sqlPreg, pregId),
-    getData(sqlPat, pregId),
-    getData(sqlRisk, pregId),
+    // Log tables
+    getData(sqlPreg, 'pregnancy', pregId),
+    getData(sqlPat, 'patient', pregId),
+    getData(sqlRisk, 'risk', pregId),
+    getData(sqlPreExam, 'prenatalExam', pregId),
+    getData(sqlMed, 'medication', pregId),
+    getData(sqlVac, 'vaccination', pregId),
+    // Lookup tables
+    getData(sqlUser, 'user'),
+    getData(sqlVacType, 'vaccinationType'),
+    getData(sqlMedType, 'medicationType'),
   ]).then(function(results) {
     // --------------------------------------------------------
     // The Angular client expects an array. The first record
@@ -60,25 +98,51 @@ var getAllData = function(req, res) {
     var data = [];
     var main;
     var secondary = {};
+    var lookup = {};
 
     // --------------------------------------------------------
-    // The main tables which are collated/merged.
+    // The main tables which are collated/merged. The "Log"
+    // suffix on the table references are removed for the client.
+    //
+    // Only the *Log tables can be collated/merged, the various
+    // lookup tables cannot because they do not have the sort field.
     // --------------------------------------------------------
-    main = _.object([
-        'pregnancyLog',
-        'patientLog'],
-      results);
+    main = _.object(results.slice(0, 5));
     main = collateRecs(main, 'replacedAt');
     mergeRecs(main, 'replacedAt');
     data.push(main);
 
+    if (pregId == 272) {
+      console.dir(results[3]);
+    }
+
     // --------------------------------------------------------
     // The secondary tables which are provided to the client raw
-    // as the second record of the array.
+    // as the second record of the array. These are all *Log
+    // tables but they are also being saved to their non-Log names
+    // so that the client can leverage the same templates, etc.
+    // for historical and non-historical views.
+    //
+    // Add more secondary tables to the input array as the come online.
     // --------------------------------------------------------
-    secondary.riskLog = results[2];      // riskLog
-    // Add more secondary tables here as the come online.
+    _.map(['risk', 'prenatalExam'], function(src) {
+      // Find the array, drop the leading source name, and assign the inner array.
+      secondary[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
+    });
+
+    // --------------------------------------------------------
+    // Lookup tables.
+    //
+    // Add more lookup tables to the input array as the come online.
+    // --------------------------------------------------------
+    _.map(['user', 'vaccinationType', 'medicationType'], function(src) {
+      // Find the array, drop the leading source name, and assign the inner array.
+      lookup[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
+    });
+
     data.push(secondary);
+    data.push(lookup);
+    logInfo('Data query response time: ' + (Date.now() - start) + ' ms.');
     res.end(JSON.stringify(data));
   });
 };
@@ -87,13 +151,16 @@ var getAllData = function(req, res) {
  * getData()
  *
  * Return a promise which will resolve to the data for the
- * specified query.
+ * specified query. Returns an Array with the srcName as
+ * the first element and the results of the query (another
+ * array) as the second.
  *
  * param       sql
+ * param       srcName
  * param       pregId
  * return      promise
  * -------------------------------------------------------- */
-var getData = function(sql, pregId) {
+var getData = function(sql, srcName, pregId) {
   var knex
     , sqlRisk
     , results
@@ -104,7 +171,9 @@ var getData = function(sql, pregId) {
     return knex
       .raw(sql, pregId)
       .then(function(data) {
-        results = data[0];
+        var results = [];
+        results.push(srcName);
+        results.push(data[0]);
         return resolve(results);
       });
   });

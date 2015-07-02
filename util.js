@@ -443,7 +443,7 @@ var collateRecs = function(data, sortFld) {
  * return      undefined
  * -------------------------------------------------------- */
 var mergeRecs = function(data, sortFld) {
-  var flds = _.omit(_.keys(data[0]), sortFld)
+  var sources = _.difference(_.keys(data[0]), [sortFld])
     , lastRecs = {}
     , output = []
     ;
@@ -451,20 +451,38 @@ var mergeRecs = function(data, sortFld) {
   // --------------------------------------------------------
   // Populate lastRecs with the initial elements we are tracking.
   // --------------------------------------------------------
-  _.each(flds, function(f) {lastRecs[f] = {};});
+  _.each(sources, function(s) {lastRecs[s] = {};});
 
   // --------------------------------------------------------
   // Merge "up" the records filling in empty objects with prior
   // non-empty objects for corresponding elements.
   // --------------------------------------------------------
+  // Each collection of sources at a particular timestamp.
   _.each(data, function(row) {
-    _.each(lastRecs, function(val, key) {
-      if (_.isEmpty(row[key])) {
-        if (! _.isEmpty(lastRecs[key])) {
-          row[key] = lastRecs[key];
+    // Each source at that timestamp.
+    _.each(lastRecs, function(val, src) {
+      // This particular source has nothing at this timestamp, so
+      // populate it from the last prior record if available.
+      if (_.isEmpty(row[src])) {
+        if (! _.isEmpty(lastRecs[src])) {
+          row[src] = lastRecs[src];
         }
       } else {
-        lastRecs[key] = row[key];
+        // This particular source does have an entry at this timestamp
+        // so update lastRecs accordingly for future timestamps.
+        lastRecs[src] = row[src];
+
+        // --------------------------------------------------------
+        // Record which data sources changed in the "whatChanged"
+        // field in the record. These "changes" represent table
+        // level changes in the database, i.e. a save but not
+        // necessarily a change from the previous record because
+        // the same data could have been saved again.
+        // --------------------------------------------------------
+        if (! _.has(row, 'whatChanged')) {
+          row.whatChanged = [];
+        }
+        row.whatChanged.push(src);
       }
     });
   });
