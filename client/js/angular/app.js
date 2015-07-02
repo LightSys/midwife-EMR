@@ -161,6 +161,52 @@
     }])
 
     /* --------------------------------------------------------
+     * secondaryHistorical()
+     *
+     * Return the historical records at the state that they
+     * were in at the replacedAt timestamp.
+     *
+     * Note: assumes that input records are already sorted
+     * by replacedAt field.
+     * -------------------------------------------------------- */
+    .filter('secondaryHistorical', ['moment', function(moment) {
+      return function(data, replacedAt, sortFld) {
+        var recs = [];
+        var tmp = {};
+        var maxDate = moment(replacedAt);
+
+        angular.forEach(data, function(rec) {
+          if (! moment(rec.replacedAt).isAfter(maxDate)) {
+            if (tmp[rec.id]) {
+              if (rec.op === 'D') {
+                delete tmp[rec.id];
+              } else {
+                // Replacement of record.
+                tmp[rec.id] = rec;
+              }
+            } else {
+              // First encounter of this record id.
+              tmp[rec.id] = rec;
+            }
+          }
+        });
+
+        // --------------------------------------------------------
+        // Convert to an array and sort by sortFld.
+        // --------------------------------------------------------
+        angular.forEach(Object.keys(tmp), function(key) {
+          recs.push(tmp[key]);
+        });
+        recs.sort(function(a, b) {
+          if (a[sortFld] < b[sortFld]) return -1;
+          if (a[sortFld] > b[sortFld]) return 1;
+          return 0;
+        });
+        return recs;
+      };
+    }])
+
+    /* --------------------------------------------------------
      * riskTypeHistorical()
      *
      * Returns historical risks that match the type passed,
@@ -216,7 +262,9 @@
 
     .filter('getGAFromLMP', ['moment', function(moment) {
       return function(lmp, rDate) {
-        return getGA(edd(lmp, moment), rDate, moment);
+        var edDate = edd(lmp, moment);
+        if (! edDate) return '';
+        return getGA(edDate, rDate, moment);
       };
     }]);
 

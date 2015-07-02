@@ -216,5 +216,9 @@ historyControlNavBtnRight {
   padding-left: 5px;
 }
 
-
+/* History - highlight changed fields */
+label.has-changed,
+span.has-changed {
+  color: #428BCA;
+}
 

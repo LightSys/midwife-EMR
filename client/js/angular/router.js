@@ -64,7 +64,7 @@
                 historyService.loadAsNeeded(pregId);
                 hsPrenatalCB = historyService.register(function(data) {
                   $scope.ctrl = data;
-                  console.dir($scope.ctrl.secondary.risk);
+                  console.dir($scope.ctrl);
                 });
                 historyService.curr();
                 $scope.pregId = pregId;
