@@ -20,29 +20,19 @@
           // --------------------------------------------------------
           // Top-level scope initialization.
           // --------------------------------------------------------
-          $scope.ctrl.pregnancy = {};
-          $scope.ctrl.patient = {};
           $scope.ctrl.currentRecord = 0;
           $scope.ctrl.numberRecords = 0;
           $scope.ctrl.pregnancyId = 0;
-
-          // --------------------------------------------------------
-          // Watch various scope variables.
-          // --------------------------------------------------------
-          var watchHandles = [];
-          watchHandles.push(
-            $scope.$watchCollection('ctrl.pregnancy', function(nval,oval,scope) {
-            })
-          );
-          watchHandles.push(
-            $scope.$watchCollection('ctrl.patient', function(nval,oval,scope) {
-            })
-          );
+          $scope.ctrl.updatedBy = '';
 
           // --------------------------------------------------------
           // Register the historyService callback.
           // --------------------------------------------------------
           hsCallback = historyService.register(function(data) {
+            var updatedBy;
+            var changedTbl;
+            var supervisor;
+
             // --------------------------------------------------------
             // Make sure updateMeta() is called the first time. Thereafter
             // the navigation controls call it.
@@ -54,15 +44,30 @@
             // shallow objects and we know exactly when they change,
             // force the digest cycle when we know that it is needed.
             // --------------------------------------------------------
-            $scope.ctrl.pregnancy = data.pregnancyLog;
-            $scope.ctrl.patient = data.patientLog;
             $scope.ctrl.replacedAt = data.replacedAt;
-            $scope.$applyAsync('ctrl.patient');
-            $scope.$applyAsync('ctrl.pregnancy');
             $scope.$applyAsync('ctrl.replacedAt');
 
+            // --------------------------------------------------------
+            // Display who changed the record.
+            // --------------------------------------------------------
+            changedTbl = data.whatChanged? data.whatChanged[0].replace(/Log/, ''): 'pregnancy';
+            $scope.ctrl.updatedBy = historyService.lookup('user', 'id', data[changedTbl].updatedBy).username;
+            if (data[changedTbl].supervisor) {
+              supervisor = historyService.lookup('user', 'id', data[changedTbl].supervisor);
+              $scope.ctrl.supervisor = supervisor.username;
+            } else {
+              $scope.ctrl.supervisor = '';
+            }
+
+
+            // --------------------------------------------------------
+            // TODO:
+            // 1. Display who updated and who super was.
+            // 2. BUT this is dependent upon which table changed.
+            // --------------------------------------------------------
+
             // Testing
-            console.log('Replaced at: ' + data.replacedAt);
+            console.log('Replaced at: ' + data.replacedAt + ' by ' + $scope.ctrl.updatedBy + '.');
           });
 
           /* --------------------------------------------------------
@@ -131,9 +136,6 @@
             } else {
               console.log('Did not successfully unregister history service callback.');
             }
-
-            // Watches
-            watchHandles.forEach(function(h) {h();});
           });
 
           // --------------------------------------------------------
