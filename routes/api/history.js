@@ -136,6 +136,12 @@ var getAllData = function(req, res) {
     // The main tables which are collated/merged. The "Log"
     // suffix on the table references are removed for the client.
     // --------------------------------------------------------
+
+    // --------------------------------------------------------
+    // TODO: Determine if main with the collateRecs() and
+    // mergeRecs() from util.js is really needed anymore in
+    // light of how historyService.formatData() is using the data.
+    // --------------------------------------------------------
     main = _.object(results.slice(0, 1));
     main = collateRecs(main, 'replacedAt');
     mergeRecs(main, 'replacedAt');
@@ -153,8 +159,8 @@ var getAllData = function(req, res) {
     //
     // Add more secondary tables to the input array as the come online.
     // --------------------------------------------------------
-    _.map(['risk', 'prenatalExam', 'medication', 'vaccination',
-           'pregnancyHistory', 'referral', 'healthTeaching',
+    _.map(['patient', 'pregnancy', 'risk', 'prenatalExam', 'medication',
+           'vaccination', 'pregnancyHistory', 'referral', 'healthTeaching',
            'labTestResult'], function(src) {
       // Find the array, drop the leading source name, and assign the inner array.
       secondary[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
@@ -202,6 +208,9 @@ var getAllData = function(req, res) {
  * -------------------------------------------------------- */
 var generateChangeLog = function(data, sources) {
   var changeLog = [];
+  var mergeLog = [];
+  var newRec = {};
+  var indexes = {};
   var cnt = 0;
 
   // --------------------------------------------------------
@@ -219,7 +228,7 @@ var generateChangeLog = function(data, sources) {
       // --------------------------------------------------------
       // For each of the historical records within a data source.
       // --------------------------------------------------------
-      _.each(src[1], function(rec) {
+      _.each(src[1], function(rec, idx) {
         var flds = [];
         // We don't report on changes in these fields because they
         // always change no matter what.
@@ -228,13 +237,15 @@ var generateChangeLog = function(data, sources) {
         if (! lastRec) {
           // First record.
           flds = _.keys(_.omit(rec, excludedKeys));
-          changeLog.push({source: srcName, replacedAt: rec.replacedAt, fields: flds});
+          changeLog.push({source: srcName, replacedAt: rec.replacedAt,
+            fields: flds, idx: idx});
           lastRec = rec;
         } else {
           if (rec.id && lastRec.id && rec.id !== lastRec.id) {
             // First record of a different id in a detail table (one to many).
             flds = _.keys(_.omit(rec, excludedKeys));
-            changeLog.push({source: srcName, replacedAt: rec.replacedAt, fields: flds});
+            changeLog.push({source: srcName, replacedAt: rec.replacedAt,
+              fields: flds, idx: idx});
             lastRec = rec;
           } else {
             _.each(_.keys(_.omit(rec, excludedKeys)), function(key) {
@@ -247,7 +258,8 @@ var generateChangeLog = function(data, sources) {
             // TODO: if the flds array is empty, should it still be added?
             // Basically this is a database save that actually did not change any data.
             if (flds.length > 0) {
-              changeLog.push({source: srcName, replacedAt: rec.replacedAt, fields: flds});
+              changeLog.push({source: srcName, replacedAt: rec.replacedAt,
+                fields: flds, idx: idx});
             }
             lastRec = rec;
           }
@@ -268,7 +280,52 @@ var generateChangeLog = function(data, sources) {
     return 0;
   });
 
-  return changeLog;
+  // --------------------------------------------------------
+  // Initialize the indexes of the data sources.
+  // --------------------------------------------------------
+  _.each(sources, function(s) {indexes[s] = 0;});
+
+  // --------------------------------------------------------
+  // Merge records with the same replacedAt times into the
+  // same record.
+  // --------------------------------------------------------
+  _.each(changeLog, function(rec, idx) {
+    if (idx === 0) {
+      // First record.
+      newRec.replacedAt = rec.replacedAt;
+      newRec[rec.source] = {
+        fields: rec.fields
+      };
+      indexes[rec.source] = rec.idx;
+      newRec.indexes = _.clone(indexes);
+    } else {
+      if (newRec.replacedAt.getTime() !== rec.replacedAt.getTime()) {
+        // New replacedAt time, so store completed record in mergeLog.
+        mergeLog.push(newRec);
+
+        // Start a new record.
+        newRec = {};
+        newRec.replacedAt = rec.replacedAt;
+        newRec[rec.source] = {
+          fields: rec.fields
+        };
+        indexes[rec.source] = rec.idx;
+        newRec.indexes = _.clone(indexes);
+      } else {
+        // Multiple data sources with the same replacedAt time
+        // so add to the current record.
+        newRec[rec.source] = {
+          fields: rec.fields
+        };
+        indexes[rec.source] = rec.idx;
+        newRec.indexes = _.clone(indexes);
+      }
+    }
+  });
+  // Add the final record.
+  mergeLog.push(newRec);
+
+  return mergeLog;
 };
 
 /* --------------------------------------------------------

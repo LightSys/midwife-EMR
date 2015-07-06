@@ -49,6 +49,7 @@
 
             // --------------------------------------------------------
             // Display who changed the record.
+            // TODO: refactor using info from data[3].
             // --------------------------------------------------------
             changedTbl = data.whatChanged? data.whatChanged[0].replace(/Log/, ''): 'pregnancy';
             $scope.ctrl.updatedBy = historyService.lookup('user', 'id', data[changedTbl].updatedBy).username;

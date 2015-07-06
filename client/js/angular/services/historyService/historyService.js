@@ -53,7 +53,7 @@
       // Tracking meta information about the current pregnancy.
       var pregnancyId;
       var numRecs;
-      var currRecNum;
+      var currRecNum;   // Based on 4th array in input data.
 
 
       /* --------------------------------------------------------
@@ -73,7 +73,7 @@
         path = baseUrl + '/' + pregnancyPath.replace(/:pregId/, pregId);
         $http.get(path, {responseType: 'json'})
           .success(function(data, sts, headers, config) {
-            numRecs = data[0].length;
+            numRecs = data[3].length;
             currRecNum = numRecs - 1;   // zero-based
             pregnancyCache.put(PREGNANCY_CACHE_KEY, data);
             console.log('Loaded ' + numRecs + ' records.');
@@ -101,6 +101,18 @@
         }
       };
 
+      var getChangedBySource = function(data, src) {
+        if (data[3][currRecNum][src]) {
+          return data[3][currRecNum][src].fields;
+        }
+        return [];
+      };
+
+      var getRecBySource = function(data, src) {
+        var idx = data[3][currRecNum].indexes[src];
+        return data[1][src][idx];
+      };
+
       /* --------------------------------------------------------
        * formatData()
        *
@@ -111,42 +123,27 @@
        * -------------------------------------------------------- */
       var formatData = function(data) {
         var rec = {};
-        // First record in array are main tables collated/merged.
-        rec.pregnancy = data[0][currRecNum].pregnancy;
-        rec.patient = data[0][currRecNum].patient;
-        rec.prenatalExam = data[0][currRecNum].prenatalExam;
 
-        rec.whatChanged = data[0][currRecNum].whatChanged;  // Table level what changed.
-        rec.replacedAt = data[0][currRecNum].replacedAt;
+        // First record in array are main tables collated/merged.
+        rec.pregnancy = getRecBySource(data, 'pregnancy');
+        rec.patient = getRecBySource(data, 'patient');
+        rec.prenatalExam = getRecBySource(data, 'prenatalExam');
+        rec.healthTeaching = getRecBySource(data, 'healthTeaching');
+        rec.labTestResult = getRecBySource(data, 'labTestResult');
+        rec.medication = getRecBySource(data, 'medication');
+        rec.pregnancyHistory = getRecBySource(data, 'pregnancyHistory');
+        rec.referral = getRecBySource(data, 'referral');
+        rec.risk = getRecBySource(data, 'risk');
+        rec.vaccination = getRecBySource(data, 'vaccination');
+
+        rec.replacedAt = data[3][currRecNum].replacedAt;
 
         // --------------------------------------------------------
-        // Flag changed records at the field level - PROOF of Concept.
-        // TODO: clean this up.
-        // TODO: figure out how to handle secondary tables.
-        // TODO: determine if this is worth the effort.
-        //
-        // Note: table-level changes are recorded in the whatChanged
-        // field by mergeRecs in util.js on the server. Maybe both
-        // of these are not necessary or table level change information
-        // could be leveraged here to improve performance. Or all of
-        // this could be done on the server.
-        //
-        // NOTE2: this is largely, if not entirely, replaced by the
-        // changelog sent up from the server (see below);
-        // TODO: remove this after converting over to changelog.
+        // Flag changed records at the field level.
         // --------------------------------------------------------
         rec.changed = {};
-        rec.changed.pregnancy = {};
-        rec.changed.patient = {};
-        if (currRecNum > 0) {
-          _.each(['pregnancy', 'patient'], function(table) {
-            var pRec = data[0][currRecNum - 1][table];
-            var cRec = data[0][currRecNum][table];
-            _.each(cRec, function(val, fld) {
-              if (val !== pRec[fld]) rec.changed[table][fld] = true;
-            });
-          });
-        }
+        rec.changed.pregnancy = getChangedBySource(data, 'pregnancy');
+        rec.changed.patient = getChangedBySource(data, 'patient');
 
         // Secondary tables which are not collated/merged.
         rec.secondary = data[1];
