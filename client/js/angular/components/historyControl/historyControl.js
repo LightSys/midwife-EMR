@@ -10,7 +10,8 @@
         templateUrl: '/angular/components/historyControl/historyControl.tmpl',
         controllerAs: 'ctrl',
         scope: {
-          hcPregId: '@'
+          hcPregId: '@',
+          hcFollow: '@'
         },
         controller: function() {},
         link: function($scope, element, attrs, ctrl) {
@@ -24,6 +25,14 @@
           $scope.ctrl.numberRecords = 0;
           $scope.ctrl.pregnancyId = 0;
           $scope.ctrl.updatedBy = '';
+          $scope.ctrl.follow = !! attrs.hcFollow;
+
+          // --------------------------------------------------------
+          // Handle the checkbox to follow changes or not.
+          // --------------------------------------------------------
+          $scope.followChange = function() {
+            // Is this necessary?
+          };
 
           // --------------------------------------------------------
           // Register the historyService callback.
@@ -40,18 +49,18 @@
             if ($scope.ctrl.currentRecord === 0) updateMeta(historyService.info());
 
             // --------------------------------------------------------
-            // Change the scope variables and since these are more than
-            // shallow objects and we know exactly when they change,
-            // force the digest cycle when we know that it is needed.
+            // Force the digest cycle when we know that it is needed.
             // --------------------------------------------------------
             $scope.ctrl.replacedAt = data.replacedAt;
             $scope.$applyAsync('ctrl.replacedAt');
 
             // --------------------------------------------------------
-            // Display who changed the record.
-            // TODO: refactor using info from data[3].
+            // Display who changed the record. We take the first changed
+            // table assuming that at any point in time the database
+            // save was by the same user even if multiple tables
+            // were involved.
             // --------------------------------------------------------
-            changedTbl = data.whatChanged? data.whatChanged[0].replace(/Log/, ''): 'pregnancy';
+            changedTbl = _.keys(data.changed)[0];
             $scope.ctrl.updatedBy = historyService.lookup('user', 'id', data[changedTbl].updatedBy).username;
             if (data[changedTbl].supervisor) {
               supervisor = historyService.lookup('user', 'id', data[changedTbl].supervisor);
@@ -60,15 +69,14 @@
               $scope.ctrl.supervisor = '';
             }
 
-
             // --------------------------------------------------------
-            // TODO:
-            // 1. Display who updated and who super was.
-            // 2. BUT this is dependent upon which table changed.
+            // Force a UI-Router state change as needed so that the
+            // changes can be seen on the proper page.
             // --------------------------------------------------------
 
-            // Testing
-            console.log('Replaced at: ' + data.replacedAt + ' by ' + $scope.ctrl.updatedBy + '.');
+
+
+
           });
 
           /* --------------------------------------------------------

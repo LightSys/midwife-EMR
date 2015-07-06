@@ -38,6 +38,12 @@
         '$cacheFactory',
         function($http, $cacheFactory) {
 
+
+      // List of sources (tables) that contain the historical changes.
+      var historicalSources = ['pregnancy', 'patient', 'prenatalExam',
+        'healthTeaching', 'labTestResult', 'medication', 'vaccination',
+        'referral', 'pregnancyHistory', 'risk'];
+
       // Paths
       var baseUrl = '/api/history';;
       var pregnancyPath = 'pregnancy/:pregId';
@@ -114,27 +120,23 @@
       };
 
       /* --------------------------------------------------------
-       * formatData()
+       * prepareRecord()
        *
-       * Format the data to conform to the expected format.
+       * Format the data to conform to the expected format for
+       * the record in question.
        *
        * param       data
        * return      rec
        * -------------------------------------------------------- */
-      var formatData = function(data) {
+      var prepareRecord = function(data) {
         var rec = {};
 
-        // First record in array are main tables collated/merged.
-        rec.pregnancy = getRecBySource(data, 'pregnancy');
-        rec.patient = getRecBySource(data, 'patient');
-        rec.prenatalExam = getRecBySource(data, 'prenatalExam');
-        rec.healthTeaching = getRecBySource(data, 'healthTeaching');
-        rec.labTestResult = getRecBySource(data, 'labTestResult');
-        rec.medication = getRecBySource(data, 'medication');
-        rec.pregnancyHistory = getRecBySource(data, 'pregnancyHistory');
-        rec.referral = getRecBySource(data, 'referral');
-        rec.risk = getRecBySource(data, 'risk');
-        rec.vaccination = getRecBySource(data, 'vaccination');
+        // --------------------------------------------------------
+        // Populate the tables for this record number.
+        // --------------------------------------------------------
+        _.each(historicalSources, function(src) {
+          rec[src] = getRecBySource(data, src);
+        });
 
         rec.replacedAt = data[3][currRecNum].replacedAt;
 
@@ -142,16 +144,23 @@
         // Flag changed records at the field level.
         // --------------------------------------------------------
         rec.changed = {};
-        rec.changed.pregnancy = getChangedBySource(data, 'pregnancy');
-        rec.changed.patient = getChangedBySource(data, 'patient');
+        _.each(historicalSources, function(src) {
+          rec.changed[src] = getChangedBySource(data, src);
+        });
 
-        // Secondary tables which are not collated/merged.
+        // --------------------------------------------------------
+        // Raw tables with full history.
+        // --------------------------------------------------------
         rec.secondary = data[1];
 
+        // --------------------------------------------------------
         // Lookup tables.
+        // --------------------------------------------------------
         rec.lookup = data[2];
 
+        // --------------------------------------------------------
         // Change log from the server.
+        // --------------------------------------------------------
         rec.changelog = data[3];
 
         return rec;
@@ -168,7 +177,7 @@
         var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
         var rec;
         if (json) {
-          rec = formatData(json);   //json[0][currRecNum];
+          rec = prepareRecord(json);
           _.each(registeredCallbacks, function(cbObj) {
             cbObj.func(rec);
           });

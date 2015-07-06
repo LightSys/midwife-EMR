@@ -158,6 +158,8 @@ var getAllData = function(req, res) {
     // for historical and non-historical views.
     //
     // Add more secondary tables to the input array as the come online.
+    //
+    // TODO: see above. Is secondary used instead of main?
     // --------------------------------------------------------
     _.map(['patient', 'pregnancy', 'risk', 'prenatalExam', 'medication',
            'vaccination', 'pregnancyHistory', 'referral', 'healthTeaching',
