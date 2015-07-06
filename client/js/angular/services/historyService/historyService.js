@@ -130,6 +130,10 @@
         // of these are not necessary or table level change information
         // could be leveraged here to improve performance. Or all of
         // this could be done on the server.
+        //
+        // NOTE2: this is largely, if not entirely, replaced by the
+        // changelog sent up from the server (see below);
+        // TODO: remove this after converting over to changelog.
         // --------------------------------------------------------
         rec.changed = {};
         rec.changed.pregnancy = {};
@@ -146,6 +150,12 @@
 
         // Secondary tables which are not collated/merged.
         rec.secondary = data[1];
+
+        // Lookup tables.
+        rec.lookup = data[2];
+
+        // Change log from the server.
+        rec.changelog = data[3];
 
         return rec;
       };

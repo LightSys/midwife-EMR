@@ -1,45 +1,59 @@
 <div id='historyControl'>
-  <table>
+  <table class='hcTable'>
     <tr>
       <td>
-        <span class='historyControlNavBtnLeft'>
+        <span class='hcNavBtnLeft'>
           <a class='' id='historyControl-first' href='#'><i class='fa fa-2x fa-fw fa-backward'></i></a>
         </span>
       </td>
       <td>
-        <span class='historyControlNavBtnLeft'>
+        <span class='hcNavBtnLeft'>
           <a class='' id='historyControl-prev' href='#'><i class='fa fa-2x fa-fw fa-step-backward'></i></a>
         </span>
       </td>
       <td>
-        <span class='historyControlNavText'>
-          <table>
-            <tr>
-              <td>
-                <strong class='text-info lead'>{{ctrl.replacedAt|date:'MM-dd-yyyy HH:mm:ss'}}</strong>
+        <span>
+          <table class='hcNavText'>
+            <tr class='hcNavText'>
+              <td class='hcNavText hcNavText-upper hcNavText-left'>
+                <div class='hcNavText'>
+                  <strong class='text-muted lead'>{{ctrl.replacedAt|date:'MM-dd-yyyy HH:mm:ss'}}</strong>
+                </div>
               </td>
-              <td>
-                <strong class='text-info lead'>Record {{ctrl.currentRecord}} of {{ctrl.numberRecords}}</strong>
+              <td class='hcNavText hcNavText-upper hcNavText-right'>
+                <div class='hcNavText'>
+                  <strong class='text-muted lead'>Record {{ctrl.currentRecord}} of {{ctrl.numberRecords}}</strong>
+                </div>
               </td>
             </tr>
             <tr>
-              <td>
-                <strong class='text-info lead'><span>{{ctrl.updatedBy}}</span><span ng-if='ctrl.supervisor'> / {{ctrl.supervisor}}</span></strong>
+              <td class='hcNavText hcNavText-lower hcNavText-left'>
+                <div class='hcNavText'>
+                  <strong class='text-muted lead'><span>{{ctrl.updatedBy}}</span><span ng-if='ctrl.supervisor'> / {{ctrl.supervisor}}</span></strong>
+                </div>
               </td>
-              <td>
-                <strong class='text-info lead'><span>where a checkbox goes</span></strong>
+              <td class='hcNavText hcNavText-lower hcNavText-right'>
+                <div class='hcNavText'>
+                  <form class='form-inline' role='form'>
+                    <div class='checkbox'>
+                      <label>
+                        <input type='checkbox' name='followChanges' value=1> <strong class='text-muted lead'>Allow screen change</strong>
+                      </label>
+                    </div>
+                  </form>
+                </div>
               </td>
             </tr>
           </table>
         </span>
       </td>
       <td>
-        <span class='historyControlNavBtnRight'>
+        <span class='hcNavBtnRight'>
           <a class='' id='historyControl-next' href='#'><i class='fa fa-2x fa-fw fa-step-forward'></i></a>
         </span>
       </td>
       <td>
-        <span class='historyControlNavBtnRight'>
+        <span class='hcNavBtnRight'>
           <a class='' id='historyControl-last' href='#'><i class='fa fa-2x fa-fw fa-forward'></i></a>
         </span>
       </td>

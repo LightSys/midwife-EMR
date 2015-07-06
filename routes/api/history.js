@@ -27,8 +27,12 @@ var getAllData = function(req, res) {
     , sqlPat
     , sqlRisk
     , sqlPreExam
+    , sqlPregHist
+    , sqlReferral
     , sqlMed
     , sqlVac
+    , sqlHealth
+    , sqlLabTestResult
     , sqlUser
     , sqlVacType
     , sqlMedType
@@ -65,6 +69,22 @@ var getAllData = function(req, res) {
   // vaccinationLog
   sqlVac =  'SELECT * FROM vaccinationLog WHERE pregnancy_id = ?';
 
+  // pregnancyHistoryLog
+  sqlPregHist = 'SELECT * FROM pregnancyHistoryLog WHERE pregnancy_id = ?';
+
+  // referralLog
+  sqlReferral = 'SELECT * FROM referralLog WHERE pregnancy_id = ?';
+
+  // healthTeachingLog
+  sqlHealth = 'SELECT * FROM healthTeachingLog WHERE pregnancy_id = ?';
+
+  // pregnoteLog
+  // NOTE: there is no pregnoteLog table.
+  //sqlPregNote = 'SELECT * FROM pregnoteLog WHERE pregnancy_id = ?';
+
+  // labTestResultLog
+  sqlLabTestResult = 'SELECT * FROM labTestResultLog WHERE pregnancy_id = ?';
+
   // --------------------------------------------------------
   // Lookup Tables. These do not reference Log tables nor
   // need to reference pregnancy id.
@@ -79,13 +99,18 @@ var getAllData = function(req, res) {
   sqlMedType =  'SELECT * FROM medicationType';
 
   return Promise.all([
-    // Log tables
+    // main Log tables
     getData(sqlPreg, 'pregnancy', pregId),
     getData(sqlPat, 'patient', pregId),
+    // Secondary Log tables
     getData(sqlRisk, 'risk', pregId),
     getData(sqlPreExam, 'prenatalExam', pregId),
     getData(sqlMed, 'medication', pregId),
     getData(sqlVac, 'vaccination', pregId),
+    getData(sqlPregHist, 'pregnancyHistory', pregId),
+    getData(sqlReferral, 'referral', pregId),
+    getData(sqlHealth, 'healthTeaching', pregId),
+    getData(sqlLabTestResult, 'labTestResult', pregId),
     // Lookup tables
     getData(sqlUser, 'user'),
     getData(sqlVacType, 'vaccinationType'),
@@ -99,24 +124,27 @@ var getAllData = function(req, res) {
     var main;
     var secondary = {};
     var lookup = {};
+    var changeMap;
+    var changeLogSources;
 
     // --------------------------------------------------------
+    // The main tables are patient and pregnancy, which are in
+    // a master/detail relationship with one another, though
+    // for our purposes pregnancy is by far the more important
+    // table, hence being grouped with the "main" tables.
+    //
     // The main tables which are collated/merged. The "Log"
     // suffix on the table references are removed for the client.
-    //
-    // Only the *Log tables can be collated/merged, the various
-    // lookup tables cannot because they do not have the sort field.
     // --------------------------------------------------------
-    main = _.object(results.slice(0, 5));
+    main = _.object(results.slice(0, 1));
     main = collateRecs(main, 'replacedAt');
     mergeRecs(main, 'replacedAt');
     data.push(main);
 
-    if (pregId == 272) {
-      console.dir(results[3]);
-    }
-
     // --------------------------------------------------------
+    // The secondary tables are basically detail tables to the
+    // master pregnancy table.
+    //
     // The secondary tables which are provided to the client raw
     // as the second record of the array. These are all *Log
     // tables but they are also being saved to their non-Log names
@@ -125,13 +153,17 @@ var getAllData = function(req, res) {
     //
     // Add more secondary tables to the input array as the come online.
     // --------------------------------------------------------
-    _.map(['risk', 'prenatalExam'], function(src) {
+    _.map(['risk', 'prenatalExam', 'medication', 'vaccination',
+           'pregnancyHistory', 'referral', 'healthTeaching',
+           'labTestResult'], function(src) {
       // Find the array, drop the leading source name, and assign the inner array.
       secondary[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
     });
+    data.push(secondary);
 
     // --------------------------------------------------------
-    // Lookup tables.
+    // Lookup tables. Lookup tables are not keyed to a particular
+    // pregnancy id.
     //
     // Add more lookup tables to the input array as the come online.
     // --------------------------------------------------------
@@ -139,12 +171,104 @@ var getAllData = function(req, res) {
       // Find the array, drop the leading source name, and assign the inner array.
       lookup[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
     });
-
-    data.push(secondary);
     data.push(lookup);
+
+    // --------------------------------------------------------
+    // High-level change log for ease of client use.
+    // --------------------------------------------------------
+    changeLogSources = ['pregnancy', 'patient', 'risk', 'prenatalExam',
+                        'medication', 'vaccination', 'pregnancyHistory',
+                        'referral', 'healthTeaching', 'labTestResult'];
+    changeLog = generateChangeLog(results, changeLogSources);
+    data.push(changeLog);
+
     logInfo('Data query response time: ' + (Date.now() - start) + ' ms.');
     res.end(JSON.stringify(data));
   });
+};
+
+/* --------------------------------------------------------
+ * generateChangeLog()
+ *
+ * Create an array of meta information about historical
+ * changes sorted by the replacedAt field across all data
+ * sources. This will allow the client to more easily
+ * ascertain significant changes per whatever criteria
+ * is desired.
+ *
+ * param      data - the historical data sources
+ * param      sources - array of source names to find in data
+ * return     changeLog - an array of meta information
+ * -------------------------------------------------------- */
+var generateChangeLog = function(data, sources) {
+  var changeLog = [];
+  var cnt = 0;
+
+  // --------------------------------------------------------
+  // For each data source, i.e. tables: patient, pregnancy, etc.
+  // --------------------------------------------------------
+  _.each(data, function(src) {
+    var srcName = src[0];
+    var lastRec;
+
+    // Only process the sources we are interested in.
+    if (_.indexOf(sources, srcName) !== -1) {
+
+      // TODO: consider adding more meta information.
+
+      // --------------------------------------------------------
+      // For each of the historical records within a data source.
+      // --------------------------------------------------------
+      _.each(src[1], function(rec) {
+        var flds = [];
+        // We don't report on changes in these fields because they
+        // always change no matter what.
+        var excludedKeys = ['replacedAt', 'updatedAt', 'updatedBy'];
+        cnt++;
+        if (! lastRec) {
+          // First record.
+          flds = _.keys(_.omit(rec, excludedKeys));
+          changeLog.push({source: srcName, replacedAt: rec.replacedAt, fields: flds});
+          lastRec = rec;
+        } else {
+          if (rec.id && lastRec.id && rec.id !== lastRec.id) {
+            // First record of a different id in a detail table (one to many).
+            flds = _.keys(_.omit(rec, excludedKeys));
+            changeLog.push({source: srcName, replacedAt: rec.replacedAt, fields: flds});
+            lastRec = rec;
+          } else {
+            _.each(_.keys(_.omit(rec, excludedKeys)), function(key) {
+              if (! _.isEqual(lastRec[key], rec[key])) {
+                if (_.indexOf(excludedKeys, key) === -1) {
+                  flds.push(key);
+                }
+              }
+            });
+            // TODO: if the flds array is empty, should it still be added?
+            // Basically this is a database save that actually did not change any data.
+            if (flds.length > 0) {
+              changeLog.push({source: srcName, replacedAt: rec.replacedAt, fields: flds});
+            }
+            lastRec = rec;
+          }
+        }
+      });
+    }   // end has sources
+  });   // end outer each
+
+  // --------------------------------------------------------
+  // Sort by replacedAt field across all data sources.
+  // --------------------------------------------------------
+  changeLog.sort(function(a, b) {
+    if (a.replacedAt < b.replacedAt) {
+      return -1;
+    } else if (a.replacedAt > b.replacedAt) {
+      return 1;
+    }
+    return 0;
+  });
+
+  return changeLog;
 };
 
 /* --------------------------------------------------------

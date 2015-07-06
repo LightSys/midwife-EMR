@@ -209,11 +209,48 @@ span#dirty-notice-tablet {
 }
 
 /* Angular components */
-historyControlNavBtnLeft {
+#historyControl {
+}
+table.hcTable {
+  margin: 5px auto;
+  border: 2px solid #CCCCCC;
+}
+hcNavBtnLeft {
   padding-right: 5px;
 }
-historyControlNavBtnRight {
+hcNavBtnRight {
   padding-left: 5px;
+}
+
+div.hcNavText {
+  /*
+  max-height: 25px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  */
+}
+
+table.hcNavText {
+  /*
+  border-top: 2px solid #CCCCCC;
+  border-bottom: 2px solid #CCCCCC;
+  */
+}
+tr.hcNavText {
+}
+td.hcNavText {
+  padding: 0;
+  margin: 3px;
+}
+td.hcNavText-upper {
+}
+td.hcNavText-lower {
+}
+td.hcNavText-left {
+  padding: 0 8px;
+}
+td.hcNavText-right {
+  padding: 0 8px;
 }
 
 /* History - highlight changed fields */
