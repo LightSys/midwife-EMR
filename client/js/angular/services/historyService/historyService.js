@@ -107,15 +107,15 @@
         }
       };
 
-      var getChangedBySource = function(data, src) {
-        if (data[3][currRecNum][src]) {
-          return data[3][currRecNum][src].fields;
+      var getChangedBySource = function(data, src, recNum) {
+        if (data[3][recNum][src]) {
+          return data[3][recNum][src].fields;
         }
         return [];
       };
 
-      var getRecBySource = function(data, src) {
-        var idx = data[3][currRecNum].indexes[src];
+      var getRecBySource = function(data, src, recNum) {
+        var idx = data[3][recNum].indexes[src];
         return data[1][src][idx];
       };
 
@@ -126,26 +126,27 @@
        * the record in question.
        *
        * param       data
+       * param       recNum
        * return      rec
        * -------------------------------------------------------- */
-      var prepareRecord = function(data) {
+      var prepareRecord = function(data, recNum) {
         var rec = {};
 
         // --------------------------------------------------------
         // Populate the tables for this record number.
         // --------------------------------------------------------
         _.each(historicalSources, function(src) {
-          rec[src] = getRecBySource(data, src);
+          rec[src] = getRecBySource(data, src, recNum);
         });
 
-        rec.replacedAt = data[3][currRecNum].replacedAt;
+        rec.replacedAt = data[3][recNum].replacedAt;
 
         // --------------------------------------------------------
         // Flag changed records at the field level.
         // --------------------------------------------------------
         rec.changed = {};
         _.each(historicalSources, function(src) {
-          rec.changed[src] = getChangedBySource(data, src);
+          rec.changed[src] = getChangedBySource(data, src, recNum);
         });
 
         // --------------------------------------------------------
@@ -159,7 +160,10 @@
         rec.lookup = data[2];
 
         // --------------------------------------------------------
-        // Change log from the server.
+        // Raw change log from the server.
+        //
+        // TODO: determine if the clients actually need this if
+        // they already get the changed object per above.
         // --------------------------------------------------------
         rec.changelog = data[3];
 
@@ -173,11 +177,12 @@
        * information has changed. If called before initial load(),
        * does nothing.
        * -------------------------------------------------------- */
-      var notifyCallbacks = function() {
+      var notifyCallbacks = function(recNum) {
+        var recNum = recNum || currRecNum;
         var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
         var rec;
         if (json) {
-          rec = prepareRecord(json);
+          rec = prepareRecord(json, recNum);
           _.each(registeredCallbacks, function(cbObj) {
             cbObj.func(rec);
           });
@@ -279,6 +284,45 @@
       };
 
       /* --------------------------------------------------------
+       * getChangedByNum()
+       *
+       * Returns the changed tables and fields for the specified
+       * record number according to the output of
+       * getChangedBySource() for each of the historicalSources.
+       * Does not notify callbacks or change the internal current
+       * record number.
+       *
+       * Note: expects that the recNum passed is *not* a zero-based
+       * record number, but rather the record number from the user
+       * perspective that starts with 1.
+       *
+       * param       recNum
+       * return      record - per the output of prepareRecord()
+       * -------------------------------------------------------- */
+      var getChangedByNum = function(recNum) {
+        var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
+        var changed = {};
+
+        // --------------------------------------------------------
+        // Sanity checks.
+        // --------------------------------------------------------
+        if (isNaN(parseInt(recNum, 10))) return changed;
+        if (recNum > numRecs) return changed;
+        if (recNum < 1) return changed;
+        if (! json) return changed;
+
+        // --------------------------------------------------------
+        // Build the changed object for this record number.
+        // --------------------------------------------------------
+        _.each(historicalSources, function(src) {
+          changed[src] = getChangedBySource(json, src, recNum - 1);
+        });
+
+        return changed;
+      };
+
+
+      /* --------------------------------------------------------
        * info()
        *
        * Returns an object with meta information about the current
@@ -336,7 +380,8 @@
         last: last,
         curr: curr,
         info: info,
-        lookup: lookup
+        lookup: lookup,
+        getChangedByNum: getChangedByNum
       };
 
     }]);

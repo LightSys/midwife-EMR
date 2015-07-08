@@ -41,7 +41,9 @@ module.exports = function(grunt) {
                 , 'client/js/angular/app.js'
                 , 'client/js/angular/router.js'
                 , 'client/js/angular/services/historyService/historyService.js'
+                , 'client/js/angular/services/changeRoutingService/changeRoutingService.js'
                 , 'client/js/angular/components/historyControl/historyControl.js'
+                , 'client/js/angular/components/patientWell/patientWell.js'
                 , 'client/js/angular/components/patientWell/patientWell.js'
               ]
             }

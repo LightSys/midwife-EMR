@@ -104,6 +104,7 @@
     'ui.router',
     'historyControlModule',
     'historyServiceModule',
+    'changeRoutingServiceModule',
     'patientWellModule'
   ]);
 
