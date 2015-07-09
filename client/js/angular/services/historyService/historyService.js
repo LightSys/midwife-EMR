@@ -69,6 +69,19 @@
        * the cache (replacing what was there already, if anything),
        * and call the registered callbacks.
        *
+       * The data comes from the server in the form of an array
+       * with three elements. The first is an object that contains
+       * the element for each data source, within each of which is
+       * an array of historical records. The second is an object
+       * that contains an element for each lookup table. The third
+       * is an array of changes in the form of objects, each of
+       * which contain an element for each table that was changed
+       * at that point in time, a datetime stamp, and an indexes
+       * object that contains elements representing each table with
+       * the value set to the index of the table that should be
+       * used at that point in time in relation to the objects of
+       * the first array returned by the server.
+       *
        * param       pregId
        * return      undefined
        * -------------------------------------------------------- */
@@ -79,7 +92,7 @@
         path = baseUrl + '/' + pregnancyPath.replace(/:pregId/, pregId);
         $http.get(path, {responseType: 'json'})
           .success(function(data, sts, headers, config) {
-            numRecs = data[3].length;
+            numRecs = data[2].length;
             currRecNum = numRecs - 1;   // zero-based
             pregnancyCache.put(PREGNANCY_CACHE_KEY, data);
             console.log('Loaded ' + numRecs + ' records.');
@@ -108,15 +121,15 @@
       };
 
       var getChangedBySource = function(data, src, recNum) {
-        if (data[3][recNum][src]) {
-          return data[3][recNum][src].fields;
+        if (data[2][recNum][src]) {
+          return data[2][recNum][src].fields;
         }
         return [];
       };
 
       var getRecBySource = function(data, src, recNum) {
-        var idx = data[3][recNum].indexes[src];
-        return data[1][src][idx];
+        var idx = data[2][recNum].indexes[src];
+        return data[0][src][idx];
       };
 
       /* --------------------------------------------------------
@@ -139,7 +152,7 @@
           rec[src] = getRecBySource(data, src, recNum);
         });
 
-        rec.replacedAt = data[3][recNum].replacedAt;
+        rec.replacedAt = data[2][recNum].replacedAt;
 
         // --------------------------------------------------------
         // Flag changed records at the field level.
@@ -152,20 +165,12 @@
         // --------------------------------------------------------
         // Raw tables with full history.
         // --------------------------------------------------------
-        rec.secondary = data[1];
+        rec.sources = data[0];
 
         // --------------------------------------------------------
         // Lookup tables.
         // --------------------------------------------------------
-        rec.lookup = data[2];
-
-        // --------------------------------------------------------
-        // Raw change log from the server.
-        //
-        // TODO: determine if the clients actually need this if
-        // they already get the changed object per above.
-        // --------------------------------------------------------
-        rec.changelog = data[3];
+        rec.lookup = data[1];
 
         return rec;
       };
@@ -355,7 +360,7 @@
         var search = {};
         var lookups;
         if (json) {
-          lookups = json[2];
+          lookups = json[1];
           if (_.has(lookups, table)) {
             search[key] = val;
             return _.findWhere(lookups[table], search);

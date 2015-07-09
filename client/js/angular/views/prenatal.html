@@ -6,13 +6,13 @@
     <div class='row'>
       <div class='col-md-6 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": ctrl.changed.pregnancy["philHealthMCP"]}'>Phil Health MCP</label>
+          <label ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "philHealthMCP")}'>Phil Health MCP</label>
           <input type='checkbox' name='philHealthMCP' tabindex="1" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthMCP'>
         </div>
       </div>
       <div class='col-md-6 box'>
         <div>
-          <span ng-class='{"has-changed": ctrl.changed.pregnancy["philHealthID"]}'>PHIC #</span>
+          <span ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "philHealthID")}'>PHIC #</span>
           <input class='form-control' type='text' size=12 tabindex="3" autocomplete="off" name='philHealthID' disabled='true' value={{ctrl.pregnancy.philHealthID}}>
         </div>
       </div>
@@ -21,14 +21,14 @@
     <div class='row'>
       <div class='col-md-6 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": ctrl.changed.pregnancy["philHealthNCP"]}'>Phil Health NCP
+          <label ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "philHealthNCP")}'>Phil Health NCP
             <input type='checkbox' name='philHealthNCP' tabindex="2" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthNCP'>
           </label>
         </div>
       </div>
       <div class='col-md-6 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": ctrl.changed.pregnancy["philHealthApproved"]}'>PHIC Approved
+          <label ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "philHealthApproved")}'>PHIC Approved
             <input type='checkbox' name='philHealthApproved' tabindex="4" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthApproved'>
           </label>
         </div>
@@ -42,7 +42,7 @@
     <div class='row'>
       <div class='col-md-4 '>
         <div>
-          <span ng-class='{"has-changed": ctrl.changed.pregnancy["lmp"]}'>LMP</span>
+          <span ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "lmp")}'>LMP</span>
           <input class='form-control' tabindex='5' name='lmp' disabled='true' value={{ctrl.pregnancy.lmp|onlyValidDate|date:'MM-dd-yyyy'}}>
         </div>
       </div>
@@ -54,7 +54,7 @@
       </div>
       <div class='col-md-4 '>
         <div>
-          <span ng-class='{"has-changed": ctrl.changed.pregnancy["alternateEdd"]}'>Alternate EDD</span>
+          <span ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "alternateEdd")}'>Alternate EDD</span>
           <input class='form-control' tabindex='8' name='alternateEdd' disabled='true' value={{ctrl.pregnancy.alternateEdd|onlyValidDate|date:'MM-dd-yyyy'}}>
         </div>
       </div>
@@ -63,14 +63,14 @@
     <div class='row'>
       <div class='col-md-6 '>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": ctrl.changed.pregnancy["sureLMP"]}'>Sure of LMP
+          <label ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "sureLMP")}'>Sure of LMP
             <input type='checkbox' name='sureLMP' tabindex="6" disabled='true' value=1 ng-checked='ctrl.pregnancy.sureLMP'>
           </label>
         </div>
       </div>
       <div class='col-md-4 col-md-offset-2'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": ctrl.changed.pregnancy["useAlternateEdd"]}'>Use Alt EDD
+          <label ng-class='{"has-changed": func.contains(ctrl.changed.pregnancy, "useAlternateEdd")}'>Use Alt EDD
             <input type='checkbox' name='useAlternateEdd' tabindex="9" disabled='true' value=1 ng-checked='ctrl.pregnancy.useAlternateEdd'>
           </label>
         </div>
@@ -86,25 +86,25 @@
     <div class='row'>
       <div class='col-md-3'>
         <h4 class='text-primary'>Risk Present</h4>
-        <div id="readonlyRiskPresent" class="readonlyCheckmark" ng-repeat='risk in ctrl.secondary.risk|riskTypeHistorical:"Present":ctrl.replacedAt'>
+        <div id="readonlyRiskPresent" class="readonlyCheckmark" ng-repeat='risk in ctrl.sources.risk|riskTypeHistorical:"Present":ctrl.replacedAt'>
           <div class="fa fa-check">{{risk.name}}: {{risk.description}}</div><br />
         </div>
       </div>
       <div class='col-md-3'>
         <h4 class='text-primary'>Risk ObHx</h4>
-        <div id="readonlyRiskObHx" class="readonlyCheckmark" ng-repeat='risk in ctrl.secondary.risk|riskTypeHistorical:"ObHx":ctrl.replacedAt'>
+        <div id="readonlyRiskObHx" class="readonlyCheckmark" ng-repeat='risk in ctrl.sources.risk|riskTypeHistorical:"ObHx":ctrl.replacedAt'>
           <div class="fa fa-check">{{risk.name}}: {{risk.description}}</div><br />
         </div>
       </div>
       <div class='col-md-3'>
         <h4 class='text-primary'>Risk MedHx</h4>
-        <div id="readonlyRiskMedHx" class="readonlyCheckmark" ng-repeat='risk in ctrl.secondary.risk|riskTypeHistorical:"MedHx":ctrl.replacedAt'>
+        <div id="readonlyRiskMedHx" class="readonlyCheckmark" ng-repeat='risk in ctrl.sources.risk|riskTypeHistorical:"MedHx":ctrl.replacedAt'>
           <div class="fa fa-check">{{risk.name}}: {{risk.description}}</div><br />
         </div>
       </div>
       <div class='col-md-3'>
         <h4 class='text-primary'>Risk Lifestyle</h4>
-        <div id="readonlyRiskLifestyle" class="readonlyCheckmark" ng-repeat='risk in ctrl.secondary.risk|riskTypeHistorical:"Lifestyle":ctrl.replacedAt'>
+        <div id="readonlyRiskLifestyle" class="readonlyCheckmark" ng-repeat='risk in ctrl.sources.risk|riskTypeHistorical:"Lifestyle":ctrl.replacedAt'>
           <div class="fa fa-check">{{risk.name}}: {{risk.description}}</div><br />
         </div>
       </div>
@@ -191,7 +191,7 @@
           <td class='table-cell-date'>Return</td>
         </tr>
       </thead>
-      <tbody ng-repeat='pe in ctrl.secondary.prenatalExam|secondaryHistorical:ctrl.replacedAt:"date"'>
+      <tbody ng-repeat='pe in ctrl.sources.prenatalExam|sourcesHistorical:ctrl.replacedAt:"date"'>
         <tr class='prenatalExamRow'>
           <td>{{pe.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
           <td>{{pe.weight}}</td>

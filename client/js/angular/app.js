@@ -162,7 +162,7 @@
     }])
 
     /* --------------------------------------------------------
-     * secondaryHistorical()
+     * sourcesHistorical()
      *
      * Return the historical records at the state that they
      * were in at the replacedAt timestamp.
@@ -170,7 +170,7 @@
      * Note: assumes that input records are already sorted
      * by replacedAt field.
      * -------------------------------------------------------- */
-    .filter('secondaryHistorical', ['moment', function(moment) {
+    .filter('sourcesHistorical', ['moment', function(moment) {
       return function(data, replacedAt, sortFld) {
         var recs = [];
         var tmp = {};

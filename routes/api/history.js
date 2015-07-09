@@ -121,8 +121,7 @@ var getAllData = function(req, res) {
     // of the array will be the collated/merged main tables.
     // --------------------------------------------------------
     var data = [];
-    var main;
-    var secondary = {};
+    var main = {};
     var lookup = {};
     var changeMap;
     var changeLogSources;
@@ -135,39 +134,37 @@ var getAllData = function(req, res) {
     //
     // The main tables which are collated/merged. The "Log"
     // suffix on the table references are removed for the client.
+    //
+    // This code that creates the main object along with the
+    // collateRecs() and mergeRecs() from util.js are not needed
+    // anymore in light of how historyService.prepareRecord()
+    // is using the data.
+    //
+    // Note: this code is effectively disabled.
+    //
+    // TODO: Remove completely and also remove collateRecs()
+    // and mergeRecs from util.js.
     // --------------------------------------------------------
+    //main = _.object(results.slice(0, 1));
+    //main = collateRecs(main, 'replacedAt');
+    //mergeRecs(main, 'replacedAt');
+    //data.push(main);
+    //data.push({});
 
     // --------------------------------------------------------
-    // TODO: Determine if main with the collateRecs() and
-    // mergeRecs() from util.js is really needed anymore in
-    // light of how historyService.formatData() is using the data.
-    // --------------------------------------------------------
-    main = _.object(results.slice(0, 1));
-    main = collateRecs(main, 'replacedAt');
-    mergeRecs(main, 'replacedAt');
-    data.push(main);
-
-    // --------------------------------------------------------
-    // The secondary tables are basically detail tables to the
-    // master pregnancy table.
-    //
-    // The secondary tables which are provided to the client raw
-    // as the second record of the array. These are all *Log
-    // tables but they are also being saved to their non-Log names
-    // so that the client can leverage the same templates, etc.
-    // for historical and non-historical views.
-    //
-    // Add more secondary tables to the input array as the come online.
-    //
-    // TODO: see above. Is secondary used instead of main?
+    // The *Log tables are provided to the client raw as the first
+    // record of the array. These are all *Log tables but they are
+    // also being saved to their non-Log names so that the client
+    // can leverage the same templates, etc. for historical and
+    // non-historical views.
     // --------------------------------------------------------
     _.map(['patient', 'pregnancy', 'risk', 'prenatalExam', 'medication',
            'vaccination', 'pregnancyHistory', 'referral', 'healthTeaching',
            'labTestResult'], function(src) {
       // Find the array, drop the leading source name, and assign the inner array.
-      secondary[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
+      main[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
     });
-    data.push(secondary);
+    data.push(main);
 
     // --------------------------------------------------------
     // Lookup tables. Lookup tables are not keyed to a particular
@@ -182,7 +179,10 @@ var getAllData = function(req, res) {
     data.push(lookup);
 
     // --------------------------------------------------------
-    // High-level change log for ease of client use.
+    // High-level change log for ease of client use. This allows
+    // the client to quickly discern which fields have changed
+    // at the table level while progressing through historical
+    // changes.
     // --------------------------------------------------------
     changeLogSources = ['pregnancy', 'patient', 'risk', 'prenatalExam',
                         'medication', 'vaccination', 'pregnancyHistory',
