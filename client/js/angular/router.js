@@ -18,6 +18,7 @@
       // same as the UI-Router states, just convention.
       // --------------------------------------------------------
       var hsPrenatalCB          = 'pregnancy.prenatal';
+      var hsPrenatalExamCB      = 'pregnancy.prenatalExam';
       var hsLabsCB              = 'pregnancy.labs';
       var hsQuestionnaireCB     = 'pregnancy.questionnaire';
       var hsMidwifeCB           = 'pregnancy.midwife';
@@ -37,6 +38,9 @@
             }]
           },
           views: {
+            'historyControl': {
+              template: "<history-control id='historyControl' hc-follow='true'></history-control>"
+            },
             'tabs': {
               templateUrl: '/angular/views/pregnancy-tab.html'
             },
@@ -78,6 +82,40 @@
           }]
         })
         // --------------------------------------------------------
+        // PrenatalExam.
+        // --------------------------------------------------------
+        .state('pregnancy.prenatalExam', {
+          url: '/prenatalexam/:peid',
+          resolve: {
+            peId: ['$stateParams', function($stateParams) {
+              return $stateParams.peid;
+            }]
+          },
+          views: {
+            'tabs@': {
+              template: '<span></span>'    // We don't want tabs to show.
+            },
+            'title@': {
+              template: '<h1>{{title}}</h1>',
+              controller: function($scope) {
+                $scope.title = 'Prenatal Exam';
+              }
+            },
+            'content@': {
+              templateUrl: '/angular/views/prenatalExam.html',
+              controller: ['$scope', 'historyService', 'pregId', 'peId',
+                  commonController(hsPrenatalExamCB)],
+            }
+          },
+          onExit: ['historyService', function(historyService) {
+            // --------------------------------------------------------
+            // Clean up the callback for the history service.
+            // --------------------------------------------------------
+            console.log('State: pregnancy.prenatalExam, onExit');
+            historyService.unregister(stateHandles[hsPrenatalExamCB]);
+          }]
+        })
+        // --------------------------------------------------------
         // Labs tab.
         // --------------------------------------------------------
         .state('pregnancy.labs', {
@@ -112,7 +150,7 @@
             'title@': {
               template: '<h1>{{title}}</h1>',
               controller: function($scope) {
-                $scope.title = 'Pregnancy Questionnaire';
+                $scope.title = 'Questionnaire';
               }
             },
             'content@': {
@@ -191,7 +229,35 @@
   // views.
   // --------------------------------------------------------
   var commonFuncs = {
-    contains: _.contains
+    contains: _.contains,
+    log: function(msg) {console.log(msg);},
+    gotoUrl: function(url) {
+      // Testing
+      console.log(url);
+    },
+    /* --------------------------------------------------------
+     * hasChanged()
+     *
+     * Returns whether the field has changed on this change
+     * record or not. Expects to be passed $scope.ctrl as the
+     * first parameter, and well as table, pregId, and field.
+     *
+     * If ctrl.changed[table][pregId] does not exist, that is
+     * not an error, it just means that it was not changed.
+     *
+     * param       ctrl
+     * param       table
+     * param       pregId
+     * param       fld
+     * return      boolean
+     * -------------------------------------------------------- */
+    hasChanged: function(ctrl, table, pregId, fld) {
+      if (! ctrl || ! table || ! pregId || ! fld) return false;
+      if (ctrl.changed && ctrl.changed[table] && ctrl.changed[table][pregId]) {
+        return _.contains(ctrl.changed[table][pregId].fields, fld);
+      }
+      return false;
+    }
   };
 
   /* --------------------------------------------------------
@@ -220,20 +286,28 @@
     * retrieved later from the stateHandles object when it is
     * time to unregister.
     *
+    * The detId parameter, if passed, is defined per the context
+    * or state and might be prenatalExamId in one context or
+    * medicationId in another.
+    *
     * param       handle
+    * param       detId
     * return      undefined
     * -------------------------------------------------------- */
   var commonController = function(handle) {
-    return function($scope, historyService, pregId) {
+    return function($scope, historyService, pregId, detId) {
       var unregisterHdl;
+      console.log(pregId + (detId? ' : ' + detId: ''));
       historyService.loadAsNeeded(pregId);
       unregisterHdl = historyService.register(function(data) {
         $scope.ctrl = data;
         $scope.func = commonFuncs;
+        console.dir($scope.ctrl);
       });
       addStateHandle(handle, unregisterHdl);
       historyService.curr();
       $scope.pregId = pregId;
+      if (detId) $scope.detId = detId;
     };
   };
 

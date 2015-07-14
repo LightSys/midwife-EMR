@@ -210,6 +210,15 @@ span#dirty-notice-tablet {
 
 /* Angular components */
 #historyControl {
+  position: fixed;
+  top: 51px;
+  right: 22px;
+  z-index: 2000;
+  opacity: 100%;
+  background-color: white;
+}
+div.history-header {
+  position: relative;
 }
 table.hcTable {
   margin: 5px auto;

@@ -32,6 +32,7 @@
       var navigate = function($scope, recNum, navFunc) {
         var changed;
         var newState;
+        var source;
 
         // Sanity check.
         if (recNum < 1 || recNum > $scope.ctrl.numberRecords) {
@@ -51,6 +52,8 @@
             updateMeta($scope, navFunc());
           }
         } else {
+          source = changeRoutingService.getSource('pregnancy.prenatalExam');
+          console.dir(source);
           updateMeta($scope, navFunc());
         }
       };
@@ -136,18 +139,15 @@
             $scope.$applyAsync('ctrl.replacedAt');
 
             // --------------------------------------------------------
-            // Display who changed the record. We take the first changed
-            // table assuming that at any point in time the database
-            // save was by the same user even if multiple tables
-            // were involved.
+            // Display who changed the record for this change.
             // --------------------------------------------------------
-            changedTbl = _.keys(data.changed)[0];
-            $scope.ctrl.updatedBy = historyService.lookup('user', 'id', data[changedTbl].updatedBy).username;
-            if (data[changedTbl].supervisor) {
-              supervisor = historyService.lookup('user', 'id', data[changedTbl].supervisor);
-              $scope.ctrl.supervisor = supervisor.username;
-            } else {
-              $scope.ctrl.supervisor = '';
+            $scope.ctrl.updatedBy = void 0;
+            $scope.ctrl.supervisor = void 0;
+            if (data.changedBy.updatedBy) {
+              $scope.ctrl.updatedBy = historyService.lookup('user', 'id', data.changedBy.updatedBy).username;
+            }
+            if (data.changedBy.supervisor) {
+              $scope.ctrl.supervisor = historyService.lookup('user', 'id', data.changedBy.supervisor).username;
             }
           });
 

@@ -59,7 +59,7 @@
       // Tracking meta information about the current pregnancy.
       var pregnancyId;
       var numRecs;
-      var currRecNum;   // Based on 4th array in input data.
+      var currRecNum;   // Based on 3rd array in input data.
 
 
       /* --------------------------------------------------------
@@ -70,17 +70,22 @@
        * and call the registered callbacks.
        *
        * The data comes from the server in the form of an array
-       * with three elements. The first is an object that contains
-       * the element for each data source, within each of which is
-       * an array of historical records. The second is an object
-       * that contains an element for each lookup table. The third
-       * is an array of changes in the form of objects, each of
-       * which contain an element for each table that was changed
-       * at that point in time, a datetime stamp, and an indexes
-       * object that contains elements representing each table with
-       * the value set to the index of the table that should be
-       * used at that point in time in relation to the objects of
-       * the first array returned by the server.
+       * with three elements.
+       *
+       * The first is an object that contains the element for each
+       * data source, within each of which is an array of historical
+       * records sorted in ascending order by the replacedAt field.
+       *
+       * The second is an object that contains an element for each
+       * lookup table.
+       *
+       * The third is an array of changes in the form of objects,
+       * each of which contain an element for each table that was
+       * changed at that point in time, a datetime stamp, and an
+       * indexes object that contains elements representing each
+       * table with the value set to the index of the table that
+       * should be used at that point in time in relation to the
+       * objects of the first array returned by the server.
        *
        * param       pregId
        * return      undefined
@@ -120,16 +125,61 @@
         }
       };
 
-      var getChangedBySource = function(data, src, recNum) {
-        if (data[2][recNum][src]) {
-          return data[2][recNum][src].fields;
-        }
-        return [];
+      var getRecBySource = function(data, src, recNum) {
+        var recs;
+        _.each(data[2][recNum].indexes[src], function(idx) {
+          // --------------------------------------------------------
+          // Determine if the src is a detail table or not based upon
+          // the presence of the pregnancy_id field.
+          // --------------------------------------------------------
+          if (data[0][src][idx]['pregnancy_id']) {
+            if (! recs) recs = [];
+            recs.push(data[0][src][idx]);
+          } else {
+            // --------------------------------------------------------
+            // The main tables only have one record. For ease of use to
+            // the client, we don't return it in an array.
+            // --------------------------------------------------------
+            recs = data[0][src][idx];
+          }
+        });
+        return recs;
       };
 
-      var getRecBySource = function(data, src, recNum) {
-        var idx = data[2][recNum].indexes[src];
-        return data[0][src][idx];
+      var getChangedBySource = function(data, src, recNum) {
+        if (data[2][recNum][src]) {
+          return data[2][recNum][src];
+        }
+        return {};
+      };
+
+      /* --------------------------------------------------------
+       * getChangedBy()
+       *
+       * Return an object with updatedBy and supervisor elements
+       * that contain the user ids of those responsible for the
+       * specified changed.
+       *
+       * param       data
+       * param       recNum
+       * return      changedBy
+       * -------------------------------------------------------- */
+      var getChangedBy = function(data, recNum) {
+        var changedBy = {updatedBy: void 0, supervisor: void 0};
+        var tables = _.omit(data[2][recNum], ['replacedAt', 'indexes']);
+        var tbl;
+        var recId;
+        var chgIdx;
+        if (tables && _.size(tables) > 0) {
+          tbl = _.keys(tables)[0];    // Take the first table.
+          recId = parseInt(_.keys(tables[tbl])[0], 10);
+          if (_.isNumber(recId)) {
+            chgIdx = data[2][recNum].indexes[tbl][recId];
+            changedBy.updatedBy = data[0][tbl][chgIdx].updatedBy;
+            changedBy.supervisor = data[0][tbl][chgIdx].supervisor;
+          }
+        }
+        return changedBy;
       };
 
       /* --------------------------------------------------------
@@ -164,6 +214,8 @@
 
         // --------------------------------------------------------
         // Raw tables with full history.
+        //
+        // TODO: remove this if the client views do not need it.
         // --------------------------------------------------------
         rec.sources = data[0];
 
@@ -171,6 +223,12 @@
         // Lookup tables.
         // --------------------------------------------------------
         rec.lookup = data[1];
+
+        // --------------------------------------------------------
+        // Provide a record of the user ids of the user and, if
+        // available, the supervisor that made this change.
+        // --------------------------------------------------------
+        rec.changedBy = getChangedBy(data, recNum);
 
         return rec;
       };
@@ -268,10 +326,23 @@
         notifyCallbacks();
         return info();
       };
-      var prev = function() {
-        if (currRecNum > 0) currRecNum--;
-        notifyCallbacks();
-        return info();
+      var prev = function(source, id) {
+        var data;
+        var rAt;
+        if (source && id) {
+          // Find the previous change for the specified source
+          // and id, set the record number accordingly, and
+          // notifyCallbacks().
+          data = pregnancyCache.get(PREGNANCY_CACHE_KEY);
+          rAt = data[2][currRecNum].replacedAt;
+
+
+
+        } else {
+          if (currRecNum > 0) currRecNum--;
+          notifyCallbacks();
+          return info();
+        }
       };
       var first = function() {
         currRecNum = 0;
@@ -286,6 +357,50 @@
       var curr = function() {
         notifyCallbacks();
         return info();
+      };
+
+      /* --------------------------------------------------------
+       * firstBySourceId()
+       * lastBySourceId()
+       * prevBySourceId()
+       * nextBySourceId()
+       *
+       * Sets the interal record pointer relative to the source
+       * and source id specified in relation to the current record
+       * number. For example, if the source is 'prenatalExam', the
+       * id is 757, and the method is prev(), it moves the record
+       * pointer to the previous prenatalExam record with the id
+       * of 757 in relation to the location of the current record
+       * number.
+       *
+       * param       source
+       * -------------------------------------------------------- */
+      var firstBySourceId = function(source, id) {
+
+        // --------------------------------------------------------
+        // TODO: maybe use the current navigation methods instead
+        // and just pass source and id when used in this capacity.
+        // This would allow navigate() in historyControl to still
+        // use the navFunc that it is passed.
+        // --------------------------------------------------------
+
+        var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
+        // Verify that the source is valid.
+        if (json[0][source]) {
+          // Find the replacedAt value for the source with
+          // the specified id.
+          var rec = _.findWhere(json[0][source], {id: id});
+          if (rec) {
+            var rAt = rec.replacedAt;
+            console.log(rAt);
+          }
+        }
+      };
+      var lastBySourceId = function(source, id) {
+      };
+      var prevBySourceId = function(source, id) {
+      };
+      var nextBySourceId = function(source, id) {
       };
 
       /* --------------------------------------------------------
@@ -383,6 +498,10 @@
         prev: prev,
         first: first,
         last: last,
+        firstBySourceId: firstBySourceId,
+        lastBySourceId: lastBySourceId,
+        prevBySourceId: prevBySourceId,
+        nextBySourceId: nextBySourceId,
         curr: curr,
         info: info,
         lookup: lookup,

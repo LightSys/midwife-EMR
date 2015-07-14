@@ -3,7 +3,9 @@
   'use strict';
 
   angular.module('changeRoutingServiceModule', [])
-    .factory('changeRoutingService', [function() {
+    .factory('changeRoutingService', [
+      '$cacheFactory',
+      function($cacheFactory) {
 
       // --------------------------------------------------------
       // Mapping between changed fields in a certain table and
@@ -21,7 +23,7 @@
           'DEFAULT': 'pregnancy.labs'
         },
         'prenatalExam': {
-          'DEFAULT': 'pregnancy.prenatal'
+          'DEFAULT': 'pregnancy.prenatalExam'
         },
         'referral': {
           'DEFAULT': 'pregnancy.labs'
@@ -138,6 +140,15 @@
         }
       };
 
+      var stateSourceMap = {
+        'pregnancy.prenatal': 'pregnancy',
+        'pregnancy.labs': 'pregnancy',
+        'pregnancy.questionnaire': 'pregnancy',
+        'pregnancy.midwife': 'pregnancy',
+        'pregnancy.general': 'pregnancy',
+        'pregnancy.prenatalExam': 'prenatalExam'
+      };
+
       /* --------------------------------------------------------
        * getState()
        *
@@ -155,27 +166,29 @@
 
         // Eliminate data sources with no changes.
         _.each(changes, function(val, key) {
-          if (val.length > 0) {
+          if (val && _.size(val) > 0) {
             changed[key] = val;
           }
         });
 
         // --------------------------------------------------------
-        // Find the first match by field.
+        // Find the first match by field, skip the rest.
         // --------------------------------------------------------
-        _.each(changed, function(fields, table) {
-          if (! state && fieldStateMap[table]) {
-            _.each(fields, function(f) {
-              if (! state && fieldStateMap[table][f]) {
-                state = fieldStateMap[table][f];
+        _.each(changed, function(records, table) {
+          _.each(records, function(recObj, recId) {
+            if (! state && fieldStateMap[table]) {
+              _.each(recObj.fields, function(f) {
+                if (! state && fieldStateMap[table][f]) {
+                  state = fieldStateMap[table][f];
+                }
+              });
+              // If field not found for this table, check for default
+              // for the table.
+              if (! state && fieldStateMap[table]['DEFAULT']) {
+                state = fieldStateMap[table]['DEFAULT'];
               }
-            });
-            // If field not found for this table, check for default
-            // for the table.
-            if (! state && fieldStateMap[table]['DEFAULT']) {
-              state = fieldStateMap[table]['DEFAULT'];
             }
-          }
+          });
         });
 
         // --------------------------------------------------------
@@ -188,8 +201,24 @@
         return state || defaultState;
       };
 
+
+      /* --------------------------------------------------------
+       * getSource()
+       *
+       * Return the data source that matches the UI-Router state
+       * passed. This can be used by the caller to determine which
+       * change records pertain to a specific state.
+       *
+       * param       state
+       * return      Fields object
+       * -------------------------------------------------------- */
+      var getSource = function(state) {
+        return stateSourceMap[state] || '';
+      };
+
       return {
-        getState: getState
+        getState: getState,
+        getSource: getSource
       };
     }]);
 

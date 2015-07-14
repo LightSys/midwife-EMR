@@ -1,6 +1,7 @@
 extends layouts/spa_layout
 
 block spa
+  div(ui-view='historyControl')
   div(ui-view='title')
     h5 Loading title ...
   div(ui-view='tabs')

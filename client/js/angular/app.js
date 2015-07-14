@@ -169,6 +169,10 @@
      *
      * Note: assumes that input records are already sorted
      * by replacedAt field.
+     *
+     * TODO: see prenatal.html where this is not needed because
+     * the current change has all of the records needed. Can
+     * this be eliminated?
      * -------------------------------------------------------- */
     .filter('sourcesHistorical', ['moment', function(moment) {
       return function(data, replacedAt, sortFld) {

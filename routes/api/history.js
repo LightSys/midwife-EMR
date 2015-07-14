@@ -12,7 +12,7 @@ var cfg = require('../../config')
   , mergeRecs = require('../../util').mergeRecs
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
-  , _ = require('underscore')
+  , _ = require('underscore-contrib')
   ;
 
 
@@ -214,6 +214,9 @@ var generateChangeLog = function(data, sources) {
   var newRec = {};
   var indexes = {};
   var cnt = 0;
+  // We don't report on changes in these fields because they
+  // always change no matter what.
+  var excludedKeys = ['replacedAt', 'updatedAt', 'updatedBy'];
 
   // --------------------------------------------------------
   // For each data source, i.e. tables: patient, pregnancy, etc.
@@ -232,22 +235,32 @@ var generateChangeLog = function(data, sources) {
       // --------------------------------------------------------
       _.each(src[1], function(rec, idx) {
         var flds = [];
-        // We don't report on changes in these fields because they
-        // always change no matter what.
-        var excludedKeys = ['replacedAt', 'updatedAt', 'updatedBy'];
+        chgLogOjb = {};
         cnt++;
         if (! lastRec) {
           // First record.
           flds = _.keys(_.omit(rec, excludedKeys));
-          changeLog.push({source: srcName, replacedAt: rec.replacedAt,
-            fields: flds, idx: idx});
+          chgLogObj = {
+            source: srcName,
+            id: rec.id,
+            replacedAt: rec.replacedAt,
+            fields: flds,
+            idx: idx};
+          if (rec.pregnancy_id) chgLogObj.pregnancy_id = rec.pregnancy_id;  // Detail tables
+          changeLog.push(chgLogObj);
           lastRec = rec;
         } else {
           if (rec.id && lastRec.id && rec.id !== lastRec.id) {
             // First record of a different id in a detail table (one to many).
             flds = _.keys(_.omit(rec, excludedKeys));
-            changeLog.push({source: srcName, replacedAt: rec.replacedAt,
-              fields: flds, idx: idx});
+            chgLogObj = {
+              source: srcName,
+              id: rec.id,
+              replacedAt: rec.replacedAt,
+              fields: flds,
+              idx: idx};
+            if (rec.pregnancy_id) chgLogObj.pregnancy_id = rec.pregnancy_id;  // Detail tables
+            changeLog.push(chgLogObj);
             lastRec = rec;
           } else {
             _.each(_.keys(_.omit(rec, excludedKeys)), function(key) {
@@ -260,8 +273,14 @@ var generateChangeLog = function(data, sources) {
             // TODO: if the flds array is empty, should it still be added?
             // Basically this is a database save that actually did not change any data.
             if (flds.length > 0) {
-              changeLog.push({source: srcName, replacedAt: rec.replacedAt,
-                fields: flds, idx: idx});
+              chgLogObj = {
+                source: srcName,
+                id: rec.id,
+                replacedAt: rec.replacedAt,
+                fields: flds,
+                idx: idx};
+              if (rec.pregnancy_id) chgLogObj.pregnancy_id = rec.pregnancy_id;  // Detail tables
+              changeLog.push(chgLogObj);
             }
             lastRec = rec;
           }
@@ -271,12 +290,16 @@ var generateChangeLog = function(data, sources) {
   });   // end outer each
 
   // --------------------------------------------------------
-  // Sort by replacedAt field across all data sources.
+  // Sort by replacedAt field across all data sources and sort
+  // secondarily by record id so that records saved simultaneously
+  // are saved in order of id.
   // --------------------------------------------------------
   changeLog.sort(function(a, b) {
-    if (a.replacedAt < b.replacedAt) {
+    var aa = (a.replacedAt.getTime() * 1000) + a.id;
+    var bb = (b.replacedAt.getTime() * 1000) + b.id;
+    if (aa < bb) {
       return -1;
-    } else if (a.replacedAt > b.replacedAt) {
+    } else if (aa > bb) {
       return 1;
     }
     return 0;
@@ -285,21 +308,28 @@ var generateChangeLog = function(data, sources) {
   // --------------------------------------------------------
   // Initialize the indexes of the data sources.
   // --------------------------------------------------------
-  _.each(sources, function(s) {indexes[s] = 0;});
+  _.each(sources, function(s) {indexes[s] = {};});
 
   // --------------------------------------------------------
   // Merge records with the same replacedAt times into the
-  // same record.
+  // same record then add indexes to reflect the state of
+  // related data sources at that replacedAt time.
   // --------------------------------------------------------
   _.each(changeLog, function(rec, idx) {
     if (idx === 0) {
       // First record.
       newRec.replacedAt = rec.replacedAt;
-      newRec[rec.source] = {
+      newRec[rec.source] = {};
+      newRec[rec.source][rec.id] = {
         fields: rec.fields
       };
-      indexes[rec.source] = rec.idx;
-      newRec.indexes = _.clone(indexes);
+      indexes[rec.source][rec.id] = rec.idx;
+      if (rec.pregnancy_id) {
+        if (rec.op === 'D') {
+          delete indexes[rec.source][rec.id];
+        }
+      }
+      newRec.indexes = _.snapshot(indexes);
     } else {
       if (newRec.replacedAt.getTime() !== rec.replacedAt.getTime()) {
         // New replacedAt time, so store completed record in mergeLog.
@@ -308,24 +338,39 @@ var generateChangeLog = function(data, sources) {
         // Start a new record.
         newRec = {};
         newRec.replacedAt = rec.replacedAt;
-        newRec[rec.source] = {
+        newRec[rec.source] = {};
+        newRec[rec.source][rec.id] = {
           fields: rec.fields
         };
-        indexes[rec.source] = rec.idx;
-        newRec.indexes = _.clone(indexes);
+        indexes[rec.source][rec.id] = rec.idx;
+        if (rec.pregnancy_id) {
+          if (rec.op === 'D') {
+            delete indexes[rec.source][rec.id];
+          }
+        }
+        newRec.indexes = _.snapshot(indexes);
       } else {
         // Multiple data sources with the same replacedAt time
         // so add to the current record.
-        newRec[rec.source] = {
+        if (! newRec[rec.source]) newRec[rec.source] = {};
+        newRec[rec.source][rec.id] = {
           fields: rec.fields
         };
-        indexes[rec.source] = rec.idx;
-        newRec.indexes = _.clone(indexes);
+        indexes[rec.source][rec.id] = rec.idx;
+        if (rec.pregnancy_id) {
+          if (rec.op === 'D') {
+            delete indexes[rec.source][rec.id];
+          }
+        }
+        newRec.indexes = _.snapshot(indexes);
       }
     }
   });
   // Add the final record.
   mergeLog.push(newRec);
+
+  // Debugging
+  //console.log(require('util').inspect(mergeLog, {depth: 4}));
 
   return mergeLog;
 };
