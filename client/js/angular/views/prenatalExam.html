@@ -1,7 +1,7 @@
-<div ng-repeat='pe in ctrl.prenatalExam|filter:{id: detId}'>
+<div ng-repeat='pe in ctrl.prenatalExam|showDetail:detId'>
   <div class="row">
     <div class='form-group col-md-3'>
-      <label class=''>Mother Information</label>
+      <label class=''>Mother Information {{detId}}</label>
       <div>Date</div>
       <input class='form-control' tabindex='1' name='date' disabled='true' value='{{pe.date|onlyValidDate|date:"MM-dd-yyyy"}}'>
       <span>Weight</span>

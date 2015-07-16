@@ -265,6 +265,25 @@
       };
     }])
 
+    /* --------------------------------------------------------
+     * showDetail()
+     *
+     * Returns the record as specified by the passed id, or
+     * returns an empty array.
+     * -------------------------------------------------------- */
+    .filter('showDetail', [function() {
+      return function(recs, detId) {
+        var chosen = [];
+        var tmpRec;
+        if (! detId) return [];
+        detId = parseInt(detId, 10);
+        angular.forEach(recs, function(rec) {
+          if (rec.id === detId) chosen.push(rec);
+        });
+        return chosen;
+      };
+    }])
+
     .filter('getGAFromLMP', ['moment', function(moment) {
       return function(lmp, rDate) {
         var edDate = edd(lmp, moment);

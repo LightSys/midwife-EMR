@@ -312,6 +312,78 @@
 
 
       /* --------------------------------------------------------
+       * findBySource()
+       *
+       * Find the "next" record that has changed for the source
+       * specified in the direction specified, and pertaining to
+       * the detail id passed, if specified.
+       *
+       * dir can be 'f' for first, 'l' for last, 'p' for previous
+       * or 'n' for next.
+       *
+       * Returns the record number of the change found, or
+       * currRecNum if nothing was found.
+       *
+       * param       source
+       * param       dir - one of 'f', 'l', 'p', or 'n'
+       * param       detId
+       * return      recordNum
+       * -------------------------------------------------------- */
+      var findBySource = function(source, dir, detId) {
+        var found = false;
+        var newRecNum = currRecNum;
+        var data;
+        var i;
+        var test;
+        var op;
+
+        // Sanity checks.
+        if (! source || ! dir) {
+          console.log('findBySource() warning: source and/or dir is not defined.');
+          return currRecNum;
+        }
+        if (! dir || ! _.contains(['f','l','p','n'], dir)) {
+          console.log('findBySource() error: dir is inappropriately defined.');
+          return currRecNum;
+        }
+
+        // Setup.
+        switch (dir) {
+          case 'f':
+          case 'n':
+            test = function(x) {return x < numRecs;};
+            op = function(x) {return x + 1;};
+            break;
+          case 'l':
+          case 'p':
+            test = function(x) {return x > -1;};
+            op = function(x) {return x - 1;};
+            break;
+        }
+        if (dir === 'f') i = 0;
+        if (dir === 'l') i = numRecs - 1;
+        if (dir === 'p') i = currRecNum - 1;
+        if (dir === 'n') i = currRecNum + 1;
+
+        // Find matching record if possible.
+        data = pregnancyCache.get(PREGNANCY_CACHE_KEY);
+        for (i; test(i) && ! found; i=op(i)) {
+          if (_.has(data[2][i], source)) {
+            if (detId) {
+              if (_.has(data[2][i][source], detId)) {
+                found = true;
+                newRecNum = i;
+              }
+            } else {
+              found = true;
+              newRecNum = i;
+            }
+          }
+        }
+        return newRecNum;
+      };
+
+      /* --------------------------------------------------------
        * next()
        * prev()
        * first()
@@ -321,86 +393,65 @@
        * Then returns an object via info() that carries meta data
        * about the new current record.
        * -------------------------------------------------------- */
-      var next = function() {
-        if (currRecNum < (numRecs - 1)) currRecNum++;
-        notifyCallbacks();
-        return info();
+      var next = function(source, detId) {
+        var origRecNum = currRecNum;
+        if (source) {
+          currRecNum = findBySource(source, 'n', detId);
+          if (origRecNum !== currRecNum) {
+            notifyCallbacks();
+          }
+          return info();
+        } else {
+          if (currRecNum < (numRecs - 1)) currRecNum++;
+          notifyCallbacks();
+          return info();
+        }
       };
-      var prev = function(source, id) {
-        var data;
-        var rAt;
-        if (source && id) {
-          // Find the previous change for the specified source
-          // and id, set the record number accordingly, and
-          // notifyCallbacks().
-          data = pregnancyCache.get(PREGNANCY_CACHE_KEY);
-          rAt = data[2][currRecNum].replacedAt;
-
-
-
+      var prev = function(source, detId) {
+        var origRecNum = currRecNum;
+        if (source) {
+          currRecNum = findBySource(source, 'p', detId);
+          if (origRecNum !== currRecNum) {
+            notifyCallbacks();
+          }
+          return info();
         } else {
           if (currRecNum > 0) currRecNum--;
           notifyCallbacks();
           return info();
         }
       };
-      var first = function() {
-        currRecNum = 0;
-        notifyCallbacks();
-        return info();
+      var first = function(source, detId) {
+        var origRecNum = currRecNum;
+        if (source) {
+          currRecNum = findBySource(source, 'f', detId);
+          if (origRecNum !== currRecNum) {
+            notifyCallbacks();
+          }
+          return info();
+        } else {
+          currRecNum = 0;
+          notifyCallbacks();
+          return info();
+        }
       };
-      var last = function() {
-        currRecNum = numRecs - 1;
-        notifyCallbacks();
-        return info();
+      var last = function(source, detId) {
+        var origRecNum = currRecNum;
+        if (source) {
+          currRecNum = findBySource(source, 'l', detId);
+          if (origRecNum !== currRecNum) {
+            notifyCallbacks();
+          }
+          return info();
+        } else {
+          currRecNum = numRecs - 1;
+          notifyCallbacks();
+          return info();
+        }
       };
       var curr = function() {
         notifyCallbacks();
         return info();
-      };
-
-      /* --------------------------------------------------------
-       * firstBySourceId()
-       * lastBySourceId()
-       * prevBySourceId()
-       * nextBySourceId()
-       *
-       * Sets the interal record pointer relative to the source
-       * and source id specified in relation to the current record
-       * number. For example, if the source is 'prenatalExam', the
-       * id is 757, and the method is prev(), it moves the record
-       * pointer to the previous prenatalExam record with the id
-       * of 757 in relation to the location of the current record
-       * number.
-       *
-       * param       source
-       * -------------------------------------------------------- */
-      var firstBySourceId = function(source, id) {
-
-        // --------------------------------------------------------
-        // TODO: maybe use the current navigation methods instead
-        // and just pass source and id when used in this capacity.
-        // This would allow navigate() in historyControl to still
-        // use the navFunc that it is passed.
-        // --------------------------------------------------------
-
-        var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
-        // Verify that the source is valid.
-        if (json[0][source]) {
-          // Find the replacedAt value for the source with
-          // the specified id.
-          var rec = _.findWhere(json[0][source], {id: id});
-          if (rec) {
-            var rAt = rec.replacedAt;
-            console.log(rAt);
-          }
-        }
-      };
-      var lastBySourceId = function(source, id) {
-      };
-      var prevBySourceId = function(source, id) {
-      };
-      var nextBySourceId = function(source, id) {
       };
 
       /* --------------------------------------------------------
@@ -498,10 +549,6 @@
         prev: prev,
         first: first,
         last: last,
-        firstBySourceId: firstBySourceId,
-        lastBySourceId: lastBySourceId,
-        prevBySourceId: prevBySourceId,
-        nextBySourceId: nextBySourceId,
         curr: curr,
         info: info,
         lookup: lookup,

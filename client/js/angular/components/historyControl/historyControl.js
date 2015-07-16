@@ -21,7 +21,11 @@
        * to navigate once to change to the right screen and again
        * to actually see the change.
        *
-       * Also, when a record is change, calls updateMeta() to keep
+       * When the follow changes flag is not set, obtains the UI-Router
+       * state in force for the current change so that the appropriate
+       * change for the same state can be navigated to.
+       *
+       * Finally, when a record is change, calls updateMeta() to keep
        * the meta data about the current record in tact.
        *
        * param       $scope
@@ -43,18 +47,16 @@
         if ($scope.ctrl.follow) {
           changed = historyService.getChangedByNum(recNum);
           newState = changeRoutingService.getState(changed);
-
-          console.log(newState);
-
           if (newState !== $state.$current.name) {
             $state.go(newState);
           } else {
             updateMeta($scope, navFunc());
           }
         } else {
-          source = changeRoutingService.getSource('pregnancy.prenatalExam');
-          console.dir(source);
-          updateMeta($scope, navFunc());
+          // Follow is not on, so move to next change that affects this page only.
+          // If $root.detId is not set, getSource() will search by source only.
+          source = changeRoutingService.getSource($scope.$root.hsState);
+          updateMeta($scope, navFunc(source, $scope.$root.detId));
         }
       };
 

@@ -12,17 +12,15 @@
       // --------------------------------------------------------
       // Keys for historyService callbacks to facilitate cleanup
       // when leaving states. Used by commonController() and
-      // addStateHandle().
-      //
-      // Note: there is no significance to the values being the
-      // same as the UI-Router states, just convention.
+      // addStateHandle(). Also serves to convey the current
+      // UI-Router state to commonController().
       // --------------------------------------------------------
-      var hsPrenatalCB          = 'pregnancy.prenatal';
-      var hsPrenatalExamCB      = 'pregnancy.prenatalExam';
-      var hsLabsCB              = 'pregnancy.labs';
-      var hsQuestionnaireCB     = 'pregnancy.questionnaire';
-      var hsMidwifeCB           = 'pregnancy.midwife';
-      var hsGeneralCB           = 'pregnancy.general';
+      var hsPrenatalStateCB          = 'pregnancy.prenatal';
+      var hsPrenatalExamStateCB      = 'pregnancy.prenatalExam';
+      var hsLabsStateCB              = 'pregnancy.labs';
+      var hsQuestionnaireStateCB     = 'pregnancy.questionnaire';
+      var hsMidwifeStateCB           = 'pregnancy.midwife';
+      var hsGeneralStateCB           = 'pregnancy.general';
 
       $urlRouterProvider.otherwise('/'); // TODO: this takes out of SPA, correct?
 
@@ -70,7 +68,7 @@
             'content@': {
               templateUrl: '/angular/views/prenatal.html',
               controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsPrenatalCB)],
+                  commonController(hsPrenatalStateCB)],
             }
           },
           onExit: ['historyService', function(historyService) {
@@ -78,7 +76,7 @@
             // Clean up the callback for the history service.
             // --------------------------------------------------------
             console.log('State: pregnancy.prenatal, onExit');
-            historyService.unregister(stateHandles[hsPrenatalCB]);
+            historyService.unregister(stateHandles[hsPrenatalStateCB]);
           }]
         })
         // --------------------------------------------------------
@@ -104,7 +102,7 @@
             'content@': {
               templateUrl: '/angular/views/prenatalExam.html',
               controller: ['$scope', 'historyService', 'pregId', 'peId',
-                  commonController(hsPrenatalExamCB)],
+                  commonController(hsPrenatalExamStateCB)],
             }
           },
           onExit: ['historyService', function(historyService) {
@@ -112,7 +110,7 @@
             // Clean up the callback for the history service.
             // --------------------------------------------------------
             console.log('State: pregnancy.prenatalExam, onExit');
-            historyService.unregister(stateHandles[hsPrenatalExamCB]);
+            historyService.unregister(stateHandles[hsPrenatalExamStateCB]);
           }]
         })
         // --------------------------------------------------------
@@ -130,7 +128,7 @@
             'content@': {
               template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
               controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsLabsCB)],
+                  commonController(hsLabsStateCB)],
             }
           },
           onExit: ['historyService', function(historyService) {
@@ -138,7 +136,7 @@
             // Clean up the callback for the history service.
             // --------------------------------------------------------
             console.log('State: pregnancy.labs, onExit');
-            historyService.unregister(stateHandles[hsLabsCB]);
+            historyService.unregister(stateHandles[hsLabsStateCB]);
           }]
         })
         // --------------------------------------------------------
@@ -156,7 +154,7 @@
             'content@': {
               template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
               controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsQuestionnaireCB)]
+                  commonController(hsQuestionnaireStateCB)]
             }
           },
           onExit: ['historyService', function(historyService) {
@@ -164,7 +162,7 @@
             // Clean up the callback for the history service.
             // --------------------------------------------------------
             console.log('State: pregnancy.questionnaire, onExit');
-            historyService.unregister(stateHandles[hsQuestionnaireCB]);
+            historyService.unregister(stateHandles[hsQuestionnaireStateCB]);
           }]
         })
         // --------------------------------------------------------
@@ -182,7 +180,7 @@
             'content@': {
               template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
               controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsMidwifeCB)]
+                  commonController(hsMidwifeStateCB)]
             }
           },
           onExit: ['historyService', function(historyService) {
@@ -190,7 +188,7 @@
             // Clean up the callback for the history service.
             // --------------------------------------------------------
             console.log('State: pregnancy.midwife, onExit');
-            historyService.unregister(stateHandles[hsMidwifeCB]);
+            historyService.unregister(stateHandles[hsMidwifeStateCB]);
           }]
         })
         // --------------------------------------------------------
@@ -208,7 +206,7 @@
             'content@': {
               template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
               controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsGeneralCB)]
+                  commonController(hsGeneralStateCB)]
             }
           },
           onExit: ['historyService', function(historyService) {
@@ -216,7 +214,7 @@
             // Clean up the callback for the history service.
             // --------------------------------------------------------
             console.log('State: pregnancy.general, onExit');
-            historyService.unregister(stateHandles[hsGeneralCB]);
+            historyService.unregister(stateHandles[hsGeneralStateCB]);
           }]
         });
 
@@ -286,28 +284,72 @@
     * retrieved later from the stateHandles object when it is
     * time to unregister.
     *
+    * The stateHandle parameter also serves to inform the
+    * controller it's current state.
+    *
     * The detId parameter, if passed, is defined per the context
     * or state and might be prenatalExamId in one context or
-    * medicationId in another.
+    * medicationId in another. When passed into the controller,
+    * this was initated by a user clicking on a summary row on
+    * another page.
     *
-    * param       handle
+    * When arriving on a detail page while navigating via changes
+    * per the historyControl, the detId will not be set, though
+    * it will need to be. The stateHandle parameter is used to
+    * determine what detId should be set to.
+    *
+    * param       stateHandle
     * param       detId
     * return      undefined
     * -------------------------------------------------------- */
-  var commonController = function(handle) {
+  var commonController = function(stateHandle) {
     return function($scope, historyService, pregId, detId) {
       var unregisterHdl;
-      console.log(pregId + (detId? ' : ' + detId: ''));
       historyService.loadAsNeeded(pregId);
       unregisterHdl = historyService.register(function(data) {
         $scope.ctrl = data;
         $scope.func = commonFuncs;
-        console.dir($scope.ctrl);
+
+        // --------------------------------------------------------
+        // Make the UI-Router state available in $scope. The
+        // historyControl component, for one, uses this in conjunction
+        // with the historyService for record navigation. But since
+        // this code is called toward the end of the page load, the
+        // historyControl really uses this on the "next" use, not
+        // the current page load.
+        // --------------------------------------------------------
+        $scope.$root.hsState = stateHandle;
+
+        // --------------------------------------------------------
+        // If we are in a detail state and we are arriving to it
+        // without the detId being set, set it based upon the
+        // sources that have changed. If we are no longer in a
+        // detail state, clear it.
+        // --------------------------------------------------------
+        if (! detId) {
+          switch (stateHandle) {
+            case 'pregnancy.prenatalExam':
+              if (_.size($scope.ctrl.changed.prenatalExam) > 0) {
+                $scope.detId = _.keys($scope.ctrl.changed.prenatalExam)[0];
+                $scope.$root.detId = $scope.detId;
+              }
+              break;
+            default:
+              $scope.detId = void 0;
+              $scope.$root.detId = void 0;
+          }
+        }
       });
-      addStateHandle(handle, unregisterHdl);
+      addStateHandle(stateHandle, unregisterHdl);
       historyService.curr();
       $scope.pregId = pregId;
-      if (detId) $scope.detId = detId;
+      if (detId) {
+        $scope.detId = detId;
+        $scope.$root.detId = $scope.detId;
+      } else {
+        $scope.detId = void 0;
+        $scope.$root.detId = void 0;
+      }
     };
   };
 
