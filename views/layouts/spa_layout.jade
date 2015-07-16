@@ -44,7 +44,7 @@ html(lang="en")
           if roleInfo && roleInfo.isAuthenticated
             ul(class="nav navbar-nav side-nav")
               li
-                a(href="/") <i class="fa fa-fw fa-sign-out"></i>
+                a(href=exitUrl, target="_self") <i class="fa fa-fw fa-sign-out"></i>
                   = gettext('Leave History Mode')
 
           //- Header menu options on the right
