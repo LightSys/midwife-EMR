@@ -22,7 +22,7 @@
       var hsMidwifeStateCB           = 'pregnancy.midwife';
       var hsGeneralStateCB           = 'pregnancy.general';
 
-      $urlRouterProvider.otherwise('/'); // TODO: this takes out of SPA, correct?
+      $urlRouterProvider.otherwise('/');
 
       $stateProvider
         // --------------------------------------------------------

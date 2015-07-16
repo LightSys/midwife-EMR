@@ -20,15 +20,20 @@ var cfg = require('../../config')
 var main = function(req, res) {
   var data = {
     pregId: req.parameters.id1
+    , exitUrl: req.url.replace(/\/spa\/history/, '')
   };
   switch(req.parameters.op1) {
     case 'history':
       switch(req.parameters.op2) {
         case 'pregnancy':
+          // TODO: Replace these hard-coded paths with paths from config.
+          // TODO: Add all of the paths or allow anything.
           switch(req.parameters.op3) {
             case 'prenatal':
-              // Take user back to prenatal page when leaving history mode.
-              data.exitUrl = req.url.replace(/\/spa\/history/, '');
+            case 'labs':
+            case 'quesEdit':
+            case 'midwifeinterview':
+            case 'edit':
               res.render('spa', data);
               break;
             default:

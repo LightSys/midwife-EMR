@@ -259,6 +259,21 @@ app.use(function(req, res, next) {
   next();
 });
 
+/* --------------------------------------------------------
+ * Make the current path available to the templates so that
+ * it can be used to dynamically create an url for entering
+ * history mode.
+ * -------------------------------------------------------- */
+app.use(function(req, res, next) {
+  var currUrl
+    ;
+  if (req.method === 'GET' &&
+      req.url.search(/^\/pregnancy\//) !== -1) {
+    app.locals.currUrl = req.url;
+  }
+  next();
+});
+
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
 // --------------------------------------------------------
