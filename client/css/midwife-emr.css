@@ -209,13 +209,30 @@ span#dirty-notice-tablet {
 }
 
 /* Angular components */
-#historyControl {
-  position: fixed;
-  top: 51px;
-  right: 22px;
-  z-index: 2000;
-  opacity: 100%;
-  background-color: white;
+
+/* History control neatly nests in right corner if
+ * there is enough width. Otherwise allow it to
+ * be a part of the flow.
+ */
+@media (min-width: 1200px) {
+  #historyControl {
+    position: fixed;
+    top: 51px;
+    right: 22px;
+    z-index: 2000;
+    opacity: 100%;
+    background-color: white;
+  }
+}
+@media (max-width: 1199px) {
+  #historyControl {
+    position: fixed;
+    top: 0px;
+    right: 141px;
+    z-index: 2000;
+    opacity: 100%;
+    background-color: white;
+  }
 }
 div.history-header {
   position: relative;

@@ -78,6 +78,8 @@ html(lang="en")
           ul(class="nav navbar-nav navbar-right navbar-user")
             - var appRev = applicationRevision? gettext('version') + ': ' + applicationRevision: '';
             li
+              a(href='/spa/history' + currUrl)= gettext('View History')
+            li
               span= appRev
             if roleInfo && roleInfo.hasRole('attending')
               - var superV = (supervisor || gettext('Not yet set'))
