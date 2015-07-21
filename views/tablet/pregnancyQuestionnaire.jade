@@ -58,8 +58,9 @@ block pregnancyQuestionnaire
         div(id="presentComplaints" class="collapse")
           each cb in pComplaints
             div.checkbox
-              label= gettext(cb.label)
+              label
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
 
         a(class="btn btn-default" data-toggle="collapse" href="#familyHistory" data-parent="#readonlyFamilyHistory" aria-expanded="false" aria-controls="familyHistory")= gettext('Family History')
         - tabIdx = 18;
@@ -75,8 +76,9 @@ block pregnancyQuestionnaire
         div(id="familyHistory" class="collapse")
           each cb in fHistory
             div.checkbox
-              label= gettext(cb.label)
+              label
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
 
         a(class="btn btn-default" data-toggle="collapse" href="#personalHistory" data-parent="#readonlyPersonalHistory" aria-expanded="false" aria-controls="personalHistory")= gettext('Personal History')
         - tabIdx = 26;
@@ -92,8 +94,9 @@ block pregnancyQuestionnaire
         div(id="personalHistory" class="collapse")
           each cb in pHistory
             div.checkbox
-              label= gettext(cb.label)
+              label
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
 
 
       div(class='form-group col-xs-6')
@@ -114,8 +117,9 @@ block pregnancyQuestionnaire
           span= gettext('Companion during childbirth')
           input(class='form-control', type='text', tabindex="15", autocomplete="off", name='birthCompanion', value=rec.birthCompanion)
         div.checkbox
-          label= gettext('Practiced family planning')
+          label
             input(type='checkbox', name='practiceFamilyPlanning', tabindex="16", value=1, checked=rec.practiceFamilyPlanning==true)
+            = gettext('Practiced family planning')
         div(class='separate-section')
           span= gettext('Family planning comments')
           input(class='form-control', type='text', tabindex="17", spellcheck="off", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)

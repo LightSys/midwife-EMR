@@ -58,8 +58,9 @@ block pregnancyQuestionnaire
         div(id="presentComplaints" class="collapse")
           each cb in pComplaints
             div.checkbox
-              label= gettext(cb.label)
+              label
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
 
       div(class='form-group col-sm-3')
         div(class='separate-section')
@@ -78,8 +79,9 @@ block pregnancyQuestionnaire
           span= gettext('Companion during childbirth')
           input(class='form-control', type='text', tabindex="15", autocomplete="off", name='birthCompanion', value=rec.birthCompanion)
         div.checkbox
-          label= gettext('Practiced family planning')
+          label
             input(type='checkbox', name='practiceFamilyPlanning', tabindex="16", value=1, checked=rec.practiceFamilyPlanning==true)
+            = gettext('Practiced family planning')
         span= gettext('Family planning comments')
         input(class='form-control', type='text', tabindex="17", spellcheck="off", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
 
@@ -98,8 +100,9 @@ block pregnancyQuestionnaire
         div(id="familyHistory" class="collapse")
           each cb in fHistory
             div.checkbox
-              label= gettext(cb.label)
+              label
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
 
         span= gettext('Notes')
         textarea(id='questionnaireNote', class='form-control', tabindex="25", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
@@ -119,8 +122,9 @@ block pregnancyQuestionnaire
         div(id="personalHistory" class="collapse")
           each cb in pHistory
             div.checkbox
-              label= gettext(cb.label)
+              label
                 input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
 
     div.row
       input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))

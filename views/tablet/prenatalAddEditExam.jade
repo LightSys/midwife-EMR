@@ -84,20 +84,24 @@ block prenatalAddEditExam
       div.row
         div(class='form-group col-xs-2')
           div.checkbox
-            label= gettext('Mvmt')
-              input(class='form-control input-sm', type='checkbox', name='mvmt', tabindex="13", disabled=readonlyFields.mvmt, value=1, checked=prenatalExam.mvmt==true)
+            label
+              input(type='checkbox', name='mvmt', tabindex="13", disabled=readonlyFields.mvmt, value=1, checked=prenatalExam.mvmt==true)
+              = gettext('Mvmt')
         div(class='form-group col-xs-3')
           div.checkbox
-            label= gettext('Edema')
+            label
               +select('form-control', 'edema', 14, edema, readonlyFields.edema)
+                = gettext('Edema')
         div(class='form-group col-xs-2 col-xs-offset-1')
           div.checkbox
-            label= gettext('Vitamin')
-              input(class='form-control input-sm', type='checkbox', name='vitamin', tabindex="15", disabled=readonlyFields.vitamin, value=1, checked=prenatalExam.vitamin==true)
+            label
+              input(type='checkbox', name='vitamin', tabindex="15", disabled=readonlyFields.vitamin, value=1, checked=prenatalExam.vitamin==true)
+              = gettext('Vitamin')
         div(class='form-group col-xs-2')
           div.checkbox
-            label= gettext('Pray')
-              input(class='form-control input-sm', type='checkbox', name='pray', tabindex="16", disabled=readonlyFields.pray, value=1, checked=prenatalExam.pray==true)
+            label
+              input(type='checkbox', name='pray', tabindex="16", disabled=readonlyFields.pray, value=1, checked=prenatalExam.pray==true)
+              = gettext('Pray')
 
       div.row
         div(class='form-group col-xs-6')

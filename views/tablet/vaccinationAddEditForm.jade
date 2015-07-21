@@ -50,8 +50,9 @@ block vaccinationAddEditForm
           - }
         div(class='col-xs-4')
           div.checkbox
-            label= gettext('Administered by MMC?')
+            label
               input(type='checkbox', name='administeredInternally', tabindex="4", value=1, checked=administeredInternally==true)
+              = gettext('Administered by MMC?')
         div(class='col-xs-4')
           label= gettext('Notes')
           textarea(class='form-control input-lg', tabindex="5", spellcheck="off", autocomplete="off", rows=4, name='note')= vaccinationNote

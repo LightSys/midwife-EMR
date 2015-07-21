@@ -22,8 +22,9 @@ block midwifeInterviewEditPreg
           input(id='year', class='form-control', type='number', tabindex="101", autocomplete="off", name='year', value=pregHist.year)
         div(class='form-group col-md-2')
           div.checkbox
-            span= gettext('Full Term?')
+            span
               input(type='checkbox', name='FT', tabindex="102", value=1, checked=pregHist.FT==true)
+              = gettext('Full Term?')
         div(class='form-group col-md-2')
           span= gettext('GA')
           input(id='finalGA', class='form-control', type='number', tabindex="103", autocomplete="off", name='finalGA', value=pregHist.finalGA)

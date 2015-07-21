@@ -11,18 +11,22 @@ block midwifeInterview
       div(class='form-group col-md-3')
         label= gettext('Choose at least one:')
         div.checkbox
-          label= gettext('Inverted nipples')
+          label
             input(type='checkbox', name='invertedNipples', tabindex="1", value=1, checked=rec.invertedNipples==true)
+            = gettext('Inverted nipples')
         div.checkbox
-          label= gettext('Patient has U/S')
+          label
             input(type='checkbox', name='hasUS', tabindex="2", value=1, checked=rec.hasUS==true)
+            = gettext('Patient has U/S')
         div.checkbox
-          label= gettext('Patient wants U/S')
+          label
             input(type='checkbox', name='wantsUS', tabindex="3", value=1, checked=rec.wantsUS==true)
+            = gettext('Patient wants U/S')
         div.checkbox
           //- Note that this field has no representation in the database.
-          label= gettext('None of the above')
+          label
             input(type='checkbox', name='noneOfAbove', tabindex="4", value=1, checked=rec.noneOfAbove==true)
+            = gettext('None of the above')
 
       div(class='form-group col-md-3')
         div.row

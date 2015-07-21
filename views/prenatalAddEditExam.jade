@@ -81,19 +81,22 @@ block prenatalAddEditExam
         div(class='form-group col-md-3')
           label(class='')= gettext('Other Information')
           div.checkbox
-            label= gettext('Mvmt')
+            label
               input(type='checkbox', name='mvmt', tabindex="13", disabled=readonlyFields.mvmt, value=1, checked=prenatalExam.mvmt==true)
+              = gettext('Mvmt')
           div.checkbox
             label= gettext('Edema')
               +select('form-control', 'edema', 14, edema, readonlyFields.edema)
           span= gettext('Risk')
               input(class='form-control', type='text', name='risk', spellcheck="off", autocomplete="off", tabindex="14", disabled=readonlyFields.risk, value=prenatalExam.risk)
           div.checkbox
-            label= gettext('Vitamin')
+            label
               input(type='checkbox', name='vitamin', tabindex="16", disabled=readonlyFields.vitamin, value=1, checked=prenatalExam.vitamin==true)
+              = gettext('Vitamin')
           div.checkbox
-            label= gettext('Pray')
+            label
               input(type='checkbox', name='pray', tabindex="17", disabled=readonlyFields.pray, value=1, checked=prenatalExam.pray==true)
+              = gettext('Pray')
 
         div(class='form-group col-md-3')
           label(class='')= gettext('Other continued')
