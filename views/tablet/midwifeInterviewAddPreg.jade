@@ -77,5 +77,5 @@ block midwifeInterviewAddPreg
           button(class='btn btn-primary btn-block', type='submit')= gettext('Save')
           input(type='hidden', name='_csrf', value=token)
           input(type='hidden', name='pregnancy_id', value=rec.id)
-        div(class='col-xs-4')
+        div(class='col-xs-5')
           a(href=midwifeInterviewPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to Midwife Interview')
