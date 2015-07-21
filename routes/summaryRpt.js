@@ -716,8 +716,8 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
   doLabel(doc, 'Present comments', x, y);
   y += 15;
   y = doYesNo(doc, 'Using iodized salt?', data.pregnancy.useIodizedSalt, x, y);
-  y = doCheckbox(doc, 'Taking medication?', data.pregnancy.takingMedication, x, y);
-  y = doCheckbox(doc, 'Plan to breastfeed?', data.pregnancy.planToBreastFeed, x, y);
+  y = doYesNo(doc, 'Taking medication?', data.pregnancy.takingMedication, x, y);
+  y = doYesNo(doc, 'Plan to breastfeed?', data.pregnancy.planToBreastFeed, x, y);
   y += 5;
   y = doVertFldVal(doc, 'Where do you plan to give birth?', data.pregnancy.whereDeliver, x, y);
   y += 5;
