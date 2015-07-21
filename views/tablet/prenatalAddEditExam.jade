@@ -121,13 +121,13 @@ block prenatalAddEditExam
           a(href=prenatalPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to the Prenatal Page')
         div(class='col-xs-2 col-xs-offset-1')
           - if (prenatalExamDeletePath) {
-          button(class='btn btn-block pull-right disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+          a(class='btn btn-warning pull-right disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
           - }
 
     - if (prenatalExamDeletePath) {
     div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
       form(id='deletePrenatalExamForm', role='form', name='prenatalExamDelete', action=prenatalExamDeletePath, method='post')
-        div(class='modal-dialog')
+        div(class='modal-dialog', role='document')
           div(class='modal-content')
             div(class='modal-header')
               h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')

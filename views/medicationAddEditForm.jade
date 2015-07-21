@@ -59,13 +59,13 @@ block medicationAddEditForm
           a(href=labsMainPath, class='btn btn-default disable-on-change', role='button')= gettext('Back to the Labs Page')
         - if (isUpdate) {
         div(class='col-md-2 col-md-offset-4')
-          button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+          a(class='btn btn-warning disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
         - }
 
     - if (isUpdate) {
     div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
       form(id='deleteMedicationEditForm', role='form', name='MedicationEditForm', action=medicationDeletePath, method='post')
-        div(class='modal-dialog')
+        div(class='modal-dialog' role='document')
           div(class='modal-content')
             div(class='modal-header')
               h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')

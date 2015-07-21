@@ -153,6 +153,11 @@ h4.charts {
   height: 300px;
 }
 
+/* Lab Modal adjustments */
+.labModalCheckbox {
+  left: 15px !important;
+}
+
 span#dirty-notice {
   display: none;
   position: fixed;

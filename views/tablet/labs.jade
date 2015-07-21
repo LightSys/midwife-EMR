@@ -62,15 +62,15 @@ block labs
           //- Add Lab Test modal dialog and form.
           div.row
             div(class='col-xs-6 col-xs-offset-6')
-              form(id='addLabFormId', role='form', name='addLabForm', action=addLabPath, method='post')
-                button(class='btn btn-primary', data-toggle='modal', data-target="#addLab-modal")= gettext('Add Lab Result')
+              a(class='btn btn-primary', data-toggle='modal', data-target="#addLab-modal")= gettext('Add Lab Result')
 
-                div(id='addLab-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='addLabModalHeaderLabel', aria-hidden='true')
-                  div(class='modal-dialog')
-                    div(class='modal-content')
-                      div(class='modal-header')
-                        h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab tests to enter for a specific date.')
-                      div(class='modal-body')
+              div(id='addLab-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='addLabModalHeaderLabel', aria-hidden='true')
+                div(class='modal-dialog', role='document')
+                  div(class='modal-content')
+                    div(class='modal-header')
+                      h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab tests to enter for a specific date.')
+                    div(class='modal-body')
+                      form(id='addLabFormId', role='form', name='addLabForm', action=addLabPath, method='post')
                         div.row
                           div(class='col-xs-12')
                             div(class='panel panel-default')
@@ -88,15 +88,15 @@ block labs
                                   div(id='addLabsSuite-' + suite.id + '-Content', class='panel-collapse collapse', role='tabpanel', aria-labelledby='addLabsSuite-' + suite.id)
                                     div(class='panel-body')
                                       each test in suite.tests
-                                        div.checkbox
+                                        div(class='checkbox labModalCheckbox')
+                                          input(type='checkbox', name='labtest' + '-' + test.id, value=1, checked=false)
                                           label= test.name
-                                            input(type='checkbox', name='labtest' + '-' + test.id, value=1, checked=false)
 
-                      div(class='modal-footer')
-                        input(type='hidden', name='_csrf', value=token)
-                        input(type='hidden', name='pregnancy_id', value=rec.id)
-                        button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
-                        button(type='submit', class='btn btn-primary')= gettext('Add Lab')
+                        div(class='modal-footer')
+                          input(type='hidden', name='_csrf', value=token)
+                          input(type='hidden', name='pregnancy_id', value=rec.id)
+                          button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+                          button(type='submit', class='btn btn-primary')= gettext('Add Lab')
 
       div.row
         //- Progress Notes

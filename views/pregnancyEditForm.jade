@@ -141,11 +141,11 @@ block pregnancyEdit
           input(type='hidden', name='scheduleId', value=rec.prenatalSchedule.id)
         div(class='col-md-3 col-md-offset-6')
           if roleInfo.hasRole('supervisor')
-            button(class='btn disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete pregnancy')
+            a(class='btn btn-warning disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete pregnancy')
 
   div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
     form(id='deletePregnancyForm', role='form', name='deletePregnancyForm', action=deletePregnancyPath, method='post')
-      div(class='modal-dialog')
+      div(class='modal-dialog', role='document')
         div(class='modal-content')
           div(class='modal-header')
             h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
