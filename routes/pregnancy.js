@@ -377,7 +377,7 @@ var load = function(req, res, next) {
         // --------------------------------------------------------
         if (rec.prenatalExam) {
           _.each(rec.prenatalExam, function(peRec) {
-            var examiners = ''
+            var examiners = []
               ;
             // Favor the alternateEdd if the useAlternateEdd is specified.
             if (rec.useAlternateEdd && rec.alternateEdd) {
@@ -391,15 +391,16 @@ var load = function(req, res, next) {
             // Get the examiners and supervisors from the prenatalExamLog data
             // for each prenatal exam.
             _.each(rec.prenatalExamLog, function(pel) {
+              var examStr;
               if (pel.id === peRec.id) {
-                if (examiners) examiners += ',';
-                examiners += userMap[""+pel.updatedBy]['shortName'];
+                examStr = userMap[""+pel.updatedBy]['shortName'];
                 if (pel.supervisor && pel.supervisor !== null) {
-                  examiners += '/' + userMap[""+pel.supervisor]['shortName'];
+                  examStr += '/' + userMap[""+pel.supervisor]['shortName'];
                 }
+                examiners.push(examStr);
               }
             });
-            peRec.examiner = examiners;
+            peRec.examiner = _.uniq(examiners);
           });
         }
 
