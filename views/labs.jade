@@ -280,13 +280,17 @@ block labs
           div.row
             div(class='col-md-8')
               //- Note that the save for this is handled via AJAX.
-              label= gettext('Number of required tetanus ')
-                label(class='radio-inline')= gettext('0')
-                  input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='0', checked=rec.numberRequiredTetanus==0)
-                label(class='radio-inline')= gettext('1')
-                  input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='1', checked=rec.numberRequiredTetanus==1)
-                label(class='radio-inline')= gettext('2')
-                  input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='2', checked=rec.numberRequiredTetanus==2)
+              div
+                label= gettext('Number of required tetanus ')
+              label(class='radio-inline inline-label-space')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='0', checked=rec.numberRequiredTetanus==0)
+                = gettext('0')
+              label(class='radio-inline inline-label-space')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='1', checked=rec.numberRequiredTetanus==1)
+                = gettext('1')
+              label(class='radio-inline inline-label-space')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='2', checked=rec.numberRequiredTetanus==2)
+                = gettext('2')
             div(class='col-md-4')
               - var tetMsg;
               - var tetGood = false;

@@ -287,12 +287,15 @@ block labs
               label= gettext('Number of required tetanus ')
           div.row
             div(class='col-xs-12')
-              label(class='radio-inline')= gettext('0')
+              label(class='radio-inline inline-label-space')
                 input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='0', checked=rec.numberRequiredTetanus==2)
-              label(class='radio-inline')= gettext('1')
+                = gettext('0')
+              label(class='radio-inline inline-label-space')
                 input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='1', checked=rec.numberRequiredTetanus==1)
-              label(class='radio-inline')= gettext('2')
+                = gettext('1')
+              label(class='radio-inline inline-label-space')
                 input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='2', checked=rec.numberRequiredTetanus==2)
+                = gettext('2')
             div(class='col-xs-12')
               - var tetMsg;
               - var tetGood = false;

@@ -158,6 +158,12 @@ h4.charts {
   left: 15px !important;
 }
 
+/* Provide a bit of space on inline radio buttons
+ * with small labels. */
+.inline-label-space {
+  margin-right: 20px;
+}
+
 span#dirty-notice {
   display: none;
   position: fixed;
