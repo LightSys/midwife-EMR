@@ -1,54 +1,131 @@
-<div class='pregname well well-sm'>
-  <div class='row'>
-    <div class='col-md-5'>
-      <h2 class='patient-well'>{{ctrl.pregnancy.lastname}}, {{ctrl.pregnancy.firstname}}</h2>
-    </div>
-    <div class='col-md-3'>
-      <div class='lead'>Age:
-        <span class='lead text-primary'>{{ctrl.patient.dob|amDifference:null:'years'|abs}} (<span class='small text-primary'>{{ctrl.patient.dob|date:'MM-dd-yyyy'}}</span>)</span>
+<div>
+  <!-- Larger devices. -->
+  <div class='pregname well well-sm visible-md-block visible-lg-block'>
+    <div class='row'>
+      <div class='col-md-5'>
+        <h3 class='patient-well'>{{ctrl.pregnancy.lastname}}, {{ctrl.pregnancy.firstname}}</h3>
+      </div>
+      <div class='col-md-3'>
+        <div class='lead'>Age:
+          <span class='lead text-primary'>{{ctrl.patient.dob|amDifference:null:'years'|abs}} (<span class='small text-primary'>{{ctrl.patient.dob|date:'MM-dd-yyyy'}}</span>)</span>
+        </div>
+      </div>
+      <div class='col-md-4'>
+        <div class='lead'>GA:
+          <span class='lead text-primary'>{{ctrl.pregnancy.lmp|getGAFromLMP:ctrl.replacedAt}}</span>
+        </div>
       </div>
     </div>
-    <div class='col-md-4'>
-      <div class='lead'>GA:
-        <span class='lead text-primary'>{{ctrl.pregnancy.lmp|getGAFromLMP:ctrl.replacedAt}}</span>
+
+    <div class='row'>
+      <div class='col-md-5'>
+        <div class='lead'>Nickname: <span class='lead text-primary'>{{ctrl.pregnancy.nickname}}</span></div>
+      </div>
+      <div class='col-md-3'>
+        <div class='lead'>MMC: <span class='lead text-primary'>{{ctrl.patient.dohID|dohFormatted}}</span></div>
+      </div>
+      <div class='col-md-4'>
+        <div class='lead'>Prenatal: <span class='lead text-primary'>To Do</span></div>
+      </div>
+    </div>
+
+    <div class='row'>
+      <div class='col-md-5'>
+        <span>G: <span>
+        <strong class='lead text-primary'>{{ctrl.pregnancy.gravida}}</strong>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>P: </span>
+        <strong class='lead text-primary'>{{ctrl.pregnancy.para}}</strong>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>A: </span>
+        <strong class='lead text-primary'>{{ctrl.pregnancy.abortions}}</strong>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>S: </span>
+        <strong class='lead text-primary'>{{ctrl.pregnancy.stillBirths}}</strong>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>L: </span>
+        <strong class='lead text-primary'>{{ctrl.pregnancy.living}}</strong>
+      </div>
+      <div class='col-md-3'>
+        <div class='lead'>LMP: <span class='lead text-primary'>{{ctrl.pregnancy.lmp|date:'MM-dd-yyyy'}}</span></div>
+      </div>
+      <div class='col-md-3'>
+        <div class='lead'>EDD: <span class='lead text-primary'>{{ctrl.pregnancy.lmp|edd|date:'MM-dd-yyyy'}}</span></div>
       </div>
     </div>
   </div>
 
-  <div class='row'>
-    <div class='col-md-5'>
-      <div class='lead'>Nickname: <span class='lead text-primary'>{{ctrl.pregnancy.nickname}}</span></div>
+  <!-- Smaller devices. -->
+  <div class='pregName well well-sm visible-xs-block visible-sm-block'>
+    <div class='row patient-well-smallrow'>
+      <div class='col-xs-8'>
+        <h3 class='patient-well'>{{ctrl.pregnancy.lastname}}, {{ctrl.pregnancy.firstname}}</h3>
+      </div>
+      <div class='col-xs-4'>
+        <div class='row patient-well-smallrow'>
+          <div class='col-xs-12'>
+            <div class=''>Nick:
+              <span class='text-primary'> {{ctrl.pregnancy.nickname}}</span>
+            </div>
+          </div>
+        </div>
+        <div class='row patient-well-smallrow'>
+          <div class='col-xs-12'>
+            <div class=''>MMC:
+              <span class='text-primary'> {{ctrl.patient.dohID|dohFormatted}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class='col-md-3'>
-      <div class='lead'>MMC: <span class='lead text-primary'>{{ctrl.patient.dohID|dohFormatted}}</span></div>
-    </div>
-    <div class='col-md-4'>
-      <div class='lead'>Prenatal: <span class='lead text-primary'>To Do</span></div>
-    </div>
-  </div>
 
-  <div class='row'>
-    <div class='col-md-5'>
-      <span>G: <span>
-      <strong class='lead text-primary'>{{ctrl.pregnancy.gravida}}</strong>
-      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-      <span>P: </span>
-      <strong class='lead text-primary'>{{ctrl.pregnancy.para}}</strong>
-      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-      <span>A: </span>
-      <strong class='lead text-primary'>{{ctrl.pregnancy.abortions}}</strong>
-      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-      <span>S: </span>
-      <strong class='lead text-primary'>{{ctrl.pregnancy.stillBirths}}</strong>
-      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-      <span>L: </span>
-      <strong class='lead text-primary'>{{ctrl.pregnancy.living}}</strong>
+    <div class='row patient-well-smallrow'>
+      <div class='col-xs-5'>
+        <div class=''>Age:
+          <span class='text-primary'>{{ctrl.patient.dob|amDifference:null:'years'|abs}} (<span class='small text-primary'>{{ctrl.patient.dob|date:'MM-dd-yyyy'}}</span>)</span>
+        </div>
+      </div>
+      <div class='col-xs-3'>
+        <div class=''>GA:
+          <span class='text-primary'> {{ctrl.pregnancy.lmp|getGAFromLMP:ctrl.replacedAt}}</span>
+        </div>
+      </div>
+      <div class='col-xs-4'>
+        <div class=''>Prenatal:
+          <span class='small text-primary'>To </span>
+          <span class='small text-primary'>Do</span>
+        </div>
+      </div>
     </div>
-    <div class='col-md-3'>
-      <div class='lead'>LMP: <span class='lead text-primary'>{{ctrl.pregnancy.lmp|date:'MM-dd-yyyy'}}</span></div>
+
+    <div class='row patient-well'>
+      <div class='col-xs-5'>
+        <span>G: </span>
+        <strong class='text-primary'>{{ctrl.pregnancy.gravida}}</strong>
+        <span>&nbsp;&nbsp;</span>
+        <span>P: </span>
+        <strong class='text-primary'>{{ctrl.pregnancy.para}}</strong>
+        <span>&nbsp;&nbsp;</span>
+        <span>A: </span>
+        <strong class='text-primary'>{{ctrl.pregnancy.abortions}}</strong>
+        <span>&nbsp;&nbsp;</span>
+        <span>S: </span>
+        <strong class='text-primary'>{{ctrl.pregnancy.stillBirths}}</strong>
+        <span>&nbsp;&nbsp;</span>
+        <span>L: </span>
+        <strong class='text-primary'>{{ctrl.pregnancy.living}}</strong>
+      </div>
+      <div class='col-xs-3'>
+        <div class=''>LMP:
+          <span class='text-primary'> {{ctrl.pregnancy.lmp|date:'MM-dd-yyyy'}}<span>
+        </div>
+      </div>
+      <div class='col-xs-4'>
+        <div class=''>EDD:
+          <span class='text-primary'> {{ctrl.pregnancy.lmp|edd|date:'MM-dd-yyyy'}}</span>
+        </div>
+      </div>
     </div>
-    <div class='col-md-3'>
-      <div class='lead'>EDD: <span class='lead text-primary'>{{ctrl.pregnancy.lmp|edd|date:'MM-dd-yyyy'}}</span></div>
-    </div>
+
   </div>
 </div>
