@@ -1,4 +1,4 @@
-<div id='historyControl' class='visible-md-block visible-lg-block'>
+<div id='historyControl' class=''>
   <table class='hcTable'>
     <tr>
       <td>
@@ -17,27 +17,28 @@
             <tr class='hcNavText'>
               <td class='hcNavText hcNavText-upper hcNavText-left'>
                 <div class='hcNavText'>
-                  <strong class='text-muted lead'>{{ctrl.replacedAt|date:'MM-dd-yyyy HH:mm:ss'}}</strong>
+                  <span class='text-muted'>{{ctrl.replacedAt|date:'MM-dd-yyyy HH:mm:ss'}}</span>
                 </div>
               </td>
               <td class='hcNavText hcNavText-upper hcNavText-right'>
                 <div class='hcNavText'>
-                  <strong class='text-muted lead'>Record {{ctrl.currentRecord}} of {{ctrl.numberRecords}}</strong>
+                  <span class='text-muted'>{{ctrl.currentRecord}} of {{ctrl.numberRecords}}</span>
                 </div>
               </td>
             </tr>
             <tr>
               <td class='hcNavText hcNavText-lower hcNavText-left'>
                 <div class='hcNavText'>
-                  <strong class='text-muted lead'><span>{{ctrl.updatedBy}}</span><span ng-if='ctrl.supervisor'> / {{ctrl.supervisor}}</span></strong>
+                  <span class='text-muted'>{{ctrl.updatedBy}}</span><span class='text-muted' ng-if='ctrl.supervisor'> / {{ctrl.supervisor}}</span>
                 </div>
               </td>
               <td class='hcNavText hcNavText-lower hcNavText-right'>
                 <div class='hcNavText'>
                   <form class='form-inline' role='form'>
                     <div class='checkbox'>
-                      <label>
-                        <input id='historyControl-follow' ng-model='ctrl.follow' ng-change='followChange()' type='checkbox' name='followChanges' value=1> <strong class='text-muted lead'>Follow changes</strong>
+                      <label class='text-muted'>
+                        <input id='historyControl-follow' ng-model='ctrl.follow' ng-change='followChange()' type='checkbox' name='followChanges' value=1>
+                        Follow
                       </label>
                     </div>
                   </form>

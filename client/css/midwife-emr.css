@@ -214,24 +214,24 @@ span#dirty-notice-tablet {
  * there is enough width. Otherwise allow it to
  * be a part of the flow.
  */
+#historyControl {
+  opacity: 100%;
+  background-color: white;
+}
 @media (min-width: 1200px) {
   #historyControl {
     position: fixed;
+    z-index: 2000;
     top: 51px;
     right: 22px;
-    z-index: 2000;
-    opacity: 100%;
-    background-color: white;
   }
 }
-@media (max-width: 1199px) {
+@media (min-width: 600px) and (max-width: 1199px) {
   #historyControl {
     position: fixed;
-    top: 0px;
-    right: 141px;
     z-index: 2000;
-    opacity: 100%;
-    background-color: white;
+    top: 51px;
+    right: 30px;
   }
 }
 div.history-header {
@@ -277,6 +277,16 @@ td.hcNavText-left {
 }
 td.hcNavText-right {
   padding: 0 8px;
+}
+
+/* history page title - position to clear history control. */
+#historyPageTitle {
+  margin-top: 0;
+}
+@media (min-width: 600px) and (max-width: 899px) {
+  #historyPageTitle {
+    margin-top: 90px;
+  }
 }
 
 /* History - highlight changed fields */
