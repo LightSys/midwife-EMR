@@ -6,8 +6,10 @@
     <div class='row'>
       <div class='col-md-6 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthMCP")}'>Phil Health MCP</label>
-          <input type='checkbox' name='philHealthMCP' tabindex="1" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthMCP'>
+          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthMCP")}'>
+            <input type='checkbox' name='philHealthMCP' tabindex="1" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthMCP'>
+            PHIC MCP
+          </label>
         </div>
       </div>
       <div class='col-md-6 box'>
@@ -21,15 +23,17 @@
     <div class='row'>
       <div class='col-md-6 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthNCP")}'>Phil Health NCP
+          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthNCP")}'>
             <input type='checkbox' name='philHealthNCP' tabindex="2" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthNCP'>
+            PHIC NCP
           </label>
         </div>
       </div>
       <div class='col-md-6 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthApproved")}'>PHIC Approved
+          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthApproved")}'>
             <input type='checkbox' name='philHealthApproved' tabindex="4" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthApproved'>
+            PHIC Approved
           </label>
         </div>
       </div>
@@ -63,15 +67,17 @@
     <div class='row'>
       <div class='col-md-6 '>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "sureLMP")}'>Sure of LMP
+          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "sureLMP")}'>
             <input type='checkbox' name='sureLMP' tabindex="6" disabled='true' value=1 ng-checked='ctrl.pregnancy.sureLMP'>
+            Sure of LMP
           </label>
         </div>
       </div>
       <div class='col-md-4 col-md-offset-2'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "useAlternateEdd")}'>Use Alt EDD
+          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "useAlternateEdd")}'>
             <input type='checkbox' name='useAlternateEdd' tabindex="9" disabled='true' value=1 ng-checked='ctrl.pregnancy.useAlternateEdd'>
+            Use Alt EDD
           </label>
         </div>
       </div>
