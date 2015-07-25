@@ -6,21 +6,23 @@
   // UI-Router
   // --------------------------------------------------------
   angular.module('midwifeEmr')
-    .config(['$stateProvider', '$urlRouterProvider', '$locationProvider',
+    .config([
+        '$stateProvider',
+        '$urlRouterProvider',
+        '$locationProvider',
         function($stateProvider, $urlRouterProvider, $locationProvider) {
 
       // --------------------------------------------------------
-      // Keys for historyService callbacks to facilitate cleanup
-      // when leaving states. Used by commonController() and
-      // addStateHandle(). Also serves to convey the current
-      // UI-Router state to commonController().
+      // Serves to convey the current UI-Router state to commonController().
+      // Used for registering/unregistering with various services.
       // --------------------------------------------------------
-      var hsPrenatalStateCB          = 'pregnancy.prenatal';
-      var hsPrenatalExamStateCB      = 'pregnancy.prenatalExam';
-      var hsLabsStateCB              = 'pregnancy.labs';
-      var hsQuestionnaireStateCB     = 'pregnancy.questionnaire';
-      var hsMidwifeStateCB           = 'pregnancy.midwife';
-      var hsGeneralStateCB           = 'pregnancy.general';
+      var prenatalState          = 'pregnancy.prenatal';
+      var prenatalState          = 'pregnancy.prenatal';
+      var prenatalExamState      = 'pregnancy.prenatalExam';
+      var labsState              = 'pregnancy.labs';
+      var questionnaireState     = 'pregnancy.questionnaire';
+      var midwifeState           = 'pregnancy.midwife';
+      var generalState           = 'pregnancy.general';
 
       $urlRouterProvider.otherwise('/');
 
@@ -67,16 +69,16 @@
             },
             'content@': {
               templateUrl: '/angular/views/prenatal.html',
-              controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsPrenatalStateCB)],
+              controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                  commonController(prenatalState)],
             }
           },
-          onExit: ['historyService', function(historyService) {
+          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
             // --------------------------------------------------------
-            // Clean up the callback for the history service.
+            // Clean up the registrations for this state.
             // --------------------------------------------------------
-            console.log('State: pregnancy.prenatal, onExit');
-            historyService.unregister(stateHandles[hsPrenatalStateCB]);
+            console.log('Publishing: ' + getExitState(prenatalState));
+            pubSub.publish(getExitState(prenatalState));
           }]
         })
         // --------------------------------------------------------
@@ -101,16 +103,16 @@
             },
             'content@': {
               templateUrl: '/angular/views/prenatalExam.html',
-              controller: ['$scope', 'historyService', 'pregId', 'peId',
-                  commonController(hsPrenatalExamStateCB)],
+              controller: ['$scope', 'historyService', 'templateService', 'pregId', 'peId',
+                  commonController(prenatalExamState)],
             }
           },
-          onExit: ['historyService', function(historyService) {
+          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
             // --------------------------------------------------------
-            // Clean up the callback for the history service.
+            // Clean up the registrations for this state.
             // --------------------------------------------------------
-            console.log('State: pregnancy.prenatalExam, onExit');
-            historyService.unregister(stateHandles[hsPrenatalExamStateCB]);
+            console.log('Publishing: ' + getExitState(prenatalExamState));
+            pubSub.publish(getExitState(prenatalExamState));
           }]
         })
         // --------------------------------------------------------
@@ -127,16 +129,16 @@
             },
             'content@': {
               template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsLabsStateCB)],
+              controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                  commonController(labsState)],
             }
           },
-          onExit: ['historyService', function(historyService) {
+          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
             // --------------------------------------------------------
-            // Clean up the callback for the history service.
+            // Clean up the registrations for this state.
             // --------------------------------------------------------
-            console.log('State: pregnancy.labs, onExit');
-            historyService.unregister(stateHandles[hsLabsStateCB]);
+            console.log('Publishing: ' + getExitState(labsState));
+            pubSub.publish(getExitState(labsState));
           }]
         })
         // --------------------------------------------------------
@@ -153,16 +155,16 @@
             },
             'content@': {
               template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsQuestionnaireStateCB)]
+              controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                  commonController(questionnaireState)]
             }
           },
-          onExit: ['historyService', function(historyService) {
+          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
             // --------------------------------------------------------
-            // Clean up the callback for the history service.
+            // Clean up the registrations for this state.
             // --------------------------------------------------------
-            console.log('State: pregnancy.questionnaire, onExit');
-            historyService.unregister(stateHandles[hsQuestionnaireStateCB]);
+            console.log('Publishing: ' + getExitState(questionnaireState));
+            pubSub.publish(getExitState(questionnaireState));
           }]
         })
         // --------------------------------------------------------
@@ -179,16 +181,16 @@
             },
             'content@': {
               template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsMidwifeStateCB)]
+              controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                  commonController(midwifeState)]
             }
           },
-          onExit: ['historyService', function(historyService) {
+          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
             // --------------------------------------------------------
-            // Clean up the callback for the history service.
+            // Clean up the registrations for this state.
             // --------------------------------------------------------
-            console.log('State: pregnancy.midwife, onExit');
-            historyService.unregister(stateHandles[hsMidwifeStateCB]);
+            console.log('Publishing: ' + getExitState(midwifeState));
+            pubSub.publish(getExitState(midwifeState));
           }]
         })
         // --------------------------------------------------------
@@ -205,16 +207,16 @@
             },
             'content@': {
               template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'pregId',
-                  commonController(hsGeneralStateCB)]
+              controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                  commonController(generalState)]
             }
           },
-          onExit: ['historyService', function(historyService) {
+          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
             // --------------------------------------------------------
-            // Clean up the callback for the history service.
+            // Clean up the registrations for this state.
             // --------------------------------------------------------
-            console.log('State: pregnancy.general, onExit');
-            historyService.unregister(stateHandles[hsGeneralStateCB]);
+            console.log('Publishing: ' + getExitState(generalState));
+            pubSub.publish(getExitState(generalState));
           }]
         });
 
@@ -276,6 +278,16 @@
   var stateHandles = {};
 
   /* --------------------------------------------------------
+   * getExitState()
+   *
+   * Returns the state name passed with "exit." prepended.
+   *
+   * param      state
+   * return     exit state
+   * -------------------------------------------------------- */
+  var getExitState = function(state) {return "exit." + state;}
+
+  /* --------------------------------------------------------
     * commonController()
     *
     * Returns a controller that is most likly useful for most
@@ -303,10 +315,10 @@
     * return      undefined
     * -------------------------------------------------------- */
   var commonController = function(stateHandle) {
-    return function($scope, historyService, pregId, detId) {
-      var unregisterHdl;
+    return function($scope, historyService, templateService,
+        pregId, detId) {
       historyService.loadAsNeeded(pregId);
-      unregisterHdl = historyService.register(function(data) {
+      historyService.registerPubSub(getExitState(stateHandle), function(data) {
         $scope.ctrl = data;
         $scope.func = commonFuncs;
 
@@ -318,7 +330,7 @@
         // historyControl really uses this on the "next" use, not
         // the current page load.
         // --------------------------------------------------------
-        $scope.$root.hsState = stateHandle;
+        if ($scope && $scope.$root) $scope.$root.hsState = stateHandle;
 
         // --------------------------------------------------------
         // If we are in a detail state and we are arriving to it
@@ -331,16 +343,16 @@
             case 'pregnancy.prenatalExam':
               if (_.size($scope.ctrl.changed.prenatalExam) > 0) {
                 $scope.detId = _.keys($scope.ctrl.changed.prenatalExam)[0];
-                $scope.$root.detId = $scope.detId;
+                if ($scope && $scope.$root) $scope.$root.detId = $scope.detId;
               }
               break;
             default:
               $scope.detId = void 0;
-              $scope.$root.detId = void 0;
+              if ($scope && $scope.$root) $scope.$root.detId = void 0;
           }
         }
       });
-      addStateHandle(stateHandle, unregisterHdl);
+
       historyService.curr();
       $scope.pregId = pregId;
       if (detId) {
@@ -350,6 +362,11 @@
         $scope.detId = void 0;
         $scope.$root.detId = void 0;
       }
+
+      // Respond to resize events.
+      templateService.register(getExitState(stateHandle), function(viewPort) {
+        console.log('Resize event received: ' + viewPort.w + ' by ' + viewPort.h);
+      });
     };
   };
 

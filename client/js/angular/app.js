@@ -105,6 +105,8 @@
     'historyControlModule',
     'historyServiceModule',
     'changeRoutingServiceModule',
+    'templateServiceModule',
+    'minPubSubNgModule',
     'patientWellModule'
   ]);
 
@@ -129,9 +131,34 @@
 
   angular.module('midwifeEmr')
     .run(function() {
-      var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-      var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-      console.log('Width: ' + w + ', Height: ' + h);
+      //var vPort = getViewportSize(window);
+      //console.log('Width: ' + vPort.w + ', Height: ' + vPort.h);
+
+
+      // TODO:
+      // 1. Use an adaptive design strategy in the broad stroke and a
+      //    responsive strategy in the detail. Using Bootstrap does the latter
+      //    automatically.
+      // 2. All the templates will be loaded intially. It does not matter in
+      //    regard to performance because it is a single load within a LAN
+      //    environment.
+      // 3. The proper view can be loaded with the template element in the
+      //    UI-Router state as a function that calls a service to resolve the view.
+      // 4. The components can also use the service to determine which template
+      //    to load.
+      // 5. Write a service for 3 and 4.
+      // 6. The UI-Router will need to be triggered to re-render on resize which
+      //    the service will monitor. The UI-Router could register a callback for
+      //    resize events.
+      // 7. The components will need to register themselves with the service too
+      //    in order to properly respond to resize events.
+      //
+      // At the end of the day, I don't think that it is reasonable to think that
+      // I can support 480px to 1600px using responsive design alone for this app.
+      // The screens, which are mostly forms, are far too complicated for that. I
+      // would be pulling my hair out. Continuing an adaptive/responsive strategy
+      // in the transition to SPA makes sense and is the easiest solution. Just
+      // need to put the components in place that make the strategy work.
     });
 
   // --------------------------------------------------------

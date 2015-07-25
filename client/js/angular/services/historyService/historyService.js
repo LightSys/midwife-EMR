@@ -36,7 +36,8 @@
     .factory('historyService', [
         '$http',
         '$cacheFactory',
-        function($http, $cacheFactory) {
+        'minPubSubNg',
+        function($http, $cacheFactory, pubSub) {
 
 
       // List of sources (tables) that contain the historical changes.
@@ -280,12 +281,37 @@
         };
         if (func && _.isFunction(func)) {
           registeredCallbacks.push(funcObj);
-          console.log('Register: ' + funcObj.id);
+          console.log('Register historyService: ' + funcObj.id);
           return funcObj.id;
         }
         return void 0;
       };
 
+      /* --------------------------------------------------------
+       * registerPubSub()
+       *
+       * Register a callback function that is called whenever the
+       * current historical record changes. Additionally listen
+       * for a key published as an event to signal when to
+       * unregister the caller.
+       *
+       * param       key
+       * param       func
+       * return      undefined
+       * -------------------------------------------------------- */
+      var registerPubSub = function(key, func) {
+        var id = register(func);
+        var pubSubKey;
+        if (id) {
+          // --------------------------------------------------------
+          // Unregister the caller and unsubscribe the key afterwards.
+          // --------------------------------------------------------
+          pubSubKey = pubSub.subscribe(key, function() {
+            unregister(id);
+            pubSub.unsubscribe(pubSubKey);
+          });
+        }
+      };
 
       /* --------------------------------------------------------
        * unregister()
@@ -298,7 +324,7 @@
        * return      boolean for success
        * -------------------------------------------------------- */
       var unregister = function(id) {
-        console.log('Unregister: ' + id);
+        console.log('Unregister historyService: ' + id);
         var len = registeredCallbacks.length;
         // Better way to do this?
         registeredCallbacks = _.reject(registeredCallbacks, function(c) {
@@ -544,6 +570,7 @@
         load: load,
         loadAsNeeded: loadAsNeeded,
         register: register,
+        registerPubSub: registerPubSub,
         unregister: unregister,
         next: next,
         prev: prev,

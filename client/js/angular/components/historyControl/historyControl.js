@@ -7,7 +7,8 @@
         '$state',
         'historyService',
         'changeRoutingService',
-        function($state, historyService, changeRoutingService) {
+        'minPubSubNg',
+        function($state, historyService, changeRoutingService, pubSub) {
 
       /* --------------------------------------------------------
        * navigate()
@@ -101,7 +102,7 @@
         },
         controller: function() {},
         link: function($scope, element, attrs, ctrl) {
-          var hsCallback;
+          var hsUnregisterHdl = "" + (Math.random() * 99999999);
           var pregId;
 
           // --------------------------------------------------------
@@ -123,7 +124,7 @@
           // --------------------------------------------------------
           // Register the historyService callback.
           // --------------------------------------------------------
-          hsCallback = historyService.register(function(data) {
+          historyService.registerPubSub(hsUnregisterHdl, function(data) {
             var updatedBy;
             var changedTbl;
             var supervisor;
@@ -190,12 +191,8 @@
               angular.element(window).off('click', h);
             });
 
-            // The History Service callback.
-            if (historyService.unregister(hsCallback)) {
-              console.log('Successfully unregistered history service callback.');
-            } else {
-              console.log('Did not successfully unregister history service callback.');
-            }
+            // Unregister with the history service.
+            pubSub.publish(hsUnregisterHdl);
           });
 
           // --------------------------------------------------------
