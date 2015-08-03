@@ -132,10 +132,6 @@
 
   angular.module('midwifeEmr')
     .run(function() {
-      //var vPort = getViewportSize(window);
-      //console.log('Width: ' + vPort.w + ', Height: ' + vPort.h);
-
-
       // TODO:
       // 1. Use an adaptive design strategy in the broad stroke and a
       //    responsive strategy in the detail. Using Bootstrap does the latter

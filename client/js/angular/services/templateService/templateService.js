@@ -42,14 +42,42 @@
         // Tracking callbacks to track.
         var registeredCallbacks = [];
 
-        // Template path prefix and suffix that all templates use.
-        var PREFIX = '/angular/views/';
-        var SUFFIX = '.html';
-
         // Template breakpoints in pixels.
-        var SMALL = '.480';
-        var MEDIUM = '.600';
-        var LARGE = '.992';
+        var SMALL = '480';
+        var MEDIUM = '600';
+        var LARGE = '992';
+
+        /* --------------------------------------------------------
+         * getTemplateSize()
+         *
+         * Return the template breakpoint in use, e.g. SMALL, MEDIUM,
+         * or LARGE, based upon the width passed.
+         *
+         * param       width in pixels
+         * return      SMALL, MEDIUM or LARGE constant
+         * -------------------------------------------------------- */
+        var getTemplateSize = function(width) {
+          if (width < MEDIUM) {
+            return SMALL;
+          } else if (width < LARGE) {
+            return MEDIUM;
+          } else {
+            return LARGE;
+          }
+        };
+
+        // Template size in current use.
+        var currentTemplateSize = getTemplateSize(viewPort.w);
+
+        /* --------------------------------------------------------
+         * setTemplateSize()
+         *
+         * Set the template size to use based upon the current
+         * size of the viewport.
+         * -------------------------------------------------------- */
+        var setTemplateSize = function() {
+          currentTemplateSize = getTemplateSize(viewPort.w);
+        };
 
         /* --------------------------------------------------------
          * onResize()
@@ -57,8 +85,10 @@
          * Whenever the window.onresize event occurs, this is called.
          * -------------------------------------------------------- */
         var onResize = function() {
-          // Save the new viewport sizes.
+          // Save the new viewport sizes and set the current template
+          // in use.
           viewPort = getViewportSize(window);
+          setTemplateSize();
           console.log('Width: ' + viewPort.w + ', Height: ' + viewPort.h);
 
           // Notify any registered functions of the change.
@@ -170,18 +200,6 @@
           }
         };
 
-        // --------------------------------------------------------
-        // TODO:
-        // 1. Figure out how to use templateService from the config
-        // portion of router.js. While in the config stage, the only
-        // services available are providers, no? Does all of this
-        // need to be in router.js? Or maybe router.js cannot use
-        // this service and only other components can?
-        //
-        // See: https://github.com/angular-ui/ui-router/issues/1596
-        // See: https://christopherthielen.github.io/ui-router-extras/#/future
-        // --------------------------------------------------------
-
         /* --------------------------------------------------------
          * getTemplateUrl()
          *
@@ -203,13 +221,13 @@
          * return     templateUrl 
          * -------------------------------------------------------- */
         var getTemplateUrl = function(templateName) {
-          if (viewPort.w <= 600) {
-            return PREFIX + templateName + SMALL + SUFFIX;
-          } else if (viewPort.w <= 992) {
-            return PREFIX + templateName + MEDIUM + SUFFIX;
-          } else {
-            return PREFIX + templateName + LARGE + SUFFIX;
-          }
+          return templateName.replace(/RES/, currentTemplateSize);
+        };
+
+        var needTemplateChange = function(oldViewport) {
+          var oldSize = getTemplateSize(oldViewport.w);
+          if (oldSize === currentTemplateSize) return false;
+          return true;
         };
 
         return {
@@ -217,7 +235,9 @@
             pubSub = minPubSubNg;
             return {
               register: register,
-              getTemplateUrl: getTemplateUrl
+              getTemplateUrl: getTemplateUrl,
+              getViewportSize: getViewportSize,
+              needTemplateChange: needTemplateChange
             };
           }
         };

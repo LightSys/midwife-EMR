@@ -7,11 +7,10 @@
   // --------------------------------------------------------
   angular.module('midwifeEmr')
     .config([
-        '$stateProvider',
         '$urlRouterProvider',
         '$locationProvider',
         '$futureStateProvider',
-        function($stateProvider, $urlRouterProvider, $locationProvider, $futureStateProvider) {
+        function($urlRouterProvider, $locationProvider, $futureStateProvider) {
 
       // --------------------------------------------------------
       // Serves to convey the current UI-Router state to commonController().
@@ -75,7 +74,7 @@
             }
           },
           'content@': {
-            templateUrl: 'prenatal',
+            templateUrl: '/angular/views/prenatal.RES.html',
             controller: ['$scope', 'historyService', 'templateService', 'pregId',
                 commonController(prenatalState)],
           }
@@ -110,7 +109,7 @@
             }
           },
           'content@': {
-            templateUrl: '/angular/views/prenatalExam.html',
+            templateUrl: '/angular/views/prenatalExam.RES.html',
             controller: ['$scope', 'historyService', 'templateService', 'pregId', 'peId',
                 commonController(prenatalExamState)],
           }
@@ -245,16 +244,21 @@
 
       // --------------------------------------------------------
       // The State Factory that finalizes the UI Router states
-      // at runtime when the templateService is available.
+      // at runtime when the templateService is available. Assumes
+      // that the views['content@'].templateUrl needs to be
+      // replaced at runtime.
       // --------------------------------------------------------
-      $futureStateProvider.stateFactory('templateService', function($q, templateService, futureState) {
+      $futureStateProvider.stateFactory('templateService',
+          function($q, templateService, futureState) {
         var d = $q.defer();
         var template;
+        var newTemplate;
         if (futureState.views &&
             futureState.views['content@'] &&
             futureState.views['content@'].templateUrl) {
           template = futureState.views['content@'].templateUrl;
-          futureState.views['content@'].templateUrl = templateService.getTemplateUrl(template);
+          newTemplate = templateService.getTemplateUrl(template);
+          futureState.views['content@'].templateUrl = newTemplate;
         }
         d.resolve(futureState);
         return d.promise;
@@ -339,6 +343,7 @@
   var commonController = function(stateHandle) {
     return function($scope, historyService, templateService,
         pregId, detId) {
+      var currViewport = templateService.getViewportSize();
       historyService.loadAsNeeded(pregId);
       historyService.registerPubSub(getExitState(stateHandle), function(data) {
         $scope.ctrl = data;
@@ -385,13 +390,14 @@
         $scope.$root.detId = void 0;
       }
 
-      // Respond to resize events.
+      // --------------------------------------------------------
+      // Respond to resize events. If a template change is
+      // required, reload page.
+      // --------------------------------------------------------
       templateService.register(getExitState(stateHandle), function(viewPort) {
-        console.log('Resize event received: ' + viewPort.w + ' by ' + viewPort.h);
-
-        // TODO: force a state change here to the same state in order to reload
-        // the templates due to a size change? Or check with the templateService
-        // first to determine if this is even necessary?
+        if (templateService.needTemplateChange(currViewport)) {
+          window.location.reload(true);
+        }
       });
     };
   };
