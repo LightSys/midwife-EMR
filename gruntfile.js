@@ -30,22 +30,29 @@ module.exports = function(grunt) {
                 , 'bower_components/flot/jquery.flot.js'
                 , 'bower_components/flot/jquery.flot.categories.js'
                 , 'bower_components/jquery.are-you-sure/jquery.are-you-sure.js'
-                , 'bower_components/angular/angular.js'
-                , 'bower_components/angular-moment/angular-moment.js'
-                , 'bower_components/angular-ui-router/release/angular-ui-router.js'
                 , 'client/js/responsive-tables.js'
                 , 'client/js/jquery-ui.min.js'
                 , 'client/js/midwife-emr.js'
                 , 'client/js/midwife-emr-home.js'
                 , 'client/js/priorityList.js'
+              ]
+            }
+          }
+        , footerTargetSPA: {
+            files: {
+              'static/js/midwife-emr-footer-spa.min.js': [
+                'bower_components/angular/angular.js'
+                , 'bower_components/angular-moment/angular-moment.js'
+                , 'bower_components/angular-ui-router/release/angular-ui-router.js'
+                , 'bower_components/ui-router-extras/release/modular/ct-ui-router-extras.core.js'
+                , 'bower_components/ui-router-extras/release/modular/ct-ui-router-extras.future.js'
                 , 'client/js/angular/app.js'
                 , 'client/js/angular/router.js'
+                , 'client/js/angular/services/minPubSubNg/minPubSubNg.js'
                 , 'client/js/angular/services/historyService/historyService.js'
                 , 'client/js/angular/services/changeRoutingService/changeRoutingService.js'
                 , 'client/js/angular/services/templateService/templateService.js'
-                , 'client/js/angular/services/minPubSubNg/minPubSubNg.js'
                 , 'client/js/angular/components/historyControl/historyControl.js'
-                , 'client/js/angular/components/patientWell/patientWell.js'
                 , 'client/js/angular/components/patientWell/patientWell.js'
               ]
             }

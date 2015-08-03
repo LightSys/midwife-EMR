@@ -102,11 +102,12 @@
   angular.module('midwifeEmr', [
     'angularMoment',
     'ui.router',
+    'ct.ui.router.extras.future',
+    'minPubSubNgModule',
     'historyControlModule',
     'historyServiceModule',
     'changeRoutingServiceModule',
     'templateServiceModule',
-    'minPubSubNgModule',
     'patientWellModule'
   ]);
 

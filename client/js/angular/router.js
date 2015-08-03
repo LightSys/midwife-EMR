@@ -10,7 +10,8 @@
         '$stateProvider',
         '$urlRouterProvider',
         '$locationProvider',
-        function($stateProvider, $urlRouterProvider, $locationProvider) {
+        '$futureStateProvider',
+        function($stateProvider, $urlRouterProvider, $locationProvider, $futureStateProvider) {
 
       // --------------------------------------------------------
       // Serves to convey the current UI-Router state to commonController().
@@ -26,202 +27,240 @@
 
       $urlRouterProvider.otherwise('/');
 
-      $stateProvider
-        // --------------------------------------------------------
-        // Base state for all historical information on a pregnancy.
-        // --------------------------------------------------------
-        .state('pregnancy', {
-          url: '/spa/history/pregnancy/:id',
-          resolve: {
-            pregId: ['$stateParams', function($stateParams) {
-              return $stateParams.id;
-            }]
+      // ========================================================
+      // ========================================================
+      // State definition for UI Router Future States which allows
+      // the final state definition to be deferred until runtime
+      // when the templateService is available.
+      // ========================================================
+      // ========================================================
+      var fsPregnancy = {
+        type: 'templateService',
+        stateName: 'pregnancy',
+        url: '/spa/history/pregnancy/:id',
+        resolve: {
+          pregId: ['$stateParams', function($stateParams) {
+            return $stateParams.id;
+          }]
+        },
+        views: {
+          'historyControl': {
+            template: "<history-control id='historyControl' hc-follow='true'></history-control>"
           },
-          views: {
-            'historyControl': {
-              template: "<history-control id='historyControl' hc-follow='true'></history-control>"
-            },
-            'tabs': {
-              templateUrl: '/angular/views/pregnancy-tab.html'
-            },
-            'patientWell': {
-              templateUrl: '/angular/views/history-header.html',
-              controller: function($scope, $stateParams) {
-                $scope.pregId = $stateParams.id;
-              }
-            },
-            'content': {
-              template: '<p>pregnancy state</p>'
+          'tabs': {
+            templateUrl: '/angular/views/pregnancy-tab.html'
+          },
+          'patientWell': {
+            templateUrl: '/angular/views/history-header.html',
+            controller: function($scope, $stateParams) {
+              $scope.pregId = $stateParams.id;
             }
+          },
+          'content': {
+            template: '<p>pregnancy state</p>'
           }
-        })
-        // --------------------------------------------------------
-        // Prenatal tab.
-        // --------------------------------------------------------
-        .state('pregnancy.prenatal', {
-          url: '/prenatal',
-          views: {
-            'title@': {
-              template: '<h1>{{title}}</h1>',
-              controller: function($scope) {
-                $scope.title = 'Prenatal';
-              }
-            },
-            'content@': {
-              templateUrl: '/angular/views/prenatal.html',
-              controller: ['$scope', 'historyService', 'templateService', 'pregId',
-                  commonController(prenatalState)],
+        }
+      };
+
+      var fsPregnancyPrenatal = {
+        type: 'templateService',
+        stateName: 'pregnancy.prenatal',
+        parent: 'pregnancy',
+        url: '/prenatal',
+        views: {
+          'title@': {
+            template: '<h1>{{title}}</h1>',
+            controller: function($scope) {
+              $scope.title = 'Prenatal';
             }
           },
-          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-            // --------------------------------------------------------
-            // Clean up the registrations for this state.
-            // --------------------------------------------------------
-            console.log('Publishing: ' + getExitState(prenatalState));
-            pubSub.publish(getExitState(prenatalState));
+          'content@': {
+            templateUrl: 'prenatal',
+            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                commonController(prenatalState)],
+          }
+        },
+        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
+          // --------------------------------------------------------
+          // Clean up the registrations for this state.
+          // --------------------------------------------------------
+          console.log('Publishing: ' + getExitState(prenatalState));
+          pubSub.publish(getExitState(prenatalState));
+        }]
+      };
+
+      var fsPregnancyPrenatalExam = {
+        type: 'templateService',
+        stateName: 'pregnancy.prenatalExam',
+        parent: 'pregnancy',
+        url: '/prenatalexam/:peid',
+        resolve: {
+          peId: ['$stateParams', function($stateParams) {
+            return $stateParams.peid;
           }]
-        })
-        // --------------------------------------------------------
-        // PrenatalExam.
-        // --------------------------------------------------------
-        .state('pregnancy.prenatalExam', {
-          url: '/prenatalexam/:peid',
-          resolve: {
-            peId: ['$stateParams', function($stateParams) {
-              return $stateParams.peid;
-            }]
+        },
+        views: {
+          'tabs@': {
+            template: '<span></span>'    // We don't want tabs to show.
           },
-          views: {
-            'tabs@': {
-              template: '<span></span>'    // We don't want tabs to show.
-            },
-            'title@': {
-              template: '<h1>{{title}}</h1>',
-              controller: function($scope) {
-                $scope.title = 'Prenatal Exam';
-              }
-            },
-            'content@': {
-              templateUrl: '/angular/views/prenatalExam.html',
-              controller: ['$scope', 'historyService', 'templateService', 'pregId', 'peId',
-                  commonController(prenatalExamState)],
+          'title@': {
+            template: '<h1>{{title}}</h1>',
+            controller: function($scope) {
+              $scope.title = 'Prenatal Exam';
             }
           },
-          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-            // --------------------------------------------------------
-            // Clean up the registrations for this state.
-            // --------------------------------------------------------
-            console.log('Publishing: ' + getExitState(prenatalExamState));
-            pubSub.publish(getExitState(prenatalExamState));
-          }]
-        })
-        // --------------------------------------------------------
-        // Labs tab.
-        // --------------------------------------------------------
-        .state('pregnancy.labs', {
-          url: '/labs',
-          views: {
-            'title@': {
-              template: '<h1>{{title}}</h1>',
-              controller: function($scope) {
-                $scope.title = 'Labs';
-              }
-            },
-            'content@': {
-              template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'templateService', 'pregId',
-                  commonController(labsState)],
+          'content@': {
+            templateUrl: '/angular/views/prenatalExam.html',
+            controller: ['$scope', 'historyService', 'templateService', 'pregId', 'peId',
+                commonController(prenatalExamState)],
+          }
+        },
+        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
+          // --------------------------------------------------------
+          // Clean up the registrations for this state.
+          // --------------------------------------------------------
+          console.log('Publishing: ' + getExitState(prenatalExamState));
+          pubSub.publish(getExitState(prenatalExamState));
+        }]
+      };
+
+      var fsPregnancyLabs = {
+        type: 'templateService',
+        stateName: 'pregnancy.labs',
+        parent: 'pregnancy',
+        url: '/labs',
+        views: {
+          'title@': {
+            template: '<h1>{{title}}</h1>',
+            controller: function($scope) {
+              $scope.title = 'Labs';
             }
           },
-          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-            // --------------------------------------------------------
-            // Clean up the registrations for this state.
-            // --------------------------------------------------------
-            console.log('Publishing: ' + getExitState(labsState));
-            pubSub.publish(getExitState(labsState));
-          }]
-        })
-        // --------------------------------------------------------
-        // Questionnaire tab.
-        // --------------------------------------------------------
-        .state('pregnancy.questionnaire', {
-          url: '/quesEdit',
-          views: {
-            'title@': {
-              template: '<h1>{{title}}</h1>',
-              controller: function($scope) {
-                $scope.title = 'Questionnaire';
-              }
-            },
-            'content@': {
-              template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'templateService', 'pregId',
-                  commonController(questionnaireState)]
+          'content@': {
+            template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
+            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                commonController(labsState)],
+          }
+        },
+        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
+          // --------------------------------------------------------
+          // Clean up the registrations for this state.
+          // --------------------------------------------------------
+          console.log('Publishing: ' + getExitState(labsState));
+          pubSub.publish(getExitState(labsState));
+        }]
+      };
+
+      var fsPregnancyQuestionnaire = {
+        type: 'templateService',
+        stateName: 'pregnancy.questionnaire',
+        parent: 'pregnancy',
+        url: '/quesEdit',
+        views: {
+          'title@': {
+            template: '<h1>{{title}}</h1>',
+            controller: function($scope) {
+              $scope.title = 'Questionnaire';
             }
           },
-          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-            // --------------------------------------------------------
-            // Clean up the registrations for this state.
-            // --------------------------------------------------------
-            console.log('Publishing: ' + getExitState(questionnaireState));
-            pubSub.publish(getExitState(questionnaireState));
-          }]
-        })
-        // --------------------------------------------------------
-        // Midwife tab.
-        // --------------------------------------------------------
-        .state('pregnancy.midwife', {
-          url: '/midwifeinterview',
-          views: {
-            'title@': {
-              template: '<h1>{{title}}</h1>',
-              controller: function($scope) {
-                $scope.title = 'Midwife Interview';
-              }
-            },
-            'content@': {
-              template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'templateService', 'pregId',
-                  commonController(midwifeState)]
+          'content@': {
+            template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
+            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                commonController(questionnaireState)]
+          }
+        },
+        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
+          // --------------------------------------------------------
+          // Clean up the registrations for this state.
+          // --------------------------------------------------------
+          console.log('Publishing: ' + getExitState(questionnaireState));
+          pubSub.publish(getExitState(questionnaireState));
+        }]
+      };
+
+      var fsPregnancyMidwife = {
+        type: 'templateService',
+        stateName: 'pregnancy.midwife',
+        parent: 'pregnancy',
+        url: '/midwifeinterview',
+        views: {
+          'title@': {
+            template: '<h1>{{title}}</h1>',
+            controller: function($scope) {
+              $scope.title = 'Midwife Interview';
             }
           },
-          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-            // --------------------------------------------------------
-            // Clean up the registrations for this state.
-            // --------------------------------------------------------
-            console.log('Publishing: ' + getExitState(midwifeState));
-            pubSub.publish(getExitState(midwifeState));
-          }]
-        })
-        // --------------------------------------------------------
-        // General tab.
-        // --------------------------------------------------------
-        .state('pregnancy.general', {
-          url: '/edit',
-          views: {
-            'title@': {
-              template: '<h1>{{title}}</h1>',
-              controller: function($scope) {
-                $scope.title = 'Edit Client';
-              }
-            },
-            'content@': {
-              template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
-              controller: ['$scope', 'historyService', 'templateService', 'pregId',
-                  commonController(generalState)]
+          'content@': {
+            template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
+            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                commonController(midwifeState)]
+          }
+        },
+        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
+          // --------------------------------------------------------
+          // Clean up the registrations for this state.
+          // --------------------------------------------------------
+          console.log('Publishing: ' + getExitState(midwifeState));
+          pubSub.publish(getExitState(midwifeState));
+        }]
+      };
+
+      var fsPregnancyGeneral = {
+        type: 'templateService',
+        stateName: 'pregnancy.general',
+        parent: 'pregnancy',
+        url: '/edit',
+        views: {
+          'title@': {
+            template: '<h1>{{title}}</h1>',
+            controller: function($scope) {
+              $scope.title = 'Edit Client';
             }
           },
-          onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-            // --------------------------------------------------------
-            // Clean up the registrations for this state.
-            // --------------------------------------------------------
-            console.log('Publishing: ' + getExitState(generalState));
-            pubSub.publish(getExitState(generalState));
-          }]
-        });
+          'content@': {
+            template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
+            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+                commonController(generalState)]
+          }
+        },
+        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
+          // --------------------------------------------------------
+          // Clean up the registrations for this state.
+          // --------------------------------------------------------
+          console.log('Publishing: ' + getExitState(generalState));
+          pubSub.publish(getExitState(generalState));
+        }]
+      };
+
+      // --------------------------------------------------------
+      // Register the future states.
+      // --------------------------------------------------------
+      $futureStateProvider.futureState(fsPregnancy);
+      $futureStateProvider.futureState(fsPregnancyPrenatal);
+      $futureStateProvider.futureState(fsPregnancyPrenatalExam);
+      $futureStateProvider.futureState(fsPregnancyLabs);
+      $futureStateProvider.futureState(fsPregnancyQuestionnaire);
+      $futureStateProvider.futureState(fsPregnancyMidwife);
+      $futureStateProvider.futureState(fsPregnancyGeneral);
+
+      // --------------------------------------------------------
+      // The State Factory that finalizes the UI Router states
+      // at runtime when the templateService is available.
+      // --------------------------------------------------------
+      $futureStateProvider.stateFactory('templateService', function($q, templateService, futureState) {
+        var d = $q.defer();
+        var template;
+        if (futureState.views &&
+            futureState.views['content@'] &&
+            futureState.views['content@'].templateUrl) {
+          template = futureState.views['content@'].templateUrl;
+          futureState.views['content@'].templateUrl = templateService.getTemplateUrl(template);
+        }
+        d.resolve(futureState);
+        return d.promise;
+      });
 
       $locationProvider.html5Mode(true);
-
     }]);
 
   // --------------------------------------------------------
@@ -259,23 +298,6 @@
       return false;
     }
   };
-
-  /* --------------------------------------------------------
-   * addStateHandle()
-   *
-   * Store a key/value in the stateHandles object. Meant as
-   * a central place to store historyService registry ids so
-   * that they are available for unregistry later in order to
-   * prevent memory leaks.
-   *
-   * param       key
-   * param       val
-   * return      undefined
-   * -------------------------------------------------------- */
-  var addStateHandle = function(key, val) {
-    stateHandles[key] = val;
-  };
-  var stateHandles = {};
 
   /* --------------------------------------------------------
    * getExitState()
@@ -366,6 +388,10 @@
       // Respond to resize events.
       templateService.register(getExitState(stateHandle), function(viewPort) {
         console.log('Resize event received: ' + viewPort.w + ' by ' + viewPort.h);
+
+        // TODO: force a state change here to the same state in order to reload
+        // the templates due to a size change? Or check with the templateService
+        // first to determine if this is even necessary?
       });
     };
   };

@@ -151,7 +151,7 @@
 
   angular.module('minPubSubNgModule', [])
 
-  .factory('minPubSubNg', function($timeout) {
+  .provider('minPubSubNg', function() {
 
     var pubsub = {};
     ['subscribe', 'unsubscribe'].forEach(function(func) {
@@ -162,12 +162,16 @@
     // Make the publish function async.
     // --------------------------------------------------------
     pubsub.publish = function(topic, args) {
-      $timeout(function() {
+      setTimeout(function() {
         exports.publish(topic, args);
-      });
+      }, 0);
     };
 
-    return pubsub;
+    return {
+      $get: function() {
+        return pubsub;
+      }
+    };
   });
 
 })(angular);

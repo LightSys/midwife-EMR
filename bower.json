@@ -25,5 +25,8 @@
     "angular": "~1.4.3",
     "angular-moment": "~0.10.1",
     "angular-ui-router": "~0.2.15"
+  },
+  "devDependencies": {
+    "ui-router-extras": "~0.0.14"
   }
 }

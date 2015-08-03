@@ -21,28 +21,35 @@
 
     // For IE (or any browser) in Standards mode
     var d = w.document;
-    if (document.compatMode == "CSS1Compat")        return { w: d.documentElement.clientWidth,
-                h: d.documentElement.clientHeight };
+    if (document.compatMode == "CSS1Compat") {
+      return {w: d.documentElement.clientWidth, h: d.documentElement.clientHeight};
+    }
 
     // For browsers in Quirks mode
-    return { w: d.body.clientWidth, h: d.body.clientWidth };
+    return {w: d.body.clientWidth, h: d.body.clientWidth};
   };
-  var viewPort;
-
 
   angular.module('templateServiceModule', [])
 
-    .factory('templateService', ['minPubSubNg',
-      function(pubSub) {
+    .provider('templateService', [function() {
 
-        // Current viewport size.
-        var viewPort;
+        // minPubSubNg Service.
+        var pubSub;
 
-        // Tracking resize event?
-        var isTrackingResize = false;
+        // Initialize the viewport size.
+        var viewPort = getViewportSize(window);
 
         // Tracking callbacks to track.
         var registeredCallbacks = [];
+
+        // Template path prefix and suffix that all templates use.
+        var PREFIX = '/angular/views/';
+        var SUFFIX = '.html';
+
+        // Template breakpoints in pixels.
+        var SMALL = '.480';
+        var MEDIUM = '.600';
+        var LARGE = '.992';
 
         /* --------------------------------------------------------
          * onResize()
@@ -57,6 +64,9 @@
           // Notify any registered functions of the change.
           notifyCallbacks();
         };
+
+        // Track resize events.
+        window.onresize = onResize;
 
         /* --------------------------------------------------------
         * notifyCallbacks()
@@ -86,13 +96,12 @@
         * doRegister()
         *
         * Register a callback function that is called whenever the
-        * current historical record changes.
+        * resize and related events occur.
         *
         * param       func
         * return      id - used to unregister
         * -------------------------------------------------------- */
         var doRegister = function(func) {
-          if (! isTrackingResize) window.onresize = onResize;
           var funcObj = {
             id: getId(),
             func: func
@@ -151,7 +160,8 @@
           var pubSubKey;
           if (id) {
             // --------------------------------------------------------
-            // Unregister the caller and unsubscribe the key afterwards.
+            // Listen for unsubscribe event, then unregister the caller
+            // and unsubscribe the key afterwards.
             // --------------------------------------------------------
             pubSubKey = pubSub.subscribe(key, function() {
               doUnregister(id);
@@ -160,8 +170,56 @@
           }
         };
 
+        // --------------------------------------------------------
+        // TODO:
+        // 1. Figure out how to use templateService from the config
+        // portion of router.js. While in the config stage, the only
+        // services available are providers, no? Does all of this
+        // need to be in router.js? Or maybe router.js cannot use
+        // this service and only other components can?
+        //
+        // See: https://github.com/angular-ui/ui-router/issues/1596
+        // See: https://christopherthielen.github.io/ui-router-extras/#/future
+        // --------------------------------------------------------
+
+        /* --------------------------------------------------------
+         * getTemplateUrl()
+         *
+         * Return the appropriate templateUrl based upon the generic
+         * template name passed and the current viewport width and height.
+         *
+         * This module assumes that:
+         * 1. templates are named in TEMPLATENAME.WIDTH.html format, e.g.
+         *    'prenatal.960.html'.
+         * 2. the valid breakpoints are: 480, 600, and 992.
+         *
+         * Usage:
+         *    getTemplateUrl('prenatalExam');
+         *
+         * TODO: pre-load the templates into $templateCache and
+         * retrieve from there instead of forcing a server call.
+         *
+         * param      templateName
+         * return     templateUrl 
+         * -------------------------------------------------------- */
+        var getTemplateUrl = function(templateName) {
+          if (viewPort.w <= 600) {
+            return PREFIX + templateName + SMALL + SUFFIX;
+          } else if (viewPort.w <= 992) {
+            return PREFIX + templateName + MEDIUM + SUFFIX;
+          } else {
+            return PREFIX + templateName + LARGE + SUFFIX;
+          }
+        };
+
         return {
-          register: register
+          $get: function(minPubSubNg) {
+            pubSub = minPubSubNg;
+            return {
+              register: register,
+              getTemplateUrl: getTemplateUrl
+            };
+          }
         };
       }]);
 
