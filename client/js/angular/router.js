@@ -75,7 +75,7 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatal.RES.html',
-            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(prenatalState)],
           }
         },
@@ -110,7 +110,7 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatalExam.RES.html',
-            controller: ['$scope', 'historyService', 'templateService', 'pregId', 'peId',
+            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId', 'peId',
                 commonController(prenatalExamState)],
           }
         },
@@ -137,7 +137,7 @@
           },
           'content@': {
             template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
-            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(labsState)],
           }
         },
@@ -164,7 +164,7 @@
           },
           'content@': {
             template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
-            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(questionnaireState)]
           }
         },
@@ -191,7 +191,7 @@
           },
           'content@': {
             template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
-            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(midwifeState)]
           }
         },
@@ -218,7 +218,7 @@
           },
           'content@': {
             template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
-            controller: ['$scope', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(generalState)]
           }
         },
@@ -341,7 +341,7 @@
     * return      undefined
     * -------------------------------------------------------- */
   var commonController = function(stateHandle) {
-    return function($scope, historyService, templateService,
+    return function($scope, $state, historyService, templateService,
         pregId, detId) {
       var currViewport = templateService.getViewportSize();
       historyService.loadAsNeeded(pregId);
@@ -396,7 +396,8 @@
       // --------------------------------------------------------
       templateService.register(getExitState(stateHandle), function(viewPort) {
         if (templateService.needTemplateChange(currViewport)) {
-          window.location.reload(true);
+          currViewport = templateService.getViewportSize();
+          $state.go(stateHandle);
         }
       });
     };

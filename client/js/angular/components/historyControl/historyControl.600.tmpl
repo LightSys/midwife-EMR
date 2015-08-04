@@ -1,0 +1,63 @@
+<div id='historyControl' class=''>
+  <table class='hcTable'>
+    <tr>
+      <td>
+        <span class='hcNavBtnLeft'>
+          <a class='' id='historyControl-first' href='#'><i class='fa fa-2x fa-fw fa-backward'></i></a>
+        </span>
+      </td>
+      <td>
+        <span class='hcNavBtnLeft'>
+          <a class='' id='historyControl-prev' href='#'><i class='fa fa-2x fa-fw fa-step-backward'></i></a>
+        </span>
+      </td>
+      <td>
+        <span>
+          <table class='hcNavText'>
+            <tr class='hcNavText'>
+              <td class='hcNavText hcNavText-upper hcNavText-left'>
+                <div class='hcNavText'>
+                  <span class='text-muted'>{{ctrl.replacedAt|date:'MM-dd-yyyy HH:mm:ss'}}</span>
+                </div>
+              </td>
+              <td class='hcNavText hcNavText-upper hcNavText-right'>
+                <div class='hcNavText'>
+                  <span class='text-muted'>{{ctrl.currentRecord}} of {{ctrl.numberRecords}}</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class='hcNavText hcNavText-lower hcNavText-left'>
+                <div class='hcNavText'>
+                  <span class='text-muted'>{{ctrl.updatedBy}}</span><span class='text-muted' ng-if='ctrl.supervisor'> / {{ctrl.supervisor}}</span>
+                </div>
+              </td>
+              <td class='hcNavText hcNavText-lower hcNavText-right'>
+                <div class='hcNavText'>
+                  <form class='form-inline' role='form'>
+                    <div class='checkbox'>
+                      <label class='text-muted'>
+                        <input id='historyControl-follow' ng-model='ctrl.follow' ng-change='followChange()' type='checkbox' name='followChanges' value=1>
+                        Follow
+                      </label>
+                    </div>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </span>
+      </td>
+      <td>
+        <span class='hcNavBtnRight'>
+          <a class='' id='historyControl-next' href='#'><i class='fa fa-2x fa-fw fa-step-forward'></i></a>
+        </span>
+      </td>
+      <td>
+        <span class='hcNavBtnRight'>
+          <a class='' id='historyControl-last' href='#'><i class='fa fa-2x fa-fw fa-forward'></i></a>
+        </span>
+      </td>
+    </tr>
+  </table>
+</div>

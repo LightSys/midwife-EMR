@@ -1,0 +1,136 @@
+<div>
+  <div class='pregname well well-sm'>
+    <div class='row'>
+      <div class='col-xs-6'>
+        <h3 class='patient-well'>{{ctrl.pregnancy.lastname}}, {{ctrl.pregnancy.firstname}}</h3>
+      </div>
+      <div class='col-xs-3'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>Age: (600)</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <span class='lead text-primary'>{{ctrl.patient.dob|amDifference:null:'years'|abs}} (<span class='small text-primary'>{{ctrl.patient.dob|date:'MM-dd-yyyy'}}</span>)</span>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-3'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>GA:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <span class='lead text-primary'>{{ctrl.pregnancy.lmp|getGAFromLMP:ctrl.replacedAt}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='row'>
+      <div class='col-xs-6'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>Nickname:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <span class='lead text-primary'>{{ctrl.pregnancy.nickname}}</span>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-3'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>LMP:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <span class='lead text-primary'>{{ctrl.pregnancy.lmp|date:'MM-dd-yyyy'}}</span>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-3'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>Prenatal:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <span class='lead text-primary'>To Do</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class='row'>
+      <div class='col-xs-1'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>G:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <strong class='lead text-primary'>{{ctrl.pregnancy.gravida}}</strong>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-1'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>P:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <strong class='lead text-primary'>{{ctrl.pregnancy.para}}</strong>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-1'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>A:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <strong class='lead text-primary'>{{ctrl.pregnancy.abortions}}</strong>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-1'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>S:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <strong class='lead text-primary'>{{ctrl.pregnancy.stillBirths}}</strong>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-1'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>L:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <strong class='lead text-primary'>{{ctrl.pregnancy.living}}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class='col-xs-3 col-xs-offset-1'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>EDD:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <span class='lead text-primary'>{{ctrl.pregnancy.lmp|edd|date:'MM-dd-yyyy'}}</span>
+          </div>
+        </div>
+      </div>
+      <div class='col-xs-3'>
+        <div class='row'>
+          <div class='col-xs-12 text-muted'>MMC:</div>
+        </div>
+        <div class='row'>
+          <div class='col-xs-12'>
+            <span class='lead text-primary'>{{ctrl.patient.dohID|dohFormatted}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

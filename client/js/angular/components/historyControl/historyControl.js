@@ -5,10 +5,13 @@
   angular.module('historyControlModule', [])
     .directive('historyControl', [
         '$state',
+        '$compile',
         'historyService',
         'changeRoutingService',
+        'templateService',
         'minPubSubNg',
-        function($state, historyService, changeRoutingService, pubSub) {
+        function($state, $compile, historyService, changeRoutingService,
+          templateService, pubSub) {
 
       /* --------------------------------------------------------
        * navigate()
@@ -94,7 +97,6 @@
       return {
         restrict: 'E',
         replace: true,
-        templateUrl: '/angular/components/historyControl/historyControl.tmpl',
         controllerAs: 'ctrl',
         scope: {
           hcPregId: '@',
@@ -102,8 +104,26 @@
         },
         controller: function() {},
         link: function($scope, element, attrs, ctrl) {
+          var currViewport = templateService.getViewportSize();
           var hsUnregisterHdl = "" + (Math.random() * 99999999);
           var pregId;
+
+          /* --------------------------------------------------------
+           * loadTemplate()
+           *
+           * Compile and install the template dynamically.
+           *
+           * param       templateName
+           * return      undefined
+           * -------------------------------------------------------- */
+          var loadTemplate = function(templateName) {
+            templateService.getTemplate(templateName)
+              .then(function(tmpl) {
+                console.log('historyControl: loading template.');
+                element.html(tmpl).show();
+                $compile(element.contents())($scope);
+              });
+          };
 
           // --------------------------------------------------------
           // Top-level scope initialization.
@@ -180,6 +200,26 @@
           });
           var lastHandle = lastLink.on('click', function(evt) {
             navigate($scope, $scope.ctrl.numberRecords, historyService.last);
+          });
+
+          // --------------------------------------------------------
+          // Dynamically load the template according the size of the
+          // viewport.
+          //
+          // Adapted from: http://onehungrymind.com/angularjs-dynamic-templates/
+          // --------------------------------------------------------
+          var templateName = '/angular/components/historyControl/historyControl.RES.tmpl';
+          loadTemplate(templateName);
+
+          // --------------------------------------------------------
+          // Respond to resize events by loading the proper template
+          // as necessary when viewport breakpoints are crossed.
+          // --------------------------------------------------------
+          templateService.register('historyControl', function(viewPort) {
+            if (templateService.needTemplateChange(currViewport)) {
+              currViewport = templateService.getViewportSize();
+              loadTemplate(templateName);
+            }
           });
 
           // --------------------------------------------------------

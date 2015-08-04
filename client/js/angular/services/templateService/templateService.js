@@ -31,10 +31,8 @@
 
   angular.module('templateServiceModule', [])
 
-    .provider('templateService', [function() {
-
-        // minPubSubNg Service.
-        var pubSub;
+    .factory('templateService', ['$http', '$templateCache', '$q', 'minPubSubNg',
+          function($http, $templateCache, $q, pubSub) {
 
         // Initialize the viewport size.
         var viewPort = getViewportSize(window);
@@ -201,6 +199,36 @@
         };
 
         /* --------------------------------------------------------
+         * getTemplate()
+         *
+         * Return the actual template based upon the template name
+         * which should contain a RES placeholder that will be
+         * replaced with the appropriate template width per the
+         * established breakpoints. Retrieves the appropriate
+         * template from the server if it is not already cached
+         * and caches it. Serves the template contents back to the
+         * caller in the form of a promise.
+         *
+         * param       templateName
+         * return      promise
+         * -------------------------------------------------------- */
+        var getTemplate = function(templateName) {
+          var template = getTemplateUrl(templateName);
+          return $q(function(resolve, reject) {
+            var templateContents = $templateCache.get(template);
+            if (! templateContents) {
+              $http.get(template)
+                .success(function(data) {
+                  $templateCache.put(template, data);
+                  resolve(data);
+                });
+            } else {
+              resolve(templateContents);
+            }
+          });
+        };
+
+        /* --------------------------------------------------------
          * getTemplateUrl()
          *
          * Return the appropriate templateUrl based upon the generic
@@ -224,6 +252,17 @@
           return templateName.replace(/RES/, currentTemplateSize);
         };
 
+        /* --------------------------------------------------------
+         * needTemplateChange()
+         *
+         * Returns true if the template needs to be changed based
+         * upon a comparison of the former viewport and the current
+         * viewport width settings in light of the breakpoints that
+         * this service knows about.
+         *
+         * param       oldViewport
+         * return      boolean
+         * -------------------------------------------------------- */
         var needTemplateChange = function(oldViewport) {
           var oldSize = getTemplateSize(oldViewport.w);
           if (oldSize === currentTemplateSize) return false;
@@ -231,15 +270,11 @@
         };
 
         return {
-          $get: function(minPubSubNg) {
-            pubSub = minPubSubNg;
-            return {
-              register: register,
-              getTemplateUrl: getTemplateUrl,
-              getViewportSize: getViewportSize,
-              needTemplateChange: needTemplateChange
-            };
-          }
+          register: register,
+          getTemplate: getTemplate,
+          getTemplateUrl: getTemplateUrl,
+          getViewportSize: getViewportSize,
+          needTemplateChange: needTemplateChange
         };
       }]);
 
