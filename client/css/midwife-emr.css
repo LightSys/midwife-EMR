@@ -226,12 +226,46 @@ span#dirty-notice-tablet {
     right: 22px;
   }
 }
-@media (min-width: 600px) and (max-width: 1199px) {
+@media (min-width: 768px) and (max-width: 1199px) {
   #historyControl {
     position: fixed;
     z-index: 2000;
     top: 51px;
     right: 30px;
+  }
+}
+@media (min-width: 550px) and (max-width: 767px) {
+  #historyControl {
+    position: fixed;
+    z-index: 2000;
+    top: 0px;
+    right: 100px;
+    background-color: #428BCA;
+  }
+  #historyControl table.hcTable {
+    /* For when the control is in the top menu bar. */
+    background-color: white;
+    border: none;
+  }
+  #historyControl table.hcTable th,
+  #historyControl table.hcTable td {
+    padding: 0 5px !important;
+  }
+  #historyControl tr.hcNavText div.checkbox {
+    /* The checkbox forces a certain height and this corrects this. */
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+}
+@media (min-width: 480px) and (max-width: 549px) {
+  #historyControl tr.hcNavText div.checkbox {
+    /* The checkbox forces a certain height and this corrects this. */
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .fa-2x {
+    /* Override default to use the smaller icons. */
+    font-size: 1em;
   }
 }
 div.history-header {
@@ -283,7 +317,7 @@ td.hcNavText-right {
 #historyPageTitle {
   margin-top: 0;
 }
-@media (min-width: 600px) and (max-width: 899px) {
+@media (min-width: 768px) and (max-width: 899px) {
   #historyPageTitle {
     margin-top: 90px;
   }
