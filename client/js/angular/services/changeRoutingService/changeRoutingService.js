@@ -31,6 +31,9 @@
         'risk': {
           'DEFAULT': 'pregnancy.prenatal'
         },
+        'schedule': {
+          'DEFAULT': 'pregnancy.general'
+        },
         'vaccination': {
           'DEFAULT': 'pregnancy.labs'
         },

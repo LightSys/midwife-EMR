@@ -109,6 +109,42 @@
           var pregId;
 
           /* --------------------------------------------------------
+           * attachEvents()
+           *
+           * Handle record navigation. There are four navagation types
+           * with corresponding directive elements and historyService
+           * functions for each of them. Each of the historyService
+           * calls return the current record information which we use
+           * to update the current meta information.
+           *
+           * param       $scope
+           * param       element
+           * return      undefined
+           * -------------------------------------------------------- */
+          var attachEvents = function($scope, element) {
+            var firstLink = element.find('#historyControl-first');
+            var prevLink = element.find('#historyControl-prev');
+            var nextLink = element.find('#historyControl-next');
+            var lastLink = element.find('#historyControl-last');
+            var firstHandle = firstLink.on('click', function(evt) {
+              navigate($scope, 1, historyService.first);
+            });
+            var prevHandle = prevLink.on('click', function(evt) {
+              if ($scope.ctrl.currentRecord !== 1) {
+                navigate($scope, $scope.ctrl.currentRecord - 1, historyService.prev);
+              }
+            });
+            var nextHandle = nextLink.on('click', function(evt) {
+              if ($scope.ctrl.currentRecord !== $scope.ctrl.numberRecords) {
+                navigate($scope, $scope.ctrl.currentRecord + 1, historyService.next);
+              }
+            });
+            var lastHandle = lastLink.on('click', function(evt) {
+              navigate($scope, $scope.ctrl.numberRecords, historyService.last);
+            });
+          };
+
+          /* --------------------------------------------------------
            * loadTemplate()
            *
            * Compile and install the template dynamically.
@@ -122,8 +158,29 @@
                 console.log('historyControl: loading template.');
                 element.html(tmpl).show();
                 $compile(element.contents())($scope);
+                attachEvents($scope, element);
               });
           };
+
+          // --------------------------------------------------------
+          // Dynamically load the template according the size of the
+          // viewport.
+          //
+          // Adapted from: http://onehungrymind.com/angularjs-dynamic-templates/
+          // --------------------------------------------------------
+          var templateName = '/angular/components/historyControl/historyControl.RES.tmpl';
+          loadTemplate(templateName);
+
+          // --------------------------------------------------------
+          // Respond to resize events by loading the proper template
+          // as necessary when viewport breakpoints are crossed.
+          // --------------------------------------------------------
+          templateService.register('historyControl', function(viewPort) {
+            if (templateService.needTemplateChange(currViewport)) {
+              currViewport = templateService.getViewportSize();
+              loadTemplate(templateName);
+            }
+          });
 
           // --------------------------------------------------------
           // Top-level scope initialization.
@@ -171,54 +228,6 @@
             }
             if (data.changedBy.supervisor) {
               $scope.ctrl.supervisor = historyService.lookup('user', 'id', data.changedBy.supervisor).username;
-            }
-          });
-
-          // --------------------------------------------------------
-          // Handle record navigation. There are four navagation types
-          // with corresponding directive elements and historyService
-          // functions for each of them. Each of the historyService
-          // calls return the current record information which we use
-          // to update the current meta information.
-          // --------------------------------------------------------
-          var firstLink = element.find('#historyControl-first');
-          var prevLink = element.find('#historyControl-prev');
-          var nextLink = element.find('#historyControl-next');
-          var lastLink = element.find('#historyControl-last');
-          var firstHandle = firstLink.on('click', function(evt) {
-            navigate($scope, 1, historyService.first);
-          });
-          var prevHandle = prevLink.on('click', function(evt) {
-            if ($scope.ctrl.currentRecord !== 1) {
-              navigate($scope, $scope.ctrl.currentRecord - 1, historyService.prev);
-            }
-          });
-          var nextHandle = nextLink.on('click', function(evt) {
-            if ($scope.ctrl.currentRecord !== $scope.ctrl.numberRecords) {
-              navigate($scope, $scope.ctrl.currentRecord + 1, historyService.next);
-            }
-          });
-          var lastHandle = lastLink.on('click', function(evt) {
-            navigate($scope, $scope.ctrl.numberRecords, historyService.last);
-          });
-
-          // --------------------------------------------------------
-          // Dynamically load the template according the size of the
-          // viewport.
-          //
-          // Adapted from: http://onehungrymind.com/angularjs-dynamic-templates/
-          // --------------------------------------------------------
-          var templateName = '/angular/components/historyControl/historyControl.RES.tmpl';
-          loadTemplate(templateName);
-
-          // --------------------------------------------------------
-          // Respond to resize events by loading the proper template
-          // as necessary when viewport breakpoints are crossed.
-          // --------------------------------------------------------
-          templateService.register('historyControl', function(viewPort) {
-            if (templateService.needTemplateChange(currViewport)) {
-              currViewport = templateService.getViewportSize();
-              loadTemplate(templateName);
             }
           });
 
