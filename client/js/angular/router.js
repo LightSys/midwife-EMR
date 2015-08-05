@@ -47,10 +47,10 @@
             template: "<history-control id='historyControl' hc-follow='true'></history-control>"
           },
           'tabs': {
-            templateUrl: '/angular/views/pregnancy-tab.html'
+            templateUrl: '/angular/views/pregnancy-tab.RES.html'
           },
           'patientWell': {
-            templateUrl: '/angular/views/history-header.html',
+            templateUrl: '/angular/views/history-header.RES.html',
             controller: function($scope, $stateParams) {
               $scope.pregId = $stateParams.id;
             }
@@ -186,7 +186,7 @@
           'title@': {
             template: '<h1>{{title}}</h1>',
             controller: function($scope) {
-              $scope.title = 'Midwife Interview';
+              $scope.title = 'Midwife';
             }
           },
           'content@': {
@@ -245,21 +245,23 @@
       // --------------------------------------------------------
       // The State Factory that finalizes the UI Router states
       // at runtime when the templateService is available. Assumes
-      // that the views['content@'].templateUrl needs to be
-      // replaced at runtime.
+      // that when templateUrl elements have 'RES' in the value,
+      // that they need to be replaced at runtime.
       // --------------------------------------------------------
       $futureStateProvider.stateFactory('templateService',
           function($q, templateService, futureState) {
         var d = $q.defer();
-        var template;
-        var newTemplate;
-        if (futureState.views &&
-            futureState.views['content@'] &&
-            futureState.views['content@'].templateUrl) {
-          template = futureState.views['content@'].templateUrl;
-          newTemplate = templateService.getTemplateUrl(template);
-          futureState.views['content@'].templateUrl = newTemplate;
-        }
+        _.each(futureState.views, function(obj, name) {
+          var template;
+          var newTemplate;
+          if (_.has(obj, 'templateUrl')) {
+            template = obj.templateUrl;
+            newTemplate = templateService.getTemplateUrl(template);
+            if (obj.templateUrl !== newTemplate) {
+              obj.templateUrl = newTemplate;
+            }
+          }
+        });
         d.resolve(futureState);
         return d.promise;
       });
