@@ -33,6 +33,7 @@ var getAllData = function(req, res) {
     , sqlVac
     , sqlHealth
     , sqlLabTestResult
+    , sqlSchedule
     , sqlUser
     , sqlVacType
     , sqlMedType
@@ -85,6 +86,9 @@ var getAllData = function(req, res) {
   // labTestResultLog
   sqlLabTestResult = 'SELECT * FROM labTestResultLog WHERE pregnancy_id = ?';
 
+  // scheduleLog
+  sqlSchedule = 'SELECT * FROM scheduleLog WHERE pregnancy_id = ?';
+
   // --------------------------------------------------------
   // Lookup Tables. These do not reference Log tables nor
   // need to reference pregnancy id.
@@ -111,6 +115,7 @@ var getAllData = function(req, res) {
     getData(sqlReferral, 'referral', pregId),
     getData(sqlHealth, 'healthTeaching', pregId),
     getData(sqlLabTestResult, 'labTestResult', pregId),
+    getData(sqlSchedule, 'schedule', pregId),
     // Lookup tables
     getData(sqlUser, 'user'),
     getData(sqlVacType, 'vaccinationType'),
@@ -160,7 +165,7 @@ var getAllData = function(req, res) {
     // --------------------------------------------------------
     _.map(['patient', 'pregnancy', 'risk', 'prenatalExam', 'medication',
            'vaccination', 'pregnancyHistory', 'referral', 'healthTeaching',
-           'labTestResult'], function(src) {
+           'labTestResult', 'schedule'], function(src) {
       // Find the array, drop the leading source name, and assign the inner array.
       main[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
     });
@@ -186,7 +191,8 @@ var getAllData = function(req, res) {
     // --------------------------------------------------------
     changeLogSources = ['pregnancy', 'patient', 'risk', 'prenatalExam',
                         'medication', 'vaccination', 'pregnancyHistory',
-                        'referral', 'healthTeaching', 'labTestResult'];
+                        'referral', 'healthTeaching', 'labTestResult',
+                        'schedule'];
     changeLog = generateChangeLog(results, changeLogSources);
     data.push(changeLog);
 

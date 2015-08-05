@@ -42,8 +42,8 @@
 
       // List of sources (tables) that contain the historical changes.
       var historicalSources = ['pregnancy', 'patient', 'prenatalExam',
-        'healthTeaching', 'labTestResult', 'medication', 'vaccination',
-        'referral', 'pregnancyHistory', 'risk'];
+        'healthTeaching', 'labTestResult', 'medication', 'schedule',
+        'vaccination', 'referral', 'pregnancyHistory', 'risk'];
 
       // Paths
       var baseUrl = '/api/history';;
