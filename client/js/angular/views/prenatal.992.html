@@ -8,7 +8,7 @@
         <div class='checkbox'>
           <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthMCP")}'>
             <input type='checkbox' name='philHealthMCP' tabindex="1" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthMCP'>
-            PHIC MCP
+            PH MCP
           </label>
         </div>
       </div>
@@ -25,7 +25,7 @@
         <div class='checkbox'>
           <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthNCP")}'>
             <input type='checkbox' name='philHealthNCP' tabindex="2" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthNCP'>
-            PHIC NCP
+            PH NCP
           </label>
         </div>
       </div>
@@ -33,7 +33,7 @@
         <div class='checkbox'>
           <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthApproved")}'>
             <input type='checkbox' name='philHealthApproved' tabindex="4" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthApproved'>
-            PHIC Approved
+            PH Appr
           </label>
         </div>
       </div>
@@ -124,11 +124,11 @@
       </div>
 
       <div class='form-group col-md-3 box'>
-        <p class='text-primary lead'>Transfer of Care</p>
+        <p class='text-primary lead'>Transfer Care</p>
         <div class='row'>
           <div class='col-md-7'>
             <div>
-              <span>Transfer Date</span>
+              <span>Trfr Date</span>
               <input class='form-control' tabindex='40' name='transferOfCare' disabled='true' value="{{ctrl.pregnancy.transferOfCare|onlyValidDate|date:'MM-dd-yyyy'}}">
             </div>
           </div>
@@ -150,7 +150,7 @@
       </div>
 
       <div class='form-group col-md-3 box'>
-        <p class='text-primary lead'>Pregnancy Result</p>
+        <p class='text-primary lead'>Preg Result</p>
         <div class='row'>
           <div class='col-md-12'>
             <div>
@@ -175,54 +175,56 @@
 
 <div class='row'>
   <div class='col-md-12'>
-    <table id='prenatalExaminations' class='table table-striped table-bordered table-hover table-condensed responsive'>
-      <thead>
-        <tr>
-          <td class='table-cell-date'>Date</td>
-          <td>Weight</td>
-          <td>B/P</td>
-          <td>CR</td>
-          <td>Temp</td>
-          <td>RR</td>
-          <td>GA</td>
-          <td>FH</td>
-          <td>FHT</td>
-          <td>Pos</td>
-          <td>Mvmt</td>
-          <td>Edema</td>
-          <td>Risk</td>
-          <td>Vit</td>
-          <td>Pray</td>
-          <td>Examiners</td>
-          <td class='table-cell-date'>Return</td>
-        </tr>
-      </thead>
-      <!--<tbody ng-repeat='pe in ctrl.sources.prenatalExam|sourcesHistorical:ctrl.replacedAt:"date"'>-->
-      <tbody ng-repeat='pe in ctrl.prenatalExam'>
-        <tr class='prenatalExamRow' ui-sref='pregnancy.prenatalExam({pregId: pregId, peid: pe.id})'>
-          <td>{{pe.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-          <td>{{pe.weight}}</td>
-          <td>{{pe.systolic && pe.diastolic? pe.systolic + ' / ' + pe.diastolic: ''}}</td>
-          <td>{{pe.cr}}</td>
-          <td>{{pe.temperature}}</td>
-          <td>{{pe.respiratoryRate}}</td>
-          <td>{{ctrl.pregnancy.lmp|getGAFromLMP:pe.date}}</td>
-          <td>{{pe.fh}}</td>
-          <td>{{pe.fht}}</td>
-          <td>{{pe.pos}}</td>
-          <td>{{pe.mvmt === 1? 'Y': ''}}</td>
-          <td>{{pe.edema === 'none'? 'None': pe.edema}}</td>
-          <td>{{pe.risk}}</td>
-          <td>{{pe.vitamin === 1? 'Y': ''}}</td>
-          <td>{{pe.pray === 1? 'Y': ''}}</td>
-          <td>{{pe.examiner}}</td>
-          <td>{{pe.returnDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-        </tr>
-        <tr class='prenatalExamRow' ng-if='pe.note && pe.note.length > 0'>
-          <td class='table-cell-subrow'></td>
-          <td class='table-cell-subrow' colspan='16'>{{pe.note}}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class='bigTable'>
+      <table id='prenatalExaminations' class='table table-striped table-bordered table-hover table-condensed responsive'>
+        <thead>
+          <tr>
+            <td class='table-cell-date'>Date</td>
+            <td>Wgt</td>
+            <td>B/P</td>
+            <td>CR</td>
+            <td>Temp</td>
+            <td>RR</td>
+            <td>GA</td>
+            <td>FH</td>
+            <td>FHT</td>
+            <td>Pos</td>
+            <td>Mvmt</td>
+            <td>Edema</td>
+            <td>Risk</td>
+            <td>Vit</td>
+            <td>Pray</td>
+            <td>Exmrs</td>
+            <td class='table-cell-date'>Return</td>
+          </tr>
+        </thead>
+        <!--<tbody ng-repeat='pe in ctrl.sources.prenatalExam|sourcesHistorical:ctrl.replacedAt:"date"'>-->
+        <tbody ng-repeat='pe in ctrl.prenatalExam'>
+          <tr class='prenatalExamRow' ui-sref='pregnancy.prenatalExam({pregId: pregId, peid: pe.id})'>
+            <td>{{pe.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
+            <td>{{pe.weight}}</td>
+            <td>{{pe.systolic && pe.diastolic? pe.systolic + ' / ' + pe.diastolic: ''}}</td>
+            <td>{{pe.cr}}</td>
+            <td>{{pe.temperature}}</td>
+            <td>{{pe.respiratoryRate}}</td>
+            <td>{{ctrl.pregnancy.lmp|getGAFromLMP:pe.date}}</td>
+            <td>{{pe.fh}}</td>
+            <td>{{pe.fht}}</td>
+            <td>{{pe.pos}}</td>
+            <td>{{pe.mvmt === 1? 'Y': ''}}</td>
+            <td>{{pe.edema === 'none'? 'None': pe.edema}}</td>
+            <td>{{pe.risk}}</td>
+            <td>{{pe.vitamin === 1? 'Y': ''}}</td>
+            <td>{{pe.pray === 1? 'Y': ''}}</td>
+            <td>{{pe.examiner}}</td>
+            <td>{{pe.returnDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
+          </tr>
+          <tr class='prenatalExamRow' ng-if='pe.note && pe.note.length > 0'>
+            <td class='table-cell-subrow'></td>
+            <td class='table-cell-subrow' colspan='16'>{{pe.note}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

@@ -329,4 +329,11 @@ span.has-changed {
   color: #428BCA;
 }
 
-
+/* Handling large tables for medium screens. Anything under
+ * 768px wide is handled by Bootstrap with table-responsive. */
+@media screen and (min-width: 768px) {
+  div.bigTable {
+    overflow-x: auto !important;
+    display: block !important;
+  }
+}
