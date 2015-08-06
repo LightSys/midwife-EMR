@@ -234,7 +234,7 @@ span#dirty-notice-tablet {
     right: 30px;
   }
 }
-@media (min-width: 550px) and (max-width: 767px) {
+@media (min-width: 480px) and (max-width: 767px) {
   #historyControl {
     position: fixed;
     z-index: 2000;
@@ -258,11 +258,6 @@ span#dirty-notice-tablet {
   }
 }
 @media (min-width: 480px) and (max-width: 549px) {
-  #historyControl tr.hcNavText div.checkbox {
-    /* The checkbox forces a certain height and this corrects this. */
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-  }
   .fa-2x {
     /* Override default to use the smaller icons. */
     font-size: 1em;
