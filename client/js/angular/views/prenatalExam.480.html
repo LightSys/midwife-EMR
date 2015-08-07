@@ -1,59 +1,59 @@
 <div ng-repeat='pe in ctrl.prenatalExam|showDetail:detId'>
   <div class="row">
-    <div class='form-group col-md-3'>
-      <label class=''>Mother Information {{detId}}</label>
+    <div class='form-group col-xs-6'>
+      <label class=''>Mother Information</label>
       <div>Date</div>
       <input class='form-control' tabindex='1' name='date' disabled='true' value='{{pe.date|onlyValidDate|date:"MM-dd-yyyy"}}'>
       <span>Weight</span>
       <input id='weight' class='form-control' type='number' tabindex="2" autocomplete="off" name='weight' disabled=true value='{{pe.weight}}'>
       <div class='row'>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <span>Systolic</span>
           <input id='systolic' class='form-control' type='number' tabindex="3" name='systolic' disabled=true value='{{pe.systolic}}'>
         </div>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <span>Diastolic</span>
           <input id='diastolic' class='form-control' type='number' tabindex="4" name='diastolic' disabled=true value='{{pe.diastolic}}'>
         </div>
       </div>
       <div class='row'>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <div>CR</div>
           <input id='cr' class='form-control' type='number' tabindex="5" name='cr' disabled=true value='{{pe.cr}}'>
         </div>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <div>Temperature</div>
           <input id='cr' class='form-control' type='number' step="0.1" tabindex="6" name='temperature' disabled=true value='{{pe.temperature}}'>
         </div>
       </div>
       <div class='row'>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <div>RR</div>
           <input id='cr' class='form-control' type='number' tabindex="7" name='respiratoryRate' disabled=true value='{{pe.respiratoryRate}}'>
         </div>
       </div>
     </div>
 
-    <div class='form-group col-md-3'>
+    <div class='form-group col-xs-6'>
       <label class=''>Fetus Information</label>
       <div>GA</div>
       <input id='ga' class='form-control' type='text' name='ga' disabled=true value='{{ctrl.pregnancy.lmp|getGAFromLMP:pe.date}}'>
       <div class='row'>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <span>FH</span>
           <input id='fh' class='form-control' type='number' tabindex="8" name='fh' disabled=true value='{{pe.fh}}'>
         </div>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <span>FH Note</span>
           <input id='fhNote' class='form-control' type='text' tabindex='9' name='fhNote' disabled=true value='{{pe.fhNote}}'>
         </div>
       </div>
       <div class='row'>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <span>FHT</span>
           <input id='fht' class='form-control' type='number' tabindex="10" name='fht' disabled=true value='{{pe.fht}}'>
         </div>
-        <div class='col-md-6'>
+        <div class='col-xs-6'>
           <span>FHT Note</span>
           <input id='fhtNote' class='form-control' type='text' tabindex='11' name='fhtNote' disabled=true value='{{pe.fhtNote}}'>
         </div>
@@ -61,8 +61,10 @@
       <span>Position (saved all caps)</span>
       <input id='pos' class='form-control' type='text' tabindex="12" name='pos' disabled=true value='{{pe.pos}}'>
     </div>
+  </div>
 
-    <div class='form-group col-md-3'>
+  <div class="row">
+    <div class='form-group col-xs-6'>
       <label class=''>Other Information</label>
       <div class='checkbox'>
         <label>
@@ -89,7 +91,7 @@
         </label>
       </div>
     </div>
-    <div class='form-group col-md-3'>
+    <div class='form-group col-xs-6'>
       <label class=''>Other continued</label>
       <div>Notes</div>
       <textarea id='note' class='form-control' tabindex="18" wrap="soft" rows="4" disabled=true name='note'>{{pe.note}}</textarea>
@@ -101,7 +103,7 @@
 
 </div>
 <div class='row'>
-  <div class='form-group col-md-offset-3 col-md-2'>
+  <div class='form-group col-xs-offset-3 col-xs-2'>
     <a ui-sref='pregnancy.prenatal' class='btn btn-default' role='button'>Back to the Prenatal Page</a>
   </div>
 </div>

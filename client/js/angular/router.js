@@ -103,7 +103,7 @@
             template: '<span></span>'    // We don't want tabs to show.
           },
           'title@': {
-            template: '<h1>{{title}}</h1>',
+            template: '<h2>{{title}}</h2>',
             controller: function($scope) {
               $scope.title = 'Prenatal Exam';
             }
