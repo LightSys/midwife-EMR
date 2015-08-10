@@ -1,0 +1,148 @@
+<div class='row'>
+  <div class='form-group col-xs-4'>
+    <h4 class='text-primary'>Present Complaints</h4>
+    <div id="readonlyPresentComplaints" class="readonlyCheckmark">
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyVomiting'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Vomiting</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyDizzy'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Dizzy</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyFainting'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Fainted</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyBleeding'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Bleeding</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyUrinationPain'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Pain in urinating</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyBlurryVision'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Blurry vision</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlySwelling'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Swelling</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyVaginalPain'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Vaginal pain</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyVaginalItching'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Vaginal itching</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyNone'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>None of the above</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class='form-group col-xs-4'>
+    <h4 class='text-primary'>Family History</h4>
+    <div id="readonlyFamilyHistory" class="readonlyCheckmark">
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistoryTwins'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Twins</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistoryHighBloodPressure'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>High blood pressure</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistoryDiabetes'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Diabetes</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistoryHeartProblems'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Heart problems</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistoryTB'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>TB</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistorySmoking'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Smoking</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistoryNone'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>None of the above</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class='form-group col-xs-4'>
+    <h4 class='text-primary'>Personal History</h4>
+    <div id="readonlyPersonalHistory" class="readonlyCheckmark">
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyFoodAllergy'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Food allergy</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyMedicineAllergy'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Medicine allergy</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyAsthma'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Asthma</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyHeartProblems'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Heart problems</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyKidneyProblems'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Kidney problems</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyHepatitis'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Hepatitis</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyGoiter'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Goiter</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyHighBloodPressure'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>High blood pressure</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyHospitalOperation'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Operation in the hospital</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyBloodTransfusion'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Blood transfusion</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historySmoking'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Smoking</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyDrinking'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Drinking</td></tr>
+      </table>
+      <table class='checkMarkText' ng-show='ctrl.pregnancy.historyNone'>
+        <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>None of the above</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-xs-6'>
+    <div class='separate-section'>
+      <label>Use iodized salt: </label><span class='text-primary'> {{ctrl.pregnancy.useIodizedSalt|yesNo}}</span>
+    </div>
+    <div class='separate-section'>
+      <label>Take Medication: </label><span class='text-primary'> {{ctrl.pregnancy.takingMedication|yesNo}}</span>
+    </div>
+    <div class='separate-section'>
+      <label>Plan to BF: </label><span class='text-primary'> {{ctrl.pregnancy.planToBreastFeed|yesNo}}</span>
+    </div>
+    <div class='separate-section'>
+      <label>Where do you plan to give birth? </label>
+      <input class='form-control' disabled value='{{ctrl.pregnancy.whereDeliver}}'>
+    </div>
+    <div class='separate-section'>
+      <label>Companion during childbirth? </label>
+      <input class='form-control' disabled value='{{ctrl.pregnancy.birthCompanion}}'>
+    </div>
+    <div class='checkbox'>
+      <label>
+        <input type='checkbox' name='practiceFamilyPlanning' disabled ng-checked='ctrl.pregnancy.practiceFamilyPlanning===1'>
+        Practiced family planning
+      </label>
+    </div>
+    <span>Family planning comments
+      <input class='form-control' type='text' disabled name='practiceFamilyPlanningDetails' value='{{ctrl.pregnancy.practiceFamilyPlanningDetails}}'>
+    </span>
+  </div>
+
+  <div class='form-group col-xs-6'>
+    <span>Notes
+      <textarea id='questionnaireNote' class='form-control' wrap="soft" rows="6" disabled name='questionnaireNote'>{{ctrl.pregnancy.questionnaireNote}}</textarea>
+    </span>
+  </div>
+</div>
+
+

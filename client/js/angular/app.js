@@ -315,6 +315,18 @@
       };
     }])
 
+    .filter('yesNo', [function() {
+      return function(ans) {
+        var ansStr;
+        if (! ans) return '';
+        if (! _.isString(ans)) return '';
+        ansStr = ans.toLowerCase();
+        if (ansStr === 'n' || ansStr === 'no') return 'No';
+        if (ansStr === 'y' || ansStr === 'yes') return 'Yes';
+        return '';
+      };
+    }])
+
     .filter('getGAFromLMP', ['moment', function(moment) {
       return function(lmp, rDate) {
         var edDate = edd(lmp, moment);

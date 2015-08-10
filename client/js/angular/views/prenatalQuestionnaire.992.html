@@ -1,0 +1,144 @@
+<div class='row'>
+  <div class='form-group col-sm-3'>
+    <h4 class='text-primary'>Present Complaints</h4>
+    <div id="readonlyPresentComplaints" class="readonlyCheckmark">
+      <div ng-show='ctrl.pregnancy.currentlyVomiting'>
+        <div class="fa fa-check">Vomiting</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyDizzy'>
+        <div class="fa fa-check">Dizzy</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyFainting'>
+        <div class="fa fa-check">Fainted</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyBleeding'>
+        <div class="fa fa-check">Bleeding</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyUrinationPain'>
+        <div class="fa fa-check">Pain in urinating</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyBlurryVision'>
+        <div class="fa fa-check">Blurry vision</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlySwelling'>
+        <div class="fa fa-check">Swelling</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyVaginalPain'>
+        <div class="fa fa-check">Vaginal pain</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyVaginalItching'>
+        <div class="fa fa-check">Vaginal itching</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.currentlyNone'>
+        <div class="fa fa-check">None of the above</div><br />
+      </div>
+    </div>
+  </div>
+
+  <div class='form-group col-sm-3'>
+    <div class='separate-section'>
+      <label>Use iodized salt: </label><span class='text-primary'> {{ctrl.pregnancy.useIodizedSalt|yesNo}}</span>
+    </div>
+    <div class='separate-section'>
+      <label>Take Medication: </label><span class='text-primary'> {{ctrl.pregnancy.takingMedication|yesNo}}</span>
+    </div>
+    <div class='separate-section'>
+      <label>Plan to BF: </label><span class='text-primary'> {{ctrl.pregnancy.planToBreastFeed|yesNo}}</span>
+    </div>
+    <div class='separate-section'>
+      <label>Where do you plan to give birth? </label>
+      <input class='form-control' disabled value='{{ctrl.pregnancy.whereDeliver}}'>
+    </div>
+    <div class='separate-section'>
+      <label>Companion during childbirth? </label>
+      <input class='form-control' disabled value='{{ctrl.pregnancy.birthCompanion}}'>
+    </div>
+    <div class='checkbox'>
+      <label>
+        <input type='checkbox' name='practiceFamilyPlanning' disabled ng-checked='ctrl.pregnancy.practiceFamilyPlanning===1'>
+        Practiced family planning
+      </label>
+    </div>
+    <span>Family planning comments
+      <input class='form-control' type='text' disabled name='practiceFamilyPlanningDetails' value='{{ctrl.pregnancy.practiceFamilyPlanningDetails}}'>
+    </span>
+  </div>
+
+  <div class='form-group col-sm-3'>
+    <h4 class='text-primary'>Family History</h4>
+    <div id="readonlyFamilyHistory" class="readonlyCheckmark">
+      <div ng-show='ctrl.pregnancy.familyHistoryTwins'>
+        <div class="fa fa-check">Twins</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.familyHistoryHighBloodPressure'>
+        <div class="fa fa-check">High blood pressure</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.familyHistoryDiabetes'>
+        <div class="fa fa-check">Diabetes</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.familyHistoryHeartProblems'>
+        <div class="fa fa-check">Heart problems</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.familyHistoryTB'>
+        <div class="fa fa-check">TB</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.familyHistorySmoking'>
+        <div class="fa fa-check">Smoking</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.familyHistoryNone'>
+        <div class="fa fa-check">None of the above</div><br />
+      </div>
+    </div>
+
+    <span>Notes
+      <textarea id='questionnaireNote' class='form-control' wrap="soft" rows="6" disabled name='questionnaireNote'>{{ctrl.pregnancy.questionnaireNote}}</textarea>
+    </span>
+
+
+  </div>
+
+  <div class='form-group col-sm-3'>
+    <h4 class='text-primary'>Personal History</h4>
+    <div id="readonlyPersonalHistory" class="readonlyCheckmark">
+      <div ng-show='ctrl.pregnancy.historyFoodAllergy'>
+        <div class="fa fa-check">Food allergy</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyMedicineAllergy'>
+        <div class="fa fa-check">Medicine allergy</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyAsthma'>
+        <div class="fa fa-check">Asthma</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyHeartProblems'>
+        <div class="fa fa-check">Heart problems</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyKidneyProblems'>
+        <div class="fa fa-check">Kidney problems</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyHepatitis'>
+        <div class="fa fa-check">Hepatitis</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyGoiter'>
+        <div class="fa fa-check">Goiter</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyHighBloodPressure'>
+        <div class="fa fa-check">High blood pressure</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyHospitalOperation'>
+        <div class="fa fa-check">Operation in the hospital</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyBloodTransfusion'>
+        <div class="fa fa-check">Blood transfusion</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historySmoking'>
+        <div class="fa fa-check">Smoking</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyDrinking'>
+        <div class="fa fa-check">Drinking</div><br />
+      </div>
+      <div ng-show='ctrl.pregnancy.historyNone'>
+        <div class="fa fa-check">None of the above</div><br />
+      </div>
+    </div>
+  </div>
+</div>

@@ -332,3 +332,16 @@ span.has-changed {
     display: block !important;
   }
 }
+
+/* Position the text to the right of a fa-check mark. */
+table.checkMarkText {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+td.checkMark {
+  width: 15px;
+  padding: 0 !important;
+}
+td.checkText {
+  padding: 0 0 0 5px !important;
+}

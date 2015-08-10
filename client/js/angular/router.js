@@ -163,7 +163,7 @@
             }
           },
           'content@': {
-            template: '<p>This is the questionnaire content for pregnancy id: {{pregId}}.</p>',
+            templateUrl: '/angular/views/prenatalQuestionnaire.RES.html',
             controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(questionnaireState)]
           }
