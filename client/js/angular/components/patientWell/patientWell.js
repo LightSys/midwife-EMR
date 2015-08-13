@@ -26,7 +26,6 @@
           var loadTemplate = function(templateName) {
             templateService.getTemplate(templateName)
               .then(function(tmpl) {
-                console.log('patientWell: loading template.');
                 element.html(tmpl).show();
                 $compile(element.contents())($scope);
               });

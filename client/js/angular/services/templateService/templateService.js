@@ -31,8 +31,12 @@
 
   angular.module('templateServiceModule', [])
 
-    .factory('templateService', ['$http', '$templateCache', '$q', 'minPubSubNg',
-          function($http, $templateCache, $q, pubSub) {
+    .factory('templateService', ['$http', '$templateCache', '$cacheFactory',
+             '$q', 'moment', 'minPubSubNg',
+          function($http, $templateCache, $cacheFactory, $q, moment, pubSub) {
+
+        // Debugging.
+        var DEBUG = true;
 
         // Initialize the viewport size.
         var viewPort = getViewportSize(window);
@@ -44,6 +48,22 @@
         var SMALL = '480';
         var MEDIUM = '600';
         var LARGE = '992';
+
+        /* --------------------------------------------------------
+         * log()
+         *
+         * Simple logging to the console if DEBUG is true.
+         *
+         * param      msg
+         * return     undefined
+         * -------------------------------------------------------- */
+        var log = function(msg) {
+          var time;
+          if (DEBUG) {
+            time = moment().format('HH:mm:ss.SSS: ');
+            console.log(time + msg);
+          }
+        };
 
         /* --------------------------------------------------------
          * getTemplateSize()
@@ -83,14 +103,15 @@
          * Whenever the window.onresize event occurs, this is called.
          * -------------------------------------------------------- */
         var onResize = function() {
-          // Save the new viewport sizes and set the current template
-          // in use.
+          var origTmplSize = currentTemplateSize;
           viewPort = getViewportSize(window);
           setTemplateSize();
-          console.log('Width: ' + viewPort.w + ', Height: ' + viewPort.h);
+          log('templateService.onResize(), Width: ' + viewPort.w + ', Height: ' + viewPort.h);
 
           // Notify any registered functions of the change.
-          notifyCallbacks();
+          // Pass true if the change requires reloading the
+          // template if there is one.
+          notifyCallbacks(origTmplSize !== currentTemplateSize);
         };
 
         // Track resize events.
@@ -101,9 +122,15 @@
         *
         * Notify all of the registered callbacks that the viewport
         * information has changed.
+        *
+        * param       boolean - whether to call loadTemplateToCache()
+        * returns     undefined
         * -------------------------------------------------------- */
-        var notifyCallbacks = function() {
+        var notifyCallbacks = function(doLoadTemplate) {
           _.each(registeredCallbacks, function(cbObj) {
+            if (doLoadTemplate && cbObj.template) {
+              loadTemplateToCache(cbObj.template);
+            }
             cbObj.func(viewPort);
           });
         };
@@ -129,14 +156,15 @@
         * param       func
         * return      id - used to unregister
         * -------------------------------------------------------- */
-        var doRegister = function(func) {
+        var doRegister = function(func, template) {
           var funcObj = {
             id: getId(),
-            func: func
+            func: func,
+            template: template
           };
           if (func && _.isFunction(func)) {
             registeredCallbacks.push(funcObj);
-            console.log('Register templateService: ' + funcObj.id);
+            log('Register templateService: ' + funcObj.id);
             return funcObj.id;
           }
           return void 0;
@@ -153,7 +181,7 @@
         * return      boolean for success
         * -------------------------------------------------------- */
         var doUnregister = function(id) {
-          console.log('Unregister templateService: ' + id);
+          log('Unregister templateService: ' + id);
           var len = registeredCallbacks.length;
           // Better way to do this?
           registeredCallbacks = _.reject(registeredCallbacks, function(c) {
@@ -163,6 +191,30 @@
             return true;
           }
           return false;
+        };
+
+        /* --------------------------------------------------------
+         * getTemplateUrl()
+         *
+         * Return the appropriate templateUrl based upon the generic
+         * template name passed and the current viewport width and height.
+         *
+         * This module assumes that:
+         * 1. templates are named in TEMPLATENAME.RES.html format, e.g.
+         *    'prenatal.RES.html'.
+         * 2. the valid breakpoints are: 480, 600, and 992.
+         *
+         * If the template does not contain 'RES', the caller is
+         * returned the same as was passed.
+         *
+         * Usage:
+         *    getTemplateUrl('/angular/views/prenatal.RES.html');
+         *
+         * param      templateName
+         * return     templateUrl
+         * -------------------------------------------------------- */
+        var getTemplateUrl = function(templateName) {
+          return templateName.replace(/RES/, currentTemplateSize);
         };
 
         // ========================================================
@@ -183,8 +235,8 @@
          * param       func
          * return      undefined
          * -------------------------------------------------------- */
-        var register = function(key, func) {
-          var id = doRegister(func);
+        var register = function(key, func, template) {
+          var id = doRegister(func, template);
           var pubSubKey;
           if (id) {
             // --------------------------------------------------------
@@ -209,6 +261,13 @@
          * and caches it. Serves the template contents back to the
          * caller in the form of a promise.
          *
+         * Note: because we are no using ui-router-extras that
+         * preloads all of the templates into a script that is
+         * parsed upon application load, there should never be a
+         * case when a template is retrieved from the server. IF
+         * it should be attempted, a warning will be writted to
+         * the console.
+         *
          * param       templateName
          * return      promise
          * -------------------------------------------------------- */
@@ -217,39 +276,20 @@
           return $q(function(resolve, reject) {
             var templateContents = $templateCache.get(template);
             if (! templateContents) {
+              log('WARNING: ' + templateName + ' was not properly loaded by ui-router-extras.');
               $http.get(template)
                 .success(function(data) {
+                  log('WARNING: ' + templateName + ' was loaded from the server.');
                   $templateCache.put(template, data);
                   resolve(data);
+                })
+                .error(function(data, status, headers, config) {
+                  log('ERROR: ' + templateName + ' was unabled to be loaded from the server.');
                 });
             } else {
               resolve(templateContents);
             }
           });
-        };
-
-        /* --------------------------------------------------------
-         * getTemplateUrl()
-         *
-         * Return the appropriate templateUrl based upon the generic
-         * template name passed and the current viewport width and height.
-         *
-         * This module assumes that:
-         * 1. templates are named in TEMPLATENAME.WIDTH.html format, e.g.
-         *    'prenatal.960.html'.
-         * 2. the valid breakpoints are: 480, 600, and 992.
-         *
-         * Usage:
-         *    getTemplateUrl('prenatalExam');
-         *
-         * TODO: pre-load the templates into $templateCache and
-         * retrieve from there instead of forcing a server call.
-         *
-         * param      templateName
-         * return     templateUrl 
-         * -------------------------------------------------------- */
-        var getTemplateUrl = function(templateName) {
-          return templateName.replace(/RES/, currentTemplateSize);
         };
 
         /* --------------------------------------------------------
@@ -269,12 +309,31 @@
           return true;
         };
 
+        /* --------------------------------------------------------
+         * loadTemplateToCache()
+         *
+         * Based upon the template string passed, which is assumed to
+         * have "RES" in it, the appropriate matching string is
+         * retrieved from $templateCache based upon the current
+         * viewport breakpoint and subsequently loaded into
+         * $templateCache for the value of template.
+         *
+         * param       template
+         * return      undefined
+         * -------------------------------------------------------- */
+        var loadTemplateToCache = function(template) {
+          var tmplCache = $cacheFactory.get('templates');
+          var newTmpl = getTemplateUrl(template);
+          tmplCache.put(template, tmplCache.get(newTmpl));
+          log('loadTemplateToCache() Size: ' + currentTemplateSize + ', Template: ' + template + ', New: ' + newTmpl);
+        };
+
         return {
           register: register,
           getTemplate: getTemplate,
-          getTemplateUrl: getTemplateUrl,
           getViewportSize: getViewportSize,
-          needTemplateChange: needTemplateChange
+          needTemplateChange: needTemplateChange,
+          loadTemplateToCache: loadTemplateToCache
         };
       }]);
 

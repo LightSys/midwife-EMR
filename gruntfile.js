@@ -84,6 +84,27 @@ module.exports = function(grunt) {
           }
         }
       }
+    , ngtemplates: {
+      views: {
+        cwd: 'client/js',
+        src: 'angular/views/*.html',
+        dest: 'static/js/templates.js',
+        options: {
+          prefix: '/',
+          module: 'midwifeEmr'
+        }
+      }
+      , components: {
+        cwd: 'client/js',
+        src: 'angular/components/*/*.tmpl',
+        dest: 'static/js/templates.js',
+        options: {
+          prefix: '/',
+          module: 'midwifeEmr',
+          append: true
+        }
+      }
+    }
     , copy: {
         main: {
           // Copy the image files that are associated with the jquery-ui css files.
@@ -92,6 +113,12 @@ module.exports = function(grunt) {
           , src: 'images/*'
           , dest: 'static/css/'
         }
+        // ngtemplates above should pre-cache all of these templates for
+        // the components as well as the views into templates.js which
+        // is loaded into the $templateCache for us at application load.
+        // So this is not properly necessary but is just a fallback so that
+        // the templates are at least in the proper place on the server
+        // should templateService need to resort to retrieving them from there.
         , angularComponents: {
             // The templates associated with the Angular components (directives).
             expand: true
@@ -115,11 +142,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-angular-templates');
 
   // --------------------------------------------------------
   // Define tasks.
   // --------------------------------------------------------
-  grunt.registerTask('default', ['uglify', 'cssmin', 'copy']);
+  grunt.registerTask('default', ['uglify', 'cssmin', 'ngtemplates', 'copy']);
 
 };
 

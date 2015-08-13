@@ -155,7 +155,6 @@
           var loadTemplate = function(templateName) {
             templateService.getTemplate(templateName)
               .then(function(tmpl) {
-                console.log('historyControl: loading template.');
                 element.html(tmpl).show();
                 $compile(element.contents())($scope);
                 attachEvents($scope, element);

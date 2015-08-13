@@ -2,6 +2,37 @@
 
   'use strict';
 
+  // ========================================================
+  // ========================================================
+  // A word about templates and viewport sizes.
+  //
+  // The application uses a combination of adaptive web design
+  // (AWD) and responsive web design (RWD) in order to
+  // appropriately handle the variety of viewport sizes of the
+  // clients. Both AWD and RWD are used for the more complicated
+  // portions of the application, for example, the 'content@'
+  // views below in the Future States definitions as well as
+  // some of the components. This allows these more complicated
+  // layouts to be addressed at the course level by AWD, ie,
+  // currently one of three breakpoints at 480, 600, and 992.
+  // Then the more granular level, RWD provides the "in-between"
+  // viewport sizes.
+  //
+  // Less complicated views and components will likely only
+  // use RWD seeing that their needs can adequately be addressed
+  // by a smattering of media queries and/or Bootstrap visibility
+  // classes.
+  //
+  // templateService provides the application an interface
+  // both to resize events as well as a means to swap templates
+  // into $templateCache behind the scenes to allow on the fly
+  // transistions to different templates entirely (AWD) when
+  // breakpoints are crossed. Components and various UI Router
+  // states can register with templateService in order to
+  // properly respond to these resize events.
+  // ========================================================
+  // ========================================================
+
   // --------------------------------------------------------
   // UI-Router
   // --------------------------------------------------------
@@ -17,7 +48,6 @@
       // Used for registering/unregistering with various services.
       // --------------------------------------------------------
       var prenatalState          = 'pregnancy.prenatal';
-      var prenatalState          = 'pregnancy.prenatal';
       var prenatalExamState      = 'pregnancy.prenatalExam';
       var labsState              = 'pregnancy.labs';
       var questionnaireState     = 'pregnancy.questionnaire';
@@ -31,6 +61,23 @@
       // State definition for UI Router Future States which allows
       // the final state definition to be deferred until runtime
       // when the templateService is available.
+      //
+      // UI-Router-Extras Future States allow us to defer the
+      // specification of the templateUrl for the context@ view
+      // until runtime. At that point, templateService.loadTemplateToCache()
+      // is called that swaps the proper template into the
+      // $templateCache key/value store identified by the
+      // templateUrls below that have RES in the name.
+      // loadTemplateToCache() retrieves the actual template to
+      // use based upon the current viewport.
+      //
+      // Note that this only works for the initial load. After
+      // that the various components, ie, historyControl and
+      // patientWell, and the Future State views here that need
+      // to swap templates after initialization due to user resize
+      // events, will rely upon templateService to swap templates
+      // in the background in order to properly handle these events
+      // with the correct template for the viewport size.
       // ========================================================
       // ========================================================
       var fsPregnancy = {
@@ -47,16 +94,16 @@
             template: "<history-control id='historyControl' hc-follow='true'></history-control>"
           },
           'tabs': {
-            templateUrl: '/angular/views/pregnancy-tab.RES.html'
+            templateUrl: '/angular/views/pregnancy-tab.html'
           },
           'patientWell': {
-            templateUrl: '/angular/views/history-header.RES.html',
+            templateUrl: '/angular/views/history-header.html',
             controller: function($scope, $stateParams) {
               $scope.pregId = $stateParams.id;
             }
           },
           'content': {
-            template: '<p>pregnancy state</p>'
+            template: '<p>Loading ...</p>'
           }
         }
       };
@@ -84,7 +131,7 @@
           // Clean up the registrations for this state.
           // --------------------------------------------------------
           console.log('Publishing: ' + getExitState(prenatalState));
-          pubSub.publish(getExitState(prenatalState));
+          pubSub.publish(retireExitState(prenatalState));
         }]
       };
 
@@ -119,7 +166,7 @@
           // Clean up the registrations for this state.
           // --------------------------------------------------------
           console.log('Publishing: ' + getExitState(prenatalExamState));
-          pubSub.publish(getExitState(prenatalExamState));
+          pubSub.publish(retireExitState(prenatalExamState));
         }]
       };
 
@@ -146,7 +193,7 @@
           // Clean up the registrations for this state.
           // --------------------------------------------------------
           console.log('Publishing: ' + getExitState(labsState));
-          pubSub.publish(getExitState(labsState));
+          pubSub.publish(retireExitState(labsState));
         }]
       };
 
@@ -173,7 +220,7 @@
           // Clean up the registrations for this state.
           // --------------------------------------------------------
           console.log('Publishing: ' + getExitState(questionnaireState));
-          pubSub.publish(getExitState(questionnaireState));
+          pubSub.publish(retireExitState(questionnaireState));
         }]
       };
 
@@ -200,7 +247,7 @@
           // Clean up the registrations for this state.
           // --------------------------------------------------------
           console.log('Publishing: ' + getExitState(midwifeState));
-          pubSub.publish(getExitState(midwifeState));
+          pubSub.publish(retireExitState(midwifeState));
         }]
       };
 
@@ -227,7 +274,7 @@
           // Clean up the registrations for this state.
           // --------------------------------------------------------
           console.log('Publishing: ' + getExitState(generalState));
-          pubSub.publish(getExitState(generalState));
+          pubSub.publish(retireExitState(generalState));
         }]
       };
 
@@ -247,19 +294,19 @@
       // at runtime when the templateService is available. Assumes
       // that when templateUrl elements have 'RES' in the value,
       // that they need to be replaced at runtime.
+      //
+      // Note that this only runs once when the state is initialized
+      // or finalized or whatever you want to call it. After that,
+      // resize events in coordination with the templateService
+      // is used to swap in the proper template whenever viewport
+      // breakpoints are crossed.
       // --------------------------------------------------------
       $futureStateProvider.stateFactory('templateService',
           function($q, templateService, futureState) {
         var d = $q.defer();
         _.each(futureState.views, function(obj, name) {
-          var template;
-          var newTemplate;
           if (_.has(obj, 'templateUrl')) {
-            template = obj.templateUrl;
-            newTemplate = templateService.getTemplateUrl(template);
-            if (obj.templateUrl !== newTemplate) {
-              obj.templateUrl = newTemplate;
-            }
+            templateService.loadTemplateToCache(obj.templateUrl);
           }
         });
         d.resolve(futureState);
@@ -307,13 +354,43 @@
 
   /* --------------------------------------------------------
    * getExitState()
+   * retireExitState()
    *
-   * Returns the state name passed with "exit." prepended.
+   * Allows use of a unique identifier tied to a particular
+   * state as defined by the caller until the unique identifier
+   * is no longer needed.
+   *
+   * getExitState() returns a unique identifier for the state
+   * passed, generating one if one does not already exist, and
+   * returning the same one if one already exists.
+   *
+   * retireExitState() returns the already existing unique
+   * identifer corresponding to the state passed and then
+   * deletes the unique identifier. If the state does not exist,
+   * it returns undefined and issues a warning to the console.
    *
    * param      state
    * return     exit state
    * -------------------------------------------------------- */
-  var getExitState = function(state) {return "exit." + state;}
+  var exitStates = {};
+  var getExitState = function(state) {
+    if (exitStates.state) {
+      return exitStates.state;
+    } else {
+      exitStates.state = 'exit.' + state + '.' + (Math.random() * 99999999);
+      return exitStates.state;
+    }
+  };
+  var retireExitState = function(state) {
+    var tmpState;
+    if (exitStates.state) {
+      tmpState = exitStates.state;
+      delete exitStates.state;
+      return tmpState;
+    } else {
+      console.log('WARNING: retireExitState() did not find ' + state + '.');
+    }
+  };
 
   /* --------------------------------------------------------
     * commonController()
@@ -369,6 +446,7 @@
         // --------------------------------------------------------
         if (! detId) {
           switch (stateHandle) {
+            // Add states here for detail pages as necessary.
             case 'pregnancy.prenatalExam':
               if (_.size($scope.ctrl.changed.prenatalExam) > 0) {
                 $scope.detId = _.keys($scope.ctrl.changed.prenatalExam)[0];
@@ -394,16 +472,26 @@
 
       // --------------------------------------------------------
       // Respond to resize events. If a template change is
-      // required, reload page.
+      // required, the template passed to the register function
+      // will be loaded in $templateCache with the correct template
+      // before the callback is called, so only have to reload the
+      // page in the callback.
+      //
+      // NOTE: currently this is for the content@ view in whatever
+      // state which is the complicated view across the states. For
+      // simpler views, we don't use an adaptive web design approach
+      // but instead rely completely on responsive web design using
+      // media queries and/or Bootstrap visibility classes, etc.
       // --------------------------------------------------------
+      var stateObj = $state.get(stateHandle);
+      var contentTemplateUrl = stateObj.views['content@'].templateUrl;
       templateService.register(getExitState(stateHandle), function(viewPort) {
         if (templateService.needTemplateChange(currViewport)) {
           currViewport = templateService.getViewportSize();
-          $state.go(stateHandle);
+          $state.reload(stateHandle);
         }
-      });
+      }, contentTemplateUrl);
     };
   };
-
 
 })(angular);
