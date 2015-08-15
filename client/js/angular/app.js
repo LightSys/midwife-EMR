@@ -315,15 +315,33 @@
       };
     }])
 
+    /* --------------------------------------------------------
+     * yesNo()
+     *
+     * Handle various inputs and interpret as Yes or No and
+     * return as such. Returns an empty string if unable to
+     * interpret. Handles string input of 'y','n','no','yes' and
+     * the various case permutations. Handles 1 as a Yes and
+     * 0 as a No.
+     *
+     * param       ans
+     * return      'Yes', 'No', or ''
+     * -------------------------------------------------------- */
     .filter('yesNo', [function() {
       return function(ans) {
         var ansStr;
-        if (! ans) return '';
-        if (! _.isString(ans)) return '';
-        ansStr = ans.toLowerCase();
-        if (ansStr === 'n' || ansStr === 'no') return 'No';
-        if (ansStr === 'y' || ansStr === 'yes') return 'Yes';
-        return '';
+        if (_.isNumber(ans)) {
+          if (ans === 1) return 'Yes';
+          if (ans === 0) return 'No';
+          return '';
+        } else {
+          if (! _.isString(ans)) return '';
+          if (! ans) return '';
+          ansStr = ans.toLowerCase();
+          if (ansStr === 'n' || ansStr === 'no') return 'No';
+          if (ansStr === 'y' || ansStr === 'yes') return 'Yes';
+          return '';
+        }
       };
     }])
 

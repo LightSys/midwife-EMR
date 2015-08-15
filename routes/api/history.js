@@ -8,8 +8,6 @@ var cfg = require('../../config')
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
   , logError = require('../../util').logError
-  , collateRecs = require('../../util').collateRecs
-  , mergeRecs = require('../../util').mergeRecs
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
   , _ = require('underscore-contrib')
@@ -34,9 +32,11 @@ var getAllData = function(req, res) {
     , sqlHealth
     , sqlLabTestResult
     , sqlSchedule
+    , sqlCustomField
     , sqlUser
     , sqlVacType
     , sqlMedType
+    , sqlCustomFieldType
     , start = Date.now()
     , end
     ;
@@ -89,6 +89,9 @@ var getAllData = function(req, res) {
   // scheduleLog
   sqlSchedule = 'SELECT * FROM scheduleLog WHERE pregnancy_id = ?';
 
+  // customFieldLog
+  sqlCustomField = 'SELECT * FROM customFieldLog WHERE pregnancy_id = ?';
+
   // --------------------------------------------------------
   // Lookup Tables. These do not reference Log tables nor
   // need to reference pregnancy id.
@@ -101,6 +104,8 @@ var getAllData = function(req, res) {
   sqlVacType =  'SELECT * FROM vaccinationType';
 
   sqlMedType =  'SELECT * FROM medicationType';
+
+  sqlCustomFieldType = 'SELECT * FROM customFieldType';
 
   return Promise.all([
     // main Log tables
@@ -116,10 +121,12 @@ var getAllData = function(req, res) {
     getData(sqlHealth, 'healthTeaching', pregId),
     getData(sqlLabTestResult, 'labTestResult', pregId),
     getData(sqlSchedule, 'schedule', pregId),
+    getData(sqlCustomField, 'customField', pregId),
     // Lookup tables
     getData(sqlUser, 'user'),
     getData(sqlVacType, 'vaccinationType'),
     getData(sqlMedType, 'medicationType'),
+    getData(sqlCustomFieldType, 'customFieldType'),
   ]).then(function(results) {
     // --------------------------------------------------------
     // The Angular client expects an array. The first record
@@ -132,31 +139,6 @@ var getAllData = function(req, res) {
     var changeLogSources;
 
     // --------------------------------------------------------
-    // The main tables are patient and pregnancy, which are in
-    // a master/detail relationship with one another, though
-    // for our purposes pregnancy is by far the more important
-    // table, hence being grouped with the "main" tables.
-    //
-    // The main tables which are collated/merged. The "Log"
-    // suffix on the table references are removed for the client.
-    //
-    // This code that creates the main object along with the
-    // collateRecs() and mergeRecs() from util.js are not needed
-    // anymore in light of how historyService.prepareRecord()
-    // is using the data.
-    //
-    // Note: this code is effectively disabled.
-    //
-    // TODO: Remove completely and also remove collateRecs()
-    // and mergeRecs from util.js.
-    // --------------------------------------------------------
-    //main = _.object(results.slice(0, 1));
-    //main = collateRecs(main, 'replacedAt');
-    //mergeRecs(main, 'replacedAt');
-    //data.push(main);
-    //data.push({});
-
-    // --------------------------------------------------------
     // The *Log tables are provided to the client raw as the first
     // record of the array. These are all *Log tables but they are
     // also being saved to their non-Log names so that the client
@@ -165,7 +147,7 @@ var getAllData = function(req, res) {
     // --------------------------------------------------------
     _.map(['patient', 'pregnancy', 'risk', 'prenatalExam', 'medication',
            'vaccination', 'pregnancyHistory', 'referral', 'healthTeaching',
-           'labTestResult', 'schedule'], function(src) {
+           'labTestResult', 'schedule', 'customField'], function(src) {
       // Find the array, drop the leading source name, and assign the inner array.
       main[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
     });
@@ -177,7 +159,7 @@ var getAllData = function(req, res) {
     //
     // Add more lookup tables to the input array as the come online.
     // --------------------------------------------------------
-    _.map(['user', 'vaccinationType', 'medicationType'], function(src) {
+    _.map(['user', 'vaccinationType', 'medicationType', 'customFieldType'], function(src) {
       // Find the array, drop the leading source name, and assign the inner array.
       lookup[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
     });
@@ -192,7 +174,7 @@ var getAllData = function(req, res) {
     changeLogSources = ['pregnancy', 'patient', 'risk', 'prenatalExam',
                         'medication', 'vaccination', 'pregnancyHistory',
                         'referral', 'healthTeaching', 'labTestResult',
-                        'schedule'];
+                        'schedule', 'customField'];
     changeLog = generateChangeLog(results, changeLogSources);
     data.push(changeLog);
 
@@ -412,146 +394,6 @@ var getData = function(sql, srcName, pregId) {
       });
   });
 };
-
-/* --------------------------------------------------------
- * prenatalFormatted()
- *
- * Return all of the historical records as shown on the
- * prenatal page in the format expected by the front-end.
- * -------------------------------------------------------- */
-//var prenatalFormatted = function(req, res) {
-  //var pregId;
-
-  //if (req.parameters && req.parameters.id1) {
-    //pregId = req.parameters.id1;
-  //} else {
-    //// Bad request since the proper parameter not specified.
-    //res.statusCode = 400;
-    //return res.end();
-  //}
-
-  //return prenatal(pregId)
-    //.then(function(data) {
-      //// Adjust the data per caller requirements.
-
-      //data = collateRecs(data, 'replacedAt');
-      //mergeRecs(data, 'replacedAt');
-
-      //res.end(JSON.stringify(data));
-    //});
-//};
-
-
-/* --------------------------------------------------------
- * pregnancyFormatted()
- *
- * Return all of the historical records for a specfic
- * pregnancy formatted for the front-end.
- * -------------------------------------------------------- */
-//var pregnancyFormatted = function(req, res) {
-  //var pregId;
-
-  //if (req.parameters && req.parameters.id1) {
-    //pregId = req.parameters.id1;
-  //} else {
-    //// Bad request since the proper parameter not specified.
-    //res.statusCode = 400;
-    //return res.end();
-  //}
-
-  //return pregnancy(pregId)
-    //.then(function(data) {
-      //// Adjust the data per caller requirements.
-
-      //data = collateRecs(data, 'replacedAt');
-      //mergeRecs(data, 'replacedAt');
-
-      //res.end(JSON.stringify(data));
-    //});
-//};
-
-
-/* --------------------------------------------------------
- * prenatal()
- *
- * Return all of the historical records as show on the
- * prenatal page for the various tables per the pregnancy id
- * specified.
- * -------------------------------------------------------- */
-//var prenatal = function(pregId) {
-  //var knex
-    //, sqlRisk
-    //, riskData
-    //;
-
-  //// --------------------------------------------------------
-  //// Historical tables for the prenatal page include:
-  ////    pregnancyLog, patientLog, riskLog
-  //// --------------------------------------------------------
-  //sqlRisk = 'SELECT * FROM riskLog WHERE pregnancy_id = ? ORDER BY replacedAt';
-
-  //return new Promise(function(resolve, reject) {
-    //knex = Bookshelf.DB.knex;
-
-    //return pregnancy(pregId)
-      //.then(function(data) {
-        //return knex
-          //.raw(sqlRisk, pregId)
-          //.then(function(data) {
-            //riskData = data[0];
-          //})
-          //.then(function() {
-            //// Merge the data into one object.
-            //data.riskLog = riskData;
-            //return resolve(data);
-          //});
-      //});
-  //});
-//};
-
-/* --------------------------------------------------------
- * pregnancy()
- *
- * Return the pregnancy historical records for the pregnancy.
- * This information will be used across nearly all pages. This
- * includes the patient information as well.
- * -------------------------------------------------------- */
-//var pregnancy = function(pregId) {
-  //var knex
-    //, sqlPreg
-    //, sqlPat
-    //, pregData
-    //, patData
-    //, allData = {}
-    //;
-
-  //// --------------------------------------------------------
-  //// Historical tables: pregnancyLog and patientLog.
-  //// --------------------------------------------------------
-  //sqlPreg = 'SELECT * FROM pregnancyLog WHERE id = ? ORDER BY replacedAt';
-  //sqlPat  = 'SELECT * FROM patientLog WHERE id = ? ORDER BY replacedAt';
-
-  //return new Promise(function(resolve, reject) {
-    //knex = Bookshelf.DB.knex;
-    //return knex
-      //.raw(sqlPreg, pregId)
-      //.then(function(data) {
-        //pregData = data[0];
-      //})
-      //.then(function() {
-        //return knex.raw(sqlPat, pregData[0].patient_id);
-      //})
-      //.then(function(data) {
-        //patData = data[0];
-      //})
-      //.then(function() {
-        //// Merge the data into one object.
-        //allData.pregnancyLog = pregData;
-        //allData.patientLog = patData;
-        //return resolve(allData);
-      //});
-  //});
-//};
 
 /* --------------------------------------------------------
  * get()

@@ -11,8 +11,16 @@
       // Mapping between changed fields in a certain table and
       // the UI-Router state in which that change should be
       // displayed.
+      //
+      // NOTE: customField below works as long as there is only
+      // one customField or as long as all customFields are
+      // situated on the pregnancy.general page. Otherwise, this
+      // needs to be refactored.
       // --------------------------------------------------------
       var fieldStateMap = {
+        'customField': {
+          'DEFAULT': 'pregnancy.general'
+        },
         'healthTeaching': {
           'DEFAULT': 'pregnancy.labs'
         },

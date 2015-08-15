@@ -1,0 +1,150 @@
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Last name</span>
+    <input class='form-control input-lg' type='text' disabled name='lastname' value='{{ctrl.pregnancy.lastname}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>First name</span>
+    <input class='form-control input-lg' type='text' disabled name='firstname' value='{{ctrl.pregnancy.firstname}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Date of birth</span>
+    <input class='form-control input-lg' type='text' disabled name='dob' value='{{ctrl.patient.dob|onlyValidDate|date:"MM-dd-yyyy"}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Religion</span>
+    <input class='form-control input-lg' type='text' disabled name='firstname' value='{{ctrl.pregnancy.religion}}'>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Maiden name</span>
+    <input class='form-control input-lg' type='text' disabled name='maidenname' value='{{ctrl.pregnancy.maidenname}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Nick name</span>
+    <input class='form-control input-lg' type='text' disabled name='nickname' value='{{ctrl.pregnancy.nickname}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Marital status</span>
+    <input class='form-control input-lg' type='text' disabled name='maritalStatus' value='{{ctrl.pregnancy.maritalStatus}}'>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Address</span>
+    <input class='form-control input-lg' type='text' disabled name='address1' value='{{ctrl.pregnancy.address1}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>City</span>
+    <input class='form-control input-lg' type='text' disabled name='city' value='{{ctrl.pregnancy.city}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Barangay</span>
+    <input class='form-control input-lg' type='text' disabled name='address3' value='{{ctrl.pregnancy.address3}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>District</span>
+    <input class='form-control input-lg' type='text' disabled name='address4' value='{{ctrl.pregnancy.address4}}'>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Agdao?</span>
+    <input class='form-control input-lg' type='text' disabled name='agdao' value='{{ctrl.customField[0].booleanVal|yesNo}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Work</span>
+    <input class='form-control input-lg' type='text' disabled name='work' value='{{ctrl.pregnancy.work}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Education</span>
+    <input class='form-control input-lg' type='text' disabled name='education' value='{{ctrl.pregnancy.education}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Telephone</span>
+    <input class='form-control input-lg' type='text' disabled name='telephone' value='{{ctrl.pregnancy.telephone}}'>
+  </div>
+</div>
+
+<hr />
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Partner lastname</span>
+    <input class='form-control input-lg' type='text' disabled name='partnerLastname' value='{{ctrl.pregnancy.partnerLastname}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Partner firstname</span>
+    <input class='form-control input-lg' type='text' disabled name='partnerFirstname' value='{{ctrl.pregnancy.partnerFirstname}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Partner age</span>
+    <input class='form-control input-lg' type='text' disabled name='partnerAge' value='{{ctrl.pregnancy.partnerAge}}'>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Partner work</span>
+    <input class='form-control input-lg' type='text' disabled name='partnerWork' value='{{ctrl.pregnancy.partnerWork}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Partner education</span>
+    <input class='form-control input-lg' type='text' disabled name='partnerEducation' value='{{ctrl.pregnancy.partnerEducation}}'>
+  </div>
+</div>
+
+<hr />
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Client income</span>
+    <input class='form-control input-lg' type='text' disabled name='clientIncome' value='{{ctrl.pregnancy.clientIncome}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Income period</span>
+    <input class='form-control input-lg' type='text' disabled name='clientIncomePeriod' value='{{ctrl.pregnancy.clientIncomePeriod}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Partner income</span>
+    <input class='form-control input-lg' type='text' disabled name='partnerIncome' value='{{ctrl.pregnancy.partnerIncome}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Income period</span>
+    <input class='form-control input-lg' type='text' disabled name='partnerIncomePeriod' value='{{ctrl.pregnancy.partnerIncomePeriod}}'>
+  </div>
+</div>
+
+<hr />
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>MMC #</span>
+    <input class='form-control input-lg' type='text' disabled name='doh' value='{{ctrl.patient.dohID}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <!-- Priority barcode is a temporary assignment for which no permanent record is retained. -->
+    <span>Priority barcode #</span>
+    <input class='form-control input-lg' type='text' disabled name='priorityBarcode' value='N/A'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Prenatal day<span>
+        <input class='form-control input-lg' type='text' disabled name='prenatalDay' value='{{ctrl.schedule[0].day}}'>
+  </div>
+  <div class='form-group col-md-3'>
+    <span>Prenatal location<span>
+        <input class='form-control input-lg' type='text' disabled name='prenatalLocation' value='{{ctrl.schedule[0].location}}'>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <span>Mother/Baby Book?</span>
+    <input class='form-control input-lg' type='text' disabled name='mbBook' value='{{ctrl.pregnancy.mbBook|yesNo}}'>
+  </div>
+</div>
+

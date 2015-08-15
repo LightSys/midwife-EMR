@@ -264,7 +264,7 @@
             }
           },
           'content@': {
-            template: '<p>This is the general content for pregnancy id: {{pregId}}.</p>',
+            templateUrl: '/angular/views/prenatalGeneral.RES.html',
             controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(generalState)]
           }
