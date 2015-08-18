@@ -49,6 +49,9 @@
         var MEDIUM = '600';
         var LARGE = '992';
 
+        // List of generic templateUrls.
+        var genericTemplateUrls = [];
+
         /* --------------------------------------------------------
          * log()
          *
@@ -108,29 +111,40 @@
           setTemplateSize();
           log('templateService.onResize(), Width: ' + viewPort.w + ', Height: ' + viewPort.h);
 
+          // --------------------------------------------------------
+          // Refresh the $templateCache with template urls for the
+          // current breakpoint.
+          // --------------------------------------------------------
+          if (origTmplSize !== currentTemplateSize) loadGenericTemplateUrls();
+
           // Notify any registered functions of the change.
-          // Pass true if the change requires reloading the
-          // template if there is one.
-          notifyCallbacks(origTmplSize !== currentTemplateSize);
+          notifyCallbacks();
         };
 
         // Track resize events.
         window.onresize = onResize;
+
+
+        /* --------------------------------------------------------
+         * loadGenericTemplateUrls()
+         *
+         * Load all of the registered generic template urls into the
+         * $templateCache using the appropriate breakpoint.
+         * -------------------------------------------------------- */
+        var loadGenericTemplateUrls = function() {
+          _.each(genericTemplateUrls, function(t) {
+            loadTemplateToCache(t);
+          });
+        };
 
         /* --------------------------------------------------------
         * notifyCallbacks()
         *
         * Notify all of the registered callbacks that the viewport
         * information has changed.
-        *
-        * param       boolean - whether to call loadTemplateToCache()
-        * returns     undefined
         * -------------------------------------------------------- */
-        var notifyCallbacks = function(doLoadTemplate) {
+        var notifyCallbacks = function() {
           _.each(registeredCallbacks, function(cbObj) {
-            if (doLoadTemplate && cbObj.template) {
-              loadTemplateToCache(cbObj.template);
-            }
             cbObj.func(viewPort);
           });
         };
@@ -156,11 +170,10 @@
         * param       func
         * return      id - used to unregister
         * -------------------------------------------------------- */
-        var doRegister = function(func, template) {
+        var doRegister = function(func) {
           var funcObj = {
             id: getId(),
-            func: func,
-            template: template
+            func: func
           };
           if (func && _.isFunction(func)) {
             registeredCallbacks.push(funcObj);
@@ -235,8 +248,8 @@
          * param       func
          * return      undefined
          * -------------------------------------------------------- */
-        var register = function(key, func, template) {
-          var id = doRegister(func, template);
+        var register = function(key, func) {
+          var id = doRegister(func);
           var pubSubKey;
           if (id) {
             // --------------------------------------------------------
@@ -328,12 +341,32 @@
           log('loadTemplateToCache() Size: ' + currentTemplateSize + ', Template: ' + template + ', New: ' + newTmpl);
         };
 
+
+        /* --------------------------------------------------------
+         * registerGenericTemplateUrl()
+         *
+         * Save a generic template url, i.e. a template url with
+         * RES in the name as a placeholder for the breakpoint
+         * width to use. At runtime during resize events when
+         * breakpoints are crossed, all of the generic template urls
+         * are loaded in the $templateCache with the appropriate
+         * template url for that breakpoint. But to do that, the
+         * template urls need to be registered first.
+         *
+         * param       templateUrl
+         * return      undefined
+         * -------------------------------------------------------- */
+        var registerGenericTemplateUrl = function(templateUrl) {
+          genericTemplateUrls.push(templateUrl);
+        };
+
         return {
           register: register,
           getTemplate: getTemplate,
           getViewportSize: getViewportSize,
           needTemplateChange: needTemplateChange,
-          loadTemplateToCache: loadTemplateToCache
+          loadTemplateToCache: loadTemplateToCache,
+          registerGenericTemplateUrl: registerGenericTemplateUrl
         };
       }]);
 

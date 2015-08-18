@@ -281,13 +281,27 @@
       // --------------------------------------------------------
       // Register the future states.
       // --------------------------------------------------------
-      $futureStateProvider.futureState(fsPregnancy);
-      $futureStateProvider.futureState(fsPregnancyPrenatal);
-      $futureStateProvider.futureState(fsPregnancyPrenatalExam);
-      $futureStateProvider.futureState(fsPregnancyLabs);
-      $futureStateProvider.futureState(fsPregnancyQuestionnaire);
-      $futureStateProvider.futureState(fsPregnancyMidwife);
-      $futureStateProvider.futureState(fsPregnancyGeneral);
+      var allStates = [fsPregnancy, fsPregnancyPrenatal, fsPregnancyPrenatalExam,
+          fsPregnancyLabs, fsPregnancyQuestionnaire, fsPregnancyMidwife,
+          fsPregnancyGeneral];
+      _.each(allStates, function(state) {
+        $futureStateProvider.futureState(state);
+      });
+
+      // --------------------------------------------------------
+      // Create a collection of generic templateUrls so that the
+      // first state to be initialized by stateFactory below
+      // can register them all in templateService. This will allow
+      // templateService to reload all of the templateUrls
+      // upon resize events that cross breakpoint boundaries.
+      // --------------------------------------------------------
+      var genericTemplatesRegistered = false;
+      var genericTemplates = [];
+      _.each(allStates, function(state) {
+        if (state.views && state.views['content@'] && state.views['content@'].templateUrl) {
+          genericTemplates.push({stateName: state.name, templateUrl: state.views['content@'].templateUrl});
+        }
+      });
 
       // --------------------------------------------------------
       // The State Factory that finalizes the UI Router states
@@ -304,11 +318,29 @@
       $futureStateProvider.stateFactory('templateService',
           function($q, templateService, futureState) {
         var d = $q.defer();
+
+        // --------------------------------------------------------
+        // For this state, load the appropriate template to
+        // $templateCache.
+        // --------------------------------------------------------
         _.each(futureState.views, function(obj, name) {
           if (_.has(obj, 'templateUrl')) {
             templateService.loadTemplateToCache(obj.templateUrl);
           }
         });
+
+        // --------------------------------------------------------
+        // The first state intialized will also register all of the
+        // generic templateUrls found in the states above. This will
+        // enable the templateService to reload all of these templates
+        // whenever resize events cross established breakpoints.
+        // --------------------------------------------------------
+        if (! genericTemplatesRegistered) {
+          _.each(genericTemplates, function(st) {
+            templateService.registerGenericTemplateUrl(st.templateUrl);
+          });
+          genericTemplatesRegistered = true;
+        }
         d.resolve(futureState);
         return d.promise;
       });
@@ -472,10 +504,11 @@
 
       // --------------------------------------------------------
       // Respond to resize events. If a template change is
-      // required, the template passed to the register function
-      // will be loaded in $templateCache with the correct template
-      // before the callback is called, so only have to reload the
-      // page in the callback.
+      // required because a breakpoint has been called, the
+      // $templateCache will already have been primed with the
+      // proper template by the time this callback is called.
+      // Therefore, the state just needs to be reloaded in order
+      // to utilize the new template for the new size.
       //
       // NOTE: currently this is for the content@ view in whatever
       // state which is the complicated view across the states. For
@@ -484,13 +517,12 @@
       // media queries and/or Bootstrap visibility classes, etc.
       // --------------------------------------------------------
       var stateObj = $state.get(stateHandle);
-      var contentTemplateUrl = stateObj.views['content@'].templateUrl;
       templateService.register(getExitState(stateHandle), function(viewPort) {
         if (templateService.needTemplateChange(currViewport)) {
           currViewport = templateService.getViewportSize();
           $state.reload(stateHandle);
         }
-      }, contentTemplateUrl);
+      });
     };
   };
 
