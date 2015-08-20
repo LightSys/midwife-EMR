@@ -117,6 +117,12 @@
   // --------------------------------------------------------
   angular.module('midwifeEmr')
     .run(function($rootScope) {
+
+      // --------------------------------------------------------
+      // Write to the console what version of Angular we have.
+      // --------------------------------------------------------
+      console.log('Midwife-EMR running Angular v' + angular.version.full);
+
       $rootScope.$on("$stateChangeError", console.log.bind(console));
 
       $rootScope.$on('$stateChangeStart',
