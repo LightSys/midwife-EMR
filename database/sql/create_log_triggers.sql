@@ -462,6 +462,90 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: pregnote_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS pregnote_after_insert;
+CREATE TRIGGER pregnote_after_insert AFTER INSERT ON pregnote
+FOR EACH ROW
+BEGIN
+  INSERT INTO pregnoteLog
+  (id, pregnoteType, noteDate, note, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.pregnoteType, NEW.noteDate, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: pregnote_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS pregnote_after_update;
+CREATE TRIGGER pregnote_after_update AFTER UPDATE ON pregnote
+FOR EACH ROW
+BEGIN
+  INSERT INTO pregnoteLog
+  (id, pregnoteType, noteDate, note, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.pregnoteType, NEW.noteDate, NEW.note, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: pregnote_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS pregnote_after_delete;
+CREATE TRIGGER pregnote_after_delete AFTER DELETE ON pregnote
+FOR EACH ROW
+BEGIN
+  INSERT INTO pregnoteLog
+  (id, pregnoteType, noteDate, note, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (OLD.id, OLD.pregnoteType, OLD.noteDate, OLD.note, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: pregnoteType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS pregnoteType_after_insert;
+CREATE TRIGGER pregnoteType_after_insert AFTER INSERT ON pregnoteType
+FOR EACH ROW
+BEGIN
+  INSERT INTO pregnoteTypeLog
+  (id, name, description, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: pregnoteType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS pregnoteType_after_update;
+CREATE TRIGGER pregnoteType_after_update AFTER UPDATE ON pregnoteType
+FOR EACH ROW
+BEGIN
+  INSERT INTO pregnoteTypeLog
+  (id, name, description, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: pregnoteType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS pregnoteType_after_delete;
+CREATE TRIGGER pregnoteType_after_delete AFTER DELETE ON pregnoteType
+FOR EACH ROW
+BEGIN
+  INSERT INTO pregnoteTypeLog
+  (id, name, description, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: prenatalExam_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

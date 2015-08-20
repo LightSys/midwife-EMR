@@ -222,3 +222,23 @@ ALTER TABLE customFieldLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE customFieldLog DROP KEY customFieldType_id;
 --
 --
+-- Creating pregnoteTypeLog
+SELECT 'pregnoteTypeLog' AS Creating FROM DUAL;
+CREATE TABLE pregnoteTypeLog LIKE pregnoteType;
+ALTER TABLE pregnoteTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE pregnoteTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE pregnoteTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE pregnoteTypeLog DROP PRIMARY KEY;
+ALTER TABLE pregnoteTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+--
+-- Creating pregnoteLog
+SELECT 'pregnoteLog' AS Creating FROM DUAL;
+CREATE TABLE pregnoteLog LIKE pregnote;
+ALTER TABLE pregnoteLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE pregnoteLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE pregnoteLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE pregnoteLog DROP PRIMARY KEY;
+ALTER TABLE pregnoteLog ADD PRIMARY KEY (id, replacedAt);
+--
+--
