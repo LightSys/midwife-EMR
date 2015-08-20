@@ -183,7 +183,7 @@
             }
           },
           'content@': {
-            template: '<p>This is the labs content for pregnancy id: {{pregId}}.</p>',
+            templateUrl: '/angular/views/prenatalLabs.RES.html',
             controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(labsState)],
           }
@@ -459,6 +459,10 @@
       historyService.registerPubSub(getExitState(stateHandle), function(data) {
         $scope.ctrl = data;
         $scope.func = commonFuncs;
+
+        // TESTING
+        console.log(stateHandle);
+        console.dir($scope.ctrl);
 
         // --------------------------------------------------------
         // Make the UI-Router state available in $scope. The

@@ -43,7 +43,8 @@
       // List of sources (tables) that contain the historical changes.
       var historicalSources = ['pregnancy', 'patient', 'prenatalExam',
         'healthTeaching', 'labTestResult', 'medication', 'schedule',
-        'vaccination', 'referral', 'pregnancyHistory', 'risk', 'customField'];
+        'vaccination', 'referral', 'pregnancyHistory', 'risk', 'customField',
+        'pregnote'];
 
       // Paths
       var baseUrl = '/api/history';;
@@ -133,9 +134,13 @@
           // Determine if the src is a detail table or not based upon
           // the presence of the pregnancy_id field.
           // --------------------------------------------------------
-          if (data[0][src][idx]['pregnancy_id']) {
-            if (! recs) recs = [];
-            recs.push(data[0][src][idx]);
+          var currRec = data[0][src][idx];
+          if (currRec['pregnancy_id']) {
+            // Don't show deleted records.
+            if (currRec.op !== 'D') {
+              if (! recs) recs = [];
+              recs.push(currRec);
+            }
           } else {
             // --------------------------------------------------------
             // The main tables only have one record. For ease of use to

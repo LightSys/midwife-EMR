@@ -333,6 +333,13 @@ span.has-changed {
   }
 }
 
+@media screen and (min-width: 600px) {
+  div.bigTable {
+    overflow-x: auto !important;
+    display: block !important;
+  }
+}
+
 /* Position the text to the right of a fa-check mark. */
 table.checkMarkText {
   padding: 0 !important;

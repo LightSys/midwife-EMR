@@ -321,6 +321,65 @@
       };
     }])
 
+    /* --------------------------------------------------------
+     * toArray()
+     *
+     * Convert a collection of objects to an array. Needed for
+     * orderBy filter and probably others.
+     * -------------------------------------------------------- */
+    .filter('toArray', [function() {
+      return function(objects) {
+        return _.toArray(objects);
+      };
+    }])
+
+    /* --------------------------------------------------------
+     * getUserField()
+     *
+     * Return the specified field from the user table based upon
+     * the id passed. If the optional fld is not passed, defaults
+     * to shortName. Returns an empty string if lookup fails.
+     *
+     * param       id
+     * param       fld (optional)
+     * return      field contents
+     * -------------------------------------------------------- */
+    .filter('getUserField', ['historyService', function(historyService) {
+      return function(id, fld) {
+        var result = historyService.lookup('user', 'id', id);
+        if (result && _.has(result, fld)) return result[fld];
+        if (result && _.has(result, 'shortName')) return result['shortName'];
+        return '';
+      };
+    }])
+
+    /* --------------------------------------------------------
+     * getDateFromVaccination()
+     *
+     * Vaccinations can be recorded with a normal date stamp or
+     * with various combinations of year and month. This filter
+     * accepts the whole vaccination record and returns a string
+     * to best represent the vaccination date.
+     * -------------------------------------------------------- */
+    .filter('getDateFromVaccination', ['moment', function(moment) {
+      return function(vac) {
+        var vacDate = '';
+        if (! vac) return vacDate;
+        if (vac.vacDate && moment(vac.vacDate).isValid()) {
+          vacDate = moment(vac.vacDate).format('MM-DD-YYYY');
+        } else {
+          if (vac.vacMonth && vac.vacYear) {
+            vacDate = vac.vacMonth + ' - ' + vac.vacYear;
+          } else {
+            if (vac.vacYear) {
+              vacDate = vac.vacYear;
+            }
+          }
+        }
+        return vacDate;
+      };
+    }])
+
     .filter('getGAFromLMP', ['moment', function(moment) {
       return function(lmp, rDate) {
         var edDate = edd(lmp, moment);

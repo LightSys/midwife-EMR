@@ -33,6 +33,7 @@ var getAllData = function(req, res) {
     , sqlLabTestResult
     , sqlSchedule
     , sqlCustomField
+    , sqlPregNote
     , sqlUser
     , sqlVacType
     , sqlMedType
@@ -65,10 +66,19 @@ var getAllData = function(req, res) {
   sqlPreExam =  'SELECT * FROM prenatalExamLog WHERE pregnancy_id = ?';
 
   // medicationLog
-  sqlMed =  'SELECT * FROM medicationLog WHERE pregnancy_id = ?';
+  // Note: we join to medicationType in order to get the name field.
+  sqlMed  = 'SELECT m.id, m.date, m.medicationType, m.numberDispensed, m.note, ';
+  sqlMed += 'm.updatedBy, m.updatedAt, m.supervisor, m.pregnancy_id, m.replacedAt, ';
+  sqlMed += 'm.op, mt.name FROM medicationLog m INNER JOIN medicationType mt ON ';
+  sqlMed += 'm.medicationType = mt.id WHERE m.pregnancy_id = ?';
 
   // vaccinationLog
-  sqlVac =  'SELECT * FROM vaccinationLog WHERE pregnancy_id = ?';
+  // Note: we join to vaccinationType in order to get the name field.
+  sqlVac  = 'SELECT v.id, v.vaccinationType, v.vacDate, v.vacMonth, v.vacYear, ';
+  sqlVac += 'v.administeredInternally, v.note, v.updatedBy, v.updatedAt, ';
+  sqlVac += 'v.supervisor, v.pregnancy_id, v.op, v.replacedAt, vt.name ';
+  sqlVac += 'FROM vaccinationLog v INNER JOIN vaccinationType vt ';
+  sqlVac += 'ON v.vaccinationType = vt.id WHERE v.pregnancy_id = ?';
 
   // pregnancyHistoryLog
   sqlPregHist = 'SELECT * FROM pregnancyHistoryLog WHERE pregnancy_id = ?';
@@ -80,11 +90,21 @@ var getAllData = function(req, res) {
   sqlHealth = 'SELECT * FROM healthTeachingLog WHERE pregnancy_id = ?';
 
   // pregnoteLog
-  // NOTE: there is no pregnoteLog table.
-  //sqlPregNote = 'SELECT * FROM pregnoteLog WHERE pregnancy_id = ?';
+  sqlPregNote  = 'SELECT p.id, p.pregnoteType, p.noteDate, p.note, p.updatedBy, ';
+  sqlPregNote += 'p.updatedAt, p.supervisor, p.pregnancy_id, p.op, p.replacedAt, ';
+  sqlPregNote += 'pt.name ';
+  sqlPregNote += 'FROM pregnoteLog p INNER JOIN pregnoteType pt ';
+  sqlPregNote += 'ON p.pregnoteType = pt.id ';
+  sqlPregNote += 'WHERE pt.name = "prenatalProgress" AND ';
+  sqlPregNote += 'p.pregnancy_id = ? ORDER BY p.noteDate';
 
   // labTestResultLog
-  sqlLabTestResult = 'SELECT * FROM labTestResultLog WHERE pregnancy_id = ?';
+  // We join to labTest in order to get the name field.
+  sqlLabTestResult  = 'SELECT ltr.id, ltr.testDate, ltr.result, ltr.result2, ';
+  sqlLabTestResult += 'ltr.warn, ltr.labTest_id, ltr.pregnancy_id, ltr.updatedBy, ';
+  sqlLabTestResult += 'ltr.updatedAt, ltr.supervisor, ltr.replacedAt, ltr.op, lt.name ';
+  sqlLabTestResult += 'FROM labTestResultLog ltr INNER JOIN labTest lt ON ';
+  sqlLabTestResult += 'ltr.labTest_id = lt.id WHERE ltr.pregnancy_id = ?';
 
   // scheduleLog
   sqlSchedule = 'SELECT * FROM scheduleLog WHERE pregnancy_id = ?';
@@ -107,6 +127,7 @@ var getAllData = function(req, res) {
 
   sqlCustomFieldType = 'SELECT * FROM customFieldType';
 
+
   return Promise.all([
     // main Log tables
     getData(sqlPreg, 'pregnancy', pregId),
@@ -122,6 +143,7 @@ var getAllData = function(req, res) {
     getData(sqlLabTestResult, 'labTestResult', pregId),
     getData(sqlSchedule, 'schedule', pregId),
     getData(sqlCustomField, 'customField', pregId),
+    getData(sqlPregNote, 'pregnote', pregId),
     // Lookup tables
     getData(sqlUser, 'user'),
     getData(sqlVacType, 'vaccinationType'),
@@ -147,7 +169,7 @@ var getAllData = function(req, res) {
     // --------------------------------------------------------
     _.map(['patient', 'pregnancy', 'risk', 'prenatalExam', 'medication',
            'vaccination', 'pregnancyHistory', 'referral', 'healthTeaching',
-           'labTestResult', 'schedule', 'customField'], function(src) {
+           'labTestResult', 'schedule', 'customField', 'pregnote'], function(src) {
       // Find the array, drop the leading source name, and assign the inner array.
       main[src] = _.find(results, function(a) {return a[0] === src;}).slice(1)[0];
     });
@@ -174,7 +196,7 @@ var getAllData = function(req, res) {
     changeLogSources = ['pregnancy', 'patient', 'risk', 'prenatalExam',
                         'medication', 'vaccination', 'pregnancyHistory',
                         'referral', 'healthTeaching', 'labTestResult',
-                        'schedule', 'customField'];
+                        'schedule', 'customField', 'pregnote'];
     changeLog = generateChangeLog(results, changeLogSources);
     data.push(changeLog);
 
