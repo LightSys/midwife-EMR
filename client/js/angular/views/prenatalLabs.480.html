@@ -18,10 +18,10 @@
               </thead>
               <tbody>
                 <tr class='labTestResultsRow' ng-repeat='ltr in ctrl.labTestResult|toArray|orderBy:["name","testDate"]'>
-                  <td>{{:: ltr.name}}</td>
-                  <td class='table-cell-date'>{{:: ltr.testDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-                  <td>{{:: ltr.result}}</td>
-                  <td>{{:: ltr.testWarn|yesNo}}</td>
+                  <td>{{ltr.name}}</td>
+                  <td class='table-cell-date'>{{ltr.testDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
+                  <td>{{ltr.result}}</td>
+                  <td>{{ltr.testWarn|yesNo}}</td>
                 </tr>
               </tbody>
             </table>
@@ -47,13 +47,13 @@
               </thead>
               <tbody>
                 <tr class='medicationsRow' ng-repeat-start='med in ctrl.medication'>
-                  <td class='table-cell-date'>{{:: med.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-                  <td>{{:: med.name}}</td>
-                  <td>{{:: med.numberDispensed}}</td>
+                  <td class='table-cell-date'>{{med.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
+                  <td>{{med.name}}</td>
+                  <td>{{med.numberDispensed}}</td>
                 </tr>
                 <tr ng-if='med.note && med.note.length > 0' ng-repeat-end>
                   <td class='table-cell-subrow'></td>
-                  <td class='table-cell-subrow' colspan='2'>{{:: med.note}}</td>
+                  <td class='table-cell-subrow' colspan='2'>{{med.note}}</td>
                 </tr>
               </tbody>
             </table>
@@ -79,9 +79,9 @@
               </thead>
               <tbody>
                 <tr class='teachingsRow' ng-repeat='teach in ctrl.healthTeaching'>
-                  <td class='table-cell-date'>{{:: teach.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-                  <td>{{:: teach.topic}}</td>
-                  <td>{{:: teach.teacher|getUserField:'lastname'}}, {{:: teach.teacher|getUserField:'firstname'}}</td>
+                  <td class='table-cell-date'>{{teach.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
+                  <td>{{teach.topic}}</td>
+                  <td>{{teach.teacher|getUserField:'lastname'}}, {{teach.teacher|getUserField:'firstname'}}</td>
                 </tr>
               </tbody>
             </table>
@@ -106,8 +106,8 @@
               </thead>
               <tbody>
                 <tr class='teachingsRow' ng-repeat='note in ctrl.pregnote'>
-                  <td class='table-cell-date'>{{:: note.noteDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-                  <td>{{:: note.note}}</td>
+                  <td class='table-cell-date'>{{note.noteDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
+                  <td>{{note.note}}</td>
                 </tr>
               </tbody>
             </table>
@@ -133,9 +133,9 @@
               </thead>
               <tbody>
                 <tr class='referralsRow' ng-repeat='ref in ctrl.referral'>
-                  <td class='table-cell-date'>{{:: ref.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-                  <td>{{:: ref.referral}}</td>
-                  <td>{{:: ref.reason}}</td>
+                  <td class='table-cell-date'>{{ref.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
+                  <td>{{ref.referral}}</td>
+                  <td>{{ref.reason}}</td>
                 </tr>
               </tbody>
             </table>
@@ -176,15 +176,15 @@
               </thead>
               <tbody>
                 <tr class='vaccinationsRow' ng-repeat-start='vac in ctrl.vaccination' ng-switch on='vac.administeredInternally'>
-                  <td>{{:: vac.name}}</td>
-                  <td class='table-cell-date'>{{:: vac|getDateFromVaccination}}</td>
+                  <td>{{vac.name}}</td>
+                  <td class='table-cell-date'>{{vac|getDateFromVaccination}}</td>
                   <td ng-switch-default></td>
                   <td ng-switch-when='1'>Internal</td>
                   <td ng-switch-when='0'>External</td>
                 </tr>
                 <tr ng-if='vac.note && vac.note.length > 0' ng-repeat-end>
                   <td class='table-cell-subrow'></td>
-                  <td class='table-cell-subrow' colspan='2'>{{:: vac.note}}</td>
+                  <td class='table-cell-subrow' colspan='2'>{{vac.note}}</td>
                 </tr>
               </tbody>
             </table>
