@@ -208,6 +208,11 @@ span#dirty-notice-tablet {
   padding: 0 0 10px 0;
 }
 
+/* Minimum input sizes for 2 characters */
+.minInputSize2 {
+  min-width: 45px;
+}
+
 /* Angular components */
 
 /* History control neatly nests in right corner if
@@ -333,7 +338,7 @@ span.has-changed {
   }
 }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 480px) {
   div.bigTable {
     overflow-x: auto !important;
     display: block !important;

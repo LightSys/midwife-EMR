@@ -1,0 +1,129 @@
+<div class='row'>
+  <div class='form-group col-md-3'>
+    <label>Choose at least one:</label>
+      <div class='checkbox'>
+        <label>
+          <input type='checkbox' name='invertedNipples' disabled value=1 ng-checked='ctrl.pregnancy.invertedNipples'>
+          Inverted nipples
+        </label>
+      </div>
+      <div class='checkbox'>
+        <label>
+          <input type='checkbox' name='hasUS' disabled value=1 ng-checked='ctrl.pregnancy.hasUS'>
+          Patient has U/S
+        </label>
+      </div>
+      <div class='checkbox'>
+        <label>
+          <input type='checkbox' name='wantsUS' disabled value=1 ng-checked='ctrl.pregnancy.wantsUS'>
+          Patient wants U/S
+        </label>
+      </div>
+      <div class='checkbox'>
+        <label>
+          <input type='checkbox' name='noneOfAbove' disabled value=1 ng-checked='!ctrl.pregnancy.invertedNipples && !ctrl.pregnancy.hasUS && !ctrl.pregnancy.wantsUS'>
+          None of the above
+        </label>
+      </div>
+  </div>
+
+  <div class='form-group col-md-3'>
+    <div class='row'>
+      <div class='form-group col-md-12'>
+        <span>Age of menarche</span>
+        <input class='form-control' type='number' disabled name='ageOfMenarche' value='{{ctrl.patient.ageOfMenarche}}'>
+      </div>
+    </div>
+  </div>
+
+  <div class='form-group col-md-6'>
+    <span>Comments </span>
+    <span class="text-info">('**Flag a comment on it\'s own line.')</span>
+    <textarea class='form-control' rows='6' wrap='soft' disabled name='note'>{{ctrl.pregnancy.note}}</textarea>
+  </div>
+
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-1'>
+    <label>Grav
+      <input class='form-control input-md minInputSize2' disabled type='text' name='gravida' value='{{ctrl.pregnancy.gravida}}'>
+    </label>
+  </div>
+  <div class='form-group col-md-1 col-md-offset-1'>
+    <label>Para
+      <input class='form-control input-md minInputSize2' disabled type='text' name='para' value='{{ctrl.pregnancy.para}}'>
+    </label>
+  </div>
+  <div class='form-group col-md-1 col-md-offset-2'>
+    <label>A/M
+      <input class='form-control input-md minInputSize2' disabled type='text' name='abortions' value='{{ctrl.pregnancy.abortions}}'>
+    </label>
+  </div>
+  <div class='form-group col-md-1 col-md-offset-1'>
+    <label>Living
+      <input class='form-control input-md minInputSize2' disabled type='text' name='living' value='{{ctrl.pregnancy.living}}'>
+    </label>
+  </div>
+  <div class='form-group col-md-1 col-md-offset-1'>
+    <label>Stillbirth
+      <input class='form-control input-md minInputSize2' disabled type='text' name='stillBirths' value='{{ctrl.pregnancy.stillBirths}}'>
+    </label>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-md-1 col-md-offset-2'>
+    <label>Term
+      <input class='form-control input-md minInputSize2' disabled type='text' name='term' value='{{ctrl.pregnancy.term}}'>
+    </label>
+  </div>
+  <div class='form-group col-md-1'>
+    <label>PreTerm
+      <input class='form-control input-md minInputSize2' disabled type='text' name='preterm' value='{{ctrl.pregnancy.preterm}}'>
+    </label>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-12'>
+    <div class='bigTable'>
+      <table id='pregnancyHistoryTable' class='table table-striped table-bordered table-hover table-condensed responsive'>
+        <thead>
+          <tr>
+            <td class='table-cell-date'>Date</td>
+            <td>GA</td>
+            <td>Sex</td>
+            <td>Place of birth</td>
+            <td>Attendent</td>
+            <td>Del type</td>
+            <td>Labor (hrs)</td>
+            <td>Wgt (kg)</td>
+            <td>Epis tear</td>
+            <td>Repaired</td>
+            <td>Breast fed</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class='pregHistoryRow' ng-repeat-start='ph in ctrl.pregnancyHistory' ui-sref='pregnancy.pregnancyHistory({pregId: pregId, phid: ph.id})'>
+            <td>{{ph.month? ph.month + '-': ''}}{{ph.day? ph.day + '-': ''}}{{ph.year}}</td>
+            <td>{{ph.FT === 1? 'Full term': ph.finalGA + ' ' + ph.finalGAPeriod}}</td>
+            <td>{{ph.sexOfBaby}}</td>
+            <td>{{ph.placeOfBirth}}</td>
+            <td>{{ph.attendant}}</td>
+            <td>{{ph.typeOfDelivery}}</td>
+            <td>{{ph.lengthOfLabor}}</td>
+            <td>{{ph.birthWeight}}</td>
+            <td>{{ph.episTear}}</td>
+            <td>{{ph.repaired}}</td>
+            <td>{{ph.howLongBFed? ph.howLongBFed + ' ' + ph.howLongBFedPeriod: ''}}</td>
+          </tr>
+          <tr class='pregHistoryRow' ng-repeat-end ng-if='ph.note && ph.note.length > 0'>
+            <td class='table-cell-subrow'></td>
+            <td class='table-cell-subrow' colspan='10'>{{ph.note}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

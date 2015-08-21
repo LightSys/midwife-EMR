@@ -237,7 +237,7 @@
             }
           },
           'content@': {
-            template: '<p>This is the midwife content for pregnancy id: {{pregId}}.</p>',
+            templateUrl: '/angular/views/prenatalMidwifeInterview.RES.html',
             controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
                 commonController(midwifeState)]
           }
