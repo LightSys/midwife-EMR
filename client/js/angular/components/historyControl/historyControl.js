@@ -234,7 +234,7 @@
           // Clean up.
           // --------------------------------------------------------
           $scope.$on('$destroy', function() {
-            var handles = [getHistoryHandle, prevHandle, nextHandle];
+            var handles = [prevHandle, nextHandle];
             handles.forEach(function(h) {
               angular.element(window).off('click', h);
             });
