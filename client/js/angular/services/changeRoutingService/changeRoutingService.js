@@ -18,6 +18,9 @@
       // needs to be refactored.
       // --------------------------------------------------------
       var fieldStateMap = {
+        'pregnote': {
+          'DEFAULT': 'pregnancy.labs'
+        },
         'customField': {
           'DEFAULT': 'pregnancy.general'
         },
