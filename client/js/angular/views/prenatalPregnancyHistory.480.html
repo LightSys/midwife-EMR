@@ -1,0 +1,93 @@
+<div ng-repeat='ph in ctrl.pregnancyHistory|showDetail:detId'>
+  <div class='row'>
+    <div class='form-group col-xs-3'>
+      <span>Month</span>
+      <input id='month' class='form-control' type='number' disabled name='month' value='{{ph.month}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Day</span>
+      <input id='day' class='form-control' type='number' disabled name='day' value='{{ph.day}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Year</span>
+      <input id='year' class='form-control' type='number' disabled name='year' value='{{ph.year}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <div class='checkbox'>
+        <span>
+          <input type='checkbox' disabled name='FT' tabindex="102" value=1 checked='{{ph.FT==true}}'>
+          Full Term?
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class='row'>
+    <div class='form-group col-xs-3'>
+      <span>GA</span>
+      <input id='finalGA' class='form-control' type='number' disabled name='finalGA' value='{{ph.finalGA && ph.finalGA !== 0? ph.finalGA:""}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Wks/Mths</span>
+      <input id='finalGAPeriod' class='form-control' type='text' disabled name='finalGAPeriod' value='{{ph.finalGAPeriod && ph.finalGAPeriod !== ""?ph.finalGAPeriod:""}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Sex of baby</span>
+      <input id='sexOfBaby' class='form-control' type='text' disabled name='sexOfBaby' value='{{ph.sexOfBaby}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Birth place</span>
+      <input id='placeOfBirth' class='form-control' type='text' disabled name='placeOfBirth' value='{{ph.placeOfBirth}}'>
+    </div>
+  </div>
+  <div class='row'>
+    <div class='form-group col-xs-3'>
+      <span>Attendant</span>
+      <input id='attendant' class='form-control' type='text' disabled name='attendant' value='{{ph.attendant}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Del type</span>
+      <input id='typeOfDelivery' class='form-control' type='text' disabled name='typeOfDelivery' value='{{ph.typeOfDelivery}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Labor (hrs)</span>
+      <input id='lengthOfLabor' class='form-control' type='number' disabled name='lengthOfLabor' value='{{ph.lengthOfLabor}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>B Wgt (kg)</span>
+      <input id='birthWeight' class='form-control' type="tel" disabled name='birthWeight' value='{{ph.birthWeight}}'>
+    </div>
+  </div>
+
+  <div class='row'>
+    <div class='form-group col-xs-3'>
+      <span>Epis Tear?</span>
+      <input id='episTear' class='form-control' type="tel" disabled name='episTear' value='{{ph.episTear}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Repaired?</span>
+      <input id='repaired' class='form-control' type="tel" disabled name='repaired' value='{{ph.repaired}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>BFed</span>
+      <input id='howLongBFed' class='form-control' type='number' disabled name='howLongBFed' value='{{ph.howLongBFed}}'>
+    </div>
+    <div class='form-group col-xs-3'>
+      <span>Wk/Mtn/Yr</span>
+      <input id='howLongBFedPeriod' class='form-control' type='text' disabled name='howLongBFedPeriod' value='{{ph.howLongBFedPeriod}}'>
+    </div>
+  </div>
+
+  <div class='row'>
+    <div class='form-group col-xs-6'>
+      <span>Comment</span>
+      <textarea id='note' class='form-control' rows='3' type='text' disabled name='note'>{{ph.note}}</textarea>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='form-group col-xs-3'>
+    <a ui-sref='pregnancy.midwife' class='btn btn-default' role='button'>Back to the Midwife Interview Page</a>
+  </div>
+</div>
+

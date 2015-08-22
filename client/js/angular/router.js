@@ -52,6 +52,7 @@
       var labsState              = 'pregnancy.labs';
       var questionnaireState     = 'pregnancy.questionnaire';
       var midwifeState           = 'pregnancy.midwife';
+      var pregHistoryState       = 'pregnancy.pregnancyHistory';
       var generalState           = 'pregnancy.general';
 
       $urlRouterProvider.otherwise('/');
@@ -251,6 +252,41 @@
         }]
       };
 
+      var fsPregnancyHistory = {
+        type: 'templateService',
+        stateName: 'pregnancy.pregnancyHistory',
+        parent: 'pregnancy',
+        url: '/preghistory/:phid',
+        resolve: {
+          phId: ['$stateParams', function($stateParams) {
+            return $stateParams.phid;
+          }]
+        },
+        views: {
+          'tabs@': {
+            template: '<span></span>'    // We don't want tabs to show.
+          },
+          'title@': {
+            template: '<h2>{{title}}</h2>',
+            controller: function($scope) {
+              $scope.title = 'Hist Pregnancy';
+            }
+          },
+          'content@': {
+            templateUrl: '/angular/views/prenatalPregnancyHistory.RES.html',
+            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId', 'phId',
+                commonController(pregHistoryState)],
+          }
+        },
+        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
+          // --------------------------------------------------------
+          // Clean up the registrations for this state.
+          // --------------------------------------------------------
+          console.log('Publishing: ' + getExitState(pregHistoryState));
+          pubSub.publish(retireExitState(pregHistoryState));
+        }]
+      };
+
       var fsPregnancyGeneral = {
         type: 'templateService',
         stateName: 'pregnancy.general',
@@ -283,7 +319,7 @@
       // --------------------------------------------------------
       var allStates = [fsPregnancy, fsPregnancyPrenatal, fsPregnancyPrenatalExam,
           fsPregnancyLabs, fsPregnancyQuestionnaire, fsPregnancyMidwife,
-          fsPregnancyGeneral];
+          fsPregnancyHistory, fsPregnancyGeneral];
       _.each(allStates, function(state) {
         $futureStateProvider.futureState(state);
       });
