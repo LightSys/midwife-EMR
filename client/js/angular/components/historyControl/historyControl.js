@@ -107,6 +107,8 @@
           var currViewport = templateService.getViewportSize();
           var hsUnregisterHdl = "" + (Math.random() * 99999999);
           var pregId;
+          var prevHandle;
+          var nextHandle;
 
           /* --------------------------------------------------------
            * attachEvents()
@@ -129,12 +131,12 @@
             var firstHandle = firstLink.on('click', function(evt) {
               navigate($scope, 1, historyService.first);
             });
-            var prevHandle = prevLink.on('click', function(evt) {
+            prevHandle = prevLink.on('click', function(evt) {
               if ($scope.ctrl.currentRecord !== 1) {
                 navigate($scope, $scope.ctrl.currentRecord - 1, historyService.prev);
               }
             });
-            var nextHandle = nextLink.on('click', function(evt) {
+            nextHandle = nextLink.on('click', function(evt) {
               if ($scope.ctrl.currentRecord !== $scope.ctrl.numberRecords) {
                 navigate($scope, $scope.ctrl.currentRecord + 1, historyService.next);
               }
