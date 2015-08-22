@@ -88,7 +88,7 @@
           'pregnancyEndDate': 'pregnancy.prenatal',
           'pregnancyEndResult': 'pregnancy.prenatal',
           'iugr': 'pregnancy.prenatal',                 // ???
-          'note': 'pregnancy.prenatal',
+          'note': 'pregnancy.midwife',
           'numberRequiredTetanus': 'pregnancy.labs',
           'invertedNipples': 'pregnancy.midwife',
           'hasUS': 'pregnancy.midwife',
