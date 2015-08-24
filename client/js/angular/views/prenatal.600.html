@@ -4,7 +4,7 @@
     <p class='text-primary lead'>Phil Health</p>
 
     <div class='row'>
-      <div class='col-xs-6 box'>
+      <div class='col-xs-12 box'>
         <div class='checkbox'>
           <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthMCP")}'>
             <input type='checkbox' name='philHealthMCP' tabindex="1" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthMCP'>
@@ -12,16 +12,9 @@
           </label>
         </div>
       </div>
-      <div class='col-xs-6 box'>
-        <div>
-          <span ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthID")}'>PHIC #</span>
-          <input class='form-control' type='text' size=12 tabindex="3" autocomplete="off" name='philHealthID' disabled='true' value={{ctrl.pregnancy.philHealthID}}>
-        </div>
-      </div>
     </div>
-
     <div class='row'>
-      <div class='col-xs-6 box'>
+      <div class='col-xs-12 box'>
         <div class='checkbox'>
           <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthNCP")}'>
             <input type='checkbox' name='philHealthNCP' tabindex="2" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthNCP'>
@@ -29,12 +22,22 @@
           </label>
         </div>
       </div>
-      <div class='col-xs-6 box'>
+    </div>
+    <div class='row'>
+      <div class='col-xs-12 box'>
         <div class='checkbox'>
           <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthApproved")}'>
             <input type='checkbox' name='philHealthApproved' tabindex="4" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthApproved'>
             Approved
           </label>
+        </div>
+      </div>
+    </div>
+    <div class='row'>
+      <div class='col-xs-12 box'>
+        <div>
+          <span ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthID")}'>PHIC #</span>
+          <input class='form-control' type='text' size=12 tabindex="3" autocomplete="off" name='philHealthID' disabled='true' value={{ctrl.pregnancy.philHealthID}}>
         </div>
       </div>
     </div>
