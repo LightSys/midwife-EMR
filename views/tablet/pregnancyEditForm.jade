@@ -3,9 +3,6 @@ extends layouts/default_layout
 block pregnancyEdit
   div.row
     +titleMsg(title)
-    div(class='col-xs-2 col-xs-offset-10')
-      if roleInfo.hasRole('supervisor')
-        a(class='pull-right btn btn-default', href='history')= gettext('View history of changes')
   div.row
     div(class='col-xs-12')
       +pregnancyTab('edit')

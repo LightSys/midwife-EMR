@@ -6,10 +6,6 @@ block pregnancyEdit
   - var deletePregnancyPath = '/pregnancy/' + rec.id + '/delete';
 
   div.row
-    div(class='col-md-2 col-md-offset-10')
-      if roleInfo.hasRole('supervisor')
-        a(class='pull-right btn btn-default', href='history')= gettext('View history of changes')
-  div.row
     div(class='col-md-12')
       +pregnancyTab('edit')
 

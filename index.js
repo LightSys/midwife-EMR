@@ -419,8 +419,6 @@ app.get(cfg.path.pregnancyEditForm, common, hasSuper,
     inRoles(['clerk','attending','supervisor']), pregnancy.generalEditForm);
 app.post(cfg.path.pregnancyUpdate, common, hasSuper,
     inRoles(['clerk','attending','supervisor']), pregnancy.generalEditSave);
-app.get(cfg.path.pregnancyHistory, common,
-    inRoles(['supervisor']), pregnancy.history);
 app.post(cfg.path.pregnancyDelete, common, hasSuper,
     inRoles(['supervisor']), pregnancy.pregnancyDelete);
 

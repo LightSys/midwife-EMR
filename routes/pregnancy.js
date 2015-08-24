@@ -504,45 +504,6 @@ var load = function(req, res, next) {
 };
 
 /* --------------------------------------------------------
- * history()
- *
- * Render the history page for the pregnancy.
- * -------------------------------------------------------- */
-var history = function(req, res) {
-  var data = {
-        title: req.gettext('Pregnancy History')
-        , user: req.session.user
-        , messages: req.flash()
-        , rec: req.paramPregnancy
-      }
-    ;
-  if (req.paramPregnancy) {
-    User.getUserIdMap()
-      .then(function(users) {
-        Pregnancy.forge({id: req.paramPregnancy.id})
-          .historyData(req.paramPregnancy.id)
-          .then(function(list) {
-            var options = {};
-            options.sid = req.sessionID;
-            options.user_id = req.session.user.id;
-            options.pregnancy_id = req.paramPregnancy.id;
-            Event.historyEvent(options).then(function() {
-              data.history = list;
-              data.users = users;
-              res.render('history', data);
-            });
-          });
-      })
-      .caught(function(err) {
-        logError(err);
-      });
-  } else {
-    // Pregnancy not found.
-    res.redirect(cfg.path.search);
-  }
-};
-
-/* --------------------------------------------------------
  * getCommonFormData()
  *
  * Return the data necessary to populate several of the forms
@@ -2264,7 +2225,6 @@ module.exports = {
   , labsForm: labsForm
   , doctorDentistSave: doctorDentistSave
   , load: load
-  , history: history
   , getCommonFormData: getCommonFormData
 };
 
