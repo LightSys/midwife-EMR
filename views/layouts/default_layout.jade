@@ -81,8 +81,9 @@ html(lang="en")
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
             - var appRev = applicationRevision? gettext('version') + ': ' + applicationRevision: '';
-            li
-              a(href='/spa/history' + currUrl)= gettext('View History')
+            if rec && rec.id && roleInfo && roleInfo.isAuthenticated && roleInfo.hasRole('supervisor')
+              li
+                a(href='/spa/history' + currUrl)= gettext('View History')
             li
               span= appRev
             if roleInfo && roleInfo.hasRole('attending')
