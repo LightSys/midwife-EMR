@@ -18,6 +18,9 @@
       // needs to be refactored.
       // --------------------------------------------------------
       var fieldStateMap = {
+        'pregnancyHistory': {
+          'DEFAULT': 'pregnancy.pregnancyHistory'
+        },
         'pregnote': {
           'DEFAULT': 'pregnancy.labs'
         },
@@ -82,7 +85,7 @@
           'doctorConsultDate': 'pregnancy.labs',
           'dentistConsultDate': 'pregnancy.labs',
           'mbBook': 'pregnancy.general',
-          'whereDeliver': 'pregnancy.midwife',
+          'whereDeliver': 'pregnancy.questionnaire',
           'fetuses': 'pregnancy.midwife',               // ???
           'monozygotic': 'pregnancy.midwife',           // ???
           'pregnancyEndDate': 'pregnancy.prenatal',
@@ -160,7 +163,8 @@
         'pregnancy.questionnaire': 'pregnancy',
         'pregnancy.midwife': 'pregnancy',
         'pregnancy.general': 'pregnancy',
-        'pregnancy.prenatalExam': 'prenatalExam'
+        'pregnancy.prenatalExam': 'prenatalExam',
+        'pregnancy.pregnancyHistory': 'pregnancyHistory'
       };
 
       /* --------------------------------------------------------

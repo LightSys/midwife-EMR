@@ -525,6 +525,12 @@
                 if ($scope && $scope.$root) $scope.$root.detId = $scope.detId;
               }
               break;
+            case 'pregnancy.pregnancyHistory':
+              if (_.size($scope.ctrl.changed.pregnancyHistory) > 0) {
+                $scope.detId = _.keys($scope.ctrl.changed.pregnancyHistory)[0];
+                if ($scope && $scope.$root) $scope.$root.detId = $scope.detId;
+              }
+              break;
             default:
               $scope.detId = void 0;
               if ($scope && $scope.$root) $scope.$root.detId = void 0;
