@@ -200,7 +200,7 @@ var getAllData = function(req, res) {
     changeLog = generateChangeLog(results, changeLogSources);
     data.push(changeLog);
 
-    logInfo('Data query response time: ' + (Date.now() - start) + ' ms.');
+    //logInfo('Data query response time: ' + (Date.now() - start) + ' ms.');
     res.end(JSON.stringify(data));
   });
 };
