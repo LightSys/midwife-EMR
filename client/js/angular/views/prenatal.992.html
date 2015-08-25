@@ -6,7 +6,6 @@
     <div class='row'>
       <div class='col-md-12 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthMCP")}'>
             <input type='checkbox' name='philHealthMCP' tabindex="1" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthMCP'>
             PH MCP
           </label>
@@ -16,7 +15,6 @@
     <div class='row'>
       <div class='col-md-12 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthNCP")}'>
             <input type='checkbox' name='philHealthNCP' tabindex="2" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthNCP'>
             PH NCP
           </label>
@@ -24,7 +22,6 @@
       </div>
       <div class='col-md-12 box'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthApproved")}'>
             <input type='checkbox' name='philHealthApproved' tabindex="4" disabled='true' value=1 ng-checked='ctrl.pregnancy.philHealthApproved'>
             PH Appr
           </label>
@@ -34,7 +31,6 @@
     <div class='row'>
       <div class='col-md-12 box'>
         <div>
-          <span ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "philHealthID")}'>PHIC #</span>
           <input class='form-control' type='text' size=12 tabindex="3" autocomplete="off" name='philHealthID' disabled='true' value={{ctrl.pregnancy.philHealthID}}>
         </div>
       </div>
@@ -47,7 +43,6 @@
     <div class='row'>
       <div class='col-md-4 '>
         <div>
-          <span ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "lmp")}'>LMP</span>
           <input class='form-control' tabindex='5' name='lmp' disabled='true' value={{ctrl.pregnancy.lmp|onlyValidDate|date:'MM-dd-yyyy'}}>
         </div>
       </div>
@@ -59,7 +54,6 @@
       </div>
       <div class='col-md-4 '>
         <div>
-          <span ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "alternateEdd")}'>Alternate EDD</span>
           <input class='form-control' tabindex='8' name='alternateEdd' disabled='true' value={{ctrl.pregnancy.alternateEdd|onlyValidDate|date:'MM-dd-yyyy'}}>
         </div>
       </div>
@@ -68,7 +62,6 @@
     <div class='row'>
       <div class='col-md-6 '>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "sureLMP")}'>
             <input type='checkbox' name='sureLMP' tabindex="6" disabled='true' value=1 ng-checked='ctrl.pregnancy.sureLMP'>
             Sure of LMP
           </label>
@@ -76,7 +69,6 @@
       </div>
       <div class='col-md-4 col-md-offset-2'>
         <div class='checkbox'>
-          <label ng-class='{"has-changed": func.hasChanged(ctrl, "pregnancy", pregId, "useAlternateEdd")}'>
             <input type='checkbox' name='useAlternateEdd' tabindex="9" disabled='true' value=1 ng-checked='ctrl.pregnancy.useAlternateEdd'>
             Use Alt EDD
           </label>

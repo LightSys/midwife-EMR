@@ -220,8 +220,6 @@
 
         // --------------------------------------------------------
         // Raw tables with full history.
-        //
-        // TODO: remove this if the client views do not need it.
         // --------------------------------------------------------
         rec.sources = data[0];
 
