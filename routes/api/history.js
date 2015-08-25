@@ -434,6 +434,7 @@ var get = function(req, res) {
           logError('Unsupported API call: ' + req.path);
           res.redirect(cfg.path.search);
       }
+      break;
     default:
       logError('op2 unknown: ' + req.parameters.op2);
       res.redirect(cfg.path.search);

@@ -37,7 +37,6 @@ var should = require('should')
 
 describe('api', function(done) {
   var pregId = 422;
-  var prenatalUrl = '/api/history/pregnancy/' + pregId + '/prenatal';
   var pregnancyUrl = '/api/history/pregnancy/' + pregId;
 
   describe('history', function(done) {
@@ -52,35 +51,35 @@ describe('api', function(done) {
 
     describe('access', function(done) {
       it('admin should not', function(done) {
-        var req = request.get(prenatalUrl)
+        var req = request.get(pregnancyUrl)
           ;
         admin.attachCookies(req);
         req
           .expect(403, done);
       });
       it('clerk should not', function(done) {
-        var req = request.get(prenatalUrl)
+        var req = request.get(pregnancyUrl)
           ;
         clerk.attachCookies(req);
         req
           .expect(403, done);
       });
       it('guard should not', function(done) {
-        var req = request.get(prenatalUrl)
+        var req = request.get(pregnancyUrl)
           ;
         guard.attachCookies(req);
         req
           .expect(403, done);
       });
       it('attending should not', function(done) {
-        var req = request.get(prenatalUrl)
+        var req = request.get(pregnancyUrl)
           ;
         attendingWithSuper.attachCookies(req);
         req
           .expect(403, done);
       });
       it('supervisor should', function(done) {
-        var req = request.get(prenatalUrl)
+        var req = request.get(pregnancyUrl)
           ;
         supervisor.attachCookies(req);
         req
@@ -105,44 +104,15 @@ describe('api', function(done) {
               return done(e);
             }
             json.should.be.an.Array;
-            json[0].should.have.a.property('pregnancyLog');
-            json[0].should.have.a.property('patientLog');
-            json[0].should.have.a.property('replacedAt');
-            json[0].pregnancyLog.should.be.an.Object;
-            json[0].patientLog.should.be.an.Object;
+            json[0].should.have.a.property('pregnancy');
+            json[0].should.have.a.property('patient');
+            json[0].pregnancy.should.be.an.Object;
+            json[0].patient.should.be.an.Object;
             done();
           });
       });
     }); // end pregnancy
 
-    describe('prenatal', function(done) {
-      it('JSON', function(done) {
-        var req = request.get(prenatalUrl)
-          ;
-        supervisor.attachCookies(req);
-        req
-          .expect(200)
-          .end(function(err, res) {
-            var json;
-            if (err) return done(err);
-            if (! res || ! res.text) return done('No Response');
-            try {
-              json = JSON.parse(res.text);
-            } catch (e) {
-              return done(e);
-            }
-            json.should.be.an.Array;
-            json[0].should.have.a.property('pregnancyLog');
-            json[0].should.have.a.property('patientLog');
-            json[0].should.have.a.property('riskLog');
-            json[0].should.have.a.property('replacedAt');
-            json[0].pregnancyLog.should.be.an.Object;
-            json[0].patientLog.should.be.an.Object;
-            json[0].riskLog.should.be.an.Object;
-            done();
-          });
-      });
-    }); // end prenatal
   });   // end history
 });     // end api
 

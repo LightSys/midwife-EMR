@@ -224,49 +224,6 @@ describe('Pregnancy', function(done) {
 
   });
 
-  describe('can display the history page', function(done) {
-    it('admin should not', function(done) {
-      var req = request.get('/pregnancy/1/history')
-        ;
-      admin.attachCookies(req);
-      req
-        .expect(403, done);
-    });
-
-    it('guard should not', function(done) {
-      var req = request.get('/pregnancy/1/history')
-        ;
-      guard.attachCookies(req);
-      req
-        .expect(403, done);
-    });
-
-    it('attending should not', function(done) {
-      var req = request.get('/pregnancy/1/history')
-        ;
-      attendingWithSuper.attachCookies(req);
-      req
-        .expect(403, done);
-    });
-
-    it('clerk should not', function(done) {
-      var req = request.get('/pregnancy/1/history')
-        ;
-      clerk.attachCookies(req);
-      req
-        .expect(403, done);
-    });
-
-    it('supervisor should', function(done) {
-      var req = request.get('/pregnancy/1/history')
-        ;
-      supervisor.attachCookies(req);
-      req
-        .expect(200, done);
-    });
-
-  });
-
   describe('can display the prenatal page', function(done) {
     var pregId
       ;
