@@ -99,7 +99,8 @@
         $http.get(path, {responseType: 'json'})
           .success(function(data, sts, headers, config) {
             numRecs = data[2].length;
-            currRecNum = numRecs - 1;   // zero-based
+            //currRecNum = numRecs - 1;   // zero-based, set to last record
+            currRecNum = 0;             // zero-based, set to first record
             pregnancyCache.put(PREGNANCY_CACHE_KEY, data);
             log.log('Loaded ' + numRecs + ' records.');
             log.dir(data);
