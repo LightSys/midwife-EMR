@@ -511,6 +511,12 @@
         $scope.func = commonFuncs;
 
         // --------------------------------------------------------
+        // If DEBUG is on, write out the data we are dealt by the
+        // historyService to the console.
+        // --------------------------------------------------------
+        log.dir(data);
+
+        // --------------------------------------------------------
         // Make the UI-Router state available in $scope. The
         // historyControl component, for one, uses this in conjunction
         // with the historyService for record navigation. But since
