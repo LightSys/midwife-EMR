@@ -173,17 +173,23 @@
       var getChangedBy = function(data, recNum) {
         var changedBy = {updatedBy: void 0, supervisor: void 0};
         var tables = _.omit(data[2][recNum], ['replacedAt', 'indexes']);
-        var tbl;
-        var recId;
-        var chgIdx;
         if (tables && _.size(tables) > 0) {
-          tbl = _.keys(tables)[0];    // Take the first table.
-          recId = parseInt(_.keys(tables[tbl])[0], 10);
-          if (_.isNumber(recId)) {
-            chgIdx = data[2][recNum].indexes[tbl][recId];
-            changedBy.updatedBy = data[0][tbl][chgIdx].updatedBy;
-            changedBy.supervisor = data[0][tbl][chgIdx].supervisor;
-          }
+          // --------------------------------------------------------
+          // Loop through the tables for updatedBy and optionally
+          // supervisor fields. At least one table, customField, does
+          // not contain these fields so we need to loop to insure that
+          // we get a real value.
+          // --------------------------------------------------------
+          _.each(_.keys(tables), function(tbl) {
+            if (changedBy.updatedBy) return;  // Ignore any other tables if success.
+            var chgIdx;
+            var recId = parseInt(_.keys(tables[tbl])[0], 10);
+            if (_.isNumber(recId)) {
+              chgIdx = data[2][recNum].indexes[tbl][recId];
+              changedBy.updatedBy = data[0][tbl][chgIdx].updatedBy;
+              changedBy.supervisor = data[0][tbl][chgIdx].supervisor;
+            }
+          });
         }
         return changedBy;
       };
