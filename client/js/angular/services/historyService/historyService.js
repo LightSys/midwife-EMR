@@ -37,8 +37,8 @@
         '$http',
         '$cacheFactory',
         'minPubSubNg',
-        function($http, $cacheFactory, pubSub) {
-
+        'loggingService',
+        function($http, $cacheFactory, pubSub, log) {
 
       // List of sources (tables) that contain the historical changes.
       var historicalSources = ['pregnancy', 'patient', 'prenatalExam',
@@ -62,7 +62,6 @@
       var pregnancyId;
       var numRecs;
       var currRecNum;   // Based on 3rd array in input data.
-
 
       /* --------------------------------------------------------
        * load()
@@ -102,12 +101,12 @@
             numRecs = data[2].length;
             currRecNum = numRecs - 1;   // zero-based
             pregnancyCache.put(PREGNANCY_CACHE_KEY, data);
-            console.log('Loaded ' + numRecs + ' records.');
-            console.dir(data);
+            log.log('Loaded ' + numRecs + ' records.');
+            log.dir(data);
             notifyCallbacks();
           })
           .error(function(data, sts, headers, config) {
-            console.log('Error: ' + sts);
+            log.error('Error: ' + sts);
           });
       };
 
@@ -284,7 +283,7 @@
         };
         if (func && _.isFunction(func)) {
           registeredCallbacks.push(funcObj);
-          console.log('Register historyService: ' + funcObj.id);
+          log.log('Register historyService: ' + funcObj.id);
           return funcObj.id;
         }
         return void 0;
@@ -327,7 +326,7 @@
        * return      boolean for success
        * -------------------------------------------------------- */
       var unregister = function(id) {
-        console.log('Unregister historyService: ' + id);
+        log.log('Unregister historyService: ' + id);
         var len = registeredCallbacks.length;
         // Better way to do this?
         registeredCallbacks = _.reject(registeredCallbacks, function(c) {
@@ -368,11 +367,11 @@
 
         // Sanity checks.
         if (! source || ! dir) {
-          console.log('findBySource() warning: source and/or dir is not defined.');
+          log.log('findBySource() warning: source and/or dir is not defined.');
           return currRecNum;
         }
         if (! dir || ! _.contains(['f','l','p','n'], dir)) {
-          console.log('findBySource() error: dir is inappropriately defined.');
+          log.error('findBySource() error: dir is inappropriately defined.');
           return currRecNum;
         }
 

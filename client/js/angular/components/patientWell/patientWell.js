@@ -4,7 +4,7 @@
 
   angular.module('patientWellModule', [])
     .directive('patientWell', ['$compile', 'historyService', 'templateService',
-        function($compile, historyService, templateService) {
+        'loggingService', function($compile, historyService, templateService, log) {
       return {
         restrict: 'A',
         replace: false,
@@ -64,9 +64,9 @@
           $scope.$on('$destroy', function() {
             // The History Service callback.
             if (historyService.unregister(hsCallback)) {
-              console.log('Successfully unregistered history service callback.');
+              log.log('Successfully unregistered history service callback.');
             } else {
-              console.log('Did not successfully unregister history service callback.');
+              log.log('Did not successfully unregister history service callback.');
             }
           });
 

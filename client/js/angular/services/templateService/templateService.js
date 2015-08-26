@@ -32,11 +32,8 @@
   angular.module('templateServiceModule', [])
 
     .factory('templateService', ['$http', '$templateCache', '$cacheFactory',
-             '$q', 'moment', 'minPubSubNg',
-          function($http, $templateCache, $cacheFactory, $q, moment, pubSub) {
-
-        // Debugging.
-        var DEBUG = true;
+             '$q', 'moment', 'minPubSubNg', 'loggingService',
+          function($http, $templateCache, $cacheFactory, $q, moment, pubSub, log) {
 
         // Initialize the viewport size.
         var viewPort = getViewportSize(window);
@@ -51,22 +48,6 @@
 
         // List of generic templateUrls.
         var genericTemplateUrls = [];
-
-        /* --------------------------------------------------------
-         * log()
-         *
-         * Simple logging to the console if DEBUG is true.
-         *
-         * param      msg
-         * return     undefined
-         * -------------------------------------------------------- */
-        var log = function(msg) {
-          var time;
-          if (DEBUG) {
-            time = moment().format('HH:mm:ss.SSS: ');
-            console.log(time + msg);
-          }
-        };
 
         /* --------------------------------------------------------
          * getTemplateSize()
@@ -109,7 +90,7 @@
           var origTmplSize = currentTemplateSize;
           viewPort = getViewportSize(window);
           setTemplateSize();
-          log('templateService.onResize(), Width: ' + viewPort.w + ', Height: ' + viewPort.h);
+          log.log('templateService.onResize(), Width: ' + viewPort.w + ', Height: ' + viewPort.h);
 
           // --------------------------------------------------------
           // Refresh the $templateCache with template urls for the
@@ -177,7 +158,7 @@
           };
           if (func && _.isFunction(func)) {
             registeredCallbacks.push(funcObj);
-            log('Register templateService: ' + funcObj.id);
+            log.log('Register templateService: ' + funcObj.id);
             return funcObj.id;
           }
           return void 0;
@@ -194,7 +175,7 @@
         * return      boolean for success
         * -------------------------------------------------------- */
         var doUnregister = function(id) {
-          log('Unregister templateService: ' + id);
+          log.log('Unregister templateService: ' + id);
           var len = registeredCallbacks.length;
           // Better way to do this?
           registeredCallbacks = _.reject(registeredCallbacks, function(c) {
@@ -289,15 +270,15 @@
           return $q(function(resolve, reject) {
             var templateContents = $templateCache.get(template);
             if (! templateContents) {
-              log('WARNING: ' + templateName + ' was not properly loaded by ui-router-extras.');
+              log.log('WARNING: ' + templateName + ' was not properly loaded by ui-router-extras.');
               $http.get(template)
                 .success(function(data) {
-                  log('WARNING: ' + templateName + ' was loaded from the server.');
+                  log.log('WARNING: ' + templateName + ' was loaded from the server.');
                   $templateCache.put(template, data);
                   resolve(data);
                 })
                 .error(function(data, status, headers, config) {
-                  log('ERROR: ' + templateName + ' was unabled to be loaded from the server.');
+                  log.error('ERROR: ' + templateName + ' was unabled to be loaded from the server.');
                 });
             } else {
               resolve(templateContents);
@@ -338,7 +319,7 @@
           var tmplCache = $cacheFactory.get('templates');
           var newTmpl = getTemplateUrl(template);
           tmplCache.put(template, tmplCache.get(newTmpl));
-          log('loadTemplateToCache() Size: ' + currentTemplateSize + ', Template: ' + template + ', New: ' + newTmpl);
+          log.log('loadTemplateToCache() Size: ' + currentTemplateSize + ', Template: ' + template + ', New: ' + newTmpl);
         };
 
 

@@ -5,7 +5,8 @@
   angular.module('changeRoutingServiceModule', [])
     .factory('changeRoutingService', [
       '$cacheFactory',
-      function($cacheFactory) {
+      'loggingService',
+      function($cacheFactory, log) {
 
       // --------------------------------------------------------
       // Mapping between changed fields in a certain table and
@@ -213,8 +214,8 @@
         // No match! Log the same and return the default state.
         // --------------------------------------------------------
         if (! state) {
-          console.log('Warning: no state found for following changelog.');
-          console.dir(changes);
+          log.log('Warning: no state found for following changelog.');
+          log.dir(changes);
         }
         return state || defaultState;
       };

@@ -10,8 +10,9 @@
         'changeRoutingService',
         'templateService',
         'minPubSubNg',
+        'loggingService',
         function($state, $compile, historyService, changeRoutingService,
-          templateService, pubSub) {
+          templateService, pubSub, log) {
 
       /* --------------------------------------------------------
        * navigate()
@@ -44,7 +45,7 @@
 
         // Sanity check.
         if (recNum < 1 || recNum > $scope.ctrl.numberRecords) {
-          console.log('Invalid record number: ' + recNum + '. Aborting navigation.');
+          log.error('Invalid record number: ' + recNum + '. Aborting navigation.');
           return;
         }
 

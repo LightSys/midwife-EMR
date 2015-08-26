@@ -123,16 +123,18 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatal.RES.html',
-            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService',
+                'loggingService', 'pregId',
                 commonController(prenatalState)],
           }
         },
-        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-          // --------------------------------------------------------
-          // Clean up the registrations for this state.
-          // --------------------------------------------------------
-          console.log('Publishing: ' + getExitState(prenatalState));
-          pubSub.publish(retireExitState(prenatalState));
+        onExit: ['historyService', 'minPubSubNg', 'loggingService',
+          function(historyService, pubSub, log) {
+            // --------------------------------------------------------
+            // Clean up the registrations for this state.
+            // --------------------------------------------------------
+            log.log('Publishing: ' + getExitState(prenatalState));
+            pubSub.publish(retireExitState(prenatalState));
         }]
       };
 
@@ -158,16 +160,18 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatalExam.RES.html',
-            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId', 'peId',
+            controller: ['$scope', '$state', 'historyService', 'templateService',
+                'loggingService', 'pregId', 'peId',
                 commonController(prenatalExamState)],
           }
         },
-        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-          // --------------------------------------------------------
-          // Clean up the registrations for this state.
-          // --------------------------------------------------------
-          console.log('Publishing: ' + getExitState(prenatalExamState));
-          pubSub.publish(retireExitState(prenatalExamState));
+        onExit: ['historyService', 'minPubSubNg', 'loggingService',
+          function(historyService, pubSub, log) {
+            // --------------------------------------------------------
+            // Clean up the registrations for this state.
+            // --------------------------------------------------------
+            log.log('Publishing: ' + getExitState(prenatalExamState));
+            pubSub.publish(retireExitState(prenatalExamState));
         }]
       };
 
@@ -185,16 +189,18 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatalLabs.RES.html',
-            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService',
+                'loggingService', 'pregId',
                 commonController(labsState)],
           }
         },
-        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-          // --------------------------------------------------------
-          // Clean up the registrations for this state.
-          // --------------------------------------------------------
-          console.log('Publishing: ' + getExitState(labsState));
-          pubSub.publish(retireExitState(labsState));
+        onExit: ['historyService', 'minPubSubNg', 'loggingService',
+          function(historyService, pubSub, log) {
+            // --------------------------------------------------------
+            // Clean up the registrations for this state.
+            // --------------------------------------------------------
+            log.log('Publishing: ' + getExitState(labsState));
+            pubSub.publish(retireExitState(labsState));
         }]
       };
 
@@ -212,16 +218,18 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatalQuestionnaire.RES.html',
-            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService',
+                'loggingService', 'pregId',
                 commonController(questionnaireState)]
           }
         },
-        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-          // --------------------------------------------------------
-          // Clean up the registrations for this state.
-          // --------------------------------------------------------
-          console.log('Publishing: ' + getExitState(questionnaireState));
-          pubSub.publish(retireExitState(questionnaireState));
+        onExit: ['historyService', 'minPubSubNg', 'loggingService',
+          function(historyService, pubSub, log) {
+            // --------------------------------------------------------
+            // Clean up the registrations for this state.
+            // --------------------------------------------------------
+            log.log('Publishing: ' + getExitState(questionnaireState));
+            pubSub.publish(retireExitState(questionnaireState));
         }]
       };
 
@@ -239,16 +247,18 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatalMidwifeInterview.RES.html',
-            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService',
+                'loggingService', 'pregId',
                 commonController(midwifeState)]
           }
         },
-        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-          // --------------------------------------------------------
-          // Clean up the registrations for this state.
-          // --------------------------------------------------------
-          console.log('Publishing: ' + getExitState(midwifeState));
-          pubSub.publish(retireExitState(midwifeState));
+        onExit: ['historyService', 'minPubSubNg', 'loggingService',
+          function(historyService, pubSub, log) {
+            // --------------------------------------------------------
+            // Clean up the registrations for this state.
+            // --------------------------------------------------------
+            log.log('Publishing: ' + getExitState(midwifeState));
+            pubSub.publish(retireExitState(midwifeState));
         }]
       };
 
@@ -274,16 +284,18 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatalPregnancyHistory.RES.html',
-            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId', 'phId',
+            controller: ['$scope', '$state', 'historyService', 'templateService',
+                'loggingService', 'pregId', 'phId',
                 commonController(pregHistoryState)],
           }
         },
-        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-          // --------------------------------------------------------
-          // Clean up the registrations for this state.
-          // --------------------------------------------------------
-          console.log('Publishing: ' + getExitState(pregHistoryState));
-          pubSub.publish(retireExitState(pregHistoryState));
+        onExit: ['historyService', 'minPubSubNg', 'loggingService',
+            function(historyService, pubSub, log) {
+              // --------------------------------------------------------
+              // Clean up the registrations for this state.
+              // --------------------------------------------------------
+              log.log('Publishing: ' + getExitState(pregHistoryState));
+              pubSub.publish(retireExitState(pregHistoryState));
         }]
       };
 
@@ -301,16 +313,18 @@
           },
           'content@': {
             templateUrl: '/angular/views/prenatalGeneral.RES.html',
-            controller: ['$scope', '$state', 'historyService', 'templateService', 'pregId',
+            controller: ['$scope', '$state', 'historyService', 'templateService',
+                'loggingService', 'pregId',
                 commonController(generalState)]
           }
         },
-        onExit: ['historyService', 'minPubSubNg', function(historyService, pubSub) {
-          // --------------------------------------------------------
-          // Clean up the registrations for this state.
-          // --------------------------------------------------------
-          console.log('Publishing: ' + getExitState(generalState));
-          pubSub.publish(retireExitState(generalState));
+        onExit: ['historyService', 'minPubSubNg', 'loggingService',
+            function(historyService, pubSub, log) {
+              // --------------------------------------------------------
+              // Clean up the registrations for this state.
+              // --------------------------------------------------------
+              log.log('Publishing: ' + getExitState(generalState));
+              pubSub.publish(retireExitState(generalState));
         }]
       };
 
@@ -390,7 +404,7 @@
   // --------------------------------------------------------
   var commonFuncs = {
     contains: _.contains,
-    log: function(msg) {console.log(msg);},
+    //log: function(msg) {console.log(msg);},
     gotoUrl: function(url) {
       // Testing
       console.log(url);
@@ -489,16 +503,12 @@
     * -------------------------------------------------------- */
   var commonController = function(stateHandle) {
     return function($scope, $state, historyService, templateService,
-        pregId, detId) {
+        log, pregId, detId) {
       var currViewport = templateService.getViewportSize();
       historyService.loadAsNeeded(pregId);
       historyService.registerPubSub(getExitState(stateHandle), function(data) {
         $scope.ctrl = data;
         $scope.func = commonFuncs;
-
-        // TESTING
-        console.log(stateHandle);
-        console.dir($scope.ctrl);
 
         // --------------------------------------------------------
         // Make the UI-Router state available in $scope. The

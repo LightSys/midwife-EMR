@@ -108,13 +108,17 @@
     'historyServiceModule',
     'changeRoutingServiceModule',
     'templateServiceModule',
+    'loggingServiceModule',
     'patientWellModule'
   ]);
 
+  // --------------------------------------------------------
+  // Application level constants.
+  // --------------------------------------------------------
+  angular.module('midwifeEmr')
+    .constant('DEBUG', true)
+    ;
 
-  // --------------------------------------------------------
-  // Debugging for UI Router.
-  // --------------------------------------------------------
   angular.module('midwifeEmr')
     .run(function($rootScope) {
 
@@ -123,8 +127,10 @@
       // --------------------------------------------------------
       console.log('Midwife-EMR running Angular v' + angular.version.full);
 
+      // --------------------------------------------------------
+      // Debugging for UI Router.
+      // --------------------------------------------------------
       $rootScope.$on("$stateChangeError", console.log.bind(console));
-
       $rootScope.$on('$stateChangeStart',
         function(event, toState, toParams, fromState, fromParams){
           //console.dir(event);
@@ -134,10 +140,6 @@
           //console.dir(fromParams);
           //event.preventDefault();
       });
-    });
-
-  angular.module('midwifeEmr')
-    .run(function() {
     });
 
   // --------------------------------------------------------
