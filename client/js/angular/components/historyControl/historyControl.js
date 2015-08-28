@@ -41,7 +41,7 @@
       var navigate = function($scope, recNum, navFunc) {
         var changed;
         var newState;
-        var source;
+        var sourceInfo;
 
         // Sanity check.
         if (recNum < 1 || recNum > $scope.ctrl.numberRecords) {
@@ -49,6 +49,12 @@
           return;
         }
 
+        // --------------------------------------------------------
+        // If follow is set, we make sure we navigate to the correct
+        // page instead of executing the change. The user will need
+        // to press the navigation button again after getting to the
+        // correct page.
+        // --------------------------------------------------------
         if ($scope.ctrl.follow) {
           changed = historyService.getChangedByNum(recNum);
           newState = changeRoutingService.getState(changed);
@@ -58,10 +64,15 @@
             updateMeta($scope, navFunc());
           }
         } else {
-          // Follow is not on, so move to next change that affects this page only.
-          // If $root.detId is not set, getSource() will search by source only.
-          source = changeRoutingService.getSource($scope.$root.hsState);
-          updateMeta($scope, navFunc(source, $scope.$root.detId));
+          // --------------------------------------------------------
+          // Follow is not on, so move to next change that affects this
+          // page only. sourceInfo returned by getSourceFieldInfo() has
+          // a map of acceptable tables/fields for this page, so the
+          // corresponding change is found based upon that information.
+          // If detId is set, that is passed.
+          // --------------------------------------------------------
+          sourceInfo = changeRoutingService.getSourceFieldInfo($scope.$root.hsState);
+          updateMeta($scope, navFunc(sourceInfo, $scope.$root.detId));
         }
       };
 

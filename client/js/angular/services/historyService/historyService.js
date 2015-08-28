@@ -61,7 +61,7 @@
       // Tracking meta information about the current pregnancy.
       var pregnancyId;
       var numRecs;
-      var currRecNum;   // Based on 3rd array in input data.
+      var currRecNum;   // Based on 3rd array in input data, zero based.
 
       /* --------------------------------------------------------
        * load()
@@ -345,44 +345,58 @@
         return false;
       };
 
-
       /* --------------------------------------------------------
-       * findBySource()
+       * findBySourceInfo()
        *
-       * Find the "next" record that has changed for the source
-       * specified in the direction specified, and pertaining to
-       * the detail id passed, if specified.
+       * Find the "next" record that has changed according to the
+       * criteria in the srcInfo object passed, in the direction
+       * specified, and pertaining to the detail id passed, if specified.
+       *
+       * Expects the srcInfo object to be from the
+       * changeRoutingService.getSourceFieldInfo() method. This allows the
+       * caller to request the next/previous/first/last change that only
+       * pertains to a specific page because the srcInfo object specifies
+       * the allowable table and field names that the matching change must
+       * possess.
        *
        * dir can be 'f' for first, 'l' for last, 'p' for previous
        * or 'n' for next.
        *
        * Returns the record number of the change found, or
-       * currRecNum if nothing was found.
+       * currRecNum if nothing was found, i.e. no record change.
        *
-       * param       source
+       * NOTE: depends upon the fieldStateMap internal to the
+       * changeRoutingService to be correctly populated.
+       *
+       * param       srcInfo
        * param       dir - one of 'f', 'l', 'p', or 'n'
        * param       detId
        * return      recordNum
        * -------------------------------------------------------- */
-      var findBySource = function(source, dir, detId) {
+      var findBySourceInfo = function(srcInfo, dir, detId) {
         var found = false;
         var newRecNum = currRecNum;
-        var data;
+        var data = pregnancyCache.get(PREGNANCY_CACHE_KEY);
         var i;
         var test;
         var op;
+        var tentativeRecNum;
+        var currRec;    // The change record we are processing at a certain time.
 
         // Sanity checks.
-        if (! source || ! dir) {
-          log.log('findBySource() warning: source and/or dir is not defined.');
+        if (! srcInfo || ! dir) {
+          log.error('findBySourceInfo() warning: srcInfo and/or dir is not defined.');
           return currRecNum;
         }
         if (! dir || ! _.contains(['f','l','p','n'], dir)) {
-          log.error('findBySource() error: dir is inappropriately defined.');
+          log.error('findBySourceInfo() error: dir is inappropriately defined.');
           return currRecNum;
         }
 
-        // Setup.
+        // --------------------------------------------------------
+        // Setup test() and op() to test for the end of the loop and move
+        // the record pointer in the proper direction, respectively.
+        // --------------------------------------------------------
         switch (dir) {
           case 'f':
           case 'n':
@@ -400,21 +414,80 @@
         if (dir === 'p') i = currRecNum - 1;
         if (dir === 'n') i = currRecNum + 1;
 
-        // Find matching record if possible.
-        data = pregnancyCache.get(PREGNANCY_CACHE_KEY);
+        // --------------------------------------------------------
+        // Loop through change records.
+        // --------------------------------------------------------
         for (i; test(i) && ! found; i=op(i)) {
-          if (_.has(data[2][i], source)) {
-            if (detId) {
-              if (_.has(data[2][i][source], detId)) {
-                found = true;
-                newRecNum = i;
-              }
-            } else {
-              found = true;
-              newRecNum = i;
-            }
+          currRec = data[2][i];
+
+          // --------------------------------------------------------
+          // Loop through the tables and acceptable fields that we are
+          // looking for as passed in srcInfo.
+          // --------------------------------------------------------
+          _.each(srcInfo, function(flds, tbl) {
+            var dId;
+            var detRec;
+
+            // --------------------------------------------------------
+            // Does this change contain this table?
+            // --------------------------------------------------------
+            if (_.has(currRec, tbl)) {
+              if (! found) {
+                // --------------------------------------------------------
+                // If detId is specified, the record must be chosen with it.
+                // --------------------------------------------------------
+                if (detId) {
+                  if (_.has(currRec[tbl], detId)) {
+                    detRec = currRec[tbl][detId];
+                  }
+                } else {
+                  // --------------------------------------------------------
+                  // No detId, but the changes always have the id of the source
+                  // as the key, so take the first one. Multiple keys would
+                  // require a detId to access so we are only expecting one anyway.
+                  // --------------------------------------------------------
+                  dId = _.keys(currRec[tbl])[0];
+                  if (! _.isUndefined(dId)) {
+                    detRec = currRec[tbl][dId];
+                  }
+                }
+                if (detRec && detRec.fields) {
+                  // --------------------------------------------------------
+                  // We have a change record so test to see if it has fields
+                  // that match the required fields in srcInfo for this table.
+                  // --------------------------------------------------------
+                  _.each(detRec.fields, function(f) {
+                    if (! found) {
+                      if (_.contains(flds, f)) {
+                        // --------------------------------------------------------
+                        // Found a positive match.
+                        // --------------------------------------------------------
+                        newRecNum = i;
+                        found = true;
+                      } else {
+                        if (_.contains(flds, 'DEFAULT')) {
+                          // --------------------------------------------------------
+                          // We can use a default field as a tentative answer to use
+                          // if we don't come up with anything specific.
+                          // --------------------------------------------------------
+                          tentativeRecNum = i;
+                        }
+                      }
+                    }     // ! found
+                  });
+                }
+              }   // if (! found)
+            }     // if (_.has(currRec, tbl))
+          });     // each srcInfo loop.
+          // --------------------------------------------------------
+          // Still nothing definitive found? Use what we have, if anything.
+          // --------------------------------------------------------
+          if (! found && tentativeRecNum) {
+            newRecNum = tentativeRecNum;
+            found = true;
           }
-        }
+        }         // Outer for loop.
+
         return newRecNum;
       };
 
@@ -428,10 +501,10 @@
        * Then returns an object via info() that carries meta data
        * about the new current record.
        * -------------------------------------------------------- */
-      var next = function(source, detId) {
+      var next = function(srcInfo, detId) {
         var origRecNum = currRecNum;
-        if (source) {
-          currRecNum = findBySource(source, 'n', detId);
+        if (srcInfo) {
+          currRecNum = findBySourceInfo(srcInfo, 'n', detId);
           if (origRecNum !== currRecNum) {
             notifyCallbacks();
           }
@@ -442,10 +515,10 @@
           return info();
         }
       };
-      var prev = function(source, detId) {
+      var prev = function(srcInfo, detId) {
         var origRecNum = currRecNum;
-        if (source) {
-          currRecNum = findBySource(source, 'p', detId);
+        if (srcInfo) {
+          currRecNum = findBySourceInfo(srcInfo, 'p', detId);
           if (origRecNum !== currRecNum) {
             notifyCallbacks();
           }
@@ -456,10 +529,10 @@
           return info();
         }
       };
-      var first = function(source, detId) {
+      var first = function(srcInfo, detId) {
         var origRecNum = currRecNum;
-        if (source) {
-          currRecNum = findBySource(source, 'f', detId);
+        if (srcInfo) {
+          currRecNum = findBySourceInfo(srcInfo, 'f', detId);
           if (origRecNum !== currRecNum) {
             notifyCallbacks();
           }
@@ -470,10 +543,10 @@
           return info();
         }
       };
-      var last = function(source, detId) {
+      var last = function(srcInfo, detId) {
         var origRecNum = currRecNum;
-        if (source) {
-          currRecNum = findBySource(source, 'l', detId);
+        if (srcInfo) {
+          currRecNum = findBySourceInfo(srcInfo, 'l', detId);
           if (origRecNum !== currRecNum) {
             notifyCallbacks();
           }
