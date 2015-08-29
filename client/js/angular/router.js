@@ -409,29 +409,6 @@
       // Testing
       console.log(url);
     },
-    /* --------------------------------------------------------
-     * hasChanged()
-     *
-     * Returns whether the field has changed on this change
-     * record or not. Expects to be passed $scope.ctrl as the
-     * first parameter, and well as table, pregId, and field.
-     *
-     * If ctrl.changed[table][pregId] does not exist, that is
-     * not an error, it just means that it was not changed.
-     *
-     * param       ctrl
-     * param       table
-     * param       pregId
-     * param       fld
-     * return      boolean
-     * -------------------------------------------------------- */
-    hasChanged: function(ctrl, table, pregId, fld) {
-      if (! ctrl || ! table || ! pregId || ! fld) return false;
-      if (ctrl.changed && ctrl.changed[table] && ctrl.changed[table][pregId]) {
-        return _.contains(ctrl.changed[table][pregId].fields, fld);
-      }
-      return false;
-    }
   };
 
   /* --------------------------------------------------------
@@ -552,6 +529,25 @@
               if ($scope && $scope.$root) $scope.$root.detId = void 0;
           }
         }
+
+        // --------------------------------------------------------
+        // Flag the fields that have changed so that the view can
+        // easily highlight changed fields. We populate a $scope
+        // object with an object whose elements are the names of
+        // the fields that have changed for this change record in
+        // a format that the view can easily access (meaning without
+        // too much boilerplate code). This is the same information
+        // that already is in data.changed, but it is folded into
+        // a one level map for ease of use.
+        // --------------------------------------------------------
+        if (data.currentRecordNumber === 0) {
+          // All the fields have changed on the first record, so it is
+          // meaningless to try to highlight what has changed.
+          $scope.chgd = {};
+        } else {
+          $scope.chgd = historyService.getChangedFields(data.changed, detId);
+        }
+
       });
 
       historyService.curr();

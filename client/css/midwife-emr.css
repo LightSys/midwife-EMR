@@ -325,8 +325,12 @@ td.hcNavText-right {
 
 /* History - highlight changed fields */
 label.has-changed,
+div.has-changed,
 span.has-changed {
   color: #428BCA;
+}
+input.has-changed {
+  border: 1px solid green;
 }
 
 /* Handling large tables for medium screens. Anything under

@@ -50,10 +50,16 @@
       var baseUrl = '/api/history';;
       var pregnancyPath = 'pregnancy/:pregId';
 
+      // --------------------------------------------------------
       // Caches and cache keys
+      // --------------------------------------------------------
+      // Cache the data received from the server.
       var PREGNANCY_CACHE = 'pregnancyCache';
       var PREGNANCY_CACHE_KEY = 'all';
       var pregnancyCache = $cacheFactory(PREGNANCY_CACHE);
+      // Cache the changed field mapping calculated by getChangedFields().
+      var CHANGED_FIELDS_CACHE = 'changedFieldsCache';
+      var changedFieldsCache = $cacheFactory(CHANGED_FIELDS_CACHE);
 
       // Tracking callbacks to track.
       var registeredCallbacks = [];
@@ -215,6 +221,7 @@
         });
 
         rec.replacedAt = data[2][recNum].replacedAt;
+        rec.currentRecordNumber = recNum;    // zero-based.
 
         // --------------------------------------------------------
         // Flag changed records at the field level.
@@ -643,6 +650,50 @@
         return undefined;
       };
 
+      /* --------------------------------------------------------
+      * getChangedFields()
+      *
+      * Returns a map of fields that have changed for the changed
+      * object passed and optionally, pertaining to the detail id
+      * passed.
+      *
+      * The changed object expected is what was returned by
+      * notifyCallbacks() in the changed element.
+      *
+      * The returned changed map is a simplier version that has an
+      * element per field across all data sources. This allows the
+      * caller, i.e. a view, to be able to quickly ascertain whether
+      * a change occurred or not. There is a loss of table information,
+      * but for the fields that matter, it does not make much difference.
+      *
+      * Changed fields are memoized by the current record number.
+      *
+      * param       changed
+      * param       detId
+      * return      changedFields
+      * -------------------------------------------------------- */
+      var getChangedFields = function(changed, detId) {
+        var key = "" + currRecNum;
+        var changedFields = changedFieldsCache.get(key);
+        if (changedFields) return changedFields;
+        changedFields = {};
+        _.each(changed, function(obj, tbl) {
+          var flds = [];
+          if (_.size(obj) > 0) {
+            if (detId) {
+              flds = obj[detId].fields;
+            } else {
+              flds = obj[_.keys(obj)[0]].fields;
+            }
+            _.each(flds, function(f) {
+              changedFields[f] = true;
+            });
+          }
+        });
+        changedFieldsCache.put(key, changedFields);
+        return changedFields;
+      };
+
       // ========================================================
       // ========================================================
       // Public API of historyService.
@@ -661,7 +712,8 @@
         curr: curr,
         info: info,
         lookup: lookup,
-        getChangedByNum: getChangedByNum
+        getChangedByNum: getChangedByNum,
+        getChangedFields: getChangedFields
       };
 
     }]);
