@@ -1,52 +1,52 @@
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>Last name</span>
+    <span ng-class='{"has-changed": chgd.lastname}'>Last name</span>
     <input class='form-control input-lg' type='text' disabled name='lastname' value='{{ctrl.pregnancy.lastname}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>First name</span>
+    <span ng-class='{"has-changed": chgd.firstname}'>First name</span>
     <input class='form-control input-lg' type='text' disabled name='firstname' value='{{ctrl.pregnancy.firstname}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Date of birth</span>
+    <span ng-class='{"has-changed": chgd.dob}'>Date of birth</span>
     <input class='form-control input-lg' type='text' disabled name='dob' value='{{ctrl.patient.dob|onlyValidDate|date:"MM-dd-yyyy"}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Religion</span>
+    <span ng-class='{"has-changed": chgd.religion}'>Religion</span>
     <input class='form-control input-lg' type='text' disabled name='firstname' value='{{ctrl.pregnancy.religion}}'>
   </div>
 </div>
 
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>Maiden name</span>
+    <span ng-class='{"has-changed": chgd.maidenname}'>Maiden name</span>
     <input class='form-control input-lg' type='text' disabled name='maidenname' value='{{ctrl.pregnancy.maidenname}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Nick name</span>
+    <span ng-class='{"has-changed": chgd.nickname}'>Nick name</span>
     <input class='form-control input-lg' type='text' disabled name='nickname' value='{{ctrl.pregnancy.nickname}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Marital status</span>
+    <span ng-class='{"has-changed": chgd.maritalStatus}'>Marital status</span>
     <input class='form-control input-lg' type='text' disabled name='maritalStatus' value='{{ctrl.pregnancy.maritalStatus}}'>
   </div>
 </div>
 
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>Address</span>
+    <span ng-class='{"has-changed": chgd.address1}'>Address</span>
     <input class='form-control input-lg' type='text' disabled name='address1' value='{{ctrl.pregnancy.address1}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>City</span>
+    <span ng-class='{"has-changed": chgd.city}'>City</span>
     <input class='form-control input-lg' type='text' disabled name='city' value='{{ctrl.pregnancy.city}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Barangay</span>
+    <span ng-class='{"has-changed": chgd.address3}'>Barangay</span>
     <input class='form-control input-lg' type='text' disabled name='address3' value='{{ctrl.pregnancy.address3}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>District</span>
+    <span ng-class='{"has-changed": chgd.address4}'>District</span>
     <input class='form-control input-lg' type='text' disabled name='address4' value='{{ctrl.pregnancy.address4}}'>
   </div>
 </div>
@@ -57,15 +57,15 @@
     <input class='form-control input-lg' type='text' disabled name='agdao' value='{{ctrl.customField[0].booleanVal|yesNo}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Work</span>
+    <span ng-class='{"has-changed": chgd.work}'>Work</span>
     <input class='form-control input-lg' type='text' disabled name='work' value='{{ctrl.pregnancy.work}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Education</span>
+    <span ng-class='{"has-changed": chgd.education}'>Education</span>
     <input class='form-control input-lg' type='text' disabled name='education' value='{{ctrl.pregnancy.education}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Telephone</span>
+    <span ng-class='{"has-changed": chgd.telephone}'>Telephone</span>
     <input class='form-control input-lg' type='text' disabled name='telephone' value='{{ctrl.pregnancy.telephone}}'>
   </div>
 </div>
@@ -74,26 +74,26 @@
 
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>Partner lastname</span>
+    <span ng-class='{"has-changed": chgd.partnerLastname}'>Partner lastname</span>
     <input class='form-control input-lg' type='text' disabled name='partnerLastname' value='{{ctrl.pregnancy.partnerLastname}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Partner firstname</span>
+    <span ng-class='{"has-changed": chgd.partnerFirstname}'>Partner firstname</span>
     <input class='form-control input-lg' type='text' disabled name='partnerFirstname' value='{{ctrl.pregnancy.partnerFirstname}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Partner age</span>
+    <span ng-class='{"has-changed": chgd.partnerAge}'>Partner age</span>
     <input class='form-control input-lg' type='text' disabled name='partnerAge' value='{{ctrl.pregnancy.partnerAge}}'>
   </div>
 </div>
 
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>Partner work</span>
+    <span ng-class='{"has-changed": chgd.partnerWork}'>Partner work</span>
     <input class='form-control input-lg' type='text' disabled name='partnerWork' value='{{ctrl.pregnancy.partnerWork}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Partner education</span>
+    <span ng-class='{"has-changed": chgd.partnerEducation}'>Partner education</span>
     <input class='form-control input-lg' type='text' disabled name='partnerEducation' value='{{ctrl.pregnancy.partnerEducation}}'>
   </div>
 </div>
@@ -102,19 +102,19 @@
 
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>Client income</span>
+    <span ng-class='{"has-changed": chgd.clientIncome}'>Client income</span>
     <input class='form-control input-lg' type='text' disabled name='clientIncome' value='{{ctrl.pregnancy.clientIncome}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Income period</span>
+    <span ng-class='{"has-changed": chgd.clientIncomePeriod}'>Income period</span>
     <input class='form-control input-lg' type='text' disabled name='clientIncomePeriod' value='{{ctrl.pregnancy.clientIncomePeriod}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Partner income</span>
+    <span ng-class='{"has-changed": chgd.partnerIncome}'>Partner income</span>
     <input class='form-control input-lg' type='text' disabled name='partnerIncome' value='{{ctrl.pregnancy.partnerIncome}}'>
   </div>
   <div class='form-group col-md-3'>
-    <span>Income period</span>
+    <span ng-class='{"has-changed": chgd.partnerIncomePeriod}'>Income period</span>
     <input class='form-control input-lg' type='text' disabled name='partnerIncomePeriod' value='{{ctrl.pregnancy.partnerIncomePeriod}}'>
   </div>
 </div>
@@ -123,7 +123,7 @@
 
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>MMC #</span>
+    <span ng-class='{"has-changed": chgd.dohID}'>MMC #</span>
     <input class='form-control input-lg' type='text' disabled name='doh' value='{{ctrl.patient.dohID}}'>
   </div>
   <div class='form-group col-md-3'>
@@ -143,7 +143,7 @@
 
 <div class='row'>
   <div class='form-group col-md-3'>
-    <span>Mother/Baby Book?</span>
+    <span ng-class='{"has-changed": chgd.mbBook}'>Mother/Baby Book?</span>
     <input class='form-control input-lg' type='text' disabled name='mbBook' value='{{ctrl.pregnancy.mbBook|yesNo}}'>
   </div>
 </div>

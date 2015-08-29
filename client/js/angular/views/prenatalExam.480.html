@@ -2,33 +2,33 @@
   <div class="row">
     <div class='form-group col-xs-6'>
       <label class=''>Mother Information</label>
-      <div>Date</div>
+      <div ng-class='{"has-changed": chgd.date}'>Date</div>
       <input class='form-control' tabindex='1' name='date' disabled='true' value='{{pe.date|onlyValidDate|date:"MM-dd-yyyy"}}'>
-      <span>Weight</span>
+      <span ng-class='{"has-changed": chgd.weight}'>Weight</span>
       <input id='weight' class='form-control' type='number' tabindex="2" autocomplete="off" name='weight' disabled=true value='{{pe.weight}}'>
       <div class='row'>
         <div class='col-xs-6'>
-          <span>Systolic</span>
+          <span ng-class='{"has-changed": chgd.systolic}'>Systolic</span>
           <input id='systolic' class='form-control' type='number' tabindex="3" name='systolic' disabled=true value='{{pe.systolic}}'>
         </div>
         <div class='col-xs-6'>
-          <span>Diastolic</span>
+          <span ng-class='{"has-changed": chgd.diastolic}'>Diastolic</span>
           <input id='diastolic' class='form-control' type='number' tabindex="4" name='diastolic' disabled=true value='{{pe.diastolic}}'>
         </div>
       </div>
       <div class='row'>
         <div class='col-xs-6'>
-          <div>CR</div>
+          <div ng-class='{"has-changed": chgd.cr}'>CR</div>
           <input id='cr' class='form-control' type='number' tabindex="5" name='cr' disabled=true value='{{pe.cr}}'>
         </div>
         <div class='col-xs-6'>
-          <div>Temperature</div>
+          <div ng-class='{"has-changed": chgd.temperature}'>Temperature</div>
           <input id='cr' class='form-control' type='number' step="0.1" tabindex="6" name='temperature' disabled=true value='{{pe.temperature}}'>
         </div>
       </div>
       <div class='row'>
         <div class='col-xs-6'>
-          <div>RR</div>
+          <div ng-class='{"has-changed": chgd.respiratoryRate}'>RR</div>
           <input id='cr' class='form-control' type='number' tabindex="7" name='respiratoryRate' disabled=true value='{{pe.respiratoryRate}}'>
         </div>
       </div>
@@ -40,25 +40,25 @@
       <input id='ga' class='form-control' type='text' name='ga' disabled=true value='{{ctrl.pregnancy.lmp|getGAFromLMP:pe.date}}'>
       <div class='row'>
         <div class='col-xs-6'>
-          <span>FH</span>
+          <span ng-class='{"has-changed": chgd.fh}'>FH</span>
           <input id='fh' class='form-control' type='number' tabindex="8" name='fh' disabled=true value='{{pe.fh}}'>
         </div>
         <div class='col-xs-6'>
-          <span>FH Note</span>
+          <span ng-class='{"has-changed": chgd.fhNote}'>FH Note</span>
           <input id='fhNote' class='form-control' type='text' tabindex='9' name='fhNote' disabled=true value='{{pe.fhNote}}'>
         </div>
       </div>
       <div class='row'>
         <div class='col-xs-6'>
-          <span>FHT</span>
+          <span ng-class='{"has-changed": chgd.fht}'>FHT</span>
           <input id='fht' class='form-control' type='number' tabindex="10" name='fht' disabled=true value='{{pe.fht}}'>
         </div>
         <div class='col-xs-6'>
-          <span>FHT Note</span>
+          <span ng-class='{"has-changed": chgd.fhtNote}'>FHT Note</span>
           <input id='fhtNote' class='form-control' type='text' tabindex='11' name='fhtNote' disabled=true value='{{pe.fhtNote}}'>
         </div>
       </div>
-      <span>Position (saved all caps)</span>
+      <span ng-class='{"has-changed": chgd.pos}'>Position (saved all caps)</span>
       <input id='pos' class='form-control' type='text' tabindex="12" name='pos' disabled=true value='{{pe.pos}}'>
     </div>
   </div>
@@ -67,25 +67,25 @@
     <div class='form-group col-xs-6'>
       <label class=''>Other Information</label>
       <div class='checkbox'>
-        <label>
+        <label ng-class='{"has-changed": chgd.mvmt}'>
           <input type='checkbox' name='mvmt' tabindex="13" disabled=true value=1 checked='{{pe.mvmt==true}}'>
           Mvmt
         </label>
       </div>
-      <span>Edema
+      <span ng-class='{"has-changed": chgd.edema}'>Edema
         <input class='form-control' name='edema' tabindex='14' disabled=true value='{{pe.edema}}'>
       </span>
-      <span>Risk
+      <span ng-class='{"has-changed": chgd.risk}'>Risk
         <input class='form-control' type='text' name='risk' tabindex="14" disabled=true value='{{pe.risk}}'>
       </span>
       <div class='checkbox'>
-        <label>
+        <label ng-class='{"has-changed": chgd.vitamin}'>
           <input type='checkbox' name='vitamin' tabindex="16" disabled=true value=1 checked='{{pe.vitamin==true}}'>
           Vitamin
         </label>
       </div>
       <div class='checkbox'>
-        <label>
+        <label ng-class='{"has-changed": chgd.pray}'>
           <input type='checkbox' name='pray' tabindex="17" disabled=true value=1 checked='{{pe.pray==true}}'>
           Pray
         </label>
@@ -93,9 +93,9 @@
     </div>
     <div class='form-group col-xs-6'>
       <label class=''>Other continued</label>
-      <div>Notes</div>
+      <div ng-class='{"has-changed": chgd.note}'>Notes</div>
       <textarea id='note' class='form-control' tabindex="18" wrap="soft" rows="4" disabled=true name='note'>{{pe.note}}</textarea>
-      <div>Return Date
+      <div ng-class='{"has-changed": chgd.returnDate}'>Return Date
         <input class='form-control' tabindex='19' name='returnDate' disabled=true value='{{pe.returnDate|onlyValidDate|date:"MM-dd-yyyy"}}'>
       </div>
     </div>
