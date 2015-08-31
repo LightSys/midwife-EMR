@@ -36,7 +36,7 @@
        * param       $scope
        * param       recNum - 1 based
        * param       navFunc - the historyService navigation function.
-       * return      
+       * return
        * -------------------------------------------------------- */
       var navigate = function($scope, recNum, navFunc) {
         var changed;
@@ -54,30 +54,47 @@
 
         // --------------------------------------------------------
         // If follow is set, we make sure we navigate to the correct
-        // page instead of executing the change. The user will need
-        // to press the navigation button again after getting to the
-        // correct page. getState() returns an object with the state
-        // field specifying the stateName and the optional detail key
-        // and detail value fields specifying key/value of detail id
-        // respectfully. The names of these fields are set by the
-        // changeRoutingService and that service provides methods
-        // for accessing these fields.
+        // page instead of blindly executing the change. The user will
+        // need to press the navigation button again after getting to
+        // the correct page.
+        //
+        // getState() returns an object with the state field specifying
+        // the stateName and the optional detail key and detail value
+        // fields specifying key/value of detail id respectfully. The
+        // names of these fields are set by the changeRoutingService
+        // and that service provides methods for accessing these fields.
         // --------------------------------------------------------
         if ($scope.ctrl.follow) {
           changed = historyService.getChangedByNum(recNum);
           newState = changeRoutingService.getState(changed);
+          detKeyFld = changeRoutingService.getStateDetKey(newState);
+          detKeyVal = changeRoutingService.getStateDetVal(newState);
+          // --------------------------------------------------------
+          // See if there are any extra parameters for this state.
+          // --------------------------------------------------------
+          if (detKeyFld && detKeyVal) {
+            newStateParams[detKeyFld] = detKeyVal;
+          }
+
+          // --------------------------------------------------------
+          // If we are not at the correct state, switch to it rather
+          // than changing record number.
+          // --------------------------------------------------------
           if (newState.stateName !== $state.$current.name) {
-            // --------------------------------------------------------
-            // See if there are any extra parameters for this state.
-            // --------------------------------------------------------
-            detKeyFld = changeRoutingService.getStateDetKey(newState);
-            detKeyVal = changeRoutingService.getStateDetVal(newState);
-            if (detKeyFld && detKeyVal) {
-              newStateParams[detKeyFld] = detKeyVal;
-            }
             $state.go(newState.stateName, newStateParams);
           } else {
-            updateMeta($scope, navFunc());
+            // --------------------------------------------------------
+            // Just because we are in the proper state, that does not
+            // mean that we have the proper detail id still. If our
+            // detail has changed, treat it as a state change in order
+            // to get things in sync again.
+            // --------------------------------------------------------
+            if (detKeyFld && detKeyVal && $state.params[detKeyFld] &&
+                parseInt($state.params[detKeyFld], 10) !== parseInt(detKeyVal, 10)) {
+              $state.go(newState.stateName, newStateParams);
+            } else {
+              updateMeta($scope, navFunc());
+            }
           }
         } else {
           // --------------------------------------------------------
@@ -100,7 +117,7 @@
         *
         * param       $scope
         * param       info - object returned from some historyService calls
-        * return      
+        * return
         * -------------------------------------------------------- */
       var updateMeta = function($scope, info) {
         $scope.ctrl.currentRecord = info.currentRecord;
