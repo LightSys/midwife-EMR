@@ -1,84 +1,84 @@
 <div ng-repeat='ph in ctrl.pregnancyHistory|showDetail:detId'>
   <div class='row'>
     <div class='form-group col-md-2'>
-      <span>Month</span>
+      <span ng-class='{"has-changed": chgd.month}'>Month</span>
       <input id='month' class='form-control' type='number' disabled name='month' value='{{ph.month}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Day</span>
+      <span ng-class='{"has-changed": chgd.day}'>Day</span>
       <input id='day' class='form-control' type='number' disabled name='day' value='{{ph.day}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Year</span>
+      <span ng-class='{"has-changed": chgd.year}'>Year</span>
       <input id='year' class='form-control' type='number' disabled name='year' value='{{ph.year}}'>
     </div>
     <div class='form-group col-md-2'>
       <div class='checkbox'>
-        <span>
+        <span ng-class='{"has-changed": chgd.FT}'>
           <input type='checkbox' disabled name='FT' tabindex="102" value=1 checked='{{ph.FT==true}}'>
           Full Term?
         </span>
       </div>
     </div>
     <div class='form-group col-md-2'>
-      <span>GA</span>
+      <span ng-class='{"has-changed": chgd.finalGA}'>GA</span>
       <input id='finalGA' class='form-control' type='number' disabled name='finalGA' value='{{ph.finalGA && ph.finalGA !== 0? ph.finalGA:""}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Weeks/Months</span>
+      <span ng-class='{"has-changed": chgd.finalGAPeriod}'>Weeks/Months</span>
       <input id='finalGAPeriod' class='form-control' type='text' disabled name='finalGAPeriod' value='{{ph.finalGAPeriod && ph.finalGAPeriod !== ""?ph.finalGAPeriod:""}}'>
     </div>
   </div>
 
   <div class='row'>
     <div class='form-group col-md-2'>
-      <span>Sex of baby</span>
+      <span ng-class='{"has-changed": chgd.sexOfBaby}'>Sex of baby</span>
       <input id='sexOfBaby' class='form-control' type='text' disabled name='sexOfBaby' value='{{ph.sexOfBaby}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Place of birth</span>
+      <span ng-class='{"has-changed": chgd.placeOfBirth}'>Place of birth</span>
       <input id='placeOfBirth' class='form-control' type='text' disabled name='placeOfBirth' value='{{ph.placeOfBirth}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Attendant</span>
+      <span ng-class='{"has-changed": chgd.attendant}'>Attendant</span>
       <input id='attendant' class='form-control' type='text' disabled name='attendant' value='{{ph.attendant}}'>
     </div>
     <div class='form-group col-md-3'>
-      <span>Type of Delivery</span>
+      <span ng-class='{"has-changed": chgd.typeOfDelivery}'>Type of Delivery</span>
       <input id='typeOfDelivery' class='form-control' type='text' disabled name='typeOfDelivery' value='{{ph.typeOfDelivery}}'>
     </div>
     <div class='form-group col-md-3'>
-      <span>Labor (hours)</span>
+      <span ng-class='{"has-changed": chgd.lengthOfLabor}'>Labor (hours)</span>
       <input id='lengthOfLabor' class='form-control' type='number' disabled name='lengthOfLabor' value='{{ph.lengthOfLabor}}'>
     </div>
   </div>
 
   <div class='row'>
     <div class='form-group col-md-3'>
-      <span>Birth Weight (kg)</span>
+      <span ng-class='{"has-changed": chgd.birthWeight}'>Birth Weight (kg)</span>
       <input id='birthWeight' class='form-control' type="tel" disabled name='birthWeight' value='{{ph.birthWeight}}'>
     </div>
     <div class='form-group col-md-3'>
-      <span>Epis Tear?</span>
+      <span ng-class='{"has-changed": chgd.episTear}'>Epis Tear?</span>
       <input id='episTear' class='form-control' type="tel" disabled name='episTear' value='{{ph.episTear}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Repaired?</span>
+      <span ng-class='{"has-changed": chgd.repaired}'>Repaired?</span>
       <input id='repaired' class='form-control' type="tel" disabled name='repaired' value='{{ph.repaired}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Breast Fed</span>
+      <span ng-class='{"has-changed": chgd.howLongBFed}'>Breast Fed</span>
       <input id='howLongBFed' class='form-control' type='number' disabled name='howLongBFed' value='{{ph.howLongBFed}}'>
     </div>
     <div class='form-group col-md-2'>
-      <span>Wks/Mon/Yrs</span>
+      <span ng-class='{"has-changed": chgd.howLongBFedPeriod}'>Wks/Mon/Yrs</span>
       <input id='howLongBFedPeriod' class='form-control' type='text' disabled name='howLongBFedPeriod' value='{{ph.howLongBFedPeriod}}'>
     </div>
   </div>
 
   <div class='row'>
     <div class='form-group col-md-6'>
-      <span>Comment</span>
+      <span ng-class='{"has-changed": chgd.note}'>Comment</span>
       <textarea id='note' class='form-control' rows='3' type='text' disabled name='note'>{{ph.note}}</textarea>
     </div>
   </div>
