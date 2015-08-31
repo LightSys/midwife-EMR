@@ -7,6 +7,9 @@
       'loggingService',
       function(log) {
 
+        var DETAIL_ID_KEY_FIELD = 'detIdKey';
+        var DETAIL_ID_VAL_FIELD = 'detIdVal';
+
         // --------------------------------------------------------
         // Mapping between changed fields in a certain table and
         // the UI-Router state in which that change should be
@@ -26,7 +29,8 @@
         // --------------------------------------------------------
         var fieldStateMap = {
           'pregnancyHistory': {
-            'DEFAULT': 'pregnancy.pregnancyHistory'
+            'DEFAULT': 'pregnancy.pregnancyHistory',
+            'STATE_DETAIL_ID_NAME': 'phid'
           },
           'pregnote': {
             'DEFAULT': 'pregnancy.labs'
@@ -44,7 +48,8 @@
             'DEFAULT': 'pregnancy.labs'
           },
           'prenatalExam': {
-            'DEFAULT': 'pregnancy.prenatalExam'
+            'DEFAULT': 'pregnancy.prenatalExam',
+            'STATE_DETAIL_ID_NAME': 'peid'
           },
           'referral': {
             'DEFAULT': 'pregnancy.labs'
@@ -217,13 +222,16 @@
         * represented by the changed object passed, which consists
         * of the table(s) and fields changed in a particular record.
         *
+        * Returned object has at least one field named state and
+        * optionally two other fields named detIdKey and detIdVal.
+        *
         * param       changes
-        * return      state
+        * return      state as an object
         * -------------------------------------------------------- */
         var getState = function(changes) {
           var changed = {};
-          var state;
-          var defaultState = 'pregnancy.general';
+          var state = {};
+          var defaultState = {stateName: 'pregnancy.general'};
 
           // Eliminate data sources with no changes.
           _.each(changes, function(val, key) {
@@ -237,16 +245,29 @@
           // --------------------------------------------------------
           _.each(changed, function(records, table) {
             _.each(records, function(recObj, recId) {
-              if (! state && fieldStateMap[table]) {
+              if (! state.stateName && fieldStateMap[table]) {
+                // --------------------------------------------------------
+                // Find the state to use based upon a matching change field.
+                // --------------------------------------------------------
                 _.each(recObj.fields, function(f) {
-                  if (! state && fieldStateMap[table][f]) {
-                    state = fieldStateMap[table][f];
+                  if (! state.stateName && fieldStateMap[table][f]) {
+                    state.stateName = fieldStateMap[table][f];
                   }
                 });
+                // --------------------------------------------------------
                 // If field not found for this table, check for default
                 // for the table.
-                if (! state && fieldStateMap[table]['DEFAULT']) {
-                  state = fieldStateMap[table]['DEFAULT'];
+                // --------------------------------------------------------
+                if (! state.stateName && fieldStateMap[table]['DEFAULT']) {
+                  state.stateName = fieldStateMap[table]['DEFAULT'];
+                }
+                // --------------------------------------------------------
+                // Finally, if there is suposed to be a detail id passed
+                // with the state, include it here.
+                // --------------------------------------------------------
+                if (fieldStateMap[table].STATE_DETAIL_ID_NAME) {
+                  state.detIdKey = fieldStateMap[table].STATE_DETAIL_ID_NAME;
+                  state.detIdVal = recId;
                 }
               }
             });
@@ -255,11 +276,37 @@
           // --------------------------------------------------------
           // No match! Log the same and return the default state.
           // --------------------------------------------------------
-          if (! state) {
+          if (! state.stateName) {
             log.log('Warning: no state found for following changelog.');
             log.dir(changes);
           }
           return state || defaultState;
+        };
+
+        /* --------------------------------------------------------
+         * getStateDetKey()
+         *
+         * Returns the detail key field name from the state object
+         * returned by the getState() method.
+         *
+         * param       stateObj as returned by getState().
+         * return      field name
+         * -------------------------------------------------------- */
+        var getStateDetKey = function(stateObj) {
+          return stateObj[DETAIL_ID_KEY_FIELD] || '';
+        };
+
+        /* --------------------------------------------------------
+         * getStateDetVal()
+         *
+         * Returns the detail key field value from the state object
+         * returned by the getState() method.
+         *
+         * param       stateObj as returned by getState()
+         * return      field value
+         * -------------------------------------------------------- */
+        var getStateDetVal = function(stateObj) {
+          return stateObj[DETAIL_ID_VAL_FIELD] || '';
         };
 
         /* --------------------------------------------------------
@@ -278,7 +325,9 @@
 
         return {
           getState: getState,
-          getSourceFieldInfo: getSourceFieldInfo
+          getSourceFieldInfo: getSourceFieldInfo,
+          getStateDetKey: getStateDetKey,
+          getStateDetVal: getStateDetVal
         };
       }
     ]);

@@ -680,7 +680,7 @@
         _.each(changed, function(obj, tbl) {
           var flds = [];
           if (_.size(obj) > 0) {
-            if (detId) {
+            if (detId && obj[detId] && obj[detId].fields) {
               flds = obj[detId].fields;
             } else {
               flds = obj[_.keys(obj)[0]].fields;

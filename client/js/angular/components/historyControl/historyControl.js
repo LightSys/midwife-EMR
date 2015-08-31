@@ -41,6 +41,9 @@
       var navigate = function($scope, recNum, navFunc) {
         var changed;
         var newState;
+        var newStateParams = {};
+        var detKeyFld;
+        var detKeyVal;
         var sourceInfo;
 
         // Sanity check.
@@ -53,13 +56,26 @@
         // If follow is set, we make sure we navigate to the correct
         // page instead of executing the change. The user will need
         // to press the navigation button again after getting to the
-        // correct page.
+        // correct page. getState() returns an object with the state
+        // field specifying the stateName and the optional detail key
+        // and detail value fields specifying key/value of detail id
+        // respectfully. The names of these fields are set by the
+        // changeRoutingService and that service provides methods
+        // for accessing these fields.
         // --------------------------------------------------------
         if ($scope.ctrl.follow) {
           changed = historyService.getChangedByNum(recNum);
           newState = changeRoutingService.getState(changed);
-          if (newState !== $state.$current.name) {
-            $state.go(newState);
+          if (newState.stateName !== $state.$current.name) {
+            // --------------------------------------------------------
+            // See if there are any extra parameters for this state.
+            // --------------------------------------------------------
+            detKeyFld = changeRoutingService.getStateDetKey(newState);
+            detKeyVal = changeRoutingService.getStateDetVal(newState);
+            if (detKeyFld && detKeyVal) {
+              newStateParams[detKeyFld] = detKeyVal;
+            }
+            $state.go(newState.stateName, newStateParams);
           } else {
             updateMeta($scope, navFunc());
           }
