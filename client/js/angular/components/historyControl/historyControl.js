@@ -41,7 +41,7 @@
       var navigate = function($scope, recNum, navFunc) {
         var changed;
         var newState;
-        var newStateParams = {};
+        var newStateParams;
         var detKeyFld;
         var detKeyVal;
         var sourceInfo;
@@ -73,6 +73,7 @@
           // See if there are any extra parameters for this state.
           // --------------------------------------------------------
           if (detKeyFld && detKeyVal) {
+            newStateParams = {};
             newStateParams[detKeyFld] = detKeyVal;
           }
 

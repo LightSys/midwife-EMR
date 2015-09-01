@@ -166,7 +166,8 @@
             'partnerWork': 'pregnancy.general',
             'partnerEducation': 'pregnancy.general',
             'partnerIncome': 'pregnancy.general',
-            'partnerIncomePeriod': 'pregnancy.general'
+            'partnerIncomePeriod': 'pregnancy.general',
+            'supervisor': 'pregnancy.general' // There are changes with only this field.
           }
         };
 
