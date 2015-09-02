@@ -20,7 +20,7 @@
                 <tr class='labTestResultsRow' ng-hide='ltr.op == "D"' ng-repeat='ltr in ctrl.labTestResult|toArray|orderBy:["name","testDate"]'>
                   <td>{{ltr.name}}</td>
                   <td class='table-cell-date'>{{ltr.testDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
-                  <td>{{ltr.result}}</td>
+                  <td>{{ltr.result}}<span ng-show='ltr.result2.length > 0'> - </span>{{ltr.result2}}</td>
                   <td>{{ltr.testWarn|yesNo}}</td>
                 </tr>
               </tbody>
