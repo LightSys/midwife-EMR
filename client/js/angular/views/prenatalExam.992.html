@@ -1,4 +1,9 @@
 <div ng-repeat='pe in ctrl.prenatalExam|showDetail:detId'>
+  <div class='row' ng-show='pe.op == "D"'>
+    <div class='form-group col-md-12'>
+      <div class='alert alert-info'>Record DELETED!</div>
+    </div>
+  </div>
   <div class="row">
     <div class='form-group col-md-3'>
       <label class=''>Mother Information</label>

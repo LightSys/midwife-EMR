@@ -142,11 +142,8 @@
           // --------------------------------------------------------
           var currRec = data[0][src][idx];
           if (currRec['pregnancy_id']) {
-            // Don't show deleted records.
-            if (currRec.op !== 'D') {
-              if (! recs) recs = [];
-              recs.push(currRec);
-            }
+            if (! recs) recs = [];
+            recs.push(currRec);
           } else {
             // --------------------------------------------------------
             // The main tables only have one record. For ease of use to

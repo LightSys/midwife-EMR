@@ -17,7 +17,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class='labTestResultsRow' ng-repeat='ltr in ctrl.labTestResult|toArray|orderBy:["name","testDate"]'>
+                <tr class='labTestResultsRow' ng-hide='ltr.op == "D"' ng-repeat='ltr in ctrl.labTestResult|toArray|orderBy:["name","testDate"]'>
                   <td>{{ltr.name}}</td>
                   <td class='table-cell-date'>{{ltr.testDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
                   <td>{{ltr.result}}</td>
@@ -46,7 +46,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class='medicationsRow' ng-repeat-start='med in ctrl.medication'>
+                <tr class='medicationsRow' ng-hide='med.op == "D"' ng-repeat-start='med in ctrl.medication'>
                   <td class='table-cell-date'>{{med.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
                   <td>{{med.name}}</td>
                   <td>{{med.numberDispensed}}</td>
@@ -78,7 +78,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class='teachingsRow' ng-repeat='teach in ctrl.healthTeaching'>
+                <tr class='teachingsRow' ng-hide='teach.op == "D"' ng-repeat='teach in ctrl.healthTeaching'>
                   <td class='table-cell-date'>{{teach.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
                   <td>{{teach.topic}}</td>
                   <td>{{teach.teacher|getUserField:'lastname'}}, {{teach.teacher|getUserField:'firstname'}}</td>
@@ -109,7 +109,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class='teachingsRow' ng-repeat='note in ctrl.pregnote'>
+                <tr class='teachingsRow' ng-hide='note.op == "D"' ng-repeat='note in ctrl.pregnote'>
                   <td class='table-cell-date'>{{note.noteDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
                   <td>{{note.note}}</td>
                 </tr>
@@ -136,7 +136,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class='referralsRow' ng-repeat='ref in ctrl.referral'>
+                <tr class='referralsRow' ng-hide='ref.op == "D"' ng-repeat='ref in ctrl.referral'>
                   <td class='table-cell-date'>{{ref.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
                   <td>{{ref.referral}}</td>
                   <td>{{ref.reason}}</td>
@@ -179,7 +179,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class='vaccinationsRow' ng-repeat-start='vac in ctrl.vaccination' ng-switch on='vac.administeredInternally'>
+                <tr class='vaccinationsRow' ng-hide='vac.op == "D"' ng-repeat-start='vac in ctrl.vaccination' ng-switch on='vac.administeredInternally'>
                   <td>{{vac.name}}</td>
                   <td class='table-cell-date'>{{vac|getDateFromVaccination}}</td>
                   <td ng-switch-default></td>

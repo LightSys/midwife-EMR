@@ -1,4 +1,9 @@
 <div ng-repeat='ph in ctrl.pregnancyHistory|showDetail:detId'>
+  <div class='row' ng-show='ph.op == "D"'>
+    <div class='form-group col-md-12'>
+      <div class='alert alert-info'>Record DELETED!</div>
+    </div>
+  </div>
   <div class='row'>
     <div class='form-group col-md-2'>
       <span ng-class='{"has-changed": chgd.month}'>Month</span>
