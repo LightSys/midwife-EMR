@@ -201,7 +201,7 @@
         </thead>
         <!--<tbody ng-repeat='pe in ctrl.sources.prenatalExam|sourcesHistorical:ctrl.replacedAt:"date"'>-->
         <tbody>
-          <tr class='prenatalExamRow' ng-repeat-start='pe in ctrl.prenatalExam' ui-sref='pregnancy.prenatalExam({pregId: pregId, peid: pe.id})'>
+          <tr class='prenatalExamRow' ng-hide='pe.op == "D"' ng-repeat-start='pe in ctrl.prenatalExam' ui-sref='pregnancy.prenatalExam({pregId: pregId, peid: pe.id})'>
             <td>{{pe.date|onlyValidDate|date:'MM-dd-yyyy'}}</td>
             <td>{{pe.weight}}</td>
             <td>{{pe.systolic && pe.diastolic? pe.systolic + ' / ' + pe.diastolic: ''}}</td>
@@ -220,7 +220,7 @@
             <td>{{pe.examiner}}</td>
             <td>{{pe.returnDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
           </tr>
-          <tr class='prenatalExamRow' ng-repeat-end ng-if='pe.note && pe.note.length > 0'>
+          <tr class='prenatalExamRow' ng-hide='pe.op == "D"' ng-repeat-end ng-if='pe.note && pe.note.length > 0'>
             <td class='table-cell-subrow'></td>
             <td class='table-cell-subrow' colspan='16'>{{pe.note}}</td>
           </tr>
