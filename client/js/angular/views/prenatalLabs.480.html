@@ -182,7 +182,7 @@
                   <td ng-switch-when='1'>Internal</td>
                   <td ng-switch-when='0'>External</td>
                 </tr>
-                <tr ng-if='vac.note && vac.note.length > 0' ng-repeat-end>
+                <tr ng-if='vac.note && vac.note.length > 0' ng-hide='vac.op == "D"' ng-repeat-end>
                   <td class='table-cell-subrow'></td>
                   <td class='table-cell-subrow' colspan='2'>{{vac.note}}</td>
                 </tr>
