@@ -105,7 +105,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr class='pregHistoryRow' ng-repeat-start='ph in ctrl.pregnancyHistory' ui-sref='pregnancy.pregnancyHistory({pregId: pregId, phid: ph.id})'>
+          <tr class='pregHistoryRow' ng-hide='ph.op == "D"' ng-repeat-start='ph in ctrl.pregnancyHistory' ui-sref='pregnancy.pregnancyHistory({pregId: pregId, phid: ph.id})'>
             <td>{{ph.month? ph.month + '-': ''}}{{ph.day? ph.day + '-': ''}}{{ph.year}}</td>
             <td>{{ph.FT === 1? 'Full term': ph.finalGA + ' ' + ph.finalGAPeriod}}</td>
             <td>{{ph.sexOfBaby}}</td>
@@ -118,7 +118,7 @@
             <td>{{ph.repaired}}</td>
             <td>{{ph.howLongBFed? ph.howLongBFed + ' ' + ph.howLongBFedPeriod: ''}}</td>
           </tr>
-          <tr class='pregHistoryRow' ng-repeat-end ng-if='ph.note && ph.note.length > 0'>
+          <tr class='pregHistoryRow' ng-hide='ph.op == "D"' ng-repeat-end ng-if='ph.note && ph.note.length > 0'>
             <td class='table-cell-subrow'></td>
             <td class='table-cell-subrow' colspan='10'>{{ph.note}}</td>
           </tr>

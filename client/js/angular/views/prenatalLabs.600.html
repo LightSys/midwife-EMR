@@ -109,7 +109,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class='teachingsRow' ng-hide='note.op == "D"' ng-repeat='note in ctrl.pregnote'>
+                <tr class='notesRow' ng-hide='note.op == "D"' ng-repeat='note in ctrl.pregnote'>
                   <td class='table-cell-date'>{{note.noteDate|onlyValidDate|date:'MM-dd-yyyy'}}</td>
                   <td>{{note.note}}</td>
                 </tr>
