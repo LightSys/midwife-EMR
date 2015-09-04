@@ -20,16 +20,22 @@
         // situated on the pregnancy.general page. Otherwise, this
         // needs to be refactored.
         //
-        // NOTE2: only use DEFAULT when all of the fields of the
-        // table are mapped to the same state. If only some of the
-        // fields are mapped to the same state, each field must be
-        // specifically listed and DEFAULT should not be used because
-        // it will cause the historyService.findBySourceInfo()
-        // method to incorrectly select a change record.
+        // DEFAULT: a flag that all of the fields for a particular
+        // source are mapped to the same state unless the fields are
+        // otherwise separately listed.
+        //
+        // SECONDARY: a flag a state that is a fallback if other fields
+        // are not found. Used to allow changes from detail tables to
+        // be shown on summary pages like prenatal and midwife when
+        // the follow flag is off, thus allowing changes in the detail
+        // tables to be shown even though the detail state is not
+        // current and there are actually no fields for the current
+        // state.
         // --------------------------------------------------------
         var fieldStateMap = {
           'pregnancyHistory': {
             'DEFAULT': 'pregnancy.pregnancyHistory',
+            'SECONDARY': 'pregnancy.midwife',
             'STATE_DETAIL_ID_NAME': 'phid'
           },
           'pregnote': {
@@ -49,6 +55,7 @@
           },
           'prenatalExam': {
             'DEFAULT': 'pregnancy.prenatalExam',
+            'SECONDARY': 'pregnancy.prenatal',
             'STATE_DETAIL_ID_NAME': 'peid'
           },
           'referral': {
@@ -65,9 +72,10 @@
           },
           'patient': {
             'ageOfMenarche': 'pregnancy.midwife',
-            'dohID': 'pregnancy.general',
-            'dob': 'pregnancy.general',
-            'generalInfo': 'pregnancy.general'
+            'DEFAULT': 'pregnancy.general'
+            //'dohID': 'pregnancy.general',
+            //'dob': 'pregnancy.general',
+            //'generalInfo': 'pregnancy.general'
           },
           'pregnancy': {
             'firstname': 'pregnancy.general',
@@ -202,19 +210,6 @@
           return result;
         })();
 
-        // --------------------------------------------------------
-        // TODO: retire this.
-        // --------------------------------------------------------
-        var stateSourceMap = {
-          'pregnancy.prenatal': 'pregnancy',
-          'pregnancy.labs': 'pregnancy',
-          'pregnancy.questionnaire': 'pregnancy',
-          'pregnancy.midwife': 'pregnancy',
-          'pregnancy.general': 'pregnancy',
-          'pregnancy.prenatalExam': 'prenatalExam',
-          'pregnancy.pregnancyHistory': 'pregnancyHistory'
-        };
-
         /* --------------------------------------------------------
         * getState()
         *
@@ -254,6 +249,7 @@
                     state.stateName = fieldStateMap[table][f];
                   }
                 });
+
                 // --------------------------------------------------------
                 // If field not found for this table, check for default
                 // for the table.

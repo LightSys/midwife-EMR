@@ -469,10 +469,12 @@
                         newRecNum = i;
                         found = true;
                       } else {
-                        if (_.contains(flds, 'DEFAULT')) {
+                        if (_.contains(flds, 'DEFAULT') ||
+                            _.contains(flds, 'SECONDARY')) {
                           // --------------------------------------------------------
-                          // We can use a default field as a tentative answer to use
-                          // if we don't come up with anything specific.
+                          // We can use a default field or a secondary field as a
+                          // tentative answer to use if we don't come up with
+                          // anything specific.
                           // --------------------------------------------------------
                           tentativeRecNum = i;
                         }
