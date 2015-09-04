@@ -166,8 +166,7 @@
             'partnerWork': 'pregnancy.general',
             'partnerEducation': 'pregnancy.general',
             'partnerIncome': 'pregnancy.general',
-            'partnerIncomePeriod': 'pregnancy.general',
-            'supervisor': 'pregnancy.general' // There are changes with only this field.
+            'partnerIncomePeriod': 'pregnancy.general'
           }
         };
 
@@ -281,7 +280,7 @@
             log.log('Warning: no state found for following changelog.');
             log.dir(changes);
           }
-          return state || defaultState;
+          return state.stateName? state: defaultState;
         };
 
         /* --------------------------------------------------------
