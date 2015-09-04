@@ -326,6 +326,7 @@ td.hcNavText-right {
 /* History - highlight changed fields */
 label.has-changed,
 div.has-changed,
+h4.has-changed,
 span.has-changed {
   color: #428BCA;
 }

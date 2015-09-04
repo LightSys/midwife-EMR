@@ -1,6 +1,6 @@
 <div class='row'>
   <div class='form-group col-xs-4'>
-    <h4 class='text-primary'>Present Complaints</h4>
+    <h4 class='text-muted' ng-class='{"has-changed": chgd.currentlyVomiting || chgd.currentlyDizzy || chgd.currentlyFainting || chgd.currentlyBleeding || chgd.currentlyUrinationPain || chgd.currentlyBlurryVision || chgd.currentlySwelling || chgd.currentlyVaginalPain || chgd.currentlyVaginalItching || chgd.currentlyNone}'>Present Complaints</h4>
     <div id="readonlyPresentComplaints" class="readonlyCheckmark">
       <table class='checkMarkText' ng-show='ctrl.pregnancy.currentlyVomiting'>
         <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Vomiting</td></tr>
@@ -36,7 +36,7 @@
   </div>
 
   <div class='form-group col-xs-4'>
-    <h4 class='text-primary'>Family History</h4>
+    <h4 class='text-muted' ng-class='{"has-changed": chgd.familyHistoryTwins || chgd.familyHistoryHighBloodPressure || chgd.familyHistoryDiabetes || chgd.familyHistoryHeartProblems || chgd.familyHistoryTB || chgd.familyHistorySmoking || chgd.familyHistoryNone}'>Family History</h4>
     <div id="readonlyFamilyHistory" class="readonlyCheckmark">
       <table class='checkMarkText' ng-show='ctrl.pregnancy.familyHistoryTwins'>
         <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Twins</td></tr>
@@ -63,7 +63,7 @@
   </div>
 
   <div class='form-group col-xs-4'>
-    <h4 class='text-primary'>Personal History</h4>
+    <h4 class='text-muted' ng-class='{"has-changed": chgd.historyFoodAllergy || chgd.historyMedicineAllergy || chgd.historyAsthma || chgd.historyHeartProblems || chgd.historyKidneyProblems || chgd.historyHepatitis || chgd.historyGoiter || chgd.historyHighBloodPressure || chgd.historyHospitalOperation || chgd.historyBloodTransfusion || chgd.historySmoking || chgd.historyDrinking || chgd.historyNone}'>Personal History</h4>
     <div id="readonlyPersonalHistory" class="readonlyCheckmark">
       <table class='checkMarkText' ng-show='ctrl.pregnancy.historyFoodAllergy'>
         <tr><td align='left' class="checkMark fa fa-check"></td><td class='checkText'>Food allergy</td></tr>
@@ -111,35 +111,35 @@
 <div class='row'>
   <div class='form-group col-xs-6'>
     <div class='separate-section'>
-      <label>Use iodized salt: </label><span class='text-primary'> {{ctrl.pregnancy.useIodizedSalt|yesNo}}</span>
+      <label ng-class='{"has-changed": chgd.useIodizedSalt}'>Use iodized salt: </label><span class='text-primary'> {{ctrl.pregnancy.useIodizedSalt|yesNo}}</span>
     </div>
     <div class='separate-section'>
-      <label>Take Medication: </label><span class='text-primary'> {{ctrl.pregnancy.takingMedication|yesNo}}</span>
+      <label ng-class='{"has-changed": chgd.takingMedication}'>Take Medication: </label><span class='text-primary'> {{ctrl.pregnancy.takingMedication|yesNo}}</span>
     </div>
     <div class='separate-section'>
-      <label>Plan to BF: </label><span class='text-primary'> {{ctrl.pregnancy.planToBreastFeed|yesNo}}</span>
+      <label ng-class='{"has-changed": chgd.planToBreastFeed}'>Plan to BF: </label><span class='text-primary'> {{ctrl.pregnancy.planToBreastFeed|yesNo}}</span>
     </div>
     <div class='separate-section'>
-      <label>Where do you plan to give birth? </label>
+      <label ng-class='{"has-changed": chgd.whereDeliver}'>Where do you plan to give birth? </label>
       <input class='form-control' disabled value='{{ctrl.pregnancy.whereDeliver}}'>
     </div>
     <div class='separate-section'>
-      <label>Companion during childbirth? </label>
+      <label ng-class='{"has-changed": chgd.birthCompanion}'>Companion during childbirth? </label>
       <input class='form-control' disabled value='{{ctrl.pregnancy.birthCompanion}}'>
     </div>
     <div class='checkbox'>
-      <label>
+      <label ng-class='{"has-changed": chgd.practiceFamilyPlanning}'>
         <input type='checkbox' name='practiceFamilyPlanning' disabled ng-checked='ctrl.pregnancy.practiceFamilyPlanning===1'>
         Practiced family planning
       </label>
     </div>
-    <span>Family planning comments
+    <span ng-class='{"has-changed": chgd.practiceFamilyPlanningDetails}'>Family planning comments
       <input class='form-control' type='text' disabled name='practiceFamilyPlanningDetails' value='{{ctrl.pregnancy.practiceFamilyPlanningDetails}}'>
     </span>
   </div>
 
   <div class='form-group col-xs-6'>
-    <span>Notes
+    <span ng-class='{"has-changed": chgd.questionnaireNote}'>Notes
       <textarea id='questionnaireNote' class='form-control' wrap="soft" rows="6" disabled name='questionnaireNote'>{{ctrl.pregnancy.questionnaireNote}}</textarea>
     </span>
   </div>
