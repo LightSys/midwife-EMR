@@ -1502,6 +1502,32 @@ var doTable = function(doc, columns, rows, opts, ypos,
 
 
 /* --------------------------------------------------------
+ * doAllFooters()
+ *
+ * Do all of the footers once we know how many pages have
+ * been generated. This needs to be done this way to account
+ * for overflow pages that were used.
+ *
+ * param       doc
+ * param       opts
+ * return      undefined
+ * -------------------------------------------------------- */
+var doAllFooters = function(doc, opts) {
+  var left = 'Summary Report'
+    , right = moment().format('MMM DD, YYYY h:mm a')
+    , rangePages = doc.bufferedPageRange()
+    , i = rangePages.start    // zero-based page
+    , j                       // human page
+    ;
+
+  for (; i < (rangePages.start + rangePages.count); i++) {
+    j = i + 1;
+    doc.switchToPage(i);
+    doFooter(doc, left, 'Page ' + j + ' of ' + rangePages.count, right, opts)
+  }
+};
+
+/* --------------------------------------------------------
  * doFooter()
  *
  * Write the footer for the report.
@@ -1559,13 +1585,12 @@ var doFooter = function(doc, left, middle, right, opts) {
 var doPage1 = function doPage1(doc, data, opts) {
   var y = 85
     ;
-  doPageCommon(doc, data, opts);
+  doPageCommon(doc, data, opts);  // No need to add a page on the first page.
   y = doClientGeneral(doc, data, opts, y);
   y = doPrenatal(doc, data, opts, y);
   y = doQuestionnaire(doc, data, opts, y);
   y = doMidwifeInterview(doc, data, opts, y);
   y = doPregnancyHistory(doc, data, opts, y);
-  doFooter(doc, 'Summary Report', 'Page 1 of 3', moment().format('MMM DD, YYYY h:mm a'), opts);
 };
 
 
@@ -1584,16 +1609,13 @@ var doPage2 = function doPage2(doc, data, opts) {
     , y1
     , y2
     ;
-  doc.addPage();
-  doPageCommon(doc, data, opts);
+  doStartPage(doc, data, opts);
   y = doLabResults(doc, data, opts, y);
   y1 = doMedications(doc, data, opts, y);   // left side
   y2 = doVaccinations(doc, data, opts, y);  // right side
   y = y1 > y2? y1: y2;
   y1 = doReferrals(doc, data, opts, y);     // left side
   y2 = doDoctorDentist(doc, data, opts, y); // right side
-
-  doFooter(doc, 'Summary Report', 'Page 2 of 3', moment().format('MMM DD, YYYY h:mm a'), opts);
 };
 
 /* --------------------------------------------------------
@@ -1611,15 +1633,27 @@ var doPage3 = function doPage2(doc, data, opts) {
     , y1
     , y2
     ;
-  doc.addPage();
-  doPageCommon(doc, data, opts);
+  doStartPage(doc, data, opts);
   y1 = doPrenatalRisk(doc, data, opts, y);
   y2 = doTransferOfCare(doc, data, opts, y);
   y2 = doPregnancyResult(doc, data, opts, y2);
   y = y1 >= y2? y1: y2;
   y = doPrenatalExams(doc, data, opts, y);
+};
 
-  doFooter(doc, 'Summary Report', 'Page 3 of 3', moment().format('MMM DD, YYYY h:mm a'), opts);
+/* --------------------------------------------------------
+ * doStartPage()
+ *
+ * Add a page and write out the header information.
+ *
+ * param       doc
+ * param       data
+ * param       opts
+ * return      undefined
+ * -------------------------------------------------------- */
+var doStartPage = function(doc, data, opts) {
+  doc.addPage();
+  doPageCommon(doc, data, opts);
 };
 
 /* --------------------------------------------------------
@@ -1640,6 +1674,8 @@ var doPages = function(doc, data, opts) {
   doPage1(doc, data, opts);
   doPage2(doc, data, opts);
   doPage3(doc, data, opts);
+
+  doAllFooters(doc, opts);
 };
 
 
@@ -1792,6 +1828,7 @@ var getData = function(id) {
  * -------------------------------------------------------- */
 var doReport = function doReport(id, writable) {
   var options = {
+        bufferPages: true,      // Allow writing to prior pages if desired.
         margins: {
           top: 18
           , right: 18
@@ -1815,6 +1852,7 @@ var doReport = function doReport(id, writable) {
   opts.margins = options.margins;
   opts.pageWidth = doc.page.width;
   opts.pageHeight = doc.page.height;
+  opts.rowsPerPage = rowsPerPage;
 
   // --------------------------------------------------------
   // Write the report to the writable stream passed.

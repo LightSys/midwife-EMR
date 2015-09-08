@@ -22,7 +22,7 @@
     "node-cache": "^1.0.3",
     "passport": "^0.2.1",
     "passport-local": "^1.0.0",
-    "pdfkit": "^0.6.2",
+    "pdfkit": "^0.7.1",
     "recluster": "^0.3.7",
     "underscore": "~1.7.0",
     "grunt": "^0.4.5",
