@@ -22,7 +22,10 @@
         //
         // DEFAULT: a flag that all of the fields for a particular
         // source are mapped to the same state unless the fields are
-        // otherwise separately listed.
+        // otherwise separately listed. Usually it is better to
+        // specifically set each field and use DEFAULT exclusively
+        // for the case when all the fields of a table are mapped to
+        // one state.
         //
         // SECONDARY: a flag a state that is a fallback if other fields
         // are not found. Used to allow changes from detail tables to
@@ -72,10 +75,9 @@
           },
           'patient': {
             'ageOfMenarche': 'pregnancy.midwife',
-            'DEFAULT': 'pregnancy.general'
-            //'dohID': 'pregnancy.general',
-            //'dob': 'pregnancy.general',
-            //'generalInfo': 'pregnancy.general'
+            'dohID': 'pregnancy.general',
+            'dob': 'pregnancy.general',
+            'generalInfo': 'pregnancy.general'
           },
           'pregnancy': {
             'firstname': 'pregnancy.general',
