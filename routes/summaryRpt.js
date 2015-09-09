@@ -45,6 +45,7 @@ var _ = require('underscore')
   , blackColor = '#000'
   , greyDarkColor = '#999'
   , greyLightColor = '#AAA'
+  , currentPage = 0;    // Tracking the current page that is printing.
   ;
 
 /* --------------------------------------------------------
@@ -289,7 +290,7 @@ var doCheckbox = function(doc, label, value, x, y) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     simulated object from doTable() with increased y
  * -------------------------------------------------------- */
 var doClientGeneral = function(doc, data, opts, ypos) {
   var x = opts.margins.left
@@ -373,7 +374,7 @@ var doClientGeneral = function(doc, data, opts, ypos) {
   doVertFldVal(doc, 'Partner Income', partnerIncome, x, y, true);
 
   y += 30;
-  return y;
+  return {y: y, overflow: false};
 };
 
 /* --------------------------------------------------------
@@ -386,13 +387,14 @@ var doClientGeneral = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     object from doTable() with increased y
  * -------------------------------------------------------- */
 var doPrenatalRisk = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
     , colNames = []
     , colData = []
+    , tblResult
     ;
 
   colNames.push('Risk type');
@@ -425,9 +427,10 @@ var doPrenatalRisk = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Prenatal Risks', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, 'left', true);
+  tblResult = doTable(doc, colNames, colData, opts, y, 'left', true);
+  tblResult.y += 10;
 
-  return y + 10;
+  return tblResult;
 };
 
 
@@ -445,7 +448,7 @@ var doPrenatalRisk = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     simulated object from doTable() with increased y
  * -------------------------------------------------------- */
 var doTransferOfCare = function(doc, data, opts, ypos) {
   var x = (doc.page.width / 2) + 10
@@ -470,9 +473,9 @@ var doTransferOfCare = function(doc, data, opts, ypos) {
     if (tNote) {
       y = doVertFldVal(doc, '', tNote, x, y, true);
     }
-    return y + 10;
+    return {y: y + 10, overflow: false};
   } else {
-    return y;
+    return {y: y, overflow: false};
   }
 };
 
@@ -489,7 +492,7 @@ var doTransferOfCare = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     simulated object from doTable() with increase y
  * -------------------------------------------------------- */
 var doPregnancyResult = function(doc, data, opts, ypos) {
   var x = (doc.page.width / 2) + 10
@@ -514,9 +517,9 @@ var doPregnancyResult = function(doc, data, opts, ypos) {
     if (rNote) {
       y = doVertFldVal(doc, '', rNote, x, y, true);
     }
-    return y + 10;
+    return {y: y + 10, overflow: false};
   } else {
-    return y;
+    return {y: y, overflow: false};
   }
 };
 
@@ -529,7 +532,7 @@ var doPregnancyResult = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     simulated object from doTable() with increased y
  * -------------------------------------------------------- */
 var doPrenatal = function(doc, data, opts, ypos) {
   var x = opts.margins.left
@@ -585,7 +588,7 @@ var doPrenatal = function(doc, data, opts, ypos) {
   doVertFldVal(doc, 'Risk Notes', riskNote, x, y, true);
 
   y = doc.y + 10;
-  return y;
+  return {y: y, overflow: false};
 };
 
 /* --------------------------------------------------------
@@ -597,7 +600,7 @@ var doPrenatal = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     simulated object from doTable() with increased y
  * -------------------------------------------------------- */
 var doMidwifeInterview = function(doc, data, opts, ypos) {
   var x = opts.margins.left
@@ -666,7 +669,7 @@ var doMidwifeInterview = function(doc, data, opts, ypos) {
     y = doc.y + 15;
   }
 
-  return y;
+  return {y: y, overflow: false};
 };
 
 /* --------------------------------------------------------
@@ -678,7 +681,7 @@ var doMidwifeInterview = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     simulated object from doTable() with increased y
  * -------------------------------------------------------- */
 var doQuestionnaire = function(doc, data, opts, ypos) {
   var x = opts.margins.left
@@ -773,7 +776,7 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
 
   doc.moveDown(1);
   y = doc.y + 10;
-  return y;
+  return {y: y, overflow: false};
 };
 
 /* --------------------------------------------------------
@@ -786,7 +789,7 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     object from doTable()
  * -------------------------------------------------------- */
 var doPregnancyHistory = function(doc, data, opts, ypos) {
   var x = opts.margins.left
@@ -794,6 +797,7 @@ var doPregnancyHistory = function(doc, data, opts, ypos) {
     , colNames = []
     , colData = []
     , bottomNote = []
+    , tblResult
     ;
 
   colNames.push('Date       ');
@@ -841,8 +845,9 @@ var doPregnancyHistory = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Pregnancy History', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, void 0, false, bottomNote);
+  tblResult = doTable(doc, colNames, colData, opts, y, void 0, false, bottomNote);
 
+  return tblResult;
 };
 
 /* --------------------------------------------------------
@@ -854,13 +859,14 @@ var doPregnancyHistory = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     object from doTable with increased y
  * -------------------------------------------------------- */
 var doLabResults = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
     , colNames = []
     , colData = []
+    , tblResult
     ;
 
   y += 5;
@@ -888,9 +894,10 @@ var doLabResults = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Lab Test Results', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y);
+  tblResult = doTable(doc, colNames, colData, opts, y);
+  tblResult.y += 10;
 
-  return y + 10;
+  return tblResult;
 };
 
 
@@ -903,7 +910,7 @@ var doLabResults = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     object from doTable() with increased y
  * -------------------------------------------------------- */
 var doVaccinations = function(doc, data, opts, ypos) {
   var x = (doc.page.width / 2) + 10
@@ -911,6 +918,7 @@ var doVaccinations = function(doc, data, opts, ypos) {
     , colNames = []
     , colData = []
     , reqTetanus = ''
+    , tblResults
     ;
 
   if (data.pregnancy.numberRequiredTetanus) {
@@ -945,9 +953,10 @@ var doVaccinations = function(doc, data, opts, ypos) {
   doShortAnswer(doc, 'Required tetanus:', reqTetanus, x, y, true);
 
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, 'right');
+  tblResults = doTable(doc, colNames, colData, opts, y, 'right');
+  tblResults.y += 10;
 
-  return y + 10;
+  return tblResults;
 };
 
 /* --------------------------------------------------------
@@ -959,13 +968,14 @@ var doVaccinations = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     object from doTable() with increased y
  * -------------------------------------------------------- */
 var doMedications = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
     , colNames = []
     , colData = []
+    , tblResults
     ;
 
   colNames.push('Name                      ');
@@ -983,9 +993,10 @@ var doMedications = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Medications', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, 'left');
+  tblResults = doTable(doc, colNames, colData, opts, y, 'left');
+  tblResults.y += 10;
 
-  return y + 10;
+  return tblResults;
 };
 
 
@@ -1034,7 +1045,7 @@ var doPrenatalNotes = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Prenatal Examination Notes', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, null, true);
+  y = doTable(doc, colNames, colData, opts, y, null, true).y;
 
   return y + 10;
 };
@@ -1048,7 +1059,7 @@ var doPrenatalNotes = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     object from doTable() with increased y
  * -------------------------------------------------------- */
 var doPrenatalExams = function(doc, data, opts, ypos) {
   var x = opts.margins.left
@@ -1056,6 +1067,7 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
     , colNames = []
     , colData = []
     , estDueDate
+    , tblResult
     ;
 
   // --------------------------------------------------------
@@ -1121,7 +1133,7 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Prenatal Examinations', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, null, true, void 0,
+  tblResult = doTable(doc, colNames, colData, opts, y, null, true, void 0,
     function(doc, x, y, row, rowIdx) {
       // --------------------------------------------------------
       // The post row callback for the prenatal table which allows
@@ -1150,8 +1162,8 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
       var riskNote = pExam.risk? pExam.risk: '';
       var otherNote = pExam.note? pExam.note: '';
       var riskOtherWidth = 240;
-      var riskLines = Math.ceil(doc.widthOfString(riskNote) / riskOtherWidth);
-      var otherLines = Math.ceil(doc.widthOfString(otherNote) / riskOtherWidth);
+      var riskLines = Math.ceil(doc.widthOfString(riskNote) / riskOtherWidth)+1;
+      var otherLines = Math.ceil(doc.widthOfString(otherNote) / riskOtherWidth)+1;
 
       // --------------------------------------------------------
       // Select the progress notes that should be printed along
@@ -1241,8 +1253,9 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
       // Requirement: return the new y position to the caller.
       return y;
     });
+  tblResult.y += 10;
 
-  return y + 10;
+  return tblResult;
 };
 
 
@@ -1255,13 +1268,14 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     object from doTable() with increased y
  * -------------------------------------------------------- */
 var doReferrals = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
     , colNames = []
     , colData = []
+    , tblResults
     ;
 
   colNames.push('Date  ');
@@ -1279,9 +1293,10 @@ var doReferrals = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Referrals', x, y);
   y += 10;
-  y = doTable(doc, colNames, colData, opts, y, 'left');
+  tblResults = doTable(doc, colNames, colData, opts, y, 'left');
+  tblResults.y += 10;
 
-  return y + 10;
+  return tblResults;
 };
 
 
@@ -1294,7 +1309,7 @@ var doReferrals = function(doc, data, opts, ypos) {
  * param      data
  * param      opts
  * param      ypos
- * return     y - new y position
+ * return     simulated object from doTable() with increased y
  * -------------------------------------------------------- */
 var doDoctorDentist = function(doc, data, opts, ypos) {
   var x = (doc.page.width / 2) + 10
@@ -1315,8 +1330,10 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
   doVertFldVal(doc, 'Doctor consult', docDate, x, y, true);
   x += 100;
   y = doVertFldVal(doc, 'Dentist consult', denDate, x, y, true);
+  y += 20;
 
-  return y +20;
+  // Simulate the object returned from doTable().
+  return {y: y, overflow: false};
 };
 
 
@@ -1348,6 +1365,13 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * been printed. The function has to be syncronous, should return the
  * new y position, and is passed the following parameters:
  *
+ * If the number of rows causes the page to exceed it's bounds,
+ * a new page will be added, including the header information, and
+ * the rows will be continued on the new overflow page. It is the
+ * caller's responsibility to start a new page before calling doTable()
+ * if there is not enough room to do at least some of the rows including
+ * the table header information.
+ *
  *  doc
  *  x
  *  y
@@ -1358,6 +1382,9 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  *  out after the row proper. The postRowCB is called after the
  *  bottomNote, if present, is printed.
  *
+ *  Returns an object with two elements, 'y' for the new y position and
+ *  'overflow' as a boolean whether an overflow page was added.
+ *
  * param      doc
  * param      columns - list of column names
  * param      rows
@@ -1367,16 +1394,32 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
  * param      wrap - whether to wrap data if too long for column
  * param      bottomNote - an array of notes, one per record, to write at bottom
  * param      postRowCB - callback called after each row
- * return     y - final y
+ * return     Object with y and overflow elements
  * -------------------------------------------------------- */
 var doTable = function(doc, columns, rows, opts, ypos,
     position, wrap, bottomNote, postRowCB) {
   var x = opts.margins.left
     , left = x
     , y = ypos
+    , lastY       // Starting y value for the current row.
+    , totalY = 0  // Total of the vertical space used for all rows at any point.
+    , avgY = 0    // Running average of vertical space used per row.
+    , minY = 90   // If overflow, start at this y position on new page.
+    , maxY = doc.page.height - opts.margins.bottom - 20 // Overflow trigger.
+    , didAddPage = false    // Was a page added due to overflow?
     , pageWidth = opts.pageWidth - opts.margins.left - opts.margins.right
     , colWidth = {}
     , totalColWidth = 0
+    , handlePageOverflow = function() {
+        if (y > (maxY - avgY)) {
+          logInfo('Summary Report: Added another page in doTable() due to overflow.');
+          doStartPage(doc, data, opts);
+          y = minY;
+          didAddPage = true;
+          // Reset font to what we expect.
+          doc.font(FONTS.Helvetica).fontSize(9);
+        }
+      }
     ;
 
   if (position) {
@@ -1426,6 +1469,7 @@ var doTable = function(doc, columns, rows, opts, ypos,
   // Write out the rows.
   // --------------------------------------------------------
   y += 10;
+  lastY = y;
   doc
     .font(FONTS.Helvetica)
     .fontSize(9);
@@ -1438,13 +1482,22 @@ var doTable = function(doc, columns, rows, opts, ypos,
       , numBtmLines
       , btmTmp
       ;
+
+    // Note the starting y position as we begin to print this row.
+    lastY = y;
+
     _.each(row, function(val, idx) {
       if (_.isNull(val)) val = '';
       var currColWidth = colWidth[columns[idx]]
         , textWidth = doc.widthOfString(val)
         , colStart
-        , currY = y
         ;
+
+      // --------------------------------------------------------
+      // Have we exceeded the vertical capabilities of the page
+      // after the rows completed so far?
+      // --------------------------------------------------------
+      handlePageOverflow();
 
       // Remove the new lines for the purposes of this report.
       val = String(val).replace(/$/g, ' ');
@@ -1495,9 +1548,20 @@ var doTable = function(doc, columns, rows, opts, ypos,
 
     doSep(doc, opts, y, greyLightColor, position);
     y += 10;
+
+    // --------------------------------------------------------
+    // Calculate the running average of the vertical space used
+    // for the rows so far. This allows a slightly more accurate
+    // "guess" whether to add a new page by the handlePageOverflow()
+    // function. In the case where we overflowed a page already,
+    // the first row will yield a y that is less than lastY, so
+    // ignore that and fudge the calculation.
+    // --------------------------------------------------------
+    totalY += y > lastY? y - lastY: avgY;
+    avgY = totalY / (rowNum + 1);
   });
 
-  return y + 10;
+  return {y: y + 10, overflow: didAddPage};
 };
 
 
@@ -1583,14 +1647,23 @@ var doFooter = function(doc, left, middle, right, opts) {
  * return     undefined
  * -------------------------------------------------------- */
 var doPage1 = function doPage1(doc, data, opts) {
-  var y = 85
+  var sections = []
     ;
-  doPageCommon(doc, data, opts);  // No need to add a page on the first page.
-  y = doClientGeneral(doc, data, opts, y);
-  y = doPrenatal(doc, data, opts, y);
-  y = doQuestionnaire(doc, data, opts, y);
-  y = doMidwifeInterview(doc, data, opts, y);
-  y = doPregnancyHistory(doc, data, opts, y);
+
+  // No need to add a page on the first page so doStartPage() not used.
+  doPageCommon(doc, data, opts);
+
+  // --------------------------------------------------------
+  // Define the sections for this page.
+  // --------------------------------------------------------
+  sections.push([doClientGeneral]);
+  sections.push([doPrenatal]);
+  sections.push([doQuestionnaire]);
+  sections.push([doMidwifeInterview]);
+  sections.push([doPregnancyHistory]);
+
+  // Print as defined.
+  doPrintPage(doc, data, opts, sections);
 };
 
 
@@ -1605,17 +1678,20 @@ var doPage1 = function doPage1(doc, data, opts) {
  * return     undefined
  * -------------------------------------------------------- */
 var doPage2 = function doPage2(doc, data, opts) {
-  var y = 85
-    , y1
-    , y2
+  var sections = []
     ;
+
   doStartPage(doc, data, opts);
-  y = doLabResults(doc, data, opts, y);
-  y1 = doMedications(doc, data, opts, y);   // left side
-  y2 = doVaccinations(doc, data, opts, y);  // right side
-  y = y1 > y2? y1: y2;
-  y1 = doReferrals(doc, data, opts, y);     // left side
-  y2 = doDoctorDentist(doc, data, opts, y); // right side
+
+  // --------------------------------------------------------
+  // Define the sections for this page.
+  // --------------------------------------------------------
+  sections.push([doLabResults]);
+  sections.push([doMedications, doVaccinations]);
+  sections.push([doReferrals, doDoctorDentist]);
+
+  // Print as defined.
+  doPrintPage(doc, data, opts, sections);
 };
 
 /* --------------------------------------------------------
@@ -1629,16 +1705,139 @@ var doPage2 = function doPage2(doc, data, opts) {
  * return     undefined
  * -------------------------------------------------------- */
 var doPage3 = function doPage2(doc, data, opts) {
-  var y = 85
-    , y1
-    , y2
+  var sections = []
     ;
+
   doStartPage(doc, data, opts);
-  y1 = doPrenatalRisk(doc, data, opts, y);
-  y2 = doTransferOfCare(doc, data, opts, y);
-  y2 = doPregnancyResult(doc, data, opts, y2);
-  y = y1 >= y2? y1: y2;
-  y = doPrenatalExams(doc, data, opts, y);
+
+  // --------------------------------------------------------
+  // Define the sections for this page.
+  // --------------------------------------------------------
+  sections.push([doPrenatalRisk, doTransferOfCare, doPregnancyResult]);
+  sections.push([doPrenatalExams]);
+
+  // Print as defined.
+  doPrintPage(doc, data, opts, sections);
+};
+
+/* --------------------------------------------------------
+ * doPrintPage()
+ *
+ * Manages the printing of a page, including handling overflows
+ * of the page onto one or more overflow pages. Expects the
+ * near standard doc, data, and opts parameters as well as
+ * a fourth, sections.
+ *
+ * The sections parameter is expected to be an array of arrays,
+ * each interior array to consist of the functions to call to
+ * produce the section in question. Interior arrays with one
+ * element will span the whole width of the page, while those
+ * with two will print to the left and right respectfully. E.g.
+ *
+ * sections = [[doLabResults], [doMedications, doVaccination],
+ *             [doReferrals, doDoctorDentist]];
+ *
+ * Each section function, when called, will be passed doc, data,
+ * opts, and y as parameters. Each section is expected to return
+ * an object with at least two elements, y and overflow.
+ *
+ * For ease of terminology, the inner arrays will be referred
+ * to as sections. Each section may have one or two parts
+ * corresponding to the functions within the inner arrays.
+ *
+ * It is allowable that there can be more than two parts in
+ * a section, but in that case, it is assumed that the parts
+ * will not have any risk of overflow, i.e. they have a constant
+ * size that is not influenced by data.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      sections
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPrintPage = function(doc, data, opts, sections) {
+  var minY = 85   // Top/bottom positions for printing on a page.
+    , maxY = doc.page.height - opts.margins.bottom - 40
+    , y = minY
+    , startPage = currentPage
+    , partsResults = []
+    , funcCnt = 0
+    , numSections = _.size(sections)
+    ;
+
+  _.each(sections, function(partsArray, secIdx) {
+    var isFullWidth = _.size(partsArray) === 1? true: false
+      , sectionY = y
+      ;
+    // --------------------------------------------------------
+    // Process this section of either one or two parts.
+    // --------------------------------------------------------
+    _.each(partsArray, function(func, idx) {
+      // Run the function and get the result.
+      partsResults[idx] = func(doc, data, opts, y);
+      funcCnt++;
+
+      // --------------------------------------------------------
+      // If a full width section used too much vertical w/o adding
+      // page, we add another page for the sake of the next section,
+      // unless there isn't another one coming.
+      // --------------------------------------------------------
+      if (isFullWidth &&
+          partsResults[idx].y > maxY &&
+          ! partsResults[idx].overflow &&
+          secIdx < (numSections - 1)) {
+        doStartPage(doc, data, opts);
+        y = minY;
+      }
+
+      // If we are full width, reset y for the next section down.
+      if (isFullWidth) {
+        y = partsResults[idx].y;
+      } else {
+        if (idx === 0) {
+          // First of two side-by-side sections.
+          if (partsResults[idx].overflow) {
+            // Reset to prior page and y for the next part in this section.
+            doc.switchToPage(--currentPage);
+          }
+          y = sectionY;
+        }
+        if (idx === 1) {
+          // Second of two side-by-side sections.
+          if (! partsResults[0].overflow && ! partsResults[1].overflow) {
+            // Neither part overflowed, so take the greatest y.
+            y = partsResults[0].y > partsResults[1].y? partsResults[0].y: partsResults[1].y;
+          } else if (partsResults[0].overflow && ! partsResults[1].overflow) {
+            // If the first part overflowed but the second did not,
+            // move ahead a page for the sake of the next section and use the
+            // y value from the first part because it is the y for the new page.
+            doc.switchToPage(++currentPage);
+            y = partsResults[0].y;
+          } else if (! partsResults[0].overflow && partsResults[1].overflow) {
+            // The second part overflowed but the first did not, already moved
+            // ahead a page so just take the y from the second part.
+            y = partsResults[1].y;
+          } else if (partsResults[0].overflow && partsResults[1].overflow) {
+            // Both parts overflowed so take the greater of the y values.
+            y = partsResults[0].y > partsResults[1].y? partsResults[0].y: partsResults[1].y;
+          } else {
+            logWarn('doPrintPage(): logic error - should not have reached this point.');
+          }
+        }
+        if (idx > 1) {
+          // --------------------------------------------------------
+          // Assume that we are not printing left/right parts using
+          // doTable() and that overflow with this is not an issue, so
+          // just track y.
+          // --------------------------------------------------------
+          y = partsResults[idx].y;
+        }
+      }
+    });
+    partsResults = [];   // Clear for the next section.
+  });
+
 };
 
 /* --------------------------------------------------------
@@ -1654,6 +1853,7 @@ var doPage3 = function doPage2(doc, data, opts) {
 var doStartPage = function(doc, data, opts) {
   doc.addPage();
   doPageCommon(doc, data, opts);
+  currentPage++;
 };
 
 /* --------------------------------------------------------
@@ -1853,6 +2053,8 @@ var doReport = function doReport(id, writable) {
   opts.pageWidth = doc.page.width;
   opts.pageHeight = doc.page.height;
   opts.rowsPerPage = rowsPerPage;
+
+  currentPage = 0;   // Tracking what page we are printing to now, zero based.
 
   // --------------------------------------------------------
   // Write the report to the writable stream passed.
