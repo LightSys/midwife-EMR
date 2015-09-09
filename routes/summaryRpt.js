@@ -894,7 +894,7 @@ var doLabResults = function(doc, data, opts, ypos) {
 
   doLabel(doc, 'Lab Test Results', x, y);
   y += 10;
-  tblResult = doTable(doc, colNames, colData, opts, y);
+  tblResult = doTable(doc, colNames, colData, opts, y, undefined, true);
   tblResult.y += 10;
 
   return tblResult;
