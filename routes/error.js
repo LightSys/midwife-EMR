@@ -37,7 +37,11 @@ var notFoundError = function(req, res) {
   var title = req.gettext("Oops! Couldn't find that page.")
     , text = "We've saved what happened so that we can figure it out later. In the meantime, choose the Home menu option to try again."
     ;
-  logInfo('Not found - User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method);
+  if (req.session && req.session.user && req.session.user.id) {
+    logInfo('Not found - User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method);
+  } else {
+    logInfo('Not found - Path: ' + req.path + ', method: ' + req.method);
+  }
   res.render('errorPage', {title: title, text: text});
 };
 

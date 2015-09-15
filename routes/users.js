@@ -316,7 +316,7 @@ var saveProfile = function(req, res) {
     });
   } else {
     if (req.body && req.body.id && req.body.id != req.session.user.id) {
-      res.send(403, 'Forbidden');
+      res.status(403).send('Forbidden');
     }
   }
 };

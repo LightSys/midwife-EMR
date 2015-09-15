@@ -7,6 +7,14 @@
  */
 
 var express = require('express')
+  , bodyParser = require('body-parser')
+  , cookieParser = require('cookie-parser')
+  , session = require('express-session')
+  , errorHandler = require('errorhandler')
+  , methodOverride = require('method-override')
+  , favicon = require('serve-favicon')
+  , csurf = require('csurf')
+  , csrfProtection = csurf({cookie: true})
   , http = require('http')
   , https = require('https')
   , heapdump = require('heapdump')
@@ -21,7 +29,7 @@ var express = require('express')
   , setRoleInfo = require('./auth').setRoleInfo(app)    // requires the app object
   , clearRoleInfo = require('./auth').clearRoleInfo(app)    // requires the app object
   , auth = require('./auth').auth
-  , SessionStore = require('connect-mysql')(express)
+  , SessionStore = require('express-mysql-session')
   , MySQL = require('mysql')                            // for conn pool for sessions
   , i18n = require('i18n-abide')
   , _ = require('underscore')
@@ -104,29 +112,39 @@ passport.use(new LocalStrategy(
 app.engine('jade', cons.jade);
 app.set('view engine', 'jade');
 app.set('views', path.join(__dirname,'views'));
+app.use(favicon(__dirname + '/static/favicon.ico'));
 app.use(express.static('bower_components'));
 app.use(express.static('static'));
-app.use(express.favicon());
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(express.methodOverride());
-app.use(express.cookieParser(cfg.cookie.secret));
-// We explicitly create our own pool because connect-mysql does not
-// have options to specify the database residing on a different host.
+app.use(bodyParser.json());
+app.use(methodOverride());
+app.use(cookieParser(cfg.cookie.secret));
+
 cfg.session.pool = MySQL.createPool({
   user: cfg.database.dbUser
   , password: cfg.database.dbPass
   , host: cfg.database.host
   , port: cfg.database.port
   , database: cfg.database.db
+  , schema: {
+      tablename: 'session'
+      , columnNames: {
+          session_id: 'sid'
+          , expires: 'expires'
+          , data: 'session'
+      }
+    }
 });
-app.use(express.session({
+var sessionStore = new SessionStore(cfg.session.config);
+app.use(session({
   secret: cfg.session.secret
   , cookie: {maxAge: cfg.cookie.maxAge, secure: useSecureCookie}
   , rolling: true   // Allows session to remain active as long as it is being used.
-  , store: new SessionStore(cfg.session)
+  , resave: true
+  , saveUninitialized: false
+  , store: sessionStore
 }));
-app.use(express.bodyParser());
+
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(device.capture());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -135,12 +153,9 @@ app.use(flash());
 // --------------------------------------------------------
 // Deliver these JS libraries to the templating system.
 // --------------------------------------------------------
-app.locals({
-  libs: {
-    mmt: moment     // Moment's global reference is deprecated.
-    , _: _          // Underscore
-  }
-});
+app.locals.libs = {};
+app.locals.libs.mmt = moment;   // Moment's global reference is deprecated.
+app.locals.libs._ = _;          // Underscore
 
 // --------------------------------------------------------
 // Localization.
@@ -277,7 +292,7 @@ app.use(function(req, res, next) {
 // --------------------------------------------------------
 // Protect against cross site request forgeries.
 // --------------------------------------------------------
-app.use(express.csrf());
+app.use(csrfProtection);
 app.use(function(req, res, next) {
   app.locals.token = req.csrfToken();
   next();
@@ -304,31 +319,19 @@ if (fs.existsSync('./VERSION')) {
 // --------------------------------------------------------
 device.enableViewRouting(app);
 
-app.use(app.router);
-
-// --------------------------------------------------------
-// Error handling.
-// TODO: should these be located here or below the routes?
-// --------------------------------------------------------
-app.use(error.notFoundError);
-app.use(error.logException);
-app.use(error.displayError);
-app.use(error.exitError);
-
 // --------------------------------------------------------
 // Development configuration
 // --------------------------------------------------------
-app.configure('development', function() {
+if (app.get('env') === 'development') {
   logInfo('DEVELOPMENT mode');
-  app.use(express.logger('dev'));
-  app.use(express.errorHandler());
-});
+}
+
 // --------------------------------------------------------
 // Production configuration
 // --------------------------------------------------------
-app.configure('production', function() {
+if (app.get('env') === 'production') {
   logInfo('PRODUCTION mode');
-});
+}
 
 // ========================================================
 // ========================================================
@@ -594,6 +597,17 @@ app.get(cfg.path.spa, common,
 app.get(cfg.path.apiLoad, api.params);    // parameter handling
 app.get(cfg.path.apiHistory, common,
     inRoles(['supervisor']), api.history.get);
+
+// --------------------------------------------------------
+// Error handling.
+// --------------------------------------------------------
+app.use(error.notFoundError);
+app.use(error.logException);
+app.use(error.displayError);
+app.use(error.exitError);
+if (app.get('env') === 'development') {
+  app.use(errorHandler());
+}
 
 // --------------------------------------------------------
 // The last resort.

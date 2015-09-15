@@ -130,7 +130,9 @@ cfg.session.pool = true;
 cfg.session.table = 'session';
 cfg.session.cleanup = true;
 cfg.session.config = {
-  user: cfg.database.dbUser
+  host: cfg.database.host
+  , port: cfg.database.port
+  , user: cfg.database.dbUser
   , password: cfg.database.dbPass
   , database: cfg.database.db
 };

@@ -2077,7 +2077,7 @@ var doReport = function doReport(id, writable) {
  * Create the summary report for a patient.
  * -------------------------------------------------------- */
 var run = function run(req, res) {
-  var id = req.param('id')
+  var id = req.params.id
     , filePath = path.join(cfg.site.tmpDir, 'rpt-' + (Math.random() * 9999999999) + '.pdf')
     , writable = fs.createWriteStream(filePath)
     , success = false

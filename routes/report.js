@@ -26,7 +26,7 @@ var _ = require('underscore')
  * Generates the summary report for the current pregnancy.
  * -------------------------------------------------------- */
 var summary = function summary(req, res) {
-  var id = req.param('id')
+  var id = req.params.id
     ;
   if (! id) {
     req.flash('warning', req.gettext('Pregnancy id not specified.'));
