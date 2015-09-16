@@ -36,7 +36,7 @@
     "pdfkit": "^0.7.1",
     "recluster": "^0.3.7",
     "serve-favicon": "^2.3.0",
-    "underscore": "~1.7.0",
+    "underscore": "^1.8.3",
     "underscore-contrib": "^0.3.0",
     "validator": "~3.22.1"
   },
