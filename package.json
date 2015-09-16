@@ -14,7 +14,7 @@
     "csurf": "^1.8.3",
     "errorhandler": "^1.4.2",
     "express": "^4.13.3",
-    "express-device": "^0.3.11",
+    "express-device": "^0.4.2",
     "express-flash": "0.0.2",
     "express-mysql-session": "^0.4.1",
     "express-session": "^1.11.3",
