@@ -13,6 +13,7 @@ var _ = require('underscore')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , validOrVoidDate = require('../util').validOrVoidDate
   , adjustSelectData = require('../util').adjustSelectData
   , getCommonFormData = require('./pregnancy').getCommonFormData
   , Referral = require('../models').Referral
@@ -50,7 +51,7 @@ var referralEditForm = function(req, res) {
       .then(function(model) {
         var referral = _.omit(model.toJSON(), ['updatedBy', 'updatedAt', 'supervisor'])
           ;
-        referral.date = moment(referral.date).format('YYYY-MM-DD');
+        referral.date = validOrVoidDate(referral.date);
         data.referralRec = referral;
         res.render('referralAddEditForm', getCommonFormData(req, data));
       })

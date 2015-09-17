@@ -15,6 +15,7 @@ var _ = require('underscore')
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , adjustSelectData = require('../util').adjustSelectData
+  , validOrVoidDate = require('../util').validOrVoidDate
   , getCommonFormData = require('./pregnancy').getCommonFormData
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
@@ -76,7 +77,7 @@ var medicationEditForm = function(req, res) {
           , medType = model.related('medicationType')
           ;
         if (medication.date) {
-          medication.date = moment(medication.date).format('YYYY-MM-DD');
+          medication.date = validOrVoidDate(medication.date);
         }
         data.medicationRec = medication;
         data.medicationRec.medType = medType.get('name');

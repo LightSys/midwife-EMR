@@ -7,6 +7,12 @@ block pregnancyEdit
     div(class='col-xs-12')
       +pregnancyTab('edit')
 
+  //- Date fields are expected to come into the template as valid Date objects
+  //- or undefined. Inputs with type date and those using the datePicker mixin
+  //- require 'YYYY-MM-DD' format, while inputs with type text require 'MM/DD/YYYY'.
+  //- Date inputs:
+  - var dob = rec.patient.dob? libs.mmt(rec.patient.dob).format('YYYY-MM-DD'): '';
+
   div(class='formBoxLarge')
     form(class='dirty-check disable-on-submit', role='form', name='pregnancyForm', action='/pregnancy/' + rec.id + '/update', method='post')
       div.row
@@ -18,7 +24,7 @@ block pregnancyEdit
           input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname', value=rec.firstname)
         div(class='form-group col-xs-4')
           span= gettext('DOB (mm/dd/yyyy)')
-          input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob', value=rec.patient.dob)
+          input(class='form-control input-lg', type='date', tabindex="3", autocomplete="off", name='dob', value=dob)
       div.row
         div(class='form-group col-xs-4')
           span= gettext('Religion')

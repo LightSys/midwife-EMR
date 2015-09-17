@@ -16,6 +16,7 @@ var _ = require('underscore')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , validOrVoidDate = require('../util').validOrVoidDate
   , adjustSelectData = require('../util').adjustSelectData
   , getCommonFormData = require('./pregnancy').getCommonFormData
   , LabSuite = require('../models').LabSuite
@@ -56,7 +57,7 @@ var labTestAddForm = function(req, res) {
     });
     testDate = req.body.labTestDate || void 0;
 
-    if (testDate && testIds.length > 0) {
+    if (testDate && moment(testDate, 'YYYY-MM-DD').isValid() && testIds.length > 0) {
       new LabTests()
         .query(function(qb) {
           qb.whereIn('id', testIds);
@@ -67,7 +68,7 @@ var labTestAddForm = function(req, res) {
             , formData = {
                 title: req.gettext('Add Lab Tests')
                 , labTestResultDate: testDate
-                , addLabsDate: testDate
+                , addLabsDate: validOrVoidDate(moment(testDate, 'YYYY-MM-DD').toDate())
               }
             ;
 
@@ -119,7 +120,7 @@ var labTestEditForm = function(req, res) {
                   var formData = {
                     title: req.gettext('Edit Lab Test: ' + labTest.get('name'))
                     , labTestResultId: ltrId
-                    , labTestResultDate: moment(testDate).format('YYYY-MM-DD')
+                    , labTestResultDate: validOrVoidDate(testDate)
                   }
                   , data
                   , ltf = labTestFormat(labTest, result, result2, warn)

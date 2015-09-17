@@ -10,8 +10,8 @@ mixin patientWell(record)
   - var nickname = record.nickname && record.nickname.length > 0? record.nickname: '';
   - var dob;
   - dob = record.patient.dob? libs.mmt(record.patient.dob): '';
+  - var age = dob && dob.isValid()? libs.mmt().diff(dob, 'years'): '';
   - dob = dob && dob.isValid()? dob.format('MM-DD-YYYY'): '';
-  - var age = dob? libs.mmt().diff(dob, 'years'): '';
   - var edd = record.edd? libs.mmt(record.edd).format('MM-DD-YYYY'): '';
   - var lmp = record.lmp? libs.mmt(record.lmp).format('MM-DD-YYYY'): '';
   - if (record.useAlternateEdd && record.alternateEdd && libs.mmt(record.alternateEdd).isValid()) {

@@ -15,6 +15,7 @@ var _ = require('underscore')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , validOrVoidDate = require('../util').validOrVoidDate
   , adjustSelectData = require('../util').adjustSelectData
   , getCommonFormData = require('./pregnancy').getCommonFormData
   , Pregnote = require('../models').Pregnote
@@ -69,7 +70,7 @@ var pregnoteEditForm = function(req, res) {
       .then(function(model) {
         var pregnote = _.omit(model.toJSON(), ['updatedBy', 'updatedAt', 'supervisor'])
           ;
-        pregnote.noteDate = moment(pregnote.noteDate).format('YYYY-MM-DD');
+        pregnote.noteDate = validOrVoidDate(pregnote.noteDate);
         data.pregnoteRec = pregnote;
         res.render('pregnoteAddEditForm', getCommonFormData(req, data));
       })

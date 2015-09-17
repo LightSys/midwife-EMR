@@ -16,7 +16,16 @@ block prenatal
   -   return rec.riskType? rec.riskType: undefined;
   - }
 
-  - var edd = rec.edd? libs.mmt(rec.edd).format('MM-DD-YYYY'): '';
+  //- Date fields are expected to come into the template as valid Date objects
+  //- or undefined. Inputs with type date and those using the datePicker mixin
+  //- require 'YYYY-MM-DD' format, while inputs with type text require 'MM/DD/YYYY'.
+  //- Date inputs:
+  - var lmp = rec.lmp? libs.mmt(rec.lmp).format('YYYY-MM-DD'): '';
+  - var alternateEdd = rec.alternateEdd? libs.mmt(rec.alternateEdd).format('YYYY-MM-DD'): '';
+  - var pregnancyEndDate = rec.pregnancyEndDate? libs.mmt(rec.pregnancyEndDate).format('YYYY-MM-DD'): '';
+  - var transferOfCare = rec.transferOfCare? libs.mmt(rec.transferOfCare).format('YYYY-MM-DD'): '';
+  //- Text inputs:
+  - var edd = rec.edd? libs.mmt(rec.edd).format('MM/DD/YYYY'): '';
 
   - var prenatalExamAddFormPath = '/pregnancy/' + rec.id + '/prenatalexam';
   form(id='prenatalForm', class='dirty-check disable-on-submit', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')
@@ -51,7 +60,7 @@ block prenatal
           div(class='col-md-4 ')
             div
               span= gettext('LMP')
-              +datePicker('form-control', 5, 'lmp', rec.lmp, 'prenatal-lmp', null, readonlyFields.lmp, 'Unknown')
+              +datePicker('form-control', 5, 'lmp', lmp, 'prenatal-lmp', null, readonlyFields.lmp, 'Unknown')
           div(class='col-md-4 ')
             div
               span= gettext('EDD')
@@ -59,7 +68,7 @@ block prenatal
           div(class='col-md-4 ')
             div
               span= gettext('Alternate EDD')
-              +datePicker('form-control', 8, 'alternateEdd', rec.alternateEdd, null, null, readonlyFields.alternateEdd)
+              +datePicker('form-control', 8, 'alternateEdd', alternateEdd, null, null, readonlyFields.alternateEdd)
         div.row
           div(class='col-md-6 ')
             div.checkbox
@@ -245,7 +254,7 @@ block prenatal
               div(class='col-md-7')
                 div
                   span= gettext('Transfer Date')
-                  +datePicker('form-control', 40, 'transferOfCare', rec.transferOfCare, null, null, readonlyFields.transferOfCare)
+                  +datePicker('form-control', 40, 'transferOfCare', transferOfCare, null, null, readonlyFields.transferOfCare)
               div(class='col-md-5')
                 div
                   span= gettext('Time')
@@ -261,7 +270,7 @@ block prenatal
               div(class='col-md-12')
                 div
                   span= gettext('End Date')
-                  +datePicker('form-control', 43, 'pregnancyEndDate', rec.pregnancyEndDate, null, null, readonlyFields.pregnancyEndDate)
+                  +datePicker('form-control', 43, 'pregnancyEndDate', pregnancyEndDate, null, null, readonlyFields.pregnancyEndDate)
             div(class='row')
               div(class='col-md-12')
                 div

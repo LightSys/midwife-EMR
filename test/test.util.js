@@ -87,6 +87,57 @@ describe('Util', function(done) {
 
   });
 
+  describe('validOrVoidDate', function(done) {
+    it('should return the same Date object if one is passed', function(done) {
+      var d = new Date();
+      var result = util.validOrVoidDate(d);
+      d.should.be.a.Date;
+      done();
+    });
+
+    it('should return undefined if a string is passed', function(done) {
+      var d = 'This is a test string';
+      var result = util.validOrVoidDate(d);
+      should.not.exist(result);
+      done();
+    });
+
+    it('should return undefined if a string that looks like a date is passed', function(done) {
+      var d = 'Wed Sep 16 2015 21:27:17 GMT+0800 (PHT)';
+      var result = util.validOrVoidDate(d);
+      should.not.exist(result);
+      done();
+    });
+
+    it('should return undefined if a date string with zeroes is passed', function(done) {
+      var d = '0000-00-00';
+      var result = util.validOrVoidDate(d);
+      should.not.exist(result);
+      done();
+    });
+
+    it('should return undefined if undefined is passed', function(done) {
+      var d = void 0;
+      var result = util.validOrVoidDate(d);
+      should.not.exist(result);
+      done();
+    });
+
+    it('should return undefined if null is passed', function(done) {
+      var d = null;
+      var result = util.validOrVoidDate(d);
+      should.not.exist(result);
+      done();
+    });
+
+    it('should return undefined if a valid Moment object is passed', function(done) {
+      var d = moment();
+      var result = util.validOrVoidDate(d);
+      should.not.exist(result);
+      done();
+    });
+  });
+
   describe('getGA', function(done) {
     it('should throw exception if called with no parameters', function(done) {
       (function() {

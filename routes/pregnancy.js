@@ -55,6 +55,7 @@ var _ = require('underscore')
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , getGA = require('../util').getGA
+  , validOrVoidDate = require('../util').validOrVoidDate
   , getAbbr = require('../util').getAbbr
   , calcEdd = require('../util').calcEdd
   , adjustSelectData = require('../util').adjustSelectData
@@ -333,16 +334,16 @@ var load = function(req, res, next) {
         });
 
         // --------------------------------------------------------
-        // Fix the dates for the screen in the format that the
-        // input[type='date'] expects.
+        // Insure that that dates sent to the templates are Date
+        // objects or undefined.
         // --------------------------------------------------------
-        rec.patient.dob = formatDate(rec.patient.dob);
-        rec.lmp = formatDate(rec.lmp);
-        rec.edd = formatDate(rec.edd);
-        rec.alternateEdd = formatDate(rec.alternateEdd);
-        rec.pregnancyEndDate = formatDate(rec.pregnancyEndDate);
-        rec.dentistConsultDate = formatDate(rec.dentistConsultDate);
-        rec.doctorConsultDate = formatDate(rec.doctorConsultDate);
+        rec.patient.dob = validOrVoidDate(rec.patient.dob);
+        rec.lmp = validOrVoidDate(rec.lmp);
+        rec.edd = validOrVoidDate(rec.edd);
+        rec.alternateEdd = validOrVoidDate(rec.alternateEdd);
+        rec.pregnancyEndDate = validOrVoidDate(rec.pregnancyEndDate);
+        rec.dentistConsultDate = validOrVoidDate(rec.dentistConsultDate);
+        rec.doctorConsultDate = validOrVoidDate(rec.doctorConsultDate);
 
         // --------------------------------------------------------
         // transferOfCareTime is a psuedo field that is stored in
@@ -353,7 +354,7 @@ var load = function(req, res, next) {
         // source field is changed when the date portion is processed.
         // --------------------------------------------------------
         rec.transferOfCareTime = formatTime(rec.transferOfCare);
-        rec.transferOfCare = formatDate(rec.transferOfCare);
+        rec.transferOfCare = validOrVoidDate(rec.transferOfCare);
 
         // --------------------------------------------------------
         // Calculate the gestational age at this point or at the
@@ -2032,6 +2033,7 @@ var labsForm = function(req, res) {
         _.each(ltResults.toJSON(), function(result) {
             var r = _.omit(result, ['updatedBy','updatedAt','supervisor','LabTest']);
             r.name = result.LabTest.name;
+            r.testDate = validOrVoidDate(r.testDate);
             ltests.push(r);
         });
         // --------------------------------------------------------
@@ -2052,7 +2054,7 @@ var labsForm = function(req, res) {
         var refList;
         refList = _.sortBy(refs, 'date');
         _.each(refList, function(ref) {
-          ref.date = moment(ref.date).format('MM-DD-YYYY');
+          ref.date = validOrVoidDate(ref.date);
         });
         referrals = refList;
       })
@@ -2067,7 +2069,7 @@ var labsForm = function(req, res) {
         var teachingsList;
         teachingsList = _.sortBy(records, 'date');
         _.each(teachingsList, function(teach) {
-          teach.date = moment(teach.date).format('MM-DD-YYYY');
+          teach.date = validOrVoidDate(teach.date);
         });
         teachings = teachingsList;
       })
@@ -2097,7 +2099,7 @@ var labsForm = function(req, res) {
               vac.sortDate = '0';
             }
           } else {
-            vac.vacDate = moment(vac.vacDate).format('YYYY-MM-DD');
+            vac.vacDate = validOrVoidDate(vac.vacDate);
             vac.sortDate = moment(vac.vacDate).format('YYYYMMDD');
           }
           vacList.push(vac);
@@ -2137,7 +2139,7 @@ var labsForm = function(req, res) {
       .then(function(meds) {
         var medList = [];
         _.each(meds, function(med) {
-          med.date = moment(med.date).format('YYYY-MM-DD');
+          med.date = validOrVoidDate(med.date);
           medList.push(med);
         });
         medList = _.sortBy(medList, 'date');

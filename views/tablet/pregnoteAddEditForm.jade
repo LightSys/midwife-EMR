@@ -17,7 +17,7 @@ block pregnoteAddEditForm
   //- If editing a referral
   - if (pregnoteRec && pregnoteRec.id) {
   -   formAction ='/pregnancy/' + rec.id + '/pregnote/' + pregnoteRec.id;
-  -   pregnoteDate = pregnoteRec.noteDate || pregnoteDate;
+  -   pregnoteDate = pregnoteRec.noteDate? libs.mmt(pregnoteRec.noteDate).format('YYYY-MM-DD'): pregnoteDate;
   -   note = pregnoteRec.note;
   -   isUpdate = true;
   -   pregnoteDeletePath = '/pregnancy/' + rec.id + '/pregnote/' + pregnoteRec.id + '/delete';

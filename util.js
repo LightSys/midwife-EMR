@@ -304,6 +304,26 @@ var isValidDate = function(dte, format) {
   return false;
 };
 
+
+/* --------------------------------------------------------
+ * validOrVoidDate()
+ *
+ * Insure that the parameter passed in either a valid Date
+ * object and return the same, otherwise return an undefined.
+ * Note that this will return undefined even if a valid
+ * Moment object is passed.
+ *
+ * param       val - a Date object or anything
+ * return      result - a Date object or undefined
+ * -------------------------------------------------------- */
+var validOrVoidDate = function(val) {
+  var result = void 0;
+  if (val === null) return result;
+  if (val === '0000-00-00') return result;
+  if (_.isDate(val) && moment(val).isValid()) result = val;
+  return result;
+};
+
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
@@ -315,6 +335,7 @@ module.exports = {
   , getAbbr: getAbbr
   , formatDohID: formatDohID
   , isValidDate: isValidDate
+  , validOrVoidDate: validOrVoidDate
 };
 
 

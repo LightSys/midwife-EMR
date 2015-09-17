@@ -27,6 +27,10 @@ block labs
   //- Latest prenatal exam
   - var latestPrenatalExamPath = '/pregnancy/' + rec.id + '/prenatalexamlatest';
 
+  //- Doctor/dentist dates
+  - var doctorConsultDate = rec.doctorConsultDate? libs.mmt(rec.doctorConsultDate).format('YYYY-MM-DD'): '';
+  - var dentistConsultDate = rec.dentistConsultDate? libs.mmt(rec.dentistConsultDate).format('YYYY-MM-DD'): '';
+
   div.row
     //- -------------------------------------------------
     //- All sections on the left of the screen.
@@ -143,9 +147,10 @@ block labs
                 - var pregId = 'pregnancyId-' + rec.id;
                 tbody(id=pregId)
                   each topic in teachings
+                    - var topicDate = topic.date? libs.mmt(topic.date).format('MM-DD-YYYY'): '';
                     - var teacherName = userMap[topic.teacher].lastname + ', ' + userMap[topic.teacher].firstname;
                     tr(class='teachingsRow', id='teaching-'+topic.id)
-                      td= topic.date
+                      td= topicDate
                       td= topic.topic
                       td= teacherName
 
@@ -208,8 +213,9 @@ block labs
                 - var pregId = 'pregnancyId-' + rec.id;
                 tbody(id=pregId)
                   each ref in referrals
+                    - var refDate = ref.date? libs.mmt(ref.date).format('MM-DD-YYYY'): '';
                     tr(class='referralsRow', id='referral-'+ref.id)
-                      td= ref.date
+                      td= refDate
                       td= ref.referral
                       td= ref.reason
 
@@ -231,10 +237,10 @@ block labs
             div.row
               div(class='col-md-6')
                 label= gettext('Doctor consult date')
-                +datePicker('form-control input-lg', 3, 'doctorConsultDate', rec.doctorConsultDate, undefined, undefined, false, 'Unknown')
+                +datePicker('form-control input-lg', 3, 'doctorConsultDate', doctorConsultDate, undefined, undefined, false, 'Unknown')
               div(class='col-md-6')
                 label= gettext('Dentist consult date')
-                +datePicker('form-control input-lg', 4, 'dentistConsultDate', rec.dentistConsultDate, undefined, undefined, false, 'Unknown')
+                +datePicker('form-control input-lg', 4, 'dentistConsultDate', dentistConsultDate, undefined, undefined, false, 'Unknown')
             div(class='row spacing-row')
               div(class='col-md-4 col-md-offset-8')
                 - if (roleInfo.hasRole('clerk')) {
@@ -262,7 +268,7 @@ block labs
                     - var vacName = vac.name;
                     - var vacDate;
                     - var by = vac.administeredInternally? 'Internal': 'External';
-                    - if (libs.mmt(vac.vacDate).isValid()) {
+                    - if (vac.vacDate) {
                     -   vacDate = libs.mmt(vac.vacDate).format('MM-DD-YYYY');
                     - } else {
                     -   if (vac.vacMonth && vac.vacYear) {

@@ -11,7 +11,8 @@ block defaultLab
   - var warn = false;
   - var isRange = false;
   - var isText = false;
-  - var testDate = labTestResultDate? labTestResultDate: libs.mmt().format('YYYY-MM-DD');
+  - var testDate = labTestResultDate? libs.mmt(labTestResultDate).format('YYYY-MM-DD'): libs.mmt().format('YYYY-MM-DD');
+  - if (addLabsDate) addLabsDate = libs.mmt(addLabsDate).format('YYYY-MM-DD');
   - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
   - var labsPath = '/pregnancy/' + rec.id + '/labtest';
   - var labDeletePath;

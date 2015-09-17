@@ -28,7 +28,7 @@
     "jade": "~1.7.0",
     "knex": "^0.6.22",
     "method-override": "^2.3.5",
-    "moment": "~2.8.4",
+    "moment": "^2.10.6",
     "mysql": "^2.5.3",
     "node-cache": "^1.0.3",
     "passport": "^0.2.1",

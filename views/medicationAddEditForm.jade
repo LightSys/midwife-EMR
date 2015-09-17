@@ -17,7 +17,7 @@ block medicationAddEditForm
   //- If editing a medication
   - if (medicationRec && medicationRec.id) {
   -   formAction ='/pregnancy/' + rec.id + '/medication/' + medicationRec.id;
-  -   medicationDate = medicationRec.date || medicationDate;
+  -   medicationDate = medicationRec.date? libs.mmt(medicationRec.date).format('YYYY-MM-DD'): medicationDate;
   -   medicationNote = medicationRec.note || '';
   -   numberDispensed = medicationRec.numberDispensed || '';
   -   isUpdate = true;

@@ -17,7 +17,7 @@ block referralAddEditForm
   //- If editing a referral
   - if (referralRec && referralRec.id) {
   -   formAction ='/pregnancy/' + rec.id + '/referral/' + referralRec.id;
-  -   referralDate = referralRec.date || referralDate;
+  -   referralDate = referralRec.date? libs.mmt(referralRec.date).format('YYYY-MM-DD'): referralDate;
   -   referral = referralRec.referral || referral;
   -   reason = referralRec.reason || '';
   -   isUpdate = true;

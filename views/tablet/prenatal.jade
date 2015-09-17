@@ -16,7 +16,16 @@ block prenatal
   -   return rec.riskType? rec.riskType: undefined;
   - }
 
-  - var edd = rec.edd? libs.mmt(rec.edd).format('MM-DD-YYYY'): '';
+  //- Date fields are expected to come into the template as valid Date objects
+  //- or undefined. Inputs with type date and those using the datePicker mixin
+  //- require 'YYYY-MM-DD' format, while inputs with type text require 'MM/DD/YYYY'.
+  //- Date inputs:
+  - var lmp = rec.lmp? libs.mmt(rec.lmp).format('YYYY-MM-DD'): '';
+  - var alternateEdd = rec.alternateEdd? libs.mmt(rec.alternateEdd).format('YYYY-MM-DD'): '';
+  - var pregnancyEndDate = rec.pregnancyEndDate? libs.mmt(rec.pregnancyEndDate).format('YYYY-MM-DD'): '';
+  - var transferOfCare = rec.transferOfCare? libs.mmt(rec.transferOfCare).format('YYYY-MM-DD'): '';
+  //- Text inputs:
+  - var edd = rec.edd? libs.mmt(rec.edd).format('MM/DD/YYYY'): '';
 
   - var prenatalExamAddFormPath = '/pregnancy/' + rec.id + '/prenatalexam';
   form(id='prenatalForm', class='dirty-check disable-on-submit', role='form', name='prenatal', action='/pregnancy/' + rec.id + '/prenatal', method='post')
@@ -49,7 +58,7 @@ block prenatal
           div(class='col-xs-12')
             div
               span= gettext('LMP')
-              input(id='prenatal-lmp', class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', disabled=readonlyFields.lmp, value=rec.lmp)
+              input(id='prenatal-lmp', class='form-control', type='date', tabindex="5", autocomplete="off", name='lmp', disabled=readonlyFields.lmp, value=lmp)
         div.row
           div(class='col-xs-12')
             div
@@ -71,7 +80,7 @@ block prenatal
           div(class='col-xs-12')
             div
               span= gettext('Alternate EDD')
-              input(class='form-control', type='date', name='alternateEdd', tabindex="9", disabled=readonlyFields.alternateEdd, value=rec.alternateEdd)
+              input(class='form-control', type='date', name='alternateEdd', tabindex="9", disabled=readonlyFields.alternateEdd, value=alternateEdd)
 
 
     div.row
@@ -245,7 +254,7 @@ block prenatal
               div(class='col-xs-12')
                 div
                   span= gettext('End Date')
-                  input(class='form-control', type='date', name='pregnancyEndDate', tabindex="15", disabled=readonlyFields.pregnancyEndDate, value=rec.pregnancyEndDate)
+                  input(class='form-control', type='date', name='pregnancyEndDate', tabindex="15", disabled=readonlyFields.pregnancyEndDate, value=pregnancyEndDate)
             div(class='row')
               div(class='col-xs-12')
                 div
@@ -258,7 +267,7 @@ block prenatal
               div(class='col-xs-4')
                 div
                   span= gettext('Transfer Date')
-                  input(class='form-control', type='date', name='transferOfCare', value=rec.transferOfCare)
+                  input(class='form-control', type='date', name='transferOfCare', value=transferOfCare)
               div(class='col-xs-3')
                 div
                   span= gettext('Time (hh:mm)')

@@ -1,4 +1,5 @@
 mixin datePicker(classes, tabindex, name, value, id, defaultDate, readonly, placeholder)
+  //- Note: expects value field to be in YYYY-MM-DD string format.
   - var classVals = classes + ' datepicker';
   - var displayFieldName = 'displayField-' + name;
   - var hiddenFieldId = 'altField-' + name;
