@@ -4,7 +4,7 @@
   "description": "Maternal care and patient management.",
   "main": "index.js",
   "dependencies": {
-    "bcrypt": "~0.7.8",
+    "bcrypt": "^0.8.5",
     "bluebird": "~1.0.3",
     "body-parser": "^1.13.3",
     "bookshelf": "^0.7.9",
