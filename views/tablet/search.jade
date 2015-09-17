@@ -52,8 +52,9 @@ block search
       div.row
         div(class='col-xs-6')
           div.checkbox
-            label= gettext('Include only Transfer of Care clients')
+            label
               input(type='checkbox', name='transferOfCare', tabindex="9", value=1)
+              = gettext('Include only Transfer of Care clients')
         div(class='col-xs-3')
           div.form-group
             span= gettext('Transferred After')

@@ -38,10 +38,12 @@ block search
           span &nbsp;&nbsp;
           span= gettext(' Is currently a teacher? ')
         div.form-group
-          label.radio-inline= gettext('Active')
+          label.radio-inline
             input(type='radio', name='status', value='1' checked=editUser.status==1)
-          label.radio-inline= gettext('Inactive')
+            = gettext('Active')
+          label.radio-inline
             input(type='radio', name='status', value='0' checked=editUser.status==0)
+            = gettext('Inactive')
         div.form-group
           span= gettext('Comment')
           input(class='form-control input-lg', type='text', autocomplete="off", name='note', value=editUser.note)
@@ -67,8 +69,9 @@ block search
                   - if (r.id == role.id)
                     - isChecked = true
                     - break
-              label.checkbox= role.name
-                input(type='checkbox', name='roles', value=role.id, checked=isChecked)
+              label.radio
+                input(type='radio', name='roles', value=role.id, checked=isChecked)
+                = role.name
 
           input(class='btn btn-default btn-primary', type='submit', value=gettext('Save Role Assignments'))
           input(type='hidden', name='_csrf', value=token)
