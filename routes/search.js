@@ -17,6 +17,7 @@ var _ = require('underscore')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , validOrVoidDate = require('../util').validOrVoidDate
   ;
 
 /* --------------------------------------------------------
@@ -205,7 +206,7 @@ var execute = function(req, res) {
     .then(function(list) {
       _.each(list, function(rec) {
         var r = _.pick(rec, 'priority', 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address1', 'address3');
-        r.dob = moment(r.dob).format('MM-DD-YYYY');
+        r.dob = validOrVoidDate(r.dob);
         results.push(r);
       });
     renderData = {

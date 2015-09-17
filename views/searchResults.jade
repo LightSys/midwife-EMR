@@ -26,7 +26,7 @@ block searchResults
           tbody
             each rec in results
               - var searchResultsId = 'searchResultsId-' + rec.id;
-              - var dob = rec.dob && libs.mmt(rec.dob).isValid()? rec.dob: '';
+              - var dob = rec.dob? libs.mmt(rec.dob).format('MM-DD-YYYY'): '';
               tr(class=rowClass, id=searchResultsId)
                 td= rec.priority
                 td= rec.lastname
