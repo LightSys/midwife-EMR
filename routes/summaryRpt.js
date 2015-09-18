@@ -551,7 +551,7 @@ var doPrenatal = function(doc, data, opts, ypos) {
 
   if (edd || altEdd) {
     // Favor the alternateEdd if the useAlternateEdd is specified.
-    if (useAltEdd && altEdd && moment(altEdd).isAfter('1990')) {
+    if (useAltEdd && altEdd && moment(altEdd).isAfter('1990-01-01', 'year')) {
       ga = getGA(moment(altEdd));
       edd = moment(edd).format('MM-DD-YYYY');
       altEdd = moment(altEdd).format('MM-DD-YYYY');
@@ -1078,7 +1078,7 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
     // Favor the alternateEdd if the useAlternateEdd is specified.
     if (data.pregnancy.useAlternateEdd &&
         data.pregnancy.alternateEdd &&
-        moment(data.pregnancy.alternateEdd).isAfter('1990')) {
+        moment(data.pregnancy.alternateEdd).isAfter('1990-01-01', 'year')) {
       estDueDate = moment(data.pregnancy.alternateEdd);
     } else {
       estDueDate = moment(data.pregnancy.edd);
@@ -1319,11 +1319,11 @@ var doDoctorDentist = function(doc, data, opts, ypos) {
     ;
 
   if (data.pregnancy.doctorConsultDate &&
-      moment(data.pregnancy.doctorConsultDate).isAfter('1990')) {
+      moment(data.pregnancy.doctorConsultDate).isAfter('1990-01-01', 'year')) {
     docDate = moment(data.pregnancy.doctorConsultDate).format('MM-DD-YYYY');
   }
   if (data.pregnancy.dentistConsultDate &&
-      moment(data.pregnancy.dentistConsultDate).isAfter('1990')) {
+      moment(data.pregnancy.dentistConsultDate).isAfter('1990-01-01', 'year')) {
     denDate = moment(data.pregnancy.dentistConsultDate).format('MM-DD-YYYY');
   }
 
