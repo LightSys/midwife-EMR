@@ -120,11 +120,10 @@ var doSep = function(doc, opts, ypos, color, position) {
  * every page of the report.
  *
  * param      doc     - the document
- * param      data    - the data
  * param      opts    - options
  * return     undefined
  * -------------------------------------------------------- */
-var doPageCommon = function doPageCommon(doc, data, opts) {
+var doPageCommon = function doPageCommon(doc, opts) {
   doSiteTitle(doc, 24);
   doReportName(doc, opts.title, 48);
   doReportDate(doc, opts);
@@ -1420,7 +1419,7 @@ var doTable = function(doc, columns, rows, opts, ypos,
     , handlePageOverflow = function() {
         if (y > (maxY - avgY)) {
           logInfo('Summary Report: Added another page in doTable() due to overflow.');
-          doStartPage(doc, data, opts);
+          doStartPage(doc, opts);
           y = minY;
           didAddPage = true;
           // Reset font to what we expect.
@@ -1658,7 +1657,7 @@ var doPage1 = function doPage1(doc, data, opts) {
     ;
 
   // No need to add a page on the first page so doStartPage() not used.
-  doPageCommon(doc, data, opts);
+  doPageCommon(doc, opts);
 
   // --------------------------------------------------------
   // Define the sections for this page.
@@ -1688,7 +1687,7 @@ var doPage2 = function doPage2(doc, data, opts) {
   var sections = []
     ;
 
-  doStartPage(doc, data, opts);
+  doStartPage(doc, opts);
 
   // --------------------------------------------------------
   // Define the sections for this page.
@@ -1715,7 +1714,7 @@ var doPage3 = function doPage2(doc, data, opts) {
   var sections = []
     ;
 
-  doStartPage(doc, data, opts);
+  doStartPage(doc, opts);
 
   // --------------------------------------------------------
   // Define the sections for this page.
@@ -1794,7 +1793,7 @@ var doPrintPage = function(doc, data, opts, sections) {
           partsResults[idx].y > maxY &&
           ! partsResults[idx].overflow &&
           secIdx < (numSections - 1)) {
-        doStartPage(doc, data, opts);
+        doStartPage(doc, opts);
         y = minY;
       }
 
@@ -1853,13 +1852,12 @@ var doPrintPage = function(doc, data, opts, sections) {
  * Add a page and write out the header information.
  *
  * param       doc
- * param       data
  * param       opts
  * return      undefined
  * -------------------------------------------------------- */
-var doStartPage = function(doc, data, opts) {
+var doStartPage = function(doc, opts) {
   doc.addPage();
-  doPageCommon(doc, data, opts);
+  doPageCommon(doc, opts);
   currentPage++;
 };
 
