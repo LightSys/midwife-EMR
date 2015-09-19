@@ -287,6 +287,7 @@ var doRow = function(doc, data, rowNum, rowHeight) {
     , remark = data.note && data.note.length > 0? data.note: ''
     , gravida = data.gravida || 1
     , para = data.para || 0
+    , lmp = data.lmp && _.isDate(data.lmp) && moment(data.lmp).isValid()? data.lmp: void 0
     ;
   // Create the cell borders
   // Lastname
@@ -321,9 +322,11 @@ var doRow = function(doc, data, rowNum, rowHeight) {
     doc.text(moment().diff(data.dob, 'years'), startX + 225, startY + 9);
   }
   // LMP
-  doc
-    .fontSize(10)
-    .text(moment(data.lmp).format('MM/DD/YYYY'), startX + 247, startY + 9);
+  if (lmp) {
+    doc
+      .fontSize(10)
+      .text(moment(lmp).format('MM/DD/YYYY'), startX + 247, startY + 9);
+  }
   // GP
   doc
     .fontSize(12)
