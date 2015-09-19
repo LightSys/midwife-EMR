@@ -300,7 +300,7 @@ block labs
             div(class='col-md-4')
               - var tetMsg;
               - var tetGood = false;
-              - if (libs._.isNull(rec.lmp) || rec.lmp.length === 0 || rec.lmp === '0000-00-00') {
+              - if (! rec.lmp || libs._.isNull(rec.lmp) || rec.lmp.length === 0 || rec.lmp === '0000-00-00') {
               -   tetMsg = 'Set LMP';
               - } else {
               -   if (tetanusComplete === 1) {
