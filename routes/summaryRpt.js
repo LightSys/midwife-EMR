@@ -553,12 +553,12 @@ var doPrenatal = function(doc, data, opts, ypos) {
     // Favor the alternateEdd if the useAlternateEdd is specified.
     if (useAltEdd && altEdd && moment(altEdd).isAfter('1990-01-01', 'year')) {
       ga = getGA(moment(altEdd));
-      edd = moment(edd).format('MM-DD-YYYY');
-      altEdd = moment(altEdd).format('MM-DD-YYYY');
+      edd = edd? moment(edd).format('MM-DD-YYYY'): '';
+      altEdd = altEdd? moment(altEdd).format('MM-DD-YYYY'): '';
     } else {
       ga = getGA(moment(edd));
-      edd = moment(edd).format('MM-DD-YYYY');
-      altEdd = '';
+      edd = edd? moment(edd).format('MM-DD-YYYY'): '';
+      altEdd = altEdd? moment(altEdd).format('MM-DD-YYYY'): '';
     }
   }
 
@@ -566,7 +566,12 @@ var doPrenatal = function(doc, data, opts, ypos) {
   y += 5;
   doVertFldVal(doc, 'GA', ga, x, y, true);
   x += 40;
-  doVertFldVal(doc, 'Lmp', moment(lmp).format('MM-DD-YYYY'), x, y, true);
+  if (lmp && _.isDate(lmp)) {
+    doVertFldVal(doc, 'Lmp', moment(lmp).format('MM-DD-YYYY'), x, y, true);
+  } else {
+    // We don't have a valid date, so we print an empty field (the label prints).
+    doVertFldVal(doc, 'Lmp', '', x, y, true);
+  }
   x += 60;
   doVertFldVal(doc, 'Edd', edd, x, y, true);
   x += 60;
@@ -579,7 +584,7 @@ var doPrenatal = function(doc, data, opts, ypos) {
   doVertFldVal(doc, 'P/H NCP', data.pregnancy.philHealthNCP? 'Yes': '', x, y, true);
   x += 40;
   doVertFldVal(doc, 'P/H Number', data.pregnancy.philHealthID, x, y, true);
-  x += 60;
+  x += 70;
   doVertFldVal(doc, 'P/H Approved', data.pregnancy.philHealthApproved? 'Yes': '', x, y, true);
 
 
@@ -885,7 +890,7 @@ var doLabResults = function(doc, data, opts, ypos) {
     data.push(row.name);
     data.push(moment(row.testDate).format('MM-DD-YYYY'));
     result = row.result;
-    if (row.result2.length > 0) result += ' - ' + row.result2;
+    if (row.result2 && row.result2.length > 0) result += ' - ' + row.result2;
     if (row.unit !== null && row.unit.length > 0) result += ' ' + row.unit;
     data.push(result);
     data.push(warn);
@@ -1102,12 +1107,14 @@ var doPrenatalExams = function(doc, data, opts, ypos) {
 
   _.each(data.prenatalExams, function(row) {
     var data = []
+      , systolic = row.systolic && ! _.isNull(row.systolic)? row.systolic: ''
+      , diastolic = row.diastolic && ! _.isNull(row.diastolic)? row.diastolic: ''
       ;
     // Specify a manual line break in the table between the date and name.
     data.push(moment(row.date).format('MM-DD-YYYY') +
         '\n' + row.lastname + ', ' + row.firstname);
     data.push(row.weight);
-    data.push(row.systolic + ' / ' + row.diastolic);
+    data.push(systolic + ' / ' + diastolic);
     data.push(row.cr);
     data.push(row.temperature);
     data.push(row.respiratoryRate);
@@ -1487,7 +1494,7 @@ var doTable = function(doc, columns, rows, opts, ypos,
     lastY = y;
 
     _.each(row, function(val, idx) {
-      if (_.isNull(val)) val = '';
+      if (! val || _.isNull(val)) val = '';
       var currColWidth = colWidth[columns[idx]]
         , textWidth = doc.widthOfString(val)
         , colStart
@@ -1910,7 +1917,12 @@ var getData = function(id) {
       .then(function() {
         return new Vaccinations().query(function(qb) {
           qb.innerJoin('vaccinationType', 'vaccination.vaccinationType', 'vaccinationType.id');
-          qb.select(['vaccinationType.name']);
+          qb.select(['vaccinationType.name', 'vaccination.id',
+                     'vaccination.vaccinationType', 'vaccination.vacDate',
+                     'vaccination.vacMonth', 'vaccination.vacYear',
+                     'vaccination.administeredInternally', 'vaccination.note',
+                     'vaccination.updatedBy', 'vaccination.updatedAt',
+                     'vaccination.supervisor', 'vaccination.pregnancy_id']);
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
@@ -1922,7 +1934,11 @@ var getData = function(id) {
       .then(function() {
         return new Medications().query(function(qb) {
           qb.innerJoin('medicationType', 'medication.medicationType', 'medicationType.id');
-          qb.select(['medicationType.name']);
+          qb.select(['medicationType.name', 'medication.id', 'medication.date',
+                     'medication.medicationType', 'medication.numberDispensed',
+                     'medication.note', 'medication.updatedBy',
+                     'medication.updatedAt', 'medication.supervisor',
+                     'medication.pregnancy_id']);
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
@@ -1935,7 +1951,18 @@ var getData = function(id) {
         return new PrenatalExams().query(function(qb) {
           qb.where('pregnancy_id', '=', data.pregnancy.id);
           qb.innerJoin('user', 'user.id', 'prenatalExam.updatedBy');
-          qb.select(['user.firstname', 'user.lastname', 'user.username']);
+          qb.select(['user.firstname', 'user.lastname', 'user.username',
+                     'prenatalExam.id', 'prenatalExam.date', 'prenatalExam.weight',
+                     'prenatalExam.systolic', 'prenatalExam.diastolic',
+                     'prenatalExam.cr', 'prenatalExam.temperature',
+                     'prenatalExam.respiratoryRate', 'prenatalExam.fh',
+                     'prenatalExam.fhNote', 'prenatalExam.fht',
+                     'prenatalExam.fhtNote', 'prenatalExam.pos',
+                     'prenatalExam.mvmt', 'prenatalExam.edema', 'prenatalExam.risk',
+                     'prenatalExam.vitamin', 'prenatalExam.pray',
+                     'prenatalExam.note', 'prenatalExam.returnDate',
+                     'prenatalExam.updatedBy', 'prenatalExam.updatedAt',
+                     'prenatalExam.supervisor', 'prenatalExam.pregnancy_id']);
           qb.orderBy('prenatalExam.date');
         })
         .fetch();
@@ -1998,7 +2025,13 @@ var getData = function(id) {
         return new LabTestResults().query(function(qb) {
           qb.innerJoin('labTest', 'labTestResult.labTest_id', 'labTest.id');
           qb.innerJoin('labSuite', 'labTest.labSuite_id', 'labSuite.id');
-          qb.select(['labTest.name', 'labTest.abbrev', 'labTest.unit', 'labSuite.name as type']);
+          qb.select(['labTest.name', 'labTest.abbrev', 'labTest.unit',
+                     'labSuite.name as type', 'labTestResult.id',
+                     'labTestResult.testDate', 'labTestResult.result',
+                     'labTestResult.result2', 'labTestResult.warn',
+                     'labTestResult.labTest_id', 'labTestResult.pregnancy_id',
+                     'labTestResult.updatedBy', 'labTestResult.updatedAt',
+                     'labTestResult.supervisor']);
           qb.where('pregnancy_id', '=', data.pregnancy.id);
         })
         .fetch();
