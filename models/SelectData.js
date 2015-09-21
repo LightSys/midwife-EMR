@@ -7,7 +7,6 @@
  */
 
 var moment = require('moment')
-  , val = require('validator')
   , Promise = require('bluebird')
   , _ = require('underscore')
     // Default settings used unless Bookshelf already initialized.

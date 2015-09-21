@@ -12,7 +12,6 @@
  */
 
 var moment = require('moment')
-  , val = require('validator')
   , Promise = require('bluebird')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
