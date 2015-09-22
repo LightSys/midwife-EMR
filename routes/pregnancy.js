@@ -393,10 +393,13 @@ var load = function(req, res, next) {
             // for each prenatal exam.
             _.each(rec.prenatalExamLog, function(pel) {
               var examStr;
+              var umRec;
               if (pel.id === peRec.id) {
-                examStr = userMap[""+pel.updatedBy]['shortName'];
+                umRec = userMap[""+pel.updatedBy];
+                examStr = umRec && umRec.shortName? umRec.shortName: umRec.username;
                 if (pel.supervisor && pel.supervisor !== null) {
-                  examStr += '/' + userMap[""+pel.supervisor]['shortName'];
+                  umRec = userMap[""+pel.supervisor];
+                  examStr += '/' + umRec && umRec.shortName? umRec.shortName: umRec.username;
                 }
                 examiners.push(examStr);
               }

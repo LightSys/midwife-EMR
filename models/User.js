@@ -324,7 +324,7 @@ User = Bookshelf.Model.extend({
         userIdMapCache.get(teachersCacheKey, function(err, map) {
           if (err) return reject(err);
           if (map && _.size(map) > 0) {
-            return resolve(map[teachersCacheKey]);
+            return resolve(map);
           }
 
           knex('user')
@@ -372,7 +372,7 @@ User = Bookshelf.Model.extend({
         userIdMapCache.get(userCacheKey, function(err, map) {
           if (err) return reject(err);
           if (map && _.size(map) > 0) {
-            return resolve(map[userCacheKey]);
+            return resolve(map);
           }
 
           knex('user')
