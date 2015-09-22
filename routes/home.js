@@ -45,35 +45,33 @@ new EventTypes()
 // (including this one) updates it.
 // --------------------------------------------------------
 process.on('message', function(msg) {
-  // Prenatal long cache stats.
-  if (msg && msg.cmd && msg.cmd === prenatalHistory) {
-    longCache.set(prenatalHistory, msg.stats, function(err, success) {
+  if (msg && msg.cmd && msg.stats) {
+    longCache.set(msg.cmd, msg.stats, function(err, success) {
       if (err) logError(err);
-      if (! success) {
-        logError('Failed to set ' + prenatalHistory);
-      } else {
-        logInfo('Saved ' + prenatalHistory + ' via event.');
-      }
-    });
-  }
-  if (msg && msg.cmd && msg.cmd === prenatalRecentHistory) {
-    shortCache.set(prenatalRecentHistory, msg.stats, function(err, success) {
-      if (err) logError(err);
-      if (! success) {
-        logError('Failed to set ' + prenatalRecentHistory);
-      } else {
-        logInfo('Saved ' + prenatalRecentHistory + ' via event.');
-      }
+      if (! success) logError('Failed to set ' + msg.cmd);
+      if (success) logInfo('Saved ' + msg.cmd + ' to cache.');
     });
   }
 });
 
+
+/* --------------------------------------------------------
+ * getScheduledPrenatalExams()
+ *
+ * Return a map of stats about prenatal exams for the days
+ * specified.
+ *
+ * Uses shortCache so that the server is not needlessly hit.
+ *
+ * param       days
+ * param       cb
+ * -------------------------------------------------------- */
 var getScheduledPrenatalExams = function(days, cb) {
   var stats = {}
     ;
   longCache.get(prenatalScheduled, function(err, recs) {
     if (err) logError(err);
-    if (_.isEmpty(recs)) {
+    if (! recs || _.isEmpty(recs)) {
       var knex
         , sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(e.returnDate, "%m-%d") AS scheduled ' +
           'FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id ' +
@@ -96,7 +94,7 @@ var getScheduledPrenatalExams = function(days, cb) {
           return cb(null, stats);
         });
     } else {
-      return cb(null, recs[prenatalScheduled]);
+      return cb(null, recs);
     }
   });
 };
@@ -117,7 +115,7 @@ var getRecentPrenatalHistory = function(cb) {
     ;
   shortCache.get(prenatalRecentHistory, function(err, recs) {
     if (err) logError(err);
-    if (_.isEmpty(recs)) {
+    if (! recs || _.isEmpty(recs)) {
       var knex
         , sql = 'SELECT COUNT(*) AS cnt, SUBSTR(DAYNAME(date), 1, 3) AS day ' +
         'FROM prenatalExam ' +
@@ -140,7 +138,7 @@ var getRecentPrenatalHistory = function(cb) {
 
     } else {
       // Return the cached results.
-      return cb(null, recs[prenatalRecentHistory]);
+      return cb(null, recs);
     }
   });
 };
@@ -162,7 +160,7 @@ var getPrenatalHistoryByWeek = function(numWeeks, cb) {
     ;
   longCache.get(cacheKey, function(err, recs) {
     if (err) logError(err);
-    if (_.isEmpty(recs)) {
+    if (! recs || _.isEmpty(recs)) {
       var knex
         , sql = 'SELECT COUNT(*) AS cnt, ' +
         'CONCAT(SUBSTR(YEAR(date), 3), "-", LPAD(WEEK(date, 2), 2, "0")) AS yearweek ' +
@@ -186,7 +184,7 @@ var getPrenatalHistoryByWeek = function(numWeeks, cb) {
 
     } else {
       // Return the cached results.
-      return cb(null, recs[cacheKey]);
+      return cb(null, recs);
     }
   });
 };
@@ -202,7 +200,7 @@ var getPrenatalHistoryByWeek = function(numWeeks, cb) {
  * return     undefined
  * -------------------------------------------------------- */
 var getPrenatalHistoryByMonth = function(numMonths, cb) {
-  var stats = []
+  var stats = {}
     , cacheKey = prenatalHistoryByMonth + ':' + numMonths
     ;
   longCache.get(cacheKey, function(err, recs) {
@@ -215,7 +213,7 @@ var getPrenatalHistoryByMonth = function(numMonths, cb) {
           'GROUP BY MONTHNAME(date) ' +
           'ORDER BY date';
     if (err) logError(err);
-    if (_.isEmpty(recs)) {
+    if (!recs || _.isEmpty(recs)) {
       knex = Bookshelf.DB.knex;
       knex
         .raw(sql, numMonths)
@@ -232,7 +230,7 @@ var getPrenatalHistoryByMonth = function(numMonths, cb) {
         });
     } else {
       // Return the cached results.
-      return cb(null, recs[cacheKey]);
+      return cb(null, recs);
     }
   });
 };
@@ -258,7 +256,7 @@ var getPrenatalHistory = function(cb) {
     ;
   longCache.get(prenatalHistory, function(err, recs) {
     if (err) logError(err);
-    if (_.isEmpty(recs)) {
+    if (! recs || _.isEmpty(recs)) {
       // Get the data from the database and update the cache.
       var knex = Bookshelf.DB.knex;
       // Last week (not this week).
@@ -298,7 +296,7 @@ var getPrenatalHistory = function(cb) {
         });
     } else {
       // Return the cached results.
-      return cb(null, recs[prenatalHistory]);
+      return cb(null, recs);
     }
   });
 };

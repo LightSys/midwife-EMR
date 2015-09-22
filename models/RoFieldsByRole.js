@@ -62,7 +62,7 @@ RoFieldsByRole = Bookshelf.Model.extend({
       fieldsCache.get(key, function(err, map) {
         if (err) return reject(err);
         if (map && _.size(map) > 0) {
-          return resolve(map[key]);
+          return resolve(map);
         }
 
         knex('roFieldsByRole')
