@@ -327,31 +327,20 @@ describe('Pregnancy', function(done) {
           , formName: 'prenatalAddExam'
           , postPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
         }
+        , postData = {}
         ;
 
-      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
-        fldsCfg.getPath, fldsCfg.formName)
-        .then(function(flds) {
-          var postData = {}
-            ;
-          postData.pregnancy_id = pregId;
-          postData.weight = 50;
-          postData.systolic = 110;
-          postData.diastolic = 60;
-          return postData;
-        })
-        .then(function(postData) {
-          fldsCfg = _.extend(fldsCfg, {postData: postData});
-          utils.prepPostAsync(fldsCfg)
-            .then(function(postInfo) {
-              postInfo.postReq
-                .send(postInfo.formData)
-                .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
-                .expect(302, done);
-            })
-            .caught(function(e) {
-              done(e);
-            });
+      postData.pregnancy_id = pregId;
+      postData.weight = 50;
+      postData.systolic = 110;
+      postData.diastolic = 60;
+      fldsCfg = _.extend(fldsCfg, {postData: postData});
+      utils.prepPostAsync(fldsCfg)
+        .then(function(postInfo) {
+          postInfo.postReq
+            .send(postInfo.formData)
+            .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
+            .expect(302, done);
         })
         .caught(function(e) {
           done(e);
@@ -366,48 +355,37 @@ describe('Pregnancy', function(done) {
           , formName: 'prenatalAddExam'
           , postPath: cfg.path.pregnancyPrenatalExamAdd.replace(':id', pregId)
         }
+        , postData = {}
         , crazyWgt = Math.round(Math.random() * 500)
         , testFH = 28
         ;
 
-      utils.getFormFieldsAsync(fldsCfg.request, fldsCfg.agent,
-        fldsCfg.getPath, fldsCfg.formName)
-        .then(function(flds) {
-          var postData = {}
-            ;
-          postData.pregnancy_id = pregId;
-          postData.weight = crazyWgt;
-          postData.fh = testFH;
-          postData.fht = 155;
-          return postData;
-        })
-        .then(function(postData) {
-          fldsCfg = _.extend(fldsCfg, {postData: postData});
-          utils.prepPostAsync(fldsCfg)
-            .then(function(postInfo) {
-              postInfo.postReq
-                .send(postInfo.formData)
-                .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
-                .expect(302, function() {
-                  // Now access the prenatal record to verify that the cr
-                  // field was not actually set.
-                  new PrenatalExam({pregnancy_id: pregId, weight: crazyWgt})
-                    .fetch({require: true})
-                    .then(function(model) {
-                      model.get('pregnancy_id').should.equal(pregId);
-                      model.get('weight').should.equal(crazyWgt);
-                      testFH.should.not.equal(model.get('fh'));
-                      done();
-                    })
-                    .caught(function(err) {
-                      done(err);
-                    });
-                });
-              })
-        })
-        .caught(function(e) {
-          done(e);
-        });
+        postData.pregnancy_id = pregId;
+        postData.weight = crazyWgt;
+        postData.fh = testFH;
+        postData.fht = 155;
+        fldsCfg = _.extend(fldsCfg, {postData: postData});
+        utils.prepPostAsync(fldsCfg)
+          .then(function(postInfo) {
+            postInfo.postReq
+              .send(postInfo.formData)
+              .expect('location', cfg.path.pregnancyPrenatalEdit.replace(':id', pregId))
+              .expect(302, function() {
+                // Now access the prenatal record to verify that the cr
+                // field was not actually set.
+                new PrenatalExam({pregnancy_id: pregId, weight: crazyWgt})
+                  .fetch({require: true})
+                  .then(function(model) {
+                    model.get('pregnancy_id').should.equal(pregId);
+                    model.get('weight').should.equal(crazyWgt);
+                    testFH.should.not.equal(model.get('fh'));
+                    done();
+                  })
+                  .caught(function(err) {
+                    done(err);
+                  });
+              });
+            });
     });
 
     it('clerk can display edit form', function(done) {
