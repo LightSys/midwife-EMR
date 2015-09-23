@@ -29,7 +29,7 @@
     "moment": "^2.10.6",
     "mysql": "^2.9.0",
     "node-cache": "^3.0.0",
-    "passport": "^0.2.1",
+    "passport": "^0.3.0",
     "passport-local": "^1.0.0",
     "pdfkit": "^0.7.1",
     "recluster": "^0.4.1",
