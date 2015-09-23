@@ -24,14 +24,15 @@ var should = require('should')
   , guard = supertest.agent(app)
   , clerk = supertest.agent(app)
   , attending = supertest.agent(app)
+  , attendingWithSuper = supertest.agent(app)
   , supervisor = supertest.agent(app)
   , cheerio = require('cheerio')
   , _ = require('underscore')
   , moment = require('moment')
   , cfg = require('../config')
   , utils = require('./utils')
-  , allUserNames = ['admin', 'guard', 'clerk', 'attending', 'supervisor']
-  , allUserAgents = [admin, guard, clerk, attending, supervisor]
+  , allUserNames = ['admin', 'guard', 'clerk', 'attending', 'attending', 'supervisor']
+  , allUserAgents = [admin, guard, clerk, attending, attendingWithSuper, supervisor]
   ;
 
 describe('unauthenticated', function(done) {
@@ -89,8 +90,13 @@ describe('authenticated', function(done) {
   before(function(done) {
     utils.loginMany(request, allUserNames, allUserAgents, function(err, success) {
       if (err) return done(err);
-      if (success) return done();
-      return done(new Error('Something went wrong.'));
+      if (! success) return done(new Error('Something went wrong!'));
+
+      utils.setSuper(request, attendingWithSuper, function(err, success) {
+        if (err) return done(err);
+        if (! success) return done('setSuper() failed');
+        done();
+      });
     });
   });
 
@@ -274,12 +280,14 @@ describe('authenticated', function(done) {
     var formName = 'form[name="profileForm"]'
       , elements = ['id','_csrf','firstname','lastname','email']
       , data = {}
-      , req
+      ;
+
+    var runTest = function(agent, newId, done) {
+      var req
       , postReq
       , req2
       ;
 
-    var runTest = function(agent, newId, done) {
       // --------------------------------------------------------
       // newId allows tests regarding illegally trying to update
       // a profile belonging to someone else.
@@ -291,7 +299,7 @@ describe('authenticated', function(done) {
       // --------------------------------------------------------
       // Get the profile form and scrape the data.
       // --------------------------------------------------------
-      agent.attachCookies(req);
+      req = agent.get('/profile');
       req.expect(200)
         .end(function(err, res) {
           var $ = cheerio.load(res.text)
@@ -316,8 +324,7 @@ describe('authenticated', function(done) {
           // --------------------------------------------------------
           // Save to the database then verify the result.
           // --------------------------------------------------------
-          agent.saveCookies(res);
-          agent.attachCookies(postReq);
+          postReq = agent.post('/profile');
           postReq
             .send(data)
             .end(function(err2, res2) {
@@ -328,7 +335,7 @@ describe('authenticated', function(done) {
               } else {
                 res2.status.should.eql(302);
               }
-              agent.attachCookies(req2);
+              req2 = agent.get('/profile');
               req2.expect(200)
                 .end(function(err3, res3) {
                   var $$ = cheerio.load(res3.text)
@@ -344,9 +351,6 @@ describe('authenticated', function(done) {
 
     beforeEach(function(done) {
       data = {password: '', password2: ''};
-      req = request.get('/profile');
-      postReq = request.post('/profile');
-      req2 = request.get('/profile');
       done();
     });
 
@@ -363,7 +367,7 @@ describe('authenticated', function(done) {
     });
 
     it('attending can update profile', function(done) {
-      runTest(attending, done);
+      runTest(attendingWithSuper, done);
     });
 
     it('supervisor can update profile', function(done) {
@@ -383,7 +387,7 @@ describe('authenticated', function(done) {
     });
 
     it('attending cannot update profile for supervisor', function(done) {
-      runTest(attending, 5, done);
+      runTest(attendingWithSuper, 5, done);
     });
 
     it('supervisor cannot update profile for admin', function(done) {
