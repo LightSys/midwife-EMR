@@ -22,7 +22,7 @@
     "jquery": "1.11.0",
     "flot": "~0.8.3",
     "jquery.are-you-sure": "~1.9.0",
-    "angular": "~1.4.5",
+    "angular": "~1.4.6",
     "angular-moment": "~0.10.1",
     "angular-ui-router": "~0.2.15"
   },
