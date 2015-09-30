@@ -650,7 +650,7 @@ var getCommonFormData = function(req, addData) {
  * Display the pregnancy questionnaire form.
  * -------------------------------------------------------- */
 var questionaireForm = function(req, res) {
-  var data = {title: req.gettext('Pregnancy Questionnaire')};
+  var data = {title: req.gettext('Questionnaire')};
   if (req.paramPregnancy) {
     res.render('pregnancyQuestionnaire', getCommonFormData(req, data));
   } else {
