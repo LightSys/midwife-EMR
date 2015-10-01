@@ -205,6 +205,7 @@ cfg.path.setSuper = '/setsuper';        // GET for form, POST to save
 
 cfg.path.pregnancyList = '/pregnancy';                // GET
 cfg.path.pregnancyNewForm = '/pregnancy/new';         // GET
+cfg.path.pregnancyNewCurrPatForm = '/pregnancy/new/patient/:patid'; // GET (new pregnancy, existing patient)
 cfg.path.pregnancyCreate = '/pregnancy';              // POST
 cfg.path.pregnancyEditForm = '/pregnancy/:id/edit';   // GET
 cfg.path.pregnancyUpdate = '/pregnancy/:id/update';   // POST

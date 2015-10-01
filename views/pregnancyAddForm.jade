@@ -1,9 +1,19 @@
 extends layouts/default_layout
 
 block pregnancyAdd
+  - if (patientRec) {title += ' for Existing Patient';}
   +titleMsg(title)
 
   - if (! priorRec) priorRec = {};
+  - if (! patientRec) patientRec = {};
+
+  //- Date fields are expected to come into the template as valid Date objects
+  //- or undefined. Inputs with type date and those using the datePicker mixin
+  //- require 'YYYY-MM-DD' format, while inputs with type text require 'MM/DD/YYYY'.
+  //- Date inputs:
+  - var priorDob = priorRec.dob? libs.mmt(priorRec.dob).format('YYYY-MM-DD'): '';
+  - var patientDob = patientRec.dob? libs.mmt(patientRec.dob).format('YYYY-MM-DD'): '';
+
   div.formBoxLarge
     form(class='dirty-check disable-on-submit', role='form', name='pregnancyForm', action='/pregnancy', method='post')
       div.row
@@ -15,7 +25,7 @@ block pregnancyAdd
           input(class='form-control input-lg', type='text', tabindex="2", autocomplete="off", name='firstname', value=priorRec.firstname)
         div(class='form-group col-md-3')
           span= gettext('Date of Birth')
-          +datePicker('form-control input-lg', 3, 'dob', priorRec.dob, undefined, undefined, false, 'Unknown')
+          +datePicker('form-control input-lg', 3, 'dob', priorDob || patientDob, undefined, undefined, false, 'Unknown')
         div(class='form-group col-md-3')
           span= gettext('Religion')
           +select('form-control input-lg', 'religion', 4, religion)
@@ -110,7 +120,7 @@ block pregnancyAdd
       div.row
         div(class='form-group col-md-3')
           span= gettext('MMC #')
-          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='doh', value=priorRec.doh)
+          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='doh', value=priorRec.doh || patientRec.dohID)
         div(class='form-group col-md-3')
           span= gettext('Priority Barcode #')
           input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='priorityBarcode', value=priorRec.priorityBarcode)
@@ -128,4 +138,7 @@ block pregnancyAdd
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
         input(type='hidden', name='_csrf', value=token)
+        - if (patientRec) {
+          input(type='hidden', name='patientId', value=patientRec.id)
+        - }
 

@@ -1,9 +1,10 @@
 mixin titleMsg(title)
   - var pregId = rec && rec.id? rec.id: void 0;
+  - var patId = rec && rec.patient_id? rec.patient_id: void 0;
   div.row
-    div(class='col-md-6')
+    div(class='col-md-5')
       h1= title
-    div(class='col-md-4')
+    div(class='col-md-3')
       +flash(messages)
       - if (rec && rec.flags && rec.flags.length > 0) {
         div(class='flags alert alert-info')
@@ -11,6 +12,8 @@ mixin titleMsg(title)
             p(class='')= f
           - });
       - }
+    div(class='col-md-2')
+      +addPregnancy(patId, otherPregnancies)
     div(class='col-md-2')
       - if (pregId)
         a(type='button', class='btn btn-default', href='/report/summary/' + pregId)= gettext('Summary Rpt')

@@ -415,6 +415,8 @@ app.post(cfg.path.setSuper, common, inRoles(['attending']), users.saveSupervisor
 app.all(cfg.path.pregnancyLoad, pregnancy.load);  // parameter handling
 app.get(cfg.path.pregnancyNewForm, common, hasSuper,
     inRoles(['clerk','attending','supervisor']), pregnancy.generalAddForm);
+app.get(cfg.path.pregnancyNewCurrPatForm, common, hasSuper,
+    inRoles(['clerk','attending','supervisor']), pregnancy.generalAddForm);
 app.post(cfg.path.pregnancyCreate, common, hasSuper,
     inRoles(['clerk','attending','supervisor']), pregnancy.generalAddSave);
 app.get(cfg.path.pregnancyEditForm, common, hasSuper,

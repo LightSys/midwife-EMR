@@ -222,6 +222,7 @@ var load = function(req, res, next) {
     , op = req.params.op
     , op2 = req.params.op2
     , rec
+    , otherPregs
     , formatTime = function(val) {
         var d
           , formatted
@@ -263,9 +264,18 @@ var load = function(req, res, next) {
     ;
 
   // --------------------------------------------------------
-  // If the url is 'pregnancy/new', we don't have anything to load.
+  // If the url is 'pregnancy/new' without a patient component,
+  // we don't have anything to load.
   // --------------------------------------------------------
-  if (id === 'new') return next();
+  if (id === 'new' && ! op) return next();
+
+  // --------------------------------------------------------
+  // If this is a new pregnancy for an existing patient, load
+  // the patient.
+  // --------------------------------------------------------
+  if (id === 'new' && op === 'patient' && id2) {
+    return loadPatient(req, res, next);
+  }
 
   // --------------------------------------------------------
   // Add tables to fetch depending upon the URL.
@@ -324,6 +334,18 @@ var load = function(req, res, next) {
         if (data && data[0] && data[0].length > 0) {
           rec.prenatalExamLog = data[0];
         }
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Retrieve other pregnancies for this patient.
+        // --------------------------------------------------------
+        return Pregnancy.forge()
+          .where('id', '<>', rec.id)
+          .where('patient_id', '=', rec.patient_id)
+          .fetchAll()
+          .then(function(pregs) {
+            otherPregs = pregs.toJSON();
+          });
       })
       .then(function() {
         // --------------------------------------------------------
@@ -431,6 +453,13 @@ var load = function(req, res, next) {
         }
 
         // --------------------------------------------------------
+        // Store the other pregnancies for this patient.
+        // --------------------------------------------------------
+        if (otherPregs) {
+          req.otherPregnancies = otherPregs;
+        }
+
+        // --------------------------------------------------------
         // Assign detail record in the master-detail relationship
         // to a convenient location on the request object.
         // --------------------------------------------------------
@@ -505,6 +534,30 @@ var load = function(req, res, next) {
     logError(err);
   });
 
+};
+
+/* --------------------------------------------------------
+ * loadPatient()
+ *
+ * Load the patient record and save in the request object
+ * as paramPatient.
+ *
+ * param       req
+ * param       res
+ * param       next
+ * return      undefined
+ * -------------------------------------------------------- */
+var loadPatient = function(req, res, next) {
+  var patId = req.params.id2
+    ;
+  Patient.forge({id: patId})
+    .fetch()
+    .then(function(pat) {
+      req.paramPatient = pat.toJSON();
+    })
+    .then(function() {
+      next();
+    });
 };
 
 /* --------------------------------------------------------
@@ -641,6 +694,7 @@ var getCommonFormData = function(req, addData) {
     , referralsDatalist: rf
     , teachingDatalist: ht
     , userMap: req.paramUserMap
+    , otherPregnancies: req.otherPregnancies
   });
 };
 
@@ -768,6 +822,13 @@ var generalAddForm = function(req, res) {
     // Use the saved information only once.
     delete req.session.priorRec;
   }
+
+  // --------------------------------------------------------
+  // A new pregnancy for an existing patient.
+  // --------------------------------------------------------
+  if (req.paramPatient) {
+    data.patientRec = req.paramPatient;
+  }
   res.render('pregnancyAddForm', getEditFormData(req, data));
 };
 
@@ -891,6 +952,7 @@ var getEditFormData = function(req, addData) {
     , customFieldTypes: customFieldTypes
     , defaultCity: defaultCity
     , mbBook: mb
+    , otherPregnancies: req.otherPregnancies
   });
 };
 
@@ -942,6 +1004,7 @@ var generalAddSave = function(req, res) {
     , prenatalLoc = req.body.prenatalLocation && req.body.prenatalLocation.length > 0? req.body.prenatalLocation: null
     , prenatalDay = req.body.prenatalDay && req.body.prenatalDay.length > 0? req.body.prenatalDay: null
     , priorityBarcode = req.body.priorityBarcode || void(0)
+    , patId = req.body.patientId? parseInt(req.body.patientId, 10): null
     , pregFlds = _.omit(req.body, ['_csrf', 'dob'])
     , patFlds = {}
     , schFlds = false
@@ -955,6 +1018,9 @@ var generalAddSave = function(req, res) {
   }
   pregFlds = _.extend(pregFlds, common);
   patFlds = _.extend(common, {dob: dob, dohID: doh});
+  if (patId) {
+    patFlds.id = patId;
+  }
   if (prenatalLoc && prenatalDay) {
     schFlds = {scheduleType: 'Prenatal', location: prenatalLoc, day: prenatalDay};
   } else {
@@ -983,15 +1049,16 @@ var generalAddSave = function(req, res) {
       // pregnancy, schedule, priority, and event tables.
       // --------------------------------------------------------
       return Bookshelf.DB.knex.transaction(function(t) {
+        var method = patId? 'update': 'insert';
 
         // --------------------------------------------------------
-        // Create and save the patient record.
+        // Create or update the patient record.
         // --------------------------------------------------------
         Patient
           .forge(flds.patFlds)
           .setUpdatedBy(req.session.user.id)
           .setSupervisor(common.supervisor)
-          .save(null, {transacting: t})
+          .save({}, {transacting: t, method: method})
           .then(function(patient) {
             // --------------------------------------------------------
             // Create and save the pregnancy record.

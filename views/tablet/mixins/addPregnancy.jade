@@ -1,0 +1,29 @@
+mixin addPregnancy(patientId, pregnancies)
+  - var numOther = pregnancies? libs._.size(pregnancies): 0;
+  - var addAnotherRef = '/pregnancy/new/patient/' + patientId;
+  - if (! pregnancies) pregnancies = [];
+  - if (patientId) {
+    div(class='dropdown')
+      button(type='button', class='btn btn-info', id='addPregnancyDropDown', data-toggle='dropdown', aria-haspopup='true' aria-expanded='false')
+        <span class='badge'>#{numOther}</span> Other <span class='caret'></span>
+      ul(class='dropdown-menu', aria-labelledby='addPregnancyDropDown')
+        each preg in pregnancies
+          - var lmp = preg.lmp && libs._.isDate(preg.lmp)? libs.mmt(preg.lmp).format('MM-DD-YYYY'): 'Unknown';
+          //- Default to prenatal page.
+          - var href = preg.id? '/pregnancy/' + preg.id + '/prenatal': '#';
+          - var parts;
+          - if (currUrl) {
+          -   // Adjust the url to land on the same page that we are on, but
+          -   // only if we are not on a detail page because that would not
+          -   // make sense.
+          -   parts = currUrl.split('/');
+          -   if (parts.length === 4) {
+          -     href = href.replace(/prenatal/, parts[3]);
+          -   }
+          - }
+          li
+            a(href=href) LMP: #{lmp}
+        li(role='separator', class='divider')
+        li
+          a(href=addAnotherRef) Add another pregnancy
+  - }
