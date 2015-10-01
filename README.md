@@ -129,7 +129,7 @@ designed and developed.
 
 ## Technology Used
 
-- Nodejs - version v0.10.38 (upgrade to Node 4.x is in process).
+- Nodejs - version v0.10.40 (upgrade to Node 4.x is in pending dependencies).
 - MySQL
 - Nginx - reverse proxy for the application (optional)
 
