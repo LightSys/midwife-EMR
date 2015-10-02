@@ -690,6 +690,7 @@ var doMidwifeInterview = function(doc, data, opts, ypos) {
 var doQuestionnaire = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
+    , maxY
     , questionnaireNote = ''
     ;
 
@@ -704,16 +705,36 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
   // --------------------------------------------------------
   doLabel(doc, 'Present complaints', x, y);
   y += 15;
-  y = doCheckbox(doc, 'Been vomiting?', data.pregnancy.currentlyVomiting, x, y);
-  y = doCheckbox(doc, 'Feeling dizzy?', data.pregnancy.currentlyDizzy, x, y);
-  y = doCheckbox(doc, 'Have fainted?', data.pregnancy.currentlyFainting, x, y);
-  y = doCheckbox(doc, 'Bleeding?', data.pregnancy.currentlyBleeding, x, y);
-  y = doCheckbox(doc, 'Pain in urinating?', data.pregnancy.currentlyUrinationPain, x, y);
-  y = doCheckbox(doc, 'Blurry vision?', data.pregnancy.currentlyBlurryVision, x, y);
-  y = doCheckbox(doc, 'Swelling?', data.pregnancy.currentlySwelling, x, y);
-  y = doCheckbox(doc, 'Vaginal pain?', data.pregnancy.currentlyVaginalPain, x, y);
-  y = doCheckbox(doc, 'Vaginal itching?', data.pregnancy.currentlyVaginalItching, x, y);
-  y = doCheckbox(doc, 'None of the above', data.pregnancy.currentlyNone, x, y);
+  if (data.pregnancy.currentlyVomiting) {
+    y = doCheckbox(doc, 'Been vomiting?', data.pregnancy.currentlyVomiting, x, y);
+  }
+  if (data.pregnancy.currentlyDizzy) {
+    y = doCheckbox(doc, 'Feeling dizzy?', data.pregnancy.currentlyDizzy, x, y);
+  }
+  if (data.pregnancy.currentlyFainting) {
+    y = doCheckbox(doc, 'Have fainted?', data.pregnancy.currentlyFainting, x, y);
+  }
+  if (data.pregnancy.currentlyBleeding) {
+    y = doCheckbox(doc, 'Bleeding?', data.pregnancy.currentlyBleeding, x, y);
+  }
+  if (data.pregnancy.currentlyUrinationPain) {
+    y = doCheckbox(doc, 'Pain in urinating?', data.pregnancy.currentlyUrinationPain, x, y);
+  }
+  if (data.pregnancy.currentlyBlurryVision) {
+    y = doCheckbox(doc, 'Blurry vision?', data.pregnancy.currentlyBlurryVision, x, y);
+  }
+  if (data.pregnancy.currentlySwelling) {
+    y = doCheckbox(doc, 'Swelling?', data.pregnancy.currentlySwelling, x, y);
+  }
+  if (data.pregnancy.currentlyVaginalPain) {
+    y = doCheckbox(doc, 'Vaginal pain?', data.pregnancy.currentlyVaginalPain, x, y);
+  }
+  if (data.pregnancy.currentlyVaginalItching) {
+    y = doCheckbox(doc, 'Vaginal itching?', data.pregnancy.currentlyVaginalItching, x, y);
+  }
+  if (data.pregnancy.currentlyNone) {
+    y = doCheckbox(doc, 'None of the above', data.pregnancy.currentlyNone, x, y);
+  }
 
   // --------------------------------------------------------
   // Present comments.
@@ -733,6 +754,7 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
   y = doCheckbox(doc, 'Practiced family planning?', data.pregnancy.practiceFamilyPlanning, x, y);
   y -= 10;    // Family planning details - just put under checkbox quesion with no label.
   y = doVertFldVal(doc, '', data.pregnancy.practiceFamilyPlanningDetails, x, y);
+  maxY = y;
 
   // --------------------------------------------------------
   // Family History.
@@ -741,13 +763,27 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
   y = ypos + 10;
   doLabel(doc, 'Family History', x, y);
   y += 15;
-  y = doCheckbox(doc, 'Twins?', data.pregnancy.familyHistoryTwins, x, y);
-  y = doCheckbox(doc, 'High Blood Pressure?', data.pregnancy.familyHistoryHighBloodPressure, x, y);
-  y = doCheckbox(doc, 'Diabetes?', data.pregnancy.familyHistoryDiabetes, x, y);
-  y = doCheckbox(doc, 'Heart Problems?', data.pregnancy.familyHistoryHeartProblems, x, y);
-  y = doCheckbox(doc, 'TB?', data.pregnancy.familyHistoryTB, x, y);
-  y = doCheckbox(doc, 'Smoking?', data.pregnancy.familyHistorySmoking, x, y);
-  y = doCheckbox(doc, 'None of the above', data.pregnancy.familyHistoryNone, x, y);
+  if (data.pregnancy.familyHistoryTwins) {
+    y = doCheckbox(doc, 'Twins?', data.pregnancy.familyHistoryTwins, x, y);
+  }
+  if (data.pregnancy.familyHistoryHighBloodPressure) {
+    y = doCheckbox(doc, 'High Blood Pressure?', data.pregnancy.familyHistoryHighBloodPressure, x, y);
+  }
+  if (data.pregnancy.familyHistoryDiabetes) {
+    y = doCheckbox(doc, 'Diabetes?', data.pregnancy.familyHistoryDiabetes, x, y);
+  }
+  if (data.pregnancy.familyHistoryHeartProblems) {
+    y = doCheckbox(doc, 'Heart Problems?', data.pregnancy.familyHistoryHeartProblems, x, y);
+  }
+  if (data.pregnancy.familyHistoryTB) {
+    y = doCheckbox(doc, 'TB?', data.pregnancy.familyHistoryTB, x, y);
+  }
+  if (data.pregnancy.familyHistorySmoking) {
+    y = doCheckbox(doc, 'Smoking?', data.pregnancy.familyHistorySmoking, x, y);
+  }
+  if (data.pregnancy.familyHistoryNone) {
+    y = doCheckbox(doc, 'None of the above', data.pregnancy.familyHistoryNone, x, y);
+  }
 
   // --------------------------------------------------------
   // Personal History.
@@ -756,23 +792,50 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
   y = ypos + 10;
   doLabel(doc, 'Personal History', x, y);
   y += 15;
-  y = doCheckbox(doc, 'Food allergy?', data.pregnancy.historyFoodAllergy, x, y);
-  y = doCheckbox(doc, 'Medicine allergy?', data.pregnancy.historyMedicineAllergy, x, y);
-  y = doCheckbox(doc, 'Asthma?', data.pregnancy.historyAsthma, x, y);
-  y = doCheckbox(doc, 'Heart problems?', data.pregnancy.historyHeartProblems, x, y);
-  y = doCheckbox(doc, 'Kidney problems?', data.pregnancy.historyKidneyProblems, x, y);
-  y = doCheckbox(doc, 'Hepatitis?', data.pregnancy.historyHepatitis, x, y);
-  y = doCheckbox(doc, 'Goiter?', data.pregnancy.historyGoiter, x, y);
-  y = doCheckbox(doc, 'High blood pressure?', data.pregnancy.historyHighBloodPressure, x, y);
-  y = doCheckbox(doc, 'Hospital operation?', data.pregnancy.historyHospitalOperation, x, y);
-  y = doCheckbox(doc, 'Blood transfusion?', data.pregnancy.historyBloodTransfusion, x, y);
-  y = doCheckbox(doc, 'Smoking?', data.pregnancy.historySmoking, x, y);
-  y = doCheckbox(doc, 'Drinking?', data.pregnancy.historyDrinking, x, y);
-  y = doCheckbox(doc, 'None of the above?', data.pregnancy.historyNone, x, y);
+  if (data.pregnancy.historyFoodAllergy) {
+    y = doCheckbox(doc, 'Food allergy?', data.pregnancy.historyFoodAllergy, x, y);
+  }
+  if (data.pregnancy.historyMedicineAllergy) {
+    y = doCheckbox(doc, 'Medicine allergy?', data.pregnancy.historyMedicineAllergy, x, y);
+  }
+  if (data.pregnancy.historyAsthma) {
+    y = doCheckbox(doc, 'Asthma?', data.pregnancy.historyAsthma, x, y);
+  }
+  if (data.pregnancy.historyHeartProblems) {
+    y = doCheckbox(doc, 'Heart problems?', data.pregnancy.historyHeartProblems, x, y);
+  }
+  if (data.pregnancy.historyKidneyProblems) {
+    y = doCheckbox(doc, 'Kidney problems?', data.pregnancy.historyKidneyProblems, x, y);
+  }
+  if (data.pregnancy.historyHepatitis) {
+    y = doCheckbox(doc, 'Hepatitis?', data.pregnancy.historyHepatitis, x, y);
+  }
+  if (data.pregnancy.historyGoiter) {
+    y = doCheckbox(doc, 'Goiter?', data.pregnancy.historyGoiter, x, y);
+  }
+  if (data.pregnancy.historyHighBloodPressure) {
+    y = doCheckbox(doc, 'High blood pressure?', data.pregnancy.historyHighBloodPressure, x, y);
+  }
+  if (data.pregnancy.historyHospitalOperation) {
+    y = doCheckbox(doc, 'Hospital operation?', data.pregnancy.historyHospitalOperation, x, y);
+  }
+  if (data.pregnancy.historyBloodTransfusion) {
+    y = doCheckbox(doc, 'Blood transfusion?', data.pregnancy.historyBloodTransfusion, x, y);
+  }
+  if (data.pregnancy.historySmoking) {
+    y = doCheckbox(doc, 'Smoking?', data.pregnancy.historySmoking, x, y);
+  }
+  if (data.pregnancy.historyDrinking) {
+    y = doCheckbox(doc, 'Drinking?', data.pregnancy.historyDrinking, x, y);
+  }
+  if (data.pregnancy.historyNone) {
+    y = doCheckbox(doc, 'None of the above?', data.pregnancy.historyNone, x, y);
+  }
 
   // --------------------------------------------------------
   // Notes.
   // --------------------------------------------------------
+  if (y < maxY) y = maxY;
   x = opts.margins.left;
   if (questionnaireNote.length > 0) {
     y = doVertFldVal(doc, 'Notes', questionnaireNote, x, y, true);

@@ -28,6 +28,7 @@
    - Heapdump
 - Retired Grunt and replaced with Gulp.
 - Increased field sizes of many notes fields.
+- Summary report only shows checked items in questionnaire section.
 - Bug fixes
    - Fixed the display of various radio/checkboxes
    - Fixed date handling issues with Moment
