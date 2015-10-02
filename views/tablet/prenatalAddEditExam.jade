@@ -70,14 +70,14 @@ block prenatalAddEditExam
               input(id='fh', class='form-control input-lg', type='number', tabindex="8", autocomplete="off", name='fh', disabled=readonlyFields.fh, value=prenatalExam.fh)
             div.col-xs-7
               span= gettext('FH Note')
-              input(id='fhNote', class='form-control input-lg', type='text', tabindex='9', spellcheck="off", autocomplete='off', name='fhNote', disabled=readonlyFields.fhNote, value=prenatalExam.fhNote)
+              +textarea('fhNote', 'fhNote', 'form-control', '9', prenatalExam.fhNote, readonlyFields.fhNote)
           div.row
             div.col-xs-5
               span= gettext('FHT')
               input(id='fht', class='form-control input-lg', type='number', tabindex="10", autocomplete="off", name='fht', disabled=readonlyFields.fht, value=prenatalExam.fht)
             div.col-xs-7
               span= gettext('FHT Note')
-              input(id='fhtNote', class='form-control input-lg', type='text', tabindex='11', spellcheck="off", autocomplete='off', name='fhtNote', disabled=readonlyFields.fhtNote, value=prenatalExam.fhtNote)
+              +textarea('fhtNote', 'fhtNote', 'form-control', '11', prenatalExam.fhtNote, readonlyFields.fhtNote)
           span= gettext('Position (saved all caps)')
           input(id='pos', class='form-control input-lg', type='text', tabindex="12", autocomplete="off", name='pos', disabled=readonlyFields.pos, value=prenatalExam.pos)
 
@@ -106,12 +106,12 @@ block prenatalAddEditExam
       div.row
         div(class='form-group col-xs-6')
           span= gettext('Risk note')
-              input(class='form-control', type='text', name='risk', spellcheck="off", autocomplete="off", tabindex="17", disabled=readonlyFields.risk, value=prenatalExam.risk)
+          +textarea('risk', 'risk', 'form-control', '17', prenatalExam.risk, readonlyFields.risk)
           div= gettext('Return Date')
           input(id='returnDate', class='form-control input-lg', type='date', tabindex="18", autocomplete="off", name='returnDate', disabled=readonlyFields.returnDate, value=returnDate)
         div(class='form-group col-xs-6')
           span= gettext('Notes')
-          textarea(id='note', class='form-control input-lg', tabindex="19", spellcheck="off", autocomplete="off", wrap="soft", rows="3", disabled=readonlyFields.note, name='note')= prenatalExam.note
+          +textarea('note', 'note', 'form-control', '19', prenatalExam.note, readonlyFields.note)
 
       div.row
         div(class='col-xs-2')

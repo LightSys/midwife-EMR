@@ -246,7 +246,7 @@ block prenatal
           div(class='col-xs-6')
             div
               span.text-primary= gettext('Risk Notes')
-              textarea(class='form-control', tabindex="14", spellcheck="off", autocomplete="off", rows=5, disabled=readonlyFields.riskNote, name='riskNote')= rec.riskNote
+              +textarea('riskNote', 'riskNote', 'form-control', '14', rec.riskNote, readonlyFields.riskNote)
 
           div(class='form-group col-xs-4 box')
             p(class='text-primary lead')= gettext('Pregnancy End Result')

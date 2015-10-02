@@ -37,7 +37,7 @@ block midwifeInterview
       div(class='form-group col-md-6')
         span= gettext('Comments ')
         span(class="text-info")= gettext('**Flag a comment on it\'s own line.')
-        textarea(class='form-control', rows='6', tabindex="6", spellcheck="off", autocomplete="off", wrap='soft', name='note')= rec.note
+        +textarea('note', 'note', 'form-control', '6', rec.note)
 
     div.row
       div(class='form-group col-md-1')

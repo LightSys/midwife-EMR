@@ -71,7 +71,7 @@ block midwifeInterviewAddPreg
       div.row
         div(class='form-group col-xs-12')
           span= gettext('Comment')
-          input(id='note', class='form-control', type='text', tabindex="115", spellcheck="off", autocomplete="off", name='note')
+          +textarea('note', 'note', 'form-control', '115', '')
 
         div(class='col-xs-3')
           button(class='btn btn-primary btn-block', type='submit')= gettext('Save')

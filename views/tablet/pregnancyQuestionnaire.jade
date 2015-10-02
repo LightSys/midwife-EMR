@@ -125,7 +125,7 @@ block pregnancyQuestionnaire
           input(class='form-control', type='text', tabindex="17", spellcheck="off", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
 
         span= gettext('Notes')
-        textarea(id='questionnaireNote', class='form-control', tabindex="25", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
+        +textarea('questionnaireNote', 'questionnaireNote', 'form-control', '25', rec.questionnaireNote)
 
 
     div.row

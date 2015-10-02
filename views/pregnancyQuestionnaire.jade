@@ -105,7 +105,7 @@ block pregnancyQuestionnaire
                 = gettext(cb.label)
 
         span= gettext('Notes')
-        textarea(id='questionnaireNote', class='form-control', tabindex="25", wrap="soft", rows="6", name='questionnaireNote')= rec.questionnaireNote
+        +textarea('questionnaireNote', 'questionnaireNote', 'form-control', '25', rec.questionnaireNote)
 
       div(class='form-group col-sm-3')
         a(class="btn btn-default" data-toggle="collapse" href="#personalHistory" data-parent="#readonlyPersonalHistory" aria-expanded="false" aria-controls="personalHistory")= gettext('Personal History')
