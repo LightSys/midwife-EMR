@@ -27,6 +27,7 @@
 - Removed the following dependencies
    - Heapdump
 - Retired Grunt and replaced with Gulp.
+- Increased field sizes of many notes fields.
 - Bug fixes
    - Fixed the display of various radio/checkboxes
    - Fixed date handling issues with Moment
@@ -39,9 +40,11 @@
    - Fixed some tests
    - Corrected references to validator
    - Shortened title on questionnaire page to fit better
+   - Better table layouts on screens
 - New Features
    - Allow adding another pregnancy to a patient
    - Shows if a patient has more than one pregnancy
    - Allows easy switching between pregnancies of a patient
+   - Textareas auto resize per field contents w/o scrolling
 
 
