@@ -13,7 +13,8 @@ mixin titleMsg(title)
           - });
       - }
     div(class='col-md-2')
-      +addPregnancy(patId, otherPregnancies)
+      - if (pregId && roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('attending') || roleInfo.hasRole('supervisor')))
+        +addPregnancy(patId, otherPregnancies)
     div(class='col-md-2')
-      - if (pregId)
+      - if (pregId && roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('attending') || roleInfo.hasRole('supervisor')))
         a(type='button', class='btn btn-default', href='/report/summary/' + pregId)= gettext('Summary Rpt')

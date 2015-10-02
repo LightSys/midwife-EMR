@@ -5,9 +5,10 @@ mixin titleMsg(title)
     div(class='col-xs-7')
       h2= title
     div(class='col-xs-2')
-      +addPregnancy(patId, otherPregnancies)
+      - if (pregId && roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('attending') || roleInfo.hasRole('supervisor')))
+        +addPregnancy(patId, otherPregnancies)
     div(class='col-xs-3')
-      - if (pregId)
+      - if (pregId && roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('attending') || roleInfo.hasRole('supervisor')))
         a(type='button', class='btn btn-default', href='/report/summary/' + pregId)= gettext('Summary Rpt')
   div.row
     div(class='col-xs-6')

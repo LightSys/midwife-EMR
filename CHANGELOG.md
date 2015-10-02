@@ -41,6 +41,7 @@
    - Corrected references to validator
    - Shortened title on questionnaire page to fit better
    - Better table layouts on screens
+   - Guard cannot see summary report and other pregnancy options
 - New Features
    - Allow adding another pregnancy to a patient
    - Shows if a patient has more than one pregnancy
