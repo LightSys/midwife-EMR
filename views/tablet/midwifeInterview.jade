@@ -66,43 +66,44 @@ block midwifeInterview
 
     div.row
       div(class='col-xs-12')
-        table(id='pregnancyHistoryTable', class='table table-striped table-bordered table-hover table-condensed responsive')
-          thead
-            tr
-              td= gettext('Date')
-              td= gettext('GA')
-              td= gettext('Sex')
-              td= gettext('Place of birth')
-              td= gettext('Attendant')
-              td= gettext('Del type')
-              td= gettext('Labor (hrs)')
-              td= gettext('Wgt (kg)')
-              td= gettext('Epis tear')
-              td= gettext('Repaired')
-              td= gettext('Breast Fed')
-              td= gettext('Comments')
-          -var pregId = 'pregnancyId-' + rec.id;
-          tbody(id=pregId)
-            each ph in rec.pregnancyHistory
-              -var pregHistId = 'pregnancyHistoryId-' + ph.id;
-              tr(class='pregHistoryRow', id=pregHistId)
-                - var ga = ph.FT === 1? 'Full Term': ph.finalGA + ' ' + ph.finalGAPeriod;
-                - var bf = ph.howLongBFed? ph.howLongBFed + ' ' + ph.howLongBFedPeriod: '';
-                - var theDate = ph.month + '-' + ph.day + '-' + ph.year;
-                - theDate = theDate.replace(/--/, '-');   // Make the display a little more pleasing to the eye.
-                - theDate = theDate.replace(/^-/, '');
-                td= theDate
-                td= ga
-                td= ph.sexOfBaby
-                td= ph.placeOfBirth
-                td= ph.attendant
-                td= ph.typeOfDelivery
-                td= ph.lengthOfLabor
-                td= ph.birthWeight
-                td= ph.episTear
-                td= ph.repaired
-                td= bf
-                td= ph.note
+        div(class='bigTable')
+          table(id='pregnancyHistoryTable', class='table table-striped table-bordered table-hover table-condensed')
+            thead
+              tr
+                td(class='table-cell-date')= gettext('Date')
+                td= gettext('GA')
+                td= gettext('Sex')
+                td= gettext('Place of birth')
+                td= gettext('Attendant')
+                td= gettext('Del type')
+                td= gettext('Labor (hrs)')
+                td= gettext('Wgt (kg)')
+                td= gettext('Epis tear')
+                td= gettext('Repaired')
+                td= gettext('Breast Fed')
+                td= gettext('Comments')
+            -var pregId = 'pregnancyId-' + rec.id;
+            tbody(id=pregId)
+              each ph in rec.pregnancyHistory
+                -var pregHistId = 'pregnancyHistoryId-' + ph.id;
+                tr(class='pregHistoryRow', id=pregHistId)
+                  - var ga = ph.FT === 1? 'Full Term': ph.finalGA + ' ' + ph.finalGAPeriod;
+                  - var bf = ph.howLongBFed? ph.howLongBFed + ' ' + ph.howLongBFedPeriod: '';
+                  - var theDate = ph.month + '-' + ph.day + '-' + ph.year;
+                  - theDate = theDate.replace(/--/, '-');   // Make the display a little more pleasing to the eye.
+                  - theDate = theDate.replace(/^-/, '');
+                  td= theDate
+                  td= ga
+                  td= ph.sexOfBaby
+                  td= ph.placeOfBirth
+                  td= ph.attendant
+                  td= ph.typeOfDelivery
+                  td= ph.lengthOfLabor
+                  td= ph.birthWeight
+                  td= ph.episTear
+                  td= ph.repaired
+                  td= bf
+                  td= ph.note
     div.row
       div(class='col-xs-4 col-xs-offset-5')
         p(class='text-muted invisible visible-on-change')= gettext('Save changes before adding historical pregnancies.')
