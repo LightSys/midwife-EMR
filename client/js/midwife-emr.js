@@ -22,6 +22,23 @@ $(function() {
       , warn: function() {}
     };
 
+    // --------------------------------------------------------
+    // Auto expanding text areas. Adapted from "Expanding Text
+    // Areas Made Elegant", http://alistapart.com/article/expanding-text-areas-made-elegant.
+    // 
+    // This is the JS component of the "textarea" Jade component
+    // in the mixins folder. There is also CSS.
+    // --------------------------------------------------------
+    $('div.expandingArea').each(function() {
+      var area = $('textarea', $(this));
+      var span = $('span', $(this));
+      area.bind('input', function() {
+        span.text(area.val());
+      });
+      span.text(area.val());
+      $(this).addClass('active');
+    });
+
     /* --------------------------------------------------------
     * disableOnChange()
     * enableOnChange()
