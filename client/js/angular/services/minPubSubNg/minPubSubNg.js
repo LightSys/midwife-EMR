@@ -15,9 +15,10 @@
   // ========================================================
   // The following code is by Daniel Lamb from his MinPubSub
   // library https://github.com/daniellmb/MinPubSub. The only
-  // modification was the change on the last line to pass in
+  // modifications were changes on the last line to pass in
   // a local object instead of the global window to the
-  // immediate function.
+  // immediate function and fix suggestion by jshint about the
+  // redefinition of callback in unsubscribe.
   // ========================================================
   // ========================================================
 
@@ -114,11 +115,11 @@
       //    unsubscribe(handle);
 
       var subs = cache[callback ? handle : handle[0]],
-        callback = callback || handle[1],
+        cb = callback || handle[1],
         len = subs ? subs.length : 0;
 
       while (len--) {
-        if (subs[len] === callback) {
+        if (subs[len] === cb) {
           subs.splice(len, 1);
         }
       }

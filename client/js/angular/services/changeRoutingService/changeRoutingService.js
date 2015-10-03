@@ -256,8 +256,8 @@
                 // If field not found for this table, check for default
                 // for the table.
                 // --------------------------------------------------------
-                if (! state.stateName && fieldStateMap[table]['DEFAULT']) {
-                  state.stateName = fieldStateMap[table]['DEFAULT'];
+                if (! state.stateName && fieldStateMap[table].DEFAULT) {
+                  state.stateName = fieldStateMap[table].DEFAULT;
                 }
                 // --------------------------------------------------------
                 // Finally, if there is suposed to be a detail id passed

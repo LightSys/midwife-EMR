@@ -47,7 +47,7 @@
         'pregnote'];
 
       // Paths
-      var baseUrl = '/api/history';;
+      var baseUrl = '/api/history';
       var pregnancyPath = 'pregnancy/:pregId';
 
       // --------------------------------------------------------
@@ -141,7 +141,7 @@
           // the presence of the pregnancy_id field.
           // --------------------------------------------------------
           var currRec = data[0][src][idx];
-          if (currRec['pregnancy_id']) {
+          if (currRec.pregnancy_id) {
             if (! recs) recs = [];
             recs.push(currRec);
           } else {
@@ -255,7 +255,7 @@
        * does nothing.
        * -------------------------------------------------------- */
       var notifyCallbacks = function(recNum) {
-        var recNum = recNum || currRecNum;
+        recNum = recNum || currRecNum;
         var json = pregnancyCache.get(PREGNANCY_CACHE_KEY);
         var rec;
         if (json) {

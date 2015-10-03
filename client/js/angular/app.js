@@ -356,7 +356,7 @@
       return function(id, fld) {
         var result = historyService.lookup('user', 'id', id);
         if (result && _.has(result, fld)) return result[fld];
-        if (result && _.has(result, 'shortName')) return result['shortName'];
+        if (result && _.has(result, 'shortName')) return result.shortName;
         return '';
       };
     }])

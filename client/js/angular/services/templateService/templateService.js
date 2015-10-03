@@ -17,7 +17,7 @@
     w = w || window;
 
     // This works for all browsers except IE8 and before
-    if (w.innerWidth != null) return {w: w.innerWidth, h:w.innerHeight};
+    if (w.innerWidth !== null) return {w: w.innerWidth, h:w.innerHeight};
 
     // For IE (or any browser) in Standards mode
     var d = w.document;

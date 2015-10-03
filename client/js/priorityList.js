@@ -128,7 +128,7 @@ $(function() {
      * return     html as a string
      * -------------------------------------------------------- */
     var makeCell = function makeCell(text, id) {
-      var col = '<td'
+      var col = '<td';
       if (id) {
         col += ' id="' + id + '"';
       }
