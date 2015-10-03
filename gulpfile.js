@@ -14,6 +14,7 @@ var minifyCss = require('gulp-minify-css');
 var templateCache = require('gulp-angular-templatecache');
 var Promise = require('bluebird');
 var del = require('del');
+var jshint = require('gulp-jshint');
 
 // --------------------------------------------------------
 // Global configuration options for various gulp packages.
@@ -222,6 +223,18 @@ gulp.task('font-awesome', function() {
     .pipe(gulp.dest('static/font-awesome/'));
 });
 
+// --------------------------------------------------------
+// JSHint
+// --------------------------------------------------------
+gulp.task('jshint', function() {
+  return gulp
+    .src(['client/js/midwife-emr-home.js',
+          'client/js/midwife-emr.js',
+          'client/js/priorityList.js',
+          'client/js/angular/**/*.js'])
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'));
+});
 
 // --------------------------------------------------------
 // The default tasks.
