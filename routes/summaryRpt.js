@@ -690,7 +690,7 @@ var doMidwifeInterview = function(doc, data, opts, ypos) {
 var doQuestionnaire = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
-    , maxY
+    , maxY = y
     , questionnaireNote = ''
     ;
 
@@ -752,7 +752,7 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
   y = doVertFldVal(doc, 'Companion during childbirth?', data.pregnancy.birthCompanion, x, y);
   y += 5;
   y = doCheckbox(doc, 'Practiced family planning?', data.pregnancy.practiceFamilyPlanning, x, y);
-  y -= 10;    // Family planning details - just put under checkbox quesion with no label.
+  y -= 10;    // Family planning details - just put under checkbox question with no label.
   y = doVertFldVal(doc, '', data.pregnancy.practiceFamilyPlanningDetails, x, y);
   maxY = y;
 
@@ -842,7 +842,7 @@ var doQuestionnaire = function(doc, data, opts, ypos) {
   }
 
   doc.moveDown(1);
-  y = doc.y + 10;
+  y += 10;
   return {y: y, overflow: false};
 };
 
@@ -1901,6 +1901,11 @@ var doPrintPage = function(doc, data, opts, sections) {
           // just track y.
           // --------------------------------------------------------
           y = partsResults[idx].y;
+        }
+        if (y > maxY) {
+          // Add another page if we have gone too far down already.
+          doStartPage(doc, opts);
+          y = minY;
         }
       }
     });
