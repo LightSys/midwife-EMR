@@ -1481,12 +1481,20 @@ var doTable = function(doc, columns, rows, opts, ypos,
     , totalColWidth = 0
     , handlePageOverflow = function() {
         if (y > (maxY - avgY)) {
-          logInfo('Summary Report: Added another page in doTable() due to overflow.');
-          doStartPage(doc, opts);
-          y = minY;
-          didAddPage = true;
-          // Reset font to what we expect.
-          doc.font(FONTS.Helvetica).fontSize(9);
+          if (position && position === 'right' && doc.bufferedPageRange().count > (currentPage + 1)) {
+            // No need to add a page if the left side has already added on for us.
+            logInfo('Summary Report: Advancing a page in doTable() due to overflow.');
+            doc.switchToPage(++currentPage);
+            y = minY;
+            didAddPage = true;
+          } else {
+            logInfo('Summary Report: Added another page in doTable() due to overflow.');
+            doStartPage(doc, opts);
+            y = minY;
+            didAddPage = true;
+            // Reset font to what we expect.
+            doc.font(FONTS.Helvetica).fontSize(9);
+          }
         }
       }
     ;
@@ -1856,6 +1864,7 @@ var doPrintPage = function(doc, data, opts, sections) {
           partsResults[idx].y > maxY &&
           ! partsResults[idx].overflow &&
           secIdx < (numSections - 1)) {
+        logInfo('Summary Report: Adding a page in doPrintPage().');
         doStartPage(doc, opts);
         y = minY;
       }
@@ -1902,8 +1911,10 @@ var doPrintPage = function(doc, data, opts, sections) {
           // --------------------------------------------------------
           y = partsResults[idx].y;
         }
-        if (y > maxY) {
-          // Add another page if we have gone too far down already.
+        if (y > maxY && secIdx < (numSections - 1)) {
+          // Add another page if we have gone too far down already and
+          // we still have more sections to print.
+          logInfo('Summary Report: Adding a page in doPrintPage().');
           doStartPage(doc, opts);
           y = minY;
         }
@@ -2191,7 +2202,7 @@ var run = function run(req, res) {
     req.flash('error', req.gettext('The pregnancy id for the summary report was not specified.'));
   }
   if (! fieldsReady) {
-    console.log('Summary report: not all fields supplied.');
+    logWarn('Summary Report: not all fields supplied.');
     // TODO: better place to go than here?
     res.redirect(cfg.path.search);
   }
