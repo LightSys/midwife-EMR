@@ -95,7 +95,7 @@ gulp.task('uglify-footer', function() {
           , 'client/js/jquery-ui.min.js'
           , 'client/js/midwife-emr.js'
           , 'client/js/midwife-emr-home.js'
-          , 'client/js/prioritylist.js'
+          , 'client/js/priorityList.js'
       ])
     .pipe(concat('midwife-emr-footer.min.js'))
     .pipe(uglify(cfg.uglify))
