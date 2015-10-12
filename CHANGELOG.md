@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.1
+
+- Fixed gulpfile.js to properly process priorityList.js.
+
 ## 0.6.0
 
 *See docs/upgrades/0.6.x.md for upgrade instructions.*
