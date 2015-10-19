@@ -2,11 +2,14 @@
 
 ## 0.6.2
 
+*See docs/upgrades/0.6.2.md for upgrade instructions.*
+
 - Replaces the session table with sessions as required by the
   express-mysql-sessions module.
    - This updates table creation script and drops the unused session table.
 - Handle an occasional error due to uninitialized object while adding a pregnancy.
 - Downgrade Bcrypt back to 0.7.8 because it would not compile on the ODroid.
+- Remove Grunt dependencies.
 
 ## 0.6.1
 
