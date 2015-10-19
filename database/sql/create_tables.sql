@@ -59,13 +59,13 @@ CREATE TABLE IF NOT EXISTS `user_role` (
 );
 SHOW WARNINGS;
 
--- Definition required by the connect-mysql Nodejs module.
-CREATE TABLE IF NOT EXISTS `session` (
-  `sid` VARCHAR(255) NOT NULL,
-  `session` TEXT NOT NULL,
-  `expires` INT,
-  PRIMARY KEY (`sid`)
-) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+-- Definition required by the express-mysql-session module.
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `session_id` VARCHAR(255) COLLATE utf8_bin NOT NULL,
+  `expires` INT(11) UNSIGNED NOT NULL,
+  `data` text COLLATE utf8_bin,
+  PRIMARY KEY (`session_id`)
+) CHARACTER SET utf8 COLLATE utf8_bin;
 SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `dohSeq` (
