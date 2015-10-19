@@ -9,8 +9,8 @@ block pregnancyAdd
   //- or undefined. Inputs with type date and those using the datePicker mixin
   //- require 'YYYY-MM-DD' format, while inputs with type text require 'MM/DD/YYYY'.
   //- Date inputs:
-  - var priorDob = priorRec.dob? libs.mmt(priorRec.dob).format('YYYY-MM-DD'): '';
-  - var patientDob = patientRec.dob? libs.mmt(patientRec.dob).format('YYYY-MM-DD'): '';
+  - var priorDob = priorRec && priorRec.dob? libs.mmt(priorRec.dob).format('YYYY-MM-DD'): '';
+  - var patientDob = patientRec && patientRec.dob? libs.mmt(patientRec.dob).format('YYYY-MM-DD'): '';
 
   div.formBoxLarge
     form(class='dirty-check disable-on-submit', role='form', name='pregnancyForm', action='/pregnancy', method='post')
