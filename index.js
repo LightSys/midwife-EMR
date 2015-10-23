@@ -65,6 +65,7 @@ var express = require('express')
   , revision = 0
   , tmpRevision = 0
   , useSecureCookie = cfg.tls.key || false
+  , workerPort = cfg.host.tlsPort
   ;
 
 // --------------------------------------------------------
@@ -632,14 +633,37 @@ if (process.env.NODE_ENV == 'test') {
   logInfo('TEST mode');
   app.listen(cfg.host.port, cfg.host.name);
 } else {
+  // --------------------------------------------------------
+  // Determine which port this instance will listen on. In a
+  // cluster of workers, due to the need to use sticky sessions
+  // for the sake of Socket.io, we have the workers listen on
+  // separate ports if there are more than one worker. See
+  // http://socket.io/docs/using-multiple-nodes/ for details.
+  //
+  // Note that if cfg.cpu.workers is greater than 1, then a
+  // reverse proxy like Nginx must be configured that implements
+  // sticky sessions or else only one worker will be used.
+  // --------------------------------------------------------
+  if (process.env.WORKER_ID) {
+    if (cfg.tls.key) {
+      workerPort = Number(cfg.host.tlsPort) + Number(process.env.WORKER_ID);
+    } else {
+      workerPort = Number(cfg.host.port) + Number(process.env.WORKER_ID);
+    }
+  }
   if (cfg.tls.key) {
     // --------------------------------------------------------
     // Listen for HTTPS connections.
     // --------------------------------------------------------
-    https.createServer(cfg.tls, app).listen(cfg.host.tlsPort, cfg.host.name);
+    https.createServer(cfg.tls, app).listen(workerPort, cfg.host.name);
 
     // --------------------------------------------------------
     // Catch all incoming HTTP connections and redirect to HTTPS.
+    // We don't redirect to the workerPort because if we are
+    // running more than one worker in a cluster, the reverse
+    // proxy should be implementing some form of sticky connections
+    // which should choose the correct worker port, if the
+    // remoteAddress has already been assigned to one.
     // --------------------------------------------------------
     http.createServer(function(req, res) {
       var httpsLoc = url.format({
@@ -655,14 +679,14 @@ if (process.env.NODE_ENV == 'test') {
     // --------------------------------------------------------
     // HTTP only. This should not be used for production.
     // --------------------------------------------------------
-    http.createServer(app).listen(cfg.host.port, cfg.host.name);
+    http.createServer(app).listen(workerPort, cfg.host.name);
   }
 }
 if (cfg.tls.key) {
-  logInfo('Server listening for HTTPS on port ' + cfg.host.tlsPort +
+  logInfo('Server listening for HTTPS on port ' + workerPort +
       ' and redirecting port ' + cfg.host.port);
 } else {
-  logInfo('Server listening in INSECURE mode on port ' + cfg.host.port);
+  logInfo('Server listening in INSECURE mode on port ' + workerPort);
 }
 
 // --------------------------------------------------------

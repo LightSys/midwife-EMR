@@ -15,10 +15,17 @@ var fs = require('fs')
   ;
 
 // --------------------------------------------------------
-// Adjust the CPU cores used if specified to do so.
+// Adjust the CPU cores used if specified to do so. Otherwise
+// use only one worker even if there are multiple cores.
+// This is the safe default because if more workers are used,
+// the installation also needs a reverse proxy like Nginx in
+// front that implements sticky sessions. This is required
+// due to the use of Socket.io.
 // --------------------------------------------------------
 if (cfg.cpu && cfg.cpu.workers && ! isNaN(parseInt(cfg.cpu.workers))) {
   config.workers = cfg.cpu.workers;
+} else {
+  config.workers = 1;
 }
 
 var recluster = require('recluster')
