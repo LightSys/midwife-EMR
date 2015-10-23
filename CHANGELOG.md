@@ -1,5 +1,13 @@
 # Change Log
 
+## Phase2 branch
+
+- Upgraded bcrypt to current (assumes use of NodeJS 4.x).
+- Installed Socket.io.
+- Cluster workers now listen on different ports.
+   - If more than one worker is used, requires a reverse proxy
+     like Nginx that implements sticky sessions.
+
 ## 0.6.3
 
 - Does not show inactive users in health teaching teacher selection.
