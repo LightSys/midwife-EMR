@@ -700,6 +700,19 @@ if (process.env.NODE_ENV == 'test') {
   comm.init(SocketIO(server), sessionMiddleware);
 
   // TESTING stuff
+  //comm.subscribeSystem(
+      //function(x) {logInfo('index: ' + JSON.stringify(x));},
+      //function(err) {logError('Error: ' + err);},
+      //function() {logInfo('Completed system.');}
+  //);
+  //comm.sendSystem('start worker ' + process.env.WORKER_ID, Date.now());
+  //setTimeout(function() {
+    //comm.sendSystem('system update for worker ' + process.env.WORKER_ID, Math.random() * 888);
+  //}, 4000);
+  //setTimeout(function() {
+    //comm.sendSystem('system by scope for worker ' + process.env.WORKER_ID, Math.random() * 77, process.env.WORKER_ID);
+  //}, 8000);
+
   //if (process.env.WORKER_ID == 1) {
     //setTimeout(function() {
       //var testingCancel = comm.subscribeSite(
