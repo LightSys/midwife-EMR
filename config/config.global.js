@@ -98,6 +98,14 @@ cfg.database.dbPass = 'yourDBpassword';
 cfg.database.charset = 'utf8';
 
 // --------------------------------------------------------
+// Redis settings.
+// --------------------------------------------------------
+cfg.redis = {};
+cfg.redis.db = 1;
+cfg.redis.host = '127.0.0.1';
+cfg.redis.port = 6379;
+
+// --------------------------------------------------------
 // Cache settings.
 // In memory cache time to live settings. How long to cache
 // before updating. Currently using node-cache module.

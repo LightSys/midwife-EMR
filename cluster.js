@@ -47,9 +47,12 @@ process.on('SIGUSR1', function() {
 // --------------------------------------------------------
 _.each(cluster.workers, function(worker) {
   // For each worker, listen for messages.
+  console.log('Setting up listener for worker.id: ' + worker.id);
   worker.process.on('message', function(msg) {
     // For each message received, rebroadcast it to all workers.
+    console.log('Master: received msg');
     _.each(cluster.workers, function(worker) {
+      console.log('Master: sending message to worker.id: ' + worker.id);
       worker.process.send(msg);
     });
   });
