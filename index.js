@@ -24,6 +24,8 @@ var express = require('express')
   , cons = require('consolidate')
   , flash = require('express-flash')
   , app = express()
+  , SocketIO = require('socket.io')
+  , comm = require('./comm')
   , inRoles = require('./auth').inRoles
   , setRoleInfo = require('./auth').setRoleInfo(app)    // requires the app object
   , clearRoleInfo = require('./auth').clearRoleInfo(app)    // requires the app object
@@ -65,6 +67,7 @@ var express = require('express')
   , revision = 0
   , tmpRevision = 0
   , useSecureCookie = cfg.tls.key || false
+  , server      // https server
   , workerPort = cfg.host.tlsPort
   ;
 
@@ -136,14 +139,19 @@ cfg.session.pool = MySQL.createPool({
     }
 });
 var sessionStore = new SessionStore(cfg.session.config);
-app.use(session({
+// --------------------------------------------------------
+// sessionMiddleware() allows the same authentication to
+// be used in Express as in Socket.io.
+// --------------------------------------------------------
+var sessionMiddleware = session({
   secret: cfg.session.secret
   , cookie: {maxAge: cfg.cookie.maxAge, secure: useSecureCookie}
   , rolling: true   // Allows session to remain active as long as it is being used.
   , resave: true
   , saveUninitialized: false
   , store: sessionStore
-}));
+});
+app.use(sessionMiddleware);
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(device.capture());
@@ -655,7 +663,8 @@ if (process.env.NODE_ENV == 'test') {
     // --------------------------------------------------------
     // Listen for HTTPS connections.
     // --------------------------------------------------------
-    https.createServer(cfg.tls, app).listen(workerPort, cfg.host.name);
+    server = https.createServer(cfg.tls, app);
+    server.listen(workerPort, cfg.host.name);
 
     // --------------------------------------------------------
     // Catch all incoming HTTP connections and redirect to HTTPS.
@@ -679,9 +688,42 @@ if (process.env.NODE_ENV == 'test') {
     // --------------------------------------------------------
     // HTTP only. This should not be used for production.
     // --------------------------------------------------------
-    http.createServer(app).listen(workerPort, cfg.host.name);
+    server = http.createServer(app);
+    server.listen(workerPort, cfg.host.name);
   }
+
+  // ========================================================
+  // ========================================================
+  // Initialize the communication module for this worker.
+  // ========================================================
+  // ========================================================
+  comm.init(SocketIO(server), sessionMiddleware);
+
+  // TESTING stuff
+  //if (process.env.WORKER_ID == 1) {
+    //setTimeout(function() {
+      //var testingCancel = comm.subscribeSite(
+        //function(x) {logInfo('index[1]: ' + JSON.stringify(x));},
+        //function(err) {logInfo('Error[1]: ' + err);},
+        //function() {logInfo('Completed[1].');}
+      //);
+      //var testingId = comm.sendSite('someThing', 123);
+      //logInfo('Sent message with id: ' + testingId);
+    //}, 2000);
+  //} else {
+    //var testProc0 = comm.subscribeSite(
+      //function(x) {logInfo('index[0]: ' + JSON.stringify(x));},
+      //function(err) {logInfo('Error[0]: ' + err);},
+      //function() {logInfo('Completed[0].');}
+    //);
+    //var testProc0Id = comm.sendSite('something-0', 456);
+    //setInterval(function() {
+      //comm.sendSite('intervalTest-' + Math.random() * 888, Math.random() * 777);
+    //}, 30000);
+  //}
 }
+
+
 if (cfg.tls.key) {
   logInfo('Server listening for HTTPS on port ' + workerPort +
       ' and redirecting port ' + cfg.host.port);
