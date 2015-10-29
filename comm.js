@@ -6,6 +6,50 @@
  * other cluster worker processes, and the RxJS interface to the other modules
  * in this worker process. Expose only RxJS streams to the other modules and
  * leave the Socket.io and Redis interfaces private to this module.
+ *
+ * There are three communication streams (system, site, and data) that are active
+ * across each of the three interfaces (Socket.io, Redis, and RxJS). All messages
+ * created are delivered to all subscribers in the current process, to all
+ * subscribers in other cluster processes, and to all subscribing clients
+ * irrespective of which server process they are currently attached to.
+ *
+ * All messages are "wrapped" in a wrapper that contains the following fields:
+ * - id         - a unique id for the message
+ * - type       - one of system, site, or data
+ * - updatedAt  - date/time in milliseconds of creation/update
+ * - workerId   - the process.env.WORKER_ID that created/updated the message
+ * - scope      - if specified, names the worker id that message is limited to
+ * - data       - the payload, all the key/value pairs set so far
+ *
+ * The system stream:
+ * - Purpose: server to client broadcast to subscribers. System messages pertain to
+ *   the server's operations as opposed to application issues. Examples include
+ *   a shutdown notice, shutdown canceled, notification that a worker process is
+ *   dying, etc.
+ * - Characteristics:
+ *    - Client to server system messages are not allowed.
+ *    - Messages are not aggregated on the server like site messages are. Instead
+ *      messages are sent individually to all subscribers.
+ *    - At subscription, the most recent message is not conveyed to the subscriber,
+ *      only new messages after that point are delivered to that subscriber.
+ *
+ * The site stream:
+ * - Purpose: server to server or server to client broadcast to subscribers. Site
+ *   messages generally are for communication about statistics and facts about the
+ *   Midwife-EMR instance itself at the application level. Examples might be the
+ *   number of prenatalExams conducted by today or the number of patients waiting
+ *   to be served.
+ * - Characteristics:
+ *    - Client to server site messages are not allowed.
+ *    - The stream always conveys an object to subscribers containing all of the
+ *      key/value pairs set up until that point in time. There is not a separate
+ *      message delivered for each key/value pair because all key/values, no matter
+ *      what process/module/function set it, will be aggregated to the object.
+ *    - At subscription, the most recent message will be conveyed to the subscriber.
+ *    - Whenever there is a change or addition of any key/value pair, a new message
+ *      is delivered to subscribers with all of the key/value pairs.
+ *    - Scope is always unspecified for site messages, which are delivered to all
+ *      processes without exception.
  * -------------------------------------------------------------------------------
  */
 
@@ -32,6 +76,8 @@ var redis = require('redis')
   , rClient
   , siteSubject
   , siteSubjectData
+  , systemSubject
+  , systemSubjectLastId
   , CONST
   ;
 
@@ -57,14 +103,18 @@ CONST = {
  *
  * param       type
  * param       data
+ * param       scope - optional, for system messages only
  * return      message object
  * -------------------------------------------------------- */
-var wrap = function(type, data) {
+var wrap = function(type, data, scope) {
   return {
     id: uuid.v1()
     , type: type
     , updatedAt: Date.now()
     , workerId: process.env.WORKER_ID
+    , scope: type == CONST.TYPE.SITE? undefined:
+             type == CONST.TYPE.DATA? undefined:
+             type == CONST.TYPE.SYSTEM? scope: undefined
     , data: data? data: {}
   };
 };
@@ -81,19 +131,31 @@ siteSubjectData = wrap(CONST.TYPE.SITE);
  * return      function
  * -------------------------------------------------------- */
 var makeSend = function(type) {
-  return function(key, val) {
-    if (type == CONST.TYPE.SITE) {
+  return function(key, val, scope) {
+    var data = {};
+    var wrapped;
+    if (type === CONST.TYPE.SITE) {
       // --------------------------------------------------------
       // For site messages, the most recent copy is stored so
       // update the data portion with the key/val pair, refresh
       // the wrapper and notify subscribers. Return the unique
       // message id to the caller.
       // --------------------------------------------------------
-      var data = {};
       data[key] = val;
       siteSubjectData = wrap(type, _.extendOwn(siteSubjectData.data, data));
       siteSubject.onNext(siteSubjectData);
       return siteSubjectData.id;
+    } else if (type === CONST.TYPE.SYSTEM) {
+      // --------------------------------------------------------
+      // For system messages, there is no aggregation and there
+      // is an optional scope parameter allowed. We store the
+      // id of the message as we inject it into the rx stream in
+      // order to prevent circularities.
+      // --------------------------------------------------------
+      data[key] = val;
+      wrapped = wrap(type, data, scope);
+      systemSubjectLastId = wrapped.id;
+      systemSubject.onNext(wrapped);
     } else {
       logError('Error: makeSend() unimplemented for this type: ' + type);
     }
@@ -109,6 +171,7 @@ var makeSend = function(type) {
  *
  * param       key      - the key of the key/val pair
  * param       val      - the value of the key/val pair
+ * param       scope    - the scope of the message (system only)
  * return      id       - the unique message id
  * -------------------------------------------------------- */
 var sendSite = makeSend(CONST.TYPE.SITE);
@@ -127,6 +190,20 @@ var sendData = makeSend(CONST.TYPE.DATA);
  * -------------------------------------------------------- */
 var subscribeSite = function(onNext, onError, onCompleted) {
   return siteSubject.subscribe(onNext, onError, onCompleted);
+};
+
+/* --------------------------------------------------------
+ * subscribeSystem()
+ *
+ * Subscribe to system type messages.
+ *
+ * param       onNext       - function to call upon msg
+ * param       onError      - function to call upon error
+ * param       onCompleted  - function to call when done
+ * return      subscription object
+ * -------------------------------------------------------- */
+var subscribeSystem = function(onNext, onError, onCompleted) {
+  return systemSubject.subscribe(onNext, onError, onCompleted);
 };
 
 /* --------------------------------------------------------
@@ -202,9 +279,8 @@ var init = function(io, sessionMiddle) {
   // Handle messages from other worker processes.
   // --------------------------------------------------------
   pubSub.on('message', function(channel, message) {
-    var data;
+    var data = JSON.parse(message);
     if (channel === CONST.TYPE.SITE) {
-      data = JSON.parse(message);
       // We already have this message, therefore do nothing.
       if (data.id && data.id === siteSubjectData.id) return;
       // --------------------------------------------------------
@@ -218,13 +294,21 @@ var init = function(io, sessionMiddle) {
       siteSubjectData.type = data.type;
       siteSubjectData.updatedAt = data.updatedAt;
       siteSubjectData.workerId = data.workerId;
+      siteSubjectData.scope = undefined;    // by definition for site
       siteSubjectData.data = _.extendOwn(siteSubjectData.data, data.data);
       siteSubject.onNext(siteSubjectData);
+    } else if (channel === CONST.TYPE.SYSTEM) {
+      // We already have this message, therefore do nothing.
+      if (data.id && data.id === systemSubjectLastId) return;
+      // Save the id so we don't create a loop between Rx and Redis.
+      systemSubjectLastId = data.id;
+      systemSubject.onNext(data);
     } else {
       logError('pubSub: channel ' + channel + ' is not yet implemented.');
     }
   });
   pubSub.subscribe(CONST.TYPE.SITE);
+  pubSub.subscribe(CONST.TYPE.SYSTEM);
 
 
   // ========================================================
@@ -246,24 +330,50 @@ var init = function(io, sessionMiddle) {
   // Pass the site data to the other cluster processes.
   // --------------------------------------------------------
   var siteSubscription = siteSubject.subscribe(
-      function(data) {
-        // Empty data, likely due to first message, don't send out.
-        if (data && data.data && _.isEmpty(data.data)) return;
-        // Message is from another process already so don't send out.
-        if (data && data.workerId && data.workerId !== process.env.WORKER_ID) {
-          return;
-        }
-        logInfo('Sending ' + data.id + ' to the other process.');
-        rClient.publish(CONST.TYPE.SITE, JSON.stringify(data));
-      },
-      function(err) {
-        logInfo('Error: ' + err);
-      },
-      function() {
-        logInfo('siteSubject completed.');
+    function(data) {
+      // Empty data, likely due to first message, don't send out.
+      if (data && data.data && _.isEmpty(data.data)) return;
+      // Message is from another process already so don't send out.
+      if (data && data.workerId && data.workerId !== process.env.WORKER_ID) {
+        return;
       }
+      logInfo('Sending ' + data.id + ' to the other process.');
+      rClient.publish(CONST.TYPE.SITE, JSON.stringify(data));
+    },
+    function(err) {
+      logInfo('Error: ' + err);
+    },
+    function() {
+      logInfo('siteSubject completed.');
+    }
   );
 
+  // --------------------------------------------------------
+  // systemSubject is a normal rx.Subject and key/value pairs
+  // are not aggregated but sent out individually.
+  // --------------------------------------------------------
+  systemSubject = new rx.Subject();
+
+  var systemSubscription = systemSubject.subscribe(
+    function(data) {
+      // Message is from another process already so don't send out.
+      if (data && data.workerId && data.workerId !== process.env.WORKER_ID) {
+        return;
+      }
+      // Message is limited by scope to this process only so don't send out.
+      if (data && data.scope && data.scope === process.env.WORKER_ID) {
+        return;
+      }
+      logInfo('Sending ' + data.id + ' to the other process.');
+      rClient.publish(CONST.TYPE.SYSTEM, JSON.stringify(data));
+    },
+    function(err) {
+      logInfo('Error: ' + err);
+    },
+    function() {
+      logInfo('systemSubject completed.');
+    }
+  );
 
   // ========================================================
   // ========================================================
@@ -304,10 +414,34 @@ var init = function(io, sessionMiddle) {
   //  - cluster worker process failure
   // --------------------------------------------------------
   ioSystem.on('connection', function(socket) {
+    var systemSubscription;
     socket.on('disconnect', function() {
+      systemSubscription.dispose();
       cntSystem--;
     });
     cntSystem++;
+
+    // --------------------------------------------------------
+    // Send all system messages out to the authenticated clients.
+    // --------------------------------------------------------
+    systemSubscription = systemSubject.subscribe(
+      function(data) {
+        // Don't do work unless logged in.
+        if (! isValidSocketSession(socket)) {
+          logInfo('Socket is invalid so not sending.');
+          return;
+        } else {
+          logInfo('Socket is sending');
+        }
+        socket.emit(CONST.TYPE.SYSTEM, data);
+      },
+      function(err) {
+        logInfo('Error: ' + err);
+      },
+      function() {
+        logInfo('systemSubject completed.');
+      }
+    );
   });
 
   // --------------------------------------------------------
@@ -337,19 +471,18 @@ var init = function(io, sessionMiddle) {
     // Send all site messages out to the authenticated clients.
     // --------------------------------------------------------
     siteSubscription = siteSubject.subscribe(
-        function(data) {
-          // Don't do work unless logged in.
-          if (! isValidSocketSession(socket)) return;
-          socket.emit(CONST.TYPE.SITE, data);
-        },
-        function(err) {
-          logInfo('Error: ' + err);
-        },
-        function() {
-          logInfo('siteSubject completed.');
-        }
+      function(data) {
+        // Don't do work unless logged in.
+        if (! isValidSocketSession(socket)) return;
+        socket.emit(CONST.TYPE.SITE, data);
+      },
+      function(err) {
+        logInfo('Error: ' + err);
+      },
+      function() {
+        logInfo('siteSubject completed.');
+      }
     );
-
   });
 
   // --------------------------------------------------------
@@ -383,5 +516,6 @@ module.exports = {
   , sendSystem: sendSystem
   , sendData: sendData
   , subscribeSite: subscribeSite
+  , subscribeSystem: subscribeSystem
 };
 
