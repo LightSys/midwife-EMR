@@ -50,6 +50,37 @@
  *      is delivered to subscribers with all of the key/value pairs.
  *    - Scope is always unspecified for site messages, which are delivered to all
  *      processes without exception.
+ *
+ * The data stream:
+ * - Purpose: client to server process and server process to client broadcast to
+ *   subscribers. All data management is handled through the data stream, including
+ *   the client retrieving data or the server pushing data to interested clients or
+ *   the client sending changed data, etc.
+ * - Characteristics:
+ *    - Client to server data messages are allowed.
+ *    - Subscriptions to all data messages are not allowed, only subsets of data.
+ *       - Allowable subscription levels:
+ *          - Pregnancy id
+ *          - Patient id
+ *          - User id
+ *          - Generally subscriptions are to the ids of major tables as opposed to
+ *            the more detailed tables.
+ *    - Sub-categories of data client to server messages.
+ *       - Get data
+ *          - Scope of message is automatically limited to receiving process, other
+ *            processes on the server do not receive the message.
+ *          - Data is returned to client.
+ *          - Message is not broadcast to other clients.
+ *          - ALTERNATIVE: subscribe to data against a BehaviorSubject, created on
+ *            the fly, that returns the data as the first message and all changes
+ *            to the data after that. ???
+ *       - Subscribe to changes for specific data
+ *          - Scope of message allows notification of all processes.
+ *       - Update data
+ *          - Update is handled be receiving process.
+ *          - Other processes are notified of change.
+ *
+ *
  * -------------------------------------------------------------------------------
  */
 
@@ -72,8 +103,8 @@ var redis = require('redis')
   , cntSystem = 0
   , cntSite = 0
   , cntData = 0
-  , pubSub
-  , rClient
+  , redisSub
+  , redisPub
   , siteSubject
   , siteSubjectData
   , systemSubject
@@ -266,19 +297,19 @@ var init = function(io, sessionMiddle) {
   // ========================================================
 
   // --------------------------------------------------------
-  // pubSub is used exclusively for subscribing, receiving
-  // messages, and unsubscribing. rClient is used for publishing
+  // redisSub is used exclusively for subscribing, receiving
+  // messages, and unsubscribing. redisPub is used for publishing
   // and anything else.
   // --------------------------------------------------------
-  pubSub = redis.createClient(cfg.redis);
-  rClient = redis.createClient(cfg.redis);
-  pubSub.select(cfg.redis.db);
-  rClient.select(cfg.redis.db);
+  redisSub = redis.createClient(cfg.redis);
+  redisPub = redis.createClient(cfg.redis);
+  redisSub.select(cfg.redis.db);
+  redisPub.select(cfg.redis.db);
 
   // --------------------------------------------------------
   // Handle messages from other worker processes.
   // --------------------------------------------------------
-  pubSub.on('message', function(channel, message) {
+  redisSub.on('message', function(channel, message) {
     var data = JSON.parse(message);
     if (channel === CONST.TYPE.SITE) {
       // We already have this message, therefore do nothing.
@@ -304,11 +335,11 @@ var init = function(io, sessionMiddle) {
       systemSubjectLastId = data.id;
       systemSubject.onNext(data);
     } else {
-      logError('pubSub: channel ' + channel + ' is not yet implemented.');
+      logError('redisSub: channel ' + channel + ' is not yet implemented.');
     }
   });
-  pubSub.subscribe(CONST.TYPE.SITE);
-  pubSub.subscribe(CONST.TYPE.SYSTEM);
+  redisSub.subscribe(CONST.TYPE.SITE);
+  redisSub.subscribe(CONST.TYPE.SYSTEM);
 
 
   // ========================================================
@@ -338,7 +369,7 @@ var init = function(io, sessionMiddle) {
         return;
       }
       logInfo('Sending ' + data.id + ' to the other process.');
-      rClient.publish(CONST.TYPE.SITE, JSON.stringify(data));
+      redisPub.publish(CONST.TYPE.SITE, JSON.stringify(data));
     },
     function(err) {
       logInfo('Error: ' + err);
@@ -365,7 +396,7 @@ var init = function(io, sessionMiddle) {
         return;
       }
       logInfo('Sending ' + data.id + ' to the other process.');
-      rClient.publish(CONST.TYPE.SYSTEM, JSON.stringify(data));
+      redisPub.publish(CONST.TYPE.SYSTEM, JSON.stringify(data));
     },
     function(err) {
       logInfo('Error: ' + err);
@@ -430,8 +461,6 @@ var init = function(io, sessionMiddle) {
         if (! isValidSocketSession(socket)) {
           logInfo('Socket is invalid so not sending.');
           return;
-        } else {
-          logInfo('Socket is sending');
         }
         socket.emit(CONST.TYPE.SYSTEM, data);
       },

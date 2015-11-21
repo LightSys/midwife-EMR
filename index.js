@@ -603,10 +603,10 @@ app.get(cfg.path.invoiceWorksheet, common,
 // ========================================================
 // ========================================================
 
-// SPA page
+// SPA pages
 app.get(cfg.path.spaLoad, api.params);    // parameter handling
 app.get(cfg.path.spa, common,
-    inRoles(['supervisor', 'clerk', 'attending']), api.spa.main);
+    inRoles(['administrator', 'supervisor', 'clerk', 'attending']), api.spa.main);
 
 // History API
 app.get(cfg.path.apiLoad, api.params);    // parameter handling
@@ -698,6 +698,13 @@ if (process.env.NODE_ENV == 'test') {
   // ========================================================
   // ========================================================
   comm.init(SocketIO(server), sessionMiddleware);
+
+  // Testing.
+  if (process.env.WORKER_ID == 1) {
+    setInterval(function() {
+      comm.sendSystem('upat', Date.now());
+    }, 8000);
+  }
 
   // TESTING stuff
   //comm.subscribeSystem(
