@@ -5,7 +5,8 @@
  * Load the page for the SPA portion of the application.
  * -------------------------------------------------------------------------------
  */
-var cfg = require('../../config')
+var _ = require('underscore')
+  , cfg = require('../../config')
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
   , logError = require('../../util').logError
@@ -18,12 +19,14 @@ var cfg = require('../../config')
  * application.
  * -------------------------------------------------------- */
 var main = function(req, res) {
-  var data = {
-    pregId: req.parameters.id1
-    , exitUrl: req.url.replace(/\/spa\/history/, '')
-  };
+  var data;
+  logInfo('op1: ' + req.parameters.op1);
   switch(req.parameters.op1) {
     case 'history':
+      data = {
+        pregId: req.parameters.id1
+        , exitUrl: req.url.replace(/\/spa\/history/, '')
+      };
       switch(req.parameters.op2) {
         case 'pregnancy':
           // TODO: Replace these hard-coded paths with paths from config.
@@ -45,6 +48,33 @@ var main = function(req, res) {
           logError('op2 unknown: ' + req.parameters.op2);
           res.redirect(cfg.path.search);
       }
+      break;
+    case 'admin':
+      // --------------------------------------------------------
+      // The data that we load into the app when it loads.
+      //
+      // Note: this is wrapped in an outer object below and
+      // stringified in the Jade template before being sent to
+      // the client.
+      // --------------------------------------------------------
+      data = {
+        // This confirms to the Cfg interface on the client.
+        cfg: {
+          siteTitle: cfg.site.title
+          , siteTitleLong: cfg.site.titleLong
+        }
+        , user: {roleInfo: {
+            isAuthenticated: false,
+            roleNames: []
+          }
+        }
+      };
+      if (req.session && req.session.roleInfo) {
+        data.user.roleInfo = _.omit(req.session.roleInfo, 'hasRole');
+      }
+      logInfo('Loading Midwife-EMR with this data:');
+      console.log(JSON.stringify(data));
+      res.render('spa2', {data: data});
       break;
     default:
       logError('op1 unknown: ' + req.parameters.op1);
