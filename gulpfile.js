@@ -109,19 +109,6 @@ gulp.task('uglify-header', function() {
 });
 
 // --------------------------------------------------------
-// Concat and uglify the js to include in the header for
-// Angular2 app.
-// --------------------------------------------------------
-gulp.task('uglify-header-ang2', function() {
-  return gulp
-    .src(['node_modules/es6-shim/es6-shim.js'])
-    .pipe(concat('midwife-emr-header-ang2.min.js'))
-    .pipe(uglify(cfg.uglify))
-    .pipe(gulp.dest('static/js/'));
-});
-
-
-// --------------------------------------------------------
 // Concat and uglify the js to include in the footer.
 // Note: source order is important.
 // --------------------------------------------------------
@@ -286,7 +273,6 @@ gulp.task('jshint', function() {
 // --------------------------------------------------------
 gulp.task('default', [
   'uglify-header',
-  'uglify-header-ang2',
   'uglify-footer',
   'uglify-footer-spa',
   'templateCache',
