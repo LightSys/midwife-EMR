@@ -8,7 +8,7 @@ mixin addPregnancy(patientId, pregnancies)
         <span class='badge'>#{numOther}</span> Other <span class='caret'></span>
       ul(class='dropdown-menu', aria-labelledby='addPregnancyDropDown')
         each preg in pregnancies
-          - var lmp = preg.lmp && libs._.isDate(preg.lmp)? libs.mmt(preg.lmp).format('MM-DD-YYYY'): 'Unknown';
+          - var edd = preg.edd && libs._.isDate(preg.edd)? libs.mmt(preg.edd).format('MM-DD-YYYY'): 'Unknown';
           //- Default to prenatal page.
           - var href = preg.id? '/pregnancy/' + preg.id + '/prenatal': '#';
           - var parts;
@@ -22,7 +22,7 @@ mixin addPregnancy(patientId, pregnancies)
           -   }
           - }
           li
-            a(href=href) LMP: #{lmp}
+            a(href=href) EDD: #{edd}
         li(role='separator', class='divider')
         li
           a(href=addAnotherRef) Add another pregnancy
