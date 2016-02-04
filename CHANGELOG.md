@@ -10,6 +10,8 @@
 - Handle an occasional error due to uninitialized object while adding a pregnancy.
 - Downgrade Bcrypt back to 0.7.8 because it would not compile on the ODroid.
 - Remove Grunt dependencies.
+- Adds an invoice worksheet for midwives to use.
+- Shows EDD instead of LMP on drop down to switch between multiple pregnancies.
 
 ## 0.6.1
 
