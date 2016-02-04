@@ -287,6 +287,8 @@ cfg.path.spa = '/spa/*';                                    // GET - load the SP
 cfg.path.apiLoad = '/api/:op1/:op2/:id1/:op3?/:id2?';       // parameter handling
 cfg.path.apiHistory = '/api/history/*';                     // GET
 
+// Invoice worksheet
+cfg.path.invoiceWorksheet = '/invoiceWorksheet';
 
 // --------------------------------------------------------
 // JumpTo Settings.

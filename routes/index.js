@@ -28,4 +28,5 @@ module.exports = {
   , philHealthDailyRpt: require('./philHealthDailyRpt')
   , teaching: require('./teaching')
   , inactiveRpt: require('./inactiveRpt')
+  , invWork: require('./invWork')
 };

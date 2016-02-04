@@ -55,7 +55,8 @@ var express = require('express')
   , error = require('./routes').error
   , report = require('./routes').report
   , dewormingRpt = require('./routes').dewormingRpt
-  , priorityList =require('./routes').priorityList
+  , priorityList = require('./routes').priorityList
+  , invWork = require('./routes').invWork
   , logInfo = require('./util').logInfo
   , logWarn = require('./util').logWarn
   , logError = require('./util').logError
@@ -582,6 +583,10 @@ app.post(cfg.path.reportRun, common, hasSuper,
     inRoles(['supervisor', 'clerk']), report.run);
 app.get(cfg.path.reportSummary, common, hasSuper,
     inRoles(['supervisor', 'clerk', 'attending']), report.summary);
+
+// Invoice Worksheet
+app.get(cfg.path.invoiceWorksheet, common,
+    inRoles(['supervisor', 'clerk', 'attending']), invWork.invoiceWorksheet);
 
 // ========================================================
 // ========================================================

@@ -83,6 +83,11 @@ html(lang="en")
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
             - var appRev = applicationRevision? gettext('version') + ': ' + applicationRevision: '';
+            if (rec && rec.id && roleInfo && roleInfo.isAuthenticated && (roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending') || roleInfo.hasRole('clerk')))
+              li
+                - var invWorkUrl = '/invoiceWorksheet' + '#' + rec.lastname + ', ' + rec.firstname + '/' + user.shortName;
+                - if (supervisor) invWorkUrl += '/' + supervisor;
+                a(href=invWorkUrl target='_blank')= gettext('Inv Worksheet')
             if rec && rec.id && roleInfo && roleInfo.isAuthenticated && roleInfo.hasRole('supervisor')
               li
                 a(href='/spa/history' + currUrl)= gettext('View History')
