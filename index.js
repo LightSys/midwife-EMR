@@ -702,8 +702,13 @@ if (process.env.NODE_ENV == 'test') {
   // Testing.
   if (process.env.WORKER_ID == 1) {
     setInterval(function() {
-      comm.sendSystem('upat', Date.now());
-    }, 8000);
+      comm.sendSite('upat', Date.now());
+    }, 27 * 1000);
+  }
+  if (process.env.WORKER_ID == 0) {
+    setInterval(function() {
+      comm.sendSystem('somethingElse', Date.now());
+    }, 20 * 1000);
   }
 
   // TESTING stuff

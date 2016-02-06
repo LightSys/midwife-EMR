@@ -2,6 +2,9 @@
 
 ## Phase2 branch
 
+- Assumes that Redis is installed to allow efficient inter-process
+  communication between node server processes. This is necessary
+  to facilitate "push" to the clients.
 - Upgraded bcrypt to current (assumes use of NodeJS 4.x).
 - Installed Socket.io.
 - Cluster workers now listen on different ports.
