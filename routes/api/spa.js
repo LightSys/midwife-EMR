@@ -63,18 +63,10 @@ var main = function(req, res) {
           siteTitle: cfg.site.title
           , siteTitleLong: cfg.site.titleLong
         }
-        , user: {roleInfo: {
-            isAuthenticated: false,
-            roleNames: []
-          }
-        }
       };
-      if (req.session && req.session.roleInfo) {
-        data.user.roleInfo = _.omit(req.session.roleInfo, 'hasRole');
-      }
       logInfo('Loading Midwife-EMR with this data:');
       console.log(JSON.stringify(data));
-      res.render('spa2', {data: data});
+      res.render('main', {cfg: data});
       break;
     default:
       logError('op1 unknown: ' + req.parameters.op1);

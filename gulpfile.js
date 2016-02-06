@@ -61,7 +61,7 @@ var devCompiler = webpack(devConfig);
 gulp.task('webpack:build-dev', function(cb) {
   if (process.env['WEBPACK_WATCH']) {
     // E.g.:  WEBPACK_WATCH=1 gulp webpack:build-dev
-    devCompiler.watch({}, function(err, stats) {
+    devCompiler.watch({poll: true}, function(err, stats) {
       if (err) throw new gutil.PluginError('webpack:build-dev', err);
       gutil.log('[webpack:build-dev]', stats.toString({colors: true}));
     });
@@ -121,7 +121,6 @@ gulp.task('uglify-footer', function() {
           , 'bower_components/flot/jquery.flot.js'
           , 'bower_components/flot/jquery.flot.categories.js'
           , 'bower_components/jquery.are-you-sure/jquery.are-you-sure.js'
-          , 'node_modules/falcor/dist/falcor.all.js'
           , 'client/js/responsive-tables.js'
           , 'client/js/jquery-ui.min.js'
           , 'client/js/midwife-emr.js'
