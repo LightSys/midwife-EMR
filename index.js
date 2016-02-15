@@ -371,7 +371,7 @@ app.get(cfg.path.logout, logRoute, clearRoleInfo, home.logout);
 // --------------------------------------------------------
 // Home
 // --------------------------------------------------------
-app.get(cfg.path.home, common, hasSuper, home.home);
+app.get(cfg.path.home, common, hasSuper, api.doSpa, home.home);
 
 // --------------------------------------------------------
 // Search
@@ -384,28 +384,28 @@ app.post(cfg.path.search, common, hasSuper,
 // --------------------------------------------------------
 // Users
 // --------------------------------------------------------
-app.get(cfg.path.userList, common, inRoles(['administrator']), users.list);
+app.get(cfg.path.userList, common, inRoles(['administrator']), api.doSpa, users.list);
 app.all(cfg.path.userLoad, users.load);  // parameter handling
-app.get(cfg.path.userNewForm, common, inRoles(['administrator']), users.addForm);
-app.post(cfg.path.userCreate, common, inRoles(['administrator']), users.create);
-app.get(cfg.path.userEditForm, common, inRoles(['administrator']), users.editForm);
-app.post(cfg.path.userUpdate, common, inRoles(['administrator']), users.update);
+app.get(cfg.path.userNewForm, common, inRoles(['administrator']), api.doSpa, users.addForm);
+app.post(cfg.path.userCreate, common, inRoles(['administrator']), api.doSpa, users.create);
+app.get(cfg.path.userEditForm, common, inRoles(['administrator']), api.doSpa, users.editForm);
+app.post(cfg.path.userUpdate, common, inRoles(['administrator']), api.doSpa, users.update);
 
 // --------------------------------------------------------
 // Roles
 // --------------------------------------------------------
-app.get(cfg.path.roleList, common, inRoles(['administrator']), roles.list);
+app.get(cfg.path.roleList, common, inRoles(['administrator']), api.doSpa, roles.list);
 app.all(cfg.path.roleLoad, roles.load);  // parameter handling
-app.get(cfg.path.roleNewForm, common, inRoles(['administrator']), roles.addForm);
-app.post(cfg.path.roleCreate, common, inRoles(['administrator']), roles.create);
-app.get(cfg.path.roleEditForm, common, inRoles(['administrator']), roles.editForm);
-app.post(cfg.path.roleUpdate, common, inRoles(['administrator']), roles.update);
+app.get(cfg.path.roleNewForm, common, inRoles(['administrator']), api.doSpa, roles.addForm);
+app.post(cfg.path.roleCreate, common, inRoles(['administrator']), api.doSpa, roles.create);
+app.get(cfg.path.roleEditForm, common, inRoles(['administrator']), api.doSpa, roles.editForm);
+app.post(cfg.path.roleUpdate, common, inRoles(['administrator']), api.doSpa, roles.update);
 
 // --------------------------------------------------------
 // Role assignment to users
 // --------------------------------------------------------
 app.all(cfg.path.userLoad2, users.load);  // parameter handling
-app.post(cfg.path.changeRoles, common, inRoles(['administrator']), users.changeRoles);
+app.post(cfg.path.changeRoles, common, inRoles(['administrator']), api.doSpa, users.changeRoles);
 
 // --------------------------------------------------------
 // Profile
@@ -609,9 +609,12 @@ app.get(cfg.path.spa, common,
     inRoles(['administrator', 'supervisor', 'clerk', 'attending']), api.spa.main);
 
 // History API
-app.get(cfg.path.apiLoad, api.params);    // parameter handling
+app.all(cfg.path.apiLoad, api.params);    // parameter handling
 app.get(cfg.path.apiHistory, common,
     inRoles(['supervisor']), api.history.get);
+
+// User/Role Management
+app.all(cfg.path.apiUser, common, inRoles(['administrator']), api.userRoles.user);
 
 // --------------------------------------------------------
 // Error handling.

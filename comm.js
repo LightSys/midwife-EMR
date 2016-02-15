@@ -354,7 +354,6 @@ var init = function(io, sessionMiddle) {
   // pairs sent using sendSite() are used to extend the
   // siteSubjectData object.
   // --------------------------------------------------------
-  logInfo('Seeding siteSubject with ' + siteSubjectData.id);
   siteSubject = new rx.BehaviorSubject(siteSubjectData);
 
   // --------------------------------------------------------
@@ -368,11 +367,10 @@ var init = function(io, sessionMiddle) {
       if (data && data.workerId && data.workerId !== process.env.WORKER_ID) {
         return;
       }
-      logInfo('Sending ' + data.id + ' to the other process.');
       redisPub.publish(CONST.TYPE.SITE, JSON.stringify(data));
     },
     function(err) {
-      logInfo('Error: ' + err);
+      logError('Error: ' + err);
     },
     function() {
       logInfo('siteSubject completed.');
@@ -395,11 +393,10 @@ var init = function(io, sessionMiddle) {
       if (data && data.scope && data.scope === process.env.WORKER_ID) {
         return;
       }
-      logInfo('Sending ' + data.id + ' to the other process.');
       redisPub.publish(CONST.TYPE.SYSTEM, JSON.stringify(data));
     },
     function(err) {
-      logInfo('Error: ' + err);
+      logError('Error: ' + err);
     },
     function() {
       logInfo('systemSubject completed.');
@@ -465,7 +462,7 @@ var init = function(io, sessionMiddle) {
         socket.emit(CONST.TYPE.SYSTEM, data);
       },
       function(err) {
-        logInfo('Error: ' + err);
+        logError('Error: ' + err);
       },
       function() {
         logInfo('systemSubject completed.');

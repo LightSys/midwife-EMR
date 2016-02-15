@@ -1,0 +1,102 @@
+import React, {Component} from 'react'
+import {isEmpty, map, debounce} from 'underscore'
+
+import UserLine from './UserLine'
+
+const DEBOUNCE_MS = 200
+
+export class UserList extends Component {
+  constructor(props) {
+    super(props)
+    this.render = this.render.bind(this)
+    this.saveSearch = this.saveSearch.bind(this)
+    this.doSearch = debounce(this.doSearch.bind(this), DEBOUNCE_MS)
+    this.searchAll = this.searchAll.bind(this)
+
+    this.state = {
+      pending: '',  // The search criteria before the debounce.
+      term: '',     // The search criteria to search with (after debounce).
+    }
+  }
+
+  // Save the search term to state and call doSearch().
+  saveSearch(val) {
+    this.setState({pending: val})
+    this.doSearch()
+  }
+
+  // Debounced function: sets term to force rerender.
+  doSearch() {
+    this.setState({term: this.state.pending})
+  }
+
+  // Instant search for everything.
+  searchAll() {
+    this.setState({term: '.'})      // A regular expression for any character.
+    this.setState({pending: ''})    // Clear the input field.
+  }
+
+  componentWillMount() {
+    this.props.loadUsers()
+  }
+
+  componentDidMount() {
+    this._searchInput.focus()
+  }
+
+  render() {
+    const term = new RegExp(this.state.term, 'i')
+    const userLines = map(this.props.users, (u) => {
+      if (this.state.term) {
+        if (term.test(u.firstname) ||
+            term.test(u.lastname) ||
+            term.test(u.shortName)) {
+          const roleName = this.props.roles[u.role].name
+          return <UserLine key={u.id} id={u.id} roleName={roleName} {...u} selectUser={this.props.selectUser} />
+        }
+      }
+    })
+    return (
+      <div>
+        <h3>Search</h3>
+        <form className='form-horizontal' onSubmit={(e) => e.preventDefault()}>
+          <div className='form-group row'>
+            <div className='col-xs-6 col-sm-6 col-md-6 col-lg-6'>
+              <input
+                ref={(c) => this._searchInput = c}
+                type='text'
+                placeholder='last, first, or short name'
+                value={this.state.pending}
+                onChange={(evt) => this.saveSearch(evt.target.value)}
+              />
+              <span className='text-primary'><strong> or </strong></span>
+              <button
+                type='button'
+                className='btn btn-info'
+                onClick={this.searchAll}
+              >Show All</button>
+            </div>
+          </div>
+        </form>
+        <h3>Search Results</h3>
+        <table className='table table-striped table-bordered table-hover'>
+          <thead>
+            <tr>
+              <td>ID</td>
+              <td>Lastname</td>
+              <td>Firstname</td>
+              <td>shortName</td>
+              <td>Role</td>
+              <td>Is active</td>
+              <td>Is teacher</td>
+            </tr>
+          </thead>
+          <tbody>
+            {userLines}
+          </tbody>
+        </table>
+      </div>
+   )
+ }
+}
+

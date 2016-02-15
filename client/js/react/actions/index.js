@@ -1,15 +1,29 @@
-import {CALL_API} from '../middleware'
+/*
+ * -------------------------------------------------------------------------------
+ * actions/index.js
+ *
+ * Actions common to multiple domains or not specific to one domain.
+ * -------------------------------------------------------------------------------
+ */
+
+import {CALL_API, Schemas} from '../middleware'
 
 
 // --------------------------------------------------------
 // Action types.
 // --------------------------------------------------------
+
 export const CURRENT_USER_REQUEST = 'CURRENT_USER_REQUEST'
 export const CURRENT_USER_SUCCESS = 'CURRENT_USER_SUCCESS'
 export const CURRENT_USER_FAILURE = 'CURRENT_USER_FAILURE'
 
+
 export const SITE_MESSAGE = 'SITE_MESSAGE'
 export const SYSTEM_MESSAGE = 'SYSTEM_MESSAGE'
+
+export const AUTHENTICATION_UPDATE = 'AUTHENTICATION_UPDATE'
+
+export const SET_COOKIES = 'SET_COOKIES'
 
 // --------------------------------------------------------
 // Actions.
@@ -21,7 +35,7 @@ function fetchUser(login) {
   return {
     [CALL_API]: {
       types: [ CURRENT_USER_REQUEST, CURRENT_USER_SUCCESS, CURRENT_USER_FAILURE ],
-      key: login,
+      serverPath: login,
       schema: Schemas.USER
     }
   }
@@ -53,4 +67,21 @@ export const systemMessage = (msg) => {
     message: msg
   }
 }
+
+export const authenticationUpdate = ({authExpiry, isAuthenticated}) => {
+  return {
+    type: AUTHENTICATION_UPDATE,
+    expiry: authExpiry,
+    isAuthenticated: isAuthenticated
+  }
+}
+
+// NOTE: this might not be necessary with the credentials option in the middleware.
+export const setCookies = (cookies) => {
+  return {
+    type: SET_COOKIES,
+    cookies: cookies
+  }
+}
+
 
