@@ -5,6 +5,18 @@
  * All routing modules are exported here.
  * -------------------------------------------------------------------------------
  */
+var cfg = require('../../config')
+  , adminMenuLeft = []
+  , adminMenuRight = []
+  ;
+
+
+adminMenuLeft.push({label: 'Home', url: '/'});
+adminMenuLeft.push({label: 'Users', url: '/users'});
+adminMenuLeft.push({label: 'Logout', url: '/logout'});
+
+adminMenuRight.push({label: 'version 0.7.2', url: '#version'});  // Meant to be disabled on client.
+adminMenuRight.push({label: 'Profile', url: '/profile'});
 
 /* --------------------------------------------------------
  * params()
@@ -23,8 +35,59 @@ var params = function(req, res, next) {
   return next();
 };
 
+/* --------------------------------------------------------
+ * doSpa()
+ *
+ * Determine if the request should load a SPA response or
+ * not based upon the role the user has. This affords a
+ * transition of the application from full page loads to
+ * SPA in stages.
+ * -------------------------------------------------------- */
+var doSpa = function(req, res, next) {
+  var data;
+  var connSid;
+
+  // --------------------------------------------------------
+  // Get the connection.sid cookie so that the client can
+  // use the data API.
+  //
+  // NOTE: passing cookies to the client might not be
+  // necessary when {credentials: 'same-origin'} is used in
+  // the header of the client's call to the server.
+  // TODO: remove if not needed.
+  // --------------------------------------------------------
+  res.req.headers.cookie.split(';').forEach(function(c) {
+    var cookie = c.trim();
+    if (/^connect\.sid/.test(cookie)) {
+      connSid = cookie.split('=', 2)[1];
+    }
+  });
+
+  if (req.session.user && req.session.user.roles && req.session.user.roles[0]) {
+    if (req.session.user.roles[0].name === 'administrator') {
+      data = {
+        cfg: {
+          siteTitle: cfg.site.title
+          , siteTitleLong: cfg.site.titleLong
+        },
+        menuLeft: adminMenuLeft,
+        menuRight: adminMenuRight,
+        cookies: {
+          '_csrf': req.csrfToken(),
+          'connect.sid': connSid
+        }
+      };
+      console.log(data);
+      return res.render('main', {cfg: data});
+    }
+  }
+  return next();
+}
+
 module.exports = {
   params: params
   , history: require('./history')
+  , userRoles: require('./userRoles')
   , spa: require('./spa')
+  , doSpa: doSpa
 };

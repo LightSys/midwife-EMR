@@ -309,6 +309,8 @@ var getPrenatalHistory = function(cb) {
  * Render the home page which has charts and stats on it.
  * -------------------------------------------------------- */
 var home = function(req, res) {
+  var data;
+
   // --------------------------------------------------------
   // Get the number of prenatal exams performed in the last year.
   // --------------------------------------------------------
