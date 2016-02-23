@@ -299,6 +299,20 @@ app.use(function(req, res, next) {
 });
 
 // --------------------------------------------------------
+// Debugging, etc.
+// --------------------------------------------------------
+app.use(function(req, res, next) {
+  if (cfg.site.debug) {
+    console.log('============================');
+    console.log(req.headers);
+    console.log('-----');
+    console.log(req.body);
+    console.log('============================');
+  }
+  next();
+});
+
+// --------------------------------------------------------
 // Protect against cross site request forgeries.
 // --------------------------------------------------------
 app.use(csrfProtection);
