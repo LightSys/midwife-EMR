@@ -96,6 +96,7 @@ cfg.database.db = 'yourDBname';
 cfg.database.dbUser = 'yourDBuser';
 cfg.database.dbPass = 'yourDBpassword';
 cfg.database.charset = 'utf8';
+cfg.database.debug = false;     // Make Bookshelf ORM verbose in the log output.
 
 // --------------------------------------------------------
 // Redis settings.
