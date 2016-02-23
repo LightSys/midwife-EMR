@@ -47,6 +47,7 @@ var init = function(dbSettings) {
       , database: dbSettings.db
       , charset: dbSettings.charset
     }
+    , debug: dbSettings.debug
   });
   Bookshelf.DB = Bookshelf(knex);
 
