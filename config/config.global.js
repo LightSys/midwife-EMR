@@ -42,6 +42,7 @@ cfg.site.languages = _.keys(cfg.site.languagesMap);
 cfg.site.defaultLanguage = 'en-US';
 cfg.site.debugLanguage = 'it-CH';
 cfg.site.tmpDir = 'tmp';
+cfg.site.debug = false;     // true allows debugging info in the logs on the server.
 
 // --------------------------------------------------------
 // CPU Settings.
