@@ -280,7 +280,7 @@ User = Bookshelf.Model.extend({
       // --------------------------------------------------------
       // Optional fields.
       // --------------------------------------------------------
-      if (rec.email.length > 0) {
+      if (rec.email && rec.email.length > 0) {
         if (! val.isEmail(rec.email)) result.messages.push('Email must be valid.');
       }
 
