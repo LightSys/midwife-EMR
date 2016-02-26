@@ -32,6 +32,7 @@ var params = function(req, res, next) {
   if (req.params.op3) req.parameters.op3 = req.params.op3;
   if (req.params.id1) req.parameters.id1 = req.params.id1;
   if (req.params.id2) req.parameters.id2 = req.params.id2;
+  console.log('params(): [' + req.method + '] ' + req.url);
   return next();
 };
 

@@ -96,6 +96,27 @@ gulp.task('test', function() {
 });
 
 // --------------------------------------------------------
+// Test the React client.
+// --------------------------------------------------------
+gulp.task('test-client', function() {
+  var babel = require('babel-core/register')
+  return gulp
+    .src(['client/js/react/**/*_spec.js'], {read: false})
+    .pipe(mocha({
+      reporter: 'spec',
+      require: ['expect'],
+      compilers: {js: babel}
+    }))
+    .once('error', function(err) {
+      //console.log(err);
+      process.exit(1);
+    })
+    .once('end', function() {
+      process.exit();
+    });
+});
+
+// --------------------------------------------------------
 // Concat and uglify the js to include in the header.
 // --------------------------------------------------------
 gulp.task('uglify-header', function() {

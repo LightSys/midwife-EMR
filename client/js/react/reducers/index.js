@@ -8,12 +8,13 @@
  */
 import {combineReducers} from 'redux'
 import {reducer as formReducer} from 'redux-form'
+import optimist from 'redux-optimist'
 
 // --------------------------------------------------------
 // Import Actions and Reducers from the various domains.
 // --------------------------------------------------------
-import {SELECTED_USER} from '../User/UserActions'
-import {selectedUser} from '../User/UserReducers'
+import selected from './Selected'
+import entities from './Entities'
 
 // --------------------------------------------------------
 // Common Actions and Reducers across multiple domains.
@@ -24,18 +25,6 @@ import {
   AUTHENTICATION_UPDATE,
   SET_COOKIES
 } from '../actions/index'
-
-const DEFAULT_ENTITY_STATE = {
-  users: {},
-  roles: {}
-}
-
-const entities = (state = DEFAULT_ENTITY_STATE, action) => {
-  if (action.response && action.response.entities) {
-    return Object.assign({}, state, action.response.entities)
-  }
-  return state
-}
 
 
 const siteMessage = (state = {}, action) => {
@@ -71,14 +60,20 @@ const cookies = (state = {}, action) => {
   return state;
 }
 
-const RootReducer = combineReducers({
+// --------------------------------------------------------
+// TODO: resolve issue with node_modules/redux-optimist/.babelrc
+// which was causing compile failures to due using a Babel 5.x
+// option named "optional" which caused my Babel 6.x configuration
+// to fail. As a hack, I renamed .babelrc to RENAMED_bablerc.
+// --------------------------------------------------------
+const RootReducer = optimist(combineReducers({
   form: formReducer,
   entities,
   siteMessage,
   systemMessage,
   authentication,
   cookies,
-  selectedUser
-})
+  selected
+}))
 
 export default RootReducer

@@ -5,18 +5,15 @@ import {Provider} from 'react-redux'
 import thunk from 'redux-thunk'
 import createLogger from 'redux-logger'
 import {Router, browserHistory} from 'react-router'
+import ES6Promise from 'es6-promise'
+ES6Promise.polyfill()
+
 
 import reducers from './reducers'
-import api from './middleware'
+import dataMiddleware from './middleware/data'
 import Comm from './services/comm'
 import {initializeAuth} from './services/authentication'
 import routes from './routes'
-
-import {
-  USER_SAVE_REQUEST,
-  USER_SAVE_SUCCESS,
-  USER_SAVE_FAILURE
-} from './User/UserActions'
 
 // --------------------------------------------------------
 // Bring in our own Bootstrap theme and styles.
@@ -27,13 +24,10 @@ require('./style.css')
 // --------------------------------------------------------
 // Get logging setup for development, etc.
 // --------------------------------------------------------
-const logTheseTypes = [
-  USER_SAVE_REQUEST,
-  USER_SAVE_SUCCESS,
-  USER_SAVE_FAILURE
-]
+//const logTheseTypes = [ ]
 const loggerOpts = {
-  predicate: (getState, action) => logTheseTypes.indexOf(action.type) !== -1
+  //predicate: (getState, action) => logTheseTypes.indexOf(action.type) !== -1
+  predicate: (getState, action) => action.meta && action.meta.dataMiddleware
 }
 const logger = createLogger(loggerOpts)
 
@@ -45,7 +39,7 @@ const logger = createLogger(loggerOpts)
 const createMiddlewareStore = compose(
   applyMiddleware(
     thunk,
-    api,
+    dataMiddleware,
     logger)
   , window.devToolsExtension ? window.devToolsExtension() : f => f
   )(createStore)

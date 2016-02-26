@@ -633,6 +633,7 @@ app.all(cfg.path.apiUser, common, inRoles(['administrator']), api.userRoles.user
 // --------------------------------------------------------
 // Error handling.
 // --------------------------------------------------------
+app.use(error.notFoundApiError);
 app.use(error.notFoundError);
 app.use(error.logException);
 app.use(error.displayError);
@@ -717,16 +718,16 @@ if (process.env.NODE_ENV == 'test') {
   comm.init(SocketIO(server), sessionMiddleware);
 
   // Testing.
-  if (process.env.WORKER_ID == 1) {
-    setInterval(function() {
-      comm.sendSite('upat', Date.now());
-    }, 27 * 1000);
-  }
-  if (process.env.WORKER_ID == 0) {
-    setInterval(function() {
-      comm.sendSystem('somethingElse', Date.now());
-    }, 20 * 1000);
-  }
+  //if (process.env.WORKER_ID == 1) {
+    //setInterval(function() {
+      //comm.sendSite('upat', Date.now());
+    //}, 27 * 1000);
+  //}
+  //if (process.env.WORKER_ID == 0) {
+    //setInterval(function() {
+      //comm.sendSystem('somethingElse', Date.now());
+    //}, 20 * 1000);
+  //}
 
   // TESTING stuff
   //comm.subscribeSystem(
