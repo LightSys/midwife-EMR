@@ -37,7 +37,7 @@ export class UserList extends Component {
   }
 
   componentWillMount() {
-    this.props.loadUsers()
+    this.props.loadAllUsersRoles()
   }
 
   componentDidMount() {
@@ -51,7 +51,7 @@ export class UserList extends Component {
         if (term.test(u.firstname) ||
             term.test(u.lastname) ||
             term.test(u.shortName)) {
-          const roleName = this.props.roles[u.role].name
+          const roleName = u && u.hasOwnProperty('role')? this.props.roles[u.role].name: ''
           return <UserLine key={u.id} id={u.id} roleName={roleName} {...u} selectUser={this.props.selectUser} />
         }
       }

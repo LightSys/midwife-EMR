@@ -1,3 +1,8 @@
+import {
+  BP_SMALL,
+  BP_MEDIUM,
+  BP_LARGE
+} from '../constants/index'
 
 export {
   renderText,
@@ -5,13 +10,18 @@ export {
   renderHidden
 } from './formHelper'
 
+export {
+  makeGetAction,
+  makePostAction
+} from './actionHelper'
+
+// --------------------------------------------------------
+// These are our breakpoints, but we never reference the
+// numbers themselves except here.
+// --------------------------------------------------------
 const BREAKPOINT_SMALL = 480
 const BREAKPOINT_MEDIUM = 600
 const BREAKPOINT_LARGE = 992
-
-export const BP_SMALL = 'BP_SMALL'
-export const BP_MEDIUM = 'BP_MEDIUM'
-export const BP_LARGE = 'BP_LARGE'
 
 export const getBreakpoint = () => {
   const size = getViewportSize()

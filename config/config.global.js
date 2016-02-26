@@ -294,11 +294,11 @@ cfg.path.priorityListSave = '/priorityList/:id/save';      // POST to save data
 // /api/history/pregnancy/423/preghistory/788
 cfg.path.spaLoad = '/spa/:op1/:op2/:id1/:op3?/:id2?';       // parameter handling
 cfg.path.spa = '/spa/*';                                    // GET - load the SPA page
-cfg.path.apiLoad = '/api/:op1/:op2/:id1/:op3?/:id2?';       // parameter handling
+cfg.path.apiLoad = '/api/:op1/:op2/:id1?/:op3?/:id2?';       // parameter handling
 cfg.path.apiHistory = '/api/history/*';                     // GET
 
 cfg.path.apiData = '/api/data/*';
-cfg.path.apiUser = '/api/data/user';
+cfg.path.apiUser = '/api/data/user/:id1?/:op3?/:id2?';
 
 // Invoice worksheet
 cfg.path.invoiceWorksheet = '/invoiceWorksheet';

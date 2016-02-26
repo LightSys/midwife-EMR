@@ -1,20 +1,21 @@
 import React, {Component, PropTypes} from 'react'
-import {reduxForm} from 'redux-form'
 import _ from 'underscore'
 
-import {saveUser} from './UserActions'
+import {saveUser} from '../actions/UsersRoles'
+
+import {
+  BP_SMALL,
+  BP_MEDIUM,
+  BP_LARGE
+} from '../constants/index'
 
 import {
   getBreakpoint,
-  BP_SMALL,
-  BP_MEDIUM,
-  BP_LARGE,
   renderText,
   renderCB,
   renderHidden
 } from '../utils'
 
-// TODO: need to add the id as hidden so it gets passed on after submit?
 const fldObjs = {
   'username': {
     func: renderText,
@@ -77,15 +78,31 @@ const fldObjs = {
   }
 }
 
-class UserEdit extends Component {
+export class UserEdit extends Component {
   constructor(props) {
     super(props)
 
     this.renderSmall = this.renderSmall.bind(this)
     this.renderMedium = this.renderMedium.bind(this)
     this.renderLarge = this.renderLarge.bind(this)
+    this.handleChange = this.handleChange.bind(this)
 
     this.breakpoint = BP_LARGE    // Default.
+
+    // Initialize the form.
+    this.state = {
+      user: this.props.user,
+      roles: this.props.roles
+    }
+  }
+
+  handleChange(name) {
+    return (evt) => {
+      // Adapted from: https://gist.github.com/markerikson/554cab15d83fd994dfab
+      let value = (evt.target.type == "checkbox") ? evt.target.checked : evt.target.value;
+      const newState = Object.assign({}, this.state.user, {[name]: value})
+      this.setState({user: newState}) //, () => console.log(this.state.user))
+    }
   }
 
   componentWillMount() {
@@ -113,6 +130,14 @@ class UserEdit extends Component {
           <div className='row'>{row4}</div>
           <div className='row'>{row5}</div>
           <div className='row'>{row6}</div>
+          <div className='row'>
+            <div className='col-xs-6'>
+              {hidden}
+              <button type='submit' disabled={submitting}>
+                Save
+              </button>
+            </div>
+          </div>
         </form>
       </div>
     )
@@ -134,15 +159,23 @@ class UserEdit extends Component {
           <div className='row'>{row2}</div>
           <div className='row'>{row3}</div>
           <div className='row'>{row4}</div>
+          <div className='row'>
+            <div className='col-xs-6'>
+              {hidden}
+              <button type='submit' disabled={submitting}>
+                Save
+              </button>
+            </div>
+          </div>
         </form>
       </div>
     )
   }
 
   renderLarge() {
-    const {handleSubmit, resetForm, submitting} = this.props
+    let submitting = false
     const flds = _.map(fldObjs, (fld, fldName) => {
-      return fld.func(3, fld.lbl, fld.ph, fld.type, this.props.fields[fldName])
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
     })
     const row1 = flds.slice(0, 4)
     const row2 = flds.slice(4, 8)
@@ -151,10 +184,11 @@ class UserEdit extends Component {
     return (
       <div>
         <h3>Edit User</h3>
-        <form onSubmit={handleSubmit((user) => {
-          console.log('Submitting, I think ...')
-          this.props.saveUser(user)
-        })}>
+        <form onSubmit={(evt) => {
+          evt.preventDefault()
+          submitting = true   // TODO: manage this.
+          this.props.saveUser(Object.assign({}, this.state.user))
+        }}>
           <div className='row'>{row1}</div>
           <div className='row'>{row2}</div>
           <div className='row'>{row3}</div>
@@ -180,23 +214,3 @@ class UserEdit extends Component {
   }
 }
 
-UserEdit.propTypes = {
-  fields: PropTypes.object.isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  resetForm: PropTypes.func.isRequired,
-  submitting: PropTypes.bool.isRequired
-}
-
-UserEdit = reduxForm({
-  form: 'UserEdit',
-  fields: _.keys(fldObjs)
-}, state => {
-  const user = state.entities.users[state.selectedUser]
-  const roles = state.entities.roles
-  // Don't load roles into initialValues but make available on props.
-  return {initialValues: user, roles: roles}
-},
-{saveUser}
-)(UserEdit)
-
-export {UserEdit}

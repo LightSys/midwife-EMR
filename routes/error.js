@@ -29,6 +29,22 @@ isClientError = function isClientError(status) {
 };
 
 /* --------------------------------------------------------
+ * notFoundApiError()
+ *
+ * If it is an API call, do not return a not found page but
+ * instead return an appropriate error code.
+ * -------------------------------------------------------- */
+var notFoundApiError = function(req, res, next) {
+  if (/^\/api/.test(req.path)) {
+    logInfo('API call not found: ' + req.path + ', method: ' + req.method);
+    res.status(404);
+    res.end();
+  } else {
+    next();
+  }
+};
+
+/* --------------------------------------------------------
  * notFoundError()
  *
  * Display a not found page. This is not a fatal error.
@@ -104,6 +120,7 @@ var exitError = function(err, req, res, next) {
 module.exports = {
   logException: logException
   , notFoundError: notFoundError
+  , notFoundApiError: notFoundApiError
   , displayError: displayError
   , exitError: exitError
 };

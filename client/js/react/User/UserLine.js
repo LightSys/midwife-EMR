@@ -7,6 +7,10 @@ class UserLine extends Component {
     this.editUser = this.editUser.bind(this)
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    return true
+  }
+
   editUser() {
     this.props.selectUser(this.props.id)
     this.context.router.push(`/user/${this.props.id}`)

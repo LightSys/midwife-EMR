@@ -6,9 +6,6 @@
  * -------------------------------------------------------------------------------
  */
 
-import {CALL_API, Schemas} from '../middleware'
-
-
 // --------------------------------------------------------
 // Action types.
 // --------------------------------------------------------
@@ -28,31 +25,6 @@ export const SET_COOKIES = 'SET_COOKIES'
 // --------------------------------------------------------
 // Actions.
 // --------------------------------------------------------
-
-// Fetches a single user from the server.
-// Relies on the custom API middleware defined in ../middleware/index.js.
-function fetchUser(login) {
-  return {
-    [CALL_API]: {
-      types: [ CURRENT_USER_REQUEST, CURRENT_USER_SUCCESS, CURRENT_USER_FAILURE ],
-      serverPath: login,
-      schema: Schemas.USER
-    }
-  }
-}
-
-// Fetches a single user from the server unless it is cached.
-// Relies on Redux Thunk middleware.
-export function loadUser(login, requiredFields = []) {
-  return (dispatch, getState) => {
-    const user = getState().entities.users[login]
-    if (user && requiredFields.every(key => user.hasOwnProperty(key))) {
-      return null
-    }
-
-    return dispatch(fetchUser(login))
-  }
-}
 
 export const siteMessage = (msg) => {
   return {
@@ -76,7 +48,6 @@ export const authenticationUpdate = ({authExpiry, isAuthenticated}) => {
   }
 }
 
-// NOTE: this might not be necessary with the credentials option in the middleware.
 export const setCookies = (cookies) => {
   return {
     type: SET_COOKIES,

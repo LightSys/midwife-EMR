@@ -1,34 +1,36 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
 
-import {loadUsers, selectUser} from './UserActions'
+import {selectUser, saveUser} from '../actions/UsersRoles'
+import {loadAllUsersRoles} from '../actions/UsersRoles'
 import {UserList as UL} from './UserList'
 import {UserEdit as UE} from './UserEdit'
 
 
 const mapStateToPropsUserList = (state) => {
-  const {users, roles} = state.entities
+  const {users, roles, saving} = state.entities
   return {
     users,
-    roles
+    roles,
+    saving
   }
 }
 
 const mapStateToPropsUserEdit = (state) => {
-  const {selectedUser, entities: {users, roles}} = state
+  const user = state.entities.users[state.selected.user]
+  const roles = state.entities.roles
   return {
-    users,
-    roles,
-    selectedUser
+    user,
+    roles
   }
 }
 
 export const UserList = connect(mapStateToPropsUserList, {
-  loadUsers,
-  selectUser
+  selectUser,
+  loadAllUsersRoles,
 })(UL)
 
-// --------------------------------------------------------
-// mapStateToProps is handled by reduxForm in UserEdit.
-// --------------------------------------------------------
-export {UE as UserEdit}
+export const UserEdit = connect(mapStateToPropsUserEdit, {
+  saveUser
+})(UE)
+
