@@ -1,5 +1,4 @@
 import React, {Component, PropTypes} from 'react'
-import {IndexLink} from 'react-router'
 
 class UserLine extends Component {
   constructor(props) {

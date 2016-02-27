@@ -31,6 +31,7 @@ export const UserList = connect(mapStateToPropsUserList, {
 })(UL)
 
 export const UserEdit = connect(mapStateToPropsUserEdit, {
+  selectUser,
   saveUser
 })(UE)
 
