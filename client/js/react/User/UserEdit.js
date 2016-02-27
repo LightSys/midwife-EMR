@@ -112,7 +112,7 @@ export class UserEdit extends Component {
 
   renderSmall() {
     const flds = _.map(fldObjs, (fld, fldName) => {
-      return fld.func(6, fld.lbl, fld.ph, fld.type, this.props.fields[fldName])
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
     })
     const row1 = flds.slice(0, 2)
     const row2 = flds.slice(2, 4)
@@ -145,7 +145,7 @@ export class UserEdit extends Component {
 
   renderMedium() {
     const flds = _.map(fldObjs, (fld, fldName) => {
-      return fld.func(6, fld.lbl, fld.ph, fld.type, this.props.fields[fldName])
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
     })
     const row1 = flds.slice(0, 3)
     const row2 = flds.slice(3, 6)

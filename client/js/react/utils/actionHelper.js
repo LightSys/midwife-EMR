@@ -13,7 +13,7 @@ let options = {
  *
  * Returns a transaction id for use with redux-optimist.
  * -------------------------------------------------------- */
-let nextTransactionId = 0
+let nextTransactionId = 1
 const getTransactionId = () => {
   return nextTransactionId++
 }
@@ -35,17 +35,18 @@ export const makeGetAction = (types, test, path, schema, opts) => {
   }
 }
 
-export const makePostAction = (types, test, path, schema, opts, data) => {
+export const makePostAction = (types, test, path, schema, opts, data, meta) => {
   const callOpts = Object.assign({}, options, opts)
   return (dispatch, getState) => {
     const {_csrf} = getState().cookies
-    opts.method = 'POST'
-    opts.headers = {
+    callOpts.method = 'POST'
+    callOpts.headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     }
-    opts.body = JSON.stringify(Object.assign({}, data, {_csrf}))
+    callOpts.body = JSON.stringify(Object.assign({}, data, {_csrf}))
     const {id} = data
+    let metaObj = Object.assign({}, meta, {dataMiddleware: true, optimistId: getTransactionId()})
     dispatch({
       payload: {
         types: types,
@@ -53,10 +54,7 @@ export const makePostAction = (types, test, path, schema, opts, data) => {
         schema: schema,
         data: data
       },
-      meta: {
-        dataMiddleware: true,
-        optimistId: getTransactionId()
-      },
+      meta: metaObj
     })
   }
 }

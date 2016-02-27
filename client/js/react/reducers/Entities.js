@@ -8,12 +8,6 @@
 import {isNumber} from 'underscore'
 
 import {
-  saveUserRequest,
-  saveUserSuccess,
-  saveUserFailure
-} from '../actions/UsersRoles'
-
-import {
   LOAD_ALL_USERS_REQUEST,
   LOAD_ALL_USERS_SUCCESS,
   LOAD_ALL_USERS_FAILURE,
