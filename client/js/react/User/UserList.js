@@ -44,8 +44,9 @@ export class UserList extends Component {
     this._searchInput.focus()
   }
 
+
   render() {
-    const term = new RegExp(this.state.term, 'i')
+    const term = new RegExp(`^${this.state.term}`, 'i')
     const userLines = map(this.props.users, (u) => {
       if (this.state.term) {
         if (term.test(u.firstname) ||

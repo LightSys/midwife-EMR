@@ -78,7 +78,7 @@ const fldObjs = {
   }
 }
 
-export class UserEdit extends Component {
+class UserEditClass extends Component {
   constructor(props) {
     super(props)
 
@@ -111,6 +111,7 @@ export class UserEdit extends Component {
   }
 
   renderSmall() {
+    let submitting = false
     const flds = _.map(fldObjs, (fld, fldName) => {
       return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
     })
@@ -123,7 +124,13 @@ export class UserEdit extends Component {
     return (
       <div>
         <h3>Edit User</h3>
-        <form>
+        <form onSubmit={(evt) => {
+          evt.preventDefault()
+          submitting = true   // TODO: manage this.
+          this.props.saveUser(Object.assign({}, this.state.user))
+          this.props.selectUser()               // unset the user
+          this.context.router.push('/users')    // go back to userlist
+        }}>
           <div className='row'>{row1}</div>
           <div className='row'>{row2}</div>
           <div className='row'>{row3}</div>
@@ -144,6 +151,7 @@ export class UserEdit extends Component {
   }
 
   renderMedium() {
+    let submitting = false
     const flds = _.map(fldObjs, (fld, fldName) => {
       return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
     })
@@ -154,7 +162,13 @@ export class UserEdit extends Component {
     return (
       <div>
         <h3>Edit User</h3>
-        <form>
+        <form onSubmit={(evt) => {
+          evt.preventDefault()
+          submitting = true   // TODO: manage this.
+          this.props.saveUser(Object.assign({}, this.state.user))
+          this.props.selectUser()               // unset the user
+          this.context.router.push('/users')    // go back to userlist
+        }}>
           <div className='row'>{row1}</div>
           <div className='row'>{row2}</div>
           <div className='row'>{row3}</div>
@@ -188,6 +202,8 @@ export class UserEdit extends Component {
           evt.preventDefault()
           submitting = true   // TODO: manage this.
           this.props.saveUser(Object.assign({}, this.state.user))
+          this.props.selectUser()               // unset the user
+          this.context.router.push('/users')    // go back to userlist
         }}>
           <div className='row'>{row1}</div>
           <div className='row'>{row2}</div>
@@ -214,3 +230,8 @@ export class UserEdit extends Component {
   }
 }
 
+UserEditClass.contextTypes = {
+  router: PropTypes.object.isRequired
+}
+
+export {UserEditClass as UserEdit}

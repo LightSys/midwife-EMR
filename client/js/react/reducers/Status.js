@@ -116,14 +116,22 @@ const setStatus = (entity, state, status) => {
   return Object.assign({}, state, {[entity]: {status: status, dirty: state[entity].dirty}})
 }
 
+// --------------------------------------------------------
+// Add an id to the dirty field of an entity, leaving status
+// field unchanged.
+// --------------------------------------------------------
 const addDirty = (entity, state, id) => {
-  let dirties = new Set(state[entity].dirty)
+  let dirties = new Set(state[entity].dirty)  // Insure unique.
   dirties.add(id)
   return Object.assign({}, state, {[entity]: {status: state[entity].status, dirty: [...dirties]}})
 }
 
+// --------------------------------------------------------
+// Remove an id from the dirty field of an entity, leaving
+// status field unchanged.
+// --------------------------------------------------------
 const removeDirty = (entity, state, id) => {
-  let dirties = new Set(state[entity].dirty)
+  let dirties = new Set(state[entity].dirty)  // Insure unique.
   dirties.delete(id)
   return Object.assign({}, state, {[entity]: {status: state[entity].status, dirty: [...dirties]}})
 }
