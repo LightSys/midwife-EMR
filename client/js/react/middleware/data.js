@@ -20,6 +20,7 @@ import {BEGIN, COMMIT, REVERT} from 'redux-optimist'
 //      data            - optional, if present passes to requestType for optimist
 // --------------------------------------------------------
 export default ({dispatch, getState}) => next => action => {
+  // Determine if we are meant to be activated.
   if (! action.meta || ! action.meta.dataMiddleware) {
     return next(action)
   }
@@ -33,6 +34,9 @@ export default ({dispatch, getState}) => next => action => {
     data
   } = action.payload
 
+  // --------------------------------------------------------
+  // Sanity checks.
+  // --------------------------------------------------------
   if (! types || ! Array.isArray(types) || types.length !== 3) {
     throw new Error('Expected an array of three in the types element.')
   }
@@ -46,7 +50,7 @@ export default ({dispatch, getState}) => next => action => {
   }
 
   // --------------------------------------------------------
-  // Does this API call use redux-optimist?
+  // Determine if this call should use redux-optimist.
   // --------------------------------------------------------
   let isOptimist = false
   let optimistId
@@ -109,9 +113,9 @@ export default ({dispatch, getState}) => next => action => {
       console.log(`Server error during call for ${requestType}`, err)
       let nextAction
       if (isOptimist) {
-        nextAction = makeNextAction(failureType, undefined, undefined, {type: REVERT, id: optimistId})
+        nextAction = makeNextAction(failureType, action.payload, action.meta, {type: REVERT, id: optimistId})
       } else {
-        nextAction = makeNextAction(failureType)
+        nextAction = makeNextAction(failureType, action.payload, action.meta)
       }
       dispatch(nextAction)
       // Set empty objects so that destructurings below do not die.
@@ -135,9 +139,9 @@ export default ({dispatch, getState}) => next => action => {
       // --------------------------------------------------------
       let nextAction
       if (isOptimist) {
-        nextAction = makeNextAction(successType, {json}, undefined, {type: COMMIT, id: optimistId})
+        nextAction = makeNextAction(successType, {json}, action.meta, {type: COMMIT, id: optimistId})
       } else {
-        nextAction = makeNextAction(successType, {json})
+        nextAction = makeNextAction(successType, {json}, action.meta)
       }
       dispatch(nextAction)
     })

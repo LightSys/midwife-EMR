@@ -15,6 +15,7 @@ import optimist from 'redux-optimist'
 // --------------------------------------------------------
 import selected from './Selected'
 import entities from './Entities'
+import status from './Status'
 
 // --------------------------------------------------------
 // Common Actions and Reducers across multiple domains.
@@ -68,6 +69,7 @@ const cookies = (state = {}, action) => {
 // --------------------------------------------------------
 const RootReducer = optimist(combineReducers({
   form: formReducer,
+  status,
   entities,
   siteMessage,
   systemMessage,

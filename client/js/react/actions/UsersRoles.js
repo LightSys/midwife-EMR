@@ -4,18 +4,14 @@ import {Schemas} from '../constants/index'
 import {makeGetAction, makePostAction} from '../utils/index'
 import {
   SELECT_USER,
-  LOAD_ALL_USERS_REQUEST,
-  LOAD_ALL_USERS_SUCCESS,
-  LOAD_ALL_USERS_FAILURE,
-  SAVE_USER_REQUEST,
-  SAVE_USER_SUCCESS,
-  SAVE_USER_FAILURE
+  LOAD_ALL_USERS_SET,
+  SAVE_USER_SET,
 } from '../constants/ActionTypes'
 
 
 
 // --------------------------------------------------------
-// Exported action creators.
+// Sync action creators.
 // --------------------------------------------------------
 
 export const selectUser = (userId) => {
@@ -26,23 +22,28 @@ export const selectUser = (userId) => {
   }
 }
 
+// --------------------------------------------------------
+// Async action creators.
+// --------------------------------------------------------
+
 export const loadAllUsersRoles = () => {
   return makeGetAction(
-    [LOAD_ALL_USERS_REQUEST, LOAD_ALL_USERS_SUCCESS, LOAD_ALL_USERS_FAILURE],
-    (state) => isEmpty(state.entities.users),
-    'user',
-    Schemas.USER_ARRAY
+    LOAD_ALL_USERS_SET,                       // types
+    (state) => isEmpty(state.entities.users), // test
+    'user',                                   // path
+    Schemas.USER_ARRAY                        // schema
   )
 }
 
 export const saveUser = (user) => {
   return makePostAction(
-    [SAVE_USER_REQUEST, SAVE_USER_SUCCESS, SAVE_USER_FAILURE],  // types
-    noop,                                                       // test
-    'user',                                                     // path
-    Schemas.USER,                                               // schema
-    {},                                                         // options
-    user                                                        // data
+    SAVE_USER_SET,                            // types
+    noop,                                     // test
+    'user',                                   // path
+    Schemas.USER,                             // schema
+    {},                                       // options
+    user,                                     // data
+    {id: user.id}                             // meta object additions
   )
 }
 
