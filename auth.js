@@ -40,20 +40,20 @@ var setRoleInfo = function(app) {
   return function(req, res, next) {
     var roleInfo = {
         isAuthenticated: req.isAuthenticated()
-        , roleNames: []
+        , roleName: undefined
           // Note that hasRole() will not be saved to the session so is available
           // in app.locals only, which means the templates. Use auth.hasRole()
           // for other uses.
         , hasRole: function(roleName) {
             if (! req.session.roleInfo) return false;
-            return _.contains(req.session.roleInfo.roleNames, roleName);
+            return req.session.roleInfo.roleName === roleName;
         }
       }
       ;
 
     if (req.session && ! req.session.roleInfo) {
       if (req.user && req.user.related) {
-        roleInfo.roleNames = _.pluck(req.user.related('roles').toJSON(), 'name');
+        roleInfo.roleName = req.user.related('role').toJSON().name;
         req.session.roleInfo = roleInfo;
         req.session.save();
       }
@@ -88,8 +88,8 @@ var clearRoleInfo = function(app) {
 /* --------------------------------------------------------
  * hasRole()
  *
- * Returns true if the passed role is found in the list of
- * roles that the user is a member of in the session.
+ * Returns true if the passed role matches the role that the
+ * user is a member of.
  *
  * param       req
  * param       role
@@ -97,7 +97,7 @@ var clearRoleInfo = function(app) {
  * -------------------------------------------------------- */
 var hasRole = function(req, role) {
   if (! req.session || ! req.session.roleInfo) return false;
-  return _.contains(req.session.roleInfo.roleNames, role);
+  return req.session.roleInfo.roleName === role
 };
 
 /* --------------------------------------------------------
@@ -113,7 +113,7 @@ var hasRole = function(req, role) {
  * Assumptions:
  *  1. That the user is already logged in.
  *  2. That the function setRoleInfo() has already been
- *     called so that the roles have already been placed
+ *     called so that the role has already been placed
  *     in the request object.
  *
  * param        roles - an array of role names
@@ -121,7 +121,7 @@ var hasRole = function(req, role) {
  * -------------------------------------------------------- */
 var inRoles = function(roles) {
   return function(req, res, next) {
-    if (_.intersection(req.session.roleInfo.roleNames, roles).length > 0) return next();
+    if (_.contains(roles, req.session.roleInfo.roleName)) return next();
     var unauth = new Error(req.gettext('You are not authorized for this page.'));
     unauth.details = 'User: ' + req.session.user.id + ', path: ' + req.path + ', method: ' + req.method;
     unauth.status = 403;

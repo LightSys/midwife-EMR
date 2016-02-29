@@ -47,33 +47,13 @@ block search
         div.form-group
           span= gettext('Comment')
           input(class='form-control input-lg', type='text', tabindex=12, autocomplete="off", name='note', value=editUser.note)
+        div.form-group
+          - var roleSelect = libs._.map(roles, function(r) {return {selectKey: r.id, selected: editUser.role_id === r.id? true:false, label: r.name};})
+          span= gettext('Role')
+          +select('form-control input-lg', 'role_id', 13, roleSelect)
 
         input(class='btn btn-default btn-primary', type='submit', value=gettext('Save'))
 
         input(type='hidden', name='_csrf', value=token)
         input(type='hidden', name='id', value=editUser.id)
-
-      h3= gettext('Roles')
-
-      p= gettext('Check the roles that this user should belong to and press Save Role Assignments.')
-
-    - var action = '/user/' + editUser.id + '/role/changeroles';
-      form(class='dirty-check', role='form', name='userForm', action=action, method='post')
-
-        div.form-group
-          if roles
-            for role in roles
-              - var isChecked = false;
-              if editUser.roles
-                for r in editUser.roles
-                  - if (r.id == role.id)
-                    - isChecked = true
-                    - break
-              label.radio
-                input(type='radio', name='roles', value=role.id, checked=isChecked)
-                = role.name
-
-          input(class='btn btn-default btn-primary', type='submit', value=gettext('Save Role Assignments'))
-          input(type='hidden', name='_csrf', value=token)
-
 

@@ -91,6 +91,7 @@ CREATE TABLE `user` (
   `status` tinyint(1) NOT NULL DEFAULT '1',
   `note` varchar(300) DEFAULT NULL,
   `isCurrentTeacher` tinyint(1) DEFAULT '0',
+  `role_id` int(11) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
   `supervisor` int(11) DEFAULT NULL,
@@ -98,9 +99,11 @@ CREATE TABLE `user` (
   UNIQUE KEY `username` (`username`),
   KEY `updatedBy` (`updatedBy`),
   KEY `supervisor` (`supervisor`),
+  KEY `role_id` (`role_id`),
+  CONSTRAINT `user_ibfk_3` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `user_ibfk_2` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=latin1
  */
 User = Bookshelf.Model.extend({
   // --------------------------------------------------------
@@ -110,7 +113,7 @@ User = Bookshelf.Model.extend({
 
   , permittedAttributes: ['id', 'username', 'firstname', 'lastname', 'password',
       'email', 'lang', 'shortName', 'displayName', 'status', 'note',
-     'isCurrentTeacher', 'updatedBy', 'updatedAt', 'supervisor']
+     'isCurrentTeacher', 'role_id', 'updatedBy', 'updatedAt', 'supervisor']
   , initialize: function() {
     this.on('saving', this.saving, this);
     this.on('saved', this.saved, this);
@@ -148,8 +151,8 @@ User = Bookshelf.Model.extend({
   // Relationships
   // --------------------------------------------------------
 
-  , roles: function() {
-      return this.belongsToMany(Role, 'user_role', 'user_id', 'role_id');
+  , role: function() {
+      return this.belongsTo(require('./Role').Role, 'role_id');
     }
 
 }, {
@@ -165,7 +168,7 @@ User = Bookshelf.Model.extend({
    * -------------------------------------------------------- */
   findById: function(id, cb) {
     this.forge({id: id})
-      .fetch({withRelated: ['roles']})
+      .fetch({withRelated: ['role']})
       .then(function(u) {
         if (! u) return cb(new Error('User id ' + id + ' not found.'));
         return cb(null, u);
@@ -205,7 +208,7 @@ User = Bookshelf.Model.extend({
      * -------------------------------------------------------- */
   , findByUsername: function(username, cb) {
       this.forge({username: username})
-        .fetch({withRelated: ['roles']})
+        .fetch({withRelated: ['role']})
         .then(function(u) {
           if (! u) return cb(new Error('User ' + username + ' does not exist.'));
           return cb(null, u);

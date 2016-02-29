@@ -46,7 +46,7 @@ var user = function(req, res) {
     // Get a list of the users in the system.
     return Users
       .forge()
-      .fetch({withRelated: ['roles']})
+      .fetch({withRelated: ['role']})
       .then(function(list) {
         var userList = [];
         list.forEach(function(rec) {
@@ -54,22 +54,6 @@ var user = function(req, res) {
           userList.push(r);
         });
         return userList;
-      })
-      .then(function(userList) {
-        // --------------------------------------------------------
-        // The user records contain a roles array, yet the application
-        // assumes that each user can only have one role. Simplify
-        // by rewriting roles as as role, an object. Also, remove the
-        // pivot information because it is not needed on the client.
-        // --------------------------------------------------------
-        var newList = userList.map(function(u) {
-          u.role = u.roles[0];
-          delete u.roles;
-          delete u.role._pivot_user_id;
-          delete u.role._pivot_role_id;
-          return u;
-        });
-        return newList;
       })
       .then(function(userList) {
         return res.end(JSON.stringify(userList));
@@ -86,7 +70,7 @@ var user = function(req, res) {
     ;(function() {
       var user
         , processPW = false
-        , fldsToOmit = ['password2','_csrf']
+        , fldsToOmit = ['password2','_csrf', 'role']  // role is the withRelated join from the GET.
         , defaultFlds = {
             isCurrentTeacher: '0'
             , status: '0'
@@ -123,6 +107,7 @@ var user = function(req, res) {
           // Set field defaults which allows unsettings checkboxes.
           // --------------------------------------------------------
           editObj = _.extend(defaultFlds, {updatedBy: req.session.user.id}, _.omit(workingBody, fldsToOmit));
+          console.dir(editObj);
           user = new User(editObj);
           if (hasRole(req, 'attending')) {
             supervisor = req.session.supervisor.id;

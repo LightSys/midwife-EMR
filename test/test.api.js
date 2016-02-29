@@ -36,7 +36,7 @@ var should = require('should')
 
 
 describe('api', function(done) {
-  var pregId = 422;
+  var pregId = 10;
   var pregnancyUrl = '/api/history/pregnancy/' + pregId;
 
   describe('history', function(done) {

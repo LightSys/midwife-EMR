@@ -58,7 +58,7 @@ var load = function(req, res, next) {
     ;
 
   User.forge({id: id})
-    .fetch({withRelated: ['roles']})
+    .fetch({withRelated: ['role']})
     .then(function(rec) {
       if (! rec) return next();
       rec = _.omit(rec.toJSON(), ['password']);
@@ -96,7 +96,7 @@ var getProfileFormData = function(req, addData) {
  * return      undefined
  * -------------------------------------------------------- */
 var editSupervisor = function(req, res) {
-  var omit = ['password', 'updatedBy', 'supervisor', 'roles',
+  var omit = ['password', 'updatedBy', 'supervisor', 'role',
       'updatedAt', 'email', 'lang', 'status', 'note']
     , users = new Users()
     , data = {
@@ -113,12 +113,12 @@ var editSupervisor = function(req, res) {
   }
 
   users
-    .fetch({withRelated: 'roles'})
+    .fetch({withRelated: 'role'})
     .then(function(list) {
       var userList = [];
       list.forEach(function(rec) {
-        var roles = rec.related('roles').toJSON();
-        if (_.contains(_.pluck(roles, 'name'), 'supervisor')) {
+        var role = rec.related('role').toJSON();
+        if (role.name === 'supervisor') {
           userList.push(_.omit(rec.toJSON(), omit));
         }
       });
@@ -150,14 +150,14 @@ var saveSupervisor = function(req, res) {
 
   if (supervisor !== -1) {
     User.forge({id: supervisor})
-      .fetch({withRelated: ['roles']})
+      .fetch({withRelated: ['role']})
       .then(function(rec) {
         var roles
           , options = {}
           ;
         if (rec) {
-          roles = rec.related('roles').toJSON();
-          if (_.contains(_.pluck(roles, 'name'), 'supervisor')) {
+          role = rec.related('role').toJSON();
+          if (role.name === 'supervisor') {
             req.session.supervisor = {};
             req.session.supervisor.id = rec.get('id');
             req.session.supervisor.username = rec.get('username');
@@ -199,7 +199,8 @@ var saveSupervisor = function(req, res) {
  * -------------------------------------------------------- */
 var editProfile = function(req, res) {
   var profile
-    , omit = ['password', 'status', 'note', 'updatedBy', 'updatedAt', 'supervisor']
+    , omit = ['password', 'status', 'note', 'updatedBy',
+              'updatedAt', 'supervisor', 'role', 'role_id']
     , additionalData = {
         success: true
         , messages: req.flash()
@@ -360,20 +361,18 @@ var list = function(req, res) {
     .query(function(qb) {
       if (! isNaN(status)) qb.where('status', '=', status);
     })
-    .fetch({withRelated: ['roles']})
+    .fetch({withRelated: ['role']})
     .then(function(list) {
       var userList = [];
       list.forEach(function(rec) {
         var r = rec.toJSON()
           , sts = r.status
-          , roles
           ;
         r.status = req.gettext('Yes');
         if (sts == 0) r.status = req.gettext('No');
 
         if (role) {
-          roles = _.pluck(r.roles, 'id');
-          if (_.indexOf(roles, role) !== -1) {
+          if (r.role.id === role) {
             userList.push(_.omit(r, omit));
           }
         } else {
@@ -410,14 +409,27 @@ var addForm = function(req, res) {
       , 'status': ''
       , note: ''
     }
+    , roles = []
     ;
-  res.render('userAddForm', {
-    title: req.gettext('Add User')
-    , user: req.session.user
-    , success: true
-    , messages: req.flash()
-    , editUser: blankUser
-  });
+  // --------------------------------------------------------
+  // Pass all the roles available for the roles listing
+  // to the template.
+  // --------------------------------------------------------
+  Roles.forge()
+    .fetch()
+    .then(function(list) {
+      for (var i = 0; i < list.length; i++) {
+        roles.push(list.at(i).toJSON());
+      }
+      res.render('userAddForm', {
+        title: req.gettext('Add User')
+        , user: req.session.user
+        , success: true
+        , messages: req.flash()
+        , editUser: blankUser
+        , roles: roles
+      });
+    });
 };
 
 /* --------------------------------------------------------
@@ -612,75 +624,6 @@ var create = function(req, res) {
   });
 };
 
-/* --------------------------------------------------------
- * changeRoles()
- *
- * Update the roles that are associated with the user
- * through insertions and deletions in the user_role
- * table.
- *
- * param       req
- * param       res
- * return      undefined
- * -------------------------------------------------------- */
-var changeRoles = function(req, res) {
-  var newRoles = []
-    , currRoles = _.pluck(req.paramUser.roles, 'id')
-    , additions = []
-    , deletions = []
-    , rid
-    ;
-
-  // --------------------------------------------------------
-  // Convert roles from the form from string to int.
-  // --------------------------------------------------------
-  _.each(req.body.roles, function(r) {
-    newRoles.push(parseInt(r, 10));
-  });
-
-  Roles.forge()
-    .fetch()
-    .then(function(roles) {
-      // --------------------------------------------------------
-      // Populate the additions and deletions arrays of role ids
-      // that need to change.
-      // --------------------------------------------------------
-      for (var i = 0; i < roles.length; i++ ) {
-        rid = roles.at(i).get('id');
-        if (_.contains(newRoles, rid)) {
-          if (! _.contains(currRoles, rid)) {
-            additions.push({
-              user_id: req.paramUser.id
-              , role_id: rid
-              , updatedBy: req.session.user.id
-              , supervisor: req.session.supervisor
-              , updatedAt: new Date()
-	    });
-          }
-        } else {
-          if (_.contains(currRoles, rid)) {
-            deletions.push(rid);
-          }
-        }
-      }
-
-      // --------------------------------------------------------
-      // Save the changes to the database.
-      // --------------------------------------------------------
-      User.forge({id: req.paramUser.id})
-        .related('roles')
-        .detach(deletions)
-        .then(function() {
-          User.forge({id: req.paramUser.id})
-            .related('roles')
-            .attach(additions)
-            .then(function() {
-              res.redirect(cfg.path.userList);
-            });
-        });
-    });
-};
-
 // --------------------------------------------------------
 // Initialize the module.
 // --------------------------------------------------------
@@ -693,7 +636,6 @@ module.exports = {
   , load: load
   , editForm: editForm
   , update: update
-  , changeRoles: changeRoles
   , editProfile: editProfile
   , saveProfile: saveProfile
   , editSupervisor: editSupervisor

@@ -53,10 +53,7 @@ block userList
             td= isTeacher
             td= user.status
             td= user.note
-            td
-              ul(class='list-unstyled')
-                for role in user.roles
-                  li= role.name
+            td= user.role.name
             td= user.id
     a(class='btn btn-primary pull-right', href='/user/new')= gettext('Add a new user')
 

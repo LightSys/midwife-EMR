@@ -1701,7 +1701,7 @@ var midwifeSave = function(req, res) {
  * -------------------------------------------------------- */
 var prenatalForm = function(req, res) {
   var data = getCommonFormData(req, {title: req.gettext('Prenatal')})
-    , role = req.session.roleInfo.roleNames[0]
+    , role = req.session.roleInfo.roleName
     , table1 = 'pregnancy'
     , table2 = 'risk'
     ;
@@ -1772,7 +1772,7 @@ var prenatalSave = function(req, res) {
         , G5: '0'
         , G6: '0'
       }
-    , role = req.session.roleInfo.roleNames[0]
+    , role = req.session.roleInfo.roleName
     ;
 
   if (req.paramPregnancy &&

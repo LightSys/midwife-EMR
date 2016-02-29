@@ -64,8 +64,8 @@ var doSpa = function(req, res, next) {
     }
   });
 
-  if (req.session.user && req.session.user.roles && req.session.user.roles[0]) {
-    if (req.session.user.roles[0].name === 'administrator') {
+  if (req.session.user && req.session.user.role) {
+    if (req.session.user.role.name === 'administrator') {
       data = {
         cfg: {
           siteTitle: cfg.site.title

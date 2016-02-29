@@ -20,16 +20,6 @@ ALTER TABLE roleLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE roleLog DROP KEY name;
 --
 --
--- Creating user_roleLog
-SELECT 'user_roleLog' AS Creating FROM DUAL;
-CREATE TABLE user_roleLog LIKE user_role;
-ALTER TABLE user_roleLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE user_roleLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE user_roleLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE user_roleLog DROP PRIMARY KEY;
-ALTER TABLE user_roleLog ADD PRIMARY KEY (id, replacedAt);
---
---
 -- Creating patientLog
 SELECT 'patientLog' AS Creating FROM DUAL;
 CREATE TABLE patientLog LIKE patient;

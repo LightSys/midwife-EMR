@@ -209,7 +209,7 @@ var i18nLocals = function(req, res, next) {
 var hasSuper = function(req, res, next) {
   var superName
     ;
-  if (_.contains(req.session.roleInfo.roleNames, 'attending')) {
+  if (req.session.roleInfo.roleName === 'attending') {
     if (req.session.supervisor) {
       // --------------------------------------------------------
       // Store the supervisor in app.locals for the templates.
@@ -419,7 +419,6 @@ app.post(cfg.path.roleUpdate, common, inRoles(['administrator']), api.doSpa, rol
 // Role assignment to users
 // --------------------------------------------------------
 app.all(cfg.path.userLoad2, users.load);  // parameter handling
-app.post(cfg.path.changeRoles, common, inRoles(['administrator']), api.doSpa, users.changeRoles);
 
 // --------------------------------------------------------
 // Profile
