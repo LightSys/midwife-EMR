@@ -93,6 +93,7 @@ class UserEditClass extends Component {
     this.renderMedium = this.renderMedium.bind(this)
     this.renderLarge = this.renderLarge.bind(this)
     this.handleChange = this.handleChange.bind(this)
+    this.handleCancel = this.handleCancel.bind(this)
 
     this.breakpoint = BP_LARGE    // Default.
 
@@ -119,6 +120,12 @@ class UserEditClass extends Component {
       const newState = Object.assign({}, this.state.user, {[name]: value})
       this.setState({user: newState}, () => console.log(this.state.user))
     }
+  }
+
+  handleCancel(evt) {
+    evt.preventDefault()
+    this.props.selectUser()               // unset the user
+    this.context.router.push('/users')    // go back to userlist
   }
 
   componentWillMount() {
@@ -163,6 +170,11 @@ class UserEditClass extends Component {
                 Save
               </button>
             </div>
+            <div className='col-xs-6'>
+              <button type='button' onClick={this.handleCancel}>
+                Cancel
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -202,6 +214,11 @@ class UserEditClass extends Component {
                 Save
               </button>
             </div>
+            <div className='col-xs-6'>
+              <button type='button' onClick={this.handleCancel}>
+                Cancel
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -233,10 +250,15 @@ class UserEditClass extends Component {
           <div className='row'>{row2}</div>
           <div className='row'>{row3}</div>
           <div className='row'>
-            <div className='col-xs-6'>
+            <div className='col-xs-3'>
               {hidden}
               <button type='submit' disabled={submitting}>
                 Save
+              </button>
+            </div>
+            <div className='col-xs-3'>
+              <button type='button' onClick={this.handleCancel}>
+                Cancel
               </button>
             </div>
           </div>
