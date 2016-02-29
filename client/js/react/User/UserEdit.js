@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react'
-import _ from 'underscore'
+import {map} from 'underscore'
 
 import {saveUser} from '../actions/UsersRoles'
 
@@ -9,12 +9,14 @@ import {
   BP_LARGE
 } from '../constants/index'
 
+import {getBreakpoint} from '../utils'
+
 import {
-  getBreakpoint,
   renderText,
   renderCB,
-  renderHidden
-} from '../utils'
+  renderHidden,
+  renderSelect
+} from '../utils/formHelper'
 
 const fldObjs = {
   'username': {
@@ -73,6 +75,11 @@ const fldObjs = {
     func: renderCB,
     lbl: 'Is teacher now?'
   },
+  'role_id': {
+    func: renderSelect,
+    lbl: 'Role',
+    additionalProps: 'roles'
+  },
   'id': {
     func: renderHidden
   }
@@ -98,10 +105,19 @@ class UserEditClass extends Component {
 
   handleChange(name) {
     return (evt) => {
-      // Adapted from: https://gist.github.com/markerikson/554cab15d83fd994dfab
-      let value = (evt.target.type == "checkbox") ? evt.target.checked : evt.target.value;
+      let value
+      switch (evt.target.type) {
+        case 'checkbox':
+          value = evt.target.checked
+          break
+        case 'select-one':
+          value = parseInt(evt.target.value, 10)
+          break
+        default:
+          value = evt.target.value
+      }
       const newState = Object.assign({}, this.state.user, {[name]: value})
-      this.setState({user: newState}) //, () => console.log(this.state.user))
+      this.setState({user: newState}, () => console.log(this.state.user))
     }
   }
 
@@ -112,8 +128,10 @@ class UserEditClass extends Component {
 
   renderSmall() {
     let submitting = false
-    const flds = _.map(fldObjs, (fld, fldName) => {
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
+    const flds = map(fldObjs, (fld, fldName) => {
+      let options
+      if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName), options)
     })
     const row1 = flds.slice(0, 2)
     const row2 = flds.slice(2, 4)
@@ -121,6 +139,7 @@ class UserEditClass extends Component {
     const row4 = flds.slice(6, 8)
     const row5 = flds.slice(8, 10)
     const row6 = flds.slice(10, 12)
+    const hidden = flds.slice(12)
     return (
       <div>
         <h3>Edit User</h3>
@@ -152,13 +171,16 @@ class UserEditClass extends Component {
 
   renderMedium() {
     let submitting = false
-    const flds = _.map(fldObjs, (fld, fldName) => {
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
+    const flds = map(fldObjs, (fld, fldName) => {
+      let options
+      if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName), options)
     })
     const row1 = flds.slice(0, 3)
     const row2 = flds.slice(3, 6)
     const row3 = flds.slice(6, 9)
     const row4 = flds.slice(9, 12)
+    const hidden = flds.slice(12)
     return (
       <div>
         <h3>Edit User</h3>
@@ -188,8 +210,10 @@ class UserEditClass extends Component {
 
   renderLarge() {
     let submitting = false
-    const flds = _.map(fldObjs, (fld, fldName) => {
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName))
+    const flds = map(fldObjs, (fld, fldName) => {
+      let options
+      if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName), options)
     })
     const row1 = flds.slice(0, 4)
     const row2 = flds.slice(4, 8)
