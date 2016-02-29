@@ -5,12 +5,6 @@ import {
 } from '../constants/index'
 
 export {
-  renderText,
-  renderCB,
-  renderHidden
-} from './formHelper'
-
-export {
   makeGetAction,
   makePostAction
 } from './actionHelper'
