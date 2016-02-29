@@ -122,15 +122,15 @@ var form = function(req, res) {
   ];
 
   new Users()
-    .fetch({withRelated: 'roles'})
+    .fetch({withRelated: 'role'})
     .then(function(list) {
       var supers = [{selectKey: '', selected: true, label: ''}]
         ;
       list.forEach(function(rec) {
-        var roles = rec.related('roles').toJSON()
+        var role = rec.related('role').toJSON()
           , superRec = {}
           ;
-        if (_.contains(_.pluck(roles, 'name'), 'supervisor')) {
+        if (role.name === 'supervisor') {
           superRec.selectKey = rec.get('id');
           superRec.selected = false;
           superRec.label = rec.get('lastname') + ', ' + rec.get('firstname');

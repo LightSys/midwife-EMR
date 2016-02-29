@@ -118,8 +118,7 @@ var getAllData = function(req, res) {
   // --------------------------------------------------------
   sqlUser =  'SELECT u.id, u.username, u.firstname, u.lastname, u.shortName, ';
   sqlUser += 'u.displayName, u.status, u.isCurrentTeacher, r.name AS rolename ';
-  sqlUser += 'FROM user u INNER JOIN user_role ur ON u.id = ur.user_id ';
-  sqlUser += 'INNER JOIN role r ON ur.role_id = r.id';
+  sqlUser += 'FROM user u INNER JOIN role r ON u.role_id = r.id';
 
   sqlVacType =  'SELECT * FROM vaccinationType';
 

@@ -34,6 +34,11 @@ block search
         div.form-group
           span= gettext('Comment')
           input(class='form-control input-lg', type='text', tabindex=9, autocomplete="off", name='note')
+        div.form-group
+          - var roleSelect = libs._.map(roles, function(r) {return {selectKey: r.id, selected: false, label: r.name};})
+          span= gettext('Role')
+          +select('form-control input-lg', 'role_id', 13, roleSelect)
+
 
         input(class='btn btn-default btn-primary', type='submit', value=gettext('Create User'))
         input(type='hidden', name='_csrf', value=token)

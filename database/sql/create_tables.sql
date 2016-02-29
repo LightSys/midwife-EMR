@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   status BOOLEAN NOT NULL DEFAULT 1,
   note VARCHAR(300) NULL,
   isCurrentTeacher BOOLEAN NULL DEFAULT 0,
+  role_id INT NOT NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
@@ -41,22 +42,8 @@ CREATE TABLE IF NOT EXISTS `role` (
 );
 SHOW WARNINGS;
 
--- Many-to-many join table for user and role.
--- Notes:
--- 2014-01-22: updatedBy field allows NULL because the orm (Bookshelf)
--- presently cannot handle updating an extra field in a many-to-many join table.
-CREATE TABLE IF NOT EXISTS `user_role` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  role_id INT NOT NULL,
-  updatedBy INT NULL,
-  updatedAt DATETIME NOT NULL,
-  supervisor INT NULL,
-  FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  FOREIGN KEY (role_id) REFERENCES role (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  FOREIGN KEY (supervisor) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
+-- Add after the role table has been created.
+ALTER TABLE user ADD FOREIGN KEY (role_id) REFERENCES role (id) ON DELETE NO ACTION ON UPDATE NO ACTION;
 SHOW WARNINGS;
 
 -- Definition required by the express-mysql-session module.

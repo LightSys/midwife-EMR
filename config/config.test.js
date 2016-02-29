@@ -48,7 +48,7 @@ cfg.site.tmpDir = 'tmp';
 // Host settings.
 // --------------------------------------------------------
 cfg.host = {};
-cfg.host.port = 8000
+cfg.host.port = 9000
 
 // --------------------------------------------------------
 // Database settings.
@@ -56,7 +56,7 @@ cfg.host.port = 8000
 cfg.database = {};
 cfg.database.host = 'localhost';
 cfg.database.port = 3306;
-cfg.database.db = 'mercy1test';
+cfg.database.db = 'testingmidwife';
 cfg.database.dbUser = 'mercy1testuser';
 cfg.database.dbPass = 'mmSsrtF7yTJoUDbx';
 cfg.database.charset = 'utf8';

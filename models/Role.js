@@ -44,7 +44,7 @@ Role = Bookshelf.Model.extend({
   // --------------------------------------------------------
 
   , users: function() {
-    return this.belongsToMany(User, 'user_role', 'role_id', 'user_id');
+    return this.hasMany(require('./User').User, 'role_id');
   }
 
 
