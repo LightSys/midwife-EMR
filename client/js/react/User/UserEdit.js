@@ -138,7 +138,8 @@ class UserEditClass extends Component {
     const flds = map(fldObjs, (fld, fldName) => {
       let options
       if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName), options)
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName,
+        this.state.user[fldName], this.handleChange(fldName), options)
     })
     const row1 = flds.slice(0, 2)
     const row2 = flds.slice(2, 4)
@@ -186,7 +187,8 @@ class UserEditClass extends Component {
     const flds = map(fldObjs, (fld, fldName) => {
       let options
       if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName), options)
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName,
+        this.state.user[fldName], this.handleChange(fldName), options)
     })
     const row1 = flds.slice(0, 3)
     const row2 = flds.slice(3, 6)
@@ -230,7 +232,8 @@ class UserEditClass extends Component {
     const flds = map(fldObjs, (fld, fldName) => {
       let options
       if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName, this.state.user[fldName], this.handleChange(fldName), options)
+      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName,
+        this.state.user[fldName], this.handleChange(fldName), options)
     })
     const row1 = flds.slice(0, 4)
     const row2 = flds.slice(4, 8)

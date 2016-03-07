@@ -4,6 +4,20 @@ import {normalize} from 'normalizr'
 import {BEGIN, COMMIT, REVERT} from 'redux-optimist'
 
 // --------------------------------------------------------
+// Create the next action without the elements particular
+// to a dataMiddleware call.
+// --------------------------------------------------------
+const makeNextAction = (type, payload, meta, optimist) => {
+  let newAction = {
+    type: type,
+    payload: Object.assign({}, omit(payload, ['types', 'test'])),
+    meta: Object.assign({}, omit(meta, 'dataMiddleware'))
+  }
+  if (optimist) newAction.optimist = Object.assign({}, optimist)
+  return newAction
+}
+
+// --------------------------------------------------------
 // Handle any action with a meta object that has a
 // dataMiddleware element set to true. Assumes that the
 // action has a payload element.
@@ -57,20 +71,6 @@ export default ({dispatch, getState}) => next => action => {
   if (action.meta && action.meta.hasOwnProperty('optimistId')) {
     isOptimist = true
     optimistId = action.meta.optimistId
-  }
-
-  // --------------------------------------------------------
-  // Create the next action without the elements particular
-  // to a dataMiddleware call.
-  // --------------------------------------------------------
-  const makeNextAction = (type, payload, meta, optimist) => {
-    let newAction = {
-      type: type,
-      payload: Object.assign({}, omit(payload, ['types', 'test'])),
-      meta: Object.assign({}, omit(meta, 'dataMiddleware'))
-    }
-    if (optimist) newAction.optimist = Object.assign({}, optimist)
-    return newAction
   }
 
   // --------------------------------------------------------
