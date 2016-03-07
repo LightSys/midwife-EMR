@@ -44,6 +44,15 @@ var formatDohID = function(dohID, useAltFormat) {
 };
 
 /* --------------------------------------------------------
+ * getProcessId()
+ *
+ * Return the process id of the current process.
+ * -------------------------------------------------------- */
+var getProcessId = function() {
+  return process.env.WORKER_ID? process.env.WORKER_ID: 0;
+}
+
+/* --------------------------------------------------------
  * writeLog()
  *
  * Writes a log message to the console.
@@ -54,7 +63,7 @@ var formatDohID = function(dohID, useAltFormat) {
  * -------------------------------------------------------- */
 var writeLog = function(msg, logType) {
   var fn = 'info'
-    , id = process.env.WORKER_ID? process.env.WORKER_ID: 0
+    , id = getProcessId()
     ;
   if (logType === WARN || logType === ERROR) fn = 'error';
   console[fn]('%d|%s: %s', id, moment().format('YYYY-MM-DD HH:mm:ss.SSS'), msg);
@@ -336,6 +345,7 @@ module.exports = {
   , formatDohID: formatDohID
   , isValidDate: isValidDate
   , validOrVoidDate: validOrVoidDate
+  , getProcessId
 };
 
 
