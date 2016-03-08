@@ -6,7 +6,10 @@
  * -------------------------------------------------------------------------------
  */
 
-var cfg = require('../../config')
+var Bookshelf = require('bookshelf')
+  , Promise = require('bluebird')
+  , _ = require('underscore-contrib')
+  , cfg = require('../../config')
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
   , logError = require('../../util').logError
@@ -17,9 +20,8 @@ var cfg = require('../../config')
   , hasRole = require('../../auth').hasRole
   , resError = require('./utils').resError
   , tf2Num = require('./utils').tf2Num
-  , Bookshelf = require('bookshelf')
-  , Promise = require('bluebird')
-  , _ = require('underscore-contrib')
+  , sendData = require('../../comm').sendData
+  , DATA_CHANGE = require('../../comm').DATA_CHANGE
   ;
 
 
@@ -83,7 +85,6 @@ var user = function(req, res) {
       // --------------------------------------------------------
       if (! req.body || ! req.body.id || req.body.id != id1) {
         // Something is not right...abort.
-        console.log(req.body);
         return resError(res, 400, 'userRoles.user(): body not supplied during POST.')
       }
       if (req.body.password && req.body.password2 &&
@@ -107,7 +108,6 @@ var user = function(req, res) {
           // Set field defaults which allows unsettings checkboxes.
           // --------------------------------------------------------
           editObj = _.extend(defaultFlds, {updatedBy: req.session.user.id}, _.omit(workingBody, fldsToOmit));
-          console.dir(editObj);
           user = new User(editObj);
           if (hasRole(req, 'attending')) {
             supervisor = req.session.supervisor.id;
@@ -120,7 +120,17 @@ var user = function(req, res) {
                 .setSupervisor(supervisor)
                 .save(null, {method: 'update'})
                 .then(function(model) {
-                  return res.end();
+                  res.end();
+
+                  // --------------------------------------------------------
+                  // Notify all clients of the change.
+                  // --------------------------------------------------------
+                  var data = {
+                    table: 'user',
+                    id: editObj.id,
+                    updatedBy: req.session.user.id
+                  };
+                  sendData(DATA_CHANGE, JSON.stringify(data));
                 });
             });
           } else {
@@ -129,7 +139,18 @@ var user = function(req, res) {
               .setSupervisor(supervisor)
               .save(null, {method: 'update'})
               .then(function(model) {
-                return res.end();
+                res.end();
+
+                // --------------------------------------------------------
+                // Notify all clients of the change.
+                // --------------------------------------------------------
+                var data = {
+                  table: 'user',
+                  id: editObj.id,
+                  updatedBy: req.session.user.id,
+                  sessionID: req.sessionID
+                };
+                sendData(DATA_CHANGE, JSON.stringify(data));
               });
           }
         } else {

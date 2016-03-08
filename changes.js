@@ -17,7 +17,8 @@ var Bookshelf = require('bookshelf')
  *
  * Builds an object representing the meta data about a change
  * for client consumption. The expected input object will
- * have these fields with their respective values at a minimum:
+ * have these fields with their respective values at a minimum
+ * (although the input object may contain more):
  * table, id, updatedBy.
  *
  * The return promise will yield at least one additional field
