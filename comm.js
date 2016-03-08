@@ -92,6 +92,7 @@ var redis = require('redis')
   , logWarn = require('./util').logWarn
   , logError = require('./util').logError
   , cfg = require('./config')
+  , buildChangeObject = require('./changes').buildChangeObject
   , isInitialized = false
   , ioSystem          // our system socket
   , ioSite            // our site socket
@@ -109,7 +110,9 @@ var redis = require('redis')
   , siteSubjectData
   , systemSubject
   , systemSubjectLastId
+  , dataSubject
   , CONST
+  , DATA_CHANGE = 'DATA_CHANGE'
   ;
 
 // --------------------------------------------------------
@@ -165,30 +168,55 @@ var makeSend = function(type) {
   return function(key, val, scope) {
     var data = {};
     var wrapped;
-    if (type === CONST.TYPE.SITE) {
-      // --------------------------------------------------------
-      // For site messages, the most recent copy is stored so
-      // update the data portion with the key/val pair, refresh
-      // the wrapper and notify subscribers. Return the unique
-      // message id to the caller.
-      // --------------------------------------------------------
-      data[key] = val;
-      siteSubjectData = wrap(type, _.extendOwn(siteSubjectData.data, data));
-      siteSubject.onNext(siteSubjectData);
-      return siteSubjectData.id;
-    } else if (type === CONST.TYPE.SYSTEM) {
-      // --------------------------------------------------------
-      // For system messages, there is no aggregation and there
-      // is an optional scope parameter allowed. We store the
-      // id of the message as we inject it into the rx stream in
-      // order to prevent circularities.
-      // --------------------------------------------------------
-      data[key] = val;
-      wrapped = wrap(type, data, scope);
-      systemSubjectLastId = wrapped.id;
-      systemSubject.onNext(wrapped);
-    } else {
-      logError('Error: makeSend() unimplemented for this type: ' + type);
+    switch (type) {
+      case CONST.TYPE.SITE:
+        // --------------------------------------------------------
+        // For site messages, the most recent copy is stored so
+        // update the data portion with the key/val pair, refresh
+        // the wrapper and notify subscribers. Return the unique
+        // message id to the caller.
+        // --------------------------------------------------------
+        data[key] = val;
+        siteSubjectData = wrap(type, _.extendOwn(siteSubjectData.data, data));
+        siteSubject.onNext(siteSubjectData);
+        return siteSubjectData.id;
+
+      case CONST.TYPE.SYSTEM:
+        // --------------------------------------------------------
+        // For system messages, there is no aggregation and there
+        // is an optional scope parameter allowed. We store the
+        // id of the message as we inject it into the rx stream in
+        // order to prevent circularities.
+        // --------------------------------------------------------
+        data[key] = val;
+        wrapped = wrap(type, data, scope);
+        systemSubjectLastId = wrapped.id;
+        systemSubject.onNext(wrapped);
+        break;
+
+      case CONST.TYPE.DATA:
+        if (key === DATA_CHANGE) {
+          try {
+            data = JSON.parse(val)
+          } catch (e) {
+            logError('Error in makeSend processing data: ' + e.toString());
+            return;
+          }
+          buildChangeObject(data).then(function(data2) {
+            // --------------------------------------------------------
+            // Broadcast this to the other processes for distribution
+            // to all connected clients.
+            // --------------------------------------------------------
+            redisPub.publish(CONST.TYPE.DATA, JSON.stringify(data2));
+          });
+          break;
+
+        } else {
+          // Intentional fall through to default.
+        }
+
+      default:
+        logError('Error: makeSend() unimplemented for this type: ' + type);
     }
   };
 };
@@ -235,6 +263,10 @@ var subscribeSite = function(onNext, onError, onCompleted) {
  * -------------------------------------------------------- */
 var subscribeSystem = function(onNext, onError, onCompleted) {
   return systemSubject.subscribe(onNext, onError, onCompleted);
+};
+
+var subscribeData = function(onNext, onError, onCompleted) {
+  return dataSubject.subscribe(onNext, onError, onCompleted);
 };
 
 /* --------------------------------------------------------
@@ -310,36 +342,57 @@ var init = function(io, sessionMiddle) {
   // Handle messages from other worker processes.
   // --------------------------------------------------------
   redisSub.on('message', function(channel, message) {
-    var data = JSON.parse(message);
-    if (channel === CONST.TYPE.SITE) {
-      // We already have this message, therefore do nothing.
-      if (data.id && data.id === siteSubjectData.id) return;
-      // --------------------------------------------------------
-      // Completely replace siteSubjectData, including wrapper,
-      // with what we received from the other process, then
-      // notify subscribers in this process. Be careful not to
-      // overwrite any new, yet unpublished key/val pairs in
-      // the existing siteSubjectData.data due to a race condition.
-      // --------------------------------------------------------
-      siteSubjectData.id = data.id;
-      siteSubjectData.type = data.type;
-      siteSubjectData.updatedAt = data.updatedAt;
-      siteSubjectData.workerId = data.workerId;
-      siteSubjectData.scope = undefined;    // by definition for site
-      siteSubjectData.data = _.extendOwn(siteSubjectData.data, data.data);
-      siteSubject.onNext(siteSubjectData);
-    } else if (channel === CONST.TYPE.SYSTEM) {
-      // We already have this message, therefore do nothing.
-      if (data.id && data.id === systemSubjectLastId) return;
-      // Save the id so we don't create a loop between Rx and Redis.
-      systemSubjectLastId = data.id;
-      systemSubject.onNext(data);
-    } else {
-      logError('redisSub: channel ' + channel + ' is not yet implemented.');
+    try {
+      data = JSON.parse(message);
+    } catch (e) {
+      logError('Error during parsing of Redis message: ' + e.toString());
+      console.dir(util.inspect(message, {depth: 3}));
+      data = {};
+    }
+    switch (channel) {
+      case CONST.TYPE.SITE:
+        // We already have this message, therefore do nothing.
+        if (data.id && data.id === siteSubjectData.id) return;
+        // --------------------------------------------------------
+        // Completely replace siteSubjectData, including wrapper,
+        // with what we received from the other process, then
+        // notify subscribers in this process. Be careful not to
+        // overwrite any new, yet unpublished key/val pairs in
+        // the existing siteSubjectData.data due to a race condition.
+        // --------------------------------------------------------
+        siteSubjectData.id = data.id;
+        siteSubjectData.type = data.type;
+        siteSubjectData.updatedAt = data.updatedAt;
+        siteSubjectData.workerId = data.workerId;
+        siteSubjectData.scope = undefined;    // by definition for site
+        siteSubjectData.data = _.extendOwn(siteSubjectData.data, data.data);
+        siteSubject.onNext(siteSubjectData);
+        break;
+
+      case CONST.TYPE.SYSTEM:
+        // We already have this message, therefore do nothing.
+        if (data.id && data.id === systemSubjectLastId) return;
+        // Save the id so we don't create a loop between Rx and Redis.
+        systemSubjectLastId = data.id;
+        systemSubject.onNext(data);
+        break;
+
+      case CONST.TYPE.DATA:
+        // --------------------------------------------------------
+        // Received a data notification from some other server process
+        // (or possibly our own) so now we inject it into the RxJS data
+        // stream so that it can be sent to the clients.
+        // --------------------------------------------------------
+        dataSubject.onNext(data);
+        break;
+
+      default:
+        logError('redisSub: channel ' + channel + ' is not yet implemented.');
     }
   });
   redisSub.subscribe(CONST.TYPE.SITE);
   redisSub.subscribe(CONST.TYPE.SYSTEM);
+  redisSub.subscribe(CONST.TYPE.DATA);
 
 
   // ========================================================
@@ -402,6 +455,11 @@ var init = function(io, sessionMiddle) {
       logInfo('systemSubject completed.');
     }
   );
+
+  // --------------------------------------------------------
+  // Whatever is received here is sent to the sockets.
+  // --------------------------------------------------------
+  dataSubject = new rx.Subject();
 
   // ========================================================
   // ========================================================
@@ -531,9 +589,33 @@ var init = function(io, sessionMiddle) {
       cntData--;
     });
     cntData++;
+
+    // --------------------------------------------------------
+    // Send all data messages out to the authenticated clients.
+    // --------------------------------------------------------
+    dataSubscription = dataSubject.subscribe(
+      function(data) {
+        // Don't do work unless logged in.
+        if (! isValidSocketSession(socket)) return;
+        // --------------------------------------------------------
+        // Send the data change notification to the client, unless we
+        // can detect that the data change was initiated by this socket.
+        // --------------------------------------------------------
+        if (! data.sessionID) {
+          socket.emit(CONST.TYPE.DATA, data);
+        } else if (getSocketSessionId(socket) !== data.sessionID) {
+          // We don't leak another client's sessionID.
+          socket.emit(CONST.TYPE.DATA, _.omit(data, 'sessionID'));
+        }
+      },
+      function(err) {
+        logInfo('Error: ' + err);
+      },
+      function() {
+        logInfo('dataSubject completed.');
+      }
+    );
   });
-
-
 };
 
 module.exports = {
@@ -543,5 +625,7 @@ module.exports = {
   , sendData: sendData
   , subscribeSite: subscribeSite
   , subscribeSystem: subscribeSystem
+  , subscribeData: subscribeData
+  , DATA_CHANGE: DATA_CHANGE
 };
 
