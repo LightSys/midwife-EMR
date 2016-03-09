@@ -7,7 +7,6 @@
  * -------------------------------------------------------------------------------
  */
 import {combineReducers} from 'redux'
-import {reducer as formReducer} from 'redux-form'
 import optimist from 'redux-optimist'
 
 // --------------------------------------------------------
@@ -25,7 +24,7 @@ import {
   SYSTEM_MESSAGE,
   AUTHENTICATION_UPDATE,
   SET_COOKIES
-} from '../actions/index'
+} from '../constants/ActionTypes'
 
 
 const siteMessage = (state = {}, action) => {
@@ -68,7 +67,6 @@ const cookies = (state = {}, action) => {
 // to fail. As a hack, I renamed .babelrc to RENAMED_bablerc.
 // --------------------------------------------------------
 const RootReducer = optimist(combineReducers({
-  form: formReducer,
   status,
   entities,
   siteMessage,

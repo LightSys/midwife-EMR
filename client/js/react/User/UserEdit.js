@@ -78,7 +78,7 @@ const fldObjs = {
   'role_id': {
     func: renderSelect,
     lbl: 'Role',
-    additionalProps: 'roles'
+    additionalProps: 'role'
   },
   'id': {
     func: renderHidden
@@ -100,7 +100,7 @@ class UserEditClass extends Component {
     // Initialize the form.
     this.state = {
       user: this.props.user,
-      roles: this.props.roles
+      role: this.props.role
     }
   }
 
@@ -118,7 +118,7 @@ class UserEditClass extends Component {
           value = evt.target.value
       }
       const newState = Object.assign({}, this.state.user, {[name]: value})
-      this.setState({user: newState}, () => console.log(this.state.user))
+      this.setState({user: newState})   //, () => console.log(this.state.user))
     }
   }
 

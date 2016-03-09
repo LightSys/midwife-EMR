@@ -6,21 +6,13 @@
  * -------------------------------------------------------------------------------
  */
 
-// --------------------------------------------------------
-// Action types.
-// --------------------------------------------------------
-
-export const CURRENT_USER_REQUEST = 'CURRENT_USER_REQUEST'
-export const CURRENT_USER_SUCCESS = 'CURRENT_USER_SUCCESS'
-export const CURRENT_USER_FAILURE = 'CURRENT_USER_FAILURE'
-
-
-export const SITE_MESSAGE = 'SITE_MESSAGE'
-export const SYSTEM_MESSAGE = 'SYSTEM_MESSAGE'
-
-export const AUTHENTICATION_UPDATE = 'AUTHENTICATION_UPDATE'
-
-export const SET_COOKIES = 'SET_COOKIES'
+import {
+  DATA_CHANGE,
+  SITE_MESSAGE,
+  SYSTEM_MESSAGE,
+  AUTHENTICATION_UPDATE,
+  SET_COOKIES
+} from '../constants/ActionTypes'
 
 // --------------------------------------------------------
 // Actions.
@@ -55,4 +47,11 @@ export const setCookies = (cookies) => {
   }
 }
 
+export const dataChange = (data) => {
+  return {
+    type: DATA_CHANGE,
+    table: data.table,
+    id: data.id
+  }
+}
 

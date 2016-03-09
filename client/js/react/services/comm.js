@@ -3,8 +3,13 @@ import io from 'socket.io-client'
 import {
   siteMessage,
   systemMessage,
-  authenticationUpdate
+  authenticationUpdate,
+  dataChange
 } from '../actions'
+
+import {
+  DATA_CHANGE
+} from '../constants/ActionTypes'
 
 const SITE_URL = `${window.location.origin}/site`
 const SYSTEM_URL = `${window.location.origin}/system`
@@ -24,7 +29,16 @@ const Comm = (store) => {
   })
 
   ioData.on('data', (data) => {
-    if (data.authentication) {
+    // TODO: refactor to a switch for efficiency.
+    //
+    // NOTE: this is not a Redux type, of course, but we follow the same
+    // pattern for the server to client communications and use the same
+    // constant for the Redux action type.
+    if (data.type && data.type === DATA_CHANGE) {
+      // Notification from the server that data was
+      // changed by a different client.
+      store.dispatch(dataChange(data))
+    } else if (data.authentication) {
       store.dispatch(authenticationUpdate(data.authentication))
     }
   })

@@ -304,6 +304,7 @@ app.use(function(req, res, next) {
 app.use(function(req, res, next) {
   if (cfg.site.debug) {
     console.log('============================');
+    console.log(req.method + ': ' + req.url);
     console.log(req.headers);
     console.log('-----');
     console.log(req.body);

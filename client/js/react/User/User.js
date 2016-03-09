@@ -8,20 +8,20 @@ import {UserEdit as UE} from './UserEdit'
 
 
 const mapStateToPropsUserList = (state) => {
-  const {users, roles, saving} = state.entities
+  const {user, role, saving} = state.entities
   return {
-    users,
-    roles,
+    user,
+    role,
     saving
   }
 }
 
 const mapStateToPropsUserEdit = (state) => {
-  const user = state.entities.users[state.selected.user]
-  const roles = state.entities.roles
+  const user = state.entities.user[state.selected.user]
+  const role = state.entities.role
   return {
     user,
-    roles
+    role
   }
 }
 

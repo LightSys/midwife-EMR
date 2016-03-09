@@ -4,7 +4,8 @@ import {
   LOAD_ALL_USERS_FAILURE,
   SAVE_USER_REQUEST,
   SAVE_USER_SUCCESS,
-  SAVE_USER_FAILURE
+  SAVE_USER_FAILURE,
+  DATA_CHANGE
 } from '../constants/ActionTypes'
 
 import {
@@ -14,159 +15,234 @@ import {
   SAVING
 } from '../constants/index'
 
-const DEFAULT_STATUS = {
-  users: {
+// --------------------------------------------------------
+// status: NOT_LOADED | LOADING | LOADED | SAVING
+// pending: ids that are currently being saved to the server.
+// dirty: ids that other clients have changed that we have not refreshed.
+//
+// Note: exported for the sake of testing.
+// --------------------------------------------------------
+export const DEFAULT_STATUS = {
+  user: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  roles: {
+  role: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  patients: {
+  patient: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  pregnancies: {
+  pregnancy: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  riskCodes: {
+  riskCode: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  risks: {
+  risk: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  vaccinations: {
+  vaccination: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  vaccinationTypes: {
+  vaccinationType: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  healthTeachings: {
+  healthTeaching: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  medications: {
+  medication: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  medicationTypes: {
+  medicationType: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  pregnancyHistories: {
+  pregnancyHistory: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  eventTypes: {
+  eventType: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  events: {
+  event: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  prenatalExams: {
+  prenatalExam: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  labSuites: {
+  labSuite: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  labTests: {
+  labTest: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  labTestValues: {
+  labTestValue: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  labTestResults: {
+  labTestResult: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  referrals: {
+  referral: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  schedules: {
+  schedule: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  pregnoteTypes: {
+  pregnoteType: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   },
-  pregnotes: {
+  pregnote: {
     status: NOT_LOADED,
+    pending: [],
     dirty: []
   }
 }
 
 // --------------------------------------------------------
-// Set the status if an entity, leaving dirty field unchanged.
+// Set the status if an entity, leaving pending field unchanged.
 // --------------------------------------------------------
 const setStatus = (entity, state, status) => {
-  return Object.assign({}, state, {[entity]: {status: status, dirty: state[entity].dirty}})
+  let newStatus = Object.assign({}, state)
+  Object.assign(newStatus,
+    {[entity]: {status: status,
+      pending: state[entity].pending,
+      dirty: state[entity].dirty}})
+  return newStatus;
 }
 
 // --------------------------------------------------------
-// Add an id to the dirty field of an entity, leaving status
-// field unchanged.
+// Add an id to the pending field of an entity, leaving other
+// fields unchanged.
+// --------------------------------------------------------
+const addPending = (entity, state, id) => {
+  let pendings = new Set(state[entity].pending)  // Insure unique.
+  let dirty = state[entity].dirty
+  pendings.add(id)
+  return Object.assign({}, state,
+    {[entity]: {status: state[entity].status, pending: [...pendings], dirty}})
+}
+
+// --------------------------------------------------------
+// Add an id to the dirty field of an entity, leaving other
+// fields unchanged.
 // --------------------------------------------------------
 const addDirty = (entity, state, id) => {
   let dirties = new Set(state[entity].dirty)  // Insure unique.
+  let pending = state[entity].pending
   dirties.add(id)
-  return Object.assign({}, state, {[entity]: {status: state[entity].status, dirty: [...dirties]}})
+  return Object.assign({}, state,
+    {[entity]: {status: state[entity].status, dirty: [...dirties], pending}})
+}
+
+// --------------------------------------------------------
+// Remove an id from the pending field of an entity, leaving
+// other fields unchanged.
+// --------------------------------------------------------
+const removePending = (entity, state, id) => {
+  let pendings = new Set(state[entity].pending)  // Insure unique.
+  let dirty = state[entity].dirty
+  pendings.delete(id)
+  return Object.assign({}, state,
+    {[entity]: {status: state[entity].status, pending: [...pendings], dirty}})
 }
 
 // --------------------------------------------------------
 // Remove an id from the dirty field of an entity, leaving
-// status field unchanged.
+// other fields unchanged.
 // --------------------------------------------------------
 const removeDirty = (entity, state, id) => {
   let dirties = new Set(state[entity].dirty)  // Insure unique.
+  let pending = state[entity].pending
   dirties.delete(id)
-  return Object.assign({}, state, {[entity]: {status: state[entity].status, dirty: [...dirties]}})
+  return Object.assign({}, state,
+    {[entity]: {status: state[entity].status, dirty: [...dirties], pending}})
 }
 
 // --------------------------------------------------------
 // Tracks data status of entities.
 // status: NOT_LOADED | LOADING | LOADED | SAVING
-// dirty: array of ids that are dirty for a table.
+// pending: array of ids that are pending a save confirmation
+//          from the server for a table.
+// dirty: array of ids that other clients have changed that
+//        we have not refreshed from the server yet.
 // --------------------------------------------------------
 const status = (state = DEFAULT_STATUS, action) => {
   let newState
   switch (action.type) {
     case LOAD_ALL_USERS_REQUEST:
-      return setStatus('users', state, LOADING)
+      return setStatus('user', state, LOADING)
     case LOAD_ALL_USERS_SUCCESS:
-      return setStatus('users', state, LOADED)
+      return setStatus('user', state, LOADED)
     case LOAD_ALL_USERS_FAILURE:
-      return setStatus('users', state, NOT_LOADED)
+      return setStatus('user', state, NOT_LOADED)
 
     case SAVE_USER_REQUEST:
-      newState = setStatus('users', state, SAVING)
+      newState = setStatus('user', state, SAVING)
       if (action.meta && action.meta.hasOwnProperty('id')) {
         const id = action.meta.id
-        newState = addDirty('users', newState, id)
+        newState = addPending('user', newState, id)
       }
       return newState
     case SAVE_USER_SUCCESS:
-      newState = setStatus('users', state, LOADED)
+      newState = setStatus('user', state, LOADED)
       if (action.meta && action.meta.hasOwnProperty('id')) {
         const id = action.meta.id
-        newState = removeDirty('users', newState, id)
+        newState = removePending('user', newState, id)
       }
       return newState
     case SAVE_USER_FAILURE:
-      return setStatus('users', state, LOADED)
+      // Should set status back to LOADED but make sure id is still in pending.
+      newState = setStatus('user', state, LOADED)
+      if (action.meta && action.meta.hasOwnProperty('id')) {
+        const id = action.meta.id
+        newState = addPending('user', newState, id)
+      }
+      return newState
+
+    case DATA_CHANGE:
+      return addDirty(action.table, state, action.id)
 
     default:
       return state
