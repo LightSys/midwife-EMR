@@ -29,7 +29,7 @@ export const selectUser = (userId) => {
 export const loadAllUsersRoles = () => {
   return makeGetAction(
     LOAD_ALL_USERS_SET,                       // types
-    (state) => isEmpty(state.entities.users), // test
+    (state) => isEmpty(state.entities.user),  // test
     'user',                                   // path
     Schemas.USER_ARRAY                        // schema
   )

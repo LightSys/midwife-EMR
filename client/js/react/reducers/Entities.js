@@ -22,29 +22,29 @@ import {
 const DEFAULT_ENTITIES = {
   loading: false,
   saving: false,
-  users: {},
-  roles: {},
-  patients: {},
-  pregnancies: {},
-  riskCodes: {},
-  risks: {},
-  vaccinations: {},
-  vaccinationTypes: {},
-  healthTeachings: {},
-  medications: {},
-  medicationTypes: {},
-  pregnancyHistories: {},
-  eventTypes: {},
-  events: {},
-  prenatalExams: {},
-  labSuites: {},
-  labTests: {},
-  labTestValues: {},
-  labTestResults: {},
-  referrals: {},
-  schedules: {},
-  pregnoteTypes: {},
-  pregnotes: {}
+  user: {},
+  role: {},
+  patient: {},
+  pregnancy: {},
+  riskCode: {},
+  risk: {},
+  vaccination: {},
+  vaccinationType: {},
+  healthTeaching: {},
+  medication: {},
+  medicationType: {},
+  pregnancyHistory: {},
+  eventType: {},
+  event: {},
+  prenatalExam: {},
+  labSuite: {},
+  labTest: {},
+  labTestValue: {},
+  labTestResult: {},
+  referral: {},
+  schedule: {},
+  pregnoteType: {},
+  pregnote: {}
 }
 
 const entities = (state = DEFAULT_ENTITIES, action) => {
@@ -54,21 +54,21 @@ const entities = (state = DEFAULT_ENTITIES, action) => {
       return Object.assign({}, state, {loading: true})
     case LOAD_ALL_USERS_SUCCESS:
       newState = Object.assign({}, state, {loading: false})
-      newState.users = action.payload.json.entities.users
-      newState.roles = action.payload.json.entities.roles
+      newState.user = action.payload.json.entities.user
+      newState.role = action.payload.json.entities.role
       return newState
     case LOAD_ALL_USERS_FAILURE:
       return Object.assign({}, state, {loading: false})
 
     case SAVE_USER_REQUEST:
       // Assumes optimist update.
-      let users = Object.assign({}, state.users)
+      let user = Object.assign({}, state.user)
       if (action.optimist && action.payload.data &&
           action.payload.data.hasOwnProperty('id')) {
         const id = action.payload.data.id
-        users[id] = action.payload.data
+        user[id] = action.payload.data
       }
-      return Object.assign({}, state, {users: users, saving: true})
+      return Object.assign({}, state, {user: user, saving: true})
     case SAVE_USER_SUCCESS:
       // Assumes user data already saved with optimist.
       return Object.assign({}, state, {saving: false})

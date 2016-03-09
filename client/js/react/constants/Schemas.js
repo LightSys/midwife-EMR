@@ -3,11 +3,11 @@ import {Schema, arrayOf, normalize} from 'normalizr'
 // --------------------------------------------------------
 // Schemas.
 // --------------------------------------------------------
-const userSchema = new Schema('users', {
+const userSchema = new Schema('user', {
   idAttribute: 'id'
 })
 
-const roleSchema = new Schema('roles', {
+const roleSchema = new Schema('role', {
   idAttribute: 'id'
 })
 
