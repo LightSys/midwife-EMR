@@ -17,11 +17,9 @@ import {
 } from '../constants/ActionTypes'
 
 // --------------------------------------------------------
-// Default values.
+// Default values. Exported for the sake of testing.
 // --------------------------------------------------------
-const DEFAULT_ENTITIES = {
-  loading: false,
-  saving: false,
+export const DEFAULT_ENTITIES = {
   user: {},
   role: {},
   patient: {},
@@ -50,15 +48,11 @@ const DEFAULT_ENTITIES = {
 const entities = (state = DEFAULT_ENTITIES, action) => {
   let newState
   switch (action.type) {
-    case LOAD_ALL_USERS_REQUEST:
-      return Object.assign({}, state, {loading: true})
     case LOAD_ALL_USERS_SUCCESS:
-      newState = Object.assign({}, state, {loading: false})
+      newState = Object.assign({}, state)
       newState.user = action.payload.json.entities.user
       newState.role = action.payload.json.entities.role
       return newState
-    case LOAD_ALL_USERS_FAILURE:
-      return Object.assign({}, state, {loading: false})
 
     case SAVE_USER_REQUEST:
       // Assumes optimist update.
@@ -68,10 +62,7 @@ const entities = (state = DEFAULT_ENTITIES, action) => {
         const id = action.payload.data.id
         user[id] = action.payload.data
       }
-      return Object.assign({}, state, {user: user, saving: true})
-    case SAVE_USER_SUCCESS:
-      // Assumes user data already saved with optimist.
-      return Object.assign({}, state, {saving: false})
+      return Object.assign({}, state, {user: user})
 
     default:
       return state
