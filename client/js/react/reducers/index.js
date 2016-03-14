@@ -15,6 +15,7 @@ import optimist from 'redux-optimist'
 import selected from './Selected'
 import entities from './Entities'
 import status from './Status'
+import notifications from './Notifications'
 
 // --------------------------------------------------------
 // Common Actions and Reducers across multiple domains.
@@ -67,13 +68,14 @@ const cookies = (state = {}, action) => {
 // to fail. As a hack, I renamed .babelrc to RENAMED_bablerc.
 // --------------------------------------------------------
 const RootReducer = optimist(combineReducers({
-  status,
-  entities,
-  siteMessage,
-  systemMessage,
   authentication,
   cookies,
-  selected
+  entities,
+  notifications,
+  selected,
+  siteMessage,
+  status,
+  systemMessage
 }))
 
 export default RootReducer

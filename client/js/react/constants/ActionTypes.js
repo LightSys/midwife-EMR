@@ -18,6 +18,16 @@ export const SAVE_USER_SET = [SAVE_USER_REQUEST, SAVE_USER_SUCCESS, SAVE_USER_FA
 // We are informed by the server that another client has changed some data.
 export const DATA_CHANGE = 'DATA_CHANGE'
 
+// --------------------------------------------------------
+// Notifications.
+// --------------------------------------------------------
+export const ADD_NOTIFICATION = 'ADD_NOTIFICATION'
+export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION'
+
+// --------------------------------------------------------
+// Delayed actions.
+// --------------------------------------------------------
+export const DELAY = 'DELAY'
 
 // --------------------------------------------------------
 // Miscellaneous.

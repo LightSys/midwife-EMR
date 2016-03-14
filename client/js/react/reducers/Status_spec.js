@@ -1,8 +1,7 @@
 import expect from 'expect'
 import _ from 'underscore'
 
-import reducer from './Status'
-import {DEFAULT_STATUS} from './Status'
+import reducer, {DEFAULT_STATUS} from './Status'
 
 import {
   LOAD_ALL_USERS_REQUEST,

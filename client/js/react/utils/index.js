@@ -50,3 +50,15 @@ export const getViewportSize = (w=window) => {
   return {w: d.body.clientWidth, h: d.body.clientWidth};
 }
 
+
+/* --------------------------------------------------------
+ * getUniqueId()
+ *
+ * Returns an unitque id for use with redux-optimist or
+ * whatever else needs a non-repeating number.
+ * -------------------------------------------------------- */
+let nextUniqueId = 1
+export const getUniqueId = () => {
+  return nextUniqueId++
+}
+

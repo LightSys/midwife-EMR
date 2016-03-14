@@ -1,8 +1,6 @@
 import React, {Component, PropTypes} from 'react'
 import {map} from 'underscore'
 
-import {saveUser} from '../actions/UsersRoles'
-
 import {
   BP_SMALL,
   BP_MEDIUM,
@@ -155,6 +153,10 @@ class UserEditClass extends Component {
           evt.preventDefault()
           submitting = true   // TODO: manage this.
           this.props.saveUser(Object.assign({}, this.state.user))
+          this.props.removeNotification(
+            this.props.addSuccessNotification('User saved.').payload.id,
+            3000
+          )
           this.props.selectUser()               // unset the user
           this.context.router.push('/users')    // go back to userlist
         }}>
@@ -202,6 +204,10 @@ class UserEditClass extends Component {
           evt.preventDefault()
           submitting = true   // TODO: manage this.
           this.props.saveUser(Object.assign({}, this.state.user))
+          this.props.removeNotification(
+            this.props.addSuccessNotification('User saved.').payload.id,
+            3000
+          )
           this.props.selectUser()               // unset the user
           this.context.router.push('/users')    // go back to userlist
         }}>
@@ -246,6 +252,10 @@ class UserEditClass extends Component {
           evt.preventDefault()
           submitting = true   // TODO: manage this.
           this.props.saveUser(Object.assign({}, this.state.user))
+          this.props.removeNotification(
+            this.props.addSuccessNotification('User saved.').payload.id,
+            3000
+          )
           this.props.selectUser()               // unset the user
           this.context.router.push('/users')    // go back to userlist
         }}>

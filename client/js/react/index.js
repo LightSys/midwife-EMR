@@ -11,6 +11,7 @@ ES6Promise.polyfill()
 
 import reducers from './reducers'
 import dataMiddleware from './middleware/data'
+import delayMiddleware from './middleware/delay'
 import Comm from './services/comm'
 import {initializeAuth} from './services/authentication'
 import routes from './routes'
@@ -40,6 +41,7 @@ const createMiddlewareStore = compose(
   applyMiddleware(
     thunk,
     dataMiddleware,
+    delayMiddleware,
     logger)
   , window.devToolsExtension ? window.devToolsExtension() : f => f
   )(createStore)
