@@ -1,7 +1,9 @@
 import React, {Component} from 'react'
+import {connect} from 'react-redux'
 import {Link} from 'react-router'
 
 import TopMenu from './TopMenu'
+import Notification from './Notification'
 import {cookies} from '../services/authentication'
 
 // Holds configuration data passed from the outside on initial load.
@@ -35,6 +37,7 @@ class App extends Component {
     return (
       <div>
         <TopMenu siteTitle={siteTitle} menuLeft={menuLeft} menuRight={menuRight} />
+        <Notification messages={this.props.notifications} />
         <div className='container'>
           {this.props.children}
         </div>
@@ -43,5 +46,11 @@ class App extends Component {
   }
 }
 
-export default App
+const mapPropsToState = (state) => {
+  return {
+    notifications: state.notifications
+  }
+}
+
+export default connect(mapPropsToState)(App)
 

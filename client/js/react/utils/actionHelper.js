@@ -1,4 +1,5 @@
 import {API_ROOT} from '../constants/index'
+import {getUniqueId} from '../utils/index'
 
 // --------------------------------------------------------
 // Default options used for all server calls.
@@ -6,16 +7,6 @@ import {API_ROOT} from '../constants/index'
 let options = {
   credentials: 'same-origin',   // Applies _csrf and connection.sid cookies.
   method: 'GET'
-}
-
-/* --------------------------------------------------------
- * getTransactionId()
- *
- * Returns a transaction id for use with redux-optimist.
- * -------------------------------------------------------- */
-let nextTransactionId = 1
-const getTransactionId = () => {
-  return nextTransactionId++
 }
 
 export const makeGetAction = (types, test, path, schema, opts) => {
@@ -46,7 +37,7 @@ export const makePostAction = (types, test, path, schema, opts, data, meta) => {
     }
     callOpts.body = JSON.stringify(Object.assign({}, data, {_csrf}))
     const {id} = data
-    let metaObj = Object.assign({}, meta, {dataMiddleware: true, optimistId: getTransactionId()})
+    let metaObj = Object.assign({}, meta, {dataMiddleware: true, optimistId: getUniqueId()})
     dispatch({
       payload: {
         types: types,

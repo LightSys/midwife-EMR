@@ -2,6 +2,15 @@ import React, {Component} from 'react'
 import {connect} from 'react-redux'
 
 import {selectUser, saveUser} from '../actions/UsersRoles'
+
+import {
+  addSuccessNotification,
+  addWarningNotification,
+  addInfoNotification,
+  addDangerNotification,
+  removeNotification
+} from '../actions/Notifications'
+
 import {loadAllUsersRoles} from '../actions/UsersRoles'
 import {UserList as UL} from './UserList'
 import {UserEdit as UE} from './UserEdit'
@@ -32,6 +41,11 @@ export const UserList = connect(mapStateToPropsUserList, {
 
 export const UserEdit = connect(mapStateToPropsUserEdit, {
   selectUser,
-  saveUser
+  saveUser,
+  addSuccessNotification,
+  addWarningNotification,
+  addInfoNotification,
+  addDangerNotification,
+  removeNotification
 })(UE)
 

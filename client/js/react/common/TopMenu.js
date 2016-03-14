@@ -1,23 +1,6 @@
 import React, {Component} from 'react'
 import {IndexLink} from 'react-router'
 
-//<li className="active" role="presentation">
-  //<a href="#"> <span className="glyphicon glyphicon-search"></span></a>
-//</li>
-//<li role="presentation"><a href="#">New </a></li>
-//<li role="presentation"><a href="#">Checkout </a></li>
-//<li role="presentation"><a href="#">Reports </a></li>
-//<li role="presentation"><a href="#">Priority</a></li>
-
-//<li role="presentation"><a href="#">version 0.72</a></li>
-//<li className="dropdown"><a className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false" href="#">Profile <span className="caret"></span></a>
-  //<ul className="dropdown-menu" role="menu">
-    //<li><a href="#">First Item</a></li>
-    //<li><a href="#">Second Item</a></li>
-    //<li><a href="#">Third Item</a></li>
-  //</ul>
-//</li>
-
 class TopMenu extends Component {
   constructor(props) {
     super(props)
