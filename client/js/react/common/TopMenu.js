@@ -1,6 +1,8 @@
 import React, {Component} from 'react'
 import {IndexLink} from 'react-router'
 
+import {removeClass} from '../utils/index'
+
 class TopMenu extends Component {
   constructor(props) {
     super(props)
@@ -8,17 +10,35 @@ class TopMenu extends Component {
   }
 
   render() {
+    let onClickHandler = (e) => {
+      // Collapse the menu after a selection. 'in' is a Bootstrap class.
+      removeClass(this._navcol1, 'in')
+    }
     const menuLeftItems = this.props.menuLeft.map((m, idx) => {
-      return <li key={idx} role='presentation'><IndexLink to={m.url}>{m.label}</IndexLink></li>
+      return (
+        <li key={idx} role='presentation'>
+          <IndexLink to={m.url} onClick={onClickHandler}>{m.label}</IndexLink>
+        </li>
+      )
     })
     const menuRightItems = this.props.menuRight.map((m, idx) => {
       // TODO: need to handle drop downs too.
       // TODO: handle #version better than this.
+      let toLink = m.url
       if (m.url === '#version') {
-        return <li key={idx} role='presentation'><IndexLink onClick={(e) => e.preventDefault()} to='/'>{m.label}</IndexLink></li>
-      } else {
-        return <li key={idx} role='presentation'><IndexLink to={m.url}>{m.label}</IndexLink></li>
+        onClickHandler = (e) => {e.preventDefault()}
+        toLink = '/'
       }
+      let innerNode = (
+        <IndexLink to={toLink} onClick={onClickHandler}>
+          {m.label}
+        </IndexLink>
+      )
+      return (
+        <li key={idx} role='presentation'>
+          {innerNode}
+        </li>
+      )
     })
     return (
       <nav className="navbar navbar-default">
@@ -35,7 +55,7 @@ class TopMenu extends Component {
               <span className="icon-bar"></span>
             </button>
           </div>
-          <div className="collapse navbar-collapse" id="navcol-1">
+          <div ref={(c) => this._navcol1 = c} className="collapse navbar-collapse" id="navcol-1">
             <ul className="nav navbar-nav">
               {menuLeftItems}
             </ul>
