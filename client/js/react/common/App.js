@@ -37,7 +37,11 @@ class App extends Component {
     return (
       <div>
         <TopMenu siteTitle={siteTitle} menuLeft={menuLeft} menuRight={menuRight} />
-        <Notification messages={this.props.notifications} />
+        <div className='row'>
+          <div className='col-xs-offset-6 col-xs-6'>
+            <Notification messages={this.props.notifications} />
+          </div>
+        </div>
         <div className='container'>
           {this.props.children}
         </div>
