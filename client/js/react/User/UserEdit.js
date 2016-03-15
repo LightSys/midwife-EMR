@@ -131,161 +131,147 @@ class UserEditClass extends Component {
     console.log('breakpoint: ', this.breakpoint)
   }
 
-  renderSmall() {
-    let submitting = false
-    const flds = map(fldObjs, (fld, fldName) => {
-      let options
-      if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName,
-        this.state.user[fldName], this.handleChange(fldName), options)
-    })
-    const row1 = flds.slice(0, 2)
-    const row2 = flds.slice(2, 4)
-    const row3 = flds.slice(4, 6)
-    const row4 = flds.slice(6, 8)
-    const row5 = flds.slice(8, 10)
-    const row6 = flds.slice(10, 12)
-    const hidden = flds.slice(12)
+  renderSmall(flds) {
     return (
       <div>
-        <h3>Edit User</h3>
-        <form onSubmit={(evt) => {
-          evt.preventDefault()
-          submitting = true   // TODO: manage this.
-          this.props.saveUser(Object.assign({}, this.state.user))
-          this.props.removeNotification(
-            this.props.addSuccessNotification('User saved.').payload.id,
-            3000
-          )
-          this.props.selectUser()               // unset the user
-          this.context.router.push('/users')    // go back to userlist
-        }}>
-          <div className='row'>{row1}</div>
-          <div className='row'>{row2}</div>
-          <div className='row'>{row3}</div>
-          <div className='row'>{row4}</div>
-          <div className='row'>{row5}</div>
-          <div className='row'>{row6}</div>
-          <div className='row'>
-            <div className='col-xs-6'>
-              {hidden}
-              <button type='submit' disabled={submitting}>
-                Save
-              </button>
-            </div>
-            <div className='col-xs-6'>
-              <button type='button' onClick={this.handleCancel}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
+        <div className='row'>
+          {flds[0]}
+          {flds[1]}
+        </div>
+        <div className='row'>
+          {flds[2]}
+          {flds[3]}
+        </div>
+        <div className='row'>
+          {flds[4]}
+          {flds[5]}
+        </div>
+        <div className='row'>
+          {flds[6]}
+          {flds[7]}
+        </div>
+        <div className='row'>
+          {flds[8]}
+          {flds[9]}
+        </div>
+        <div className='row'>
+          {flds[10]}
+          {flds[11]}
+        </div>
       </div>
     )
   }
 
-  renderMedium() {
-    let submitting = false
-    const flds = map(fldObjs, (fld, fldName) => {
-      let options
-      if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName,
-        this.state.user[fldName], this.handleChange(fldName), options)
-    })
-    const row1 = flds.slice(0, 3)
-    const row2 = flds.slice(3, 6)
-    const row3 = flds.slice(6, 9)
-    const row4 = flds.slice(9, 12)
-    const hidden = flds.slice(12)
+  renderMedium(flds) {
     return (
       <div>
-        <h3>Edit User</h3>
-        <form onSubmit={(evt) => {
-          evt.preventDefault()
-          submitting = true   // TODO: manage this.
-          this.props.saveUser(Object.assign({}, this.state.user))
-          this.props.removeNotification(
-            this.props.addSuccessNotification('User saved.').payload.id,
-            3000
-          )
-          this.props.selectUser()               // unset the user
-          this.context.router.push('/users')    // go back to userlist
-        }}>
-          <div className='row'>{row1}</div>
-          <div className='row'>{row2}</div>
-          <div className='row'>{row3}</div>
-          <div className='row'>{row4}</div>
-          <div className='row'>
-            <div className='col-xs-6'>
-              {hidden}
-              <button type='submit' disabled={submitting}>
-                Save
-              </button>
-            </div>
-            <div className='col-xs-6'>
-              <button type='button' onClick={this.handleCancel}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
+        <div className='row'>
+          {flds[0]}
+          {flds[1]}
+          {flds[2]}
+        </div>
+        <div className='row'>
+          {flds[3]}
+          {flds[4]}
+          {flds[5]}
+        </div>
+        <div className='row'>
+          {flds[6]}
+          {flds[7]}
+          {flds[8]}
+        </div>
+        <div className='row'>
+          {flds[9]}
+          {flds[10]}
+          {flds[11]}
+        </div>
       </div>
     )
   }
 
-  renderLarge() {
-    let submitting = false
-    const flds = map(fldObjs, (fld, fldName) => {
-      let options
-      if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
-      return fld.func(3, fld.lbl, fld.ph, fld.type, fldName,
-        this.state.user[fldName], this.handleChange(fldName), options)
-    })
-    const row1 = flds.slice(0, 4)
-    const row2 = flds.slice(4, 8)
-    const row3 = flds.slice(8, 12)
-    const hidden = flds.slice(12)
+  renderLarge(flds) {
     return (
       <div>
-        <h3>Edit User</h3>
-        <form onSubmit={(evt) => {
-          evt.preventDefault()
-          submitting = true   // TODO: manage this.
-          this.props.saveUser(Object.assign({}, this.state.user))
-          this.props.removeNotification(
-            this.props.addSuccessNotification('User saved.').payload.id,
-            3000
-          )
-          this.props.selectUser()               // unset the user
-          this.context.router.push('/users')    // go back to userlist
-        }}>
-          <div className='row'>{row1}</div>
-          <div className='row'>{row2}</div>
-          <div className='row'>{row3}</div>
-          <div className='row'>
-            <div className='col-xs-3'>
-              {hidden}
-              <button type='submit' disabled={submitting}>
-                Save
-              </button>
-            </div>
-            <div className='col-xs-3'>
-              <button type='button' onClick={this.handleCancel}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
+        <div className='row'>
+          {flds[0]}
+          {flds[1]}
+          {flds[2]}
+          {flds[3]}
+        </div>
+        <div className='row'>
+          {flds[4]}
+          {flds[5]}
+          {flds[6]}
+          {flds[7]}
+        </div>
+        <div className='row'>
+          {flds[8]}
+          {flds[9]}
+          {flds[10]}
+          {flds[11]}
+        </div>
       </div>
     )
   }
 
   render() {
+    // Determine how many columns to render adaptively.
+    let renderFunc
+    let columnWidth   // Using Bootstrap grid system.
     switch (this.breakpoint) {
-      case BP_SMALL:    return this.renderSmall()
-      case BP_MEDIUM:   return this.renderMedium()
-      default:          return this.renderLarge()
+      case BP_SMALL:
+        renderFunc = this.renderSmall
+        columnWidth = 6
+        break
+      case BP_MEDIUM:
+        renderFunc = this.renderMedium
+        columnWidth = 4
+        break
+      default:
+        renderFunc = this.renderLarge
+        columnWidth = 3
     }
+    const columnClass = `col-xs-${columnWidth}`
+
+    // Populate the fields.
+    const flds = map(fldObjs, (fld, fldName) => {
+      let options
+      if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
+      return fld.func(columnWidth, fld.lbl, fld.ph, fld.type, fldName,
+        this.state.user[fldName], this.handleChange(fldName), options)
+    })
+    const hidden = flds.slice(12)
+
+    return (
+      <div>
+        <h3>Edit User</h3>
+        <form onSubmit={(evt) => {
+          evt.preventDefault()
+          this.props.saveUser(Object.assign({}, this.state.user))
+          this.props.removeNotification(
+            this.props.addSuccessNotification('User saved.').payload.id,
+            3000
+          )
+          this.props.selectUser()               // unset the user
+          this.context.router.push('/users')    // go back to userlist
+        }}>
+          {renderFunc(flds)}
+          <div className='row'>
+            <div className={columnClass}>
+              {hidden}
+              <button className='btn btn-primary' type='submit'>
+                Save
+              </button>
+            </div>
+            <div className={columnClass}>
+              <button className='btn btn-default' type='button' onClick={this.handleCancel}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    )
   }
 }
 
