@@ -62,3 +62,22 @@ export const getUniqueId = () => {
   return nextUniqueId++
 }
 
+/* --------------------------------------------------------
+ * removeClass()
+ *
+ * Remove the specified class from the specified element,
+ * if it exists. Note that this modifies the element that
+ * is passed.
+ *
+ * param       element
+ * param       className
+ * return      undefined
+ * -------------------------------------------------------- */
+export const removeClass = (element, className) => {
+  element.className = element
+    .className
+    .split(' ')
+    .filter((c) => {return c !== className})
+    .join(' ')
+}
+
