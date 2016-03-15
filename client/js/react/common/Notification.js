@@ -1,5 +1,7 @@
 import React, {Component} from 'react'
 
+require('./Notification.css')
+
 class Notification extends Component {
   /* --------------------------------------------------------
    * render()
@@ -15,7 +17,7 @@ class Notification extends Component {
    * -------------------------------------------------------- */
   render () {
     const msgs = this.props.messages.map((m, idx) => {
-      const classes = `alert alert-${m.msgType}`
+      const classes = `Notification alert alert-${m.msgType}`
       return (
         <div key={idx} className={classes}>
           {m.msg}
