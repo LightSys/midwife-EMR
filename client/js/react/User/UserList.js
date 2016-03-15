@@ -62,7 +62,7 @@ export class UserList extends Component {
         <h3>Search</h3>
         <form className='form-horizontal' onSubmit={(e) => e.preventDefault()}>
           <div className='form-group row'>
-            <div className='col-xs-6 col-sm-6 col-md-6 col-lg-6'>
+            <div className='col-xs-12 col-sm-8 col-md-6 col-lg-6'>
               <input
                 ref={(c) => this._searchInput = c}
                 type='text'
