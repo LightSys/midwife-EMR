@@ -53,7 +53,8 @@ export default ({dispatch, getState}) => next => action => {
     call,
     test,
     schema,
-    data
+    data,
+    notifyUser
   } = action.payload
 
   // --------------------------------------------------------
@@ -185,14 +186,16 @@ export default ({dispatch, getState}) => next => action => {
       // --------------------------------------------------------
       // Notify user of success.
       // --------------------------------------------------------
-      let msg = 'Changes saved to server.'
-      dispatch(
-        removeNotification(
-          dispatch(
-            addSuccessNotification(msg)
-          ).payload.id, 3000
+      if (notifyUser) {
+        let msg = 'Changes saved to server.'
+        dispatch(
+          removeNotification(
+            dispatch(
+              addSuccessNotification(msg)
+            ).payload.id, 3000
+          )
         )
-      )
+      }
     })
 }
 
