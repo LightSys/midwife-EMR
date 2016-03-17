@@ -17,7 +17,8 @@ export const makeGetAction = (types, test, path, schema, opts) => {
         types: types,
         test: test,
         call: () => fetch(`${API_ROOT}/${path}`, callOpts),
-        schema: schema
+        schema: schema,
+        notifyUser: false
       },
       meta: {
         dataMiddleware: true
@@ -29,7 +30,7 @@ export const makeGetAction = (types, test, path, schema, opts) => {
 export const makePostAction = (types, test, path, schema, opts, data, meta) => {
   const callOpts = Object.assign({}, options, opts)
   return (dispatch, getState) => {
-    const {_csrf} = getState().cookies
+    const {_csrf} = getState().authentication.cookies
     callOpts.method = 'POST'
     callOpts.headers = {
       'Accept': 'application/json',
@@ -43,6 +44,7 @@ export const makePostAction = (types, test, path, schema, opts, data, meta) => {
         types: types,
         call: () => fetch(`${API_ROOT}/${path}/${id}`, callOpts),
         schema: schema,
+        notifyUser: true,
         data: data
       },
       meta: metaObj
