@@ -248,10 +248,6 @@ class UserEditClass extends Component {
         <form onSubmit={(evt) => {
           evt.preventDefault()
           this.props.saveUser(Object.assign({}, this.state.user))
-          this.props.removeNotification(
-            this.props.addSuccessNotification('User saved.').payload.id,
-            3000
-          )
           this.props.selectUser()               // unset the user
           this.context.router.push('/users')    // go back to userlist
         }}>
