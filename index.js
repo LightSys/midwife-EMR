@@ -30,6 +30,7 @@ var express = require('express')
   , setRoleInfo = require('./auth').setRoleInfo(app)    // requires the app object
   , clearRoleInfo = require('./auth').clearRoleInfo(app)    // requires the app object
   , auth = require('./auth').auth
+  , spaAuth = require('./auth').spaAuth
   , SessionStore = require('express-mysql-session')
   , MySQL = require('mysql')                            // for conn pool for sessions
   , i18n = require('i18n-abide')
@@ -63,6 +64,7 @@ var express = require('express')
   , logWarn = require('./util').logWarn
   , logError = require('./util').logError
   , common = []
+  , spaCommon = []
   , attending = []
   , revision = 0
   , tmpRevision = 0
@@ -244,6 +246,7 @@ var logDevice = function(req, res, next) {
  * logRoute()
  *
  * Logs a bit about the route being accessed by the user.
+ * This does not imply that the route has been approved yet.
  * -------------------------------------------------------- */
 var logRoute = function(req, res, next) {
   var msg = ''
@@ -308,6 +311,8 @@ app.use(function(req, res, next) {
     console.log(req.headers);
     console.log('-----');
     console.log(req.body);
+    console.log('============================');
+    console.log('isAuthenticated(): ' + req.isAuthenticated());
     console.log('============================');
   }
   next();
@@ -375,6 +380,8 @@ if (app.get('env') === 'production') {
 // attending: routes a attending can use without a supervisor set.
 // --------------------------------------------------------
 common.push(logRoute, logDevice, auth, setRoleInfo, i18nLocals);
+
+spaCommon.push(logRoute, logDevice, spaAuth, setRoleInfo, i18nLocals);
 
 // --------------------------------------------------------
 // Login and logout
@@ -628,7 +635,7 @@ app.get(cfg.path.apiHistory, common,
     inRoles(['supervisor']), api.history.get);
 
 // User/Role Management
-app.all(cfg.path.apiUser, common, inRoles(['administrator']), api.userRoles.user);
+app.all(cfg.path.apiUser, spaCommon, inRoles(['administrator']), api.userRoles.user);
 
 // --------------------------------------------------------
 // Error handling.

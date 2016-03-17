@@ -1,9 +1,9 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * util.js
  *
  * Utility functions.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 var moment = require('moment')
@@ -79,6 +79,7 @@ var writeLog = function(msg, logType) {
  * -------------------------------------------------------- */
 var logInfo = function(msg) {
   writeLog(msg, INFO);
+  //console.trace('TRACE');
 };
 
 /* --------------------------------------------------------
@@ -299,7 +300,7 @@ var getAbbr = function(key) {
  *
  * param      dte
  * param      format
- * return     boolean 
+ * return     boolean
  * -------------------------------------------------------- */
 var isValidDate = function(dte, format) {
   var m;
