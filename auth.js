@@ -8,6 +8,7 @@
 
 var _ = require('underscore')
   , cfg = require('./config')
+  , logInfo = require('./util').logInfo
   ;
 
 /* --------------------------------------------------------
@@ -133,11 +134,6 @@ var inRoles = function(roles) {
  * auth()
  *
  * Is the user already authenticated?
- *
- * param       req
- * param       res
- * param       next
- * return      undefined
  * -------------------------------------------------------- */
 function auth(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
@@ -148,12 +144,25 @@ function auth(req, res, next) {
   res.redirect(cfg.path.login);
 }
 
+/* --------------------------------------------------------
+ * spaAuth()
+ *
+ * Like auth(), but returns a 401 if the user is not
+ * authenticated.
+ * -------------------------------------------------------- */
+function spaAuth(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.statusCode = 401;
+  res.end();
+  logInfo('Unauthorized: [' + req.method + '] ' + req.url);
+}
 
 module.exports = {
   inRoles: inRoles
   , setRoleInfo: setRoleInfo
   , clearRoleInfo: clearRoleInfo
   , auth: auth
+  , spaAuth: spaAuth
   , hasRole: hasRole
 };
 
