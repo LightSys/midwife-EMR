@@ -3,6 +3,14 @@ import {omit, isEmpty} from 'underscore'
 import {normalize} from 'normalizr'
 import {BEGIN, COMMIT, REVERT} from 'redux-optimist'
 
+import {
+  addSuccessNotification,
+  addWarningNotification,
+  addInfoNotification,
+  addDangerNotification,
+  removeNotification
+} from '../actions/Notifications'
+
 // --------------------------------------------------------
 // Create the next action without the elements particular
 // to a dataMiddleware call.
@@ -87,14 +95,17 @@ export default ({dispatch, getState}) => next => action => {
   // Execute the call function passed in the action.
   // --------------------------------------------------------
   let error = false
+  let errorCode = 200
   let jsonError = false
   return call()
     .then(response => {
+      console.log(`status: ${response.status}, statusText: ${response.statusText}`)
       if (! response.ok) {
         // --------------------------------------------------------
         // Flag as an unrecoverable error and throw to the catch below.
         // --------------------------------------------------------
         error = true
+        errorCode = parseInt(response.status, 10)
         throw response.statusText
       }
       // Extract JSON from the response, if available.
@@ -109,6 +120,7 @@ export default ({dispatch, getState}) => next => action => {
     .catch((err) => {
       // --------------------------------------------------------
       // Handle unrecoverable server error.
+      // First, rollback the optimistic changes, if any.
       // --------------------------------------------------------
       console.log(`Server error during call for ${requestType}`, err)
       let nextAction
@@ -118,6 +130,31 @@ export default ({dispatch, getState}) => next => action => {
         nextAction = makeNextAction(failureType, action.payload, action.meta)
       }
       dispatch(nextAction)
+
+      // --------------------------------------------------------
+      // Second, notify the user that there was a problem.
+      // --------------------------------------------------------
+      let msg = 'Sorry, a server error occurred.'
+      if (errorCode === 401) msg = 'Session expired. Please login again.'
+      dispatch(
+        removeNotification(
+          dispatch(
+            addWarningNotification(msg)
+          ).payload.id, 3000
+        )
+      )
+
+      // --------------------------------------------------------
+      // TODO:
+      // 3. Plan out actions/reducers and whether to discard current
+      // authentication state.
+      // 4. Plan out how requests are queued and replayed after
+      // login is successful.
+      // 5. Plan out how login modal will work.
+      // 6. Do it all.
+      // --------------------------------------------------------
+
+
       // Set empty objects so that destructurings below do not die.
       return {json: {}, response: {}}
     })
@@ -144,6 +181,18 @@ export default ({dispatch, getState}) => next => action => {
         nextAction = makeNextAction(successType, {json}, action.meta)
       }
       dispatch(nextAction)
+
+      // --------------------------------------------------------
+      // Notify user of success.
+      // --------------------------------------------------------
+      let msg = 'Changes saved to server.'
+      dispatch(
+        removeNotification(
+          dispatch(
+            addSuccessNotification(msg)
+          ).payload.id, 3000
+        )
+      )
     })
 }
 
