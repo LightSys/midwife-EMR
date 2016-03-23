@@ -1,5 +1,9 @@
-import {setCookies} from '../actions/index'
+import {
+  setCookies,
+  setIsAuthenticated
+} from '../actions/index'
 
+// Our singleton reference to the Redux store.
 let theStore = null;
 
 export const initializeAuth = (store) => {
@@ -10,8 +14,12 @@ export const cookies = (cookies) => {
   theStore.dispatch(setCookies(cookies))
 }
 
+export const initAuthenticated = (isAuthenticated) => {
+  theStore.dispatch(setIsAuthenticated(isAuthenticated))
+}
+
 export const isAuthenticated = () => {
-  const {authentication: {expiry, isAuthenticated: isAuthen}} = theStore.getState()
-  return isAuthen && expiry > Date.now()
+  const {authentication: {isAuthenticated: isAuthen}} = theStore.getState()
+  return isAuthen
 }
 

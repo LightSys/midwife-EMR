@@ -4,7 +4,10 @@ import {Link} from 'react-router'
 
 import TopMenu from './TopMenu'
 import Notification from './Notification'
-import {cookies} from '../services/authentication'
+import {
+  cookies,
+  initAuthenticated
+} from '../services/authentication'
 
 // Holds configuration data passed from the outside on initial load.
 let cfgData
@@ -25,6 +28,11 @@ class App extends Component {
     // Set the cookies in the store that are needed.
     // --------------------------------------------------------
     cookies(cfgData.cookies)
+
+    // --------------------------------------------------------
+    // Store whether the server considers the client authenticated.
+    // --------------------------------------------------------
+    initAuthenticated(cfgData.isAuthenticated)
   }
 
   render() {

@@ -10,8 +10,8 @@ import {
   DATA_CHANGE,
   SITE_MESSAGE,
   SYSTEM_MESSAGE,
-  AUTHENTICATION_UPDATE,
-  SET_COOKIES
+  SET_COOKIES,
+  SET_IS_AUTHENTICATED
 } from '../constants/ActionTypes'
 
 // --------------------------------------------------------
@@ -32,11 +32,17 @@ export const systemMessage = (msg) => {
   }
 }
 
-export const authenticationUpdate = ({authExpiry, isAuthenticated}) => {
+//export const authenticationUpdate = ({authExpiry, isAuthenticated}) => {
+  //return {
+    //type: AUTHENTICATION_UPDATE,
+    //isAuthenticated: isAuthenticated
+  //}
+//}
+
+export const setIsAuthenticated = (isAuthenticated) => {
   return {
-    type: AUTHENTICATION_UPDATE,
-    expiry: authExpiry,
-    isAuthenticated: isAuthenticated
+    type: SET_IS_AUTHENTICATED,
+    isAuthenticated
   }
 }
 

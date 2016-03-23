@@ -16,6 +16,7 @@ import selected from './Selected'
 import entities from './Entities'
 import status from './Status'
 import notifications from './Notifications'
+import authentication from './Authentication'
 
 // --------------------------------------------------------
 // Common Actions and Reducers across multiple domains.
@@ -42,24 +43,24 @@ const systemMessage = (state = {}, action) => {
   return state
 }
 
-const AUTHENTICATION_DEFAULT = {
-  expiry: 0,
-  isAuthenticated: false
-}
+//const AUTHENTICATION_DEFAULT = {
+  //expiry: 0,
+  //isAuthenticated: false
+//}
 
-const authentication = (state = AUTHENTICATION_DEFAULT, action) => {
-  if (action.type === AUTHENTICATION_UPDATE) {
-    return Object.assign({}, state, {expiry, isAuthenticated} = action)
-  }
-  return state;
-}
+//const authentication = (state = AUTHENTICATION_DEFAULT, action) => {
+  //if (action.type === AUTHENTICATION_UPDATE) {
+    //return Object.assign({}, state, {expiry, isAuthenticated} = action)
+  //}
+  //return state;
+//}
 
-const cookies = (state = {}, action) => {
-  if (action.type === SET_COOKIES) {
-    return Object.assign({}, state, action.cookies)
-  }
-  return state;
-}
+//const cookies = (state = {}, action) => {
+  //if (action.type === SET_COOKIES) {
+    //return Object.assign({}, state, action.cookies)
+  //}
+  //return state;
+//}
 
 // --------------------------------------------------------
 // TODO: resolve issue with node_modules/redux-optimist/.babelrc
@@ -69,7 +70,6 @@ const cookies = (state = {}, action) => {
 // --------------------------------------------------------
 const RootReducer = optimist(combineReducers({
   authentication,
-  cookies,
   entities,
   notifications,
   selected,
