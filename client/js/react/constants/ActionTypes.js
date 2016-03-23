@@ -30,9 +30,20 @@ export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION'
 export const DELAY = 'DELAY'
 
 // --------------------------------------------------------
+// Authentication related.
+// --------------------------------------------------------
+export const LOGIN_REQUESTED = 'LOGIN_REQUESTED'
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS'
+export const LOGIN_FAILURE = 'LOGIN_FAILURE'
+export const AUTHENTICATION_INIT = 'AUTHENTICATION_INIT'
+export const SET_COOKIES = 'SET_COOKIES'
+export const SET_IS_AUTHENTICATED = 'SET_IS_AUTHENTICATED'
+
+// Note: will deprecate AUTHENTICATION_UPDATE
+//export const AUTHENTICATION_UPDATE = 'AUTHENTICATION_UPDATE'
+
+// --------------------------------------------------------
 // Miscellaneous.
 // --------------------------------------------------------
 export const SITE_MESSAGE = 'SITE_MESSAGE'
 export const SYSTEM_MESSAGE = 'SYSTEM_MESSAGE'
-export const AUTHENTICATION_UPDATE = 'AUTHENTICATION_UPDATE'
-export const SET_COOKIES = 'SET_COOKIES'

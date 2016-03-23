@@ -75,7 +75,8 @@ var doSpa = function(req, res, next) {
         cookies: {
           '_csrf': req.csrfToken(),
           'connect.sid': connSid
-        }
+        },
+        isAuthenticated: req.isAuthenticated()
       };
       console.log(data);
       return res.render('main', {cfg: data});

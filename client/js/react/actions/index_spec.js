@@ -5,7 +5,7 @@ import {
   SET_COOKIES,
   SYSTEM_MESSAGE,
   SITE_MESSAGE,
-  AUTHENTICATION_UPDATE
+  SET_IS_AUTHENTICATED
 } from '../constants/ActionTypes'
 
 import {
@@ -13,7 +13,7 @@ import {
   setCookies,
   systemMessage,
   siteMessage,
-  authenticationUpdate
+  setIsAuthenticated
 } from './index'
 
 describe('actions/index', () => {
@@ -66,17 +66,22 @@ describe('actions/index', () => {
     expect(siteMessage(msg)).toEqual(expectedAction)
   })
 
-  it('authenticationUpdate', () => {
-    const update = {
-      expiry: 123456,
-      isAuthenticated: true
-    }
+  it('setIsAuthenticated true', () => {
+    const isAuthenticated = true
     const expectedAction = {
-      type: AUTHENTICATION_UPDATE,
-      expiry: update.authExpiry,
-      isAuthenticated: update.isAuthenticated
+      type: SET_IS_AUTHENTICATED,
+      isAuthenticated
     }
-    expect(authenticationUpdate(update)).toEqual(expectedAction)
+    expect(setIsAuthenticated(isAuthenticated)).toEqual(expectedAction)
+  })
+
+  it('setIsAuthenticated false', () => {
+    const isAuthenticated = false
+    const expectedAction = {
+      type: SET_IS_AUTHENTICATED,
+      isAuthenticated
+    }
+    expect(setIsAuthenticated(isAuthenticated)).toEqual(expectedAction)
   })
 })
 
