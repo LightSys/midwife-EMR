@@ -43,6 +43,11 @@ export const SET_IS_AUTHENTICATED = 'SET_IS_AUTHENTICATED'
 //export const AUTHENTICATION_UPDATE = 'AUTHENTICATION_UPDATE'
 
 // --------------------------------------------------------
+// Window resize related.
+// --------------------------------------------------------
+export const WINDOW_RESIZE = 'WINDOW_RESIZE'
+
+// --------------------------------------------------------
 // Miscellaneous.
 // --------------------------------------------------------
 export const SITE_MESSAGE = 'SITE_MESSAGE'

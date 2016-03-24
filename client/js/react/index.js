@@ -15,6 +15,7 @@ import delayMiddleware from './middleware/delay'
 import Comm from './services/comm'
 import {initializeAuth} from './services/authentication'
 import routes from './routes'
+import breakpoint from './services/breakpoint'
 
 // --------------------------------------------------------
 // Bring in our own Bootstrap theme and styles.
@@ -52,6 +53,7 @@ const store = createMiddlewareStore(reducers)
 // --------------------------------------------------------
 Comm(store)
 initializeAuth(store)
+breakpoint(store)
 
 // --------------------------------------------------------
 // Render the application.

@@ -17,6 +17,7 @@ import entities from './Entities'
 import status from './Status'
 import notifications from './Notifications'
 import authentication from './Authentication'
+import breakpoint from './Breakpoint'
 
 // --------------------------------------------------------
 // Common Actions and Reducers across multiple domains.
@@ -70,6 +71,7 @@ const systemMessage = (state = {}, action) => {
 // --------------------------------------------------------
 const RootReducer = optimist(combineReducers({
   authentication,
+  breakpoint,
   entities,
   notifications,
   selected,

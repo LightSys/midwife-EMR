@@ -7,8 +7,6 @@ import {
   BP_LARGE
 } from '../constants/index'
 
-import {getBreakpoint} from '../utils'
-
 import {
   renderText,
   renderCB,
@@ -93,8 +91,6 @@ class UserEditClass extends Component {
     this.handleChange = this.handleChange.bind(this)
     this.handleCancel = this.handleCancel.bind(this)
 
-    this.breakpoint = BP_LARGE    // Default.
-
     // Initialize the form.
     this.state = {
       user: this.props.user,
@@ -124,11 +120,6 @@ class UserEditClass extends Component {
     evt.preventDefault()
     this.props.selectUser()               // unset the user
     this.context.router.push('/users')    // go back to userlist
-  }
-
-  componentWillMount() {
-    this.breakpoint = getBreakpoint()
-    console.log('breakpoint: ', this.breakpoint)
   }
 
   renderSmall(flds) {
@@ -218,7 +209,7 @@ class UserEditClass extends Component {
     // Determine how many columns to render adaptively.
     let renderFunc
     let columnWidth   // Using Bootstrap grid system.
-    switch (this.breakpoint) {
+    switch (this.props.breakpoint.bp) {
       case BP_SMALL:
         renderFunc = this.renderSmall
         columnWidth = 6

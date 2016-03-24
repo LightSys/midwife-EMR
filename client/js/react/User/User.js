@@ -28,7 +28,9 @@ const mapStateToPropsUserList = (state) => {
 const mapStateToPropsUserEdit = (state) => {
   const user = state.entities.user[state.selected.user]
   const role = state.entities.role
+  const breakpoint = state.breakpoint
   return {
+    breakpoint,
     user,
     role
   }
