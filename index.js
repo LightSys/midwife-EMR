@@ -723,54 +723,6 @@ if (process.env.NODE_ENV == 'test') {
   // ========================================================
   // ========================================================
   comm.init(SocketIO(server), sessionMiddleware);
-
-  // Testing.
-  //if (process.env.WORKER_ID == 1) {
-    //setInterval(function() {
-      //comm.sendSite('upat', Date.now());
-    //}, 27 * 1000);
-  //}
-  //if (process.env.WORKER_ID == 0) {
-    //setInterval(function() {
-      //comm.sendSystem('somethingElse', Date.now());
-    //}, 20 * 1000);
-  //}
-
-  // TESTING stuff
-  //comm.subscribeSystem(
-      //function(x) {logInfo('index: ' + JSON.stringify(x));},
-      //function(err) {logError('Error: ' + err);},
-      //function() {logInfo('Completed system.');}
-  //);
-  //comm.sendSystem('start worker ' + process.env.WORKER_ID, Date.now());
-  //setTimeout(function() {
-    //comm.sendSystem('system update for worker ' + process.env.WORKER_ID, Math.random() * 888);
-  //}, 4000);
-  //setTimeout(function() {
-    //comm.sendSystem('system by scope for worker ' + process.env.WORKER_ID, Math.random() * 77, process.env.WORKER_ID);
-  //}, 8000);
-
-  //if (process.env.WORKER_ID == 1) {
-    //setTimeout(function() {
-      //var testingCancel = comm.subscribeSite(
-        //function(x) {logInfo('index[1]: ' + JSON.stringify(x));},
-        //function(err) {logInfo('Error[1]: ' + err);},
-        //function() {logInfo('Completed[1].');}
-      //);
-      //var testingId = comm.sendSite('someThing', 123);
-      //logInfo('Sent message with id: ' + testingId);
-    //}, 2000);
-  //} else {
-    //var testProc0 = comm.subscribeSite(
-      //function(x) {logInfo('index[0]: ' + JSON.stringify(x));},
-      //function(err) {logInfo('Error[0]: ' + err);},
-      //function() {logInfo('Completed[0].');}
-    //);
-    //var testProc0Id = comm.sendSite('something-0', 456);
-    //setInterval(function() {
-      //comm.sendSite('intervalTest-' + Math.random() * 888, Math.random() * 777);
-    //}, 30000);
-  //}
 }
 
 

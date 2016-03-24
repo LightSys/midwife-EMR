@@ -10,13 +10,27 @@ var cfg = require('../../config')
   , adminMenuRight = []
   ;
 
+/* --------------------------------------------------------
+ * makeMenu()
+ *
+ * Returns a simple object describing the menu for the client
+ * to consume.
+ *
+ * param       lbl    - the label for the menu item
+ * param       url    - the url for the menu item
+ * param       server - false for client navigation, true hits server
+ * return      Object
+ * -------------------------------------------------------- */
+var makeMenu = function(lbl, url, server) {
+  return {label: lbl, url: url, useServer: server};
+}
 
-adminMenuLeft.push({label: 'Home', url: '/'});
-adminMenuLeft.push({label: 'Users', url: '/users'});
-adminMenuLeft.push({label: 'Logout', url: '/logout'});
+adminMenuLeft.push(makeMenu('Home', '/', false));
+adminMenuLeft.push(makeMenu('Users', '/users', false));
+adminMenuLeft.push(makeMenu('Logout', '/logout', true));
 
-adminMenuRight.push({label: 'version 0.7.2', url: '#version'});  // Meant to be disabled on client.
-adminMenuRight.push({label: 'Profile', url: '/profile'});
+adminMenuRight.push(makeMenu('version 0.7.2', '#version', false));  // Meant to be disabled on client.
+adminMenuRight.push(makeMenu('Profile', '/profile', false));
 
 /* --------------------------------------------------------
  * params()

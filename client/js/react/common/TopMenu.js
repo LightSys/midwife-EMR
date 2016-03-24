@@ -15,6 +15,14 @@ class TopMenu extends Component {
       removeClass(this._navcol1, 'in')
     }
     const menuLeftItems = this.props.menuLeft.map((m, idx) => {
+      if (m.useServer) {
+        // Do not use client navigation at all for this link.
+        return (
+            <li key={idx} role='presentation'>
+              <a href={m.url} >{m.label}</a>
+            </li>
+          )
+      }
       return (
         <li key={idx} role='presentation'>
           <IndexLink to={m.url} onClick={onClickHandler}>{m.label}</IndexLink>
