@@ -17,11 +17,15 @@ const BREAKPOINT_SMALL = 480
 const BREAKPOINT_MEDIUM = 600
 const BREAKPOINT_LARGE = 992
 
-export const getBreakpoint = () => {
-  const size = getViewportSize()
-  if (size.w <= BREAKPOINT_SMALL) return BP_SMALL
-  if (size.w <= BREAKPOINT_MEDIUM) return BP_MEDIUM
-  if (size.w <= BREAKPOINT_LARGE) return BP_LARGE
+// --------------------------------------------------------
+// Passed a width, return the breakpoint. If no width is
+// passed, gets it from getViewportSize().
+// --------------------------------------------------------
+export const getBreakpoint = (w) => {
+  if (typeof w === 'undefined') w = getViewportSize().w
+  if (w <= BREAKPOINT_SMALL) return BP_SMALL
+  if (w <= BREAKPOINT_MEDIUM) return BP_MEDIUM
+  if (w <= BREAKPOINT_LARGE) return BP_LARGE
   return BP_LARGE
 }
 
