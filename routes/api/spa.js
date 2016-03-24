@@ -57,16 +57,16 @@ var main = function(req, res) {
       // stringified in the Jade template before being sent to
       // the client.
       // --------------------------------------------------------
-      data = {
-        // This confirms to the Cfg interface on the client.
-        cfg: {
-          siteTitle: cfg.site.title
-          , siteTitleLong: cfg.site.titleLong
-        }
-      };
-      logInfo('Loading Midwife-EMR with this data:');
-      console.log(JSON.stringify(data));
-      res.render('main', {cfg: data});
+      //data = {
+        //// This confirms to the Cfg interface on the client.
+        //cfg: {
+          //siteTitle: cfg.site.title
+          //, siteTitleLong: cfg.site.titleLong
+        //}
+      //};
+      //logInfo('Loading Midwife-EMR with this data:');
+      //console.log(JSON.stringify(data));
+      //res.render('main', {cfg: data});
       break;
     default:
       logError('op1 unknown: ' + req.parameters.op1);

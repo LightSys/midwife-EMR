@@ -153,6 +153,10 @@ export default ({dispatch, getState}) => next => action => {
       // login is successful.
       // 5. Plan out how login modal will work.
       // 6. Do it all.
+      //
+      // In the meantime, increase session timeout on the server
+      // to reduce the number of times users are really bothered
+      // by this issue.
       // --------------------------------------------------------
 
 
