@@ -1,6 +1,8 @@
 import React, {Component, PropTypes} from 'react'
 import {map} from 'underscore'
 
+import {SubmitCancel} from '../common/SubmitCancel'
+
 import {
   BP_SMALL,
   BP_MEDIUM,
@@ -75,9 +77,6 @@ const fldObjs = {
     func: renderSelect,
     lbl: 'Role',
     additionalProps: 'role'
-  },
-  'id': {
-    func: renderHidden
   }
 }
 
@@ -122,33 +121,20 @@ class UserEditClass extends Component {
     this.context.router.push('/users')    // go back to userlist
   }
 
+  // Change route to password reset.
+  handlePasswordReset() {
+    this.context.router.push(`${window.location.pathname}/resetpassword`)
+  }
+
   renderSmall(flds) {
     return (
       <div>
-        <div className='row'>
-          {flds[0]}
-          {flds[1]}
-        </div>
-        <div className='row'>
-          {flds[2]}
-          {flds[3]}
-        </div>
-        <div className='row'>
-          {flds[4]}
-          {flds[5]}
-        </div>
-        <div className='row'>
-          {flds[6]}
-          {flds[7]}
-        </div>
-        <div className='row'>
-          {flds[8]}
-          {flds[9]}
-        </div>
-        <div className='row'>
-          {flds[10]}
-          {flds[11]}
-        </div>
+        <div className='row'>{flds[0]} {flds[1]}</div>
+        <div className='row'>{flds[2]} {flds[3]}</div>
+        <div className='row'>{flds[4]} {flds[5]}</div>
+        <div className='row'>{flds[6]} {flds[7]}</div>
+        <div className='row'>{flds[8]} {flds[9]}</div>
+        <div className='row'>{flds[10]} {flds[11]}</div>
       </div>
     )
   }
@@ -156,26 +142,10 @@ class UserEditClass extends Component {
   renderMedium(flds) {
     return (
       <div>
-        <div className='row'>
-          {flds[0]}
-          {flds[1]}
-          {flds[2]}
-        </div>
-        <div className='row'>
-          {flds[3]}
-          {flds[4]}
-          {flds[5]}
-        </div>
-        <div className='row'>
-          {flds[6]}
-          {flds[7]}
-          {flds[8]}
-        </div>
-        <div className='row'>
-          {flds[9]}
-          {flds[10]}
-          {flds[11]}
-        </div>
+        <div className='row'>{flds[0]} {flds[1]} {flds[2]}</div>
+        <div className='row'>{flds[3]} {flds[4]} {flds[5]}</div>
+        <div className='row'>{flds[6]} {flds[7]} {flds[8]}</div>
+        <div className='row'>{flds[9]} {flds[10]} {flds[11]}</div>
       </div>
     )
   }
@@ -183,24 +153,9 @@ class UserEditClass extends Component {
   renderLarge(flds) {
     return (
       <div>
-        <div className='row'>
-          {flds[0]}
-          {flds[1]}
-          {flds[2]}
-          {flds[3]}
-        </div>
-        <div className='row'>
-          {flds[4]}
-          {flds[5]}
-          {flds[6]}
-          {flds[7]}
-        </div>
-        <div className='row'>
-          {flds[8]}
-          {flds[9]}
-          {flds[10]}
-          {flds[11]}
-        </div>
+        <div className='row'>{flds[0]} {flds[1]} {flds[2]} {flds[3]}</div>
+        <div className='row'>{flds[4]} {flds[5]} {flds[6]} {flds[7]}</div>
+        <div className='row'>{flds[8]} {flds[9]} {flds[10]} {flds[11]}</div>
       </div>
     )
   }
@@ -231,7 +186,6 @@ class UserEditClass extends Component {
       return fld.func(columnWidth, fld.lbl, fld.ph, fld.type, fldName,
         this.state.user[fldName], this.handleChange(fldName), options)
     })
-    const hidden = flds.slice(12)
 
     return (
       <div>
@@ -242,20 +196,15 @@ class UserEditClass extends Component {
           this.props.selectUser()               // unset the user
           this.context.router.push('/users')    // go back to userlist
         }}>
+
           {renderFunc(flds)}
-          <div className='row'>
-            <div className={columnClass}>
-              {hidden}
-              <button className='btn btn-primary' type='submit'>
-                Save
-              </button>
-            </div>
-            <div className={columnClass}>
-              <button className='btn btn-default' type='button' onClick={this.handleCancel}>
-                Cancel
-              </button>
-            </div>
-          </div>
+
+          <SubmitCancel
+            columnClass={columnClass}
+            keyName='id'
+            keyValue={this.state.user.id}
+            handleCancel={this.handleCancel}
+          />
         </form>
       </div>
     )
