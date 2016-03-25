@@ -4,11 +4,6 @@ import {
   BP_LARGE
 } from '../constants/index'
 
-export {
-  makeGetAction,
-  makePostAction
-} from './actionHelper'
-
 // --------------------------------------------------------
 // These are our breakpoints, but we never reference the
 // numbers themselves except here.

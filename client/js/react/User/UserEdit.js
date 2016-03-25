@@ -89,6 +89,7 @@ class UserEditClass extends Component {
     this.renderLarge = this.renderLarge.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleCancel = this.handleCancel.bind(this)
+    this.handlePasswordReset = this.handlePasswordReset.bind(this)
 
     // Initialize the form.
     this.state = {
@@ -206,6 +207,10 @@ class UserEditClass extends Component {
             handleCancel={this.handleCancel}
           />
         </form>
+        <hr />
+        <button className='btn btn-muted' onClick={() => this.handlePasswordReset(this.state.user.id)}>
+          Reset User's Password
+        </button>
       </div>
     )
   }

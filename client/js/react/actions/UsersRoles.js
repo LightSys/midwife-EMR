@@ -1,11 +1,16 @@
 import {isEmpty, isNumber, noop} from 'underscore'
 
 import {Schemas} from '../constants/index'
-import {makeGetAction, makePostAction} from '../utils/index'
+import {
+  makeGetAction,
+  makePostAction,
+  makeSimplePostAction
+} from '../utils/actionHelper'
 import {
   SELECT_USER,
   LOAD_ALL_USERS_SET,
   SAVE_USER_SET,
+  USER_PASSWORD_RESET_SET
 } from '../constants/ActionTypes'
 
 
@@ -47,4 +52,12 @@ export const saveUser = (user) => {
   )
 }
 
+export const resetUserPassword = (id, password) => {
+  return makeSimplePostAction(
+    USER_PASSWORD_RESET_SET,                  // types
+    `user/${id}/passwordreset`,               // path
+    {id, password},                           // data
+    true                                      // notify
+  )
+}
 

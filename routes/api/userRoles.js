@@ -24,6 +24,44 @@ var Bookshelf = require('bookshelf')
   , DATA_CHANGE = require('../../comm').DATA_CHANGE
   ;
 
+var resetPassword = function(req, res) {
+  var id1 = req.parameters.id1;
+  var op3 = req.parameters.op3;
+  var id2 = req.parameters.id2
+  var user;
+  var supervisor;
+
+  // --------------------------------------------------------
+  // Sanity checks.
+  // TODO: move the password checks to the User model.
+  // --------------------------------------------------------
+  if (! req.body || ! req.body.id || req.body.id != id1) {
+    // Something is not right...abort.
+    return resError(res, 400, 'userRoles.resetPassword(): body not supplied during POST.');
+  }
+  if (! req.body.password) {
+    return resError(res, 400, 'userRoles.resetPassword(): password not passed.');
+  }
+  if (! req.body.password.length >= 8) {
+    return resError(res, 400, 'userRoles.resetPassword(): password is not long enough.');
+  }
+
+  user = new User({id: id1});
+  return user.hashPassword(req.body.password, function(er2, success) {
+    if (er2) return resError(res, 400, er2);
+    user
+      .setUpdatedBy(req.session.user.id)
+      .setSupervisor(supervisor)
+      .save(null, {method: 'update'})
+      .then(function(model) {
+        res.end();
+        // --------------------------------------------------------
+        // Note that we don't notify clients of this change.
+        // --------------------------------------------------------
+      });
+  });
+
+}
 
 /* --------------------------------------------------------
  * user()
@@ -43,6 +81,7 @@ var user = function(req, res) {
   if (hasRole(req, 'attending')) {
     supervisor = req.session.supervisor.id;
   }
+  logInfo('id1: ' + id1 + ', op3: ' + op3 + ', id2: ' + id2);
   switch (method) {
   case 'GET':
     // Get a list of the users in the system.
@@ -62,6 +101,9 @@ var user = function(req, res) {
       });
     break;
   case 'POST':
+    // TODO: Refactor this.
+    if (op3 === 'passwordreset') return resetPassword(req, res);
+
     // --------------------------------------------------------
     // We post because the client may not send password, therefore
     // the whole record is not sent and therefore this might not
@@ -85,7 +127,7 @@ var user = function(req, res) {
       // --------------------------------------------------------
       if (! req.body || ! req.body.id || req.body.id != id1) {
         // Something is not right...abort.
-        return resError(res, 400, 'userRoles.user(): body not supplied during POST.')
+        return resError(res, 400, 'userRoles.user(): body not supplied during POST.');
       }
       if (req.body.password && req.body.password2 &&
           req.body.password.length > 0 && req.body.password2.length > 0) {
