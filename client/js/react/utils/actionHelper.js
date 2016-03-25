@@ -52,3 +52,31 @@ export const makePostAction = (types, test, path, schema, opts, data, meta) => {
   }
 }
 
+// --------------------------------------------------------
+// Fewer options passed, no schema, no optimist, full path
+// expected with id and any other path segments.
+// --------------------------------------------------------
+export const makeSimplePostAction = (types, path, data, notify) => {
+  const callOpts = Object.assign({}, options)
+  return (dispatch, getState) => {
+    const {_csrf} = getState().authentication.cookies
+    callOpts.method = 'POST'
+    callOpts.headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+    callOpts.body = JSON.stringify(Object.assign({}, data, {_csrf}))
+    let metaObj = Object.assign({}, {dataMiddleware: true})
+    dispatch({
+      payload: {
+        types: types,
+        call: () => fetch(`${API_ROOT}/${path}`, callOpts),
+        notifyUser: notify,
+        data: data
+      },
+      meta: metaObj
+    })
+
+  }
+}
+

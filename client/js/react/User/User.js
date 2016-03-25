@@ -1,7 +1,11 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
 
-import {selectUser, saveUser} from '../actions/UsersRoles'
+import {
+  selectUser,
+  saveUser,
+  resetUserPassword
+} from '../actions/UsersRoles'
 
 import {
   addSuccessNotification,
@@ -14,8 +18,11 @@ import {
 import {loadAllUsersRoles} from '../actions/UsersRoles'
 import {UserList as UL} from './UserList'
 import {UserEdit as UE} from './UserEdit'
+import {UserPasswordReset as UPR} from './UserPasswordReset'
 
-
+// --------------------------------------------------------
+// Map state to props.
+// --------------------------------------------------------
 const mapStateToPropsUserList = (state) => {
   const {user, role, saving} = state.entities
   return {
@@ -36,6 +43,18 @@ const mapStateToPropsUserEdit = (state) => {
   }
 }
 
+const mapStateToPropsUserPasswordReset = (state) => {
+  const user = state.entities.user[state.selected.user]
+  const breakpoint = state.breakpoint
+  return {
+    breakpoint,
+    user
+  }
+}
+
+// --------------------------------------------------------
+// Export the wrapped classes.
+// --------------------------------------------------------
 export const UserList = connect(mapStateToPropsUserList, {
   selectUser,
   loadAllUsersRoles,
@@ -51,3 +70,6 @@ export const UserEdit = connect(mapStateToPropsUserEdit, {
   removeNotification
 })(UE)
 
+export const UserPasswordReset = connect(mapStateToPropsUserPasswordReset, {
+  resetUserPassword
+})(UPR)

@@ -3,7 +3,11 @@ import {Route, IndexRoute} from 'react-router'
 
 import App from './common/App'
 import Home from './Home/Home'
-import {UserList, UserEdit} from './User/User'
+import {
+  UserList,
+  UserEdit,
+  UserPasswordReset
+} from './User/User'
 import NotAuthorized from './common/NotAuthorized'
 import Login from './common/Login'
 
@@ -30,6 +34,7 @@ export default (
   <Route path='/' component={App} >
     <IndexRoute component={Home} />
     <Route path='user/:id' component={UserEdit} />
+    <Route path='user/:id/resetpassword' component={UserPasswordReset} />
     <Route path='users' component={UserList} />
     <Route path='logout' component={Home} />
     <Route path='profile' component={UserEdit} onEnter={isApproved}/>
