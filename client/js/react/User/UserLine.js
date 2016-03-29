@@ -17,7 +17,7 @@ class UserLine extends Component {
 
   render() {
     const yesNo = (val) => {
-      return val === 1? 'Yes': 'No'
+      return val === 1 || val === true? 'Yes': 'No'
     }
 
     return (
