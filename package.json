@@ -88,7 +88,7 @@
   "scripts": {
     "test": "mocha",
     "start": "NODE_ENV=development node cluster.js",
-    "watch": "NODE_ENV=development nodemon -w . -i client cluster.js",
+    "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js",
     "build": "WEBPACK_WATCH=1 gulp webpack:build-dev"
   },
   "jshintConfig": {
