@@ -1,54 +1,213 @@
 import React from 'react'
-import {map} from 'underscore'
+import {map, each, filter} from 'underscore'
 
 
-export const renderText = (cols=3, lbl='Field label', ph='placeholder', type='text', name, val, onChange) => {
-  const classes = `form-group col-xs-${cols}`
+// --------------------------------------------------------
+// Error processing functions.
+// --------------------------------------------------------
+
+/* --------------------------------------------------------
+ * setValid()
+ *
+ * Given a field name and an error message, return an error
+ * object that has an appropriate isValid property and a
+ * message.
+ *
+ * param       fldName
+ * param       msg
+ * return      object - error object
+ * -------------------------------------------------------- */
+export const setValid = (fldName, msg) => {
+  const isValid = ! msg || msg.length === 0? true: false
+  return {
+    field: fldName,
+    isValid,
+    msg
+  }
+}
+
+
+/* --------------------------------------------------------
+ * getErrors()
+ *
+ * Passed the field objects and a copy of the state, run
+ * the validation tests, if any, against each field. Returns
+ * an object with field names as keys and error messages as
+ * values.
+ *
+ * param       fldObjs
+ * param       state
+ * return      errors - An error object.
+ * -------------------------------------------------------- */
+export const getErrors = (fldObjs, state) => {
+  // Get an array of error objects that have errors.
+  const errors = filter(map(fldObjs, (fld, fldName) => {
+    if (fld.validate) {
+      return fld.validate(fldName, state.user[fldName])
+    }
+    return setValid(fldName)
+  }), (e) =>! e.isValid)
+
+  // Convert to a single error object with field names as keys.
+  const errObj = {}
+  each(errors, (err) => {
+    errObj[err.field] = err.msg
+  })
+  return errObj
+}
+
+// --------------------------------------------------------
+// Validation functions.
+// --------------------------------------------------------
+
+
+/* --------------------------------------------------------
+ * notEmpty()
+ *
+ * Returns an appropriate error object in regard to whether
+ * the field is empty. Always returns an error object, but
+ * the object's isValid property needs to be inspected to
+ * determine if there is an error.
+ *
+ * param       fldName
+ * param       val
+ * return      object - error object
+ * -------------------------------------------------------- */
+export const notEmpty = (fldName, val) => {
+  if (! val || val.length === 0) {
+    return setValid(fldName, 'This field cannot be empty.')
+  }
+  return setValid(fldName)
+}
+
+
+// --------------------------------------------------------
+// Rendering functions.
+// --------------------------------------------------------
+
+
+/* --------------------------------------------------------
+ * renderText()
+ *
+ * Returns an input group for text fields. Also sets a reference
+ * on the state passed for the field at '_' + field name, e.g.
+ * state._firstname.
+ *
+ * Expects the following fields on the cfg object passed:
+ *    colWidth      - number of Bootstrap columns spanned
+ *    fldName       - name of the field
+ *    lbl           - label to use on the field
+ *    type          - type of the input field
+ *    ph            - placeholder value for the input
+ *    val           - the value of the input field
+ *    onChange      - the onChange handler
+ *    state         - (optional) state object to reference errors
+ *
+ * param       cfg - configuration object
+ * return      jsx
+ * -------------------------------------------------------- */
+export const renderText = (cfg) => {
+  const classes = `form-group col-xs-${cfg.colWidth}`
   return (
-    <div key={name} className={classes}>
-      <label>{lbl}</label>
-      <input type={type} className='form-control' placeholder={ph} value={val} onChange={onChange} />
+    <div key={cfg.fldName} className={classes}>
+      <label>{cfg.lbl}</label>
+      <input
+        type={cfg.type}
+        className='form-control'
+        placeholder={cfg.ph}
+        value={cfg.val}
+        onChange={cfg.onChange}
+        ref={(c) => {
+          if (cfg.state) {
+            cfg.state['_' + cfg.fldName] = c
+          }
+        }}
+      />
+      <div className='text-warning'>{
+        cfg.state &&
+        cfg.state.errors &&
+        cfg.state.errors[cfg.fldName]
+      }</div>
     </div>
   )
 }
 
-export const renderCB = (cols=3, lbl='Field label', ph='placeholder', type='text', name, val, onChange) => {
-  const classes = `form-group col-xs-${cols} checkbox`
+/* --------------------------------------------------------
+ * renderCB()
+ *
+ * Returns an input group for a checkbox.
+ *
+ * Expects the following fields on the cfg object passed:
+ *    colWidth      - number of Bootstrap columns spanned
+ *    fldName       - name of the field
+ *    lbl           - label to use on the field
+ *    val           - the value of the input field
+ *    onChange      - the onChange handler
+ *    state         - (optional) state object to reference errors
+ *
+ * param       cfg - configuration object
+ * return      jsx
+ * -------------------------------------------------------- */
+export const renderCB = (cfg) => {
+  const classes = `form-group col-xs-${cfg.colWidth} checkbox`
   return (
-    <div key={name} className={classes}>
+    <div key={cfg.fldName} className={classes}>
       <label className='checkbox'>
-        <input type='checkbox' checked={val} onChange={onChange} /><strong> {lbl}</strong>
+        <input
+          type='checkbox'
+          checked={cfg.val}
+          onChange={cfg.onChange}
+        /><strong> {cfg.lbl}</strong>
       </label>
+      <div className='text-warning'>{
+        cfg.state &&
+        cfg.state.errors &&
+        cfg.state.errors[cfg.fldName]
+      }</div>
     </div>
   )
 }
 
-export const renderHidden = (cols=3, lbl='Field label', ph='placeholder', type='hidden', name, val) => {
-  return (
-    <div key={name}>
-      <input type='hidden' value={val} />
-    </div>
-  )
-}
 
-// TODO: Fix: this still causes an unique key prop warning even though it works fine.
-export const renderSelect = (cols=3, lbl='Field label', ph='placeholder', type='select', name, val, onChange, options) => {
-  const classes = `form-group col-xs-${cols}`
+/* --------------------------------------------------------
+ * renderSelect()
+ *
+ * Returns an select component.
+ *
+ * Expects the following fields on the cfg object passed:
+ *    colWidth      - number of Bootstrap columns spanned
+ *    fldName       - name of the field
+ *    lbl           - label to use on the field
+ *    val           - the value of the input field
+ *    onChange      - the onChange handler
+ *    options       - an array of objects representing the options
+ *    state         - (optional) state object to reference errors
+ *
+ * param       cfg - configuration object
+ * return      jsx
+ * -------------------------------------------------------- */
+export const renderSelect = (cfg) => {
+  const classes = `form-group col-xs-${cfg.colWidth}`
   return (
     <div className={classes}>
-      <label>{lbl}</label>
+      <label>{cfg.lbl}</label>
       <select
         className='form-control'
-        value={val}
-        name={name}
-        onChange={onChange}
+        value={cfg.val}
+        name={cfg.fldName}
+        onChange={cfg.onChange}
       >
       {
-        map(options, (rec) => {
+        map(cfg.options, (rec) => {
           return <option key={rec.id} value={rec.id}>{rec.name}</option>
         })
       }
       </select>
+      <div className='text-warning'>{
+        cfg.state &&
+        cfg.state.errors &&
+        cfg.state.errors[cfg.fldName]
+      }</div>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react'
-import {map} from 'underscore'
+import {keys, map} from 'underscore'
 
 import {SubmitCancel} from '../common/SubmitCancel'
 
@@ -12,8 +12,10 @@ import {
 import {
   renderText,
   renderCB,
-  renderHidden,
-  renderSelect
+  renderSelect,
+  setValid,
+  notEmpty,
+  getErrors
 } from '../utils/formHelper'
 
 const fldObjs = {
@@ -21,19 +23,22 @@ const fldObjs = {
     func: renderText,
     lbl: 'Username',
     ph: 'username',
-    type: 'text'
+    type: 'text',
+    validate: notEmpty
   },
   'firstname': {
     func: renderText,
     lbl: 'Firstname',
     ph: 'first name',
-    type: 'text'
+    type: 'text',
+    validate: notEmpty
   },
   'lastname': {
     func: renderText,
     lbl: 'Lastname',
     ph: 'last name',
-    type: 'text'
+    type: 'text',
+    validate: notEmpty
   },
   'email': {
     func: renderText,
@@ -94,7 +99,8 @@ class UserEditClass extends Component {
     // Initialize the form.
     this.state = {
       user: this.props.user,
-      role: this.props.role
+      role: this.props.role,
+      errors: {}
     }
   }
 
@@ -125,6 +131,10 @@ class UserEditClass extends Component {
   // Change route to password reset.
   handlePasswordReset() {
     this.context.router.push(`${window.location.pathname}/resetpassword`)
+  }
+
+  componentDidMount() {
+    if (this.state._username) this.state._username.focus()
   }
 
   renderSmall(flds) {
@@ -164,28 +174,32 @@ class UserEditClass extends Component {
   render() {
     // Determine how many columns to render adaptively.
     let renderFunc
-    let columnWidth   // Using Bootstrap grid system.
+    let colWidth   // Using Bootstrap grid system.
     switch (this.props.breakpoint.bp) {
       case BP_SMALL:
         renderFunc = this.renderSmall
-        columnWidth = 6
+        colWidth = 6
         break
       case BP_MEDIUM:
         renderFunc = this.renderMedium
-        columnWidth = 4
+        colWidth = 4
         break
       default:
         renderFunc = this.renderLarge
-        columnWidth = 3
+        colWidth = 3
     }
-    const columnClass = `col-xs-${columnWidth}`
+    const columnClass = `col-xs-${colWidth}`
 
     // Populate the fields.
     const flds = map(fldObjs, (fld, fldName) => {
       let options
+      const val = this.state.user[fldName]
+      const onChange = this.handleChange(fldName)
       if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
-      return fld.func(columnWidth, fld.lbl, fld.ph, fld.type, fldName,
-        this.state.user[fldName], this.handleChange(fldName), options)
+      const cfg = Object.assign({}, fld, {colWidth, fldName, val, onChange, options})
+      // Pass in component state so that the helper can render error messages.
+      cfg.state = this.state
+      return cfg.func(cfg)
     })
 
     return (
@@ -193,9 +207,19 @@ class UserEditClass extends Component {
         <h3>Edit User</h3>
         <form onSubmit={(evt) => {
           evt.preventDefault()
-          this.props.saveUser(Object.assign({}, this.state.user))
-          this.props.selectUser()               // unset the user
-          this.context.router.push('/users')    // go back to userlist
+
+          // Check if there are any validation errors.
+          const errors = getErrors(fldObjs, this.state)
+
+          if (keys(errors).length > 0) {
+            // Populate the state with the error messages and deny the save.
+            this.setState({errors: errors})
+          } else {
+            // No validation errors so allow the save.
+            this.props.saveUser(Object.assign({}, this.state.user))
+            this.props.selectUser()               // unset the user
+            this.context.router.push('/users')    // go back to userlist
+          }
         }}>
 
           {renderFunc(flds)}
