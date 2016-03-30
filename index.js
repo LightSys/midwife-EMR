@@ -624,7 +624,7 @@ app.get(cfg.path.invoiceWorksheet, common,
 // ========================================================
 // ========================================================
 
-// SPA pages
+// SPA pages: the initial full page load of a SPA portion of the app.
 app.get(cfg.path.spaLoad, api.params);    // parameter handling
 app.get(cfg.path.spa, common,
     inRoles(['administrator', 'supervisor', 'clerk', 'attending']), api.spa.main);

@@ -6,8 +6,6 @@
  * -------------------------------------------------------------------------------
  */
 var cfg = require('../../config')
-  , adminMenuLeft = []
-  , adminMenuRight = []
   ;
 
 /* --------------------------------------------------------
@@ -24,13 +22,6 @@ var cfg = require('../../config')
 var makeMenu = function(lbl, url, server) {
   return {label: lbl, url: url, useServer: server};
 }
-
-adminMenuLeft.push(makeMenu('Home', '/', false));
-adminMenuLeft.push(makeMenu('Users', '/users', false));
-adminMenuLeft.push(makeMenu('Logout', '/logout', true));
-
-adminMenuRight.push(makeMenu('version 0.7.2', '#version', false));  // Meant to be disabled on client.
-adminMenuRight.push(makeMenu('Profile', '/profile', false));
 
 /* --------------------------------------------------------
  * params()
@@ -49,6 +40,26 @@ var params = function(req, res, next) {
   return next();
 };
 
+var buildMenu = function(req) {
+  var adminMenuLeft = []
+    , adminMenuRight = []
+    , appRev = req.app.locals.applicationRevision
+    ;
+
+  if (req.session.user && req.session.user.role) {
+    if (req.session.user.role.name === 'administrator') {
+
+      adminMenuLeft.push(makeMenu('Home', '/', false));
+      adminMenuLeft.push(makeMenu('Users', '/users', false));
+      adminMenuLeft.push(makeMenu('Logout', '/logout', true));
+
+      adminMenuRight.push(makeMenu('version ' + appRev, '#version', false));  // Meant to be disabled on client.
+      adminMenuRight.push(makeMenu('Profile', '/profile', false));
+      return {adminMenuLeft: adminMenuLeft, adminMenuRight: adminMenuRight};
+    }
+  }
+};
+
 /* --------------------------------------------------------
  * doSpa()
  *
@@ -58,8 +69,10 @@ var params = function(req, res, next) {
  * SPA in stages.
  * -------------------------------------------------------- */
 var doSpa = function(req, res, next) {
-  var data;
-  var connSid;
+  var data
+    , connSid
+    , newMenu
+    ;
 
   // --------------------------------------------------------
   // Get the connection.sid cookie so that the client can
@@ -79,13 +92,14 @@ var doSpa = function(req, res, next) {
 
   if (req.session.user && req.session.user.role) {
     if (req.session.user.role.name === 'administrator') {
+      newMenu = buildMenu(req);
       data = {
         cfg: {
           siteTitle: cfg.site.title
           , siteTitleLong: cfg.site.titleLong
         },
-        menuLeft: adminMenuLeft,
-        menuRight: adminMenuRight,
+        menuLeft: newMenu.adminMenuLeft,
+        menuRight: newMenu.adminMenuRight,
         cookies: {
           '_csrf': req.csrfToken(),
           'connect.sid': connSid
