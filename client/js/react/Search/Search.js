@@ -28,7 +28,7 @@ import {
 const fldObjects = {
   'searchPhrase': {
     func: renderText,
-    lbl: 'Search by First or Last name',
+    lbl: 'Search by First name, Last name, or MMC # (no dashes or spaces)',
     ph: 'type at least 3 characters',
     type: 'text',
     validate: notEmpty
