@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 import React from 'react'
 import {render} from 'react-dom'
 import {createStore, applyMiddleware, compose} from 'redux'
@@ -7,6 +8,7 @@ import createLogger from 'redux-logger'
 import {Router, browserHistory} from 'react-router'
 import ES6Promise from 'es6-promise'
 ES6Promise.polyfill()
+import createSagaMiddleware from 'redux-saga'
 
 
 import reducers from './reducers'
@@ -16,6 +18,7 @@ import Comm from './services/comm'
 import {initializeAuth} from './services/authentication'
 import routes from './routes'
 import breakpoint from './services/breakpoint'
+import {watchSearchPatient} from './sagas/Search'
 
 // --------------------------------------------------------
 // Bring in our own Bootstrap theme and styles.
@@ -38,8 +41,10 @@ const logger = createLogger(loggerOpts)
 //
 // TODO: Revise to only load devTools only in development.
 // --------------------------------------------------------
+const sagaMiddleware = createSagaMiddleware(watchSearchPatient)
 const createMiddlewareStore = compose(
   applyMiddleware(
+    sagaMiddleware,
     thunk,
     dataMiddleware,
     delayMiddleware,

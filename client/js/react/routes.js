@@ -3,6 +3,7 @@ import {Route, IndexRoute} from 'react-router'
 
 import App from './common/App'
 import Home from './Home/Home'
+import Search from './Search/Search'
 import {
   UserList,
   UserEdit,
@@ -37,6 +38,7 @@ export default (
     <Route path='user/:id/resetpassword' component={UserPasswordReset} />
     <Route path='users' component={UserList} />
     <Route path='logout' component={Home} />
+    <Route path='search' component={Search} />
     <Route path='profile' component={UserEdit} onEnter={isApproved}/>
     <Route path='notauthorized' component={NotAuthorized} />
     <Route path='login' component={Login} />

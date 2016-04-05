@@ -1,3 +1,6 @@
+import moment from 'moment'
+
+
 import {
   BP_SMALL,
   BP_MEDIUM,
@@ -78,5 +81,39 @@ export const removeClass = (element, className) => {
     .split(' ')
     .filter((c) => {return c !== className})
     .join(' ')
+}
+
+/* --------------------------------------------------------
+ * formatDate()
+ *
+ * Format the date passed to the 'MM-DD-YYYY' format.
+ *
+ * param       d  - Date object or can be turned into a Date
+ * return      string
+ * -------------------------------------------------------- */
+export const formatDate = (d) => {
+  const mDate = moment(d)
+  return mDate.format('MM-DD-YYYY')
+}
+
+/* --------------------------------------------------------
+ * formatDohID()
+ *
+  * Return the specified dohID formatted per the usual spec,
+ * which is xx-xx-xx.
+ *
+ * If useAltFormat is true, the alternate format for Phil
+ * Health is used which is xx-xxxx.
+ *
+ * param      dohID
+ * param      useAltFormat  - boolean
+ * return     formatted string
+ * -------------------------------------------------------- */
+export const formatDohID = (dohID, useAltFormat) => {
+  if (! useAltFormat) {
+    return dohID? dohID.slice(0,2) + '-' + dohID.slice(2,4) + '-' + dohID.slice(4): '';
+  } else {
+    return dohID? dohID.slice(0,2) + '-' + dohID.slice(2): '';
+  }
 }
 

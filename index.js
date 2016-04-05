@@ -51,6 +51,7 @@ var express = require('express')
   , vaccination = require('./routes').vaccination
   , medication = require('./routes').medication
   , api = require('./routes/api')
+  , apiSearch = require('./routes/api/search').search
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
@@ -636,6 +637,9 @@ app.get(cfg.path.apiHistory, common,
 
 // User/Role Management
 app.all(cfg.path.apiUser, spaCommon, inRoles(['administrator']), api.userRoles.user);
+
+// Searches
+app.get(cfg.path.apiSearch, spaCommon, inRoles(['clerk', 'guard', 'supervisor', 'attending']), apiSearch);
 
 // --------------------------------------------------------
 // Error handling.

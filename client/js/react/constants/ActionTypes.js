@@ -47,6 +47,13 @@ export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION'
 export const DELAY = 'DELAY'
 
 // --------------------------------------------------------
+// Patient Search.
+// --------------------------------------------------------
+export const SEARCH_PATIENT_REQUEST = 'SEARCH_PATIENT_REQUEST'
+export const SEARCH_PATIENT_SUCCESS = 'SEARCH_PATIENT_SUCCESS'
+export const SEARCH_PATIENT_FAILURE = 'SEARCH_PATIENT_FAILURE'
+
+// --------------------------------------------------------
 // Authentication related.
 // --------------------------------------------------------
 export const LOGIN_REQUESTED = 'LOGIN_REQUESTED'

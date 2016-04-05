@@ -18,6 +18,7 @@ import status from './Status'
 import notifications from './Notifications'
 import authentication from './Authentication'
 import breakpoint from './Breakpoint'
+import search from './Search'
 
 // --------------------------------------------------------
 // Common Actions and Reducers across multiple domains.
@@ -74,6 +75,7 @@ const RootReducer = optimist(combineReducers({
   breakpoint,
   entities,
   notifications,
+  search,
   selected,
   siteMessage,
   status,
