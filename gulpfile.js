@@ -57,11 +57,15 @@ var devConfig = Object.create(webpackConfig);
 devConfig.devtool = 'sourcemap';
 devConfig.debug = true;
 var devCompiler = webpack(devConfig);
+var devWatchOptions = {
+  poll: 1000,             // true for default, false for off, otherwise ms to poll.
+  aggregateTimeout: 200   // time to wait for other changes, default 300.
+};
 
 gulp.task('webpack:build-dev', function(cb) {
   if (process.env['WEBPACK_WATCH']) {
     // E.g.:  WEBPACK_WATCH=1 gulp webpack:build-dev
-    devCompiler.watch({poll: true}, function(err, stats) {
+    devCompiler.watch(devWatchOptions, function(err, stats) {
       if (err) throw new gutil.PluginError('webpack:build-dev', err);
       gutil.log('[webpack:build-dev]', stats.toString({colors: true}));
     });

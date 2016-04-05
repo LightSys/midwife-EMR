@@ -6,6 +6,21 @@ import {map, each, filter} from 'underscore'
 // Error processing functions.
 // --------------------------------------------------------
 
+export const getValueFromEvent = (evt) => {
+  let value
+  switch (evt.target.type) {
+    case 'checkbox':
+      value = evt.target.checked
+      break
+    case 'select-one':
+      value = parseInt(evt.target.value, 10)
+      break
+    default:
+      value = evt.target.value
+  }
+  return value
+}
+
 /* --------------------------------------------------------
  * setValid()
  *
@@ -43,7 +58,7 @@ export const getErrors = (fldObjs, state) => {
   // Get an array of error objects that have errors.
   const errors = filter(map(fldObjs, (fld, fldName) => {
     if (fld.validate) {
-      return fld.validate(fldName, state.user[fldName])
+      return fld.validate(fldName, state[fldName])
     }
     return setValid(fldName)
   }), (e) =>! e.isValid)

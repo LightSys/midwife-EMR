@@ -15,7 +15,8 @@ import {
   renderSelect,
   setValid,
   notEmpty,
-  getErrors
+  getErrors,
+  getValueFromEvent
 } from '../utils/formHelper'
 
 const fldObjs = {
@@ -106,17 +107,7 @@ class UserEditClass extends Component {
 
   handleChange(name) {
     return (evt) => {
-      let value
-      switch (evt.target.type) {
-        case 'checkbox':
-          value = evt.target.checked
-          break
-        case 'select-one':
-          value = parseInt(evt.target.value, 10)
-          break
-        default:
-          value = evt.target.value
-      }
+      const value = getValueFromEvent(evt)
       const newState = Object.assign({}, this.state.user, {[name]: value})
       this.setState({user: newState})   //, () => console.log(this.state.user))
     }
@@ -209,7 +200,7 @@ class UserEditClass extends Component {
           evt.preventDefault()
 
           // Check if there are any validation errors.
-          const errors = getErrors(fldObjs, this.state)
+          const errors = getErrors(fldObjs, this.state.user)
 
           if (keys(errors).length > 0) {
             // Populate the state with the error messages and deny the save.
