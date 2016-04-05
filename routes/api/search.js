@@ -131,6 +131,11 @@ var simpleSearch = function(req, res) {
       buildWhere(qb, saTail, false);
     }
 
+  } else {
+    // --------------------------------------------------------
+    // Number search: search these fields: patient.dohID.
+    // --------------------------------------------------------
+    qb.where('patient.dohID', searchNumber);
   }
   qb.select(cols)
     .orderBy('priority', 'desc')    // hack to get recs with priority numbers to top, though not correct order
@@ -138,7 +143,6 @@ var simpleSearch = function(req, res) {
       //console.log(qb.toString());
     //})
     .then(function(list) {
-      console.dir(list);
       _.each(list, function(rec) {
         var r = _.pick(rec, 'priority', 'id', 'dob', 'dohID', 'firstname', 'lastname', 'address1', 'address3');
         r.dob = validOrVoidDate(r.dob);
