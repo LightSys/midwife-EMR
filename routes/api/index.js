@@ -41,21 +41,31 @@ var params = function(req, res, next) {
 };
 
 var buildMenu = function(req) {
-  var adminMenuLeft = []
-    , adminMenuRight = []
+  var menuLeft = []
+    , menuRight = []
     , appRev = req.app.locals.applicationRevision
     ;
 
   if (req.session.user && req.session.user.role) {
+
+    // Default menu options that everyone has.
+    menuLeft.push(makeMenu('Home', '/', false));
+    menuRight.push(makeMenu('version ' + appRev, '#version', false));  // Meant to be disabled on client.
+
     if (req.session.user.role.name === 'administrator') {
+      menuLeft.push(makeMenu('Users', '/users', false));
 
-      adminMenuLeft.push(makeMenu('Home', '/', false));
-      adminMenuLeft.push(makeMenu('Users', '/users', false));
-      adminMenuLeft.push(makeMenu('Logout', '/logout', true));
+    } else if (req.session.user.role.name === 'guard') {
+      menuLeft.push(makeMenu('Search', '/search', false));
 
-      adminMenuRight.push(makeMenu('version ' + appRev, '#version', false));  // Meant to be disabled on client.
-      adminMenuRight.push(makeMenu('Profile', '/profile', false));
-      return {adminMenuLeft: adminMenuLeft, adminMenuRight: adminMenuRight};
+    }
+    if (menuLeft.length !== 0 || menuRight.length !== 0) {
+
+      // The last menu options on left and right are the same for everyone.
+      menuLeft.push(makeMenu('Logout', '/logout', true));
+      menuRight.push(makeMenu('Profile', '/profile', false));
+
+      return {menuLeft: menuLeft, menuRight: menuRight};
     }
   }
 };
@@ -91,15 +101,16 @@ var doSpa = function(req, res, next) {
   });
 
   if (req.session.user && req.session.user.role) {
-    if (req.session.user.role.name === 'administrator') {
+    if (req.session.user.role.name === 'administrator' ||
+        req.session.user.role.name === 'guard') {
       newMenu = buildMenu(req);
       data = {
         cfg: {
           siteTitle: cfg.site.title
           , siteTitleLong: cfg.site.titleLong
         },
-        menuLeft: newMenu.adminMenuLeft,
-        menuRight: newMenu.adminMenuRight,
+        menuLeft: newMenu.menuLeft,
+        menuRight: newMenu.menuRight,
         cookies: {
           '_csrf': req.csrfToken(),
           'connect.sid': connSid
@@ -118,5 +129,6 @@ module.exports = {
   , history: require('./history')
   , userRoles: require('./userRoles')
   , spa: require('./spa')
+  , search: require('./search')
   , doSpa: doSpa
 };
