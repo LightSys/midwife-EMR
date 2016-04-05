@@ -84,9 +84,6 @@ var simpleSearch = function(req, res) {
     // Assume an alpha search.
     searchAlpha = searchPhrase.trim();
   }
-  console.log('Search type: ' + searchType);
-  console.log(searchNumber);
-  console.log(searchAlpha);
 
   qb = new Pregnancy().query();
   qb.join('patient', 'patient.id', 'pregnancy.patient_id');

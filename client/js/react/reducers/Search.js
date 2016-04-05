@@ -5,13 +5,20 @@ import {
 } from '../constants/ActionTypes'
 
 
-export const DEFAULT_SEARCH = {searchCriteria: '', results: []}
+export const DEFAULT_SEARCH = {searchCriteria: {searchTerm: ''}, results: []}
 
 const search = (state=DEFAULT_SEARCH, action) => {
+  const newState = {}
   switch (action.type) {
+    case SEARCH_PATIENT_REQUEST:
+      // Save the search criteria, clear the prior results.
+      return Object.assign({}, {searchCriteria: action.payload.searchCriteria, results: []})
     case SEARCH_PATIENT_SUCCESS:
-      return Object.assign({}, state,
-          {searchCriteria: action.payload.searchCriteria, results: action.payload.results})
+      // Save the results, preserve existing search criteria.
+      return Object.assign({}, state, {searchCriteria: state.searchCriteria, results: action.payload.results})
+    case SEARCH_PATIENT_FAILURE:
+      // TODO: determine what to do here.
+
     default:
       return state
   }
