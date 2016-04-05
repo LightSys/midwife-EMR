@@ -16,8 +16,6 @@ const search = (state=DEFAULT_SEARCH, action) => {
     case SEARCH_PATIENT_SUCCESS:
       // Save the results, preserve existing search criteria.
       return Object.assign({}, state, {searchCriteria: state.searchCriteria, results: action.payload.results})
-    case SEARCH_PATIENT_FAILURE:
-      // TODO: determine what to do here.
 
     default:
       return state

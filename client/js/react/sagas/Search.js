@@ -10,11 +10,21 @@ import {
   SEARCH_PATIENT_FAILURE
 } from '../constants/ActionTypes'
 
+import {
+  addSuccessNotification,
+  addWarningNotification,
+  addDangerNotification,
+  removeNotification
+} from '../actions/Notifications'
+
 const options = {
   credentials: 'same-origin',   // Applies _csrf and connection.sid cookies.
   method: 'GET'
 }
 
+const infoNotifyTimeout = 2000;
+const warningNotifyTimeout = 3000;
+const dangerNotifyTimeout = 5000;
 
 /* --------------------------------------------------------
  * checkStatus()
@@ -55,6 +65,10 @@ export function* searchPatient(action) {
     yield put({type: SEARCH_PATIENT_SUCCESS, payload})
   } catch (error) {
     yield put({type: SEARCH_PATIENT_FAILURE, error})
+    const msg = 'Sorry about that, an error was encountered during the search. Try again?'
+    const warningNotifyAction = addWarningNotification(msg)
+    yield put(warningNotifyAction)
+    yield put(removeNotification(warningNotifyAction.payload.id, warningNotifyTimeout))
   }
 }
 
