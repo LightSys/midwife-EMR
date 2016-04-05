@@ -15,9 +15,45 @@ describe('reducers/Search', () => {
     expect(reducer(undefined, {})).toEqual(DEFAULT_SEARCH)
   })
 
-  it('should do a success search', () => {
+  it('should record criteria during request', () => {
     const searchCriteria = {
       searchTerm: 'This is a test'
+    }
+    const results = []
+    const action = {
+      type: SEARCH_PATIENT_REQUEST,
+      payload: {
+        searchCriteria,
+        results
+      }
+    }
+    expect(reducer(undefined, action)).toEqual(action.payload)
+
+  })
+
+  it('should wipe out prior results during request', () => {
+    const searchCriteria = {
+      searchTerm: 'This is a test'
+    }
+    const priorState = DEFAULT_SEARCH
+    priorState.results = ['one', 'two', 'three']
+    const action = {
+      type: SEARCH_PATIENT_REQUEST,
+      payload: {
+        searchCriteria
+      }
+    }
+    const expectedState = {
+      searchCriteria,
+      results: []
+    }
+    expect(reducer(priorState, action)).toEqual(expectedState)
+
+  })
+
+  it('should record results upon success', () => {
+    const searchCriteria = {
+      searchTerm: ''
     }
     const results = ['one', 'two', 'three']
     const action = {
@@ -28,6 +64,26 @@ describe('reducers/Search', () => {
       }
     }
     expect(reducer(undefined, action)).toEqual(action.payload)
+  })
+
+  it('should preserve search criteria upon success', () => {
+    const searchCriteria = {
+      searchTerm: 'This is a test'
+    }
+    const priorState = DEFAULT_SEARCH
+    priorState.searchCriteria = searchCriteria
+    const results = ['one', 'two', 'three']
+    const action = {
+      type: SEARCH_PATIENT_SUCCESS,
+      payload: {
+        results
+      }
+    }
+    const expectedState = {
+      searchCriteria,
+      results
+    }
+    expect(reducer(priorState, action)).toEqual(expectedState)
   })
 
 })

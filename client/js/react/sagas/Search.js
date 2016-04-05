@@ -51,7 +51,7 @@ export const doSearchPatient = function (searchCriteria) {
 export function* searchPatient(action) {
   try {
     const {results, error} = yield call(doSearchPatient, action.payload.searchCriteria)
-    let payload = Object.assign({}, {results, searchCriteria: action.payload.searchCriteria})
+    let payload = Object.assign({}, {results})
     yield put({type: SEARCH_PATIENT_SUCCESS, payload})
   } catch (error) {
     yield put({type: SEARCH_PATIENT_FAILURE, error})
