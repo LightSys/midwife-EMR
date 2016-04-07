@@ -18,7 +18,16 @@ import Comm from './services/comm'
 import {initializeAuth} from './services/authentication'
 import routes from './routes'
 import breakpoint from './services/breakpoint'
+
+// --------------------------------------------------------
+// Put our sagas together into an array.
+// --------------------------------------------------------
 import {watchSearchPatient} from './sagas/Search'
+import {watchGetPregnancy} from './sagas/Pregnancy'
+const sagas = [
+  watchSearchPatient,
+  watchGetPregnancy
+]
 
 // --------------------------------------------------------
 // Bring in our own Bootstrap theme and styles.
@@ -41,7 +50,7 @@ const logger = createLogger(loggerOpts)
 //
 // TODO: Revise to only load devTools only in development.
 // --------------------------------------------------------
-const sagaMiddleware = createSagaMiddleware(watchSearchPatient)
+const sagaMiddleware = createSagaMiddleware(...sagas)
 const createMiddlewareStore = compose(
   applyMiddleware(
     sagaMiddleware,

@@ -11,7 +11,6 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , Pregnancy = require('../../models').Pregnancy
   , Pregnancies = require('../../models').Pregnancies
-  //, SelectData = require('../../models').SelectData
   , cfg = require('../../config')
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
@@ -21,10 +20,9 @@ var _ = require('underscore')
   ;
 
 
+// TODO: complete is needed.
 var advancedSearch = function(req, res) {
-
-
-
+  return res.end();
 };
 
 /* --------------------------------------------------------

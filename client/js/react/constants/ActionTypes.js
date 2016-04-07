@@ -2,6 +2,7 @@
 // Users and Roles.
 // --------------------------------------------------------
 export const SELECT_USER = 'SELECT_USER'
+export const SELECT_PREGNANCY = 'SELECT_PREGNANCY'
 
 export const LOAD_ALL_USERS_REQUEST = 'LOAD_ALL_USERS_REQUEST'
 export const LOAD_ALL_USERS_SUCCESS = 'LOAD_ALL_USERS_SUCCESS'
@@ -52,6 +53,14 @@ export const DELAY = 'DELAY'
 export const SEARCH_PATIENT_REQUEST = 'SEARCH_PATIENT_REQUEST'
 export const SEARCH_PATIENT_SUCCESS = 'SEARCH_PATIENT_SUCCESS'
 export const SEARCH_PATIENT_FAILURE = 'SEARCH_PATIENT_FAILURE'
+
+// --------------------------------------------------------
+// Pregnancy.
+// --------------------------------------------------------
+export const GET_PREGNANCY_REQUEST = 'GET_PREGNANCY_REQUEST'
+export const GET_PREGNANCY_SUCCESS = 'GET_PREGNANCY_SUCCESS'
+export const GET_PREGNANCY_FAILURE = 'GET_PREGNANCY_FAILURE'
+export const CLEAR_PREGNANCY_DATA = 'CLEAR_PREGNANCY_DATA'
 
 // --------------------------------------------------------
 // Authentication related.

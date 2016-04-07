@@ -4,6 +4,8 @@ import {keys, map} from 'underscore'
 
 import {SubmitCancel} from '../common/SubmitCancel'
 import {searchPatient} from '../actions/Search'
+import {getPregnancy} from '../actions/Pregnancy'
+
 import {
   formatDate,
   formatDohID
@@ -39,6 +41,9 @@ class Search extends Component {
   constructor(props) {
     super(props)
 
+    this.handleChange = this.handleChange.bind(this)
+    this.getPregnancy = this.getPregnancy.bind(this)
+
     // Initialize the form.
     this.state = {
       searchPhrase: '',
@@ -58,6 +63,10 @@ class Search extends Component {
     }
   }
 
+  getPregnancy(id) {
+    this.props.getPregnancy(id)
+  }
+
   render() {
     const colWidth = 12
     const columnClass = `col-xs-${colWidth}`
@@ -74,7 +83,7 @@ class Search extends Component {
 
     const results = this.props.results.map(r => {
       return (
-        <tr key={r.id}>
+        <tr key={r.id} onClick={() => this.getPregnancy(r.id)}>
           <td>{r.priority? r.priority: ''}</td>
           <td>{r.lastname}</td>
           <td>{r.firstname}</td>
@@ -146,6 +155,7 @@ const mapStateToProps = (state) => {
 }
 
 export default Search = connect(mapStateToProps, {
-  searchPatient
+  searchPatient,
+  getPregnancy
 })(Search)
 
