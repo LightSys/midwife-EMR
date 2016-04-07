@@ -15,11 +15,28 @@ userSchema.define({
   role: roleSchema
 })
 
+const pregnancySchema = new Schema('pregnancy', {
+  idAttribute: 'id'
+})
+
+const patientSchema = new Schema('patient', {
+  idAttribute: 'id'
+})
+
+pregnancySchema.define({
+  patient: patientSchema
+})
+
+
 const Schemas = {
   USER: userSchema,
   USER_ARRAY: arrayOf(userSchema),
   ROLE: roleSchema,
-  ROLE_ARRAY: arrayOf(roleSchema)
+  ROLE_ARRAY: arrayOf(roleSchema),
+  PREGNANCY: pregnancySchema,
+  PREGNANCY_ARRAY: arrayOf(pregnancySchema),
+  PATIENT: patientSchema,
+  PATIENT_ARRAY: arrayOf(patientSchema)
 }
 
 export default Schemas

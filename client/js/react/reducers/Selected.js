@@ -5,7 +5,10 @@
  * Top-level reducer for flagging anything that is selected.
  * ------------------------------------------------------------------------------- 
  */
-import {SELECT_USER} from '../constants/ActionTypes'
+import {
+  SELECT_USER,
+  SELECT_PREGNANCY
+} from '../constants/ActionTypes'
 
 
 // --------------------------------------------------------
@@ -29,6 +32,12 @@ const selected = (state = DEFAULT_SELECTED, action) => {
         return Object.assign({}, state, {user: action.userId})
       } else {
         return DEFAULT_SELECTED.user
+      }
+    case SELECT_PREGNANCY:
+      if (action && action.hasOwnProperty('pregId')) {
+        return Object.assign({}, state, {pregnancy: action.pregId})
+      } else {
+        return DEFAULT_SELECTED.pregnancy
       }
     default:
       return state

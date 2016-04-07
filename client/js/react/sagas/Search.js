@@ -3,6 +3,7 @@ import {takeLatest} from 'redux-saga'
 import fetch from 'isomorphic-fetch'
 
 import {API_ROOT} from '../constants/index'
+import {checkStatus} from '../utils/sagasHelper'
 
 import {
   SEARCH_PATIENT_REQUEST,
@@ -26,20 +27,6 @@ const infoNotifyTimeout = 2000;
 const warningNotifyTimeout = 3000;
 const dangerNotifyTimeout = 5000;
 
-/* --------------------------------------------------------
- * checkStatus()
- *
- * Adapted from: https://github.com/github/fetch
- * -------------------------------------------------------- */
-function checkStatus(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response
-  } else {
-    var error = new Error(response.statusText)
-    error.response = response
-    throw error
-  }
-}
 
 // Exported for testing.
 export const doSearchPatient = function (searchCriteria) {

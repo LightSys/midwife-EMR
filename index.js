@@ -52,6 +52,7 @@ var express = require('express')
   , medication = require('./routes').medication
   , api = require('./routes/api')
   , apiSearch = require('./routes/api/search').search
+  , getPregnancy = require('./routes/api/pregnancy').getPregnancy
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
@@ -639,7 +640,12 @@ app.get(cfg.path.apiHistory, common,
 app.all(cfg.path.apiUser, spaCommon, inRoles(['administrator']), api.userRoles.user);
 
 // Searches
-app.get(cfg.path.apiSearch, spaCommon, inRoles(['clerk', 'guard', 'supervisor', 'attending']), apiSearch);
+app.get(cfg.path.apiSearch, spaCommon,
+    inRoles(['clerk', 'guard', 'supervisor', 'attending']), apiSearch);
+
+// Pregnancy
+app.get(cfg.path.apiPregnancy, spaCommon,
+    inRoles(['clerk', 'guard', 'supervisor', 'attending']), getPregnancy);
 
 // --------------------------------------------------------
 // Error handling.
