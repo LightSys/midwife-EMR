@@ -33,6 +33,7 @@ const sagas = [
 // Bring in our own Bootstrap theme and styles.
 // --------------------------------------------------------
 require('bootstrap3.3.6/flatly/bootstrap.css')
+require('css/font-awesome.css')
 require('./style.css')
 
 // --------------------------------------------------------
