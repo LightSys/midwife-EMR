@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, {Component, PropTypes} from 'react'
 import {connect} from 'react-redux'
 import {keys, map} from 'underscore'
 
@@ -21,7 +21,6 @@ import {
   renderText,
   renderCB,
   renderSelect,
-  setValid,
   notEmpty,
   getErrors,
   getValueFromEvent
@@ -47,9 +46,21 @@ class Search extends Component {
     // Initialize the form.
     this.state = {
       searchPhrase: '',
-      errors: {}
+      errors: {},
+      pregPendingRouteChange: -1    // -1 no pregnancy selected, else predId.
     }
 
+  }
+
+  componentWillReceiveProps(props) {
+    // --------------------------------------------------------
+    // If the server returned a pregnancy and we have not yet
+    // routed in response, do so now.
+    // --------------------------------------------------------
+    if (props.selectedPregnancy !== -1 && this.state.pregPendingRouteChange !== -1) {
+      this.setState({pregPendingRouteChange: -1})
+      this.context.router.push('checkinout')
+    }
   }
 
   componentDidMount() {
@@ -64,6 +75,15 @@ class Search extends Component {
   }
 
   getPregnancy(id) {
+    // --------------------------------------------------------
+    // pregPendingRouteChange is a flag that is set until the
+    // server responds with the pregnancy data and it is loaded.
+    // This allows componentWillReceiveProps() to determine that
+    // a route change is or is not warranted even if the search
+    // page is revisited later with the pregnancy still selected
+    // in Redux state.
+    // --------------------------------------------------------
+    this.setState({pregPendingRouteChange: id})
     this.props.getPregnancy(id)
   }
 
@@ -148,10 +168,30 @@ class Search extends Component {
 const mapStateToProps = (state) => {
   const searchCriteria = state.search.searchCriteria
   const results = state.search.results
-  return {
-    searchCriteria,
-    results
+
+  // --------------------------------------------------------
+  // TODO: Refactor how routes are determined based upon user
+  //       selecting a patient taking user's role as well as
+  //       specific patient/pregnancy information into account.
+  // --------------------------------------------------------
+  const selectedPregnancy = state.selected.pregnancy
+  // Guard needs to know whether patient already has a
+  // priority number in order to determine next route.
+  let hasPrenatalCheckinPriority = false
+  if (selectedPregnancy !== -1 && state.entities.pregnancy[selectedPregnancy]) {
+    hasPrenatalCheckinPriority = state.entities.pregnancy[selectedPregnancy].prenatalCheckinPriority !== 0
   }
+
+  return {
+    results,
+    searchCriteria,
+    selectedPregnancy,
+    hasPrenatalCheckinPriority
+  }
+}
+
+Search.contextTypes = {
+  router: PropTypes.object.isRequired
 }
 
 export default Search = connect(mapStateToProps, {
