@@ -57,13 +57,14 @@ var buildMenu = function(req) {
 
     } else if (req.session.user.role.name === 'guard') {
       menuLeft.push(makeMenu('Search', '/search', false));
+      menuLeft.push(makeMenu('CheckInOut', '/checkinout', false));
 
     }
     if (menuLeft.length !== 0 || menuRight.length !== 0) {
 
-      // The last menu options on left and right are the same for everyone.
-      menuLeft.push(makeMenu('Logout', '/logout', true));
+      // The last menu options on the right are the same for everyone.
       menuRight.push(makeMenu('Profile', '/profile', false));
+      menuRight.push(makeMenu('Logout', '/logout', true));
 
       return {menuLeft: menuLeft, menuRight: menuRight};
     }

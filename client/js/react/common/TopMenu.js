@@ -30,6 +30,15 @@ class TopMenu extends Component {
       )
     })
     const menuRightItems = this.props.menuRight.map((m, idx) => {
+      if (m.useServer) {
+        // Do not use client navigation at all for this link.
+        return (
+            <li key={idx} role='presentation'>
+              <a href={m.url} >{m.label}</a>
+            </li>
+          )
+      }
+
       // TODO: need to handle drop downs too.
       // TODO: handle #version better than this.
       let toLink = m.url
