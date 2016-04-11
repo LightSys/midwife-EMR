@@ -1,4 +1,5 @@
 import moment from 'moment'
+import _ from 'underscore'
 
 
 import {
@@ -92,7 +93,9 @@ export const removeClass = (element, className) => {
  * return      string
  * -------------------------------------------------------- */
 export const formatDate = (d) => {
+  if (! d) return ''
   const mDate = moment(d)
+  if (! mDate.isValid()) return ''
   return mDate.format('MM-DD-YYYY')
 }
 
@@ -115,5 +118,95 @@ export const formatDohID = (dohID, useAltFormat) => {
   } else {
     return dohID? dohID.slice(0,2) + '-' + dohID.slice(2): '';
   }
+}
+
+/* --------------------------------------------------------
+ * age()
+ *
+ * Returns the age in years as a string given the date of
+ * birth in ISO 8601 format as a string. Invalid formats
+ * passed will result in an emtpy string being returned.
+ *
+ * param       dob
+ * return      age
+ * -------------------------------------------------------- */
+export const age = (dob) => {
+  if (! dob) return ''
+  if (! moment(dob).isValid()) return ''
+  return moment().diff(dob, 'years')
+}
+
+/* --------------------------------------------------------
+ * getGA()
+ *
+ * Returns the gestational age as a string in the format
+ * 'ww d/7' where ww is the week and d is the day of the
+ * current week, e.g. 38 2/7 or 32 5/7.
+ *
+ * Uses a reference date, which is either passed or if
+ * not passed it is assumed to be today. The reference
+ * date is the date that the gestational age should be
+ * computed for. In other words, given the estimated
+ * due date and the reference date, what is the
+ * gestational age from the perspective of the reference
+ * date.
+ *
+ * Calculation assumes a 40 week pregnancy and subtracts
+ * the refDate from the estimated due date, which is
+ * also passed as a parameter. Params edd and rDate can be
+ * Moment objects, JS Date objects, or strings in YYYY-MM-DD
+ * format.
+ *
+ * Note: if parameters are not 'date-like' per above specifications,
+ * will return an empty string.
+ *
+ * param      edd - estimated due date as JS Date or Moment obj
+ * param      rDate - the reference date use for the calculation
+ * return     GA - as a string in ww d/7 format
+ * -------------------------------------------------------- */
+export const getGA = (edd, rDate) => {
+  if (! edd) throw new Error('getGA() must be called with an estimated due date.');
+  var estDue
+    , refDate
+    , tmpDate
+    ;
+  // Sanity check for edd.
+  if (typeof edd === 'string' && /....-..-../.test(edd)) {
+    estDue = moment(edd, 'YYYY-MM-DD');
+  }
+  if (moment.isMoment(edd)) estDue = edd.clone();
+  if (_.isDate(edd)) estDue = moment(edd);
+  if (! estDue) return '';
+
+  // Sanity check for rDate.
+  if (rDate) {
+    if (typeof rDate === 'string' && /....-..-../.test(rDate)) {
+      refDate = moment(rDate, 'YYYY-MM-DD');
+    }
+    if (moment.isMoment(rDate)) refDate = rDate.clone();
+    if (_.isDate(rDate)) refDate = moment(rDate);
+    if (! refDate) return '';
+  } else {
+    refDate = moment();
+  }
+
+  // --------------------------------------------------------
+  // Sanity check for reference date before pregnancy started.
+  // --------------------------------------------------------
+  tmpDate = estDue.clone();
+  if (refDate.isBefore(tmpDate.subtract(280, 'days'))) {
+    return '0 0/7';
+  }
+
+  var weeks = Math.abs(40 - estDue.diff(refDate, 'weeks') - 1)
+    , days = Math.abs(estDue.diff(refDate.add(40 - weeks, 'weeks'), 'days'))
+    ;
+  if (_.isNaN(weeks) || ! _.isNumber(weeks)) return '';
+  if (_.isNaN(days) || ! _.isNumber(days)) return '';
+  if (days >= 7) {
+    weeks++;
+    days = days - 7;
+  }
+  return weeks + ' ' + days + '/7';
 }
 

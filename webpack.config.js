@@ -15,7 +15,7 @@ const OccurenceOrderPlugin = webpack.optimize.OccurenceOrderPlugin
 const TOP_PATH = path.resolve(__dirname, 'client', 'js', 'react')
 const APP_START = path.resolve(TOP_PATH, 'index.js')
 const BUILD_PATH = path.resolve(__dirname, 'static', 'js')
-const MODULE_DIRS = ['node_modules', 'bower_components', 'themes']
+const MODULE_DIRS = ['node_modules', 'bower_components', 'themes', 'static/font-awesome']
 
 module.exports = {
   amd: {jQuery: true},
