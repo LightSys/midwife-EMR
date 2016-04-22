@@ -20,6 +20,7 @@ var Bookshelf = require('bookshelf')
   , hasRole = require('../../auth').hasRole
   , resError = require('./utils').resError
   , tf2Num = require('./utils').tf2Num
+  , statusObject = require('./utils').statusObject
   , sendData = require('../../comm').sendData
   , DATA_CHANGE = require('../../comm').DATA_CHANGE
   ;
@@ -54,7 +55,7 @@ var resetPassword = function(req, res) {
       .setSupervisor(supervisor)
       .save(null, {method: 'update'})
       .then(function(model) {
-        res.end();
+        res.end(JSON.stringify(statusObject(req, true, 'Password was changed', {})));
         // --------------------------------------------------------
         // Note that we don't notify clients of this change.
         // --------------------------------------------------------
@@ -162,7 +163,11 @@ var user = function(req, res) {
                 .setSupervisor(supervisor)
                 .save(null, {method: 'update'})
                 .then(function(model) {
-                  res.end();
+                  res.end(JSON.stringify(
+                    statusObject(req, true, 'User was updated',
+                      {}
+                    ))
+                  );
 
                   // --------------------------------------------------------
                   // Notify all clients of the change.
@@ -181,7 +186,11 @@ var user = function(req, res) {
               .setSupervisor(supervisor)
               .save(null, {method: 'update'})
               .then(function(model) {
-                res.end();
+                res.end(JSON.stringify(
+                  statusObject(req, true, 'User was updated',
+                    {}
+                  ))
+                );
 
                 // --------------------------------------------------------
                 // Notify all clients of the change.
@@ -205,7 +214,6 @@ var user = function(req, res) {
   default:
     logInfo(method + ': ' + req.url)
   }
-  return res.end(JSON.stringify({}));
 }
 
 module.exports = {

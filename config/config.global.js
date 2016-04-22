@@ -302,6 +302,8 @@ cfg.path.apiUser = '/api/data/user/:id1?/:op3?/:id2?';
 cfg.path.apiSearch = '/api/data/search';
 cfg.path.apiPregnancy = '/api/data/pregnancy/:id1/:op3?/:id2?';
 
+cfg.path.apiCheckInOut = '/api/data/checkinout';
+
 // Invoice worksheet
 cfg.path.invoiceWorksheet = '/invoiceWorksheet';
 

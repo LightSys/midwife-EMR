@@ -18,6 +18,7 @@ import {
   GET_PREGNANCY_REQUEST,
   GET_PREGNANCY_SUCCESS,
   GET_PREGNANCY_FAILURE,
+  CHECK_IN_OUT_SUCCESS
 } from '../constants/ActionTypes'
 
 // --------------------------------------------------------
@@ -118,6 +119,36 @@ const entities = (state = DEFAULT_ENTITIES, action) => {
           return newState
         }
         return state
+      }
+
+    case CHECK_IN_OUT_SUCCESS:
+      // --------------------------------------------------------
+      // For checkin/checkout operations with a specific pregnancy,
+      // set the prenatalCheckinPriority accordingly. Does not
+      // affect state for new client checkins when there is no
+      // associated pregnancy record yet.
+      //
+      // Note: the CHECK_IN_OUT_SUCCESS action is handled in the
+      // entities and search reducers.
+      // --------------------------------------------------------
+      if (true) {
+        const newState = Object.assign({}, state)
+        if (action.payload) {
+          const {operation, pregId, priority} = action.payload
+          if (operation && pregId) {
+            const preg = newState.pregnancy[pregId]
+            if (operation === 'checkin') {
+              if (preg) {
+                newState.pregnancy[pregId].prenatalCheckinPriority = priority
+              }
+            } else if (operation === 'checkout') {
+              if (preg) {
+                newState.pregnancy[pregId].prenatalCheckinPriority = 0
+              }
+            }
+          }
+        }
+        return newState
       }
 
     default:

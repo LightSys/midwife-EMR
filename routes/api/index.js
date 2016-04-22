@@ -57,7 +57,7 @@ var buildMenu = function(req) {
 
     } else if (req.session.user.role.name === 'guard') {
       menuLeft.push(makeMenu('Search', '/search', false));
-      menuLeft.push(makeMenu('CheckInOut', '/checkinout', false));
+      menuLeft.push(makeMenu('Check In/Out', '/checkinout', false));
 
     }
     if (menuLeft.length !== 0 || menuRight.length !== 0) {

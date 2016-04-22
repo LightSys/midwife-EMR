@@ -38,7 +38,37 @@ var tf2Num = function(obj, fields) {
   });
 }
 
+/* --------------------------------------------------------
+ * statusObject()
+ *
+ * Returns a status object for use in returning to the client
+ * which provides the status of the operation requested.
+ *
+ * param       req      - the request object
+ * param       success  - boolean whether the operation succeeded
+ * param       msg      - (optional) message for the client
+ * param       payload  - (optional) object for the client, varies per operation
+ * return      statusObject
+ * -------------------------------------------------------- */
+var statusObject = function(req, success, msg, payload) {
+  if (! req) {
+    throw new Error('statusObject(): Request object must be passed.');
+  }
+  if (typeof success !== 'boolean') {
+    throw new Error('statusObject(): success parameter must be passed.');
+  }
+  return {
+    requestStatus: {
+      path: req.path,
+      success: success,
+      msg: msg,
+      payload: payload
+    }
+  };
+};
+
 module.exports = {
   resError: resError,
-  tf2Num: tf2Num
+  tf2Num: tf2Num,
+  statusObject: statusObject
 };

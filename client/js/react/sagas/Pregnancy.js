@@ -27,7 +27,7 @@ import {
   selectPregnancy
 } from '../actions/Pregnancy'
 
-const infoNotifyTimeout = 2000;
+const successNotifyTimeout = 2000;
 const warningNotifyTimeout = 3000;
 const dangerNotifyTimeout = 5000;
 

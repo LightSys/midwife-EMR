@@ -5,7 +5,8 @@ import reducer, {DEFAULT_SEARCH} from './Search'
 import {
   SEARCH_PATIENT_REQUEST,
   SEARCH_PATIENT_SUCCESS,
-  SEARCH_PATIENT_FAILURE
+  SEARCH_PATIENT_FAILURE,
+  CHECK_IN_OUT_SUCCESS
 } from '../constants/ActionTypes'
 
 import {searchPatient} from '../actions/Search'
@@ -86,5 +87,46 @@ describe('reducers/Search', () => {
     expect(reducer(priorState, action)).toEqual(expectedState)
   })
 
+  it('should assign priority number upon check in', () => {
+    const initial = Object.assign({}, DEFAULT_SEARCH, {results: [{
+      id: 1,
+      priority: 0
+    }]})
+    const expected = Object.assign({}, DEFAULT_SEARCH, {results: [{
+      id: 1,
+      priority: 88
+    }]})
+    const action = {
+      type: CHECK_IN_OUT_SUCCESS,
+      payload: {
+        barcode: '123456',
+        pregId: 1,
+        priority: 88,
+        operation: 'checkin'
+      }
+    }
+    expect(reducer(initial, action)).toEqual(expected)
+  })
+
+  it('should clear priority number upon check out', () => {
+    const initial = Object.assign({}, DEFAULT_SEARCH, {results: [{
+      id: 1,
+      priority: 88
+    }]})
+    const expected = Object.assign({}, DEFAULT_SEARCH, {results: [{
+      id: 1,
+      priority: 0
+    }]})
+    const action = {
+      type: CHECK_IN_OUT_SUCCESS,
+      payload: {
+        barcode: '123456',
+        pregId: 1,
+        priority: 88,
+        operation: 'checkout'
+      }
+    }
+    expect(reducer(initial, action)).toEqual(expected)
+  })
 })
 

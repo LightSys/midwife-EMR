@@ -80,9 +80,10 @@ export const getErrors = (fldObjs, state) => {
  * notEmpty()
  *
  * Returns an appropriate error object in regard to whether
- * the field is empty. Always returns an error object, but
- * the object's isValid property needs to be inspected to
- * determine if there is an error.
+ * the field is empty.
+ *
+ * Always returns an error object, but the object's isValid
+ * property needs to be inspected to determine if there is an error.
  *
  * param       fldName
  * param       val
@@ -95,6 +96,27 @@ export const notEmpty = (fldName, val) => {
   return setValid(fldName)
 }
 
+/* --------------------------------------------------------
+ * onlyNumbers()
+ *
+ * Returns an appropriate error obejct in regard to whether
+ * the field is not empty and contains only numbers.
+ *
+ * Always returns an error object, but the object's isValid
+ * property needs to be inspected to determine if there is an error.
+ *
+ * param
+ * return
+ * -------------------------------------------------------- */
+export const onlyNumbers = (fldName, val) => {
+  if (val.length === 0) {
+    return setValid(fldName, 'This field cannot be empty.')
+  }
+  if (Array.every(val, (v) => {return v >= '0' && v <= '9'})) {
+    return setValid(fldName)
+  }
+  return setValid(fldName, 'This field can only contain numbers.')
+}
 
 // --------------------------------------------------------
 // Rendering functions.
