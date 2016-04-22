@@ -52,6 +52,10 @@ class Search extends Component {
 
   }
 
+  componentDidMount() {
+    if (this.state._searchPhrase) this.state._searchPhrase.focus()
+  }
+
   componentWillReceiveProps(props) {
     // --------------------------------------------------------
     // If the server returned a pregnancy and we have not yet
@@ -61,10 +65,6 @@ class Search extends Component {
       this.setState({pregPendingRouteChange: -1})
       this.context.router.push('checkinout')
     }
-  }
-
-  componentDidMount() {
-    if (this.state._searchPhrase) this.state._searchPhrase.focus()
   }
 
   handleChange(name) {
@@ -175,18 +175,11 @@ const mapStateToProps = (state) => {
   //       specific patient/pregnancy information into account.
   // --------------------------------------------------------
   const selectedPregnancy = state.selected.pregnancy
-  // Guard needs to know whether patient already has a
-  // priority number in order to determine next route.
-  let hasPrenatalCheckinPriority = false
-  if (selectedPregnancy !== -1 && state.entities.pregnancy[selectedPregnancy]) {
-    hasPrenatalCheckinPriority = state.entities.pregnancy[selectedPregnancy].prenatalCheckinPriority !== 0
-  }
 
   return {
     results,
     searchCriteria,
-    selectedPregnancy,
-    hasPrenatalCheckinPriority
+    selectedPregnancy
   }
 }
 

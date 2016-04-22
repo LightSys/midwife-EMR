@@ -32,13 +32,6 @@ export const systemMessage = (msg) => {
   }
 }
 
-//export const authenticationUpdate = ({authExpiry, isAuthenticated}) => {
-  //return {
-    //type: AUTHENTICATION_UPDATE,
-    //isAuthenticated: isAuthenticated
-  //}
-//}
-
 export const setIsAuthenticated = (isAuthenticated) => {
   return {
     type: SET_IS_AUTHENTICATED,

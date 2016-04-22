@@ -66,6 +66,10 @@ export const GET_PREGNANCY_REQUEST = 'GET_PREGNANCY_REQUEST'
 export const GET_PREGNANCY_SUCCESS = 'GET_PREGNANCY_SUCCESS'
 export const GET_PREGNANCY_FAILURE = 'GET_PREGNANCY_FAILURE'
 export const CLEAR_PREGNANCY_DATA = 'CLEAR_PREGNANCY_DATA'
+export const CHECK_IN_OUT_REQUEST = 'CHECK_IN_OUT_REQUEST'
+export const CHECK_IN_OUT_SUCCESS = 'CHECK_IN_OUT_SUCCESS'
+export const CHECK_IN_OUT_FAILURE = 'CHECK_IN_OUT_FAILURE'
+
 
 // --------------------------------------------------------
 // Authentication related.

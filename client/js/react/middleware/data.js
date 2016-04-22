@@ -167,13 +167,21 @@ export default ({dispatch, getState}) => next => action => {
       if (error) return {json, response}  // Unrecoverable error.
 
       // --------------------------------------------------------
+      // Extract any server meta information regarding the processing
+      // that the server did that was sent along which would be, if
+      // present, within json using the key 'requestStatus'.
+      // --------------------------------------------------------
+      const {requestStatus} = json
+      if (requestStatus) json = omit(json, 'requestStatus')
+
+      // --------------------------------------------------------
       // Normalize json if it needs it, otherwise return something
       // that passes the destructuring below.
       // --------------------------------------------------------
-      if (jsonError || isEmpty(json) || ! schema) return {json, response}
-      return {json: normalize(json, schema), response}
+      if (jsonError || isEmpty(json) || ! schema) return {json, response, requestStatus}
+      return {json: normalize(json, schema), response, requestStatus}
     })
-    .then(({json, response}) => {
+    .then(({json, response, requestStatus}) => {
       if (error) return                 // Unrecoverable error.
 
       // --------------------------------------------------------
