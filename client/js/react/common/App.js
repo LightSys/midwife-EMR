@@ -1,9 +1,10 @@
-import React, {Component} from 'react'
+import React, {Component, PropTypes} from 'react'
 import {connect} from 'react-redux'
 import {Link} from 'react-router'
 
 import TopMenu from './TopMenu'
 import Notification from './Notification'
+import {routeChange} from '../actions/Route'
 import {
   cookies,
   initAuthenticated
@@ -35,6 +36,26 @@ class App extends Component {
     initAuthenticated(cfgData.isAuthenticated)
   }
 
+  // --------------------------------------------------------
+  // Handle route change which means that a new route was
+  // requested somewhere else in the app via the Redux route
+  // state, for example, maybe a Saga.
+  // --------------------------------------------------------
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.route && nextProps.route !== this.props.route) {
+      // --------------------------------------------------------
+      // The new route is not empty and has changed so change route.
+      // --------------------------------------------------------
+      this.context.router.push({pathname: nextProps.route})
+    } else if (nextProps.route && nextProps.route === this.props.route) {
+      // --------------------------------------------------------
+      // The new route is not empty but has already been dealt
+      // with, so reset the route in Redux state to an empty string.
+      // --------------------------------------------------------
+      this.props.routeChange()
+    }
+  }
+
   render() {
     // --------------------------------------------------------
     // Set the remaining configuration into the props.
@@ -58,11 +79,18 @@ class App extends Component {
   }
 }
 
-const mapPropsToState = (state) => {
+App.contextTypes = {
+  router: PropTypes.object.isRequired
+}
+
+const mapStateToProps = (state) => {
   return {
-    notifications: state.notifications
+    notifications: state.notifications,
+    route: state.route
   }
 }
 
-export default connect(mapPropsToState)(App)
+export default connect(mapStateToProps, {
+  routeChange
+})(App)
 
