@@ -48,6 +48,11 @@ export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION'
 export const DELAY = 'DELAY'
 
 // --------------------------------------------------------
+// Route changes via Redux state.
+// --------------------------------------------------------
+export const ROUTE_CHANGE = 'ROUTE_CHANGE'
+
+// --------------------------------------------------------
 // Patient Search.
 // --------------------------------------------------------
 export const SEARCH_PATIENT_REQUEST = 'SEARCH_PATIENT_REQUEST'
