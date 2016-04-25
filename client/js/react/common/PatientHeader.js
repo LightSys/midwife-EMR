@@ -8,6 +8,26 @@ import {
 } from '../utils/index'
 
 // --------------------------------------------------------
+// UnloadLink
+//
+// Displays an icon in the form of a link outside of the lower
+// right hand corner of the container. Assumes that the
+// containing DOM element has a relative position. Expects
+// to be passed a param representing the onClick handler.
+// --------------------------------------------------------
+const UnloadLink = (handleUnload) => {
+  const style = {position: 'absolute', right: '40px', bottom: '-30px'}
+  return (
+    <a
+      href=''
+      onClick={handleUnload}
+      style={style}>
+        <span className='fa fa-fw fa-sign-out'>Unload</span>
+    </a>
+  )
+}
+
+// --------------------------------------------------------
 // CompressExpand
 //
 // Displays a compress or expand icon in the form of a link
@@ -52,6 +72,7 @@ class PatientHeader extends Component {
     this.renderMax = this.renderMax.bind(this)
     this.minimize = this.minimize.bind(this)
     this.maximize = this.maximize.bind(this)
+    this.unload = this.unload.bind(this)
 
     this.state = {
       isMinimized: this.props.showMinimized
@@ -66,6 +87,14 @@ class PatientHeader extends Component {
   maximize(evt) {
     evt.preventDefault()
     this.setState({isMinimized: false})
+  }
+
+  unload(evt) {
+    evt.preventDefault()
+    if (this.props.selectPregnancy) {
+      // Calling without a pregnancy unselects the pregnancy.
+      this.props.selectPregnancy();
+    }
   }
 
   render() {
@@ -106,10 +135,13 @@ class PatientHeader extends Component {
     return (
       <div style={{position: 'relative'}} className='panel panel-info'>
       {compressExpand}
+      {UnloadLink(this.unload)}
         <table className='table table-condensed'>
           <tbody>
             <tr key={1}>
-              <td><span className='lead'><strong>{lastname}, {firstname}</strong></span></td>
+              <td>
+                <span className='lead'><strong>{lastname}, {firstname}</strong></span>
+              </td>
               <td><strong>Age:</strong> {age(dob)} ({formatDate(dob)})</td>
               <td><strong>Current GA:</strong> {ga}</td>
             </tr>
@@ -153,10 +185,13 @@ class PatientHeader extends Component {
     return (
       <div style={{position: 'relative'}} className='panel panel-info'>
       {compressExpand}
+      {UnloadLink(this.unload)}
         <table className='table table-condensed'>
           <tbody>
             <tr key={1}>
-              <td><span className='lead'><strong>{lastname}, {firstname}</strong></span></td>
+              <td>
+                <span className='lead'><strong>{lastname}, {firstname}</strong></span>
+              </td>
               <td><strong>Age:</strong> {age(dob)} ({formatDate(dob)})</td>
               <td><strong>Current GA:</strong> {ga}</td>
             </tr>
@@ -172,7 +207,10 @@ PatientHeader.PropTypes = {
   patient: PropTypes.object,
   pregnancy: PropTypes.object,
   showMinimized: PropTypes.bool,
-  allowToggle: PropTypes.bool
+  allowToggle: PropTypes.bool,
+  // If selectPregnancy is passed, allows user to
+  // unselect/unload the pregnancy.
+  selectPregnancy: PropTypes.func
 }
 
 PatientHeader.defaultProps = {

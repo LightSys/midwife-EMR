@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import {keys, map} from 'underscore'
 
 import PatientHeader from '../common/PatientHeader'
-import {checkInOut} from '../actions/Pregnancy'
+import {checkInOut, selectPregnancy} from '../actions/Pregnancy'
 
 const NEW_IN_OR_ANY_OUT = 'NEW_IN_OR_ANY_OUT'
 const CHECK_OUT = 'CHECK_OUT'
@@ -80,7 +80,7 @@ class CheckinCheckout extends Component {
     if (this.props.patient) patient = this.props.patient
     return (
       <div>
-        <PatientHeader pregnancy={pregnancy} patient={patient} />
+        <PatientHeader pregnancy={pregnancy} patient={patient} selectPregnancy={this.props.selectPregnancy}/>
         <h3>{title}</h3>
         <div className='row'>
           {this.renderCheckInOutDetail(flds, pregnancy, patient)}
@@ -170,6 +170,7 @@ const mapStateToProps = (state) => {
 }
 
 export default CheckinCheckout = connect(mapStateToProps, {
-  checkInOut
+  checkInOut,
+  selectPregnancy
 })(CheckinCheckout)
 
