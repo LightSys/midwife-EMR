@@ -30,6 +30,7 @@ class TopMenu extends Component {
       )
     })
     const menuRightItems = this.props.menuRight.map((m, idx) => {
+      let onClick = onClickHandler
       if (m.useServer) {
         // Do not use client navigation at all for this link.
         return (
@@ -43,11 +44,11 @@ class TopMenu extends Component {
       // TODO: handle #version better than this.
       let toLink = m.url
       if (m.url === '#version') {
-        onClickHandler = (e) => {e.preventDefault()}
+        onClick = (e) => {e.preventDefault()}
         toLink = '/'
       }
       let innerNode = (
-        <IndexLink to={toLink} onClick={onClickHandler}>
+        <IndexLink to={toLink} onClick={onClick}>
           {m.label}
         </IndexLink>
       )
