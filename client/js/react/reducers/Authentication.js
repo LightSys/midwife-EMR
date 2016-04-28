@@ -4,13 +4,15 @@ import {
   LOGIN_FAILURE,
   AUTHENTICATION_INIT,
   SET_IS_AUTHENTICATED,
-  SET_COOKIES
+  SET_COOKIES,
+  SET_USER_ID
 } from '../constants/ActionTypes'
 
 // Exported for testing.
 export const AUTHENTICATION_DEFAULT = {
   isAuthenticated: false,
-  cookies: []
+  cookies: [],
+  userId: -1
 }
 
 const authentication = (state = AUTHENTICATION_DEFAULT, action) => {
@@ -27,6 +29,13 @@ const authentication = (state = AUTHENTICATION_DEFAULT, action) => {
 
     case SET_COOKIES:
       return Object.assign({}, state, {cookies: action.cookies})
+      break
+
+    case SET_USER_ID:
+      if (true) {
+        const id = action.payload.id? action.payload.id: -1
+        return Object.assign({}, state, {userId: id})
+      }
       break
 
     case LOGIN_REQUESTED:

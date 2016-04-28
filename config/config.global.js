@@ -299,6 +299,8 @@ cfg.path.apiHistory = '/api/history/*';                     // GET
 
 cfg.path.apiData = '/api/data/*';
 cfg.path.apiUser = '/api/data/user/:id1?/:op3?/:id2?';
+cfg.path.apiProfile = '/api/data/profile';                          // GET/POST
+cfg.path.apiProfilePassword = '/api/data/profile/passwordreset';    // POST
 cfg.path.apiSearch = '/api/data/search';
 cfg.path.apiPregnancy = '/api/data/pregnancy/:id1/:op3?/:id2?';
 

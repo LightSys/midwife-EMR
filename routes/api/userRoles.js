@@ -26,19 +26,21 @@ var Bookshelf = require('bookshelf')
   ;
 
 var resetPassword = function(req, res) {
-  var id1 = req.parameters.id1;
-  var op3 = req.parameters.op3;
-  var id2 = req.parameters.id2
-  var user;
-  var supervisor;
+  var user
+    , isProfileUpdate = this && this.isProfileUpdate? true: false
+    , supervisor
+    ;
 
   // --------------------------------------------------------
   // Sanity checks.
   // TODO: move the password checks to the User model.
   // --------------------------------------------------------
-  if (! req.body || ! req.body.id || req.body.id != id1) {
+  if (! req.body || ! req.body.id) {
     // Something is not right...abort.
     return resError(res, 400, 'userRoles.resetPassword(): body not supplied during POST.');
+  }
+  if (isProfileUpdate && req.body.id != req.session.user.id) {
+    return resError(res, 400, 'userRoles.resetPassword(): id passed in body does not match id in session.');
   }
   if (! req.body.password) {
     return resError(res, 400, 'userRoles.resetPassword(): password not passed.');
@@ -47,7 +49,7 @@ var resetPassword = function(req, res) {
     return resError(res, 400, 'userRoles.resetPassword(): password is not long enough.');
   }
 
-  user = new User({id: id1});
+  user = new User({id: req.body.id});
   return user.hashPassword(req.body.password, function(er2, success) {
     if (er2) return resError(res, 400, er2);
     user
@@ -65,6 +67,97 @@ var resetPassword = function(req, res) {
 }
 
 /* --------------------------------------------------------
+ * saveUser()
+ *
+ * Save the user to the database. Can be called by an
+ * administrator for any user or for any user for their
+ * own profile.
+ *
+ * Note: to restrict the function to profile only use, set
+ * isProfileUpdate to true in the context that the function
+ * runs within.
+ *
+ * E.g.
+ * (saveUser.bind({isProfileUpdate: true}))(req, res);
+ * -------------------------------------------------------- */
+var saveUser = function(req, res) {
+  var user
+    , processPW = false
+    , fldsToOmit = ['password', 'password2','_csrf', 'role']  // role is the withRelated join from the GET.
+    , defaultFlds = {
+        isCurrentTeacher: '0'
+        , status: '0'
+      }
+    , isProfileUpdate = this && this.isProfileUpdate? true: false
+    , workingBody
+    , supervisor
+    ;
+
+  if (hasRole(req, 'attending')) {
+    supervisor = req.session.supervisor.id;
+  }
+
+  if (isProfileUpdate) {
+    // User's cannot change their own usernames.
+    fldsToOmit.push('username');
+  }
+
+  // --------------------------------------------------------
+  // Sanity checks.
+  // --------------------------------------------------------
+  if (! req.body || ! req.body.id) {
+    // Something is not right...abort.
+    return resError(res, 400, 'userRoles.user(): body not supplied during POST.');
+  }
+  if (! isProfileUpdate && req.body.id != req.parameters.id1) {
+    return resError(res, 400, 'userRoles.user(): id passed in url does not match id in body.');
+  }
+
+  workingBody = req.body;
+  tf2Num(workingBody, ['status', 'isCurrentTeacher']);
+  User.checkFields(workingBody, false, processPW, function(err, result) {
+    var editObj
+      , user
+      ;
+    if (result.success) {
+      // --------------------------------------------------------
+      // Set field defaults which allows unsettings checkboxes.
+      // --------------------------------------------------------
+      editObj = _.extend(defaultFlds, {updatedBy: req.session.user.id}, _.omit(workingBody, fldsToOmit));
+      user = new User(editObj);
+      if (hasRole(req, 'attending')) {
+        supervisor = req.session.supervisor.id;
+      }
+      return user
+        .setUpdatedBy(req.session.user.id)
+        .setSupervisor(supervisor)
+        .save(null, {method: 'update'})
+        .then(function(model) {
+          res.end(JSON.stringify(
+            statusObject(req, true, 'User was updated',
+              {}
+            ))
+          );
+
+          // --------------------------------------------------------
+          // Notify all clients of the change.
+          // --------------------------------------------------------
+          var data = {
+            table: 'user',
+            id: editObj.id,
+            updatedBy: req.session.user.id,
+            sessionID: req.sessionID
+          };
+          sendData(DATA_CHANGE, JSON.stringify(data));
+        });
+    } else {
+      // TODO: send data message to user explaining error???
+      return resError(res, 400, result.messages.join(', '));
+    }
+  });
+};
+
+/* --------------------------------------------------------
  * user()
  *
  * Manages user related data requests and changes.
@@ -78,11 +171,9 @@ var user = function(req, res) {
   var op3 = req.parameters.op3;
   var id2 = req.parameters.id2
   var supervisor;
-  logInfo('userRoles.user(): [' + method + '] ' + req.url);
   if (hasRole(req, 'attending')) {
     supervisor = req.session.supervisor.id;
   }
-  logInfo('id1: ' + id1 + ', op3: ' + op3 + ', id2: ' + id2);
   switch (method) {
   case 'GET':
     // Get a list of the users in the system.
@@ -105,117 +196,62 @@ var user = function(req, res) {
     // TODO: Refactor this.
     if (op3 === 'passwordreset') return resetPassword(req, res);
 
-    // --------------------------------------------------------
-    // We post because the client may not send password, therefore
-    // the whole record is not sent and therefore this might not
-    // be an idempotent operation (which is what PUT is for).
-    //
-    // Use a closure to keep some of our variables from being polluters.
-    // --------------------------------------------------------
-    ;(function() {
-      var user
-        , processPW = false
-        , fldsToOmit = ['password2','_csrf', 'role']  // role is the withRelated join from the GET.
-        , defaultFlds = {
-            isCurrentTeacher: '0'
-            , status: '0'
-          }
-        , workingBody
-        ;
+    // Save the user record.
+    saveUser(req, res);
 
-      // --------------------------------------------------------
-      // Sanity checks.
-      // --------------------------------------------------------
-      if (! req.body || ! req.body.id || req.body.id != id1) {
-        // Something is not right...abort.
-        return resError(res, 400, 'userRoles.user(): body not supplied during POST.');
-      }
-      if (req.body.password && req.body.password2 &&
-          req.body.password.length > 0 && req.body.password2.length > 0) {
-        processPW = true;
-      }
-      workingBody = req.body;
-      tf2Num(workingBody, ['status', 'isCurrentTeacher']);
-      User.checkFields(workingBody, false, processPW, function(err, result) {
-        var editObj
-          , user
-          ;
-        if (result.success) {
-          if (! processPW) {
-            // If the password is not specified, do not replace it with an
-            // empty string in the database.
-            fldsToOmit.push('password');
-          }
-
-          // --------------------------------------------------------
-          // Set field defaults which allows unsettings checkboxes.
-          // --------------------------------------------------------
-          editObj = _.extend(defaultFlds, {updatedBy: req.session.user.id}, _.omit(workingBody, fldsToOmit));
-          user = new User(editObj);
-          if (hasRole(req, 'attending')) {
-            supervisor = req.session.supervisor.id;
-          }
-          if (processPW) {
-            return user.hashPassword(editObj.password, function(er2, success) {
-              if (er2) return resError(res, 400, er2);
-              user
-                .setUpdatedBy(req.session.user.id)
-                .setSupervisor(supervisor)
-                .save(null, {method: 'update'})
-                .then(function(model) {
-                  res.end(JSON.stringify(
-                    statusObject(req, true, 'User was updated',
-                      {}
-                    ))
-                  );
-
-                  // --------------------------------------------------------
-                  // Notify all clients of the change.
-                  // --------------------------------------------------------
-                  var data = {
-                    table: 'user',
-                    id: editObj.id,
-                    updatedBy: req.session.user.id
-                  };
-                  sendData(DATA_CHANGE, JSON.stringify(data));
-                });
-            });
-          } else {
-            return user
-              .setUpdatedBy(req.session.user.id)
-              .setSupervisor(supervisor)
-              .save(null, {method: 'update'})
-              .then(function(model) {
-                res.end(JSON.stringify(
-                  statusObject(req, true, 'User was updated',
-                    {}
-                  ))
-                );
-
-                // --------------------------------------------------------
-                // Notify all clients of the change.
-                // --------------------------------------------------------
-                var data = {
-                  table: 'user',
-                  id: editObj.id,
-                  updatedBy: req.session.user.id,
-                  sessionID: req.sessionID
-                };
-                sendData(DATA_CHANGE, JSON.stringify(data));
-              });
-          }
-        } else {
-          // TODO: send data message to user explaining error???
-          return resError(res, 400, result.messages.join(', '));
-        }
-      });
-    })();
     break;
+
   default:
-    logInfo(method + ': ' + req.url)
+    logInfo('Unexpected route: ' + method + ': ' + req.url)
   }
 }
 
+/* --------------------------------------------------------
+ * profile()
+ *
+ * Return the current user's user information (their profile)
+ * and allow the user to update most of their information as
+ * well as change their password.
+ * -------------------------------------------------------- */
+var profile = function(req, res) {
+  var method = req.method
+    , url = req.url
+    , userRec
+    , userId = req.session.user.id
+    ;
+
+  if (hasRole(req, 'attending')) {
+    supervisor = req.session.supervisor.id;
+  }
+  switch (method) {
+  case 'GET':
+    return User
+      .forge({id: userId})
+      .fetch()
+      .then(function(rec) {
+        userRec = _.omit(rec.toJSON(), 'password');
+        return userRec;
+      })
+      .then(function(userRec) {
+        return res.end(JSON.stringify(userRec));
+      });
+    break;
+
+  case 'POST':
+    // TODO: Refactor this.
+    if (url === cfg.path.apiProfilePassword) {
+      return (resetPassword.bind({isProfileUpdate: true}))(req, res);
+    }
+
+    (saveUser.bind({isProfileUpdate: true}))(req, res);
+
+  default:
+    logInfo('Unexpected route: ' + method + ': ' + req.url)
+  }
+
+}
+
 module.exports = {
-  user: user
+  user: user,
+  profile: profile
 };

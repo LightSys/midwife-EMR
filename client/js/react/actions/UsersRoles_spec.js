@@ -1,11 +1,13 @@
 import expect from 'expect'
 
 import {
-  selectUser
+  selectUser,
+  loadUserProfile
 } from './UsersRoles'
 
 import {
-  SELECT_USER
+  SELECT_USER,
+  LOAD_USER_PROFILE_REQUEST
 } from '../constants/ActionTypes'
 
 describe('actions/UsersRoles', () => {
@@ -24,6 +26,15 @@ describe('actions/UsersRoles', () => {
         userId: -1
       }
       expect(selectUser()).toEqual(expectedAction)
+    })
+  })
+
+  describe('loadUserProfile', () => {
+    it('produces expected action', () => {
+      const expectedAction = {
+        type: LOAD_USER_PROFILE_REQUEST
+      }
+      expect(loadUserProfile()).toEqual(expectedAction)
     })
   })
 })

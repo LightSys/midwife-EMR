@@ -11,7 +11,8 @@ import {
   SITE_MESSAGE,
   SYSTEM_MESSAGE,
   SET_COOKIES,
-  SET_IS_AUTHENTICATED
+  SET_IS_AUTHENTICATED,
+  SET_USER_ID
 } from '../constants/ActionTypes'
 
 // --------------------------------------------------------
@@ -36,6 +37,16 @@ export const setIsAuthenticated = (isAuthenticated) => {
   return {
     type: SET_IS_AUTHENTICATED,
     isAuthenticated
+  }
+}
+
+export const setUserId = (id) => {
+  if (! id) id = -1
+  return {
+    type: SET_USER_ID,
+    payload: {
+      id
+    }
   }
 }
 

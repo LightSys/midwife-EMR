@@ -18,7 +18,8 @@ import {
   GET_PREGNANCY_REQUEST,
   GET_PREGNANCY_SUCCESS,
   GET_PREGNANCY_FAILURE,
-  CHECK_IN_OUT_SUCCESS
+  CHECK_IN_OUT_SUCCESS,
+  LOAD_USER_PROFILE_SUCCESS
 } from '../constants/ActionTypes'
 
 // --------------------------------------------------------
@@ -148,6 +149,18 @@ const entities = (state = DEFAULT_ENTITIES, action) => {
             }
           }
         }
+        return newState
+      }
+
+    case LOAD_USER_PROFILE_SUCCESS:
+      // --------------------------------------------------------
+      // The user's profile is in action.payload. We set the
+      // appropriate user record based upon the user's id.
+      // --------------------------------------------------------
+      if (true) {
+        const newState = Object.assign({}, state)
+        const id = action.payload.id
+        newState.user[id] = action.payload
         return newState
       }
 

@@ -5,7 +5,8 @@ import {
   SET_COOKIES,
   SYSTEM_MESSAGE,
   SITE_MESSAGE,
-  SET_IS_AUTHENTICATED
+  SET_IS_AUTHENTICATED,
+  SET_USER_ID
 } from '../constants/ActionTypes'
 
 import {
@@ -13,7 +14,8 @@ import {
   setCookies,
   systemMessage,
   siteMessage,
-  setIsAuthenticated
+  setIsAuthenticated,
+  setUserId
 } from './index'
 
 describe('actions/index', () => {
@@ -82,6 +84,28 @@ describe('actions/index', () => {
       isAuthenticated
     }
     expect(setIsAuthenticated(isAuthenticated)).toEqual(expectedAction)
+  })
+
+  it('setUserId passing param sets', () => {
+    const id = 123
+    const expectedAction = {
+      type: SET_USER_ID,
+      payload: {
+        id
+      }
+    }
+    expect(setUserId(id)).toEqual(expectedAction)
+  })
+
+  it('setUserId passing no param unsets', () => {
+    const id = -1
+    const expectedAction = {
+      type: SET_USER_ID,
+      payload: {
+        id
+      }
+    }
+    expect(setUserId()).toEqual(expectedAction)
   })
 })
 

@@ -11,6 +11,7 @@ import {
 } from './User/User'
 import NotAuthorized from './common/NotAuthorized'
 import Login from './common/Login'
+import Profile from './Profile/Profile'
 import CheckinCheckout from './CheckinCheckout/CheckinCheckout'
 
 import {isAuthenticated} from './services/authentication'
@@ -39,9 +40,10 @@ export default (
     <Route path='user/:id/resetpassword' component={UserPasswordReset} />
     <Route path='users' component={UserList} />
     <Route path='logout' component={Home} />
+    <Route path='profile' component={Profile} />
+    <Route path='profile/resetpassword' component={UserPasswordReset} />
     <Route path='search' component={Search} />
     <Route path='checkinout' component={CheckinCheckout} />
-    <Route path='profile' component={UserEdit} onEnter={isApproved}/>
     <Route path='notauthorized' component={NotAuthorized} />
     <Route path='login' component={Login} />
   </Route>

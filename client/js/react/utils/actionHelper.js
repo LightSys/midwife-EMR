@@ -27,6 +27,14 @@ export const makeGetAction = (types, test, path, schema, opts) => {
   }
 }
 
+/* --------------------------------------------------------
+ * makePostAction()
+ *
+ * Makes a POST action.
+ *
+ * If meta.noIdInUrl is true, then the id is not specified
+ * in the url.
+ * -------------------------------------------------------- */
 export const makePostAction = (types, test, path, schema, opts, data, meta) => {
   const callOpts = Object.assign({}, options, opts)
   return (dispatch, getState) => {
@@ -37,12 +45,21 @@ export const makePostAction = (types, test, path, schema, opts, data, meta) => {
       'Content-Type': 'application/json'
     }
     callOpts.body = JSON.stringify(Object.assign({}, data, {_csrf}))
+
+    // Don't specify id in url if explicitly told not to.
+    let url
     const {id} = data
+    if (meta && meta.noIdInUrl) {
+      url = `${API_ROOT}/${path}`
+    } else {
+      url = `${API_ROOT}/${path}/${id}`
+    }
+
     let metaObj = Object.assign({}, meta, {dataMiddleware: true, optimistId: getUniqueId()})
     dispatch({
       payload: {
         types: types,
-        call: () => fetch(`${API_ROOT}/${path}/${id}`, callOpts),
+        call: () => fetch(url, callOpts),
         schema: schema,
         notifyUser: true,
         data: data
