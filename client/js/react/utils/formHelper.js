@@ -72,6 +72,41 @@ export const getErrors = (fldObjs, state) => {
 }
 
 // --------------------------------------------------------
+// Change processing functions.
+// --------------------------------------------------------
+
+/* --------------------------------------------------------
+ * manageChange()
+ *
+ * Returns a function that manages the object specified in
+ * the state. That function expects to be passed a field
+ * name and it returns another function that actually
+ * manages the state.
+ *
+ * Example of use:
+ *
+ * // In the constructor at the object level to manage the
+ * // profile object on the state.
+ * this.handleChange = manageChange('profile').bind(this)
+ *
+ * // In render (or somewhere else) to manage individual
+ * // fields within the profile object.
+ * const onChange = this.handleChange(fldName)
+ *
+ * param       object - object in state to manage
+ * return      function
+ * -------------------------------------------------------- */
+export function manageChange(object) {
+  return function(name) {
+    return (evt) => {
+      const value = getValueFromEvent(evt)
+      const newState = Object.assign({}, this.state[object], {[name]: value})
+      this.setState({profile: newState})
+    }
+  }
+}
+
+// --------------------------------------------------------
 // Validation functions.
 // --------------------------------------------------------
 
@@ -122,6 +157,27 @@ export const onlyNumbers = (fldName, val) => {
 // Rendering functions.
 // --------------------------------------------------------
 
+
+export const renderROText = (cfg) => {
+  const classes = `form-group col-xs-${cfg.colWidth}`
+  return (
+    <div key={cfg.fldName} className={classes}>
+      <label>{cfg.lbl}</label>
+      <input
+        type={cfg.type}
+        className='form-control'
+        placeholder={cfg.ph}
+        value={cfg.val}
+        disabled={true}
+        ref={(c) => {
+          if (cfg.state) {
+            cfg.state['_' + cfg.fldName] = c
+          }
+        }}
+      />
+    </div>
+  )
+}
 
 /* --------------------------------------------------------
  * renderText()
