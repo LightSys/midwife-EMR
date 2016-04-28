@@ -27,7 +27,7 @@ var _ = require('underscore')
  * -------------------------------------------------------- */
 var prenatalExamAddForm = function(req, res) {
   var data = {title: req.gettext('Add Prenatal Exam')}
-    , role = req.session.roleInfo.roleNames[0]
+    , role = req.session.roleInfo.roleName
     , table = 'prenatalExam'
     ;
   if (req.paramPregnancy) {
@@ -51,7 +51,7 @@ var prenatalExamAddForm = function(req, res) {
  * -------------------------------------------------------- */
 var prenatalExamEditForm = function(req, res) {
   var data = {title: req.gettext('Edit Prenatal Exam')}
-    , role = req.session.roleInfo.roleNames[0]
+    , role = req.session.roleInfo.roleName
     , table = 'prenatalExam'
     ;
   if (req.paramPregnancy) {
@@ -85,7 +85,7 @@ var prenatalExamSave = function(req, res) {
     , nbrFlds = ['weight', 'systolic', 'diastolic', 'cr', 'temperature',
         'respiratoryRate', 'fh', 'fht']
     , saveOpts = {method: 'update'}
-    , role = req.session.roleInfo.roleNames[0]
+    , role = req.session.roleInfo.roleName
     ;
 
   if (req.paramPregnancy &&
