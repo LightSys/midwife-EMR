@@ -25,10 +25,12 @@ import breakpoint from './services/breakpoint'
 import {watchSearchPatient} from './sagas/Search'
 import {watchGetPregnancy} from './sagas/Pregnancy'
 import {watchCheckInOut} from './sagas/CheckInOut'
+import {watchLoadUserProfile} from './sagas/Profile'
 const sagas = [
   watchSearchPatient,
   watchGetPregnancy,
-  watchCheckInOut
+  watchCheckInOut,
+  watchLoadUserProfile
 ]
 
 // --------------------------------------------------------

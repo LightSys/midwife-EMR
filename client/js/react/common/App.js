@@ -7,7 +7,8 @@ import Notification from './Notification'
 import {routeChange} from '../actions/Route'
 import {
   cookies,
-  initAuthenticated
+  initAuthenticated,
+  initUserId
 } from '../services/authentication'
 
 // Holds configuration data passed from the outside on initial load.
@@ -34,6 +35,11 @@ class App extends Component {
     // Store whether the server considers the client authenticated.
     // --------------------------------------------------------
     initAuthenticated(cfgData.isAuthenticated)
+
+    // --------------------------------------------------------
+    // Set the current user id as set by the server.
+    // --------------------------------------------------------
+    initUserId(cfgData.userId)
   }
 
   // --------------------------------------------------------

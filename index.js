@@ -640,6 +640,14 @@ app.get(cfg.path.apiHistory, common,
 // User/Role Management
 app.all(cfg.path.apiUser, spaCommon, inRoles(['administrator']), api.userRoles.user);
 
+// User Profile
+app.all(cfg.path.apiProfile, spaCommon,
+    inRoles(['administrator', 'clerk', 'guard', 'supervisor', 'attending']),
+    api.userRoles.profile);
+app.all(cfg.path.apiProfilePassword, spaCommon,
+    inRoles(['administrator', 'clerk', 'guard', 'supervisor', 'attending']),
+    api.userRoles.profile);
+
 // Searches
 app.get(cfg.path.apiSearch, spaCommon,
     inRoles(['clerk', 'guard', 'supervisor', 'attending']), apiSearch);

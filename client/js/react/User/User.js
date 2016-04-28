@@ -4,7 +4,8 @@ import {connect} from 'react-redux'
 import {
   selectUser,
   saveUser,
-  resetUserPassword
+  resetUserPassword,
+  resetProfilePassword
 } from '../actions/UsersRoles'
 
 import {
@@ -45,9 +46,11 @@ const mapStateToPropsUserEdit = (state) => {
 
 const mapStateToPropsUserPasswordReset = (state) => {
   const user = state.entities.user[state.selected.user]
+  const profile = state.entities.user[state.authentication.userId]
   const breakpoint = state.breakpoint
   return {
     breakpoint,
+    profile,
     user
   }
 }
@@ -71,5 +74,6 @@ export const UserEdit = connect(mapStateToPropsUserEdit, {
 })(UE)
 
 export const UserPasswordReset = connect(mapStateToPropsUserPasswordReset, {
-  resetUserPassword
+  resetUserPassword,
+  resetProfilePassword
 })(UPR)

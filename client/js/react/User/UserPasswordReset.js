@@ -13,7 +13,7 @@ class UserPasswordResetClass extends Component {
 
     this.handleChange = this.handleChange.bind(this)
     this.handleCancel = this.handleCancel.bind(this)
-    this.gotoUserEdit = this.gotoUserEdit.bind(this)
+    this.goBack = this.goBack.bind(this)
 
     // Initialize the form.
     this.state = {
@@ -32,12 +32,12 @@ class UserPasswordResetClass extends Component {
 
   handleCancel(evt) {
     evt.preventDefault()
-    this.gotoUserEdit()
+    this.goBack()
   }
 
-  gotoUserEdit() {
+  goBack() {
     const path = window.location.pathname.replace(/\/resetpassword/, '')
-    this.context.router.push(path)    // go back to user edit
+    this.context.router.push(path)    // go back to caller
   }
 
   handleChange(name) {
@@ -47,9 +47,20 @@ class UserPasswordResetClass extends Component {
   }
 
   render() {
-    const first = this.props.user.firstname
-    const last = this.props.user.lastname
-    const uname = this.props.user.username
+    let first, last, uname
+    let reference
+    if (this.props.user) {
+      reference = 'user'
+    } else if (this.props.profile) {
+      reference = 'profile'
+    }
+    if (! reference) {
+      // TODO: handle this error.
+      return <div></div>
+    }
+    first = this.props[reference].firstname
+    last = this.props[reference].lastname
+    uname = this.props[reference].username
 
     let columnWidth
     switch (this.props.breakpoint.bp) {
@@ -65,18 +76,37 @@ class UserPasswordResetClass extends Component {
     const classes = `form-group col-xs-${columnWidth}`
     let errorClasses = 'text-warning hidden'    // Not shown by default.
 
+    let preMessage = ''
+    if (this.props.user) {
+      preMessage = () => {
+        return (
+          <p>You are about to reset the password of <strong>{first} {last}</strong>&nbsp;
+          with username <strong>{uname}</strong>.</p>
+        )
+      }
+    } else if (this.props.profile) {
+      preMessage = () => {
+        return (
+          <p>You are about to reset your own password.</p>
+        )
+      }
+    }
+
     return (
       <div>
         <h3>Password Reset</h3>
-        <p>You are about to reset the password of <strong>{first} {last}</strong>&nbsp;
-        with username <strong>{uname}</strong>.</p>
-        <p><strong>Please type a new password for the user in both password fields.</strong></p>
+        {preMessage()}
+        <p><strong>Please type a new password in both password fields.</strong></p>
 
         <form onSubmit={(evt) => {
           evt.preventDefault()
-          console.log('calling resetUserPassword', this.props.user.id, this.state.password1)
-          this.props.resetUserPassword(this.props.user.id, this.state.password1)
-          this.gotoUserEdit()
+          console.log('calling resetUserPassword', this.props[reference].id, this.state.password1)
+          if (reference === 'user') {
+            this.props.resetUserPassword(this.props[reference].id, this.state.password1)
+          } else if (reference === 'profile') {
+            this.props.resetProfilePassword(this.props[reference].id, this.state.password1)
+          }
+          this.goBack()
         }}>
           <div className='row'>
             <div className={classes}>
@@ -110,7 +140,7 @@ class UserPasswordResetClass extends Component {
             <SubmitCancel
               columnClass={classes}
               keyName='id'
-              keyValue={this.props.user.id}
+              keyValue={this.props[reference].id}
               handleCancel={this.handleCancel}
             />
           </div>

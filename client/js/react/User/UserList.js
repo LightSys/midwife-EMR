@@ -52,7 +52,7 @@ export class UserList extends Component {
         if (term.test(u.firstname) ||
             term.test(u.lastname) ||
             term.test(u.shortName)) {
-          const roleName = u && u.hasOwnProperty('role_id')? this.props.role[u.role_id].name: ''
+          const roleName = u && u.hasOwnProperty('role_id') && this.props.role? this.props.role[u.role_id].name: ''
           return <UserLine key={u.id} id={u.id} roleName={roleName} {...u} selectUser={this.props.selectUser} />
         }
       }

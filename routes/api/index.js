@@ -60,12 +60,12 @@ var buildMenu = function(req) {
       menuLeft.push(makeMenu('Check In/Out', '/checkinout', false));
 
     }
+
+    // The last menu options on the right are the same for everyone.
+    menuRight.push(makeMenu('Profile', '/profile', false));
+    menuRight.push(makeMenu('Logout', '/logout', true));
+
     if (menuLeft.length !== 0 || menuRight.length !== 0) {
-
-      // The last menu options on the right are the same for everyone.
-      menuRight.push(makeMenu('Profile', '/profile', false));
-      menuRight.push(makeMenu('Logout', '/logout', true));
-
       return {menuLeft: menuLeft, menuRight: menuRight};
     }
   }
@@ -116,7 +116,8 @@ var doSpa = function(req, res, next) {
           '_csrf': req.csrfToken(),
           'connect.sid': connSid
         },
-        isAuthenticated: req.isAuthenticated()
+        isAuthenticated: req.isAuthenticated(),
+        userId: req.session.user.id
       };
       console.log(data);
       return res.render('main', {cfg: data});
