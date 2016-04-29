@@ -20,6 +20,7 @@ import authentication from './Authentication'
 import breakpoint from './Breakpoint'
 import search from './Search'
 import route from './Route'
+import serverInfo from './ServerInfo'
 
 // --------------------------------------------------------
 // Common Actions and Reducers across multiple domains.
@@ -46,25 +47,6 @@ const systemMessage = (state = {}, action) => {
   return state
 }
 
-//const AUTHENTICATION_DEFAULT = {
-  //expiry: 0,
-  //isAuthenticated: false
-//}
-
-//const authentication = (state = AUTHENTICATION_DEFAULT, action) => {
-  //if (action.type === AUTHENTICATION_UPDATE) {
-    //return Object.assign({}, state, {expiry, isAuthenticated} = action)
-  //}
-  //return state;
-//}
-
-//const cookies = (state = {}, action) => {
-  //if (action.type === SET_COOKIES) {
-    //return Object.assign({}, state, action.cookies)
-  //}
-  //return state;
-//}
-
 // --------------------------------------------------------
 // TODO: resolve issue with node_modules/redux-optimist/.babelrc
 // which was causing compile failures to due using a Babel 5.x
@@ -79,6 +61,7 @@ const RootReducer = optimist(combineReducers({
   route,
   search,
   selected,
+  serverInfo,
   siteMessage,
   status,
   systemMessage

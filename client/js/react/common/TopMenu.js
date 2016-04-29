@@ -41,14 +41,8 @@ class TopMenu extends Component {
       }
 
       // TODO: need to handle drop downs too.
-      // TODO: handle #version better than this.
-      let toLink = m.url
-      if (m.url === '#version') {
-        onClick = (e) => {e.preventDefault()}
-        toLink = '/'
-      }
-      let innerNode = (
-        <IndexLink to={toLink} onClick={onClick}>
+      const innerNode = (
+        <IndexLink to={m.url} onClick={onClick}>
           {m.label}
         </IndexLink>
       )

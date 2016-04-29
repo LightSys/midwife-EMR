@@ -10,6 +10,7 @@ import {
   initAuthenticated,
   initUserId
 } from '../services/authentication'
+import {setServerInfo} from '../actions/ServerInfo'
 
 // Holds configuration data passed from the outside on initial load.
 let cfgData
@@ -40,6 +41,11 @@ class App extends Component {
     // Set the current user id as set by the server.
     // --------------------------------------------------------
     initUserId(cfgData.userId)
+
+    // --------------------------------------------------------
+    // Store whatever else the server sent us.
+    // --------------------------------------------------------
+    this.props.setServerInfo(cfgData.serverInfo)
   }
 
   // --------------------------------------------------------
@@ -99,6 +105,7 @@ const mapStateToProps = (state) => {
 }
 
 export default connect(mapStateToProps, {
-  routeChange
+  routeChange,
+  setServerInfo
 })(App)
 
