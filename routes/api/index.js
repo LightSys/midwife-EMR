@@ -49,7 +49,7 @@ var buildMenu = function(req) {
   if (req.session.user && req.session.user.role) {
 
     // Leftmost right menu option is the same for everyone.
-    menuRight.push(makeMenu('version ' + appRev, '#version', false));  // Meant to be disabled on client.
+    //menuRight.push(makeMenu('v' + appRev, '#version', false));  // Meant to be disabled on client.
 
     // Assign menu items based upon role.
     switch(req.session.user.role.name) {
@@ -81,8 +81,9 @@ var buildMenu = function(req) {
  * SPA in stages.
  * -------------------------------------------------------- */
 var doSpa = function(req, res, next) {
-  var data
+  var appRev = req.app.locals.applicationRevision
     , connSid
+    , data
     , newMenu
     ;
 
@@ -118,7 +119,10 @@ var doSpa = function(req, res, next) {
           'connect.sid': connSid
         },
         isAuthenticated: req.isAuthenticated(),
-        userId: req.session.user.id
+        userId: req.session.user.id,
+        serverInfo: {
+          appRevision: appRev
+        }
       };
       console.log(data);
       return res.render('main', {cfg: data});

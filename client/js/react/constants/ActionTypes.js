@@ -86,6 +86,11 @@ export const SET_COOKIES = 'SET_COOKIES'
 export const SET_IS_AUTHENTICATED = 'SET_IS_AUTHENTICATED'
 export const SET_USER_ID = 'SET_USER_ID'
 
+// --------------------------------------------------------
+// Server information stored upon initialization.
+// --------------------------------------------------------
+export const SERVER_INFO = 'SERVER_INFO'
+
 // Note: will deprecate AUTHENTICATION_UPDATE
 //export const AUTHENTICATION_UPDATE = 'AUTHENTICATION_UPDATE'
 
