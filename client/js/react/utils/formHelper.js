@@ -101,7 +101,7 @@ export function manageChange(object) {
     return (evt) => {
       const value = getValueFromEvent(evt)
       const newState = Object.assign({}, this.state[object], {[name]: value})
-      this.setState({profile: newState})
+      this.setState({[object]: newState})
     }
   }
 }
