@@ -10,6 +10,7 @@ import {
 } from '../constants/index'
 
 import {
+  manageChange,
   renderText,
   renderCB,
   renderSelect,
@@ -93,7 +94,7 @@ class UserEditClass extends Component {
     this.renderSmall = this.renderSmall.bind(this)
     this.renderMedium = this.renderMedium.bind(this)
     this.renderLarge = this.renderLarge.bind(this)
-    this.handleChange = this.handleChange.bind(this)
+    this.handleChange = manageChange('user').bind(this)
     this.handleCancel = this.handleCancel.bind(this)
     this.handlePasswordReset = this.handlePasswordReset.bind(this)
 
@@ -102,14 +103,6 @@ class UserEditClass extends Component {
       user: this.props.user,
       role: this.props.role,
       errors: {}
-    }
-  }
-
-  handleChange(name) {
-    return (evt) => {
-      const value = getValueFromEvent(evt)
-      const newState = Object.assign({}, this.state.user, {[name]: value})
-      this.setState({user: newState})   //, () => console.log(this.state.user))
     }
   }
 
