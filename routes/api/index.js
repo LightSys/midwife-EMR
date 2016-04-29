@@ -48,17 +48,18 @@ var buildMenu = function(req) {
 
   if (req.session.user && req.session.user.role) {
 
-    // Default menu options that everyone has.
-    menuLeft.push(makeMenu('Home', '/', false));
+    // Leftmost right menu option is the same for everyone.
     menuRight.push(makeMenu('version ' + appRev, '#version', false));  // Meant to be disabled on client.
 
-    if (req.session.user.role.name === 'administrator') {
-      menuLeft.push(makeMenu('Users', '/users', false));
-
-    } else if (req.session.user.role.name === 'guard') {
-      menuLeft.push(makeMenu('Search', '/search', false));
-      menuLeft.push(makeMenu('Check In/Out', '/checkinout', false));
-
+    // Assign menu items based upon role.
+    switch(req.session.user.role.name) {
+      case 'administrator':
+        menuLeft.push(makeMenu('Users', '/users', false));
+        break;
+      case 'guard':
+        menuLeft.push(makeMenu('Search', '/search', false));
+        menuLeft.push(makeMenu('Check In/Out', '/checkinout', false));
+        break;
     }
 
     // The last menu options on the right are the same for everyone.

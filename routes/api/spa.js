@@ -50,6 +50,9 @@ var main = function(req, res) {
       }
       break;
     case 'admin':
+      // NOTE: see doSpa() in routes/api/index.js which is called
+      // in the main index.js.
+      //
       // --------------------------------------------------------
       // The data that we load into the app when it loads.
       //
