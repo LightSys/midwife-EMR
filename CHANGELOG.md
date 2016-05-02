@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.3
+
+- Does not show inactive users in health teaching teacher selection.
+
 ## 0.6.2
 
 *See docs/upgrades/0.6.2.md for upgrade instructions.*
