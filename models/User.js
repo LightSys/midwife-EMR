@@ -329,6 +329,7 @@ User = Bookshelf.Model.extend({
 
           knex('user')
             .where('isCurrentTeacher', true)
+            .andWhere('status', true)
             .orderBy('lastname', 'asc')
             .select(['id', 'firstname', 'lastname'])
             .then(function(list) {
