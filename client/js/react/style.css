@@ -1,3 +1,61 @@
 body {
   background: #FFFFFF;
 }
+
+/* Locally hosts Google fonts for the Bootswatch Flatly Theme.
+ *
+ * We use a customized Flatly theme from Bootswatch. The Bootswatch
+ * themes use Google fonts, but since Midwife-EMR may be hosted
+ * within a LAN without Internet access, these fonts need to be
+ * provided locally.
+ *
+ * The https://google-webfonts-helper.herokuapp.com/fonts/lato?subsets=latin
+ * site was used to generate the CSS below as well as the fonts themselves
+ * which were installed at static/fonts of the root of the Midwife-EMR
+ * project.
+ *
+ * The customized Flatly theme, https://github.com/kbsymanz/bootswatch,
+ * no longer references Google's https://fonts.googleapis.com but instead the
+ * following is used to satisfy the fonts required.
+ *
+ */
+/* lato-regular - latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../../../static/fonts/lato-v11-latin-regular.eot'); /* IE9 Compat Modes */
+  src: local('Lato Regular'), local('Lato-Regular'),
+       url('../../../static/fonts/lato-v11-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../../../static/fonts/lato-v11-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../../../static/fonts/lato-v11-latin-regular.woff') format('woff'), /* Modern Browsers */
+       url('../../../static/fonts/lato-v11-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../../../static/fonts/lato-v11-latin-regular.svg#Lato') format('svg'); /* Legacy iOS */
+}
+/* lato-italic - latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 400;
+  src: url('../../../static/fonts/lato-v11-latin-italic.eot'); /* IE9 Compat Modes */
+  src: local('Lato Italic'), local('Lato-Italic'),
+       url('../../../static/fonts/lato-v11-latin-italic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../../../static/fonts/lato-v11-latin-italic.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../../../static/fonts/lato-v11-latin-italic.woff') format('woff'), /* Modern Browsers */
+       url('../../../static/fonts/lato-v11-latin-italic.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../../../static/fonts/lato-v11-latin-italic.svg#Lato') format('svg'); /* Legacy iOS */
+}
+/* lato-700 - latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../../../static/fonts/lato-v11-latin-700.eot'); /* IE9 Compat Modes */
+  src: local('Lato Bold'), local('Lato-Bold'),
+       url('../../../static/fonts/lato-v11-latin-700.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../../../static/fonts/lato-v11-latin-700.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../../../static/fonts/lato-v11-latin-700.woff') format('woff'), /* Modern Browsers */
+       url('../../../static/fonts/lato-v11-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../../../static/fonts/lato-v11-latin-700.svg#Lato') format('svg'); /* Legacy iOS */
+}
+
