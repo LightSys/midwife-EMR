@@ -278,7 +278,7 @@ User = Bookshelf.Model.extend({
         if (! val.isLength(rec.password, 8)) result.messages.push('Password must be at least 8 characters long.');
         if (! val.equals(rec.password, rec.password2)) result.messages.push('Passwords do not match.');
       }
-      if (! val.isIn(rec.status, ['0','1'])) result.messages.push('Unacceptable status - 0 or 1 required.');
+      if (! val.isIn(''+rec.status, ['0','1'])) result.messages.push('Unacceptable status - 0 or 1 required.');
 
       // --------------------------------------------------------
       // Optional fields.
