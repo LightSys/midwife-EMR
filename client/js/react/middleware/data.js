@@ -11,6 +11,8 @@ import {
   removeNotification
 } from '../actions/Notifications'
 
+const ERR_NOTIFICATION_TIMEOUT = 5000;
+
 // --------------------------------------------------------
 // Create the next action without the elements particular
 // to a dataMiddleware call.
@@ -103,13 +105,23 @@ export default ({dispatch, getState}) => next => action => {
       console.log(`status: ${response.status}, statusText: ${response.statusText}`)
       if (! response.ok) {
         // --------------------------------------------------------
-        // Flag as an unrecoverable error and throw to the catch below.
+        // Flag as an unrecoverable error and throw to the catch below,
+        // but first see if the server sent any helpful information.
         // --------------------------------------------------------
         error = true
         errorCode = parseInt(response.status, 10)
-        throw response.statusText
+        return response
+          .json()
+          .catch(e => {
+            // Server did not send anything.
+            jsonError = true
+            throw response.statusText
+          })
+          .then(json => {
+            throw json
+          })
       }
-      // Extract JSON from the response, if available.
+      // Success: extract JSON from the response, if available.
       return response
         .json()
         // Flag as JSON not being available, which might be an error or not.
@@ -118,12 +130,12 @@ export default ({dispatch, getState}) => next => action => {
           return { json, response }
         })
     })
-    .catch((err) => {
+    .catch((errOrJson) => {
       // --------------------------------------------------------
       // Handle unrecoverable server error.
       // First, rollback the optimistic changes, if any.
       // --------------------------------------------------------
-      console.log(`Server error during call for ${requestType}`, err)
+      console.log(`Server error during call for ${requestType}`, errOrJson)
       let nextAction
       if (isOptimist) {
         nextAction = makeNextAction(failureType, action.payload, action.meta, {type: REVERT, id: optimistId})
@@ -135,13 +147,13 @@ export default ({dispatch, getState}) => next => action => {
       // --------------------------------------------------------
       // Second, notify the user that there was a problem.
       // --------------------------------------------------------
-      let msg = 'Sorry, a server error occurred.'
+      let msg = errOrJson && ! jsonError &&  errOrJson.requestStatus.msg || 'Sorry, a server error occurred.'
       if (errorCode === 401) msg = 'Session expired. Please login again.'
       dispatch(
         removeNotification(
           dispatch(
             addWarningNotification(msg)
-          ).payload.id, 3000
+          ).payload.id, ERR_NOTIFICATION_TIMEOUT
         )
       )
 
