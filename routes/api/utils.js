@@ -67,8 +67,29 @@ var statusObject = function(req, success, msg, payload) {
   };
 };
 
+var errToResponse = function(err) {
+  var response = {
+        msg: 'An error occurred.',
+        statusCode: 400
+      }
+    , partsRE = / - (.*): (.*)$/
+    , partsMatch
+    , errKey
+    , errMsg
+    ;
+  partsMatch = err.toString().match(partsRE);
+  if (partsMatch) {
+    errKey = partsMatch.length > 1? partsMatch[1]: '';
+    errMsg = partsMatch.length > 2? partsMatch[2]: '';
+  }
+
+  if (errKey && errMsg) response.msg = errKey + ': ' + errMsg;
+  return response;
+}
+
 module.exports = {
   resError: resError,
   tf2Num: tf2Num,
-  statusObject: statusObject
+  statusObject: statusObject,
+  errToResponse: errToResponse
 };

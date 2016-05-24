@@ -4,6 +4,7 @@ import {connect} from 'react-redux'
 import {
   selectUser,
   saveUser,
+  addUser,
   resetUserPassword,
   resetProfilePassword
 } from '../actions/UsersRoles'
@@ -17,7 +18,7 @@ import {
 } from '../actions/Notifications'
 
 import {loadAllUsersRoles} from '../actions/UsersRoles'
-import {UserList as UL} from './UserList'
+import UL from './UserList'
 import {UserEdit as UE} from './UserEdit'
 import {UserPasswordReset as UPR} from './UserPasswordReset'
 
@@ -37,10 +38,12 @@ const mapStateToPropsUserEdit = (state) => {
   const user = state.entities.user[state.selected.user]
   const role = state.entities.role
   const breakpoint = state.breakpoint
+  const route = state.route
   return {
     breakpoint,
     user,
-    role
+    role,
+    route
   }
 }
 
@@ -60,12 +63,13 @@ const mapStateToPropsUserPasswordReset = (state) => {
 // --------------------------------------------------------
 export const UserList = connect(mapStateToPropsUserList, {
   selectUser,
-  loadAllUsersRoles,
+  loadAllUsersRoles
 })(UL)
 
 export const UserEdit = connect(mapStateToPropsUserEdit, {
   selectUser,
   saveUser,
+  addUser,
   addSuccessNotification,
   addWarningNotification,
   addInfoNotification,

@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react'
-import {keys, map} from 'underscore'
+import {keys, map, mapObject} from 'underscore'
 
 import {SubmitCancel} from '../common/SubmitCancel'
 
@@ -16,6 +16,7 @@ import {
   renderSelect,
   setValid,
   notEmpty,
+  hasSelection,
   getErrors,
   getValueFromEvent
 } from '../utils/formHelper'
@@ -83,7 +84,8 @@ const fldObjs = {
   'role_id': {
     func: renderSelect,
     lbl: 'Role',
-    additionalProps: 'role'
+    additionalProps: 'role',
+    validate: hasSelection
   }
 }
 
@@ -98,9 +100,14 @@ class UserEditClass extends Component {
     this.handleCancel = this.handleCancel.bind(this)
     this.handlePasswordReset = this.handlePasswordReset.bind(this)
 
-    // Initialize the form.
+    // Determine if we are editing an existing record or a new user.
+    this.isNew = /\/new$/.test(window.location.pathname)
+
+    // Initialize with either the user we are editing or an empty user record.
     this.state = {
-      user: this.props.user,
+      user: this.props.user? this.props.user: mapObject(fldObjs, (val, key) => {
+        return ''
+      }),
       role: this.props.role,
       errors: {}
     }
@@ -119,6 +126,17 @@ class UserEditClass extends Component {
 
   componentDidMount() {
     if (this.state._username) this.state._username.focus()
+  }
+
+  componentWillReceiveProps(props) {
+    // Detect when we change to an edit route after a successful add user and
+    // force a reload of this new route. This will bring the component online
+    // in edit mode for this user.
+    if (this.isNew) {
+      if (! /\/new$/.test(props.route)) {
+        this.context.router.push({pathname: props.route})
+      }
+    }
   }
 
   renderSmall(flds) {
@@ -188,7 +206,7 @@ class UserEditClass extends Component {
 
     return (
       <div>
-        <h3>Edit User</h3>
+        <h3>{this.isNew? 'Add': 'Edit'} User</h3>
         <form onSubmit={(evt) => {
           evt.preventDefault()
 
@@ -200,9 +218,11 @@ class UserEditClass extends Component {
             this.setState({errors: errors})
           } else {
             // No validation errors so allow the save.
-            this.props.saveUser(Object.assign({}, this.state.user))
-            this.props.selectUser()               // unset the user
-            this.context.router.push('/users')    // go back to userlist
+            if (this.isNew) {
+              this.props.addUser(Object.assign({}, this.state.user))
+            } else {
+              this.props.saveUser(Object.assign({}, this.state.user))
+            }
           }
         }}>
 
@@ -219,6 +239,9 @@ class UserEditClass extends Component {
         <button className='btn btn-muted' onClick={() => this.handlePasswordReset(this.state.user.id)}>
           Reset User's Password
         </button>
+        <div className={this.isNew? 'text-info': 'hidden'}>
+          Remember to set the new user's password after creating their account.
+        </div>
       </div>
     )
   }

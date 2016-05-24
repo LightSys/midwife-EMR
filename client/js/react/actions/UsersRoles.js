@@ -10,6 +10,7 @@ import {
   SELECT_USER,
   LOAD_ALL_USERS_SET,
   SAVE_USER_SET,
+  ADD_USER_REQUEST,
   USER_PASSWORD_RESET_SET,
   LOAD_USER_PROFILE_REQUEST
 } from '../constants/ActionTypes'
@@ -58,6 +59,15 @@ export const saveUser = (user) => {
     user,                                     // data
     {id: user.id}                             // meta object additions
   )
+}
+
+export const addUser = (user) => {
+  return {
+    type: ADD_USER_REQUEST,
+    payload: {
+      user
+    }
+  }
 }
 
 export const resetUserPassword = (id, password) => {
