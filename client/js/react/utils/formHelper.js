@@ -134,14 +134,11 @@ export const notEmpty = (fldName, val) => {
 /* --------------------------------------------------------
  * onlyNumbers()
  *
- * Returns an appropriate error obejct in regard to whether
+ * Returns an appropriate error object in regard to whether
  * the field is not empty and contains only numbers.
  *
  * Always returns an error object, but the object's isValid
  * property needs to be inspected to determine if there is an error.
- *
- * param
- * return
  * -------------------------------------------------------- */
 export const onlyNumbers = (fldName, val) => {
   if (val.length === 0) {
@@ -151,6 +148,46 @@ export const onlyNumbers = (fldName, val) => {
     return setValid(fldName)
   }
   return setValid(fldName, 'This field can only contain numbers.')
+}
+
+/* --------------------------------------------------------
+ * gtZero()
+ *
+ * Returns an appropriate error object in regard to whether
+ * the field is a number that is greater than zero.
+ *
+ * Always returns an error object, but the object's isValid
+ * property needs to be inspected to determine if there is an error.
+ * -------------------------------------------------------- */
+export const gtZero = (fldName, val) => {
+  let num = parseInt(val, 10)
+  if (num === NaN) return setValid(fldName, 'This field must be a number.')
+  if (num > 0) return setValid(fldName)
+  return setValid(fldName, 'This field must be a number greater than zero.')
+}
+
+/* --------------------------------------------------------
+ * hasSelection()
+ *
+ * Returns an appropriate error object in regard to whether
+ * a selection has been made in a multi-select input, assuming
+ * that the id is a number greater than zero for a positive
+ * response.
+ *
+ * Always returns an error object, but the object's isValid
+ * property needs to be inspected to determine if there is an error.
+ * -------------------------------------------------------- */
+export const hasSelection = (fldName, val) => {
+  let gtz = gtZero(fldName, val)
+  if (! gtz.isValid) {
+    // --------------------------------------------------------
+    // The selection id is assumed to be a number greater than
+    // zero, so if there is an error of any type, just tell the
+    // user than a selection must be made.
+    // --------------------------------------------------------
+    gtz.msg = 'You must make a selection in this field.'
+  }
+  return gtz
 }
 
 // --------------------------------------------------------
@@ -265,7 +302,8 @@ export const renderCB = (cfg) => {
 /* --------------------------------------------------------
  * renderSelect()
  *
- * Returns an select component.
+ * Returns an select component. If cfg.val is empty or undefined,
+ * the select is set to a blank record.
  *
  * Expects the following fields on the cfg object passed:
  *    colWidth      - number of Bootstrap columns spanned
@@ -281,17 +319,23 @@ export const renderCB = (cfg) => {
  * -------------------------------------------------------- */
 export const renderSelect = (cfg) => {
   const classes = `form-group col-xs-${cfg.colWidth}`
+  const opts = Object.assign({}, cfg.options)
+  let val = cfg.val
+  if (! cfg.val) {
+    val = -1
+    opts['-1'] = {id: -1, value: -1, name: ''}
+  }
   return (
     <div className={classes}>
       <label>{cfg.lbl}</label>
       <select
         className='form-control'
-        value={cfg.val}
+        value={val}
         name={cfg.fldName}
         onChange={cfg.onChange}
       >
       {
-        map(cfg.options, (rec) => {
+        map(opts, (rec) => {
           return <option key={rec.id} value={rec.id}>{rec.name}</option>
         })
       }

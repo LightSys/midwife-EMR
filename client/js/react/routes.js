@@ -37,6 +37,7 @@ export default (
   <Route path='/' component={App} >
     <IndexRoute component={Home} />
     <Route path='user/:id' component={UserEdit} />
+    <Route path='user/new' component={UserEdit} />
     <Route path='user/:id/resetpassword' component={UserPasswordReset} />
     <Route path='users' component={UserList} />
     <Route path='logout' component={Home} />

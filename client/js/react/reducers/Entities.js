@@ -14,6 +14,9 @@ import {
   SAVE_USER_REQUEST,
   SAVE_USER_SUCCESS,
   SAVE_USER_FAILURE,
+  ADD_USER_REQUEST,
+  ADD_USER_SUCCESS,
+  ADD_USER_FAILURE,
   CLEAR_PREGNANCY_DATA,
   GET_PREGNANCY_REQUEST,
   GET_PREGNANCY_SUCCESS,
@@ -95,6 +98,22 @@ const entities = (state = DEFAULT_ENTITIES, action) => {
         user[id] = action.payload.data
       }
       return Object.assign({}, state, {user: user})
+
+    case ADD_USER_SUCCESS:
+      // Add the user that the server passed back into the state.
+      if (true) {
+        // Add the role field to match what normalizr does.
+        const newUser = Object.assign({}, action.payload)
+        newUser.role = newUser.role_id
+
+        // Add the new user to the user list.
+        const newUsers = Object.assign({}, state.user)
+        newUsers['' + action.payload.id] = newUser
+
+        // Add the new user list into the new state.
+        const newState = Object.assign({}, state, {user: newUsers})
+        return newState
+      }
 
     case CLEAR_PREGNANCY_DATA:
       // Clear all pregnancy tables.

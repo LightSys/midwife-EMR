@@ -13,7 +13,16 @@ export const checkStatus = (response)  => {
     const error = new Error(response.statusText)
     error.response = response
     error.status = response.status
-    throw error
+    return response
+      .json()
+      .catch(e => {
+        // Server did not send anything.
+        throw error
+      })
+      .then(json => {
+        error.json = json
+        throw error
+      })
   }
 }
 

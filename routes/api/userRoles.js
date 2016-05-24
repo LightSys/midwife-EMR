@@ -21,6 +21,7 @@ var Bookshelf = require('bookshelf')
   , resError = require('./utils').resError
   , tf2Num = require('./utils').tf2Num
   , statusObject = require('./utils').statusObject
+  , errToResponse = require('./utils').errToResponse
   , sendData = require('../../comm').sendData
   , DATA_CHANGE = require('../../comm').DATA_CHANGE
   ;
@@ -91,6 +92,7 @@ var saveUser = function(req, res) {
     , isProfileUpdate = this && this.isProfileUpdate? true: false
     , workingBody
     , supervisor
+    , isNewUser = false
     ;
 
   if (hasRole(req, 'attending')) {
@@ -105,12 +107,16 @@ var saveUser = function(req, res) {
   // --------------------------------------------------------
   // Sanity checks.
   // --------------------------------------------------------
-  if (! req.body || ! req.body.id) {
+  if (! req.body) {
     // Something is not right...abort.
     return resError(res, 400, 'userRoles.user(): body not supplied during POST.');
   }
   if (! isProfileUpdate && req.body.id != req.parameters.id1) {
     return resError(res, 400, 'userRoles.user(): id passed in url does not match id in body.');
+  }
+
+  if (! _.has(req.body, 'id')) {
+    isNewUser = true;
   }
 
   workingBody = req.body;
@@ -131,11 +137,11 @@ var saveUser = function(req, res) {
       return user
         .setUpdatedBy(req.session.user.id)
         .setSupervisor(supervisor)
-        .save(null, {method: 'update'})
+        .save(null, {method: isNewUser? 'insert': 'update'})
         .then(function(model) {
           res.end(JSON.stringify(
-            statusObject(req, true, 'User was updated',
-              {}
+            statusObject(req, true, 'User was ' + isNewUser? 'added': 'updated',
+              model.toJSON()
             ))
           );
 
@@ -144,15 +150,22 @@ var saveUser = function(req, res) {
           // --------------------------------------------------------
           var data = {
             table: 'user',
-            id: editObj.id,
+            id: model.get('id'),
             updatedBy: req.session.user.id,
             sessionID: req.sessionID
           };
           sendData(DATA_CHANGE, JSON.stringify(data));
+        })
+        .catch(function(err) {
+          logError('--- Caught error ---');
+          logError(err);
+          var errRes = errToResponse(err);
+          res.statusCode = errRes.statusCode;
+          res.end(JSON.stringify(statusObject(req, false, errRes.msg)));
         });
     } else {
-      // TODO: send data message to user explaining error???
-      return resError(res, 400, result.messages.join(', '));
+      res.statusCode = 400;
+      return res.end(JSON.stringify(statusObject(req, false, result.messages.join(', '))));
     }
   });
 };

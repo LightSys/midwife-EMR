@@ -1,17 +1,18 @@
-import React, {Component} from 'react'
+import React, {Component, PropTypes} from 'react'
 import {isEmpty, map, debounce} from 'underscore'
 
 import UserLine from './UserLine'
 
 const DEBOUNCE_MS = 200
 
-export class UserList extends Component {
+class UserList extends Component {
   constructor(props) {
     super(props)
     this.render = this.render.bind(this)
     this.saveSearch = this.saveSearch.bind(this)
     this.doSearch = debounce(this.doSearch.bind(this), DEBOUNCE_MS)
     this.searchAll = this.searchAll.bind(this)
+    this.addUser = this.addUser.bind(this)
 
     this.state = {
       pending: '',  // The search criteria before the debounce.
@@ -44,6 +45,9 @@ export class UserList extends Component {
     this._searchInput.focus()
   }
 
+  addUser() {
+    this.context.router.push(`/user/new`)
+  }
 
   render() {
     const term = new RegExp(`^${this.state.term}`, 'i')
@@ -76,6 +80,11 @@ export class UserList extends Component {
                 className='btn btn-info'
                 onClick={this.searchAll}
               >Show All</button>
+              <button
+                type='button'
+                className='btn btn-default pull-right'
+                onClick={this.addUser}
+              >Add User</button>
             </div>
           </div>
         </form>
@@ -100,4 +109,10 @@ export class UserList extends Component {
    )
  }
 }
+
+UserList.contextTypes = {
+  router: PropTypes.object.isRequired
+}
+
+export default UserList
 

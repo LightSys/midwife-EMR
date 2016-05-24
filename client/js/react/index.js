@@ -26,11 +26,13 @@ import {watchSearchPatient} from './sagas/Search'
 import {watchGetPregnancy} from './sagas/Pregnancy'
 import {watchCheckInOut} from './sagas/CheckInOut'
 import {watchLoadUserProfile} from './sagas/Profile'
+import {watchAddUser} from './sagas/UsersRoles'
 const sagas = [
   watchSearchPatient,
   watchGetPregnancy,
   watchCheckInOut,
-  watchLoadUserProfile
+  watchLoadUserProfile,
+  watchAddUser
 ]
 
 // --------------------------------------------------------
