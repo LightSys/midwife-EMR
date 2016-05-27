@@ -46,6 +46,7 @@ class UserList extends Component {
   }
 
   addUser() {
+    this.props.selectUser()
     this.context.router.push(`/user/new`)
   }
 
