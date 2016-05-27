@@ -55,23 +55,21 @@ describe('Utils', function(done) {
     });
 
     it('Gets all input field names', function(done) {
-      var path = cfg.path.userNewForm
-        , formName = 'userForm'
+      var path = cfg.path.profile
+        , formName = 'profileForm'
         ;
-      utils.getFormFieldsAsync(request, admin, path, formName)
+      utils.getFormFieldsAsync(request, clerk, path, formName)
         .then(function(fldNames) {
-          fldNames.should.be.an.instanceOf(Array).and.have.length(11);
-          fldNames.should.containEql('username');
+          fldNames.should.be.an.instanceOf(Array).and.have.length(9);
           fldNames.should.containEql('firstname');
           fldNames.should.containEql('lastname');
           fldNames.should.containEql('password');
           fldNames.should.containEql('password2');
           fldNames.should.containEql('email');
-          fldNames.should.containEql('note');
           fldNames.should.containEql('shortName');
           fldNames.should.containEql('displayName');
           fldNames.should.containEql('_csrf');
-          fldNames.should.containEql('status');
+          fldNames.should.containEql('id');
           done();
         })
         .catch(function(e) {
