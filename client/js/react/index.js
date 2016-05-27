@@ -19,21 +19,7 @@ import {initializeAuth} from './services/authentication'
 import routes from './routes'
 import breakpoint from './services/breakpoint'
 
-// --------------------------------------------------------
-// Put our sagas together into an array.
-// --------------------------------------------------------
-import {watchSearchPatient} from './sagas/Search'
-import {watchGetPregnancy} from './sagas/Pregnancy'
-import {watchCheckInOut} from './sagas/CheckInOut'
-import {watchLoadUserProfile} from './sagas/Profile'
-import {watchAddUser} from './sagas/UsersRoles'
-const sagas = [
-  watchSearchPatient,
-  watchGetPregnancy,
-  watchCheckInOut,
-  watchLoadUserProfile,
-  watchAddUser
-]
+import rootSaga from './sagas'
 
 // --------------------------------------------------------
 // Bring in our own Bootstrap theme and styles.
@@ -57,7 +43,7 @@ const logger = createLogger(loggerOpts)
 //
 // TODO: Revise to only load devTools only in development.
 // --------------------------------------------------------
-const sagaMiddleware = createSagaMiddleware(...sagas)
+const sagaMiddleware = createSagaMiddleware()
 const createMiddlewareStore = compose(
   applyMiddleware(
     sagaMiddleware,
@@ -68,6 +54,7 @@ const createMiddlewareStore = compose(
   , window.devToolsExtension ? window.devToolsExtension() : f => f
   )(createStore)
 const store = createMiddlewareStore(reducers)
+sagaMiddleware.run(rootSaga)
 
 // --------------------------------------------------------
 // Intialize the services with the store that need it.
