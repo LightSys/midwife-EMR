@@ -10,6 +10,10 @@ import {
 } from '../actions/UsersRoles'
 
 import {
+  getLookupTable
+} from '../actions/LookupTables'
+
+import {
   addSuccessNotification,
   addWarningNotification,
   addInfoNotification,
@@ -63,7 +67,8 @@ const mapStateToPropsUserPasswordReset = (state) => {
 // --------------------------------------------------------
 export const UserList = connect(mapStateToPropsUserList, {
   selectUser,
-  loadAllUsersRoles
+  loadAllUsersRoles,
+  getLookupTable
 })(UL)
 
 export const UserEdit = connect(mapStateToPropsUserEdit, {
