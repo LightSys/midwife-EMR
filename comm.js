@@ -92,6 +92,7 @@ var redis = require('redis')
   , logWarn = require('./util').logWarn
   , logError = require('./util').logError
   , cfg = require('./config')
+  , getLookupTable = require('./routes/api/lookupTables').getLookupTable
   , buildChangeObject = require('./changes').buildChangeObject
   , isInitialized = false
   , ioSystem          // our system socket
@@ -113,6 +114,9 @@ var redis = require('redis')
   , dataSubject
   , CONST
   , DATA_CHANGE = 'DATA_CHANGE'
+  , DATA_TABLE_REQUEST = 'DATA_TABLE_REQUEST'
+  , DATA_TABLE_SUCCESS = 'DATA_TABLE_SUCCESS'
+  , DATA_TABLE_FAILURE = 'DATA_TABLE_FAILURE'
   ;
 
 // --------------------------------------------------------
@@ -212,6 +216,7 @@ var makeSend = function(type) {
           break;
 
         } else {
+          // TODO: Handle response from lookup table request. Only send to caller.
           // Intentional fall through to default.
         }
 
@@ -589,6 +594,39 @@ var init = function(io, sessionMiddle) {
       cntData--;
     });
     cntData++;
+
+    // --------------------------------------------------------
+    // DATA_TABLE_REQUEST: this is used to populate the lookup
+    // tables on the client. Only certain tables are allowed.
+    // --------------------------------------------------------
+    socket.on(DATA_TABLE_REQUEST, function(data) {
+      var action = JSON.parse(data);
+      var retAction
+      var table = action && action.payload && action.payload.table? action.payload.table: void 0;
+      if (table) {
+        logInfo(DATA_TABLE_REQUEST + ': ' + table);
+        getLookupTable(table, function(err, data) {
+          if (err) {
+            logError(err);
+            retAction = {
+              type: DATA_TABLE_FAILURE,
+              payload: {
+                error: err
+              }
+            }
+            return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
+          }
+          retAction = {
+            type: DATA_TABLE_SUCCESS,
+            payload: {
+              table: table,
+              data: data
+            }
+          }
+          return socket.emit(DATA_TABLE_SUCCESS, JSON.stringify(retAction));
+        });
+      }
+    });
 
     // --------------------------------------------------------
     // Send all data messages out to the authenticated clients.

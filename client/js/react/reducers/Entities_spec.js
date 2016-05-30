@@ -13,7 +13,8 @@ import {
   CHECK_IN_OUT_REQUEST,
   CHECK_IN_OUT_SUCCESS,
   CHECK_IN_OUT_FAILURE,
-  LOAD_USER_PROFILE_SUCCESS
+  LOAD_USER_PROFILE_SUCCESS,
+  DATA_TABLE_SUCCESS
 } from '../constants/ActionTypes'
 
 
@@ -34,6 +35,20 @@ const getDefault = () => {
 describe('reducers/Entities', () => {
   it('should return initial state', () => {
     expect(reducer(undefined, {})).toEqual(DEFAULT_ENTITIES)
+  })
+
+  describe('Lookup Tables', () => {
+    it('should load all records of an entity', () => {
+      const entities = {role: {'0': {id: 0}, '1': {id: 1}}}
+      const action = {
+        type: DATA_TABLE_SUCCESS,
+        payload: {
+          entities
+        }
+      }
+      const expectedResult = Object.assign({}, DEFAULT_ENTITIES, {role: entities.role})
+      expect(reducer(getDefault(), action)).toEqual(expectedResult)
+    })
   })
 
   describe('USER PROFILE', () => {

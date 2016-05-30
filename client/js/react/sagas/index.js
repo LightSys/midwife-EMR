@@ -13,6 +13,7 @@ import {watchGetPregnancy} from './Pregnancy'
 import {watchCheckInOut} from './CheckInOut'
 import {watchLoadUserProfile} from './Profile'
 import {watchAddUser} from './UsersRoles'
+import {watchGetLookupTable} from './LookupTables'
 
 export default function* rootSaga() {
   yield [
@@ -20,7 +21,8 @@ export default function* rootSaga() {
     fork(watchGetPregnancy),
     fork(watchCheckInOut),
     fork(watchLoadUserProfile),
-    fork(watchAddUser)
+    fork(watchAddUser),
+    fork(watchGetLookupTable)
   ]
 }
 

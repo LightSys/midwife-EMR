@@ -1,4 +1,5 @@
 import io from 'socket.io-client'
+import {normalize} from 'normalizr'
 
 import {
   siteMessage,
@@ -8,17 +9,62 @@ import {
 } from '../actions'
 
 import {
-  DATA_CHANGE
+  DATA_CHANGE,
+  DATA_TABLE_REQUEST,
+  DATA_TABLE_SUCCESS,
+  DATA_TABLE_FAILURE
 } from '../constants/ActionTypes'
+
+import Schemas from '../constants/Schemas'
+import {setLookupTable} from '../actions/LookupTables'
 
 const SITE_URL = `${window.location.origin}/site`
 const SYSTEM_URL = `${window.location.origin}/system`
 const DATA_URL = `${window.location.origin}/data`
 
+let ioData
+
+const sendMsg = (msg, payload) => {
+  ioData.emit(DATA_TABLE_REQUEST, JSON.stringify(payload))
+}
+
+const handleFailure = (err) => {
+  // TODO: handle this properly.
+  console.log(err)
+}
+
+/* --------------------------------------------------------
+ * getLookupTable()
+ *
+ * Request that the server respond with the contents of a
+ * lookup table. The server will only respond to white
+ * listed tables.
+ *
+ * The response will arrive on the data channel.
+ *
+ * param       table
+ * return      undefined
+ * -------------------------------------------------------- */
+export const getLookupTable = (table ) => {
+  // --------------------------------------------------------
+  // Patterned after Redux, though of course, this is not.
+  // --------------------------------------------------------
+  const action = {
+    type: DATA_TABLE_REQUEST,
+    payload: {
+      table
+    }
+  }
+  // --------------------------------------------------------
+  // TODO: incorporate caching in order to reduce network calls.
+  // --------------------------------------------------------
+  sendMsg(DATA_TABLE_REQUEST, action)
+}
+
 const Comm = (store) => {
   const ioSite = io.connect(SITE_URL)
   const ioSystem = io.connect(SYSTEM_URL)
-  const ioData = io.connect(DATA_URL)
+  ioData = io.connect(DATA_URL)
 
   ioSite.on('site', (data) => {
     store.dispatch(siteMessage(data.data))
@@ -42,6 +88,19 @@ const Comm = (store) => {
       store.dispatch(authenticationUpdate(data.authentication))
     }
   })
+
+  ioData.on(DATA_TABLE_SUCCESS, (data) => {
+    const dataObj = JSON.parse(data)
+    const table = dataObj && dataObj.payload && dataObj.payload.data? dataObj.payload.data: void 0
+    if (table) {
+      const normalized = normalize(table, Schemas.ROLE_ARRAY)
+      if (normalized) {
+        store.dispatch(setLookupTable(normalized.entities))
+      }
+    }
+  })
+
+  ioData.on(DATA_TABLE_FAILURE, handleFailure)
 
 }
 

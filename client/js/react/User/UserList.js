@@ -38,6 +38,7 @@ class UserList extends Component {
   }
 
   componentWillMount() {
+    this.props.getLookupTable('role') // Needs to be populated for dropdown to work.
     this.props.loadAllUsersRoles()
   }
 

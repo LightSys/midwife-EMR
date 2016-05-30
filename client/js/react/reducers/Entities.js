@@ -22,7 +22,8 @@ import {
   GET_PREGNANCY_SUCCESS,
   GET_PREGNANCY_FAILURE,
   CHECK_IN_OUT_SUCCESS,
-  LOAD_USER_PROFILE_SUCCESS
+  LOAD_USER_PROFILE_SUCCESS,
+  DATA_TABLE_SUCCESS
 } from '../constants/ActionTypes'
 
 // --------------------------------------------------------
@@ -180,6 +181,18 @@ const entities = (state = DEFAULT_ENTITIES, action) => {
         const newState = Object.assign({}, state)
         const id = action.payload.id
         newState.user[id] = action.payload
+        return newState
+      }
+
+    case DATA_TABLE_SUCCESS:
+      // --------------------------------------------------------
+      // One of the data tables is being refreshed entirely. This
+      // usually is one of the lookup tables.
+      // --------------------------------------------------------
+      if (true) {
+        const newState = Object.assign({}, state)
+        const tableName = Object.keys(action.payload.entities)[0]
+        newState[tableName] = action.payload.entities[tableName]
         return newState
       }
 
