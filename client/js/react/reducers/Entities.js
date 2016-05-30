@@ -87,7 +87,8 @@ const entities = (state = DEFAULT_ENTITIES, action) => {
     case LOAD_ALL_USERS_SUCCESS:
       newState = Object.assign({}, state)
       newState.user = action.payload.json.entities.user
-      newState.role = action.payload.json.entities.role
+      // Since role is a lookup table, we depend upon the lookup
+      // table load to populate those rows.
       return newState
 
     case SAVE_USER_REQUEST:
