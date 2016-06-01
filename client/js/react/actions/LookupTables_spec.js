@@ -33,8 +33,5 @@ describe('action/LookupTable', () => {
     }
     expect(setLookupTable(entities)).toEqual(expectedAction)
   })
-
-
-
 })
 
