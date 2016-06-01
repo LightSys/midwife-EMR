@@ -81,7 +81,7 @@ describe('reducers/Entities', () => {
         action.payload.json.entities.user = newUsers
         action.payload.json.entities.role = newRoles
         expect(reducer(getDefault(), action))
-          .toEqual(Object.assign({}, DEFAULT_ENTITIES, {user: newUsers, role: newRoles}))
+          .toEqual(Object.assign({}, DEFAULT_ENTITIES, {user: newUsers}))
       })
     })
 

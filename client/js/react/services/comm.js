@@ -12,8 +12,24 @@ import {
   DATA_CHANGE,
   DATA_TABLE_REQUEST,
   DATA_TABLE_SUCCESS,
-  DATA_TABLE_FAILURE
+  DATA_TABLE_FAILURE,
+  ADD_USER_REQUEST,
+  ADD_USER_SUCCESS,
+  ADD_USER_FAILURE,
 } from '../constants/ActionTypes'
+
+// Time to wait for the server by default.
+const DEFAULT_SERVER_TIMEOUT = 5000
+
+/* --------------------------------------------------------
+ * getNextTransactionId()
+ *
+ * Returns the next transaction id to use.
+ * -------------------------------------------------------- */
+const getNextTransactionId = () => {
+  return ++nextTransactionId
+}
+let nextTransactionId = 0
 
 import Schemas from '../constants/Schemas'
 import {setLookupTable} from '../actions/LookupTables'
@@ -25,7 +41,7 @@ const DATA_URL = `${window.location.origin}/data`
 let ioData
 
 const sendMsg = (msg, payload) => {
-  ioData.emit(DATA_TABLE_REQUEST, JSON.stringify(payload))
+  ioData.emit(msg, JSON.stringify(payload))
 }
 
 const handleFailure = (err) => {
@@ -45,7 +61,7 @@ const handleFailure = (err) => {
  * param       table
  * return      undefined
  * -------------------------------------------------------- */
-export const getLookupTable = (table ) => {
+export const getLookupTable = (table) => {
   // --------------------------------------------------------
   // Patterned after Redux, though of course, this is not.
   // --------------------------------------------------------
@@ -59,6 +75,46 @@ export const getLookupTable = (table ) => {
   // TODO: incorporate caching in order to reduce network calls.
   // --------------------------------------------------------
   sendMsg(DATA_TABLE_REQUEST, action)
+}
+
+/* --------------------------------------------------------
+ * addUser()
+ *
+ * Send an add user request to the server. Returns a promise
+ * which resolves when the server replies to the request with
+ * the new user object or ultimately rejects if the server
+ * does not reply within the timeout.
+ *
+ * param       user object
+ * param       ms - milliseconds to wait before assuming server is gone
+ * return      undefined
+ * -------------------------------------------------------- */
+export const addUser = (user, ms) => {
+  return new Promise((resolve, reject) => {
+    // Set up the action object.
+    const transaction = getNextTransactionId()
+    const action = {
+      type: ADD_USER_REQUEST,
+      transaction,
+      payload: {
+        user
+      }
+    }
+
+    // Set up the timeout to handle a non-responsive server.
+    const timeout = setTimeout(() => {
+      reject(false)
+    }, ms? ms: DEFAULT_SERVER_TIMEOUT)
+
+    // Handle a server response.
+    ioData.on(''+transaction, function(data) {
+      var retAction = JSON.parse(data)
+      clearTimeout(timeout)
+      resolve(retAction)
+    })
+
+    sendMsg(ADD_USER_REQUEST, action)
+  })
 }
 
 const Comm = (store) => {

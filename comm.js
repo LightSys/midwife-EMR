@@ -93,7 +93,9 @@ var redis = require('redis')
   , logError = require('./util').logError
   , cfg = require('./config')
   , getLookupTable = require('./routes/api/lookupTables').getLookupTable
+  , saveUser = require('./routes/comm/userRoles').saveUser
   , buildChangeObject = require('./changes').buildChangeObject
+  , socketToUserInfo = require('./commUtils').socketToUserInfo
   , isInitialized = false
   , ioSystem          // our system socket
   , ioSite            // our site socket
@@ -117,6 +119,9 @@ var redis = require('redis')
   , DATA_TABLE_REQUEST = 'DATA_TABLE_REQUEST'
   , DATA_TABLE_SUCCESS = 'DATA_TABLE_SUCCESS'
   , DATA_TABLE_FAILURE = 'DATA_TABLE_FAILURE'
+  , ADD_USER_REQUEST = 'ADD_USER_REQUEST'
+  , ADD_USER_SUCCESS = 'ADD_USER_SUCCESS'
+  , ADD_USER_FAILURE = 'ADD_USER_FAILURE'
   ;
 
 // --------------------------------------------------------
@@ -625,6 +630,38 @@ var init = function(io, sessionMiddle) {
           }
           return socket.emit(DATA_TABLE_SUCCESS, JSON.stringify(retAction));
         });
+      }
+    });
+
+    socket.on(ADD_USER_REQUEST, function(data) {
+      var action = JSON.parse(data)
+        , retAction = _.extend({}, action)
+        , userRec = action && action.payload && action.payload.user? action.payload.user: void 0
+        , transaction = action && action.transaction? action.transaction: void 0
+        , userInfo = socketToUserInfo(socket)
+        ;
+      if (userRec && transaction && userInfo) {
+        logInfo(ADD_USER_REQUEST + ', Transaction id: ' + transaction);
+        saveUser(userRec, userInfo, function(err, newUser) {
+          var data;
+          if (err) {
+            retAction.payload = {error: err};
+            return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
+          }
+          retAction.payload = {user: newUser};
+          return socket.emit(''+transaction, JSON.stringify(retAction));
+
+          // --------------------------------------------------------
+          // Notify all clients of the change.
+          // --------------------------------------------------------
+          data = {
+            table: 'user',
+            id: newUser.id,
+            updatedBy: socket.request.session.user.id,
+            sessionID: getSocketSessionId(socket)
+          };
+          sendData(DATA_CHANGE, JSON.stringify(data));
+        })
       }
     });
 
