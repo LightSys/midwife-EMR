@@ -27,12 +27,12 @@ var Bookshelf = require('bookshelf')
  * to create or update a user or a user to update their
  * own profile.
  *
- * param       userObj  - the user object that is being saved
+ * param       payload  - the payload of the action object
  * param       userInfo - the user info of the user doing the saving
  * param       cb       - the callback, returns new user object
  * return      undefined
  * -------------------------------------------------------- */
-var saveUser = function(userObj, userInfo, cb) {
+var saveUser = function(payload, userInfo, cb) {
   var processPW = false
     , fldsToOmit = ['password', 'password2','_csrf', 'role']  // role is the withRelated join from the GET.
     , defaultFlds = {
@@ -48,6 +48,7 @@ var saveUser = function(userObj, userInfo, cb) {
         return userInfo.roleInfo.roleName === role
       }
     , errMsg
+    , userObj = payload.user? payload.user: void 0;
     ;
 
   if (isProfileUpdate) {

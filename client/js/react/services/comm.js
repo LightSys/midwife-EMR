@@ -78,28 +78,24 @@ export const getLookupTable = (table) => {
 }
 
 /* --------------------------------------------------------
- * addUser()
+ * changeData()
  *
- * Send an add user request to the server. Returns a promise
- * which resolves when the server replies to the request with
- * the new user object or ultimately rejects if the server
- * does not reply within the timeout.
+ * Takes an action object, which contains the entirety of
+ * the change, and adds a transaction id to it for tracking
+ * purposes. Allows caller to specify an optional timeout
+ * for the server to respond within, otherwise uses default.
+ * Resolves as a promise to the caller with the response
+ * from the server.
  *
- * param       user object
- * param       ms - milliseconds to wait before assuming server is gone
- * return      undefined
+ * param        action  - Redux format action object
+ * param        ms      - milliseconds to wait for the server
+ * return       promise
  * -------------------------------------------------------- */
-export const addUser = (user, ms) => {
+export const changeData = (action, ms) => {
   return new Promise((resolve, reject) => {
-    // Set up the action object.
+    // Add a transaction id to the request.
     const transaction = getNextTransactionId()
-    const action = {
-      type: ADD_USER_REQUEST,
-      transaction,
-      payload: {
-        user
-      }
-    }
+    const newAction = Object.assign({}, action, {transaction})
 
     // Set up the timeout to handle a non-responsive server.
     const timeout = setTimeout(() => {
@@ -113,7 +109,8 @@ export const addUser = (user, ms) => {
       resolve(retAction)
     })
 
-    sendMsg(ADD_USER_REQUEST, action)
+    // Send the request to the server.
+    sendMsg(DATA_CHANGE, newAction)
   })
 }
 

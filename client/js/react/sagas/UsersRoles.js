@@ -5,7 +5,7 @@ import fetch from 'isomorphic-fetch'
 import {API_ROOT} from '../constants/index'
 import {checkStatus} from '../utils/sagasHelper'
 import {Schemas} from '../constants/index'
-import {addUser} from '../services/comm'
+import {changeData} from '../services/comm'
 
 import {
   ADD_USER_REQUEST,
@@ -37,7 +37,7 @@ function* addUserSaga(action) {
   let retAction
   let newUser
   try {
-    retAction = yield call(addUser, user)
+    retAction = yield call(changeData, action)
     newUser = retAction.payload.user
     success = true
 
