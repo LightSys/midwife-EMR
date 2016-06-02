@@ -38,7 +38,7 @@
     "react-addons-create-fragment": "^15.1.0",
     "react-dom": "^15.1.0",
     "react-redux": "^4.4.5",
-    "react-router": "^2.0.0-rc5",
+    "react-router": "^2.4.0",
     "recluster": "^0.4.1",
     "redis": "^2.2.5",
     "redux": "^3.5.2",
