@@ -21,7 +21,7 @@ class UserLine extends Component {
     }
 
     return (
-      <tr key={this.props.key} onClick={this.editUser}>
+      <tr onClick={this.editUser}>
         <td>{this.props.id}</td>
         <td>{this.props.lastname}</td>
         <td>{this.props.firstname}</td>

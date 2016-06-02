@@ -195,7 +195,7 @@ class UserEditClass extends Component {
     // Populate the fields.
     const flds = map(fldObjs, (fld, fldName) => {
       let options
-      const val = this.state.user[fldName]
+      const val = this.state.user[fldName]? this.state.user[fldName]: ''
       const onChange = this.handleChange(fldName)
       if (fld.hasOwnProperty('additionalProps')) options = this.props[fld.additionalProps]
       const cfg = Object.assign({}, fld, {colWidth, fldName, val, onChange, options})
