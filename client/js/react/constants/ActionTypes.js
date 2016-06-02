@@ -45,7 +45,8 @@ export const USER_PASSWORD_RESET_SET = [
   USER_PASSWORD_RESET_FAILURE
 ]
 
-// We are informed by the server that another client has changed some data.
+// We are informed by the server that another client has changed some data
+// or we are informing the server that we have changed data.
 export const DATA_CHANGE = 'DATA_CHANGE'
 
 // --------------------------------------------------------

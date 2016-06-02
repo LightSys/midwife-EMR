@@ -633,30 +633,60 @@ var init = function(io, sessionMiddle) {
       }
     });
 
-    socket.on(ADD_USER_REQUEST, function(data) {
+    // --------------------------------------------------------
+    // Handle a data change request from a client.
+    // --------------------------------------------------------
+    socket.on(DATA_CHANGE, function(data) {
       var action = JSON.parse(data)
         , retAction = _.extend({}, action)
-        , userRec = action && action.payload && action.payload.user? action.payload.user: void 0
+        , payload = action && action.payload? action.payload: void 0
         , transaction = action && action.transaction? action.transaction: void 0
         , userInfo = socketToUserInfo(socket)
+        , dataChangeFunc      // the function to handle the data change
+        , payloadKey          // the data table
+        , errMsg
         ;
-      if (userRec && transaction && userInfo) {
-        logInfo(ADD_USER_REQUEST + ', Transaction id: ' + transaction);
-        saveUser(userRec, userInfo, function(err, newUser) {
+      if (payload && transaction && userInfo) {
+        logInfo(DATA_CHANGE + ', Transaction id: ' + transaction);
+
+        // --------------------------------------------------------
+        // Determine what action is required and handle unknown action types.
+        // --------------------------------------------------------
+        switch (action.type) {
+          case ADD_USER_REQUEST:
+            dataChangeFunc = saveUser;
+            payloadKey = 'user';
+            break;
+          default:
+            errMsg = 'Comm: received unknown action.type: ' + action.type;
+            logWarn(errMsg);
+            break;
+        }
+        if (! dataChangeFunc || ! payloadKey) {
+          retAction.payload = {error: errMsg};
+          return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
+        }
+
+        // --------------------------------------------------------
+        // Execute the change against the database and respond to
+        // the client appropriately.
+        // --------------------------------------------------------
+        dataChangeFunc(payload, userInfo, function(err, newData) {
           var data;
           if (err) {
             retAction.payload = {error: err};
             return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
           }
-          retAction.payload = {user: newUser};
+          retAction.payload[payloadKey] = newData;
           return socket.emit(''+transaction, JSON.stringify(retAction));
 
           // --------------------------------------------------------
           // Notify all clients of the change.
+          // NOTE: we assume that the payloadKey is the table name.
           // --------------------------------------------------------
           data = {
-            table: 'user',
-            id: newUser.id,
+            table: payloadKey,
+            id: newData.id,
             updatedBy: socket.request.session.user.id,
             sessionID: getSocketSessionId(socket)
           };
