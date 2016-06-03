@@ -204,7 +204,7 @@ export const renderROText = (cfg) => {
         type={cfg.type}
         className='form-control'
         placeholder={cfg.ph}
-        value={cfg.val}
+        value={cfg.val == null? '': cfg.val}
         disabled={true}
         ref={(c) => {
           if (cfg.state) {
@@ -245,7 +245,7 @@ export const renderText = (cfg) => {
         type={cfg.type}
         className='form-control'
         placeholder={cfg.ph}
-        value={cfg.val}
+        value={cfg.val == null? '': cfg.val}
         onChange={cfg.onChange}
         ref={(c) => {
           if (cfg.state) {
