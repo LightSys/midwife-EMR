@@ -133,7 +133,8 @@ class UserEditClass extends Component {
     // force a reload of this new route. This will bring the component online
     // in edit mode for this user.
     if (this.isNew) {
-      if (! /\/new$/.test(props.route)) {
+      if (props.route && props.route !== this.props.route && ! /\/new$/.test(props.route)) {
+        this.isNew = false
         this.context.router.push({pathname: props.route})
       }
     }

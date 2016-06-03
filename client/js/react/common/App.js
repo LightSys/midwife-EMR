@@ -54,12 +54,7 @@ class App extends Component {
   // state, for example, maybe a Saga.
   // --------------------------------------------------------
   componentWillReceiveProps(nextProps) {
-    if (nextProps.route && nextProps.route !== this.props.route) {
-      // --------------------------------------------------------
-      // The new route is not empty and has changed so change route.
-      // --------------------------------------------------------
-      this.context.router.push({pathname: nextProps.route})
-    } else if (nextProps.route && nextProps.route === this.props.route) {
+    if (nextProps.route && nextProps.route === this.props.route) {
       // --------------------------------------------------------
       // The new route is not empty but has already been dealt
       // with, so reset the route in Redux state to an empty string.
