@@ -394,6 +394,16 @@ app.post(cfg.path.login, logRoute, setRoleInfo, home.loginPost);
 app.get(cfg.path.logout, logRoute, clearRoleInfo, home.logout);
 
 // --------------------------------------------------------
+// Catch routes to see if user refreshed page on an SPA route
+// but don't handle the API calls.
+// --------------------------------------------------------
+app.use(function(req, res, next) {
+  if (/^\/api\//.test(req.url)) return next();
+  if (req.session && req.session.isSpaOnly) return api.doSpa(req, res, next);
+  next();
+});
+
+// --------------------------------------------------------
 // Home
 // --------------------------------------------------------
 app.get(cfg.path.home, common, hasSuper, api.doSpa, home.home);
@@ -659,6 +669,7 @@ app.get(cfg.path.apiPregnancy, spaCommon,
 // Checkin and Checkout
 app.post(cfg.path.apiCheckInOut, spaCommon,
     inRoles(['clerk', 'guard', 'supervisor', 'attending']), apiCheckInOut);
+
 
 // --------------------------------------------------------
 // Error handling.

@@ -125,6 +125,14 @@ var doSpa = function(req, res, next) {
         }
       };
       console.log(data);
+
+      // --------------------------------------------------------
+      // Store the fact that this user's routes are all SPA or
+      // phase two routes in the session. This allows page
+      // refreshes to be properly handled.
+      // --------------------------------------------------------
+      req.session.isSpaOnly = true;
+
       return res.render('main', {cfg: data});
     }
   }
