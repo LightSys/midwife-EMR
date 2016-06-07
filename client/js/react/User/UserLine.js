@@ -23,6 +23,7 @@ class UserLine extends Component {
     return (
       <tr onClick={this.editUser}>
         <td>{this.props.id}</td>
+        <td>{this.props.username}</td>
         <td>{this.props.lastname}</td>
         <td>{this.props.firstname}</td>
         <td>{this.props.shortName}</td>

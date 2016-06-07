@@ -95,6 +95,7 @@ class UserList extends Component {
           <thead>
             <tr>
               <td>ID</td>
+              <td>Username</td>
               <td>Lastname</td>
               <td>Firstname</td>
               <td>shortName</td>
