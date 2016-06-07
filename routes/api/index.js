@@ -133,6 +133,31 @@ var doSpa = function(req, res, next) {
       // --------------------------------------------------------
       req.session.isSpaOnly = true;
 
+      // --------------------------------------------------------
+      // When the user reloads a page, in many, if not most, cases
+      // the SPA will not load correctly because the Redux state is
+      // currently not being saved in localStorage and most pages
+      // are dependent upon something being in state already. Rather
+      // than addressing that issue on a page by page basis, we handle
+      // it poorly but in a way that will always work the same --
+      // we redirect the user to the home page to start again.
+      //
+      // There are known pros and cons of this approach.
+      // - Pros:
+      //    - Simplicity: 80/20 rule
+      //    - Consistency
+      //    - Users will learn not to reload page needlessly
+      //    - Performance is better because the client is not saving
+      //      the whole of the Redux state to localStorage for every
+      //      change or every x seconds.
+      // - Cons
+      //    - Users will lose place if they have to reload page
+      //    - Users cannot share deep application links with each other
+      // --------------------------------------------------------
+      if (req.url !== '/') {
+        return res.redirect('/');
+      }
+
       return res.render('main', {cfg: data});
     }
   }
