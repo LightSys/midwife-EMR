@@ -1,10 +1,6 @@
-import {call, fork, put, select} from 'redux-saga/effects'
+import {call, put} from 'redux-saga/effects'
 import {takeEvery} from 'redux-saga'
-import fetch from 'isomorphic-fetch'
 
-import {API_ROOT} from '../constants/index'
-import {checkStatus} from '../utils/sagasHelper'
-import {Schemas} from '../constants/index'
 import {changeData} from '../services/comm'
 
 import {
@@ -25,11 +21,6 @@ import {
 const successNotifyTimeout = 2000;
 const warningNotifyTimeout = 5000;
 const dangerNotifyTimeout = 7000;
-
-const options = {
-  credentials: 'same-origin',   // Applies _csrf and connection.sid cookies.
-  method: 'GET'
-}
 
 function* addUserSaga(action) {
   const user = action.payload.user

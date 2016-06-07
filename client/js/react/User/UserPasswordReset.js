@@ -27,7 +27,7 @@ class UserPasswordResetClass extends Component {
   }
 
   componentDidMount() {
-    this._password1.focus()
+    if (this._password1) this._password1.focus()
   }
 
   handleCancel(evt) {
