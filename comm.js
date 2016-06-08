@@ -19,7 +19,7 @@
  * - updatedAt  - date/time in milliseconds of creation/update
  * - workerId   - the process.env.WORKER_ID that created/updated the message
  * - scope      - if specified, names the worker id that message is limited to
- * - data       - the payload, all the key/value pairs set so far
+ * - data       - the payload
  *
  * The system stream:
  * - Purpose: server to client broadcast to subscribers. System messages pertain to
@@ -88,9 +88,7 @@ var redis = require('redis')
   , rx = require('rx')
   , uuid = require('uuid')
   , _ = require('underscore')
-  , logInfo = require('./util').logInfo
-  , logWarn = require('./util').logWarn
-  , logError = require('./util').logError
+  , moment = require('moment')
   , cfg = require('./config')
   , getLookupTable = require('./routes/api/lookupTables').getLookupTable
   , saveUser = require('./routes/comm/userRoles').saveUser
@@ -112,10 +110,10 @@ var redis = require('redis')
   , siteSubject
   , siteSubjectData
   , systemSubject
-  , systemSubjectLastId
   , dataSubject
   , CONST
   , DATA_CHANGE = 'DATA_CHANGE'
+  , SYSTEM_LOG = 'SYSTEM_LOG'
   , DATA_TABLE_REQUEST = 'DATA_TABLE_REQUEST'
   , DATA_TABLE_SUCCESS = 'DATA_TABLE_SUCCESS'
   , DATA_TABLE_FAILURE = 'DATA_TABLE_FAILURE'
@@ -123,6 +121,87 @@ var redis = require('redis')
   , ADD_USER_SUCCESS = 'ADD_USER_SUCCESS'
   , ADD_USER_FAILURE = 'ADD_USER_FAILURE'
   ;
+
+
+/* --------------------------------------------------------
+ * writeLog()
+ *
+ * Writes a log message to the console.
+ *
+ * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
+ * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
+ * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ *
+ * param      msg
+ * param      logType
+ * return     undefined
+ * -------------------------------------------------------- */
+var INFO = 1
+  , WARN = 2
+  , ERROR = 3
+  ;
+var writeLog = function(msg, logType) {
+  var fn = 'info'
+    , id = process.env.WORKER_ID? process.env.WORKER_ID: 0
+    , theDate = moment().format('YYYY-MM-DD HH:mm:ss.SSS')
+    , message = id + '|' + theDate + ': ' + msg
+    ;
+  if (logType === WARN || logType === ERROR) fn = 'error';
+  console[fn](message);
+};
+
+/* --------------------------------------------------------
+ * logCommInfo()
+ *
+ * Writes an informative message to the console.
+ *
+ * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
+ * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
+ * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ *
+ * param      msg
+ * return     undefined
+ * -------------------------------------------------------- */
+var logCommInfo = function(msg) {
+  writeLog(msg, INFO);
+  //console.trace('TRACE');
+};
+
+/* --------------------------------------------------------
+ * logCommWarn()
+ *
+ * Writes a warning message to the console.
+ *
+ * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
+ * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
+ * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ *
+ * param      msg
+ * return     undefined
+ * -------------------------------------------------------- */
+var logCommWarn = function(msg) {
+  writeLog(msg, WARN);
+};
+
+/* --------------------------------------------------------
+ * logCommError()
+ *
+ * Writes an error message to the console.
+ *
+ * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
+ * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
+ * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ *
+ * param      msg
+ * return     undefined
+ * -------------------------------------------------------- */
+var logCommError = function(msg) {
+  writeLog(msg, ERROR);
+};
 
 // --------------------------------------------------------
 // Constant definitions. Allow client of this module to use
@@ -140,9 +219,18 @@ CONST = {
  * wrap()
  *
  * Wrap data in a message wrapper per the message type. The
- * message id, type, updatedAt, and workerID fields are
- * automatically set. This is only done when new data is
- * sent into the stream.
+ * message id, type, updatedAt, workerID, and processedBy
+ * fields are automatically set. This is only done when new
+ * data is sent into the stream.
+ *
+ * The workerId field contains the id of the process that
+ * initiated the message.
+ *
+ * The processedBy field contains the ids of the processes
+ * that have received the message via Redis or, as is the
+ * case here, when the message was created. This is used to
+ * prevent messages from bouncing between processes without
+ * end.
  *
  * param       type
  * param       data
@@ -155,6 +243,7 @@ var wrap = function(type, data, scope) {
     , type: type
     , updatedAt: Date.now()
     , workerId: process.env.WORKER_ID
+    , processedBy: [process.env.WORKER_ID]
     , scope: type == CONST.TYPE.SITE? undefined:
              type == CONST.TYPE.DATA? undefined:
              type == CONST.TYPE.SYSTEM? scope: undefined
@@ -173,7 +262,7 @@ siteSubjectData = wrap(CONST.TYPE.SITE);
  * param       type     - type: site, system, or data
  * return      function
  * -------------------------------------------------------- */
-var makeSend = function(type) {
+function makeSend(type) {
   return function(key, val, scope) {
     var data = {};
     var wrapped;
@@ -193,14 +282,11 @@ var makeSend = function(type) {
       case CONST.TYPE.SYSTEM:
         // --------------------------------------------------------
         // For system messages, there is no aggregation and there
-        // is an optional scope parameter allowed. We store the
-        // id of the message as we inject it into the rx stream in
-        // order to prevent circularities.
+        // is an optional scope parameter allowed.
         // --------------------------------------------------------
         data[key] = val;
         wrapped = wrap(type, data, scope);
-        systemSubjectLastId = wrapped.id;
-        systemSubject.onNext(wrapped);
+        if (isInitialized) systemSubject.onNext(wrapped);
         break;
 
       case CONST.TYPE.DATA:
@@ -208,7 +294,7 @@ var makeSend = function(type) {
           try {
             data = JSON.parse(val)
           } catch (e) {
-            logError('Error in makeSend processing data: ' + e.toString());
+            logCommError('Error in makeSend processing data: ' + e.toString());
             return;
           }
           buildChangeObject(data).then(function(data2) {
@@ -226,7 +312,7 @@ var makeSend = function(type) {
         }
 
       default:
-        logError('Error: makeSend() unimplemented for this type: ' + type);
+        logCommError('Error: makeSend() unimplemented for this type: ' + type);
     }
   };
 };
@@ -352,17 +438,26 @@ var init = function(io, sessionMiddle) {
   // Handle messages from other worker processes.
   // --------------------------------------------------------
   redisSub.on('message', function(channel, message) {
+    var data;
     try {
       data = JSON.parse(message);
     } catch (e) {
-      logError('Error during parsing of Redis message: ' + e.toString());
+      logCommError('Error during parsing of Redis message: ' + e.toString());
       console.dir(util.inspect(message, {depth: 3}));
       data = {};
     }
     switch (channel) {
       case CONST.TYPE.SITE:
-        // We already have this message, therefore do nothing.
-        if (data.id && data.id === siteSubjectData.id) return;
+        // --------------------------------------------------------
+        // Insure that we don't process messages that we have already
+        // received from other processes by checking for our own
+        // process id in the message and putting it there if not found.
+        // --------------------------------------------------------
+        if (data.processedBy && _.contains(data.processedBy, process.env.WORKER_ID)) {
+          return;
+        }
+        data.processedBy.push(process.env.WORKER_ID);
+
         // --------------------------------------------------------
         // Completely replace siteSubjectData, including wrapper,
         // with what we received from the other process, then
@@ -380,11 +475,17 @@ var init = function(io, sessionMiddle) {
         break;
 
       case CONST.TYPE.SYSTEM:
-        // We already have this message, therefore do nothing.
-        if (data.id && data.id === systemSubjectLastId) return;
-        // Save the id so we don't create a loop between Rx and Redis.
-        systemSubjectLastId = data.id;
-        systemSubject.onNext(data);
+        // --------------------------------------------------------
+        // We just received a message from the other process so we
+        // check to see if our process id is already in the
+        // processedBy field. If it is, we drop it because we have
+        // already handled this message, else we add our process id
+        // and send the message on it's way within our process.
+        // --------------------------------------------------------
+        if (! _.contains(data.processedBy, process.env.WORKER_ID)) {
+          data.processedBy.push(process.env.WORKER_ID);
+          systemSubject.onNext(data);
+        }
         break;
 
       case CONST.TYPE.DATA:
@@ -397,7 +498,7 @@ var init = function(io, sessionMiddle) {
         break;
 
       default:
-        logError('redisSub: channel ' + channel + ' is not yet implemented.');
+        logCommError('redisSub: channel ' + channel + ' is not yet implemented.');
     }
   });
   redisSub.subscribe(CONST.TYPE.SITE);
@@ -433,10 +534,10 @@ var init = function(io, sessionMiddle) {
       redisPub.publish(CONST.TYPE.SITE, JSON.stringify(data));
     },
     function(err) {
-      logError('Error: ' + err);
+      logCommError('Error: ' + err);
     },
     function() {
-      logInfo('siteSubject completed.');
+      logCommInfo('siteSubject completed.');
     }
   );
 
@@ -459,10 +560,10 @@ var init = function(io, sessionMiddle) {
       redisPub.publish(CONST.TYPE.SYSTEM, JSON.stringify(data));
     },
     function(err) {
-      logError('Error: ' + err);
+      logCommError('Error: ' + err);
     },
     function() {
-      logInfo('systemSubject completed.');
+      logCommInfo('systemSubject completed.');
     }
   );
 
@@ -524,16 +625,26 @@ var init = function(io, sessionMiddle) {
       function(data) {
         // Don't do work unless logged in.
         if (! isValidSocketSession(socket)) {
-          logInfo('Socket is invalid so not sending.');
+          logCommInfo('Socket is invalid so not sending.');
           return;
+        }
+
+        // --------------------------------------------------------
+        // Special handling for SYSTEM_LOG messages: only users with
+        // the administrator role get these messages.
+        // --------------------------------------------------------
+        if (data.data && _.has(data.data, SYSTEM_LOG)) {
+          if (socket.request.session.roleInfo.roleName !== 'administrator') {
+            return;
+          }
         }
         socket.emit(CONST.TYPE.SYSTEM, data);
       },
       function(err) {
-        logError('Error: ' + err);
+        logCommError('Error: ' + err);
       },
       function() {
-        logInfo('systemSubject completed.');
+        logCommInfo('systemSubject completed.');
       }
     );
   });
@@ -571,10 +682,10 @@ var init = function(io, sessionMiddle) {
         socket.emit(CONST.TYPE.SITE, data);
       },
       function(err) {
-        logInfo('Error: ' + err);
+        logCommInfo('Error: ' + err);
       },
       function() {
-        logInfo('siteSubject completed.');
+        logCommInfo('siteSubject completed.');
       }
     );
   });
@@ -609,10 +720,10 @@ var init = function(io, sessionMiddle) {
       var retAction
       var table = action && action.payload && action.payload.table? action.payload.table: void 0;
       if (table) {
-        logInfo(DATA_TABLE_REQUEST + ': ' + table);
+        logCommInfo(DATA_TABLE_REQUEST + ': ' + table);
         getLookupTable(table, function(err, data) {
           if (err) {
-            logError(err);
+            logCommError(err);
             retAction = {
               type: DATA_TABLE_FAILURE,
               payload: {
@@ -647,7 +758,7 @@ var init = function(io, sessionMiddle) {
         , errMsg
         ;
       if (payload && transaction && userInfo) {
-        logInfo(DATA_CHANGE + ', Transaction id: ' + transaction);
+        logCommInfo(DATA_CHANGE + ', Transaction id: ' + transaction);
 
         // --------------------------------------------------------
         // Determine what action is required and handle unknown action types.
@@ -659,7 +770,7 @@ var init = function(io, sessionMiddle) {
             break;
           default:
             errMsg = 'Comm: received unknown action.type: ' + action.type;
-            logWarn(errMsg);
+            logCommWarn(errMsg);
             break;
         }
         if (! dataChangeFunc || ! payloadKey) {
@@ -714,17 +825,26 @@ var init = function(io, sessionMiddle) {
         }
       },
       function(err) {
-        logInfo('Error: ' + err);
+        logCommInfo('Error: ' + err);
       },
       function() {
-        logInfo('dataSubject completed.');
+        logCommInfo('dataSubject completed.');
       }
     );
   });
 };
 
+/* --------------------------------------------------------
+ * getIsInitialized()
+ *
+ * Returns a function that tells the caller if the comm
+ * module is initialized yet.
+ * -------------------------------------------------------- */
+function getIsInitialized() {return isInitialized;}
+
 module.exports = {
   init: init
+  , getIsInitialized: getIsInitialized
   , sendSite: sendSite
   , sendSystem: sendSystem
   , sendData: sendData
@@ -732,5 +852,6 @@ module.exports = {
   , subscribeSystem: subscribeSystem
   , subscribeData: subscribeData
   , DATA_CHANGE: DATA_CHANGE
+  , SYSTEM_LOG: SYSTEM_LOG
 };
 
