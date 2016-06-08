@@ -20,7 +20,10 @@ var moment = require('moment')
       , {key: 'Friday', val: 'Fri'}
       , {key: 'Saturday', val: 'Sat'}
     ]
+  , SYSTEM_LOG = 'SYSTEM_LOG' // Initialized here due to comm module initializing later.
+  , sendSystem                // This is initialized later.
   ;
+
 
 /* --------------------------------------------------------
  * formatDohID()
@@ -64,9 +67,27 @@ var getProcessId = function() {
 var writeLog = function(msg, logType) {
   var fn = 'info'
     , id = getProcessId()
+    , theDate = moment().format('YYYY-MM-DD HH:mm:ss.SSS')
+    , message = id + '|' + theDate + ': ' + msg
     ;
   if (logType === WARN || logType === ERROR) fn = 'error';
-  console[fn]('%d|%s: %s', id, moment().format('YYYY-MM-DD HH:mm:ss.SSS'), msg);
+  console[fn](message);
+
+  // --------------------------------------------------------
+  // Broadcast the message to administrators if the comm layer is up.
+  //
+  // Note that due to the comm module not being initialized as
+  // soon as this module, the sendSystem function is not
+  // available immediately upon system startup.
+  // --------------------------------------------------------
+  if (sendSystem) {
+    sendSystem(SYSTEM_LOG, message);
+  } else {
+    if (require('./comm').getIsInitialized()) {
+      sendSystem = require('./comm').sendSystem;
+      sendSystem(SYSTEM_LOG, message);
+    }
+  }
 };
 
 /* --------------------------------------------------------
