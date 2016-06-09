@@ -40,9 +40,10 @@ const siteMessage = (state = {}, action) => {
   return state
 }
 
-const systemMessage = (state = {}, action) => {
+const systemMessage = (state = [], action) => {
   if (action.type === SYSTEM_MESSAGE) {
-    return Object.assign({}, state, {message: action.message})
+    // Retain the most recent 100 messages.
+    return [action.message, ...state].slice(0, 100)
   }
   return state
 }

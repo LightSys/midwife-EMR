@@ -1,7 +1,8 @@
 import {
   setCookies,
   setIsAuthenticated,
-  setUserId
+  setUserId,
+  setRoleName
 } from '../actions/index'
 
 // Our singleton reference to the Redux store.
@@ -21,6 +22,10 @@ export const initAuthenticated = (isAuthenticated) => {
 
 export const initUserId = (id) => {
   theStore.dispatch(setUserId(id))
+}
+
+export const initRoleName = (roleName) => {
+  theStore.dispatch(setRoleName(roleName))
 }
 
 export const isAuthenticated = () => {

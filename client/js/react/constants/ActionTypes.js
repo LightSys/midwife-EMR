@@ -94,6 +94,7 @@ export const AUTHENTICATION_INIT = 'AUTHENTICATION_INIT'
 export const SET_COOKIES = 'SET_COOKIES'
 export const SET_IS_AUTHENTICATED = 'SET_IS_AUTHENTICATED'
 export const SET_USER_ID = 'SET_USER_ID'
+export const SET_ROLE_NAME = 'SET_ROLE_NAME'
 
 // --------------------------------------------------------
 // Server information stored upon initialization.

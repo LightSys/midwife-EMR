@@ -6,7 +6,8 @@ import {
   SYSTEM_MESSAGE,
   SITE_MESSAGE,
   SET_IS_AUTHENTICATED,
-  SET_USER_ID
+  SET_USER_ID,
+  SET_ROLE_NAME
 } from '../constants/ActionTypes'
 
 import {
@@ -15,7 +16,8 @@ import {
   systemMessage,
   siteMessage,
   setIsAuthenticated,
-  setUserId
+  setUserId,
+  setRoleName
 } from './index'
 
 describe('actions/index', () => {
@@ -106,6 +108,17 @@ describe('actions/index', () => {
       }
     }
     expect(setUserId()).toEqual(expectedAction)
+  })
+
+  it('setRoleName', () => {
+    const roleName = 'test'
+    const expectedAction = {
+      type: SET_ROLE_NAME,
+      payload: {
+        roleName
+      }
+    }
+    expect(setRoleName(roleName)).toEqual(expectedAction)
   })
 })
 

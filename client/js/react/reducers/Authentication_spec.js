@@ -8,7 +8,8 @@ import {
   AUTHENTICATION_INIT,
   SET_IS_AUTHENTICATED,
   SET_COOKIES,
-  SET_USER_ID
+  SET_USER_ID,
+  SET_ROLE_NAME
 } from '../constants/ActionTypes'
 
 import reducer, {AUTHENTICATION_DEFAULT} from './Authentication'
@@ -71,6 +72,17 @@ describe('reducers/Authentication', () => {
     expect(reducer(AUTHENTICATION_DEFAULT, action)).toEqual(newState)
   })
 
+  it('SET_ROLE_NAME', () => {
+    const roleName = 'testing'
+    const action = {
+      type: SET_ROLE_NAME,
+      payload: {
+        roleName
+      }
+    }
+    const newState = Object.assign({}, AUTHENTICATION_DEFAULT, {roleName})
+    expect(reducer(AUTHENTICATION_DEFAULT, action)).toEqual(newState)
+  })
 
 })
 
