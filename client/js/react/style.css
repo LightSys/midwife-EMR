@@ -59,3 +59,28 @@ body {
        url('../../../static/fonts/lato-v11-latin-700.svg#Lato') format('svg'); /* Legacy iOS */
 }
 
+
+/* System Log */
+.system-log-wrapper {
+
+}
+.system-log {
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+  border-left: 1px solid #E9E9E9;
+  border-right: 1px solid #E9E9E9;
+  width: 100%;
+  height: 300px;
+  max-height: 300px;
+  overflow-y: scroll;
+}
+.system-log-line {
+  font-weight: bold;
+}
+.system-log-line-even {
+  background-color: #E9E9E9;
+}
+.system-log-line-odd {
+  background-color: white;
+}
+

@@ -120,6 +120,7 @@ var doSpa = function(req, res, next) {
         },
         isAuthenticated: req.isAuthenticated(),
         userId: req.session.user.id,
+        roleName: req.session.user.role.name,
         serverInfo: {
           appRevision: appRev
         }

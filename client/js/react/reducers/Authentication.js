@@ -5,14 +5,16 @@ import {
   AUTHENTICATION_INIT,
   SET_IS_AUTHENTICATED,
   SET_COOKIES,
-  SET_USER_ID
+  SET_USER_ID,
+  SET_ROLE_NAME
 } from '../constants/ActionTypes'
 
 // Exported for testing.
 export const AUTHENTICATION_DEFAULT = {
   isAuthenticated: false,
   cookies: [],
-  userId: -1
+  userId: -1,
+  roleName: ''
 }
 
 const authentication = (state = AUTHENTICATION_DEFAULT, action) => {
@@ -35,6 +37,13 @@ const authentication = (state = AUTHENTICATION_DEFAULT, action) => {
       if (true) {
         const id = action.payload.id? action.payload.id: -1
         return Object.assign({}, state, {userId: id})
+      }
+      break
+
+    case SET_ROLE_NAME:
+      if (true) {
+        const roleName = action.payload.roleName? action.payload.roleName: ''
+        return Object.assign({}, state, {roleName})
       }
       break
 

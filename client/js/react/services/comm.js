@@ -124,7 +124,7 @@ const Comm = (store) => {
   })
 
   ioSystem.on('system', (data) => {
-    store.dispatch(systemMessage(data.data))
+    store.dispatch(systemMessage(data))
   })
 
   ioData.on('data', (data) => {

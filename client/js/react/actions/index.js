@@ -12,7 +12,8 @@ import {
   SYSTEM_MESSAGE,
   SET_COOKIES,
   SET_IS_AUTHENTICATED,
-  SET_USER_ID
+  SET_USER_ID,
+  SET_ROLE_NAME
 } from '../constants/ActionTypes'
 
 // --------------------------------------------------------
@@ -46,6 +47,15 @@ export const setUserId = (id) => {
     type: SET_USER_ID,
     payload: {
       id
+    }
+  }
+}
+
+export const setRoleName = (roleName) => {
+  return {
+    type: SET_ROLE_NAME,
+    payload: {
+      roleName
     }
   }
 }

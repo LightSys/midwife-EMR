@@ -8,7 +8,8 @@ import {routeChange} from '../actions/Route'
 import {
   cookies,
   initAuthenticated,
-  initUserId
+  initUserId,
+  initRoleName
 } from '../services/authentication'
 import {setServerInfo} from '../actions/ServerInfo'
 
@@ -41,6 +42,11 @@ class App extends Component {
     // Set the current user id as set by the server.
     // --------------------------------------------------------
     initUserId(cfgData.userId)
+
+    // --------------------------------------------------------
+    // Set the role of the current user as set by the server.
+    // --------------------------------------------------------
+    initRoleName(cfgData.roleName)
 
     // --------------------------------------------------------
     // Store whatever else the server sent us.
