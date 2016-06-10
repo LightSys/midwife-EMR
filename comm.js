@@ -623,9 +623,9 @@ var init = function(io, sessionMiddle) {
     // --------------------------------------------------------
     systemSubscription = systemSubject.subscribe(
       function(data) {
-        // Don't do work unless logged in.
+        // Don't do work unless logged in. This can happen while
+        // we still have some client code running phase 1.
         if (! isValidSocketSession(socket)) {
-          logCommInfo('Socket is invalid so not sending.');
           return;
         }
 
