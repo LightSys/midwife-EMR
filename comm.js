@@ -124,6 +124,23 @@ var redis = require('redis')
 
 
 /* --------------------------------------------------------
+ * getFormattedLogMsg()
+ *
+ * Returns the message passed in the format expected by
+ * the logs.
+ *
+ * param       msg
+ * return      message
+ * -------------------------------------------------------- */
+var getFormattedLogMsg = function(msg) {
+  var id = process.env.WORKER_ID? process.env.WORKER_ID: 0
+  , theDate = moment().format('YYYY-MM-DD HH:mm:ss.SSS')
+  , message = id + '|' + theDate + ': ' + msg
+  ;
+  return message;
+};
+
+/* --------------------------------------------------------
  * writeLog()
  *
  * Writes a log message to the console.
@@ -131,11 +148,12 @@ var redis = require('redis')
  * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
  * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
  * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
- * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT ALWAYS
+ * NEED THIS.
  *
  * param      msg
  * param      logType
- * return     undefined
+ * return     message
  * -------------------------------------------------------- */
 var INFO = 1
   , WARN = 2
@@ -143,12 +161,11 @@ var INFO = 1
   ;
 var writeLog = function(msg, logType) {
   var fn = 'info'
-    , id = process.env.WORKER_ID? process.env.WORKER_ID: 0
-    , theDate = moment().format('YYYY-MM-DD HH:mm:ss.SSS')
-    , message = id + '|' + theDate + ': ' + msg
+    , message = getFormattedLogMsg(msg)
     ;
   if (logType === WARN || logType === ERROR) fn = 'error';
   console[fn](message);
+  return message;
 };
 
 /* --------------------------------------------------------
@@ -159,14 +176,16 @@ var writeLog = function(msg, logType) {
  * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
  * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
  * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
- * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT ALWAYS
+ * NEED THIS.
  *
  * param      msg
+ * param      doSysMsg - boolean whether to write to socket SYSTEM_LOG
  * return     undefined
  * -------------------------------------------------------- */
-var logCommInfo = function(msg) {
-  writeLog(msg, INFO);
-  //console.trace('TRACE');
+var logCommInfo = function(msg, doSysMsg) {
+  var message = writeLog(msg, INFO);
+  if (doSysMsg) sendSystem(SYSTEM_LOG, message);
 };
 
 /* --------------------------------------------------------
@@ -177,13 +196,17 @@ var logCommInfo = function(msg) {
  * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
  * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
  * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
- * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT ALWAYS
+ * NEED THIS.
  *
  * param      msg
+ * param      doSysMsg - boolean whether to write to socket SYSTEM_LOG
+
  * return     undefined
  * -------------------------------------------------------- */
-var logCommWarn = function(msg) {
-  writeLog(msg, WARN);
+var logCommWarn = function(msg, doSysMsg) {
+  var message = writeLog(msg, WARN);
+  if (doSysMsg) sendSystem(SYSTEM_LOG, message);
 };
 
 /* --------------------------------------------------------
@@ -194,13 +217,17 @@ var logCommWarn = function(msg) {
  * NOTE: WE DO NOT USE THESE FUNCTIONS FROM util.js BECAUSE
  * OF CIRCULAR REFERENCES AND BECAUSE THE FUNCTIONS IN util.js
  * USE sendSystem() TO DISTRIBUTE MESSAGES TO THE administrators
- * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT NEED THIS.
+ * AND LOGGING MESSAGES FROM THE comm LIBRARY DO NOT ALWAYS
+ * NEED THIS.
  *
  * param      msg
+ * param      doSysMsg - boolean whether to write to socket SYSTEM_LOG
+
  * return     undefined
  * -------------------------------------------------------- */
-var logCommError = function(msg) {
-  writeLog(msg, ERROR);
+var logCommError = function(msg, doSysMsg) {
+  var message = writeLog(msg, ERROR);
+  if (doSysMsg) sendSystem(SYSTEM_LOG, message);
 };
 
 // --------------------------------------------------------
@@ -755,11 +782,10 @@ var init = function(io, sessionMiddle) {
         , userInfo = socketToUserInfo(socket)
         , dataChangeFunc      // the function to handle the data change
         , payloadKey          // the data table
-        , errMsg
+        , humanOpName         // the name of the operation for logging
+        , errMsg = ''
         ;
       if (payload && transaction && userInfo) {
-        logCommInfo(DATA_CHANGE + ', Transaction id: ' + transaction);
-
         // --------------------------------------------------------
         // Determine what action is required and handle unknown action types.
         // --------------------------------------------------------
@@ -767,14 +793,15 @@ var init = function(io, sessionMiddle) {
           case ADD_USER_REQUEST:
             dataChangeFunc = saveUser;
             payloadKey = 'user';
+            humanOpName = 'Add User';
             break;
           default:
             errMsg = 'Comm: received unknown action.type: ' + action.type;
-            logCommWarn(errMsg);
             break;
         }
         if (! dataChangeFunc || ! payloadKey) {
           retAction.payload = {error: errMsg};
+          logCommWarn(errMsg, true);
           return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
         }
 
@@ -785,11 +812,21 @@ var init = function(io, sessionMiddle) {
         dataChangeFunc(payload, userInfo, function(err, newData) {
           var data;
           if (err) {
+            // Note: we don't log because callee already should have done so.
             retAction.payload = {error: err};
             return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
           }
+
+          // --------------------------------------------------------
+          // Return the action object back to the caller.
+          // --------------------------------------------------------
           retAction.payload[payloadKey] = newData;
-          return socket.emit(''+transaction, JSON.stringify(retAction));
+          socket.emit(''+transaction, JSON.stringify(retAction));
+
+          // --------------------------------------------------------
+          // Write out to the log and SYSTEM_LOG for administrators.
+          // --------------------------------------------------------
+          logCommInfo(userInfo.user.username + ": " + humanOpName, true);
 
           // --------------------------------------------------------
           // Notify all clients of the change.
