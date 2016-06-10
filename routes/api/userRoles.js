@@ -258,6 +258,7 @@ var profile = function(req, res) {
     }
 
     (saveUser.bind({isProfileUpdate: true}))(req, res);
+    break;
 
   default:
     logInfo('Unexpected route: ' + method + ': ' + req.url)
