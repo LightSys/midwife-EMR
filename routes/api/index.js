@@ -125,7 +125,6 @@ var doSpa = function(req, res, next) {
           appRevision: appRev
         }
       };
-      console.log(data);
 
       // --------------------------------------------------------
       // Store the fact that this user's routes are all SPA or
