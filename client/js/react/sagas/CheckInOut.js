@@ -6,6 +6,8 @@ import {API_ROOT} from '../constants/index'
 import {checkStatus} from '../utils/sagasHelper'
 import {Schemas} from '../constants/index'
 
+import {changeData} from '../services/comm'
+
 import {
   CHECK_IN_OUT_REQUEST,
   CHECK_IN_OUT_SUCCESS,
@@ -25,83 +27,51 @@ const successNotifyTimeout = 2000;
 const warningNotifyTimeout = 3000;
 const dangerNotifyTimeout = 5000;
 
-const options = {
-  credentials: 'same-origin',   // Applies _csrf and connection.sid cookies.
-  method: 'GET'
-}
 
-// --------------------------------------------------------
-// This is a POST.
-// --------------------------------------------------------
-export const doCheckInOut = (getState, {barcode, pregId}) => {
-  const fetchOpts = Object.assign({}, options)
-  const {_csrf} = getState().authentication.cookies
-  fetchOpts.method = 'POST'
-  fetchOpts.headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-  fetchOpts.body = JSON.stringify(Object.assign({}, {barcode, _csrf, pregId}))
-  return fetch(`${API_ROOT}/checkinout`, fetchOpts)
-    .then(checkStatus)
-    .then((resp) => {
-      return resp.json()
-    })
-    .catch((error) => {
-      // checkStatus() threw an exception above.
-      throw error
-    })
-}
-
-export function* checkInOutSaga(getState, action) {
-  let requestStatus
-
+export function* checkInOutSaga(action) {
+  let retAction
   try {
-    ({requestStatus} = yield call(doCheckInOut, getState, action.payload))
-  } catch (error) {
-    yield put({type: CHECK_IN_OUT_FAILURE, error})
-    let msg
-    if (error.status == 401) {
-      msg = 'Oops, looks like you need to LOGIN first.'
-      // Change route to the login page.
-      yield put({type: ROUTE_CHANGE, payload: {route: '/login'}})
-    } else if (error.status == 403) {
-      msg = 'Oops, looks like you are not authorized to do this.'
-    } else {
-      msg = 'Sorry about that, an error was encountered processing the check in/out. Try again?'
-    }
-    const warningNotifyAction = addWarningNotification(msg)
-    yield put(warningNotifyAction)
-    yield put(removeNotification(warningNotifyAction.payload.id, warningNotifyTimeout))
+    retAction = yield call(changeData, action)
+
+    // Determine success or failure.
+    if (retAction.payload.error) throw retAction.payload.error
+
+    // --------------------------------------------------------
+    // Success
+    // --------------------------------------------------------
+
+    // Update the state.
+    yield put({type: CHECK_IN_OUT_SUCCESS, payload: Object.assign({}, retAction.payload)})
+
+    // Notifiy user.
+    let userMsg = 'Success'
+    if (retAction.payload.operation) userMsg += ': ' + retAction.payload.operation
+    const successNotifyAction = addSuccessNotification(userMsg)
+    yield put(successNotifyAction)
+    yield put(removeNotification(successNotifyAction.payload.id, successNotifyTimeout))
+  } catch (e) {
+    // --------------------------------------------------------
+    // Failure
+    // --------------------------------------------------------
+
+    // Update the state.
+    yield put({type: CHECK_IN_OUT_FAILURE, payload: action.payload})
+
+    // Notifiy user.
+    let userMsg = 'Sorry, there was a problem checking in or out.'
+    if (e && typeof e == 'string') userMsg = e
+    const notifyAction = addDangerNotification(userMsg)
+    const notifyTimeout = dangerNotifyTimeout
+    yield put(notifyAction)
+    yield put(removeNotification(notifyAction.payload.id, notifyTimeout))
   } finally {
-    const {path, success, msg, payload} = requestStatus
-
-    if (! success) {
-      yield put({type: CHECK_IN_OUT_FAILURE, payload: action.payload})
-
-      // Notifiy user.
-      const userMsg = 'The check in/out has failed. Please try again later.'
-      const dangerNotifyAction = addDangerNotification(userMsg)
-      yield put(dangerNotifyAction)
-      yield put(removeNotification(dangerNotifyAction.payload.id, dangerNotifyTimeout))
-    } else {
-      // Success
-      const reducerData = Object.assign({}, action.payload, payload)
-      yield put({type: CHECK_IN_OUT_SUCCESS, payload: reducerData})
-
-      // Unselect the pregnancy.
-      yield put({type: SELECT_PREGNANCY})
-
-      // Notifiy user.
-      const userMsg = `${payload.operation} successful.`
-      const successNotifyAction = addSuccessNotification(userMsg)
-      yield put(successNotifyAction)
-      yield put(removeNotification(successNotifyAction.payload.id, successNotifyTimeout))
-    }
+    // Unselect the pregnancy.
+    yield put({type: SELECT_PREGNANCY})
   }
 }
 
-export function* watchCheckInOut(getState) {
-  yield* takeLatest(CHECK_IN_OUT_REQUEST, checkInOutSaga, getState)
+
+export function* watchCheckInOut() {
+  yield* takeLatest(CHECK_IN_OUT_REQUEST, checkInOutSaga)
 }
 

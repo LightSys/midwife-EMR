@@ -53,7 +53,6 @@ var express = require('express')
   , api = require('./routes/api')
   , apiSearch = require('./routes/api/search').search
   , getPregnancy = require('./routes/api/pregnancy').getPregnancy
-  , apiCheckInOut = require('./routes/api/checkInOut').checkInOut
   , pregnancyHistory = require('./routes').pregnancyHistory
   , labs = require('./routes').labs
   , prenatalExam = require('./routes').prenatalExam
@@ -665,10 +664,6 @@ app.get(cfg.path.apiSearch, spaCommon,
 // Pregnancy
 app.get(cfg.path.apiPregnancy, spaCommon,
     inRoles(['clerk', 'guard', 'supervisor', 'attending']), getPregnancy);
-
-// Checkin and Checkout
-app.post(cfg.path.apiCheckInOut, spaCommon,
-    inRoles(['clerk', 'guard', 'supervisor', 'attending']), apiCheckInOut);
 
 
 // --------------------------------------------------------

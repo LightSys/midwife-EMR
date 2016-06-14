@@ -20,6 +20,7 @@
 var socketToUserInfo = function(socket) {
   var userInfo = {};
   if (socket && socket.request && socket.request.session) {
+    userInfo.sessionID = socket.request.sessionID;
     if (socket.request.session.user) {
       userInfo.user = socket.request.session.user;
       if (socket.request.session.roleInfo) {
