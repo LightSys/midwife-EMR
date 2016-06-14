@@ -82,10 +82,6 @@ var getPregnancy = function(req, res) {
         delete json.schedule;
         return json;
       })
-      .then(function(json) {
-        console.dir(json);
-        return json;
-      })
       .then(function(pregJson) {
         res.end(JSON.stringify(pregJson));
       });

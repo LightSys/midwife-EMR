@@ -92,6 +92,7 @@ var redis = require('redis')
   , cfg = require('./config')
   , getLookupTable = require('./routes/api/lookupTables').getLookupTable
   , saveUser = require('./routes/comm/userRoles').saveUser
+  , checkInOut = require('./routes/comm/checkInOut').checkInOut
   , buildChangeObject = require('./changes').buildChangeObject
   , socketToUserInfo = require('./commUtils').socketToUserInfo
   , isInitialized = false
@@ -120,6 +121,7 @@ var redis = require('redis')
   , ADD_USER_REQUEST = 'ADD_USER_REQUEST'
   , ADD_USER_SUCCESS = 'ADD_USER_SUCCESS'
   , ADD_USER_FAILURE = 'ADD_USER_FAILURE'
+  , CHECK_IN_OUT_REQUEST = 'CHECK_IN_OUT_REQUEST'
   ;
 
 
@@ -407,6 +409,7 @@ var isValidSocketSession = function(socket) {
                 socket.request.session &&
                 socket.request.session.roleInfo &&
                 socket.request.session.roleInfo.isAuthenticated? true: false;
+  //if (isValid) console.dir(socket.request.session);
   return isValid;
 };
 
@@ -781,7 +784,8 @@ var init = function(io, sessionMiddle) {
         , transaction = action && action.transaction? action.transaction: void 0
         , userInfo = socketToUserInfo(socket)
         , dataChangeFunc      // the function to handle the data change
-        , payloadKey          // the data table
+        , payloadKey          // the key to store return object to caller
+        , dataTableName       // the table name for the sendData operation
         , humanOpName         // the name of the operation for logging
         , errMsg = ''
         ;
@@ -793,14 +797,21 @@ var init = function(io, sessionMiddle) {
           case ADD_USER_REQUEST:
             dataChangeFunc = saveUser;
             payloadKey = 'user';
+            dataTableName = 'user';
             humanOpName = 'Add User';
+            break;
+          case CHECK_IN_OUT_REQUEST:
+            dataChangeFunc = checkInOut;
+            payloadKey = void 0;    // Signify to merge with payload.
+            dataTableName = 'priority';
+            humanOpName = 'Checkin/Checkout';
             break;
           default:
             errMsg = 'Comm: received unknown action.type: ' + action.type;
             break;
         }
-        if (! dataChangeFunc || ! payloadKey) {
-          retAction.payload = {error: errMsg};
+        if (! dataChangeFunc || ! dataTableName) {
+          retAction.payload.error = errMsg;
           logCommWarn(errMsg, true);
           return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
         }
@@ -812,15 +823,26 @@ var init = function(io, sessionMiddle) {
         dataChangeFunc(payload, userInfo, function(err, newData) {
           var data;
           if (err) {
-            // Note: we don't log because callee already should have done so.
-            retAction.payload = {error: err};
-            return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
+            // We do not return to caller with DATA_TABLE_FAILURE because
+            // the error is not due to a coding error, but rather more
+            // likely that the user tried to checkin/out the wrong patient.
+            // By returning on the same transaction, we allow the caller
+            // to handle this "normal" use case rather than treat it as
+            // something completely unexpected, which is what
+            // DATA_TABLE_FAILURE is used for.
+            retAction.payload.error = err;
+            return socket.emit(''+transaction, JSON.stringify(retAction));
           }
 
           // --------------------------------------------------------
           // Return the action object back to the caller.
+          // Note: if payloadKey is undefined, merge newData with payload.
           // --------------------------------------------------------
-          retAction.payload[payloadKey] = newData;
+          if (payloadKey) {
+            retAction.payload[payloadKey] = newData;
+          } else {
+            _.extendOwn(retAction.payload, newData);
+          }
           socket.emit(''+transaction, JSON.stringify(retAction));
 
           // --------------------------------------------------------
@@ -833,7 +855,7 @@ var init = function(io, sessionMiddle) {
           // NOTE: we assume that the payloadKey is the table name.
           // --------------------------------------------------------
           data = {
-            table: payloadKey,
+            table: dataTableName,
             id: newData.id,
             updatedBy: socket.request.session.user.id,
             sessionID: getSocketSessionId(socket)
