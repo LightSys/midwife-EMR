@@ -31,13 +31,13 @@ const selected = (state = DEFAULT_SELECTED, action) => {
       if (action && action.hasOwnProperty('userId')) {
         return Object.assign({}, state, {user: action.userId})
       } else {
-        return DEFAULT_SELECTED.user
+        return Object.assign({}, state, {user: DEFAULT_SELECTED.user})
       }
     case SELECT_PREGNANCY:
       if (action && action.hasOwnProperty('pregId')) {
         return Object.assign({}, state, {pregnancy: action.pregId})
       } else {
-        return DEFAULT_SELECTED.pregnancy
+        return Object.assign({}, state, {pregnancy: DEFAULT_SELECTED.pregnancy})
       }
     default:
       return state
