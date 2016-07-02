@@ -9,7 +9,10 @@
 import {fork} from 'redux-saga/effects'
 
 import {watchSearchPatient} from './Search'
-import {watchGetPregnancy} from './Pregnancy'
+import {
+  watchGetPregnancy,
+  watchSavePrenatal
+} from './Pregnancy'
 import {watchCheckInOut} from './CheckInOut'
 import {watchLoadUserProfile} from './Profile'
 import {watchAddUser} from './UsersRoles'
@@ -19,6 +22,7 @@ export default function* rootSaga() {
   yield [
     fork(watchSearchPatient),
     fork(watchGetPregnancy),
+    fork(watchSavePrenatal),
     fork(watchCheckInOut),
     fork(watchLoadUserProfile),
     fork(watchAddUser),

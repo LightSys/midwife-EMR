@@ -84,3 +84,20 @@ body {
   background-color: white;
 }
 
+/* Forms */
+h5.form-section {
+  position: relative;
+  font-size: 120%;
+  font-weight: bold;
+  border-top: 1px solid #E9E9E9;
+}
+
+.fhelper {
+  margin-top: -5px !important;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.fhelper-text {
+  /* Drops the input fields even with the checkboxes. */
+  margin-top: 5px !important;
+}

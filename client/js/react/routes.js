@@ -14,6 +14,11 @@ import Login from './common/Login'
 import Profile from './Profile/Profile'
 import CheckinCheckout from './CheckinCheckout/CheckinCheckout'
 
+// Prenatal Screens
+import {
+  Prenatal
+} from './Prenatal/Pregnancy'
+
 import {isAuthenticated} from './services/authentication'
 
 // --------------------------------------------------------
@@ -47,6 +52,7 @@ export default (
     <Route path='checkinout' component={CheckinCheckout} />
     <Route path='notauthorized' component={NotAuthorized} />
     <Route path='login' component={Login} />
+    <Route path='prenatal/:id' component={Prenatal} />
   </Route>
 )
 

@@ -62,8 +62,10 @@ class Search extends Component {
     // routed in response, do so now.
     // --------------------------------------------------------
     if (props.selectedPregnancy !== -1 && this.state.pregPendingRouteChange !== -1) {
+      const id = this.state.pregPendingRouteChange
+      const newRoute = this.props.newRoute.replace(':id', id)
       this.setState({pregPendingRouteChange: -1})
-      this.context.router.push('checkinout')
+      this.context.router.push(newRoute)
     }
   }
 
@@ -168,15 +170,27 @@ class Search extends Component {
 const mapStateToProps = (state) => {
   const searchCriteria = state.search.searchCriteria
   const results = state.search.results
+  const rolename = state.authentication.roleName
+  let newRoute
 
   // --------------------------------------------------------
-  // TODO: Refactor how routes are determined based upon user
-  //       selecting a patient taking user's role as well as
-  //       specific patient/pregnancy information into account.
+  // Determine what route to use after a pregnancy is selected.
   // --------------------------------------------------------
+  switch (rolename) {
+    case 'guard':
+      newRoute = 'checkinout'
+      break
+    case 'supervisor':
+      newRoute = 'prenatal/:id'
+      break
+    default:
+      break
+  }
+
   const selectedPregnancy = state.selected.pregnancy
 
   return {
+    newRoute: newRoute,
     results,
     searchCriteria,
     selectedPregnancy

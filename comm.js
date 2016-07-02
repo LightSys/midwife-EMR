@@ -93,6 +93,7 @@ var redis = require('redis')
   , getLookupTable = require('./routes/api/lookupTables').getLookupTable
   , saveUser = require('./routes/comm/userRoles').saveUser
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
+  , savePrenatal = require('./routes/comm/pregnancy').savePrenatal
   , buildChangeObject = require('./changes').buildChangeObject
   , socketToUserInfo = require('./commUtils').socketToUserInfo
   , isInitialized = false
@@ -119,8 +120,7 @@ var redis = require('redis')
   , DATA_TABLE_SUCCESS = 'DATA_TABLE_SUCCESS'
   , DATA_TABLE_FAILURE = 'DATA_TABLE_FAILURE'
   , ADD_USER_REQUEST = 'ADD_USER_REQUEST'
-  , ADD_USER_SUCCESS = 'ADD_USER_SUCCESS'
-  , ADD_USER_FAILURE = 'ADD_USER_FAILURE'
+  , SAVE_PRENATAL_REQUEST = 'SAVE_PRENATAL_REQUEST'
   , CHECK_IN_OUT_REQUEST = 'CHECK_IN_OUT_REQUEST'
   ;
 
@@ -736,6 +736,7 @@ var init = function(io, sessionMiddle) {
   //  - receive update on field value another client changed
   // --------------------------------------------------------
   ioData.on('connection', function(socket) {
+    // TODO: report number of connections to site messages.
     socket.on('disconnect', function() {
       cntData--;
     });
@@ -789,6 +790,7 @@ var init = function(io, sessionMiddle) {
         , humanOpName         // the name of the operation for logging
         , errMsg = ''
         ;
+      console.log('DATA_CHANGE');
       if (payload && transaction && userInfo) {
         // --------------------------------------------------------
         // Determine what action is required and handle unknown action types.
@@ -802,10 +804,17 @@ var init = function(io, sessionMiddle) {
             break;
           case CHECK_IN_OUT_REQUEST:
             dataChangeFunc = checkInOut;
-            payloadKey = void 0;    // Signify to merge with payload.
+            payloadKey = void 0;    // signify to merge with payload.
             dataTableName = 'priority';
-            humanOpName = 'Checkin/Checkout';
+            humanOpName = 'checkin/checkout';
             break;
+          case SAVE_PRENATAL_REQUEST:
+            dataChangeFunc = savePrenatal;
+            payloadKey = 'preg';
+            dataTableName = 'pregnancy';
+            humanOpName = 'prenatal';
+            break;
+
           default:
             errMsg = 'Comm: received unknown action.type: ' + action.type;
             break;
