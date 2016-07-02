@@ -135,7 +135,7 @@ class PatientHeader extends Component {
     return (
       <div style={{position: 'relative'}} className='panel panel-info'>
       {compressExpand}
-      {UnloadLink(this.unload)}
+      {this.props.selectPregnancy? UnloadLink(this.unload): ''}
         <table className='table table-condensed'>
           <tbody>
             <tr key={1}>
@@ -185,7 +185,7 @@ class PatientHeader extends Component {
     return (
       <div style={{position: 'relative'}} className='panel panel-info'>
       {compressExpand}
-      {UnloadLink(this.unload)}
+      {this.props.selectPregnancy? UnloadLink(this.unload): ''}
         <table className='table table-condensed'>
           <tbody>
             <tr key={1}>
@@ -208,8 +208,7 @@ PatientHeader.PropTypes = {
   pregnancy: PropTypes.object,
   showMinimized: PropTypes.bool,
   allowToggle: PropTypes.bool,
-  // If selectPregnancy is passed, allows user to
-  // unselect/unload the pregnancy.
+  // If selectPregnancy is passed, allows user to unselect/unload the pregnancy.
   selectPregnancy: PropTypes.func
 }
 

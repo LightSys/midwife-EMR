@@ -5,6 +5,9 @@ import {
   GET_PREGNANCY_REQUEST,
   GET_PREGNANCY_SUCCESS,
   GET_PREGNANCY_FAILURE,
+  SAVE_PRENATAL_REQUEST,
+  SAVE_PRENATAL_SUCCESS,
+  SAVE_PRENATAL_FAILURE,
   CHECK_IN_OUT_REQUEST
 } from '../constants/ActionTypes'
 
@@ -13,6 +16,15 @@ export const getPregnancy = (id) => {
     type: GET_PREGNANCY_REQUEST,
     payload: {
       id
+    }
+  }
+}
+
+export const savePrenatal = (preg) => {
+  return {
+    type: SAVE_PRENATAL_REQUEST,
+    payload: {
+      preg
     }
   }
 }

@@ -1,6 +1,8 @@
 import React from 'react'
 import {map, each, filter} from 'underscore'
+import moment from 'moment'
 
+import {DatePick} from '../common/DatePick'
 
 // --------------------------------------------------------
 // Error processing functions.
@@ -8,15 +10,20 @@ import {map, each, filter} from 'underscore'
 
 export const getValueFromEvent = (evt) => {
   let value
-  switch (evt.target.type) {
-    case 'checkbox':
-      value = evt.target.checked
-      break
-    case 'select-one':
-      value = parseInt(evt.target.value, 10)
-      break
-    default:
-      value = evt.target.value
+  if (typeof evt === 'object' && evt._isAMomentObject) {
+    // TODO: not sure is this is what is best to return.
+    value = evt.toDate();
+  } else {
+    switch (evt.target.type) {
+      case 'checkbox':
+        value = evt.target.checked
+        break
+      case 'select-one':
+        value = parseInt(evt.target.value, 10)
+        break
+      default:
+        value = evt.target.value
+    }
   }
   return value
 }
@@ -196,7 +203,7 @@ export const hasSelection = (fldName, val) => {
 
 
 export const renderROText = (cfg) => {
-  const classes = `form-group col-xs-${cfg.colWidth}`
+  const classes = `form-group col-xs-${cfg.colWidth} fhelper fhelper-text`
   return (
     <div key={cfg.fldName} className={classes}>
       <label>{cfg.lbl}</label>
@@ -237,7 +244,7 @@ export const renderROText = (cfg) => {
  * return      jsx
  * -------------------------------------------------------- */
 export const renderText = (cfg) => {
-  const classes = `form-group col-xs-${cfg.colWidth}`
+  const classes = `form-group col-xs-${cfg.colWidth} fhelper fhelper-text`
   return (
     <div key={cfg.fldName} className={classes}>
       <label>{cfg.lbl}</label>
@@ -263,6 +270,44 @@ export const renderText = (cfg) => {
 }
 
 /* --------------------------------------------------------
+ * renderDate()
+ *
+ * Returns an input group for date fields. Also sets a reference
+ * on the state passed for the field at '_' + field name, e.g.
+ * state._firstname.
+ *
+ * Expects the following fields on the cfg object passed:
+ *    colWidth      - number of Bootstrap columns spanned
+ *    fldName       - name of the field
+ *    lbl           - label to use on the field
+ *    type          - type of the input field
+ *    val           - the value of the input field
+ *    onChange      - the onChange handler
+ *    state         - (optional) state object to reference errors
+ *
+ * param       cfg - configuration object
+ * return      jsx
+ * -------------------------------------------------------- */
+export const renderDate = (cfg) => {
+  const dateVal = cfg.val? moment(cfg.val): void 0
+  const classes = `form-group col-xs-${cfg.colWidth} fhelper fhelper-text`
+  return (
+    <div key={cfg.fldName} className={classes}>
+      <label>{cfg.lbl}</label>
+      <DatePick
+        title={cfg.lbl}
+        onChange={cfg.onChange}
+        val={dateVal}
+      />
+      <div className='text-warning'>{
+        cfg.state &&
+        cfg.state.errors &&
+        cfg.state.errors[cfg.fldName]
+      }</div>
+    </div>
+  )
+}
+/* --------------------------------------------------------
  * renderCB()
  *
  * Returns an input group for a checkbox.
@@ -279,7 +324,7 @@ export const renderText = (cfg) => {
  * return      jsx
  * -------------------------------------------------------- */
 export const renderCB = (cfg) => {
-  const classes = `form-group col-xs-${cfg.colWidth} checkbox`
+  const classes = `form-group col-xs-${cfg.colWidth} checkbox fhelper fhelper-checkbox`
   return (
     <div key={cfg.fldName} className={classes}>
       <label className='checkbox'>
@@ -318,7 +363,7 @@ export const renderCB = (cfg) => {
  * return      jsx
  * -------------------------------------------------------- */
 export const renderSelect = (cfg) => {
-  const classes = `form-group col-xs-${cfg.colWidth}`
+  const classes = `form-group col-xs-${cfg.colWidth} fhelper`
   const opts = Object.assign({}, cfg.options)
   let val = cfg.val
   if (! cfg.val) {

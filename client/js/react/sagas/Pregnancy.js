@@ -6,13 +6,17 @@ import {normalize} from 'normalizr'
 import {API_ROOT} from '../constants/index'
 import {checkStatus} from '../utils/sagasHelper'
 import {Schemas} from '../constants/index'
+import {changeData} from '../services/comm'
 
 import {
   CLEAR_PREGNANCY_DATA,
   SELECT_PREGNANCY,
   GET_PREGNANCY_REQUEST,
   GET_PREGNANCY_SUCCESS,
-  GET_PREGNANCY_FAILURE
+  GET_PREGNANCY_FAILURE,
+  SAVE_PRENATAL_REQUEST,
+  SAVE_PRENATAL_SUCCESS,
+  SAVE_PRENATAL_FAILURE
 } from '../constants/ActionTypes'
 
 import {
@@ -35,6 +39,12 @@ const options = {
   credentials: 'same-origin',   // Applies _csrf and connection.sid cookies.
   method: 'GET'
 }
+
+// ========================================================
+// ========================================================
+// Get pregnancy
+// ========================================================
+// ========================================================
 
 export const doGetPregnancy = (pregId) => {
   const fetchOpts = Object.assign({}, options)
@@ -63,6 +73,7 @@ export function* getPregnancySaga(action) {
     yield put({type: GET_PREGNANCY_SUCCESS, payload})
     yield put(selectPregnancy(action.payload.id))
   } catch (error) {
+    console.log('Error caught in getPregnancySaga()', error)
     yield put({type: GET_PREGNANCY_FAILURE, error})
     const msg = 'Sorry about that, an error was encountered getting data. Try again?'
     const warningNotifyAction = addWarningNotification(msg)
@@ -71,7 +82,63 @@ export function* getPregnancySaga(action) {
   }
 }
 
+// ========================================================
+// ========================================================
+// Save prenatal
+// ========================================================
+// ========================================================
+
+export function* savePrenatalSaga(action) {
+  let retAction
+  try {
+    retAction = yield call(changeData, action)
+    console.log('retAction', retAction)
+
+    // Determine success or failure.
+    if (retAction.payload.error) throw retAction.payload.error
+
+    // --------------------------------------------------------
+    // Success
+    // --------------------------------------------------------
+
+    // Update the state.
+    yield put({type: SAVE_PRENATAL_SUCCESS, payload: Object.assign({}, retAction.payload)})
+
+    // Notifiy user.
+    let userMsg = 'Success'
+    if (retAction.payload.operation) userMsg += ': ' + retAction.payload.operation
+    const successNotifyAction = addSuccessNotification(userMsg)
+    yield put(successNotifyAction)
+    yield put(removeNotification(successNotifyAction.payload.id, successNotifyTimeout))
+  } catch (e) {
+    // --------------------------------------------------------
+    // Failure
+    // --------------------------------------------------------
+
+    // Update the state.
+    yield put({type: SAVE_PRENATAL_FAILURE, payload: action.payload})
+
+    // Notifiy user.
+    let userMsg = 'Sorry, there was a problem saving the record.'
+    if (e && typeof e == 'string') userMsg = e
+    const notifyAction = addDangerNotification(userMsg)
+    const notifyTimeout = dangerNotifyTimeout
+    yield put(notifyAction)
+    yield put(removeNotification(notifyAction.payload.id, notifyTimeout))
+  }
+}
+
+// ========================================================
+// ========================================================
+// Watchers
+// ========================================================
+// ========================================================
+
 export function* watchGetPregnancy() {
   yield* takeLatest(GET_PREGNANCY_REQUEST, getPregnancySaga)
+}
+
+export function* watchSavePrenatal() {
+  yield* takeLatest(SAVE_PRENATAL_REQUEST, savePrenatalSaga)
 }
 
