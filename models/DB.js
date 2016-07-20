@@ -37,18 +37,35 @@ var Bookshelf = require('bookshelf')
  * -------------------------------------------------------- */
 Bookshelf.DB = {};
 var init = function(dbSettings) {
-  var knex = Knex({
-    client: 'mysql'
-    , connection: {
-      host: dbSettings.host
-      , port: dbSettings.port
-      , user: dbSettings.dbUser
-      , password: dbSettings.dbPass
-      , database: dbSettings.db
-      , charset: dbSettings.charset
-    }
-    , debug: dbSettings.debug
-  });
+  var KnexSQLite3 = 'sqlite3' // These two are used by Knex.
+  , KnexMySQL = 'mysql'
+  , dbType = dbSettings.file && dbSettings.file.length > 0? KnexSQLite3: KnexMySQL
+  , knex
+
+  // --------------------------------------------------------
+  // Set the Knex client according to the database type.
+  // --------------------------------------------------------
+  if (dbType === KnexSQLite3) {
+    knex = Knex({
+      client: KnexSQLite3
+      , connection: {
+          filename: dbSettings.file
+        }
+    })
+  } else {
+    knex = Knex({
+      client: KnexMySQL
+      , connection: {
+        host: dbSettings.host
+        , port: dbSettings.port
+        , user: dbSettings.dbUser
+        , password: dbSettings.dbPass
+        , database: dbSettings.db
+        , charset: dbSettings.charset
+      }
+      , debug: dbSettings.debug
+    });
+  }
   Bookshelf.DB = Bookshelf(knex);
 
   // --------------------------------------------------------

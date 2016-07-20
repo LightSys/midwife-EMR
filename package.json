@@ -10,6 +10,7 @@
     "bookshelf": "^0.8.2",
     "bootstrap": "^3.3.5",
     "commander": "^2.9.0",
+    "connect-sqlite3": "^0.9.8",
     "consolidate": "^0.14.1",
     "cookie-parser": "^1.4.2",
     "csurf": "^1.8.3",
@@ -51,6 +52,7 @@
     "serve-favicon": "^2.3.0",
     "socket.io": "^1.4.6",
     "socket.io-client": "^1.4.6",
+    "sqlite3": "^3.1.4",
     "underscore": "^1.8.3",
     "underscore-contrib": "^0.3.0",
     "uuid": "^2.0.2",
@@ -91,8 +93,10 @@
   },
   "scripts": {
     "test": "mocha",
-    "start": "NODE_ENV=development node cluster.js",
-    "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js",
+    "startdefault": "NODE_ENV=development node cluster.js",
+    "start": "NODE_ENV=development node cluster.js --config ~/config.development.json",
+    "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config ~/config.development.json",
+    "simple": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config /home/kurt/work/config.simple.js",
     "build": "[ -f node_modules/redux-optimist/.babelrc ] && mv node_modules/redux-optimist/.babelrc node_modules/redux-optimist/.babelrc-renamed;WEBPACK_WATCH=1 gulp webpack:build-dev"
   },
   "jshintConfig": {

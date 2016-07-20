@@ -1,0 +1,82 @@
+{
+  "site": {
+    "title": "Midwife-EMR",
+    "titleLong": "Midwife-EMR",
+    "languagesMap": {
+      "en-US": "English - Unites States"
+    },
+    "languages": [
+      "en-US"
+    ],
+    "defaultLanguage": "en-US",
+    "debugLanguage": "",
+    "tmpDir": "tmp",
+    "debug": false
+  },
+  "cpu": {
+    "workers": 1
+  },
+  "search": {
+    "rowsPerPage": 20
+  },
+  "client": {
+    "defaultCity": ""
+  },
+  "host": {
+    "port": 8080,
+    "name": "",
+    "tlsPort": 0
+  },
+  "tls": {
+    "key": "",
+    "cert": "",
+    "passphrase": "",
+    "ciphers": "AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH",
+    "handshakeTimeout": 600,
+    "honorCipherOrder": true
+  },
+  "database": {
+    "host": "",
+    "port": 3306,
+    "db": "",
+    "dbUser": "",
+    "dbPass": "",
+    "charset": "utf8",
+    "debug": false,
+    "file": "./midwife-emr-default-database.db"
+  },
+  "redis": {
+    "db": 8,
+    "host": "",
+    "port": 6379
+  },
+  "cache": {
+    "shortTTL": 600,
+    "mediumTTL": 3600,
+    "longTTL": 86400,
+    "userTTL": 1200
+  },
+  "data": {
+    "selectRefreshInterval": 600000
+  },
+  "error": {
+    "errorTimeout": 1500
+  },
+  "session": {
+    "secret": "someSecret",
+    "pool": true,
+    "table": "session",
+    "cleanup": true,
+    "config": {
+      "host": "",
+      "port": "",
+      "user": "",
+      "password": "",
+      "database": ""
+    }
+  },
+  "cookie": {
+    "secret": "someOtherSecret",
+    "maxAge": 1800000
+  }
+}

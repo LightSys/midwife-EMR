@@ -9,6 +9,7 @@
 var fs = require('fs')
   , _ = require('underscore')
   , cfg = require('./config')
+  , database = require('./database/database')
   , config = {
       readyWhen: 'listening'
     }
@@ -27,42 +28,59 @@ if (cfg.cpu && cfg.cpu.workers && ! isNaN(parseInt(cfg.cpu.workers))) {
 } else {
   config.workers = 1;
 }
-
-var recluster = require('recluster')
-  , path = require('path')
-  ;
-
-
-var cluster = recluster(path.join(__dirname, 'index.js'), config);
-cluster.run();
-
-process.on('SIGUSR1', function() {
-    console.log('Got SIGUSR1, reloading cluster...');
-    cluster.reload();
-});
+// Sanity check: Sqlite database requires only one process.
+if (cfg.database.file) config.workers = 1;
 
 // --------------------------------------------------------
-// Rebroadcast all messages from the workers to all
-// workers (including the original sender).
+// Check that the database already exists and create it if
+// it does not.
 // --------------------------------------------------------
-_.each(cluster.workers, function(worker) {
-  // For each worker, listen for messages.
-  console.log('Setting up listener for worker.id: ' + worker.id);
-  worker.process.on('message', function(msg) {
-    // For each message received, rebroadcast it to all workers.
-    console.log('Master: received msg');
-    _.each(cluster.workers, function(worker) {
-      console.log('Master: sending message to worker.id: ' + worker.id);
-      worker.process.send(msg);
+database.init(cfg.database, (err, success) => {
+  if (err) {
+    console.log(err)
+    console.log('ABORTING due to database error.')
+    process.exit(1)
+  }
+
+  var recluster = require('recluster')
+    , path = require('path')
+    ;
+
+  // Pass any arguments passed through to cluster processes.
+  if (process.argv.length > 2) config.args = process.argv.slice(2);
+
+  var cluster = recluster(path.join(__dirname, 'index.js'), config);
+  cluster.run();
+
+  process.on('SIGUSR2', function() {
+      console.log('Got SIGUSR2, reloading cluster...');
+      cluster.reload();
+  });
+
+  // --------------------------------------------------------
+  // Rebroadcast all messages from the workers to all
+  // workers (including the original sender).
+  // --------------------------------------------------------
+  _.each(cluster.workers, function(worker) {
+    // For each worker, listen for messages.
+    console.log('Setting up listener for worker.id: ' + worker.id);
+    worker.process.on('message', function(msg) {
+      // For each message received, rebroadcast it to all workers.
+      console.log('Master: received msg');
+      _.each(cluster.workers, function(worker) {
+        console.log('Master: sending message to worker.id: ' + worker.id);
+        worker.process.send(msg);
+      });
     });
   });
-});
 
-console.log("spawned cluster, kill -s SIGUSR1", process.pid, "to reload");
+  console.log("spawned cluster, kill -s SIGUSR2", process.pid, "to reload");
 
-// Write the pid to a file for reloading via scripts easily.
-fs.writeFile('process.pid', '' + process.pid, function(err) {
-  if (err) throw err;
-});
+  // Write the pid to a file for reloading via scripts easily.
+  fs.writeFile('process.pid', '' + process.pid, function(err) {
+    if (err) throw err;
+  });
+
+})
 
 
