@@ -139,13 +139,13 @@ gulp.task('uglify-header', function() {
 // --------------------------------------------------------
 gulp.task('uglify-footer', function() {
   return gulp
-    .src(['bower_components/jquery/dist/jquery.js'
-          , 'bower_components/bootstrap/dist/js/bootstrap.js'
-          , 'bower_components/underscore/underscore.js'
-          , 'bower_components/moment/min/moment.min.js'
-          , 'bower_components/flot/jquery.flot.js'
-          , 'bower_components/flot/jquery.flot.categories.js'
-          , 'bower_components/jquery.are-you-sure/jquery.are-you-sure.js'
+    .src(['node_modules/jquery/dist/jquery.js'
+          , 'node_modules/bootstrap/dist/js/bootstrap.js'
+          , 'node_modules/underscore/underscore.js'
+          , 'node_modules/moment/min/moment.min.js'
+          , 'static/js-resources/jquery.flot.js'
+          , 'static/js-resources/jquery.flot.categories.js'
+          , 'static/js-resources/jquery.are-you-sure.js'
           , 'client/js/responsive-tables.js'
           , 'client/js/jquery-ui.min.js'
           , 'client/js/midwife-emr.js'
@@ -165,11 +165,11 @@ gulp.task('uglify-footer', function() {
 // --------------------------------------------------------
 gulp.task('uglify-footer-spa', function() {
   return gulp
-    .src(['bower_components/angular/angular.js'
-        , 'bower_components/angular-moment/angular-moment.js'
-        , 'bower_components/angular-ui-router/release/angular-ui-router.js'
-        , 'bower_components/ui-router-extras/release/modular/ct-ui-router-extras.core.js'
-        , 'bower_components/ui-router-extras/release/modular/ct-ui-router-extras.future.js'
+    .src(['node_modules/angular/angular.js'
+        , 'node_modules/angular-moment/angular-moment.js'
+        , 'node_modules/angular-ui-router/release/angular-ui-router.js'
+        , 'node_modules/ui-router-extras/release/modular/ct-ui-router-extras.core.js'
+        , 'node_modules/ui-router-extras/release/modular/ct-ui-router-extras.future.js'
         , 'client/js/angular/app.js'
         , 'client/js/angular/router.js'
         , 'client/js/angular/services/minPubSubNg/minPubSubNg.js'
@@ -238,7 +238,7 @@ gulp.task('cleanupTemplateCache', ['templateCache'], function() {
 // --------------------------------------------------------
 gulp.task('css', function() {
   return gulp
-    .src(['bower_components/bootstrap/dist/css/bootstrap.css'
+    .src(['node_modules/bootstrap/dist/css/bootstrap.css'
         , 'client/css/sb-admin.css'
         , 'client/css/responsive-tables.css'
         , 'client/css/jquery-ui.min.css'
