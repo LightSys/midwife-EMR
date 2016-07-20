@@ -2,7 +2,10 @@
   "name": "midwife-emr",
   "version": "0.6.3",
   "description": "Maternal care and patient management.",
-  "main": "index.js",
+  "main": "cluster.js",
+  "engines": {
+    "node": ">=4.4"
+  },
   "dependencies": {
     "babel-core": "^6.9.0",
     "babel-loader": "^6.2.4",
@@ -92,7 +95,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "prepublish": "[ -f node_modules/redux-optimist/.babelrc ] && mv node_modules/redux-optimist/.babelrc node_modules/redux-optimist/.babelrc-renamed;gulp webpack:build-dev",
+    "install": "[ -f node_modules/redux-optimist/.babelrc ] && mv node_modules/redux-optimist/.babelrc node_modules/redux-optimist/.babelrc-renamed;gulp webpack:build-dev",
     "startdefault": "NODE_ENV=development node cluster.js",
     "start": "NODE_ENV=development node cluster.js --config ~/config.development.json",
     "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config ~/config.development.json",
@@ -103,5 +106,5 @@
     "laxcomma": true
   },
   "author": "Kurt Symanzik",
-  "license": "BSD-2-Clause"
+  "license": "MIT"
 }
