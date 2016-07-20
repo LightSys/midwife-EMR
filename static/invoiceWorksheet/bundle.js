@@ -20401,76 +20401,80 @@
 	        )
 	      ),
 	      _react2.default.createElement(
-	        'table',
-	        { className: 'table' },
+	        'div',
+	        { id: 'print-total' },
 	        _react2.default.createElement(
-	          'tbody',
-	          null,
+	          'table',
+	          { className: 'table' },
 	          _react2.default.createElement(
-	            'tr',
+	            'tbody',
 	            null,
 	            _react2.default.createElement(
-	              'td',
-	              { className: 'text-right' },
+	              'tr',
+	              null,
 	              _react2.default.createElement(
-	                'strong',
-	                null,
-	                'Amount due'
+	                'td',
+	                { className: 'text-right' },
+	                _react2.default.createElement(
+	                  'strong',
+	                  null,
+	                  'Amount due'
+	                )
+	              ),
+	              _react2.default.createElement(
+	                'td',
+	                { className: 'text-right' },
+	                _react2.default.createElement(
+	                  'strong',
+	                  null,
+	                  grandTotal
+	                )
 	              )
 	            ),
 	            _react2.default.createElement(
-	              'td',
-	              { className: 'text-right' },
+	              'tr',
+	              null,
 	              _react2.default.createElement(
-	                'strong',
-	                null,
-	                grandTotal
-	              )
-	            )
-	          ),
-	          _react2.default.createElement(
-	            'tr',
-	            null,
-	            _react2.default.createElement(
-	              'td',
-	              { className: 'text-right' },
+	                'td',
+	                { className: 'text-right' },
+	                _react2.default.createElement(
+	                  'strong',
+	                  null,
+	                  'Amount collected ',
+	                  userSpan,
+	                  superSpan
+	                )
+	              ),
 	              _react2.default.createElement(
-	                'strong',
-	                null,
-	                'Amount collected ',
-	                userSpan,
-	                superSpan
-	              )
-	            ),
-	            _react2.default.createElement(
-	              'td',
-	              { className: 'text-right' },
-	              _react2.default.createElement(
-	                'strong',
-	                null,
-	                amtPaid
-	              )
-	            )
-	          ),
-	          _react2.default.createElement(
-	            'tr',
-	            null,
-	            _react2.default.createElement(
-	              'td',
-	              { className: 'text-right' },
-	              _react2.default.createElement(
-	                'strong',
-	                null,
-	                'Balance remaining'
+	                'td',
+	                { className: 'text-right' },
+	                _react2.default.createElement(
+	                  'strong',
+	                  null,
+	                  amtPaid
+	                )
 	              )
 	            ),
 	            _react2.default.createElement(
-	              'td',
-	              { className: 'text-right' },
+	              'tr',
+	              null,
 	              _react2.default.createElement(
-	                'strong',
-	                null,
-	                netTotal
+	                'td',
+	                { className: 'text-right' },
+	                _react2.default.createElement(
+	                  'strong',
+	                  null,
+	                  'Balance remaining'
+	                )
+	              ),
+	              _react2.default.createElement(
+	                'td',
+	                { className: 'text-right' },
+	                _react2.default.createElement(
+	                  'strong',
+	                  null,
+	                  netTotal
+	                )
 	              )
 	            )
 	          )
@@ -28871,7 +28875,7 @@
 	// Testing data
 	var data = [{
 	  category: 'General Birth',
-	  items: [{ code: 'A01', desc: 'Cord Clamp', rate: 25 }, { code: 'A02', desc: 'Gloves/Sterile/Pr', rate: 18 }, { code: 'A03', desc: 'Gloves/Exam', rate: 25 }, { code: 'A04', desc: 'Sterile gel per pack', rate: 10 }, { code: 'A05', desc: 'Laundry', rate: 150 }, { code: 'A06', desc: 'Birth Certificate', rate: 30 }, { code: 'A07', desc: 'Notary for Birth Certificate', rate: 70 }]
+	  items: [{ code: 'A01', desc: 'Cord Clamp', rate: 25 }, { code: 'A02', desc: 'Gloves/Sterile/Pr', rate: 18 }, { code: 'A03', desc: 'Gloves/Exam', rate: 25 }, { code: 'A04', desc: 'Sterile gel per pack', rate: 10 }, { code: 'A05', desc: 'Laundry', rate: 150 }, { code: 'A06', desc: 'Birth Certificate', rate: 30 }, { code: 'A07', desc: 'Notary for Birth Certificate', rate: 70 }, { code: 'A08', desc: 'AUSF', rate: 250 }]
 	}, {
 	  category: 'Newborn',
 	  items: [{ code: 'B01', desc: 'Syringe per piece', rate: 10 }, { code: 'B02', desc: 'Vitamin K', rate: 17 }, { code: 'B03', desc: 'Eye Ointment, Erythromycin', rate: 20 }, { code: 'B04', desc: 'Newborn Screening (NBS)', rate: 550 }, { code: 'B05', desc: 'Suction Catheter', rate: 20 }]
@@ -28926,7 +28930,7 @@
 
 
 	// module
-	exports.push([module.id, "body {\n  background: cornsilk;\n}\n", ""]);
+	exports.push([module.id, "body {\n  background: cornsilk;\n}\n\n/* Make the printed page quite concise so that multiple\n * pages are not required in most cases.\n */\n.visible-print-block table > tbody > tr > td {\n  line-height: 15px;\n  margin: 0;\n  padding-top: 0;\n  padding-bottom: 0;\n  border: 0;\n}\n\n/* Pull the total section while printing to the left better\n * so that the numbers are not cut off by some printers.\n * Aligns better with the totals above too.\n */\n#print-total {\n  margin-right: 50px;\n}\n", ""]);
 
 	// exports
 
