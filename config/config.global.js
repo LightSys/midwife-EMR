@@ -14,14 +14,10 @@
  * -------------------------------------------------------------------------------
  */
 
-var fs = require('fs')
-  , _ = require('underscore')
-  ;
-
 var cfg = {}
     // Allows i18n-abide's extract-pot script to pick up these
     // variables and put them into the pot file.
-  , gettext = function(param) {return param;}
+  //, gettext = function(param) {return param;}
   ;
 
 // --------------------------------------------------------
@@ -34,15 +30,15 @@ var cfg = {}
 // Note: tmpDir is assumed to be secure and site installations
 // should insure that this is the case.
 // --------------------------------------------------------
-cfg.site = {};
-cfg.site.title = gettext('Your Site Name');
-cfg.site.titleLong = gettext('Your Longer Site Name');    // Used for certain reports, etc.
-cfg.site.languagesMap = {'en-US': 'English - Unites States', 'it-CH': 'Debugging language'};
-cfg.site.languages = _.keys(cfg.site.languagesMap);
-cfg.site.defaultLanguage = 'en-US';
-cfg.site.debugLanguage = 'it-CH';
-cfg.site.tmpDir = 'tmp';
-cfg.site.debug = false;     // true allows debugging info in the logs on the server.
+//cfg.site = {};
+//cfg.site.title = gettext('Your Site Name');
+//cfg.site.titleLong = gettext('Your Longer Site Name');    // Used for certain reports, etc.
+//cfg.site.languagesMap = {'en-US': 'English - Unites States', 'it-CH': 'Debugging language'};
+//cfg.site.languages = Object.keys(cfg.site.languagesMap);
+//cfg.site.defaultLanguage = 'en-US';
+//cfg.site.debugLanguage = 'it-CH';
+//cfg.site.tmpDir = 'tmp';
+//cfg.site.debug = false;     // true allows debugging info in the logs on the server.
 
 // --------------------------------------------------------
 // CPU Settings.
@@ -51,108 +47,108 @@ cfg.site.debug = false;     // true allows debugging info in the logs on the ser
 // The default uses the same number as the CPU cores detected.
 // Note that it is possible to set more workers than cores.
 // --------------------------------------------------------
-cfg.cpu = {};
+//cfg.cpu = {};
 //cfg.cpu.workers = 3;
 
 // --------------------------------------------------------
 // Search settings.
 // --------------------------------------------------------
-cfg.search = {};
-cfg.search.rowsPerPage = 3;
+//cfg.search = {};
+//cfg.search.rowsPerPage = 3;
 
 // --------------------------------------------------------
 // Client (patient) settings.
 // --------------------------------------------------------
-cfg.client = {};
-cfg.client.defaultCity = '';    // Optional default for new patient entry.
+//cfg.client = {};
+//cfg.client.defaultCity = '';    // Optional default for new patient entry.
 
 // --------------------------------------------------------
 // Host settings.
 // --------------------------------------------------------
-cfg.host = {};
-cfg.host.name = 'localhost';    // must be set for TLS use.
-cfg.host.port = 4000
-cfg.host.tlsPort = 443;
+//cfg.host = {};
+//cfg.host.name = 'localhost';    // must be set for TLS use.
+//cfg.host.port = 4000
+//cfg.host.tlsPort = 443;
 
 // --------------------------------------------------------
 // TLS settings.
 // Note that this section follows the Node API here.
 // http://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener
 // --------------------------------------------------------
-cfg.tls = {};
-cfg.tls.key = false;          // set to false to disable TLS
-cfg.tls.cert = false;
-cfg.tls.passphrase = false;
-cfg.tls.ciphers = 'AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH';
-cfg.tls.handshakeTimeout = 120;
-cfg.tls.honorCipherOrder = true;
+//cfg.tls = {};
+//cfg.tls.key = false;          // set to false to disable TLS
+//cfg.tls.cert = false;
+//cfg.tls.passphrase = false;
+//cfg.tls.ciphers = 'AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH';
+//cfg.tls.handshakeTimeout = 120;
+//cfg.tls.honorCipherOrder = true;
 
 // --------------------------------------------------------
 // Database settings.
 // --------------------------------------------------------
-cfg.database = {};
-cfg.database.host = 'localhost';
-cfg.database.port = 3306;
-cfg.database.db = 'yourDBname';
-cfg.database.dbUser = 'yourDBuser';
-cfg.database.dbPass = 'yourDBpassword';
-cfg.database.charset = 'utf8';
-cfg.database.debug = false;     // Make Bookshelf ORM verbose in the log output.
+//cfg.database = {};
+//cfg.database.host = 'localhost';
+//cfg.database.port = 3306;
+//cfg.database.db = 'yourDBname';
+//cfg.database.dbUser = 'yourDBuser';
+//cfg.database.dbPass = 'yourDBpassword';
+//cfg.database.charset = 'utf8';
+//cfg.database.debug = false;     // Make Bookshelf ORM verbose in the log output.
 
 // --------------------------------------------------------
 // Redis settings.
 // --------------------------------------------------------
-cfg.redis = {};
-cfg.redis.db = 1;
-cfg.redis.host = '127.0.0.1';
-cfg.redis.port = 6379;
+//cfg.redis = {};
+//cfg.redis.db = 1;
+//cfg.redis.host = '127.0.0.1';
+//cfg.redis.port = 6379;
 
 // --------------------------------------------------------
 // Cache settings.
 // In memory cache time to live settings. How long to cache
 // before updating. Currently using node-cache module.
 // --------------------------------------------------------
-cfg.cache = {};                   // TTL is in seconds
-cfg.cache.shortTTL = 60 * 10;     // 10 minutes
-cfg.cache.mediumTTL = 60 * 60;    // 1 hour
-cfg.cache.longTTL = 60 * 60 * 24; // 1 day
+//cfg.cache = {};                   // TTL is in seconds
+//cfg.cache.shortTTL = 60 * 10;     // 10 minutes
+//cfg.cache.mediumTTL = 60 * 60;    // 1 hour
+//cfg.cache.longTTL = 60 * 60 * 24; // 1 day
 
 // --------------------------------------------------------
 // Data settings.
 // --------------------------------------------------------
-cfg.data = {};
-cfg.data.selectRefreshInterval = 10 * 60 * 1000;
+//cfg.data = {};
+//cfg.data.selectRefreshInterval = 10 * 60 * 1000;
 
 // --------------------------------------------------------
 // Error settings.
 // --------------------------------------------------------
-cfg.error = {};
+//cfg.error = {};
 // Time to wait after fatal error before killing process to
 // allow rendering of the error page to the client.
-cfg.error.errorTimeout = 1500;
+//cfg.error.errorTimeout = 1500;
 
 // --------------------------------------------------------
 // Session settings.
 // --------------------------------------------------------
-cfg.session = {};
-cfg.session.secret = 'yourSESSIONsecret';
-cfg.session.pool = true;
-cfg.session.table = 'session';
-cfg.session.cleanup = true;
-cfg.session.config = {
-  host: cfg.database.host
-  , port: cfg.database.port
-  , user: cfg.database.dbUser
-  , password: cfg.database.dbPass
-  , database: cfg.database.db
-};
+//cfg.session = {};
+//cfg.session.secret = 'yourSESSIONsecret';
+//cfg.session.pool = true;
+//cfg.session.table = 'session';
+//cfg.session.cleanup = true;
+//cfg.session.config = {
+  //host: cfg.database.host
+  //, port: cfg.database.port
+  //, user: cfg.database.dbUser
+  //, password: cfg.database.dbPass
+  //, database: cfg.database.db
+//};
 
 // --------------------------------------------------------
 // Cookie settings.
 // --------------------------------------------------------
-cfg.cookie = {};
-cfg.cookie.secret = 'yourCOOKIEsecret';
-cfg.cookie.maxAge = 60 * 60 * 24 * 1000;    // 1 day
+//cfg.cookie = {};
+//cfg.cookie.secret = 'yourCOOKIEsecret';
+//cfg.cookie.maxAge = 60 * 60 * 24 * 1000;    // 1 day
 
 // --------------------------------------------------------
 // Path settings.

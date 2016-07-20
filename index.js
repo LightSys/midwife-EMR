@@ -31,12 +31,13 @@ var express = require('express')
   , clearRoleInfo = require('./auth').clearRoleInfo(app)    // requires the app object
   , auth = require('./auth').auth
   , spaAuth = require('./auth').spaAuth
-  , SessionStore = require('express-mysql-session')(session)
+  , cfg = require('./config')
+  , SessionStore = cfg.database.file && cfg.database.file.length > 0?
+      require('connect-sqlite3')(session): require('express-mysql-session')(session)
   , MySQL = require('mysql')                            // for conn pool for sessions
   , i18n = require('i18n-abide')
   , _ = require('underscore')
   , moment = require('moment')
-  , cfg = require('./config')
   , path = require('path')
   , fs = require('fs')
   , User = require('./models').User
@@ -73,6 +74,7 @@ var express = require('express')
   , useSecureCookie = cfg.tls.key || false
   , server      // https server
   , workerPort = cfg.host.tlsPort
+  , sessionCfg
   ;
 
 // --------------------------------------------------------
@@ -127,22 +129,44 @@ app.use(bodyParser.json());
 app.use(methodOverride());
 app.use(cookieParser(cfg.cookie.secret));
 
-cfg.session.pool = MySQL.createPool({
-  user: cfg.database.dbUser
-  , password: cfg.database.dbPass
-  , host: cfg.database.host
-  , port: cfg.database.port
-  , database: cfg.database.db
-  , schema: {
-      tablename: 'session'
-      , columnNames: {
-          session_id: 'sid'
-          , expires: 'expires'
-          , data: 'session'
+// --------------------------------------------------------
+// If using MySQL, create a session pool and setup session
+// config. Otherwise for SQLite3 just setup session config.
+// --------------------------------------------------------
+if (cfg.database.file && cfg.database.file.length !== 0) {
+  console.log('Creating SQLite3 session configuration.')
+  sessionCfg = {
+    table: 'sessions',
+    db: 'midwife-emr-sessions',    // connect-sqlite3 adds an extension of ".db"
+    dir: path.dirname(cfg.database.file)
+  };
+} else {
+  console.log('Creating MySQL session pool and session configuration.')
+  cfg.session.pool = MySQL.createPool({
+    user: cfg.database.dbUser
+    , password: cfg.database.dbPass
+    , host: cfg.database.host
+    , port: cfg.database.port
+    , database: cfg.database.db
+    , schema: {
+        tablename: 'session'
+        , columnNames: {
+            session_id: 'sid'
+            , expires: 'expires'
+            , data: 'session'
+        }
       }
-    }
-});
-var sessionStore = new SessionStore(cfg.session.config);
+  });
+  sessionCfg = {
+    host: cfg.database.host
+    , port: cfg.database.port
+    , user: cfg.database.dbUser
+    , password: cfg.database.dbPass
+    , database: cfg.database.db
+  };
+}
+
+var sessionStore = new SessionStore(sessionCfg);
 // --------------------------------------------------------
 // sessionMiddleware() allows the same authentication to
 // be used in Express as in Socket.io.
@@ -717,7 +741,10 @@ if (process.env.NODE_ENV == 'test') {
     // --------------------------------------------------------
     // Listen for HTTPS connections.
     // --------------------------------------------------------
-    server = https.createServer(cfg.tls, app);
+    var tlsCfg = {};
+    tlsCfg.key = fs.readFileSync(cfg.tls.key);
+    tlsCfg.cert = fs.readFileSync(cfg.tls.cert);
+    server = https.createServer(tlsCfg, app);
     server.listen(workerPort, cfg.host.name);
 
     // --------------------------------------------------------
