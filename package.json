@@ -1,6 +1,6 @@
 {
-  "name": "mercy",
-  "version": "0.0.0",
+  "name": "midwife-emr",
+  "version": "0.6.3",
   "description": "Maternal care and patient management.",
   "main": "index.js",
   "dependencies": {
