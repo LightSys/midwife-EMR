@@ -123,7 +123,6 @@ app.engine('jade', cons.jade);
 app.set('view engine', 'jade');
 app.set('views', path.join(__dirname,'views'));
 app.use(favicon(__dirname + '/static/favicon.ico'));
-app.use(express.static('bower_components'));
 app.use(express.static('static'));
 app.use(bodyParser.json());
 app.use(methodOverride());
