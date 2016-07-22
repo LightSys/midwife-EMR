@@ -43,7 +43,8 @@
     "dbPass": "",
     "charset": "utf8",
     "debug": false,
-    "file": "./midwife-emr-default-database.db"
+    "file": "midwife-emr-default-database.db",
+    "directory": ""
   },
   "redis": {
     "db": 8,
