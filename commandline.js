@@ -2,7 +2,8 @@
  * -------------------------------------------------------------------------------
  * commandline.js
  *
- * Configures and processes command line arguments and exports the specified options.
+ * Configures and processes command line arguments and exports the configuration
+ * found therein as well as the name of the configuration file, if found.
  * -------------------------------------------------------------------------------
  */
 
@@ -10,53 +11,18 @@
 
 
 const fs = require('fs')
+  , path = require('path')
   , program = require('commander')
 
-
-const getVersion = () => {
-  return fs.readFileSync('./VERSION')
-}
-
-/* --------------------------------------------------------
- * getUserHome()
- *
- * Returns the user's home directory according to the
- * platform being used.
- *
- * Adapted from:
- * https://medium.com/developers-writing/building-a-desktop-application-with-electron-204203eeb658#.gw97r5fap
- * -------------------------------------------------------- */
-const getUserHome = () => {
-  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME']
-}
+let cfgFileName = ''
+  , cfg = {}
 
 const getAppName = () => {
   return 'Midwife-EMR'
 }
 
-const defaultConfigFileLocation = () => {
-  let cfgFile
-  const home = getUserHome()
-  const appName = getAppName()
-  switch (process.platform) {
-    case 'darwin':
-      cfgFile = `${home}/Library/Application Support/${appName}/${appName}.json`
-      break
-    case 'freebsd':
-      cfgFile = `${home}/.config/${appName}/${appName}.json`
-      break
-    case 'linux':
-      cfgFile = `${home}/.config/${appName}/${appName}.json`
-      break
-    case 'sunos':
-      cfgFile = `${home}/.config/${appName}/${appName}.json`
-      break
-    case 'win32':
-      cfgFile = `${home}/%APPDATA%/${appName}/${appName}.json`
-    default:
-      cfgFile = `{appName}.json`
-  }
-  return cfgFile
+const getVersion = () => {
+  return fs.readFileSync(path.join(__dirname, './VERSION'))
 }
 
 // --------------------------------------------------------
@@ -69,23 +35,17 @@ program
 
 
 // --------------------------------------------------------
-// Load the configuration file, if available, and flag
-// whether it is valid JSON.
+// Load the configuration file, if available.
 // --------------------------------------------------------
-let cfgFileName = program.config || defaultConfigFileLocation()
-let cfg
-try {
-  const contents = fs.readFileSync(cfgFileName)
-  cfg = JSON.parse(contents)
-} catch (e) {
-  console.log(e.toString())
-  cfg = {}
+if (program.config && program.config.length > 0) {
+  cfgFileName = program.config
+  try {
+    const contents = fs.readFileSync(cfgFileName)
+    cfg = JSON.parse(contents)
+  } catch (e) { }
 }
-const cfgValid = Object.keys(cfg).length > 0
-
 
 module.exports = {
   cfgFileName,
-  cfgValid,
   cfg
 }
