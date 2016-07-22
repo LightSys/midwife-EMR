@@ -72,14 +72,24 @@ var getScheduledPrenatalExams = function(days, cb) {
   longCache.get(prenatalScheduled, function(err, recs) {
     if (err) logError(err);
     if (! recs || _.isEmpty(recs)) {
-      var knex
-        , sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(e.returnDate, "%m-%d") AS scheduled ' +
-          'FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id ' +
-          'WHERE e.returnDate > CURDATE() ' +
-          'AND e.returnDate < DATE_ADD(CURDATE(), INTERVAL ' + days + ' day) ' +
-          'AND p.transferOfCare IS NULL ' +
-          'GROUP BY e.returnDate ORDER BY e.returnDate';
-      knex = Bookshelf.DB.knex;
+      var knex = Bookshelf.DB.knex
+        , sql
+        ;
+      if (knex.client === 'mysql') {
+        sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(e.returnDate, "%m-%d") AS scheduled ' +
+              'FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id ' +
+              'WHERE e.returnDate > CURDATE() ' +
+              'AND e.returnDate < DATE_ADD(CURDATE(), INTERVAL ' + days + ' day) ' +
+              'AND p.transferOfCare IS NULL ' +
+              'GROUP BY e.returnDate ORDER BY e.returnDate';
+      } else {
+        sql = "SELECT COUNT(*) AS cnt, strftime('%m-%d', e.returnDate) AS scheduled " +
+              "FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id " +
+              "WHERE e.returnDate > date() " +
+              "AND e.returnDate < date('now', '" + days + " days') " +
+              "AND p.transferOfCare IS NULL " +
+              "GROUP BY e.returnDate ORDER BY e.returnDate";
+      }
       knex
         .raw(sql)
         .then(function(data) {
@@ -207,16 +217,26 @@ var getPrenatalHistoryByMonth = function(numMonths, cb) {
     var knex
       , sql
       ;
-    sql = 'SELECT COUNT(*) AS cnt, SUBSTR(MONTHNAME(date), 1, 3) AS month ' +
-          'FROM prenatalExam ' +
-          'WHERE date > DATE_SUB(CURDATE(), INTERVAL ? MONTH) ' +
-          'GROUP BY MONTHNAME(date) ' +
-          'ORDER BY date';
     if (err) logError(err);
     if (!recs || _.isEmpty(recs)) {
+      var nMonths = numMonths * -1;   // Better for SQLite3.
       knex = Bookshelf.DB.knex;
+      if (knex.client === 'mysql') {
+        sql = 'SELECT COUNT(*) AS cnt, SUBSTR(MONTHNAME(date), 1, 3) AS month ' +
+              'FROM prenatalExam ' +
+              'WHERE date > DATE_ADD(CURDATE(), INTERVAL ? MONTH) ' +
+              'GROUP BY MONTHNAME(date) ' +
+              'ORDER BY date';
+      } else {
+        sql = "SELECT COUNT(*) AS cnt, substr(strftime('%m', date), 1, 3) AS month " +
+              "FROM prenatalExam " +
+              "WHERE date > date('now', '? months') " +
+              "GROUP BY strftime('%m', date) " +
+              "ORDER BY date";
+      }
+      sql = sql.replace('?', nMonths);
       knex
-        .raw(sql, numMonths)
+        .raw(sql)
         .then(function(data) {
           stats.historyByMonth = data[0];
         })
