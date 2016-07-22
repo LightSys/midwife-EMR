@@ -2,37 +2,168 @@
  * -------------------------------------------------------------------------------
  * index.js
  *
- * Exports a configuration object that is the composition of the JSON configuration
- * file passed on the command line and the routes of the application.
+ * Exports a configuration object that is obtained from either the configuration
+ * file passed on the command line, the configuration file found in the default
+ * location, or the default application settings.
+ *
+ * Appends all routes on the configuration object as well as the applications 
+ * default directory and configuration file locations.
+ *
+ * Creates, if neccesary, the application directory.
  * -------------------------------------------------------------------------------
  */
 
 'use strict'
 
 const fs = require('fs')
-  , defaultConfigFilename = './config/config.default.json'
+  , path = require('path')
+  , defaultConfigFilename = path.join(__dirname, 'config.default.json')
 
-let cfgSettings = require('../commandline')
+let cfg = {}
+  , usingDefaultSettings = false
+
+const getAppName = () => {
+  return 'Midwife-EMR'
+}
+
+/* --------------------------------------------------------
+ * getUserHome()
+ *
+ * Returns the user's home directory according to the
+ * platform being used.
+ *
+ * Adapted from:
+ * https://medium.com/developers-writing/building-a-desktop-application-with-electron-204203eeb658#.gw97r5fap
+ * -------------------------------------------------------- */
+const getUserHome = () => {
+  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME']
+}
+
+
+const defaultAppDirectory = () => {
+  const appName = getAppName()
+  const home = getUserHome()
+  let defaultDir
+  switch (process.platform) {
+    case 'darwin':
+      defaultDir = `${home}/Library/Application Support/${appName}`
+      break
+    case 'freebsd':
+      defaultDir = `${home}/.config/${appName}`
+      break
+    case 'linux':
+      defaultDir = `${home}/.config/${appName}`
+      break
+    case 'sunos':
+      defaultDir = `${home}/.config/${appName}`
+      break
+    case 'win32':
+      defaultDir = `${home}/%APPDATA%/${appName}`
+    default:
+      defaultDir = ''
+  }
+  return defaultDir
+}
+
+const defaultConfigFileLocation = () => {
+  let cfgFile
+  const appName = getAppName()
+  const defaultDir = defaultAppDirectory()
+  cfgFile = path.join(defaultDir, `${appName}.json`)
+  return cfgFile
+}
 
 // --------------------------------------------------------
-// Load the default configuration if configuration is
-// invalid or not found.
+// First load the settings passed on the command line, if any.
 // --------------------------------------------------------
-if (! cfgSettings.cfgValid) {
+let cmdLineSettings = require('../commandline')
+
+// --------------------------------------------------------
+// If configuration settings were not passed on command line,
+// try a couple other locations.
+// --------------------------------------------------------
+if (! cmdLineSettings ||
+    ! cmdLineSettings.cfg ||
+    ! Object.keys(cmdLineSettings.cfg).length > 0) {
+
+  // First try the default configuration file location.
+  const defaultFile = defaultConfigFileLocation()
   try {
-    const contents = fs.readFileSync(defaultConfigFilename)
-    cfgSettings.cfg = JSON.parse(contents)
-    console.log('Using default configuration values.')
+    const contents = fs.readFileSync(defaultFile)
+    cfg = JSON.parse(contents)
+  } catch (e) { }
+
+  // --------------------------------------------------------
+  // Next, if neccessary, load the default settings.
+  // --------------------------------------------------------
+  if (Object.keys(cfg).length === 0) {
+    try {
+      const contents = fs.readFileSync(defaultConfigFilename)
+      cfg = JSON.parse(contents)
+      console.log('Using default configuration values.')
+      usingDefaultSettings = true
+    } catch (e) {
+      cfg = {}
+    }
+  } else {
+    console.log('Using ' + defaultFile)
+  }
+} else {
+  // Command line settings found so pick them up.
+  cfg = cmdLineSettings.cfg
+  console.log('Using ' + cmdLineSettings.cfgFileName)
+}
+
+// --------------------------------------------------------
+// Establish an application settings in the config if there
+// is not one already. Set the default directory and the
+// configuration file.
+// --------------------------------------------------------
+if (! cfg.application) cfg.application = {}
+if (! cfg.application.directory) {
+  cfg.application.directory = defaultAppDirectory()
+}
+if (! cfg.application.configurationFile) {
+  if (cmdLineSettings.cfgFileName && ! usingDefaultSettings) {
+    cfg.application.configurationFile = cmdLineSettings.cfgFileName
+  } else {
+    cfg.application.configurationFile = defaultConfigFileLocation()
+  }
+}
+
+// --------------------------------------------------------
+// Attempt to create the application directory if it does
+// not exist already.
+// --------------------------------------------------------
+if (cfg.application.directory) {
+  let dirFound = false
+  try {
+    dirFound = fs.statSync(cfg.application.directory).isDirectory()
+  } catch (e) { }
+  if (! dirFound) {
+    try {
+      fs.mkdirSync(cfg.application.directory)
+      console.log('Created application directory: ' + cfg.application.directory)
+    } catch (e) { }
+  }
+}
+
+// --------------------------------------------------------
+// Write out the configuration file no file was found and
+// default settings are being used.
+// --------------------------------------------------------
+if (usingDefaultSettings && cfg.application.configurationFile) {
+  try {
+    fs.writeFileSync(cfg.application.configurationFile, JSON.stringify(cfg))
   } catch (e) {
     console.log(e.toString())
-    cfgSettings.cfg = {}
   }
 }
 
 // --------------------------------------------------------
 // Add the routes onto the config object for convenience.
 // --------------------------------------------------------
-cfgSettings.cfg.path = require('./config.global').path
+cfg.path = require('./config.global').path
 
-module.exports = cfgSettings.cfg
+module.exports = cfg
 
