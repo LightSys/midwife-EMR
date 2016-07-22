@@ -10,6 +10,7 @@
 
 var Knex = require('knex')
   , fs = require('fs')
+  , path = require('path')
   , sqlite3 = require('sqlite3').verbose()
   , cfg = require('../config')
   , KnexSQLite3 = 'sqlite3' // These two are used by Knex.
@@ -32,6 +33,8 @@ var Knex = require('knex')
  * -------------------------------------------------------- */
 const init = (settings, cb) => {
   let dbConn
+  let databaseFile
+
   // Sanity check
   if (! settings.file && ! settings.database) return cb('Error: invalid configuration.', false)
 
@@ -57,9 +60,19 @@ const init = (settings, cb) => {
   // default data.
   // --------------------------------------------------------
   if (dbType === KnexSQLite3) {
+    // --------------------------------------------------------
+    // Put the database in the correct directory.
+    // --------------------------------------------------------
+    if (settings.directory.length === 0 ||
+        ! fs.statSync(settings.directory).isDirectory()) {
+      databaseFile = path.join(cfg.application.directory, settings.file)
+    } else {
+      databaseFile = path.join(settings.directory, settings.file)
+    }
+
     // Open the database, creating it if necessary.
-    console.log(`Opening the database: ${settings.file}`)
-    dbConn = new sqlite3.Database(settings.file, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+    console.log(`Opening the database: ${databaseFile}`)
+    dbConn = new sqlite3.Database(databaseFile, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
       if (err) return cb(err, false)
 
       dbConn.serialize();
