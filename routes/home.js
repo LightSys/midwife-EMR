@@ -19,6 +19,7 @@ var passport = require('passport')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , util = require('../util')
   , _ = require('underscore')
   , Event = require('../models').Event
   , prenatalHistory = 'stats:prenatalHistory'
@@ -75,7 +76,7 @@ var getScheduledPrenatalExams = function(days, cb) {
       var knex = Bookshelf.DB.knex
         , sql
         ;
-      if (knex.client === 'mysql') {
+      if (util.dbType() === util.KnexMySQL) {
         sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(e.returnDate, "%m-%d") AS scheduled ' +
               'FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id ' +
               'WHERE e.returnDate > CURDATE() ' +
@@ -221,7 +222,7 @@ var getPrenatalHistoryByMonth = function(numMonths, cb) {
     if (!recs || _.isEmpty(recs)) {
       var nMonths = numMonths * -1;   // Better for SQLite3.
       knex = Bookshelf.DB.knex;
-      if (knex.client === 'mysql') {
+      if (util.dbType() === util.KnexMySQL) {
         sql = 'SELECT COUNT(*) AS cnt, SUBSTR(MONTHNAME(date), 1, 3) AS month ' +
               'FROM prenatalExam ' +
               'WHERE date > DATE_ADD(CURDATE(), INTERVAL ? MONTH) ' +

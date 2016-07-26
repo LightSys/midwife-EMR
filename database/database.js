@@ -13,8 +13,7 @@ var Knex = require('knex')
   , path = require('path')
   , sqlite3 = require('sqlite3').verbose()
   , cfg = require('../config')
-  , KnexSQLite3 = 'sqlite3' // These two are used by Knex.
-  , KnexMySQL = 'mysql'
+  , util = require('../util')
     // Note: file references from the perspective of the top-level directory.
   , sqliteCreateSchemaFile = './database/sql/create_sqlite_schema.sql'
   , sqliteLoadDataFile = './database/sql/load_default_data_sqlite.sql'
@@ -36,14 +35,12 @@ const init = (settings, cb) => {
   let databaseFile
 
   // Sanity check
-  if (! settings.file && ! settings.database) return cb('Error: invalid configuration.', false)
-
-  const dbType = settings.file && settings.file.length > 0? KnexSQLite3: KnexMySQL
+  if (! settings.file && ! settings.db) return cb('Error: invalid configuration.', false)
 
   // --------------------------------------------------------
   // Sanity check MySQL settings passed.
   // --------------------------------------------------------
-  if (dbType === KnexMySQL) {
+  if (util.dbType() === util.KnexMySQL) {
     if (! settings.host ||
         ! settings.port ||
         ! settings.dbUser ||
@@ -59,7 +56,7 @@ const init = (settings, cb) => {
   // if necessary, populate with proper schema, and load
   // default data.
   // --------------------------------------------------------
-  if (dbType === KnexSQLite3) {
+  if (util.dbType() === util.KnexSQLite3) {
     // --------------------------------------------------------
     // Put the database in the correct directory.
     // --------------------------------------------------------
@@ -115,6 +112,12 @@ const init = (settings, cb) => {
         }
       })
     })
+  } else {
+    // --------------------------------------------------------
+    // Handle a MySQL database.
+    // --------------------------------------------------------
+    // TODO: build out schema if necessary.
+    return cb(null, true)
   }
 
 }
