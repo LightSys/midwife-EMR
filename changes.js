@@ -11,6 +11,7 @@
 var Bookshelf = require('bookshelf')
   , _ = require('underscore')
   , cfg = require('./config')
+  , util = require('./util')
   , DATA_CHANGE = 'DATA_CHANGE'
   ;
 
@@ -46,7 +47,7 @@ var buildChangeObject = function(data) {
   result.type = DATA_CHANGE;
 
   // Get the foreign keys of the table.
-  if (knex.client === 'mysql') {
+  if (util.dbType() === util.KnexMySQL) {
     return knex
       .select('COLUMN_NAME')
       .from('information_schema.KEY_COLUMN_USAGE')

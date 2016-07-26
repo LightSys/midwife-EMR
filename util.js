@@ -8,6 +8,7 @@
 
 var moment = require('moment')
   , _ = require('underscore')
+  , cfg = require('./config')
   , INFO = 1
   , WARN = 2
   , ERROR = 3
@@ -22,6 +23,8 @@ var moment = require('moment')
     ]
   , SYSTEM_LOG = 'SYSTEM_LOG' // Initialized here due to comm module initializing later.
   , sendSystem                // This is initialized later.
+  , KnexSQLite3 = 'sqlite3' // These two are used by Knex.
+  , KnexMySQL = 'mysql'
   ;
 
 
@@ -355,6 +358,16 @@ var validOrVoidDate = function(val) {
   return result;
 };
 
+var dbType = function() {
+  if (cfg.database.file &&
+      cfg.database.file.length > 0 &&
+      ! cfg.database.db) {
+    return KnexSQLite3
+  } else {
+    return KnexMySQL
+  }
+}
+
 module.exports = {
   logInfo: logInfo
   , logWarn: logWarn
@@ -368,6 +381,9 @@ module.exports = {
   , isValidDate: isValidDate
   , validOrVoidDate: validOrVoidDate
   , getProcessId
+  , dbType
+  , KnexSQLite3
+  , KnexMySQL
 };
 
 
