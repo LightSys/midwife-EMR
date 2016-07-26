@@ -61,14 +61,12 @@ database.init(cfg.database, (err, success) => {
   // Rebroadcast all messages from the workers to all
   // workers (including the original sender).
   // --------------------------------------------------------
-  _.each(cluster.workers, function(worker) {
+  _.each(cluster.workers(), function(worker) {
     // For each worker, listen for messages.
     console.log('Setting up listener for worker.id: ' + worker.id);
     worker.process.on('message', function(msg) {
       // For each message received, rebroadcast it to all workers.
-      console.log('Master: received msg');
-      _.each(cluster.workers, function(worker) {
-        console.log('Master: sending message to worker.id: ' + worker.id);
+      _.each(cluster.workers(), function(worker) {
         worker.process.send(msg);
       });
     });
@@ -77,6 +75,7 @@ database.init(cfg.database, (err, success) => {
   console.log("spawned cluster, kill -s SIGUSR2", process.pid, "to reload");
 
   // Write the pid to a file for reloading via scripts easily.
+  // TODO: fix this: for multi-process sites, the pids overwrite each other.
   fs.writeFile('process.pid', '' + process.pid, function(err) {
     if (err) throw err;
   });
