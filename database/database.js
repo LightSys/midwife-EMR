@@ -79,7 +79,7 @@ const init = (settings, cb) => {
       // created yet and create if necesary.
       // --------------------------------------------------------
       testForSQLiteSchema(dbConn, (err, success) => {
-        if (err) return cb(err, false)
+        if (err) return dbConn.close(() => {cb(err, false)})
 
         // --------------------------------------------------------
         // Create tables and triggers if necessary.
@@ -89,13 +89,13 @@ const init = (settings, cb) => {
 
           // Get the SQL as individual statements which are delimited by $$.
           runSQLiteSQL(dbConn, sqliteCreateSchemaFile, (err, success) => {
-            if (err) return cb(err)
+            if (err) return dbConn.close(() => {cb(err, false)})
             if (! success) return cb('Error: unable to create database schema.')
 
             // Load the default data.
             console.log('Loading default data.')
             runSQLiteSQL(dbConn, sqliteLoadDataFile, (err, success) => {
-              if (err) return cb(err)
+              if (err) return dbConn.close(() => {cb(err, false)})
               if (! success) return cb('Error: unable to load default data.')
 
               // --------------------------------------------------------
@@ -107,8 +107,10 @@ const init = (settings, cb) => {
             })
           })
         } else {
-          // The database was previously created so will use as is.
-          return cb(null, true)
+          // The database was previously created so will use as is after we close it.
+          dbConn.close((err) => {
+            return cb(null, true)
+          })
         }
       })
     })
