@@ -12,14 +12,17 @@
  * -------------------------------------------------------------------------------
  */
 
-var Bookshelf = require('bookshelf')
+var path = require('path')
+  , Bookshelf = require('bookshelf')
   , Knex = require('knex')
   , moment = require('moment')
   , _ = require('underscore')
   , Promise = require('bluebird')
+  , util = require('../util')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , appDir = require('../config').application.directory
   ;
 
 /* --------------------------------------------------------
@@ -37,24 +40,21 @@ var Bookshelf = require('bookshelf')
  * -------------------------------------------------------- */
 Bookshelf.DB = {};
 var init = function(dbSettings) {
-  var KnexSQLite3 = 'sqlite3' // These two are used by Knex.
-  , KnexMySQL = 'mysql'
-  , dbType = dbSettings.file && dbSettings.file.length > 0? KnexSQLite3: KnexMySQL
-  , knex
+  var knex;
 
   // --------------------------------------------------------
   // Set the Knex client according to the database type.
   // --------------------------------------------------------
-  if (dbType === KnexSQLite3) {
+  if (util.dbType() === util.KnexSQLite3) {
     knex = Knex({
-      client: KnexSQLite3
+      client: util.KnexSQLite3
       , connection: {
-          filename: dbSettings.file
+          filename: path.join(appDir, dbSettings.file)
         }
     })
   } else {
     knex = Knex({
-      client: KnexMySQL
+      client: util.KnexMySQL
       , connection: {
         host: dbSettings.host
         , port: dbSettings.port
