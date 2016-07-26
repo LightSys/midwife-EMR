@@ -780,7 +780,6 @@ if (process.env.NODE_ENV == 'test') {
   comm.init(SocketIO(server), sessionMiddleware);
 }
 
-
 if (cfg.tls.key) {
   logInfo('Server listening for HTTPS on port ' + workerPort +
       ' and redirecting port ' + cfg.host.port);

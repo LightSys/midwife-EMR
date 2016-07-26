@@ -2,13 +2,13 @@
  * -------------------------------------------------------------------------------
  * comm.js
  *
- * Handle the Socket.io interface with the clients, the Redis interface with the
+ * Handle the Socket.io interface with the clients, the IPC interface with the
  * other cluster worker processes, and the RxJS interface to the other modules
  * in this worker process. Expose only RxJS streams to the other modules and
- * leave the Socket.io and Redis interfaces private to this module.
+ * leave the Socket.io and IPC interfaces private to this module.
  *
  * There are three communication streams (system, site, and data) that are active
- * across each of the three interfaces (Socket.io, Redis, and RxJS). All messages
+ * across each of the three interfaces (Socket.io, IPC, and RxJS). All messages
  * created are delivered to all subscribers in the current process, to all
  * subscribers in other cluster processes, and to all subscribing clients
  * irrespective of which server process they are currently attached to.
@@ -84,8 +84,7 @@
  * -------------------------------------------------------------------------------
  */
 
-var redis = require('redis')
-  , rx = require('rx')
+var rx = require('rx')
   , uuid = require('uuid')
   , _ = require('underscore')
   , moment = require('moment')
@@ -107,8 +106,6 @@ var redis = require('redis')
   , cntSystem = 0
   , cntSite = 0
   , cntData = 0
-  , redisSub
-  , redisPub
   , siteSubject
   , siteSubjectData
   , systemSubject
@@ -256,7 +253,7 @@ CONST = {
  * initiated the message.
  *
  * The processedBy field contains the ids of the processes
- * that have received the message via Redis or, as is the
+ * that have received the message via IPC or, as is the
  * case here, when the message was created. This is used to
  * prevent messages from bouncing between processes without
  * end.
@@ -331,7 +328,7 @@ function makeSend(type) {
             // Broadcast this to the other processes for distribution
             // to all connected clients.
             // --------------------------------------------------------
-            redisPub.publish(CONST.TYPE.DATA, JSON.stringify(data2));
+            process.send({type: CONST.TYPE.DATA, data: data2});
           });
           break;
 
@@ -365,7 +362,7 @@ var sendData = makeSend(CONST.TYPE.DATA);
 /* --------------------------------------------------------
  * subscribeSite()
  *
- * Subscribe to site type messages.
+ * Allows other modules to subscribe to site type messages.
  *
  * param       onNext       - function to call upon msg
  * param       onError      - function to call upon error
@@ -379,7 +376,7 @@ var subscribeSite = function(onNext, onError, onCompleted) {
 /* --------------------------------------------------------
  * subscribeSystem()
  *
- * Subscribe to system type messages.
+ * Allows other modules to subscribe to system type messages.
  *
  * param       onNext       - function to call upon msg
  * param       onError      - function to call upon error
@@ -390,6 +387,16 @@ var subscribeSystem = function(onNext, onError, onCompleted) {
   return systemSubject.subscribe(onNext, onError, onCompleted);
 };
 
+/* --------------------------------------------------------
+ * subscribeData()
+ *
+ * Allows other modules to subscribe to data type messages.
+ *
+ * param       onNext       - function to call upon msg
+ * param       onError      - function to call upon error
+ * param       onCompleted  - function to call when done
+ * return      subscription object
+ * -------------------------------------------------------- */
 var subscribeData = function(onNext, onError, onCompleted) {
   return dataSubject.subscribe(onNext, onError, onCompleted);
 };
@@ -431,7 +438,7 @@ var getSocketSessionId = function(socket) {
  * init()
  *
  * Initialize the three communication interfaces that this
- * module uses: Socket.io for the clients, Redis for
+ * module uses: Socket.io for the clients, IPC for
  * inter-process communication, and RxJS for intra-module
  * communication within this server process.
  *
@@ -448,35 +455,15 @@ var init = function(io, sessionMiddle) {
   if (isInitialized) return;
   isInitialized = true;
 
-  // ========================================================
-  // ========================================================
-  // Configure the Redis clients.
-  // ========================================================
-  // ========================================================
-
-  // --------------------------------------------------------
-  // redisSub is used exclusively for subscribing, receiving
-  // messages, and unsubscribing. redisPub is used for publishing
-  // and anything else.
-  // --------------------------------------------------------
-  redisSub = redis.createClient(cfg.redis);
-  redisPub = redis.createClient(cfg.redis);
-  redisSub.select(cfg.redis.db);
-  redisPub.select(cfg.redis.db);
-
   // --------------------------------------------------------
   // Handle messages from other worker processes.
   // --------------------------------------------------------
-  redisSub.on('message', function(channel, message) {
-    var data;
-    try {
-      data = JSON.parse(message);
-    } catch (e) {
-      logCommError('Error during parsing of Redis message: ' + e.toString());
-      console.dir(util.inspect(message, {depth: 3}));
-      data = {};
-    }
-    switch (channel) {
+  process.on('message', function(wrapper) {
+    var data = wrapper.data;
+    switch (wrapper.type) {
+      case CONST.TYPE.DATA:
+        dataSubject.onNext(data);
+        break;
       case CONST.TYPE.SITE:
         // --------------------------------------------------------
         // Insure that we don't process messages that we have already
@@ -518,22 +505,13 @@ var init = function(io, sessionMiddle) {
         }
         break;
 
-      case CONST.TYPE.DATA:
-        // --------------------------------------------------------
-        // Received a data notification from some other server process
-        // (or possibly our own) so now we inject it into the RxJS data
-        // stream so that it can be sent to the clients.
-        // --------------------------------------------------------
-        dataSubject.onNext(data);
-        break;
-
       default:
-        logCommError('redisSub: channel ' + channel + ' is not yet implemented.');
+        // --------------------------------------------------------
+        // There are other messages that we are not interested in.
+        // --------------------------------------------------------
+        //logCommInfo('Client: Received UNHANDLED msg: ' + JSON.stringify(wrapper));
     }
   });
-  redisSub.subscribe(CONST.TYPE.SITE);
-  redisSub.subscribe(CONST.TYPE.SYSTEM);
-  redisSub.subscribe(CONST.TYPE.DATA);
 
 
   // ========================================================
@@ -561,7 +539,7 @@ var init = function(io, sessionMiddle) {
       if (data && data.workerId && data.workerId !== process.env.WORKER_ID) {
         return;
       }
-      redisPub.publish(CONST.TYPE.SITE, JSON.stringify(data));
+      process.send({type: CONST.TYPE.SITE, data: data});
     },
     function(err) {
       logCommError('Error: ' + err);
@@ -587,7 +565,7 @@ var init = function(io, sessionMiddle) {
       if (data && data.scope && data.scope === process.env.WORKER_ID) {
         return;
       }
-      redisPub.publish(CONST.TYPE.SYSTEM, JSON.stringify(data));
+      process.send({type: CONST.TYPE.SYSTEM, data: data});
     },
     function(err) {
       logCommError('Error: ' + err);
@@ -790,7 +768,6 @@ var init = function(io, sessionMiddle) {
         , humanOpName         // the name of the operation for logging
         , errMsg = ''
         ;
-      console.log('DATA_CHANGE');
       if (payload && transaction && userInfo) {
         // --------------------------------------------------------
         // Determine what action is required and handle unknown action types.
