@@ -75,6 +75,7 @@ var express = require('express')
   , server      // https server
   , workerPort = cfg.host.tlsPort
   , sessionCfg
+  , sqliteSessionsDirectory
   ;
 
 // --------------------------------------------------------
@@ -133,11 +134,17 @@ app.use(cookieParser(cfg.cookie.secret));
 // config. Otherwise for SQLite3 just setup session config.
 // --------------------------------------------------------
 if (cfg.database.file && cfg.database.file.length !== 0) {
-  console.log('Creating SQLite3 session configuration.')
+  // If the main SQLite3 database is in a certain directory, use that.
+  if (cfg.database.directory && cfg.database.directory.length > 0) {
+    sqliteSessionsDirectory = cfg.database.directory;
+  } else {
+    sqliteSessionsDirectory = cfg.application.directory;
+  }
+  logInfo('Creating SQLite3 sessions table in ' + sqliteSessionsDirectory);
   sessionCfg = {
     table: 'sessions',
     db: 'midwife-emr-sessions',    // connect-sqlite3 adds an extension of ".db"
-    dir: path.dirname(cfg.database.file)
+    dir: sqliteSessionsDirectory
   };
 } else {
   console.log('Creating MySQL session pool and session configuration.')
