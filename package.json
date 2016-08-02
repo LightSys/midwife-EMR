@@ -100,12 +100,12 @@
   },
   "scripts": {
     "test": "mocha",
-    "postinstall": "[ -f node_modules/redux-optimist/.babelrc ] && mv node_modules/redux-optimist/.babelrc node_modules/redux-optimist/.babelrc-renamed;gulp",
+    "postinstall": "scripts/npm_lifecycle.js",
     "startdefault": "NODE_ENV=development node cluster.js",
     "start": "NODE_ENV=development node cluster.js --config config/config.development.json",
     "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config config/config.development.json",
     "simple": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config /home/kurt/work/config.simple.js",
-    "build": "[ -f node_modules/redux-optimist/.babelrc ] && mv node_modules/redux-optimist/.babelrc node_modules/redux-optimist/.babelrc-renamed;WEBPACK_WATCH=1 gulp webpack:build-dev"
+    "build": "gulp webpack:build-dev"
   },
   "jshintConfig": {
     "laxcomma": true
