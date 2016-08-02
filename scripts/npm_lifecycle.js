@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-/* 
+/*
  * -------------------------------------------------------------------------------
  * npm_lifecycle.js
  *
  * Handle various NPM life cycle events.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 "use strict";
@@ -36,8 +36,14 @@ switch (lcEvent) {
       // Run gulp to create all of the static files.
       // --------------------------------------------------------
       console.log('Running gulp ...')
-      const output = execFileSync('./node_modules/.bin/gulp', [], {encoding: 'utf8'})
-      console.log(output)
+      try {
+        const buffSize = 1024 * 1024 * 50
+        const output = execFileSync('./node_modules/.bin/gulp', [],
+            {encoding: 'utf8', maxBuffer: buffSize})
+        console.log(output)
+      } catch (e) {
+        console.log(e.toString())
+      }
     }
     break
 
