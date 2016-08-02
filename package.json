@@ -100,7 +100,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "install": "[ -f node_modules/redux-optimist/.babelrc ] && mv node_modules/redux-optimist/.babelrc node_modules/redux-optimist/.babelrc-renamed;gulp",
+    "prepublish": "[ -f node_modules/redux-optimist/.babelrc ] && mv node_modules/redux-optimist/.babelrc node_modules/redux-optimist/.babelrc-renamed;gulp",
     "startdefault": "NODE_ENV=development node cluster.js",
     "start": "NODE_ENV=development node cluster.js --config config/config.development.json",
     "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config config/config.development.json",
