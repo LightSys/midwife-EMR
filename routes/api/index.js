@@ -107,8 +107,10 @@ var doSpa = function(req, res, next) {
   });
 
   if (req.session.user && req.session.user.role) {
-    if (req.session.user.role.name === 'administrator' ||
-        req.session.user.role.name === 'guard' ||
+    if ((req.session.user.role.name === 'administrator' &&
+         req.session.user.note.startsWith('PHASE2')) ||
+        (req.session.user.role.name === 'guard' &&
+         req.session.user.note.startsWith('PHASE2')) ||
         (req.session.user.role.name === 'supervisor' &&
          req.session.user.note.startsWith('PHASE2'))) {
       newMenu = buildMenu(req);
