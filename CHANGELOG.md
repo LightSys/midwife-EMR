@@ -1,15 +1,20 @@
 # Change Log
 
-## Phase2 branch
+## Phase2 branch - pre-release
 
-- Assumes that Redis is installed to allow efficient inter-process
-  communication between node server processes. This is necessary
-  to facilitate "push" to the clients.
-- Upgraded bcrypt to current (assumes use of NodeJS 4.x).
-- Installed Socket.io.
+- Assumes use of Node 6.x line.
+- Upgraded many third-party packages to current or near current.
+- Installed Socket.io for use with experimental client (see below).
 - Cluster workers now listen on different ports.
    - If more than one worker is used, requires a reverse proxy
      like Nginx that implements sticky sessions.
+- Exposes an experimental React/Redux client that uses Socket.io.
+   - Users that start their comment field in the user record with 'PHASE2' will
+     be able to use the new client in the administrator, guard, or supervisor
+     roles. The supervisor role implementation is far from complete.
+- Experimental support for SQLite3 as an alternative database.
+- Experimental support for JSON configuration file passed on command line with defaults.
+- Removed Bower requirement/dependency.
 
 ## 0.6.3
 
