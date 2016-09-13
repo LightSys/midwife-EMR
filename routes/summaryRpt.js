@@ -1851,6 +1851,7 @@ var doPrintPage = function(doc, data, opts, sections) {
     // Process this section of either one or two parts.
     // --------------------------------------------------------
     _.each(partsArray, function(func, idx) {
+      var didAddPage = false;
       // Run the function and get the result.
       partsResults[idx] = func(doc, data, opts, y);
       funcCnt++;
@@ -1867,11 +1868,13 @@ var doPrintPage = function(doc, data, opts, sections) {
         logInfo('Summary Report: Adding a page in doPrintPage().');
         doStartPage(doc, opts);
         y = minY;
+        didAddPage = true;
       }
 
       // If we are full width, reset y for the next section down.
       if (isFullWidth) {
-        y = partsResults[idx].y;
+        // Do not reset y if already done above.
+        if (! didAddPage) y = partsResults[idx].y;
       } else {
         if (idx === 0) {
           // First of two side-by-side sections.
@@ -2211,16 +2214,18 @@ var run = function run(req, res) {
   // When the report is fully built, write it back to the caller.
   // --------------------------------------------------------
   writable.on('finish', function() {
-    fs.createReadStream(filePath).pipe(res);
-    res.end();
-    fs.unlink(filePath);
-  });
+    fs.stat(filePath, function(err, stats) {
+      if (err) return logError(err);
+      var size = stats.size;
 
-  // --------------------------------------------------------
-  // Set up the header correctly.
-  // --------------------------------------------------------
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; SummaryRpt.pdf');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; SummaryRpt.pdf');
+      res.setHeader('Content-Transfer-Encoding', 'binary');
+      res.setHeader('Content-Length', ('' + size));
+      fs.createReadStream(filePath).pipe(res);    // res is ended by default.
+      fs.unlink(filePath);
+    });
+  });
 
   doReport(id, writable);
 };

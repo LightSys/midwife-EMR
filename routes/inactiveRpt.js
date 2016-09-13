@@ -462,16 +462,18 @@ var run = function run(req, res) {
   // When the report is fully built, write it back to the caller.
   // --------------------------------------------------------
   writable.on('finish', function() {
-    fs.createReadStream(filePath).pipe(res);
-    res.end();
-    fs.unlink(filePath);
-  });
+    fs.stat(filePath, function(err, stats) {
+      if (err) return logError(err);
+      var size = stats.size;
 
-  // --------------------------------------------------------
-  // Set up the header correctly.
-  // --------------------------------------------------------
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; PhilHealthDaily.pdf');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; InactiveRpt.pdf');
+      res.setHeader('Content-Transfer-Encoding', 'binary');
+      res.setHeader('Content-Length', ('' + size));
+      fs.createReadStream(filePath).pipe(res);
+      fs.unlink(filePath);
+    });
+  });
 
   doReport(flds, writable, req, res);
 };
