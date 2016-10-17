@@ -319,7 +319,7 @@ var doFooter = function(doc, pageNum, totalPages, totalPcs, opts) {
   str = opts.logisticsName;
   len = doc.widthOfString(str);
   doc.font(FONTS.Helvetica).fontSize(smallFontSize);
-  str2 = 'MMC Vaccine In-Charge';
+  str2 = 'Vaccine In-Charge';
   len2 = doc.widthOfString(str2);
   if (len >= len2) {
     x = doc.page.width - opts.margins.right - len - 5;
