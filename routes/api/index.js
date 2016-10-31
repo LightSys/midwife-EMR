@@ -167,6 +167,28 @@ var doSpa = function(req, res, next) {
 
       return res.render('main', {cfg: data});
     }
+
+
+    if ((req.session.user.role.name === 'administrator' &&
+         req.session.user.note.startsWith('PHASE2ELM')) ||
+        (req.session.user.role.name === 'guard' &&
+         req.session.user.note.startsWith('PHASE2ELM')) ||
+        (req.session.user.role.name === 'supervisor' &&
+         req.session.user.note.startsWith('PHASE2ELM'))) {
+
+      // --------------------------------------------------------
+      // Store the fact that this user's routes are all SPA or
+      // phase two routes in the session. This allows page
+      // refreshes to be properly handled.
+      // --------------------------------------------------------
+      req.session.isSpaOnly = true;
+
+      if (req.url !== '/') {
+        return res.redirect('/');
+      }
+
+      return res.render('main_elm');
+    }
   }
   return next();
 }

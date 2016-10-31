@@ -29,6 +29,8 @@
     "css-loader": "^0.23.1",
     "csurf": "^1.8.3",
     "del": "^2.0.2",
+    "elm": "^0.17.1",
+    "elm-webpack-loader": "^3.0.6",
     "errorhandler": "^1.4.2",
     "es6-promise": "^3.2.1",
     "es6-shim": "^0.35.1",
@@ -56,6 +58,7 @@
     "jquery": "^1.12.4",
     "jshint": "^2.9.2",
     "knex": "^0.8.6",
+    "material-design-icons": "^3.0.1",
     "method-override": "^2.3.6",
     "moment": "^2.13.0",
     "mysql": "^2.9.0",
@@ -105,7 +108,9 @@
     "start": "NODE_ENV=development node cluster.js --config config/config.development.json",
     "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config config/config.development.json",
     "simple": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V cluster.js --config /home/kurt/work/config.simple.js",
-    "build": "gulp webpack:build-dev"
+    "build": "gulp webpack:build-dev",
+    "buildelm": "gulp webpack:build-elm",
+    "watchelm": "WEBPACK_WATCH=1 gulp webpack:build-elm"
   },
   "jshintConfig": {
     "laxcomma": true

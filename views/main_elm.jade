@@ -5,10 +5,11 @@ html(lang="en")
     meta(charset="utf-8")
     meta(http-equiv="X-UA-Compatible" content="IE=edge")
     meta(name="viewport", content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no")
-    link(rel='stylesheet' href='/js/elm.styles.css')
+
+    link(rel='stylesheet' href='/js/styles.css')
 
   body()
-    div(id='app')
-    script(src='/js/elm-vendor.mwemr-bundle.js')
-    script(src='/js/elm.mwemr-bundle.js')
+    div(id='root' data-cfg=cfg)
+    script(src='/js/vendor.mwemr-bundle.js')
+    script(src='/js/app.mwemr-bundle.js')
 
