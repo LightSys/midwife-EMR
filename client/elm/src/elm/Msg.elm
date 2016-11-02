@@ -12,3 +12,4 @@ type Msg
     = NoOp
     | Mdl (Material.Msg Msg)
     | SelectTab Tab
+    | NewSystemMessage SystemMessage

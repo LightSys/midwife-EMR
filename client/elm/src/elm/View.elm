@@ -1,11 +1,16 @@
 module View exposing (..)
 
 import Html as Html exposing (Html, div, p, text)
+import Html.Attributes as HA
 import Material
 import Material.Color as Color
+import Material.Grid as Grid
+import Material.Icon as Icon
 import Material.Layout as Layout
 import Material.Options as Options
+import Material.Table as Table
 import Material.Typography as Typo
+import String
 
 
 -- LOCAL IMPORTS
@@ -121,15 +126,72 @@ headerSmall title model =
                 [ Layout.title []
                     [ Options.styled p [ Typo.headline ] [ text title ]
                     ]
+                , Layout.spacer
+                , Layout.link
+                    [ Layout.href "/logout" ]
+                    [ Icon.i "exit_to_app"
+                    , text " Logout"
+                    ]
                 ]
             ]
     in
         contents
 
 
+systemLog : Model -> Html msg
+systemLog model =
+    let
+        makeRow idx m =
+            Html.li
+                [ HA.classList
+                    [ ( "system-log-line", True )
+                    , ( "system-log-line-even", idx % 2 == 0 )
+                    , ( "system-log-line-odd", idx % 2 /= 0 )
+                    ]
+                ]
+                -- Remove the process id from the beginning of the string.
+                [ m.systemLog
+                    |> String.split "|"
+                    |> List.drop 1
+                    |> List.head
+                    |> Maybe.withDefault ""
+                    |> text
+                ]
+
+        rows =
+            List.take 100 model.systemMessages
+                |> List.indexedMap makeRow
+    in
+        Html.div []
+            [ Html.h4 []
+                [ text "System Log "
+                , Html.small []
+                    [ text "Most recent 100, Newest at the top" ]
+                ]
+            , Html.ul [ HA.class "system-log" ] rows
+            ]
+
+
 viewHome : Model -> Html Msg
 viewHome model =
-    p [] [ text "Home page" ]
+    let
+        cellOpts =
+            [ Grid.size Grid.Desktop 12
+            , Grid.size Grid.Tablet 6
+            , Grid.size Grid.Phone 4
+            ]
+    in
+        Grid.grid []
+            [ Grid.cell cellOpts
+                [ Html.h3 []
+                    [ text "Home" ]
+                ]
+            , Grid.cell cellOpts
+                [ Options.styled p
+                    []
+                    [ systemLog model ]
+                ]
+            ]
 
 
 viewTablesMain : Model -> Html Msg

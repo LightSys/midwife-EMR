@@ -1,0 +1,24 @@
+
+/* System Log */
+.system-log {
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+  border-left: 1px solid #E9E9E9;
+  border-right: 1px solid #E9E9E9;
+  height: 300px;
+  max-height: 300px;
+  overflow-y: scroll;
+  margin-left: 0;
+  padding-left: 0;
+}
+.system-log-line {
+  font-weight: bold;
+  list-style: none;
+}
+.system-log-line-even {
+  background-color: #E9E9E9;
+}
+.system-log-line-odd {
+  background-color: white;
+}
+

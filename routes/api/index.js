@@ -108,11 +108,11 @@ var doSpa = function(req, res, next) {
 
   if (req.session.user && req.session.user.role) {
     if ((req.session.user.role.name === 'administrator' &&
-         req.session.user.note.startsWith('PHASE2')) ||
+         req.session.user.note.startsWith('PHASE2REACT')) ||
         (req.session.user.role.name === 'guard' &&
-         req.session.user.note.startsWith('PHASE2')) ||
+         req.session.user.note.startsWith('PHASE2REACT')) ||
         (req.session.user.role.name === 'supervisor' &&
-         req.session.user.note.startsWith('PHASE2'))) {
+         req.session.user.note.startsWith('PHASE2REACT'))) {
       newMenu = buildMenu(req);
       data = {
         cfg: {
@@ -166,15 +166,12 @@ var doSpa = function(req, res, next) {
       }
 
       return res.render('main', {cfg: data});
-    }
-
-
-    if ((req.session.user.role.name === 'administrator' &&
-         req.session.user.note.startsWith('PHASE2ELM')) ||
-        (req.session.user.role.name === 'guard' &&
-         req.session.user.note.startsWith('PHASE2ELM')) ||
-        (req.session.user.role.name === 'supervisor' &&
-         req.session.user.note.startsWith('PHASE2ELM'))) {
+    } else if ((req.session.user.role.name === 'administrator' &&
+                req.session.user.note.startsWith('PHASE2ELM')) ||
+                (req.session.user.role.name === 'guard' &&
+                req.session.user.note.startsWith('PHASE2ELM')) ||
+                (req.session.user.role.name === 'supervisor' &&
+                req.session.user.note.startsWith('PHASE2ELM'))) {
 
       // --------------------------------------------------------
       // Store the fact that this user's routes are all SPA or

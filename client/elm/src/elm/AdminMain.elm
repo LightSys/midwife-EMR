@@ -1,13 +1,16 @@
 module AdminMain exposing (..)
 
 import Html.App as App
+import Json.Decode as JD
 import Material
 
 
 -- LOCAL IMPORTS
 
+import Decoders exposing (..)
 import Model exposing (..)
 import Msg exposing (..)
+import Ports
 import View as View
 
 
@@ -23,6 +26,19 @@ update msg model =
         SelectTab tab ->
             { model | selectedTab = tab } ! []
 
+        NewSystemMessage sysMsg ->
+            -- We only keep the most recent 1000 messages.
+            let
+                newSysMessages =
+                    if sysMsg.id /= "ERROR" then
+                        sysMsg
+                            :: model.systemMessages
+                            |> List.take 1000
+                    else
+                        model.systemMessages
+            in
+                { model | systemMessages = newSysMessages } ! []
+
         NoOp ->
             let
                 _ =
@@ -37,17 +53,15 @@ update msg model =
 
 init : ( Model, Cmd Msg )
 init =
-    { mdl = Material.model
-    , user = 1
-    , selectedTab = HomeTab
-    , selectedPage = HomePage
-    }
-        ! []
+    Model.initialModel ! []
 
 
-subscriptions : a -> Sub msg
-subscriptions =
-    always Sub.none
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Ports.systemMessages Decoders.decodeSystemMessage
+            |> Sub.map NewSystemMessage
+        ]
 
 
 main : Program Never
