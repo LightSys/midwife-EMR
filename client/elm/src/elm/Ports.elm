@@ -1,11 +1,15 @@
-port module Ports exposing (..)
+port module Ports
+    exposing
+        ( systemMessages
+        , searchUser
+        )
 
 import Json.Decode
 
 
 -- LOCAL IMPORTS
 
-import Model exposing (SystemMessage)
+import Types exposing (..)
 import Msg exposing (Msg)
 
 
@@ -13,3 +17,10 @@ import Msg exposing (Msg)
 
 
 port systemMessages : (Json.Decode.Value -> msg) -> Sub msg
+
+
+
+-- OUTGOING PORTS
+
+
+port searchUser : String -> Cmd msg

@@ -1,4 +1,4 @@
-module AdminMain exposing (..)
+module Main exposing (..)
 
 import Html.App as App
 import Json.Decode as JD

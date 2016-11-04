@@ -1,4 +1,7 @@
-module Msg exposing (..)
+module Msg
+    exposing
+        ( Msg(..)
+        )
 
 import Material
 
@@ -6,6 +9,7 @@ import Material
 -- LOCAL IMPORTS
 
 import Model exposing (..)
+import Types exposing (..)
 
 
 type Msg

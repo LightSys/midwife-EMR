@@ -1,6 +1,17 @@
-module Model exposing (..)
+module Model
+    exposing
+        ( Model
+        , Page(..)
+        , Tab(..)
+        , initialModel
+        )
 
 import Material
+
+
+-- LOCAL IMPORTS
+
+import Types exposing (..)
 
 
 type alias Model =
@@ -27,16 +38,6 @@ type Tab
     | ProfileTab
 
 
-type alias SystemMessage =
-    { id : String
-    , msgType : String
-    , updatedAt : Int
-    , workerId : String
-    , processedBy : List String
-    , systemLog : String
-    }
-
-
 initialModel : Model
 initialModel =
     { mdl = Material.model
@@ -44,17 +45,4 @@ initialModel =
     , selectedTab = HomeTab
     , selectedPage = HomePage
     , systemMessages = []
-    }
-
-
-{-| Used when there is an error decoding from JS.
--}
-emptySystemMessage : SystemMessage
-emptySystemMessage =
-    { id = "ERROR"
-    , msgType = ""
-    , updatedAt = 0
-    , workerId = ""
-    , processedBy = []
-    , systemLog = ""
     }

@@ -7,11 +7,7 @@ import Json.Decode.Pipeline exposing (decode, required, requiredAt)
 
 -- LOCAL IMPORTS
 
-import Model
-    exposing
-        ( SystemMessage
-        , emptySystemMessage
-        )
+import Types exposing (..)
 
 
 systemMessageDecoder : JD.Decoder SystemMessage

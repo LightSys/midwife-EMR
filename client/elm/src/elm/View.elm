@@ -159,14 +159,14 @@ systemLog model =
                 ]
 
         rows =
-            List.take 100 model.systemMessages
+            List.take 300 model.systemMessages
                 |> List.indexedMap makeRow
     in
         Html.div []
             [ Html.h4 []
                 [ text "System Log "
                 , Html.small []
-                    [ text "Most recent 100, Newest at the top" ]
+                    [ text "Most recent 300, newest at the top" ]
                 ]
             , Html.ul [ HA.class "system-log" ] rows
             ]
