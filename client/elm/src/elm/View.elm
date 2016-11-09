@@ -1,11 +1,12 @@
 module View exposing (..)
 
+import Color as Color
 import Html as Html exposing (Html, div, p, text)
 import Html.Attributes as HA
 import Material
-import Material.Color as Color
+import Material.Color as MColor
 import Material.Grid as Grid
-import Material.Icon as Icon
+import Material.Icons.Action as Icon exposing (exit_to_app)
 import Material.Layout as Layout
 import Material.Options as Options
 import Material.Table as Table
@@ -112,8 +113,8 @@ tabSpan lbl =
 tabs : List String -> ( List (Html a), List (Options.Property b d) )
 tabs labels =
     ( List.map tabSpan labels
-    , [ Color.background Color.primaryDark
-      , Color.text Color.primaryContrast
+    , [ MColor.background MColor.primaryDark
+      , MColor.text MColor.primaryContrast
       ]
     )
 
@@ -129,7 +130,7 @@ headerSmall title model =
                 , Layout.spacer
                 , Layout.link
                     [ Layout.href "/logout" ]
-                    [ Icon.i "exit_to_app"
+                    [ Icon.exit_to_app Color.white 20
                     , text " Logout"
                     ]
                 ]
