@@ -22,3 +22,7 @@
   background-color: white;
 }
 
+/* Make labels easier to see. */
+label.mdl-textfield__label {
+  color: black !important;
+}

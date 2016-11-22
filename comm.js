@@ -119,6 +119,8 @@ var rx = require('rx')
   , ADD_USER_REQUEST = 'ADD_USER_REQUEST'
   , SAVE_PRENATAL_REQUEST = 'SAVE_PRENATAL_REQUEST'
   , CHECK_IN_OUT_REQUEST = 'CHECK_IN_OUT_REQUEST'
+  , DATA_SELECT = 'SELECT'                    // SELECT event in the data namespace.
+  , DATA_SELECT_RESPONSE = 'SELECT_RESPONSE'  // SELECT_RESPONSE event in the data namespace.
   ;
 
 
@@ -719,6 +721,33 @@ var init = function(io, sessionMiddle) {
       cntData--;
     });
     cntData++;
+
+    // --------------------------------------------------------
+    // SELECT event for the Elm client.
+    // --------------------------------------------------------
+    socket.on(DATA_SELECT, function(data) {
+      console.log(data);
+      var json = JSON.parse(data);
+      var table = json.table? json.table: void 0;
+      // NOTE: data and error fields returned are optional.
+      if (table) {
+        var response = _.clone(json);
+        getLookupTable(table, function(err, data) {
+          if (err) {
+            logCommError(err);
+            response.error = err;
+            // TODO: test this path.
+            return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(response));
+          }
+          response.data = data;
+          return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(response));
+        });
+      } else {
+        var response = _.clone(json);
+        response.error = 'Table not specified.';
+        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(response));
+      }
+    });
 
     // --------------------------------------------------------
     // DATA_TABLE_REQUEST: this is used to populate the lookup

@@ -58,7 +58,6 @@
  *          check the payload accordingly.
  *
  *
- *
  * Finally, messages are wrapped in an object that has a type field, which is
  * known as msgType within Elm due to the conflict with the 'type' keyword.
  * -------------------------------------------------------------------------------
@@ -78,18 +77,31 @@ var ioSystem = io.connect(window.location.origin + '/system');
 
 // --------------------------------------------------------
 // Socket.io event types that we will use.
-// TODO: implement new events.
 // --------------------------------------------------------
-var DATA = 'data';
-var DATA_CHANGE = 'DATA_CHANGE';      // All data change messages, bi-directional.
-var SITE = 'site';                    // All site messages use this message key.
-var SYSTEM = 'system';                // All system messages use this message key.
+// The data namespace.
+var INFORM = 'INFORM';      // Server to client data change notification in data namespace.
+var CHG = 'CHG';            // Client to server data change request in data namespace.
+var SELECT = 'SELECT';      // Client to server data request in data namespace.
+var SELECT_RESPONSE = 'SELECT_RESPONSE';  // Server to client data request response in data namespace.
+
+// The site and system namespaces.
+var SITE = 'site';          // All site messages use this message key.
+var SYSTEM = 'system';      // All system messages use this message key.
+
+
+// ========================================================
+// ========================================================
+// Utility functions.
+// ========================================================
+// ========================================================
 
 /* --------------------------------------------------------
  * getNextTransactionId()
  *
  * Returns the next transaction id to use. This is used for
- * data when the communication starts on the client.
+ * the data namespace with client initiated change requests.
+ * The server will respond with an event of 'CHG:' + the
+ * transaction id that the client sent.
  * -------------------------------------------------------- */
 var nextTransactionId = 0
 var getNextTransactionId = function() {
@@ -100,16 +112,73 @@ var getNextTransactionId = function() {
  * sendMsg()
  *
  * Sends a data message to the server using the event and
- * the payload passed.
+ * the payload passed. The site and system namespaces are
+ * not ever used to send client to server messages.
  * -------------------------------------------------------- */
 var sendMsg = function(msg, payload) {
   ioData.emit(msg, JSON.stringify(payload));
 }
 
-ioData.on(DATA, function(data) {
+
+// ========================================================
+// ========================================================
+// The data namespace.
+// ========================================================
+// ========================================================
+
+// --------------------------------------------------------
+// Server to client data change notifications.
+// --------------------------------------------------------
+ioData.on(INFORM, function(data) {
   if (! app) return;
 });
 
+ioData.on(SELECT_RESPONSE, function(data) {
+  if (! app) return;
+  //console.log('SELECT_RESPONSE');
+  //console.log(data);
+
+  // --------------------------------------------------------
+  // Discern table and send it into Elm using the proper port.
+  // --------------------------------------------------------
+  var json = JSON.parse(data);
+  var table = json.table? json.table: void 0;
+  if (table) {
+    switch (table) {
+      case 'eventType':
+        app.ports.eventType.send(json.data); break;
+      case 'labSuite':
+        app.ports.labSuite.send(json.data); break;
+      case 'labTest':
+        app.ports.labTest.send(json.data); break;
+      case 'labTestValue':
+        app.ports.labTestValue.send(json.data); break;
+      case 'medicationType':
+        app.ports.medicationType.send(json.data); break;
+      case 'pregnoteType':
+        app.ports.pregnoteType.send(json.data); break;
+      case 'riskCode':
+        app.ports.riskCode.send(json.data); break;
+      case 'vaccinationType':
+        app.ports.vaccinationType.send(json.data); break;
+      default:
+        console.log('ERROR in comm.js: unknown Elm port for table ' + table);
+    }
+  } else {
+    console.log('ERROR: data SELECT_RESPONSE received with no table.');
+  }
+});
+
+// --------------------------------------------------------
+// Client data request to the server. Payload will include
+// specifics regarding the request.
+// --------------------------------------------------------
+
+// ========================================================
+// ========================================================
+// The system namespace.
+// ========================================================
+// ========================================================
 ioSystem.on(SYSTEM, function(data) {
   if (! app) return;
 
@@ -139,6 +208,10 @@ ioSystem.on(SYSTEM, function(data) {
  * -------------------------------------------------------- */
 var setApp = function(theApp) {
   app = theApp;
+
+  app.ports.selectQuery.subscribe(function(query) {
+    sendMsg(SELECT, query);
+  });
 };
 
 module.exports = {

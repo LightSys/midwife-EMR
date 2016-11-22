@@ -4,6 +4,7 @@ import Color as Color
 import Html as Html exposing (Html, div, p, text)
 import Html.Attributes as HA
 import Material
+import Material.Button as Button
 import Material.Color as MColor
 import Material.Grid as Grid
 import Material.Icons.Action as Icon exposing (exit_to_app)
@@ -18,7 +19,10 @@ import String
 
 import Model exposing (..)
 import Msg exposing (Msg(..))
+import Types exposing (..)
+import ViewUtils as VU
 import View.Users
+import View.Tables
 
 
 type alias Mdl =
@@ -45,7 +49,7 @@ view model =
                             View.Users.viewUserSearch
 
                 TablesTab ->
-                    viewTablesMain
+                    View.Tables.view
 
                 ProfileTab ->
                     viewProfile
@@ -178,12 +182,12 @@ viewHome model =
     let
         cellOpts =
             [ Grid.size Grid.Desktop 12
-            , Grid.size Grid.Tablet 6
+            , Grid.size Grid.Tablet 8
             , Grid.size Grid.Phone 4
             ]
     in
         Grid.grid []
-            [ Grid.cell cellOpts
+            [ Grid.cell VU.fullSizeCellOpts
                 [ Html.h3 []
                     [ text "Home" ]
                 ]
@@ -193,11 +197,6 @@ viewHome model =
                     [ systemLog model ]
                 ]
             ]
-
-
-viewTablesMain : Model -> Html Msg
-viewTablesMain model =
-    p [] [ text "Tables main page" ]
 
 
 viewProfile : Model -> Html Msg

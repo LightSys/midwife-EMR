@@ -1,10 +1,55 @@
 module Types
     exposing
-        ( User
-        , Role
+        ( UserTable
+        , RoleTable
+        , EventTypeTable
+        , LabSuiteTable
+        , LabTestTable
+        , LabTestValueTable
+        , MedicationTypeTable
+        , PregnoteTypeTable
+        , RiskCodeTable
+        , VaccinationTypeTable
         , SystemMessage
         , emptySystemMessage
+        , SelectQuery
+        , Table(..)
+        , TableMetaInfo
         )
+
+import RemoteData as RD exposing (RemoteData(..), WebData)
+
+
+type Table
+    = Unknown
+    | CustomField
+    | CustomFieldType
+    | Event
+    | EventType
+    | HealthTeaching
+    | LabSuite
+    | LabTest
+    | LabTestResult
+    | LabTestValue
+    | Medication
+    | MedicationType
+    | Patient
+    | Pregnancy
+    | PregnancyHistory
+    | Pregnote
+    | PregnoteType
+    | PrenatalExam
+    | Priority
+    | Risk
+    | RiskCode
+    | Referral
+    | RoFieldsByRole
+    | Role
+    | Schedule
+    | SelectData
+    | User
+    | Vaccination
+    | VaccinationType
 
 
 type alias SystemMessage =
@@ -30,7 +75,22 @@ emptySystemMessage =
     }
 
 
-type alias User =
+type alias SelectQuery =
+    { table : Table
+    , id : Maybe Int
+    , patient_id : Maybe Int
+    , pregnancy_id : Maybe Int
+    }
+
+
+type alias TableMetaInfo =
+    { table : Table
+    , name : String
+    , desc : String
+    }
+
+
+type alias UserTable =
     { id : Int
     , username : String
     , firstname : String
@@ -47,8 +107,77 @@ type alias User =
     }
 
 
-type alias Role =
+type alias RoleTable =
     { id : Int
     , name : String
     , description : String
+    }
+
+
+type alias EventTypeTable =
+    { id : Int
+    , name : String
+    , description : String
+    }
+
+
+type alias LabSuiteTable =
+    { id : Int
+    , name : String
+    , description : String
+    , category : String
+    }
+
+
+type alias LabTestTable =
+    { id : Int
+    , name : String
+    , abbrev : String
+    , normal : String
+    , unit : String
+    , minRangeDecimal : Float
+    , maxRangeDecimal : Float
+    , minRangeInteger : Int
+    , maxRangeInteger : Int
+    , isRange : Bool
+    , isText : Bool
+    , labSuite_id : Int
+    }
+
+
+type alias LabTestValueTable =
+    { id : Int
+    , value : String
+    , labTest_id : Int
+    }
+
+
+type alias MedicationTypeTable =
+    { id : Int
+    , name : String
+    , description : String
+    , sortOrder : Int
+    }
+
+
+type alias PregnoteTypeTable =
+    { id : Int
+    , name : String
+    , description : String
+    }
+
+
+type alias RiskCodeTable =
+    { id : Int
+    , name : String
+    , riskType : String
+    , description : String
+    }
+
+
+type alias VaccinationTypeTable =
+    { id : Int
+    , name : String
+    , description : String
+    , sortOrder : Int
     }
