@@ -29,7 +29,7 @@
     "css-loader": "^0.23.1",
     "csurf": "^1.8.3",
     "del": "^2.0.2",
-    "elm": "^0.17.1",
+    "elm": "^0.18.0",
     "elm-webpack-loader": "^3.0.6",
     "errorhandler": "^1.4.2",
     "es6-promise": "^3.2.1",

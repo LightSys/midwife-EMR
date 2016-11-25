@@ -1,9 +1,9 @@
 module Main exposing (..)
 
-import Html.App as App
+import Html
 import Json.Decode as JD
 import Material
-import RemoteData as RD exposing (RemoteData(..), WebData)
+import RemoteData as RD exposing (RemoteData(..))
 
 
 -- LOCAL IMPORTS
@@ -167,9 +167,9 @@ subscriptions model =
         ]
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    App.program
+    Html.program
         { init = init
         , update = update
         , view = View.view

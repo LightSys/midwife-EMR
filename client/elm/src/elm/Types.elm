@@ -17,7 +17,7 @@ module Types
         , TableMetaInfo
         )
 
-import RemoteData as RD exposing (RemoteData(..), WebData)
+import RemoteData as RD exposing (RemoteData(..))
 
 
 type Table

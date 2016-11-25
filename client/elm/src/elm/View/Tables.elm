@@ -2,10 +2,10 @@ module View.Tables exposing (view)
 
 import Array
 import Color as Color
+import FNV
 import Html as Html exposing (Html, div, p, text)
 import Html.Attributes as HA
 import Html.Events
-import FNV
 import Material
 import Material.Button as Button
 import Material.Card as Card

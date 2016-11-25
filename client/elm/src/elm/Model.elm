@@ -7,7 +7,7 @@ module Model
         )
 
 import Material
-import RemoteData as RD exposing (RemoteData(..), WebData)
+import RemoteData as RD exposing (RemoteData(..))
 
 
 -- LOCAL IMPORTS
@@ -23,16 +23,16 @@ type alias Model =
     , userId : Int
     , selectedTable : Maybe Table
     , selectedTableRecord : Int
-    , eventType : WebData (List EventTypeTable)
-    , labSuite : WebData (List LabSuiteTable)
-    , labTest : WebData (List LabTestTable)
-    , labTestValue : WebData (List LabTestValueTable)
-    , medicationType : WebData (List MedicationTypeTable)
-    , pregnoteType : WebData (List PregnoteTypeTable)
-    , riskCode : WebData (List RiskCodeTable)
-    , vaccinationType : WebData (List VaccinationTypeTable)
-    , role : WebData RoleTable
-    , user : WebData UserTable
+    , eventType : RemoteData String (List EventTypeTable)
+    , labSuite : RemoteData String (List LabSuiteTable)
+    , labTest : RemoteData String (List LabTestTable)
+    , labTestValue : RemoteData String (List LabTestValueTable)
+    , medicationType : RemoteData String (List MedicationTypeTable)
+    , pregnoteType : RemoteData String (List PregnoteTypeTable)
+    , riskCode : RemoteData String (List RiskCodeTable)
+    , vaccinationType : RemoteData String (List VaccinationTypeTable)
+    , role : RemoteData String RoleTable
+    , user : RemoteData String UserTable
     }
 
 
@@ -54,10 +54,10 @@ type Tab
 initialModel : Model
 initialModel =
     { mdl = Material.model
-    , userId = -1
     , selectedTab = HomeTab
     , selectedPage = HomePage
     , systemMessages = []
+    , userId = -1
     , selectedTable = Nothing
     , selectedTableRecord = 0
     , eventType = NotAsked

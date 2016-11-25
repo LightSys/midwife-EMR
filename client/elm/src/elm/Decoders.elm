@@ -9,10 +9,9 @@ import Json.Decode.Pipeline
         , requiredAt
         , optional
         , optionalAt
-        , resolveResult
         )
 import Http
-import RemoteData as RD exposing (RemoteData(..), WebData)
+import RemoteData as RD exposing (RemoteData(..))
 
 
 -- LOCAL IMPORTS
@@ -60,18 +59,10 @@ eventTypeDecoder =
         |> required "description" JD.string
 
 
-decodeEventTypeTable : JE.Value -> WebData (List EventTypeTable)
+decodeEventTypeTable : JE.Value -> RemoteData String (List EventTypeTable)
 decodeEventTypeTable payload =
-    case JD.decodeValue (JD.list eventTypeDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodeEventTypeTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list eventTypeDecoder) payload
+        |> RD.fromResult
 
 
 labSuiteDecoder : JD.Decoder LabSuiteTable
@@ -83,18 +74,10 @@ labSuiteDecoder =
         |> optional "category" JD.string ""
 
 
-decodeLabSuiteTable : JE.Value -> WebData (List LabSuiteTable)
+decodeLabSuiteTable : JE.Value -> RemoteData String (List LabSuiteTable)
 decodeLabSuiteTable payload =
-    case JD.decodeValue (JD.list labSuiteDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodeLabSuiteTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list labSuiteDecoder) payload
+        |> RD.fromResult
 
 
 labTestDecoder : JD.Decoder LabTestTable
@@ -124,18 +107,10 @@ labTestDecoder =
             |> required "labSuite_id" JD.int
 
 
-decodeLabTestTable : JE.Value -> WebData (List LabTestTable)
+decodeLabTestTable : JE.Value -> RemoteData String (List LabTestTable)
 decodeLabTestTable payload =
-    case JD.decodeValue (JD.list labTestDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodeLabTestTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list labTestDecoder) payload
+        |> RD.fromResult
 
 
 labTestValueDecoder : JD.Decoder LabTestValueTable
@@ -146,18 +121,10 @@ labTestValueDecoder =
         |> required "labTest_id" JD.int
 
 
-decodeLabTestValueTable : JE.Value -> WebData (List LabTestValueTable)
+decodeLabTestValueTable : JE.Value -> RemoteData String (List LabTestValueTable)
 decodeLabTestValueTable payload =
-    case JD.decodeValue (JD.list labTestValueDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodeLabTestValueTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list labTestValueDecoder) payload
+        |> RD.fromResult
 
 
 medicationTypeDecoder : JD.Decoder MedicationTypeTable
@@ -169,18 +136,10 @@ medicationTypeDecoder =
         |> required "sortOrder" JD.int
 
 
-decodeMedicationTypeTable : JE.Value -> WebData (List MedicationTypeTable)
+decodeMedicationTypeTable : JE.Value -> RemoteData String (List MedicationTypeTable)
 decodeMedicationTypeTable payload =
-    case JD.decodeValue (JD.list medicationTypeDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodeMedicationTypeTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list medicationTypeDecoder) payload
+        |> RD.fromResult
 
 
 pregnoteTypeDecoder : JD.Decoder PregnoteTypeTable
@@ -191,18 +150,10 @@ pregnoteTypeDecoder =
         |> required "description" JD.string
 
 
-decodePregnoteTypeTable : JE.Value -> WebData (List PregnoteTypeTable)
+decodePregnoteTypeTable : JE.Value -> RemoteData String (List PregnoteTypeTable)
 decodePregnoteTypeTable payload =
-    case JD.decodeValue (JD.list pregnoteTypeDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodePregnoteTypeTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list pregnoteTypeDecoder) payload
+        |> RD.fromResult
 
 
 riskCodeDecoder : JD.Decoder RiskCodeTable
@@ -214,18 +165,10 @@ riskCodeDecoder =
         |> required "description" JD.string
 
 
-decodeRiskCodeTable : JE.Value -> WebData (List RiskCodeTable)
+decodeRiskCodeTable : JE.Value -> RemoteData String (List RiskCodeTable)
 decodeRiskCodeTable payload =
-    case JD.decodeValue (JD.list riskCodeDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodeRiskCodeTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list riskCodeDecoder) payload
+        |> RD.fromResult
 
 
 vaccinationTypeDecoder : JD.Decoder VaccinationTypeTable
@@ -237,15 +180,7 @@ vaccinationTypeDecoder =
         |> required "sortOrder" JD.int
 
 
-decodeVaccinationTypeTable : JE.Value -> WebData (List VaccinationTypeTable)
+decodeVaccinationTypeTable : JE.Value -> RemoteData String (List VaccinationTypeTable)
 decodeVaccinationTypeTable payload =
-    case JD.decodeValue (JD.list vaccinationTypeDecoder) payload of
-        Ok val ->
-            Success val
-
-        Err message ->
-            let
-                _ =
-                    Debug.log "Decoders.decodeVaccinationTypeTable decoding error" message
-            in
-                Failure <| Http.UnexpectedPayload message
+    JD.decodeValue (JD.list vaccinationTypeDecoder) payload
+        |> RD.fromResult

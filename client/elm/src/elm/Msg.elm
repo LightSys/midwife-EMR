@@ -4,7 +4,7 @@ module Msg
         )
 
 import Material
-import RemoteData as RD exposing (RemoteData(..), WebData)
+import RemoteData as RD exposing (RemoteData(..))
 
 
 -- LOCAL IMPORTS
@@ -24,11 +24,11 @@ type Msg
     | PreviousRecord
     | NextRecord
     | LastRecord
-    | EventTypeResponse (WebData (List EventTypeTable))
-    | LabSuiteResponse (WebData (List LabSuiteTable))
-    | LabTestResponse (WebData (List LabTestTable))
-    | LabTestValueResponse (WebData (List LabTestValueTable))
-    | MedicationTypeResponse (WebData (List MedicationTypeTable))
-    | PregnoteTypeResponse (WebData (List PregnoteTypeTable))
-    | RiskCodeResponse (WebData (List RiskCodeTable))
-    | VaccinationTypeResponse (WebData (List VaccinationTypeTable))
+    | EventTypeResponse (RemoteData String (List EventTypeTable))
+    | LabSuiteResponse (RemoteData String (List LabSuiteTable))
+    | LabTestResponse (RemoteData String (List LabTestTable))
+    | LabTestValueResponse (RemoteData String (List LabTestValueTable))
+    | MedicationTypeResponse (RemoteData String (List MedicationTypeTable))
+    | PregnoteTypeResponse (RemoteData String (List PregnoteTypeTable))
+    | RiskCodeResponse (RemoteData String (List RiskCodeTable))
+    | VaccinationTypeResponse (RemoteData String (List VaccinationTypeTable))
