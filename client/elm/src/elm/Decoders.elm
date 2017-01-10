@@ -9,6 +9,7 @@ import Json.Decode.Pipeline
         , requiredAt
         , optional
         , optionalAt
+        , hardcoded
         )
 import Http
 import RemoteData as RD exposing (RemoteData(..))
@@ -22,8 +23,8 @@ import Types exposing (..)
 -- System Messages.
 
 
-systemMessageDecoder : JD.Decoder SystemMessage
-systemMessageDecoder =
+systemMessage : JD.Decoder SystemMessage
+systemMessage =
     decode SystemMessage
         |> required "id" JD.string
         |> required "msgType" JD.string
@@ -35,7 +36,7 @@ systemMessageDecoder =
 
 decodeSystemMessage : JE.Value -> SystemMessage
 decodeSystemMessage payload =
-    case JD.decodeValue systemMessageDecoder payload of
+    case JD.decodeValue systemMessage payload of
         Ok val ->
             val
 
@@ -51,8 +52,8 @@ decodeSystemMessage payload =
 -- Tables.
 
 
-eventTypeDecoder : JD.Decoder EventTypeTable
-eventTypeDecoder =
+eventTypeTable : JD.Decoder EventTypeTable
+eventTypeTable =
     decode EventTypeTable
         |> required "id" JD.int
         |> required "name" JD.string
@@ -61,12 +62,12 @@ eventTypeDecoder =
 
 decodeEventTypeTable : JE.Value -> RemoteData String (List EventTypeTable)
 decodeEventTypeTable payload =
-    JD.decodeValue (JD.list eventTypeDecoder) payload
+    JD.decodeValue (JD.list eventTypeTable) payload
         |> RD.fromResult
 
 
-labSuiteDecoder : JD.Decoder LabSuiteTable
-labSuiteDecoder =
+labSuiteTable : JD.Decoder LabSuiteTable
+labSuiteTable =
     decode LabSuiteTable
         |> required "id" JD.int
         |> optional "name" JD.string ""
@@ -76,12 +77,12 @@ labSuiteDecoder =
 
 decodeLabSuiteTable : JE.Value -> RemoteData String (List LabSuiteTable)
 decodeLabSuiteTable payload =
-    JD.decodeValue (JD.list labSuiteDecoder) payload
+    JD.decodeValue (JD.list labSuiteTable) payload
         |> RD.fromResult
 
 
-labTestDecoder : JD.Decoder LabTestTable
-labTestDecoder =
+labTestTable : JD.Decoder LabTestTable
+labTestTable =
     let
         -- The server sends bools as a 0 or 1 so convert to Bool.
         handleBools : Int -> String -> String -> String -> String -> Float -> Float -> Int -> Int -> Int -> Int -> Int -> LabTestTable
@@ -109,12 +110,12 @@ labTestDecoder =
 
 decodeLabTestTable : JE.Value -> RemoteData String (List LabTestTable)
 decodeLabTestTable payload =
-    JD.decodeValue (JD.list labTestDecoder) payload
+    JD.decodeValue (JD.list labTestTable) payload
         |> RD.fromResult
 
 
-labTestValueDecoder : JD.Decoder LabTestValueTable
-labTestValueDecoder =
+labTestValueTable : JD.Decoder LabTestValueTable
+labTestValueTable =
     decode LabTestValueTable
         |> required "id" JD.int
         |> required "value" JD.string
@@ -123,27 +124,43 @@ labTestValueDecoder =
 
 decodeLabTestValueTable : JE.Value -> RemoteData String (List LabTestValueTable)
 decodeLabTestValueTable payload =
-    JD.decodeValue (JD.list labTestValueDecoder) payload
+    JD.decodeValue (JD.list labTestValueTable) payload
         |> RD.fromResult
 
 
-medicationTypeDecoder : JD.Decoder MedicationTypeTable
-medicationTypeDecoder =
+medicationTypeTable : JD.Decoder MedicationTypeTable
+medicationTypeTable =
     decode MedicationTypeTable
         |> required "id" JD.int
         |> required "name" JD.string
         |> required "description" JD.string
         |> required "sortOrder" JD.int
+        |> hardcoded Nothing
 
 
 decodeMedicationTypeTable : JE.Value -> RemoteData String (List MedicationTypeTable)
 decodeMedicationTypeTable payload =
-    JD.decodeValue (JD.list medicationTypeDecoder) payload
+    JD.decodeValue (JD.list medicationTypeTable) payload
         |> RD.fromResult
 
 
-pregnoteTypeDecoder : JD.Decoder PregnoteTypeTable
-pregnoteTypeDecoder =
+decodeMedicationTypeRecord : Maybe String -> Maybe MedicationTypeTable
+decodeMedicationTypeRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString medicationTypeTable p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    Nothing
+
+        Nothing ->
+            Nothing
+
+
+pregnoteTypeTable : JD.Decoder PregnoteTypeTable
+pregnoteTypeTable =
     decode PregnoteTypeTable
         |> required "id" JD.int
         |> required "name" JD.string
@@ -152,12 +169,12 @@ pregnoteTypeDecoder =
 
 decodePregnoteTypeTable : JE.Value -> RemoteData String (List PregnoteTypeTable)
 decodePregnoteTypeTable payload =
-    JD.decodeValue (JD.list pregnoteTypeDecoder) payload
+    JD.decodeValue (JD.list pregnoteTypeTable) payload
         |> RD.fromResult
 
 
-riskCodeDecoder : JD.Decoder RiskCodeTable
-riskCodeDecoder =
+riskCodeTable : JD.Decoder RiskCodeTable
+riskCodeTable =
     decode RiskCodeTable
         |> required "id" JD.int
         |> required "name" JD.string
@@ -167,12 +184,12 @@ riskCodeDecoder =
 
 decodeRiskCodeTable : JE.Value -> RemoteData String (List RiskCodeTable)
 decodeRiskCodeTable payload =
-    JD.decodeValue (JD.list riskCodeDecoder) payload
+    JD.decodeValue (JD.list riskCodeTable) payload
         |> RD.fromResult
 
 
-vaccinationTypeDecoder : JD.Decoder VaccinationTypeTable
-vaccinationTypeDecoder =
+vaccinationTypeTable : JD.Decoder VaccinationTypeTable
+vaccinationTypeTable =
     decode VaccinationTypeTable
         |> required "id" JD.int
         |> required "name" JD.string
@@ -182,5 +199,28 @@ vaccinationTypeDecoder =
 
 decodeVaccinationTypeTable : JE.Value -> RemoteData String (List VaccinationTypeTable)
 decodeVaccinationTypeTable payload =
-    JD.decodeValue (JD.list vaccinationTypeDecoder) payload
+    JD.decodeValue (JD.list vaccinationTypeTable) payload
         |> RD.fromResult
+
+
+changeConfirmation : JD.Decoder ChangeConfirmation
+changeConfirmation =
+    decode ChangeConfirmation
+        |> required "id" JD.int
+        |> required "table" JD.string
+        |> required "pendingTransaction" JD.int
+        |> required "success" JD.bool
+
+
+decodeChangeConfirmation : JE.Value -> Maybe ChangeConfirmation
+decodeChangeConfirmation payload =
+    case JD.decodeValue changeConfirmation payload of
+        Ok val ->
+            Just val
+
+        Err message ->
+            let
+                _ =
+                    Debug.log "Decoders.decodeChangeConfirmation decoding error" message
+            in
+                Nothing

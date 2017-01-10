@@ -1,6 +1,7 @@
 module Utils
     exposing
-        ( tableToString
+        ( maybeStringToInt
+        , tableToString
         , stringToTable
         )
 
@@ -192,3 +193,13 @@ stringToTable name =
 
         _ ->
             Unknown
+
+
+{-| Converts a String to an Int using a default
+value passed upon failure.
+-}
+maybeStringToInt : Int -> Maybe String -> Int
+maybeStringToInt default str =
+    Maybe.withDefault "" str
+        |> String.toInt
+        |> Result.withDefault default

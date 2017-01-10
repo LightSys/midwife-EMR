@@ -33,3 +33,19 @@ selectQueryToValue sq =
         , ( "patient_id", maybeIntToNegOne sq.patient_id )
         , ( "pregnancy_id", maybeIntToNegOne sq.pregnancy_id )
         ]
+
+
+medicationTypeToValue : MedicationTypeTable -> JE.Value
+medicationTypeToValue mt =
+    JE.object
+        [ ( "id", JE.int mt.id )
+        , ( "name", JE.string mt.name )
+        , ( "description", JE.string mt.description )
+        , ( "sortOrder", JE.int mt.sortOrder )
+        , case mt.pendingTransaction of
+            Just num ->
+                ( "pendingTransaction", JE.int num )
+
+            Nothing ->
+                ( "pendingTransaction", JE.null )
+        ]

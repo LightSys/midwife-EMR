@@ -121,6 +121,13 @@ var rx = require('rx')
   , CHECK_IN_OUT_REQUEST = 'CHECK_IN_OUT_REQUEST'
   , DATA_SELECT = 'SELECT'                    // SELECT event in the data namespace.
   , DATA_SELECT_RESPONSE = 'SELECT_RESPONSE'  // SELECT_RESPONSE event in the data namespace.
+  //
+  // Elm Client stuff - corresponds with comm.js on the client.
+  //
+  , CHG = 'CHG'       // data change request.
+  , TABLE_medicationType = 'medicationType'
+  , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
+  , returnStatus = require('./util').returnStatus
   ;
 
 
@@ -747,6 +754,58 @@ var init = function(io, sessionMiddle) {
         response.error = 'Table not specified.';
         return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(response));
       }
+    });
+
+    // --------------------------------------------------------
+    // Data CHG request from the Elm client. Record will have
+    // a pendingTransaction field with the client's transaction
+    // id. This needs to be stripped and not inserted into DB,
+    // but response needs to include it.
+    // --------------------------------------------------------
+    socket.on(CHG, function(payload) {
+      var wrapper = JSON.parse(payload);
+      var table = wrapper.table? wrapper.table: void 0
+        , data = wrapper.data? wrapper.data: {}
+        , recId = data? data.id: -1
+        , pendingTransaction = data.pendingTransaction? data.pendingTransaction: -1
+        , userInfo = socketToUserInfo(socket)
+        , retAction = returnStatus(table, data.id, data.pendingTransaction, false);
+      ;
+      if (! isValidSocketSession(socket)) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data CHG request: Session has expired!');
+        return;
+      }
+      if (! table || ! data || recId === -1 || pendingTransaction === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data CHG request: Improper data sent from client!');
+        return;
+      }
+      switch (table) {
+        case TABLE_medicationType:
+          // TODO: handle this.
+          console.log('Data CHG: ' + TABLE_medicationType);
+          updateMedicationType(data, userInfo, function(err, result) {
+            if (err) {
+              logCommError(err);
+              console.dir(retAction);
+              return socket.emit(CHG, JSON.stringify(retAction));
+            }
+            // TEMPORARY for TESTING: set to true when done and remove timeout.
+            retAction.success = false;
+            setTimeout(function() {
+              console.dir(retAction);
+              return socket.emit(CHG, JSON.stringify(retAction));
+            }, 3000);
+          });
+          break;
+
+        default:
+          // TODO: send the proper msg back to the client???
+          console.log('=========== Unknown CHG request =============');
+          console.log(wrapper);
+      }
+
     });
 
     // --------------------------------------------------------

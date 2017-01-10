@@ -15,6 +15,7 @@ module Types
         , SelectQuery
         , Table(..)
         , TableMetaInfo
+        , ChangeConfirmation
         )
 
 import RemoteData as RD exposing (RemoteData(..))
@@ -157,6 +158,7 @@ type alias MedicationTypeTable =
     , name : String
     , description : String
     , sortOrder : Int
+    , pendingTransaction : Maybe Int
     }
 
 
@@ -180,4 +182,12 @@ type alias VaccinationTypeTable =
     , name : String
     , description : String
     , sortOrder : Int
+    }
+
+
+type alias ChangeConfirmation =
+    { id : Int
+    , table : String
+    , pendingTransaction : Int
+    , success : Bool
     }

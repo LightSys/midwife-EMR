@@ -340,6 +340,26 @@ var isValidDate = function(dte, format) {
 
 
 /* --------------------------------------------------------
+ * returnStatus()
+ *
+ * Utility function to build an object based on the fields
+ * passed.
+ *
+ * param       rec        - the record
+ * param       success    - boolean
+ * return      rec
+ * -------------------------------------------------------- */
+var returnStatus = function(table, id, pendingTransaction, success) {
+  return {
+    table: table,
+    id: id,
+    pendingTransaction: pendingTransaction,
+    success: success
+  };
+};
+
+
+/* --------------------------------------------------------
  * validOrVoidDate()
  *
  * Insure that the parameter passed in either a valid Date
@@ -380,6 +400,7 @@ module.exports = {
   , formatDohID: formatDohID
   , isValidDate: isValidDate
   , validOrVoidDate: validOrVoidDate
+  , returnStatus: returnStatus
   , getProcessId
   , dbType
   , KnexSQLite3

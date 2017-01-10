@@ -6,6 +6,8 @@ import FNV
 import Html as Html exposing (Html, div, p, text)
 import Html.Attributes as HA
 import Html.Events
+import Form
+import Form.Field as FF
 import Material
 import Material.Button as Button
 import Material.Card as Card
@@ -32,7 +34,7 @@ import String
 
 import Constants as C
 import Model exposing (..)
-import Msg exposing (Msg(..))
+import Msg exposing (Msg(..), MedicationTypeMsg(..))
 import Types exposing (..)
 import Utils as U
 import ViewUtils as VU
@@ -213,58 +215,104 @@ viewLabSuite model =
 
 recordChanger : Model -> List (Html Msg)
 recordChanger model =
-    [ Button.render Mdl
-        [ mdlContext, 100 ]
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Button.onClick FirstRecord
+    let
+        isDisabled =
+            model.selectedTableEditMode
+
+        ( color, size ) =
+            if isDisabled then
+                ( Color.white, 30 )
+            else
+                ( Color.black, 30 )
+    in
+        [ Button.render Mdl
+            [ mdlContext, 100 ]
+            model.mdl
+            [ Button.raised
+            , Button.ripple
+            , Button.onClick FirstRecord
+            , if isDisabled then
+                Button.disabled
+              else
+                Options.nop
+            ]
+            [ arrow_back color size ]
+        , Button.render Mdl
+            [ mdlContext, 101 ]
+            model.mdl
+            [ Button.raised
+            , Button.ripple
+            , Button.onClick PreviousRecord
+            , if isDisabled then
+                Button.disabled
+              else
+                Options.nop
+            ]
+            [ chevron_left color size ]
+        , Button.render Mdl
+            [ mdlContext, 102 ]
+            model.mdl
+            [ Button.raised
+            , Button.ripple
+            , Button.onClick NextRecord
+            , if isDisabled then
+                Button.disabled
+              else
+                Options.nop
+            ]
+            [ chevron_right color size ]
+        , Button.render Mdl
+            [ mdlContext, 103 ]
+            model.mdl
+            [ Button.raised
+            , Button.ripple
+            , Button.onClick LastRecord
+            , if isDisabled then
+                Button.disabled
+              else
+                Options.nop
+            ]
+            [ arrow_forward color size ]
         ]
-        [ arrow_back Color.black 30 ]
-    , Button.render Mdl
-        [ mdlContext, 101 ]
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Button.onClick PreviousRecord
-        ]
-        [ chevron_left Color.black 30 ]
-    , Button.render Mdl
-        [ mdlContext, 102 ]
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Button.onClick NextRecord
-        ]
-        [ chevron_right Color.black 30 ]
-    , Button.render Mdl
-        [ mdlContext, 103 ]
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Button.onClick LastRecord
-        ]
-        [ arrow_forward Color.black 30 ]
-    ]
 
 
 viewMedicationType : Model -> Html Msg
 viewMedicationType model =
     let
-        textFld lbl fld idx =
-            Textfield.render Mdl
-                idx
-                model.mdl
-                [ Textfield.label lbl
-                , Textfield.floatingLabel
-                , Textfield.value fld
-                , Textfield.disabled
-                , Options.inner
-                    [ MColor.text MColor.primary
-                    ]
-                ]
+        -- Placeholder for now.
+        isEditing =
+            model.selectedTableEditMode
 
-        buildForm rec =
+        textFld lbl fld idx allowEdit =
+            let
+                tagger : String -> Msg
+                tagger =
+                    FF.String
+                        >> (Form.Input fld.path Form.Text)
+                        >> FormMsg
+                        >> MedicationTypeMessages
+            in
+                Textfield.render Mdl
+                    idx
+                    model.mdl
+                    [ Textfield.label lbl
+                    , Textfield.floatingLabel
+                    , Textfield.value <| Maybe.withDefault "" fld.value
+                    , Textfield.onInput tagger
+                    , if not allowEdit then
+                        Textfield.disabled
+                      else
+                        Options.nop
+                    , if allowEdit then
+                        Options.css "font-weight" "bold"
+                      else
+                        Options.nop
+                    , Options.inner
+                        [ MColor.text MColor.primary
+                        ]
+                    ]
+
+        buildForm form =
             let
                 tableStr =
                     case model.selectedTable of
@@ -273,20 +321,52 @@ viewMedicationType model =
 
                         Nothing ->
                             ""
+
+                btn idx msg lbl =
+                    Button.render Mdl
+                        [ mdlContext, idx ]
+                        model.mdl
+                        [ Button.raised
+                        , Button.ripple
+                        , Options.css "margin-left" "30px"
+                        , Button.onClick msg
+                        ]
+                        [ Html.text lbl ]
+
+                editingContent =
+                    [ Html.text tableStr
+                    , btn 301 (MedicationTypeMessages <| MedicationTypeSave) "Save"
+                    , btn 302 (MedicationTypeMessages <| MedicationTypeCancel) "Cancel"
+                    ]
+
+                viewingContent =
+                    [ Html.text tableStr
+                    , btn 300 EditSelectedTable "Edit"
+                    ]
+
+                ( recId, recName, recDescription, recSortOrder ) =
+                    ( Form.getFieldAsString "id" form
+                    , Form.getFieldAsString "name" form
+                    , Form.getFieldAsString "description" form
+                    , Form.getFieldAsString "sortOrder" form
+                    )
             in
                 Card.view
                     [ Options.css "width" "100%" ]
                     [ Card.title []
-                        [ Card.head []
-                            [ Html.text tableStr ]
+                        [ Card.head [] <|
+                            if isEditing then
+                                editingContent
+                            else
+                                viewingContent
                         ]
                     , Card.text
                         [ MColor.text MColor.black
                         ]
-                        [ textFld "Record id" (toString rec.id) [ mdlContext, 200 ]
-                        , textFld "Name" rec.name [ mdlContext, 201 ]
-                        , textFld "Description" rec.description [ mdlContext, 202 ]
-                        , textFld "Sort Order" (toString rec.sortOrder) [ mdlContext, 203 ]
+                        [ textFld "Record id" recId [ mdlContext, 200 ] False
+                        , textFld "Name" recName [ mdlContext, 201 ] isEditing
+                        , textFld "Description" recDescription [ mdlContext, 202 ] isEditing
+                        , textFld "Sort Order" recSortOrder [ mdlContext, 203 ] isEditing
                         ]
                     , Card.actions [ Card.border ] <| recordChanger model
                     ]
@@ -303,16 +383,7 @@ viewMedicationType model =
                     Html.text <| toString err
 
                 Success recs ->
-                    case
-                        recs
-                            |> Array.fromList
-                            |> Array.get model.selectedTableRecord
-                    of
-                        Just r ->
-                            buildForm r
-
-                        Nothing ->
-                            Html.text "Record not found."
+                    buildForm model.medicationTypeForm
     in
         div []
             [ data ]
@@ -379,5 +450,21 @@ view model =
                 , Grid.size Grid.Phone 4
                 ]
                 [ dataView model
+                ]
+            , Grid.cell
+                -- Right side, model
+                [ Grid.size Grid.Desktop 12
+                , Grid.size Grid.Tablet 8
+                , Grid.size Grid.Phone 4
+                ]
+                [ Html.text <| toString model.medicationType
+                ]
+            , Grid.cell
+                -- Right side, model
+                [ Grid.size Grid.Desktop 12
+                , Grid.size Grid.Tablet 8
+                , Grid.size Grid.Phone 4
+                ]
+                [ Html.text <| toString model.transactions
                 ]
             ]

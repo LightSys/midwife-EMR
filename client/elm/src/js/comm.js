@@ -42,11 +42,31 @@
  *
  *        - Retire the 'data' event. We already have the data namespace and that
  *          is not adding value to a significant degree.
+ *        - The 'ADD' event will be used by the client to request a data addition
+ *          for the server. The client will send the transactionId as the
+ *          pendingTransaction field within the record, which the server will
+ *          strip and use accordingly. The client will not send an id field.
  *        - The 'CHG' event will be used by the client to request a data change
- *          from the server. The client will still send the transactionId within
- *          the payload and the server will still respond with the event of the
- *          transactionId itself prepended with 'CHG:'. For example,
- *          'CHG:19283728475'.
+ *          from the server. The client will send the transactionId as the
+ *          pendingTransaction field within the record, which the server will
+ *          strip and use accordingly.
+ *        - The 'DEL' event will be used by the client to request a data deletion
+ *          on the server. The client will send the transactionId as the
+ *          pendingTransaction field within the record, which the server will
+ *          strip and use accordingly. In this case the client will only send
+ *          the table name and the primary key.
+ *        - The 'ADD_RESPONSE' event will be used by the server in response to
+ *          data addition requests from the client. The response will specify the
+ *          pendingTransaction (as passed by the client originally), the result
+ *          of the addition request, and a human readable message in case of failure.
+ *        - The 'CHG_RESPONSE' event will be used by the server in response to
+ *          data change requests from the client. The response will specify the
+ *          pendingTransaction (as passed by the client originally), the result
+ *          of the change request, and a human readable message in case of failure.
+ *        - The 'DEL_RESPONSE' event will be used by the server in response to
+ *          data deletion requests from the client. The response will specify the
+ *          pendingTransaction (as passed by the client originally), the result
+ *          of the deletion request, and a human readable message in case of failure.
  *        - The 'INFORM' event will be used by the server to inform the client
  *          of data changes that the client may be interested in.
  *        - The 'SELECT' event will be used by the client to retrieve data from
@@ -80,7 +100,9 @@ var ioSystem = io.connect(window.location.origin + '/system');
 // --------------------------------------------------------
 // The data namespace.
 var INFORM = 'INFORM';      // Server to client data change notification in data namespace.
+var ADD = 'ADD';            // Client to server data addition request in data namespace.
 var CHG = 'CHG';            // Client to server data change request in data namespace.
+var DEL = 'DEL';            // Client to server data deletion request in data namespace.
 var SELECT = 'SELECT';      // Client to server data request in data namespace.
 var SELECT_RESPONSE = 'SELECT_RESPONSE';  // Server to client data request response in data namespace.
 
@@ -119,6 +141,18 @@ var sendMsg = function(msg, payload) {
   ioData.emit(msg, JSON.stringify(payload));
 }
 
+/* --------------------------------------------------------
+ * wrapData()
+ *
+ * Wrap the tbl and data passed in an object assigned to
+ * table and data fields respectively.
+ * -------------------------------------------------------- */
+var wrapData = function(tbl, data) {
+  return {
+    table: tbl,
+    data: data
+  };
+}
 
 // ========================================================
 // ========================================================
@@ -170,6 +204,14 @@ ioData.on(SELECT_RESPONSE, function(data) {
 });
 
 // --------------------------------------------------------
+// Responses from the server due to client change requests.
+// --------------------------------------------------------
+ioData.on(CHG, function(data) {
+  if (! app) return;
+  app.ports.changeConfirmation.send(JSON.parse(data));
+});
+
+// --------------------------------------------------------
 // Client data request to the server. Payload will include
 // specifics regarding the request.
 // --------------------------------------------------------
@@ -211,6 +253,11 @@ var setApp = function(theApp) {
 
   app.ports.selectQuery.subscribe(function(query) {
     sendMsg(SELECT, query);
+  });
+
+  app.ports.medicationTypeUpdate.subscribe(function(data) {
+    console.log(data);
+    sendMsg(CHG, wrapData('medicationType', data));
   });
 };
 
