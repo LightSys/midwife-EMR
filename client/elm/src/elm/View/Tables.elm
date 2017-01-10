@@ -230,7 +230,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Button.onClick FirstRecord
+            , Options.onClick FirstRecord
             , if isDisabled then
                 Button.disabled
               else
@@ -242,7 +242,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Button.onClick PreviousRecord
+            , Options.onClick PreviousRecord
             , if isDisabled then
                 Button.disabled
               else
@@ -254,7 +254,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Button.onClick NextRecord
+            , Options.onClick NextRecord
             , if isDisabled then
                 Button.disabled
               else
@@ -266,7 +266,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Button.onClick LastRecord
+            , Options.onClick LastRecord
             , if isDisabled then
                 Button.disabled
               else
@@ -298,7 +298,7 @@ viewMedicationType model =
                     [ Textfield.label lbl
                     , Textfield.floatingLabel
                     , Textfield.value <| Maybe.withDefault "" fld.value
-                    , Textfield.onInput tagger
+                    , Options.onInput tagger
                     , if not allowEdit then
                         Textfield.disabled
                       else
@@ -307,10 +307,11 @@ viewMedicationType model =
                         Options.css "font-weight" "bold"
                       else
                         Options.nop
-                    , Options.inner
+                    , Options.input
                         [ MColor.text MColor.primary
                         ]
                     ]
+                    []
 
         buildForm form =
             let
@@ -329,7 +330,7 @@ viewMedicationType model =
                         [ Button.raised
                         , Button.ripple
                         , Options.css "margin-left" "30px"
-                        , Button.onClick msg
+                        , Options.onClick msg
                         ]
                         [ Html.text lbl ]
 

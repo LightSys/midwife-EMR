@@ -26,11 +26,15 @@ import Types exposing (..)
 import Utils as U
 
 
+type alias Mdl =
+    Material.Model
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Mdl matMsg ->
-            Material.update matMsg model
+            Material.update Mdl matMsg model
 
         SelectTab tab ->
             { model | selectedTab = tab } ! []
