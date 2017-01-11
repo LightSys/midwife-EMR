@@ -11,6 +11,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import List.Extra as LE
 import Material
+import Material.Snackbar as Snackbar
 import RemoteData as RD exposing (RemoteData(..))
 
 
@@ -35,6 +36,13 @@ update msg model =
     case msg of
         Mdl matMsg ->
             Material.update Mdl matMsg model
+
+        Snackbar msg ->
+            let
+                ( snackbar, newCmd ) =
+                    Snackbar.update msg model.snackbar
+            in
+                { model | snackbar = snackbar } ! [ Cmd.map Snackbar newCmd ]
 
         SelectTab tab ->
             { model | selectedTab = tab } ! []
@@ -161,6 +169,30 @@ update msg model =
                     model ! []
 
 
+addMessage : String -> Model -> ( Model, Cmd Msg )
+addMessage msg model =
+    let
+        sbContent =
+            Snackbar.toast "" msg
+
+        ( sbModel, sbCmd ) =
+            Snackbar.add sbContent model.snackbar
+    in
+        ( { model | snackbar = sbModel }, Cmd.map Snackbar sbCmd )
+
+
+addWarning : String -> Model -> ( Model, Cmd Msg )
+addWarning msg model =
+    let
+        sbContent =
+            Snackbar.Contents msg (Just "Warning") "" 5000 250
+
+        ( sbModel, sbCmd ) =
+            Snackbar.add sbContent model.snackbar
+    in
+        ( { model | snackbar = sbModel }, Cmd.map Snackbar sbCmd )
+
+
 updateMedicationType : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
 updateMedicationType msg model =
     case msg of
@@ -257,18 +289,20 @@ updateMedicationType msg model =
             --      c. set state into entity record and set pending to Nothing.
             --      d. remove state from transactions.
             let
-                updatedMedicationTypeRecords =
+                ( updatedMedicationTypeRecords, success ) =
                     case change.success of
                         True ->
                             -- 7. server OK:
                             -- set pending fld in entity record to Nothing.
-                            updateMedicationTypeById change.id
+                            ( updateMedicationTypeById change.id
                                 (\r -> { r | pendingTransaction = Nothing })
                                 model.medicationType
+                            , True
+                            )
 
                         False ->
                             -- 7. server Reject:
-                            -- a. TODO: display error message to user
+                            -- a. display error message to user
                             -- b. get state based on pending field
                             -- c. set state into entity record and set pending to Nothing.
                             -- d. update the form in case it is current
@@ -284,7 +318,7 @@ updateMedicationType msg model =
                             in
                                 case record of
                                     Just r ->
-                                        updateMedicationTypeById change.id
+                                        ( updateMedicationTypeById change.id
                                             (\rec ->
                                                 { rec
                                                     | pendingTransaction = Nothing
@@ -294,20 +328,31 @@ updateMedicationType msg model =
                                                 }
                                             )
                                             model.medicationType
+                                        , False
+                                        )
 
                                     Nothing ->
                                         -- TODO: handle this wrong case better.
-                                        updateMedicationTypeById change.id
+                                        ( updateMedicationTypeById change.id
                                             (\r -> { r | pendingTransaction = Nothing })
                                             model.medicationType
+                                        , False
+                                        )
 
-                -- Update the form and
-                -- remove the stored state from the transaction manager.
+                -- Update the form and remove stored state from transaction manager.
                 ( newModel, _ ) =
-                    populateSelectedTableForm model
+                    { model | medicationType = updatedMedicationTypeRecords }
+                        |> populateSelectedTableForm
                         |> Trans.delState change.pendingTransaction
+
+                -- Give a message to the user upon failure.
+                ( newModel2, newCmd2 ) =
+                    if not success then
+                        addWarning "Sorry, the server rejected that change." newModel
+                    else
+                        ( newModel, Cmd.none )
             in
-                { newModel | medicationType = updatedMedicationTypeRecords } ! []
+                newModel2 ! [ newCmd2 ]
 
 
 {-| Alias for updating medicationType functions.

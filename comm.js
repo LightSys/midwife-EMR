@@ -791,12 +791,8 @@ var init = function(io, sessionMiddle) {
               console.dir(retAction);
               return socket.emit(CHG, JSON.stringify(retAction));
             }
-            // TEMPORARY for TESTING: set to true when done and remove timeout.
-            retAction.success = false;
-            setTimeout(function() {
-              console.dir(retAction);
-              return socket.emit(CHG, JSON.stringify(retAction));
-            }, 3000);
+            retAction.success = true;
+            return socket.emit(CHG, JSON.stringify(retAction));
           });
           break;
 

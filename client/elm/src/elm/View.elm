@@ -11,6 +11,7 @@ import Material.Icons.Action as Icon exposing (exit_to_app)
 import Material.Layout as Layout
 import Material.Options as Options
 import Material.Table as Table
+import Material.Snackbar as Snackbar
 import Material.Typography as Typo
 import String
 
@@ -64,7 +65,10 @@ view model =
             { header = headerSmall "Midwife-EMR" model
             , drawer = []
             , tabs = tabs [ "Home", "User", "Tables", "Profile" ]
-            , main = [ main model ]
+            , main =
+                [ main model
+                , Html.map (\m -> Snackbar m) <| Snackbar.view model.snackbar
+                ]
             }
 
 

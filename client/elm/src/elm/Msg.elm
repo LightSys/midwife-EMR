@@ -6,6 +6,7 @@ module Msg
 
 import Form exposing (Form)
 import Material
+import Material.Snackbar as Snackbar
 import RemoteData as RD exposing (RemoteData(..))
 
 
@@ -18,6 +19,7 @@ import Types exposing (..)
 type Msg
     = NoOp
     | Mdl (Material.Msg Msg)
+    | Snackbar (Snackbar.Msg String)
     | SelectTab Tab
     | NewSystemMessage SystemMessage
     | SelectQuerySelectTable SelectQuery

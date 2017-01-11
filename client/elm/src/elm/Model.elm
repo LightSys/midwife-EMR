@@ -14,6 +14,7 @@ import Form exposing (Form)
 import Form.Field as Fld
 import Form.Validate as V
 import Material
+import Material.Snackbar as Snackbar
 import RemoteData as RD exposing (RemoteData(..))
 import Time exposing (Time)
 
@@ -25,6 +26,7 @@ import Types exposing (..)
 
 type alias Model =
     { mdl : Material.Model
+    , snackbar : Snackbar.Model String
     , transactions : States
     , selectedTab : Tab
     , selectedPage : Page
@@ -129,6 +131,7 @@ medicationTypeValidate =
 initialModel : Model
 initialModel =
     { mdl = Material.model
+    , snackbar = Snackbar.model
     , transactions = statesInit
     , selectedTab = HomeTab
     , selectedPage = HomePage
