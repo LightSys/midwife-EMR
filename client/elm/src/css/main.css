@@ -26,3 +26,10 @@
 label.mdl-textfield__label {
   color: black !important;
 }
+
+/* Warnings and notices */
+.footer-warning-header {
+  color: white;
+  font-weight: bold;
+  padding-bottom: 0.5em;
+}

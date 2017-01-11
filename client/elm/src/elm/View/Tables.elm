@@ -12,6 +12,8 @@ import Material
 import Material.Button as Button
 import Material.Card as Card
 import Material.Color as MColor
+import Material.Elevation as Elevation
+import Material.Footer as Footer
 import Material.Grid as Grid
 import Material.Icons.Navigation as Icon
     exposing
@@ -104,7 +106,7 @@ instructionsText =
 
 viewNoTable : Model -> Html Msg
 viewNoTable model =
-    Html.p [] [ Html.text "Please select a table." ]
+    Html.p [] [ Html.text "Please select a table on the left." ]
 
 
 viewLabTest : Model -> Html Msg
@@ -434,8 +436,16 @@ view model =
                 , Grid.size Grid.Tablet 5
                 , Grid.size Grid.Phone 4
                 ]
-                [ Html.h3 []
-                    [ text "" ]
+                [ VU.footerMini "Warning"
+                    """
+
+                    Do not change the "meaning" of lookup table
+                    records if there already exist production patient
+                    records that reference them. Doing so may effectively
+                    change "history" by changing the meaning of already
+                    recorded data within the patient records.
+
+                    """
                 ]
             , Grid.cell
                 -- Left side, list of lookup tables.
