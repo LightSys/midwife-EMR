@@ -43,8 +43,12 @@ subscriptions model =
             |> Sub.map RiskCodeResponse
         , Ports.vaccinationType Decoders.decodeVaccinationTypeTable
             |> Sub.map VaccinationTypeResponse
-        , Ports.changeConfirmation Decoders.decodeChangeConfirmation
-            |> Sub.map ChangeConfirmationMsg
+        , Ports.changeResponse Decoders.decodeChangeResponse
+            |> Sub.map ChangeResponseMsg
+        , Ports.addResponse Decoders.decodeAddResponse
+            |> Sub.map AddResponseMsg
+        , Ports.delResponse Decoders.decodeDelResponse
+            |> Sub.map DelResponseMsg
         ]
 
 

@@ -345,19 +345,47 @@ var isValidDate = function(dte, format) {
  * Utility function to build an object based on the fields
  * passed.
  *
- * param       rec        - the record
+ * param       op         - the operation
+ * param       table      - the table name
+ * param       id         - the id
+ * param       otherId    - an id with a name depending on the operation
  * param       success    - boolean
+ * param       msg        - message about error, etc.
  * return      rec
  * -------------------------------------------------------- */
-var returnStatus = function(table, id, pendingTransaction, success) {
-  return {
+var returnStatusCHG = function(table, id, stateId, success, msg) {
+  var retVal = {
     table: table,
     id: id,
-    pendingTransaction: pendingTransaction,
-    success: success
+    stateId: stateId,
+    success: success,
+    msg: msg? msg: ''
   };
+  return retVal;
 };
 
+
+var returnStatusADD = function(table, originalId, newId, success, msg) {
+  var retVal = {
+    id: newId,
+    table: table,
+    pendingId: originalId,
+    success: success,
+    msg: msg? msg: ''
+  };
+  return retVal;
+};
+
+var returnStatusDEL = function(table, id, stateId, success, msg) {
+  var retVal = {
+    table: table,
+    id: id,
+    stateId: stateId,
+    success: success,
+    msg: msg? msg: ''
+  };
+  return retVal;
+};
 
 /* --------------------------------------------------------
  * validOrVoidDate()
@@ -400,7 +428,9 @@ module.exports = {
   , formatDohID: formatDohID
   , isValidDate: isValidDate
   , validOrVoidDate: validOrVoidDate
-  , returnStatus: returnStatus
+  , returnStatusADD: returnStatusADD
+  , returnStatusCHG: returnStatusCHG
+  , returnStatusDEL: returnStatusDEL
   , getProcessId
   , dbType
   , KnexSQLite3

@@ -18,6 +18,7 @@ import RemoteData as RD exposing (RemoteData(..))
 -- LOCAL IMPORTS
 
 import Types exposing (..)
+import Utils as U
 
 
 -- System Messages.
@@ -203,24 +204,76 @@ decodeVaccinationTypeTable payload =
         |> RD.fromResult
 
 
-changeConfirmation : JD.Decoder ChangeConfirmation
-changeConfirmation =
-    decode ChangeConfirmation
+decodeTable : JD.Decoder Table
+decodeTable =
+    JD.string |> JD.map U.stringToTable
+
+
+changeResponse : JD.Decoder ChangeResponse
+changeResponse =
+    decode ChangeResponse
         |> required "id" JD.int
-        |> required "table" JD.string
-        |> required "pendingTransaction" JD.int
+        |> required "table" decodeTable
+        |> required "stateId" JD.int
         |> required "success" JD.bool
+        |> required "msg" JD.string
 
 
-decodeChangeConfirmation : JE.Value -> Maybe ChangeConfirmation
-decodeChangeConfirmation payload =
-    case JD.decodeValue changeConfirmation payload of
+decodeChangeResponse : JE.Value -> Maybe ChangeResponse
+decodeChangeResponse payload =
+    case JD.decodeValue changeResponse payload of
         Ok val ->
             Just val
 
         Err message ->
             let
                 _ =
-                    Debug.log "Decoders.decodeChangeConfirmation decoding error" message
+                    Debug.log "Decoders.decodeChangeResponse decoding error" message
+            in
+                Nothing
+
+
+addResponse : JD.Decoder AddResponse
+addResponse =
+    decode AddResponse
+        |> required "id" JD.int
+        |> required "table" decodeTable
+        |> required "pendingId" JD.int
+        |> required "success" JD.bool
+        |> required "msg" JD.string
+
+
+decodeAddResponse : JE.Value -> Maybe AddResponse
+decodeAddResponse payload =
+    case JD.decodeValue addResponse payload of
+        Ok val ->
+            Just val
+
+        Err message ->
+            let
+                _ =
+                    Debug.log "Decoders.decodeAddResponse decoding error" message
+            in
+                Nothing
+
+delResponse : JD.Decoder DelResponse
+delResponse =
+    decode DelResponse
+        |> required "id" JD.int
+        |> required "table" decodeTable
+        |> required "stateId" JD.int
+        |> required "success" JD.bool
+        |> required "msg" JD.string
+
+decodeDelResponse : JE.Value -> Maybe DelResponse
+decodeDelResponse payload =
+    case JD.decodeValue delResponse payload of
+        Ok val ->
+            Just val
+
+        Err message ->
+            let
+                _ =
+                    Debug.log "Decoders.decodeDelResponse decoding error" message
             in
                 Nothing

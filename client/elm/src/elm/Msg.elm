@@ -23,7 +23,9 @@ type Msg
     | SelectTab Tab
     | NewSystemMessage SystemMessage
     | SelectQuerySelectTable SelectQuery
+    | SelectedTableEditMode EditMode (Maybe Int)
     | SelectTableRecord Int
+    | AddSelectedTable
     | EditSelectedTable
     | SaveSelectedTable
     | CancelSelectedTable
@@ -39,12 +41,24 @@ type Msg
     | PregnoteTypeResponse (RemoteData String (List PregnoteTypeTable))
     | RiskCodeResponse (RemoteData String (List RiskCodeTable))
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeTable))
-    | ChangeConfirmationMsg (Maybe ChangeConfirmation)
+    | ChangeResponseMsg (Maybe ChangeResponse)
+    | AddResponseMsg (Maybe AddResponse)
+    | DelResponseMsg (Maybe DelResponse)
 
 
 type MedicationTypeMsg
     = FormMsg Form.Msg
+    | SelectedRecordId (Maybe Int)
+    | SelectedEditModeRecord EditMode (Maybe Int)
     | MedicationTypeResponse (RemoteData String (List MedicationTypeTable))
     | MedicationTypeSave
+    | MedicationTypeAdd
+    | MedicationTypeDelete (Maybe Int)
     | MedicationTypeCancel
-    | MedicationTypeSaveResponse ChangeConfirmation
+    | MedicationTypeSaveResponse ChangeResponse
+    | MedicationTypeAddResponse AddResponse
+    | MedicationTypeDelResponse DelResponse
+    | FirstMedicationTypeRecord
+    | PrevMedicationTypeRecord
+    | NextMedicationTypeRecord
+    | LastMedicationTypeRecord

@@ -1,5 +1,8 @@
 module Constants exposing (..)
 
+import Color
+
+
 -- LOCAL IMPORTS
 
 import Types exposing (..)
@@ -21,3 +24,9 @@ listLookupTables =
     , TableMetaInfo MedicationType "medicationType" "Defines medications."
     , TableMetaInfo VaccinationType "vaccinationType" "Defines vaccinations."
     ]
+
+
+{-| Same as #FF6464.
+-}
+errorColor =
+    Color.rgb 255 100 100

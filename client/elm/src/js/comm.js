@@ -44,28 +44,29 @@
  *          is not adding value to a significant degree.
  *        - The 'ADD' event will be used by the client to request a data addition
  *          for the server. The client will send the transactionId as the
- *          pendingTransaction field within the record, which the server will
- *          strip and use accordingly. The client will not send an id field.
+ *          pendingId field within the record, which the server will
+ *          strip and use accordingly. The client will not send a populated id
+ *          field.
  *        - The 'CHG' event will be used by the client to request a data change
  *          from the server. The client will send the transactionId as the
- *          pendingTransaction field within the record, which the server will
+ *          stateId field within the record, which the server will
  *          strip and use accordingly.
  *        - The 'DEL' event will be used by the client to request a data deletion
  *          on the server. The client will send the transactionId as the
- *          pendingTransaction field within the record, which the server will
+ *          stateId field within the record, which the server will
  *          strip and use accordingly. In this case the client will only send
  *          the table name and the primary key.
  *        - The 'ADD_RESPONSE' event will be used by the server in response to
  *          data addition requests from the client. The response will specify the
- *          pendingTransaction (as passed by the client originally), the result
+ *          pendingId (as passed by the client originally), the result
  *          of the addition request, and a human readable message in case of failure.
  *        - The 'CHG_RESPONSE' event will be used by the server in response to
  *          data change requests from the client. The response will specify the
- *          pendingTransaction (as passed by the client originally), the result
+ *          stateId (as passed by the client originally), the result
  *          of the change request, and a human readable message in case of failure.
  *        - The 'DEL_RESPONSE' event will be used by the server in response to
  *          data deletion requests from the client. The response will specify the
- *          pendingTransaction (as passed by the client originally), the result
+ *          stateId (as passed by the client originally), the result
  *          of the deletion request, and a human readable message in case of failure.
  *        - The 'INFORM' event will be used by the server to inform the client
  *          of data changes that the client may be interested in.
@@ -101,8 +102,11 @@ var ioSystem = io.connect(window.location.origin + '/system');
 // The data namespace.
 var INFORM = 'INFORM';      // Server to client data change notification in data namespace.
 var ADD = 'ADD';            // Client to server data addition request in data namespace.
+var ADD_RESPONSE = 'ADD_RESPONSE';  // Server to client data add response in data namespace.
 var CHG = 'CHG';            // Client to server data change request in data namespace.
+var CHG_RESPONSE = 'CHG_RESPONSE';  // Server to client data change response in data namespace.
 var DEL = 'DEL';            // Client to server data deletion request in data namespace.
+var DEL_RESPONSE = 'DEL_RESPONSE';  // Server to client data deletion response in data namespace.
 var SELECT = 'SELECT';      // Client to server data request in data namespace.
 var SELECT_RESPONSE = 'SELECT_RESPONSE';  // Server to client data request response in data namespace.
 
@@ -206,9 +210,19 @@ ioData.on(SELECT_RESPONSE, function(data) {
 // --------------------------------------------------------
 // Responses from the server due to client change requests.
 // --------------------------------------------------------
-ioData.on(CHG, function(data) {
+ioData.on(CHG_RESPONSE, function(data) {
   if (! app) return;
-  app.ports.changeConfirmation.send(JSON.parse(data));
+  app.ports.changeResponse.send(JSON.parse(data));
+});
+
+ioData.on(ADD_RESPONSE, function(data) {
+  if (! app) return;
+  app.ports.addResponse.send(JSON.parse(data));
+});
+
+ioData.on(DEL_RESPONSE, function(data) {
+  if (! app) return;
+  app.ports.delResponse.send(JSON.parse(data));
 });
 
 // --------------------------------------------------------
@@ -258,6 +272,16 @@ var setApp = function(theApp) {
   app.ports.medicationTypeUpdate.subscribe(function(data) {
     console.log(data);
     sendMsg(CHG, wrapData('medicationType', data));
+  });
+
+  app.ports.medicationTypeAdd.subscribe(function(data) {
+    console.log(data);
+    sendMsg(ADD, wrapData('medicationType', data));
+  });
+
+  app.ports.medicationTypeDel.subscribe(function(data) {
+    console.log(data);
+    sendMsg(DEL, wrapData('medicationType', data));
   });
 };
 

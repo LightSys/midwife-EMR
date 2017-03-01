@@ -33,3 +33,10 @@ label.mdl-textfield__label {
   font-weight: bold;
   padding-bottom: 0.5em;
 }
+
+/* Field level errors/warnings. */
+.error-field {
+  color: #FF6464;
+  font-weight: bold;
+  margin-left: 1em;
+}

@@ -124,10 +124,19 @@ var rx = require('rx')
   //
   // Elm Client stuff - corresponds with comm.js on the client.
   //
-  , CHG = 'CHG'       // data change request.
+  , ADD = 'ADD'                             // data add request.
+  , ADD_RESPONSE = 'ADD_RESPONSE'           // data add response.
+  , CHG = 'CHG'                             // data change request.
+  , CHG_RESPONSE = 'CHG_RESPONSE'           // data change response.
+  , DEL = 'DEL'                             // data delete request.
+  , DEL_RESPONSE = 'DEL_RESPONSE'           // data delete response.
   , TABLE_medicationType = 'medicationType'
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
-  , returnStatus = require('./util').returnStatus
+  , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
+  , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
+  , returnStatusADD = require('./util').returnStatusADD
+  , returnStatusCHG = require('./util').returnStatusCHG
+  , returnStatusDEL = require('./util').returnStatusDEL
   ;
 
 
@@ -757,8 +766,58 @@ var init = function(io, sessionMiddle) {
     });
 
     // --------------------------------------------------------
+    // Data ADD request from the Elm client.
+    // --------------------------------------------------------
+    socket.on(ADD, function(payload) {
+      var wrapper = JSON.parse(payload);
+      var table = wrapper.table? wrapper.table: void 0
+        , data = wrapper.data? wrapper.data: {}
+        , recId = data? data.id: -1
+        , userInfo = socketToUserInfo(socket)
+        , retAction
+      ;
+      console.log(payload);
+      if (! isValidSocketSession(socket)) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data ADD request: Session has expired!');
+        return;
+      }
+      if (! table || ! data || (! recId < 0) ) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log(payload);
+        console.log('Data ADD request: Improper data sent from client!');
+        return;
+      }
+      switch (table) {
+        case TABLE_medicationType:
+          console.log('Data ADD: ' + TABLE_medicationType);
+          addMedicationType(data, userInfo, function(err, success, newRec) {
+            if (err) {
+              logCommError(err);
+              console.dir(retAction);
+              retAction = returnStatusADD(table, data.id, data.id, false, err);
+              return socket.emit(ADD_RESPONSE, JSON.stringify(retAction));
+            }
+            // TODO: 
+            // 6. client then looks up id of record using returned tempId value.
+            //    in ordr to replace record with record returned from the server.
+            retAction = returnStatusADD(table, data.id, newRec.id, true);
+            console.log('Success');
+            console.log(retAction);
+            return socket.emit(ADD_RESPONSE, JSON.stringify(retAction));
+          });
+          break;
+
+        default:
+          // TODO: send the proper msg back to the client???
+          console.log('=========== Unknown ADD request =============');
+          console.log(wrapper);
+      }
+    });
+
+    // --------------------------------------------------------
     // Data CHG request from the Elm client. Record will have
-    // a pendingTransaction field with the client's transaction
+    // a pendingId field with the client's transaction
     // id. This needs to be stripped and not inserted into DB,
     // but response needs to include it.
     // --------------------------------------------------------
@@ -767,16 +826,16 @@ var init = function(io, sessionMiddle) {
       var table = wrapper.table? wrapper.table: void 0
         , data = wrapper.data? wrapper.data: {}
         , recId = data? data.id: -1
-        , pendingTransaction = data.pendingTransaction? data.pendingTransaction: -1
+        , stateId = data.stateId? data.stateId: -1
         , userInfo = socketToUserInfo(socket)
-        , retAction = returnStatus(table, data.id, data.pendingTransaction, false);
+        , retAction
       ;
       if (! isValidSocketSession(socket)) {
         // TODO: send the proper msg back to the client to this effect.
         console.log('Data CHG request: Session has expired!');
         return;
       }
-      if (! table || ! data || recId === -1 || pendingTransaction === -1) {
+      if (! table || ! data || recId === -1 || stateId === -1) {
         // TODO: send the proper msg back to the client to this effect.
         console.log('Data CHG request: Improper data sent from client!');
         return;
@@ -788,11 +847,13 @@ var init = function(io, sessionMiddle) {
           updateMedicationType(data, userInfo, function(err, result) {
             if (err) {
               logCommError(err);
-              console.dir(retAction);
-              return socket.emit(CHG, JSON.stringify(retAction));
+              // Not sending the error to the client unless we can
+              // get it user friendly enough.
+              retAction = returnStatusCHG(table, data.id, data.stateId, false);
+              return socket.emit(CHG_RESPONSE, JSON.stringify(retAction));
             }
-            retAction.success = true;
-            return socket.emit(CHG, JSON.stringify(retAction));
+            retAction = returnStatusCHG(table, data.id, data.stateId, true);
+            return socket.emit(CHG_RESPONSE, JSON.stringify(retAction));
           });
           break;
 
@@ -801,7 +862,55 @@ var init = function(io, sessionMiddle) {
           console.log('=========== Unknown CHG request =============');
           console.log(wrapper);
       }
+    });
 
+    // --------------------------------------------------------
+    // Data DEL request from the Elm client. Record will have
+    // a stateId field with the client's transaction
+    // id. This needs to be stripped and not inserted into DB,
+    // but response needs to include it.
+    // --------------------------------------------------------
+    socket.on(DEL, function(payload) {
+      var wrapper = JSON.parse(payload);
+      var table = wrapper.table? wrapper.table: void 0
+        , data = wrapper.data? wrapper.data: {}
+        , recId = data? data.id: -1
+        , stateId = data.stateId? data.stateId: -1
+        , userInfo = socketToUserInfo(socket)
+        , retAction
+      ;
+      if (! isValidSocketSession(socket)) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data DEL request: Session has expired!');
+        return;
+      }
+      if (! table || ! data || recId === -1 || stateId === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data DEL request: Improper data sent from client!');
+        return;
+      }
+      switch (table) {
+        case TABLE_medicationType:
+          // TODO: handle this.
+          console.log('Data DEL: ' + TABLE_medicationType);
+          delMedicationType(data, userInfo, function(err, success) {
+            if (err) {
+              logCommError(err);
+              // Not sending the error to the client unless we can
+              // get it user friendly enough.
+              retAction = returnStatusDEL(table, data.id, data.stateId, false);
+              return socket.emit(DEL_RESPONSE, JSON.stringify(retAction));
+            }
+            retAction = returnStatusDEL(table, data.id, data.stateId, success);
+            return socket.emit(DEL_RESPONSE, JSON.stringify(retAction));
+          });
+          break;
+
+        default:
+          // TODO: send the proper msg back to the client???
+          console.log('=========== Unknown DEL request =============');
+          console.log(wrapper);
+      }
     });
 
     // --------------------------------------------------------

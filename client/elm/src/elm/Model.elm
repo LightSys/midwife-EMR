@@ -4,14 +4,13 @@ module Model
         , Page(..)
         , Tab(..)
         , initialModel
-        , medicationTypeValidate
-        , medicationTypeInitialForm
         , State
+        , asMedicationTypeModelIn
+        , setMedicationTypeModel
         )
 
 import Date exposing (Date)
 import Form exposing (Form)
-import Form.Field as Fld
 import Form.Validate as V
 import Material
 import Material.Snackbar as Snackbar
@@ -21,6 +20,7 @@ import Time exposing (Time)
 
 -- LOCAL IMPORTS
 
+import Models.MedicationType as MedicationType
 import Types exposing (..)
 
 
@@ -28,19 +28,19 @@ type alias Model =
     { mdl : Material.Model
     , snackbar : Snackbar.Model String
     , transactions : States
+    , nextPendingId : Int
     , selectedTab : Tab
     , selectedPage : Page
     , systemMessages : List SystemMessage
     , userId : Int
     , selectedTable : Maybe Table
     , selectedTableRecord : Int
-    , selectedTableEditMode : Bool
+    , selectedTableEditMode : EditMode
     , eventType : RemoteData String (List EventTypeTable)
     , labSuite : RemoteData String (List LabSuiteTable)
     , labTest : RemoteData String (List LabTestTable)
     , labTestValue : RemoteData String (List LabTestValueTable)
-    , medicationType : RemoteData String (List MedicationTypeTable)
-    , medicationTypeForm : Form () MedicationTypeForm
+    , medicationTypeModel : MedicationType.MedicationTypeModel
     , pregnoteType : RemoteData String (List PregnoteTypeTable)
     , riskCode : RemoteData String (List RiskCodeTable)
     , vaccinationType : RemoteData String (List VaccinationTypeTable)
@@ -94,61 +94,39 @@ emptyStates =
     }
 
 
-{-| Validation for medicationType.
-
-TODO: Note that there should be no case where the user
-is editing the id field, for existing or new records.
-Should field be eliminated from here?
--}
-type alias MedicationTypeForm =
-    { id : Int
-    , name : String
-    , description : String
-    , sortOrder : Int
-    }
-
-
-medicationTypeInitialForm : MedicationTypeTable -> Form () MedicationTypeForm
-medicationTypeInitialForm table =
-    Form.initial
-        [ ( "id", Fld.string <| toString table.id )
-        , ( "name", Fld.string table.name )
-        , ( "description", Fld.string table.description )
-        , ( "sortOrder", Fld.string <| toString table.sortOrder )
-        ]
-        medicationTypeValidate
-
-
-medicationTypeValidate : V.Validation () MedicationTypeForm
-medicationTypeValidate =
-    V.map4 MedicationTypeForm
-        (V.field "id" V.int)
-        (V.field "name" V.string |> V.andThen V.nonEmpty)
-        (V.field "description" V.string |> V.andThen V.nonEmpty)
-        (V.field "sortOrder" V.int |> V.andThen (V.minInt 0))
-
-
 initialModel : Model
 initialModel =
     { mdl = Material.model
     , snackbar = Snackbar.model
     , transactions = statesInit
+    , nextPendingId = -1
     , selectedTab = HomeTab
     , selectedPage = HomePage
     , systemMessages = []
     , userId = -1
     , selectedTable = Nothing
     , selectedTableRecord = 0
-    , selectedTableEditMode = False
+    , selectedTableEditMode = EditModeView
     , eventType = NotAsked
     , labSuite = NotAsked
     , labTest = NotAsked
     , labTestValue = NotAsked
-    , medicationType = NotAsked
-    , medicationTypeForm = Form.initial [] medicationTypeValidate
+    , medicationTypeModel = MedicationType.initialMedicationTypeModel
     , pregnoteType = NotAsked
     , riskCode = NotAsked
     , vaccinationType = NotAsked
     , role = NotAsked
     , user = NotAsked
     }
+
+-- Top-level Setters
+
+setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model
+setMedicationTypeModel mtm model =
+    (\model -> { model | medicationTypeModel = mtm }) model
+
+
+asMedicationTypeModelIn : Model -> MedicationType.MedicationTypeModel -> Model
+asMedicationTypeModelIn =
+    flip setMedicationTypeModel
+

@@ -42,10 +42,10 @@ medicationTypeToValue mt =
         , ( "name", JE.string mt.name )
         , ( "description", JE.string mt.description )
         , ( "sortOrder", JE.int mt.sortOrder )
-        , case mt.pendingTransaction of
+        , case mt.stateId of
             Just num ->
-                ( "pendingTransaction", JE.int num )
+                ( "stateId", JE.int num )
 
             Nothing ->
-                ( "pendingTransaction", JE.null )
+                ( "stateId", JE.null )
         ]

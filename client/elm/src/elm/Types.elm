@@ -14,8 +14,11 @@ module Types
         , emptySystemMessage
         , SelectQuery
         , Table(..)
+        , EditMode(..)
         , TableMetaInfo
-        , ChangeConfirmation
+        , ChangeResponse
+        , AddResponse
+        , DelResponse
         )
 
 import RemoteData as RD exposing (RemoteData(..))
@@ -51,6 +54,13 @@ type Table
     | User
     | Vaccination
     | VaccinationType
+
+
+type EditMode
+    = EditModeAdd
+    | EditModeEdit
+    | EditModeView
+    | EditModeTable
 
 
 type alias SystemMessage =
@@ -158,7 +168,7 @@ type alias MedicationTypeTable =
     , name : String
     , description : String
     , sortOrder : Int
-    , pendingTransaction : Maybe Int
+    , stateId : Maybe Int
     }
 
 
@@ -185,9 +195,28 @@ type alias VaccinationTypeTable =
     }
 
 
-type alias ChangeConfirmation =
+type alias ChangeResponse =
     { id : Int
-    , table : String
-    , pendingTransaction : Int
+    , table : Table
+    , stateId : Int
     , success : Bool
+    , msg : String
     }
+
+
+type alias AddResponse =
+    { id : Int
+    , table : Table
+    , pendingId : Int
+    , success : Bool
+    , msg : String
+    }
+
+type alias DelResponse =
+    { id : Int
+    , table : Table
+    , stateId : Int
+    , success : Bool
+    , msg : String
+    }
+

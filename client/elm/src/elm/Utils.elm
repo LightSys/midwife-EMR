@@ -1,15 +1,23 @@
 module Utils
     exposing
-        ( maybeStringToInt
-        , tableToString
+        ( addMessage
+        , addWarning
+        , getIdxRemoteDataById
+        , maybeStringToInt
         , stringToTable
+        , tableToString
         )
 
 import Json.Encode as JE
+import List.Extra as LE
+import Material.Snackbar as Snackbar
+import RemoteData as RD exposing (RemoteData(..))
 
 
 -- LOCAL IMPORTS
 
+import Model exposing (..)
+import Msg exposing (..)
 import Types exposing (..)
 
 
@@ -203,3 +211,44 @@ maybeStringToInt default str =
     Maybe.withDefault "" str
         |> String.toInt
         |> Result.withDefault default
+
+
+addMessage : String -> Model -> ( Model, Cmd Msg )
+addMessage msg model =
+    let
+        sbContent =
+            Snackbar.toast "" msg
+
+        ( sbModel, sbCmd ) =
+            Snackbar.add sbContent model.snackbar
+    in
+        ( { model | snackbar = sbModel }, Cmd.map Snackbar sbCmd )
+
+
+addWarning : String -> Model -> ( Model, Cmd Msg )
+addWarning msg model =
+    let
+        sbContent =
+            Snackbar.Contents msg (Just "Warning") "" 5000 250
+
+        ( sbModel, sbCmd ) =
+            Snackbar.add sbContent model.snackbar
+    in
+        ( { model | snackbar = sbModel }, Cmd.map Snackbar sbCmd )
+
+
+getIdxRemoteDataById : Int -> RemoteData e (List { a | id : Int }) -> Maybe Int
+getIdxRemoteDataById id rdata =
+    case rdata of
+        Success recs ->
+            case LE.findIndex (\r -> r.id == id) recs of
+                Just idx ->
+                    Just idx
+
+                Nothing ->
+                    Nothing
+
+        _ ->
+            Nothing
+
+

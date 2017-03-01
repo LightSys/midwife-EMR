@@ -26,9 +26,9 @@ var updateMedicationType = function(data, userInfo, cb) {
       medicationType
         .setUpdatedBy(userInfo.user.id)
         .setSupervisor(userInfo.user.supervisor)
-        .save(_.omit(rec, 'pendingTransaction'))
+        .save(_.omit(rec, 'pendingId'))
         .then(function(rec2) {
-          return cb(null, true);
+          return cb(null, rec2.id, true);
         })
         .caught(function(err) {
           return cb(err);
@@ -36,7 +36,37 @@ var updateMedicationType = function(data, userInfo, cb) {
     });
 };
 
+var addMedicationType = function(data, userInfo, cb) {
+  var rec = _.omit(data, ['id', 'pendingId']);
+
+  MedicationType.forge(rec)
+    .setUpdatedBy(userInfo.user.id)
+    .setSupervisor(userInfo.user.supervisor)
+    .save({}, {method: 'insert'})
+    .then(function(rec2) {
+      return cb(null, true, rec2);
+    })
+    .caught(function(err) {
+      return cb(err);
+    });
+};
+
+var delMedicationType = function(data, userInfo, cb) {
+  var rec = _.omit(data, ['stateId']);
+
+  new MedicationType({id: rec.id})
+    .destroy()
+    .then(function(deletedRec) {
+      return cb(null, true);
+    })
+    .caught(function(err) {
+      return cb(err);
+    });
+};
+
 module.exports = {
-  updateMedicationType: updateMedicationType
+  addMedicationType: addMedicationType,
+  updateMedicationType: updateMedicationType,
+  delMedicationType: delMedicationType
 };
 

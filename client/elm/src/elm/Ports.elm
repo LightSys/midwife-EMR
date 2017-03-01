@@ -9,10 +9,14 @@ port module Ports
         , labTestValue
         , medicationType
         , medicationTypeUpdate
+        , medicationTypeAdd
+        , medicationTypeDel
         , pregnoteType
         , riskCode
         , vaccinationType
-        , changeConfirmation
+        , addResponse
+        , changeResponse
+        , delResponse
         )
 
 import Json.Decode as JD
@@ -56,7 +60,13 @@ port riskCode : (JD.Value -> msg) -> Sub msg
 port vaccinationType : (JD.Value -> msg) -> Sub msg
 
 
-port changeConfirmation : (JD.Value -> msg) -> Sub msg
+port addResponse : (JD.Value -> msg) -> Sub msg
+
+
+port changeResponse : (JD.Value -> msg) -> Sub msg
+
+
+port delResponse : (JD.Value -> msg) -> Sub msg
 
 
 
@@ -70,6 +80,12 @@ port selectQuery : JE.Value -> Cmd msg
 
 
 port medicationTypeUpdate : JE.Value -> Cmd msg
+
+
+port medicationTypeAdd : JE.Value -> Cmd msg
+
+
+port medicationTypeDel : JE.Value -> Cmd msg
 
 
 

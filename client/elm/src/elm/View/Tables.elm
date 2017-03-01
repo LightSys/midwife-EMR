@@ -215,11 +215,14 @@ viewLabSuite model =
             ]
 
 
-recordChanger : Model -> List (Html Msg)
-recordChanger model =
+recordChanger : ( Msg, Msg, Msg, Msg ) -> Model -> List (Html Msg)
+recordChanger ( first, prev, next, last ) model =
     let
         isDisabled =
             model.selectedTableEditMode
+                == EditModeEdit
+                || model.selectedTableEditMode
+                == EditModeAdd
 
         ( color, size ) =
             if isDisabled then
@@ -232,7 +235,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Options.onClick FirstRecord
+            , Options.onClick first
             , if isDisabled then
                 Button.disabled
               else
@@ -244,7 +247,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Options.onClick PreviousRecord
+            , Options.onClick prev
             , if isDisabled then
                 Button.disabled
               else
@@ -256,7 +259,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Options.onClick NextRecord
+            , Options.onClick next
             , if isDisabled then
                 Button.disabled
               else
@@ -268,7 +271,7 @@ recordChanger model =
             model.mdl
             [ Button.raised
             , Button.ripple
-            , Options.onClick LastRecord
+            , Options.onClick last
             , if isDisabled then
                 Button.disabled
               else
@@ -278,52 +281,108 @@ recordChanger model =
         ]
 
 
+textFld : String -> Form.FieldState e String -> List Int -> Bool -> Model -> Html Msg
+textFld lbl fld idx allowEdit model =
+    let
+        tagger : String -> Msg
+        tagger =
+            FF.String
+                >> (Form.Input fld.path Form.Text)
+                >> FormMsg
+                >> MedicationTypeMessages
+    in
+        Html.div []
+            [ Textfield.render Mdl
+                idx
+                model.mdl
+                [ Textfield.label lbl
+                , Textfield.floatingLabel
+                , Textfield.value <| Maybe.withDefault "" fld.value
+                , Options.onInput tagger
+                , if not allowEdit then
+                    Textfield.disabled
+                  else
+                    Options.nop
+                , if allowEdit then
+                    Options.css "font-weight" "bold"
+                  else
+                    Options.nop
+                , Options.input
+                    [ MColor.text MColor.primary
+                    ]
+                ]
+                []
+            , errorFor fld lbl
+            ]
+
+
+errorFor : Form.FieldState e String -> String -> Html Msg
+errorFor field lbl =
+    case field.error of
+        Just error ->
+            Html.span [ HA.class "error-field" ]
+                [ Html.text <| lbl ++ " problem: " ++ toString error ]
+
+        Nothing ->
+            Html.span [] [ Html.text "" ]
+
+
+{-| The default table view which is a table.
+-}
 viewMedicationType : Model -> Html Msg
 viewMedicationType model =
     let
+        data =
+            case model.medicationTypeModel.medicationType of
+                Success recs ->
+                    List.sortBy .sortOrder recs
+
+                _ ->
+                    []
+    in
+        MTable.table []
+            [ MTable.thead []
+                [ MTable.tr []
+                    [ MTable.th [] [ Html.text "Id" ]
+                    , MTable.th [] [ Html.text "Name" ]
+                    , MTable.th [] [ Html.text "Description" ]
+                    , MTable.th [] [ Html.text "Sort order" ]
+                    ]
+                ]
+            , MTable.tbody []
+                (List.map
+                    (\rec ->
+                        MTable.tr
+                            [ Options.onClick <|
+                                MedicationTypeMessages (SelectedEditModeRecord EditModeView (Just rec.id))
+                            ]
+                            [ MTable.td [ MTable.numeric ] [ Html.text <| toString rec.id ]
+                            , MTable.td [] [ Html.text rec.name ]
+                            , MTable.td [] [ Html.text rec.description ]
+                            , MTable.td [ MTable.numeric ] [ Html.text <| toString rec.sortOrder ]
+                            ]
+                    )
+                    data
+                )
+            ]
+
+
+{-| Viewing, editing, or adding a single record.
+-}
+viewMedicationTypeEdit : Model -> Html Msg
+viewMedicationTypeEdit ({medicationTypeModel} as model) =
+    let
         -- Placeholder for now.
         isEditing =
-            model.selectedTableEditMode
-
-        textFld lbl fld idx allowEdit =
-            let
-                tagger : String -> Msg
-                tagger =
-                    FF.String
-                        >> (Form.Input fld.path Form.Text)
-                        >> FormMsg
-                        >> MedicationTypeMessages
-            in
-                Textfield.render Mdl
-                    idx
-                    model.mdl
-                    [ Textfield.label lbl
-                    , Textfield.floatingLabel
-                    , Textfield.value <| Maybe.withDefault "" fld.value
-                    , Options.onInput tagger
-                    , if not allowEdit then
-                        Textfield.disabled
-                      else
-                        Options.nop
-                    , if allowEdit then
-                        Options.css "font-weight" "bold"
-                      else
-                        Options.nop
-                    , Options.input
-                        [ MColor.text MColor.primary
-                        ]
-                    ]
-                    []
+            medicationTypeModel.editMode
+                == EditModeEdit
+                || medicationTypeModel.editMode
+                == EditModeAdd
 
         buildForm form =
             let
                 tableStr =
-                    case model.selectedTable of
-                        Just t ->
-                            U.tableToString t
-
-                        Nothing ->
-                            ""
+                    "medicationType"
 
                 btn idx msg lbl =
                     Button.render Mdl
@@ -338,13 +397,32 @@ viewMedicationType model =
 
                 editingContent =
                     [ Html.text tableStr
-                    , btn 301 (MedicationTypeMessages <| MedicationTypeSave) "Save"
+                    , btn 301 (MedicationTypeMessages <| FormMsg Form.Submit) "Save"
                     , btn 302 (MedicationTypeMessages <| MedicationTypeCancel) "Cancel"
                     ]
 
                 viewingContent =
                     [ Html.text tableStr
-                    , btn 300 EditSelectedTable "Edit"
+                    , btn 300
+                        (SelectedEditModeRecord EditModeEdit medicationTypeModel.selectedRecordId
+                            |> MedicationTypeMessages
+                        )
+                        "Edit"
+                    , btn 303
+                        (SelectedEditModeRecord EditModeAdd medicationTypeModel.selectedRecordId
+                            |> MedicationTypeMessages
+                        )
+                        "Add"
+                    , btn 305
+                        (MedicationTypeDelete medicationTypeModel.selectedRecordId
+                            |> MedicationTypeMessages
+                        )
+                        "Delete"
+                    , btn 304
+                        (SelectedEditModeRecord EditModeTable Nothing
+                            |> MedicationTypeMessages
+                        )
+                        "Table"
                     ]
 
                 ( recId, recName, recDescription, recSortOrder ) =
@@ -366,16 +444,23 @@ viewMedicationType model =
                     , Card.text
                         [ MColor.text MColor.black
                         ]
-                        [ textFld "Record id" recId [ mdlContext, 200 ] False
-                        , textFld "Name" recName [ mdlContext, 201 ] isEditing
-                        , textFld "Description" recDescription [ mdlContext, 202 ] isEditing
-                        , textFld "Sort Order" recSortOrder [ mdlContext, 203 ] isEditing
+                        [ textFld "Record id" recId [ mdlContext, 200 ] False model
+                        , textFld "Name" recName [ mdlContext, 201 ] isEditing model
+                        , textFld "Description" recDescription [ mdlContext, 202 ] isEditing model
+                        , textFld "Sort Order" recSortOrder [ mdlContext, 203 ] isEditing model
                         ]
-                    , Card.actions [ Card.border ] <| recordChanger model
+                    , Card.actions [ Card.border ] <|
+                        recordChanger
+                            ( MedicationTypeMessages FirstMedicationTypeRecord
+                            , MedicationTypeMessages PrevMedicationTypeRecord
+                            , MedicationTypeMessages NextMedicationTypeRecord
+                            , MedicationTypeMessages LastMedicationTypeRecord
+                            )
+                            model
                     ]
 
         data =
-            case model.medicationType of
+            case medicationTypeModel.medicationType of
                 NotAsked ->
                     Html.text ""
 
@@ -386,7 +471,7 @@ viewMedicationType model =
                     Html.text <| toString err
 
                 Success recs ->
-                    buildForm model.medicationTypeForm
+                    buildForm medicationTypeModel.medicationTypeForm
     in
         div []
             [ data ]
@@ -407,7 +492,12 @@ view model =
                             viewLabTest
 
                         MedicationType ->
-                            viewMedicationType
+                            case model.medicationTypeModel.editMode of
+                                EditModeTable ->
+                                    viewMedicationType
+
+                                _ ->
+                                    viewMedicationTypeEdit
 
                         _ ->
                             viewNoTable
@@ -462,20 +552,20 @@ view model =
                 ]
                 [ dataView model
                 ]
-            , Grid.cell
-                -- Right side, model
-                [ Grid.size Grid.Desktop 12
-                , Grid.size Grid.Tablet 8
-                , Grid.size Grid.Phone 4
-                ]
-                [ Html.text <| toString model.medicationType
-                ]
-            , Grid.cell
-                -- Right side, model
-                [ Grid.size Grid.Desktop 12
-                , Grid.size Grid.Tablet 8
-                , Grid.size Grid.Phone 4
-                ]
-                [ Html.text <| toString model.transactions
-                ]
+              --, Grid.cell
+              ---- Right side, model
+              --[ Grid.size Grid.Desktop 12
+              --, Grid.size Grid.Tablet 8
+              --, Grid.size Grid.Phone 4
+              --]
+              --[ Html.text <| toString model.medicationType
+              --]
+              --, Grid.cell
+              ---- Right side, model
+              --[ Grid.size Grid.Desktop 12
+              --, Grid.size Grid.Tablet 8
+              --, Grid.size Grid.Phone 4
+              --]
+              --[ Html.text <| toString model.transactions
+              --]
             ]
