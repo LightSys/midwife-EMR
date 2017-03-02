@@ -28,7 +28,7 @@ var updateMedicationType = function(data, userInfo, cb) {
         .setSupervisor(userInfo.user.supervisor)
         .save(_.omit(rec, 'pendingId'))
         .then(function(rec2) {
-          return cb(null, rec2.id, true);
+          return cb(null, true, rec2.id);
         })
         .caught(function(err) {
           return cb(err);
