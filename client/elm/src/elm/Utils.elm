@@ -3,6 +3,7 @@ module Utils
         ( addMessage
         , addWarning
         , getIdxRemoteDataById
+        , humanReadableError
         , maybeStringToInt
         , stringToTable
         , tableToString
@@ -12,6 +13,8 @@ import Json.Encode as JE
 import List.Extra as LE
 import Material.Snackbar as Snackbar
 import RemoteData as RD exposing (RemoteData(..))
+import Regex as RX
+import Tuple
 
 
 -- LOCAL IMPORTS
@@ -229,7 +232,7 @@ addWarning : String -> Model -> ( Model, Cmd Msg )
 addWarning msg model =
     let
         sbContent =
-            Snackbar.Contents msg (Just "Warning") "" 5000 250
+            Snackbar.Contents msg (Just "Warning") "" 10000 250
 
         ( sbModel, sbCmd ) =
             Snackbar.add sbContent model.snackbar
@@ -252,3 +255,47 @@ getIdxRemoteDataById id rdata =
             Nothing
 
 
+{-| Returns a human readable message for known SQL errors,
+otherwise returns SQL error message, or full message if
+not a SQL error message.
+-}
+humanReadableError : String -> String
+humanReadableError msg =
+    msg
+        |> Debug.log "humanReadableError"
+        |> RX.split (RX.AtMost 1) (RX.regex " - ER_")
+        |> List.drop 1
+        |> List.head
+        |> Maybe.withDefault msg
+        |> sqlErrToHuman
+
+
+{-| Maps known SQL errors to human readable messages. If match
+is not found, returns the original message.
+-}
+sqlErrToHuman : String -> String
+sqlErrToHuman msg =
+    let
+        errMaps =
+            [ ( "ROW_IS_REFERENCED", "The record cannot be deleted because it is currently being used by a record in another table." )
+            , ( "DUP_ENTRY", "One of the fields is the same as another record. Please change it so that it is unique." )
+            ]
+
+        newMsg =
+            List.map
+                (\em ->
+                    if String.startsWith (Tuple.first em) msg then
+                        Tuple.second em
+                    else
+                        ""
+                )
+                errMaps
+                |> String.join " "
+                |> (\s ->
+                        if String.length s > 0 then
+                            s
+                        else
+                            msg
+                   )
+    in
+        newMsg

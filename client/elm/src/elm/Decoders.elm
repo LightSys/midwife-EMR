@@ -208,6 +208,10 @@ decodeTable : JD.Decoder Table
 decodeTable =
     JD.string |> JD.map U.stringToTable
 
+decodeErrMessage : JD.Decoder String
+decodeErrMessage =
+    JD.string |> JD.map U.humanReadableError
+
 
 changeResponse : JD.Decoder ChangeResponse
 changeResponse =
@@ -216,7 +220,7 @@ changeResponse =
         |> required "table" decodeTable
         |> required "stateId" JD.int
         |> required "success" JD.bool
-        |> required "msg" JD.string
+        |> required "msg" decodeErrMessage
 
 
 decodeChangeResponse : JE.Value -> Maybe ChangeResponse
@@ -240,7 +244,7 @@ addResponse =
         |> required "table" decodeTable
         |> required "pendingId" JD.int
         |> required "success" JD.bool
-        |> required "msg" JD.string
+        |> required "msg" decodeErrMessage
 
 
 decodeAddResponse : JE.Value -> Maybe AddResponse
@@ -263,7 +267,7 @@ delResponse =
         |> required "table" decodeTable
         |> required "stateId" JD.int
         |> required "success" JD.bool
-        |> required "msg" JD.string
+        |> required "msg" decodeErrMessage
 
 decodeDelResponse : JE.Value -> Maybe DelResponse
 decodeDelResponse payload =
