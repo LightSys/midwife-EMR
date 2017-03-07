@@ -340,30 +340,33 @@ viewMedicationType model =
                 _ ->
                     []
     in
-        MTable.table []
-            [ MTable.thead []
-                [ MTable.tr []
-                    [ MTable.th [] [ Html.text "Id" ]
-                    , MTable.th [] [ Html.text "Name" ]
-                    , MTable.th [] [ Html.text "Description" ]
-                    , MTable.th [] [ Html.text "Sort order" ]
+        Html.div
+            [ HA.class "horizontal-scroll" ]
+            [ MTable.table []
+                [ MTable.thead []
+                    [ MTable.tr []
+                        [ MTable.th [] [ Html.text "Id" ]
+                        , MTable.th [] [ Html.text "Name" ]
+                        , MTable.th [] [ Html.text "Description" ]
+                        , MTable.th [] [ Html.text "Sort order" ]
+                        ]
                     ]
-                ]
-            , MTable.tbody []
-                (List.map
-                    (\rec ->
-                        MTable.tr
-                            [ Options.onClick <|
-                                MedicationTypeMessages (SelectedEditModeRecord EditModeView (Just rec.id))
-                            ]
-                            [ MTable.td [ MTable.numeric ] [ Html.text <| toString rec.id ]
-                            , MTable.td [] [ Html.text rec.name ]
-                            , MTable.td [] [ Html.text rec.description ]
-                            , MTable.td [ MTable.numeric ] [ Html.text <| toString rec.sortOrder ]
-                            ]
+                , MTable.tbody []
+                    (List.map
+                        (\rec ->
+                            MTable.tr
+                                [ Options.onClick <|
+                                    MedicationTypeMessages (SelectedEditModeRecord EditModeView (Just rec.id))
+                                ]
+                                [ MTable.td [ MTable.numeric ] [ Html.text <| toString rec.id ]
+                                , MTable.td [] [ Html.text rec.name ]
+                                , MTable.td [] [ Html.text rec.description ]
+                                , MTable.td [ MTable.numeric ] [ Html.text <| toString rec.sortOrder ]
+                                ]
+                        )
+                        data
                     )
-                    data
-                )
+                ]
             ]
 
 
@@ -390,20 +393,18 @@ viewMedicationTypeEdit ({medicationTypeModel} as model) =
                         model.mdl
                         [ Button.raised
                         , Button.ripple
-                        , Options.css "margin-left" "30px"
+                        , Options.css "margin-right" "5px"
                         , Options.onClick msg
                         ]
                         [ Html.text lbl ]
 
                 editingContent =
-                    [ Html.text tableStr
-                    , btn 301 (MedicationTypeMessages <| FormMsg Form.Submit) "Save"
+                    [ btn 301 (MedicationTypeMessages <| FormMsg Form.Submit) "Save"
                     , btn 302 (MedicationTypeMessages <| MedicationTypeCancel) "Cancel"
                     ]
 
                 viewingContent =
-                    [ Html.text tableStr
-                    , btn 300
+                    [ btn 300
                         (SelectedEditModeRecord EditModeEdit medicationTypeModel.selectedRecordId
                             |> MedicationTypeMessages
                         )
@@ -435,6 +436,10 @@ viewMedicationTypeEdit ({medicationTypeModel} as model) =
                 Card.view
                     [ Options.css "width" "100%" ]
                     [ Card.title []
+                        [ Card.head []
+                            [ Html.text tableStr ]
+                        ]
+                    , Card.text []
                         [ Card.head [] <|
                             if isEditing then
                                 editingContent

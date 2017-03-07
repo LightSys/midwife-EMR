@@ -40,3 +40,8 @@ label.mdl-textfield__label {
   font-weight: bold;
   margin-left: 1em;
 }
+
+/* Allow contents to scroll sideways if necessary. */
+.horizontal-scroll {
+  overflow-x: auto;
+}
