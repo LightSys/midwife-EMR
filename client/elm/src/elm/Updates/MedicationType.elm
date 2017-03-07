@@ -242,7 +242,49 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                     model ! []
 
         MedicationTypeDelResponse response ->
-            model ! []
+            let
+                -- 1. Update the model according to success or failure.
+                ( newModel1, _ ) =
+                    case response.success of
+                        True ->
+                            -- Optimistic update, so nothing to do.
+                            (model, Nothing)
+
+                        False ->
+                            -- Server rejected change. Insert record back,
+                            -- select the record and populate the form.
+                            -- Finally, remove transaction record.
+                            case
+                                Trans.getState response.stateId model
+                                    |> Decoders.decodeMedicationTypeRecord
+                            of
+                                Just r ->
+                                    addMedicationTypeTable r model
+                                        |> (\m -> MedType.setSelectedRecordId (Just response.id) m.medicationTypeModel)
+                                        |> MedType.populateSelectedTableForm
+                                        |> MedType.setEditMode EditModeView
+                                        |> asMedicationTypeModelIn model
+                                        |> Trans.delState response.stateId
+
+                                Nothing ->
+                                    -- TODO: if we get here, something is really messed
+                                    -- up because we can't find our original record in
+                                    -- the transaction manager.
+                                    (model, Nothing)
+
+                -- Give a message to the user upon failure.
+                ( newModel2, newCmd2 ) =
+                    if not response.success then
+                        (if String.length response.msg == 0 then
+                            "Sorry, the server rejected that deletion."
+                         else
+                            response.msg
+                        )
+                            |> flip U.addWarning newModel1
+                    else
+                        ( newModel1, Cmd.none )
+            in
+                newModel2 ! [ newCmd2 ]
 
         MedicationTypeAdd ->
             let

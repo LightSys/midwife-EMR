@@ -452,7 +452,7 @@ viewMedicationTypeEdit ({medicationTypeModel} as model) =
                         [ textFld "Record id" recId [ mdlContext, 200 ] False model
                         , textFld "Name" recName [ mdlContext, 201 ] isEditing model
                         , textFld "Description" recDescription [ mdlContext, 202 ] isEditing model
-                        , textFld "Sort Order" recSortOrder [ mdlContext, 203 ] isEditing model
+                        , textFld "Sort Order (must be unique)" recSortOrder [ mdlContext, 203 ] isEditing model
                         ]
                     , Card.actions [ Card.border ] <|
                         recordChanger
