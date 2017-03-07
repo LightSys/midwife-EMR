@@ -1,7 +1,11 @@
 module Types
     exposing
-        ( UserTable
-        , RoleTable
+        ( AddResponse
+        , ChangeResponse
+        , DelResponse
+        , EditMode(..)
+        , emptySystemMessage
+        , ErrorCode(..)
         , EventTypeTable
         , LabSuiteTable
         , LabTestTable
@@ -9,16 +13,13 @@ module Types
         , MedicationTypeTable
         , PregnoteTypeTable
         , RiskCodeTable
-        , VaccinationTypeTable
-        , SystemMessage
-        , emptySystemMessage
+        , RoleTable
         , SelectQuery
+        , SystemMessage
         , Table(..)
-        , EditMode(..)
         , TableMetaInfo
-        , ChangeResponse
-        , AddResponse
-        , DelResponse
+        , UserTable
+        , VaccinationTypeTable
         )
 
 import RemoteData as RD exposing (RemoteData(..))
@@ -61,6 +62,13 @@ type EditMode
     | EditModeEdit
     | EditModeView
     | EditModeTable
+
+
+type ErrorCode
+    = NoErrorCode
+    | UnknownErrorCode
+    | SessionExpiredErrorCode
+    | SqlErrorCode
 
 
 type alias SystemMessage =
@@ -200,6 +208,7 @@ type alias ChangeResponse =
     , table : Table
     , stateId : Int
     , success : Bool
+    , errorCode : ErrorCode
     , msg : String
     }
 
@@ -209,14 +218,16 @@ type alias AddResponse =
     , table : Table
     , pendingId : Int
     , success : Bool
+    , errorCode : ErrorCode
     , msg : String
     }
+
 
 type alias DelResponse =
     { id : Int
     , table : Table
     , stateId : Int
     , success : Bool
+    , errorCode : ErrorCode
     , msg : String
     }
-

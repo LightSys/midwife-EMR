@@ -5,6 +5,7 @@ module Utils
         , getIdxRemoteDataById
         , humanReadableError
         , maybeStringToInt
+        , stringToErrorCode
         , stringToTable
         , tableToString
         )
@@ -291,6 +292,7 @@ sqlErrToHuman msg =
                 )
                 errMaps
                 |> String.join " "
+                |> String.trim
                 |> (\s ->
                         if String.length s > 0 then
                             s
@@ -299,3 +301,22 @@ sqlErrToHuman msg =
                    )
     in
         newMsg
+
+
+stringToErrorCode : String -> ErrorCode
+stringToErrorCode str =
+    case str of
+        "NoErrorCode" ->
+            NoErrorCode
+
+        "UnknownErrorCode" ->
+            UnknownErrorCode
+
+        "SessionExpiredErrorCode" ->
+            SessionExpiredErrorCode
+
+        "SqlErrorCode" ->
+            SqlErrorCode
+
+        _ ->
+            UnknownErrorCode

@@ -212,6 +212,7 @@ ioData.on(SELECT_RESPONSE, function(data) {
 // --------------------------------------------------------
 ioData.on(CHG_RESPONSE, function(data) {
   if (! app) return;
+  console.log(data);
   app.ports.changeResponse.send(JSON.parse(data));
 });
 

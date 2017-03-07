@@ -339,6 +339,15 @@ var isValidDate = function(dte, format) {
 };
 
 
+// --------------------------------------------------------
+// ErrorCode values for returning to the Elm client.
+// --------------------------------------------------------
+var NoErrorCode = 'NoErrorCode';
+var SessionExpiredErrorCode = 'SessionExpiredErrorCode';
+var SqlErrorCode = 'SqlErrorCode';
+var UnknownErrorCode = 'UnknownErrorCode';
+
+
 /* --------------------------------------------------------
  * returnStatus()
  *
@@ -353,7 +362,7 @@ var isValidDate = function(dte, format) {
  * param       msg        - message about error, etc.
  * return      rec
  * -------------------------------------------------------- */
-var returnStatusCHG = function(table, id, stateId, success, msg) {
+var returnStatusCHG = function(table, id, stateId, success, errCode, msg) {
   var msgStr = msg? msg: '';
   if (msg && typeof msg === 'object') {
     msgStr = JSON.stringify(msg);
@@ -363,13 +372,14 @@ var returnStatusCHG = function(table, id, stateId, success, msg) {
     id: id,
     stateId: stateId,
     success: success,
+    errorCode: errCode? errCode: NoErrorCode,
     msg: msgStr
   };
   return retVal;
 };
 
 
-var returnStatusADD = function(table, originalId, newId, success, msg) {
+var returnStatusADD = function(table, originalId, newId, success, errCode, msg) {
   var msgStr = msg? msg: '';
   if (msg && typeof msg === 'object') {
     msgStr = JSON.stringify(msg);
@@ -379,12 +389,13 @@ var returnStatusADD = function(table, originalId, newId, success, msg) {
     table: table,
     pendingId: originalId,
     success: success,
+    errorCode: errCode? errCode: NoErrorCode,
     msg: msgStr
   };
   return retVal;
 };
 
-var returnStatusDEL = function(table, id, stateId, success, msg) {
+var returnStatusDEL = function(table, id, stateId, success, errCode, msg) {
   var msgStr = msg? msg: '';
   if (msg && typeof msg === 'object') {
     msgStr = JSON.stringify(msg);
@@ -394,6 +405,7 @@ var returnStatusDEL = function(table, id, stateId, success, msg) {
     id: id,
     stateId: stateId,
     success: success,
+    errorCode: errCode? errCode: NoErrorCode,
     msg: msgStr
   };
   return retVal;
@@ -429,24 +441,28 @@ var dbType = function() {
 }
 
 module.exports = {
-  logInfo: logInfo
-  , logWarn: logWarn
-  , logError: logError
-  , getGA: getGA
-  , calcEdd: calcEdd
+  addBlankSelectData: addBlankSelectData
   , adjustSelectData: adjustSelectData
-  , addBlankSelectData: addBlankSelectData
-  , getAbbr: getAbbr
+  , calcEdd: calcEdd
+  , dbType
   , formatDohID: formatDohID
+  , getAbbr: getAbbr
+  , getGA: getGA
+  , getProcessId
   , isValidDate: isValidDate
-  , validOrVoidDate: validOrVoidDate
+  , KnexMySQL
+  , KnexSQLite3
+  , logError: logError
+  , logInfo: logInfo
+  , logWarn: logWarn
+  , NoErrorCode
   , returnStatusADD: returnStatusADD
   , returnStatusCHG: returnStatusCHG
   , returnStatusDEL: returnStatusDEL
-  , getProcessId
-  , dbType
-  , KnexSQLite3
-  , KnexMySQL
+  , SessionExpiredErrorCode
+  , SqlErrorCode
+  , UnknownErrorCode
+  , validOrVoidDate: validOrVoidDate
 };
 
 

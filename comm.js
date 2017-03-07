@@ -137,6 +137,10 @@ var rx = require('rx')
   , returnStatusADD = require('./util').returnStatusADD
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
+  , NoErrorCode = require('./util').NoErrorCode
+  , SessionExpiredErrorCode = require('./util').SessionExpiredErrorCode
+  , SqlErrorCode = require('./util').SqlErrorCode
+  , UnknownErrorCode = require('./util').UnknownErrorCode
   ;
 
 
@@ -429,13 +433,16 @@ var subscribeData = function(onNext, onError, onCompleted) {
   * return      boolean
   * -------------------------------------------------------- */
 var isValidSocketSession = function(socket) {
+  var notExpired = false;
   var isValid = socket &&
                 socket.request &&
                 socket.request.session &&
                 socket.request.session.roleInfo &&
                 socket.request.session.roleInfo.isAuthenticated? true: false;
-  //if (isValid) console.dir(socket.request.session);
-  return isValid;
+  if (isValid && socket.request.session.cookie._expires) {
+    notExpired = moment().isBefore(moment(socket.request.session.cookie._expires, moment.ISO_8601));
+  }
+  return !! (isValid && notExpired);
 };
 
 /* --------------------------------------------------------
@@ -474,11 +481,6 @@ var handleData = function(evtName, payload, socket) {
     , responseEvt
   ;
   console.log('handleData() for ' + evtName + ' with payload of: ' + payload);
-  if (! isValidSocketSession(socket)) {
-    // TODO: send the proper msg back to the client to this effect.
-    console.log('Data ' + evtName + ' request: Session has expired!');
-    return;
-  }
   switch (evtName) {
     case ADD:
       if (! table || ! data || (! recId < 0) ) {
@@ -505,7 +507,7 @@ var handleData = function(evtName, payload, socket) {
     case DEL:
       if (! table || ! data || recId === -1 || data.stateId === -1) {
         // TODO: send the proper msg back to the client to this effect.
-        console.log('Data CHG request: Improper data sent from client!');
+        console.log('Data DEL request: Improper data sent from client!');
         return;
       }
       dataFunc = delMedicationType;
@@ -514,7 +516,12 @@ var handleData = function(evtName, payload, socket) {
       break;
 
     default:
-      console.log('UNKNOWN case in handeData().');
+      console.log('UNKNOWN event of ' + evtName + ' in handeData().');
+  }
+
+  if (! isValidSocketSession(socket)) {
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired.");
+    return socket.emit(responseEvt, JSON.stringify(retAction));
   }
 
   switch (table) {
@@ -523,9 +530,9 @@ var handleData = function(evtName, payload, socket) {
         if (err) {
           logCommError(err);
           if (evtName === ADD) {
-            retAction = returnStatusFunc(table, data.id, data.id, false, err.message);
+            retAction = returnStatusFunc(table, data.id, data.id, false, SqlErrorCode, err.message);
           } else {
-            retAction = returnStatusFunc(table, data.id, data.stateId, false, err.message);
+            retAction = returnStatusFunc(table, data.id, data.stateId, false, SqlErrorCode, err.message);
           }
           return socket.emit(responseEvt, JSON.stringify(retAction));
         }
@@ -826,11 +833,13 @@ var init = function(io, sessionMiddle) {
   //  - receive update on field value another client changed
   // --------------------------------------------------------
   ioData.on('connection', function(socket) {
-    // TODO: report number of connections to site messages.
+    // TODO: report number of connections to data messages.
     socket.on('disconnect', function() {
       cntData--;
+      console.log('Number data websocket connections: ' + cntData);
     });
     cntData++;
+    console.log('Number data websocket connections: ' + cntData);
 
     // --------------------------------------------------------
     // SELECT event for the Elm client.

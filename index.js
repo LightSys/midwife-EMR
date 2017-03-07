@@ -71,7 +71,7 @@ var express = require('express')
   , attending = []
   , revision = 0
   , tmpRevision = 0
-  , useSecureCookie = cfg.tls.key || false
+  , useSecureCookie = !!(cfg.tls.key || false)
   , server      // https server
   , workerPort = cfg.host.tlsPort
   , sessionCfg
