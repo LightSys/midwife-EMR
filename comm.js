@@ -483,7 +483,6 @@ var handleData = function(evtName, payload, socket) {
     case ADD:
       if (! table || ! data || (! recId < 0) ) {
         // TODO: send the proper msg back to the client to this effect.
-        console.log(payload);
         console.log('Data ADD request: Improper data sent from client!');
         return;
       }
@@ -523,11 +522,10 @@ var handleData = function(evtName, payload, socket) {
       dataFunc(data, userInfo, function(err, success, additionalData) {
         if (err) {
           logCommError(err);
-          console.dir(retAction);
           if (evtName === ADD) {
-            retAction = returnStatusFunc(table, data.id, data.id, false, err);
+            retAction = returnStatusFunc(table, data.id, data.id, false, err.message);
           } else {
-            retAction = returnStatusFunc(table, data.id, data.stateId, false, err);
+            retAction = returnStatusFunc(table, data.id, data.stateId, false, err.message);
           }
           return socket.emit(responseEvt, JSON.stringify(retAction));
         }

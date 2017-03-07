@@ -354,35 +354,47 @@ var isValidDate = function(dte, format) {
  * return      rec
  * -------------------------------------------------------- */
 var returnStatusCHG = function(table, id, stateId, success, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
   var retVal = {
     table: table,
     id: id,
     stateId: stateId,
     success: success,
-    msg: msg? msg: ''
+    msg: msgStr
   };
   return retVal;
 };
 
 
 var returnStatusADD = function(table, originalId, newId, success, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
   var retVal = {
     id: newId,
     table: table,
     pendingId: originalId,
     success: success,
-    msg: msg? msg: ''
+    msg: msgStr
   };
   return retVal;
 };
 
 var returnStatusDEL = function(table, id, stateId, success, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
   var retVal = {
     table: table,
     id: id,
     stateId: stateId,
     success: success,
-    msg: msg? msg: ''
+    msg: msgStr
   };
   return retVal;
 };
