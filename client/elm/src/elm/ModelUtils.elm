@@ -1,6 +1,7 @@
 module ModelUtils
     exposing
-        ( delSelectedRecord
+        ( addRecord
+        , delSelectedRecord
         , getRecNextMax
         , getSelectedRecordAsString
         , selectQueryResponseToSelectQuery
@@ -10,6 +11,8 @@ module ModelUtils
         , setRecords
         , setSelectedRecordId
         , setSelectQuery
+        , updateMedicationTypeById
+        , updateMedicationTypeByIndex
         )
 
 import Form exposing (Form)
@@ -23,10 +26,11 @@ import RemoteData as RD exposing (RemoteData(..))
 import Types exposing (..)
 
 
-{-| TODO: deletion is done here, but addition is done in Updates.MedicationType.
-Fix this. Also, this one only deals with medicationTypeModel, while other
-also includes Model.
--}
+addRecord : a -> TableModel a b -> TableModel a b
+addRecord rec tableModel =
+    setRecords (RD.map (\list -> list ++ [ rec ]) tableModel.records) tableModel
+
+
 delSelectedRecord : TableModel { a | id : Int } b -> TableModel { a | id : Int } b
 delSelectedRecord ({ records, selectedRecordId } as tableModel) =
     case ( records, selectedRecordId ) of
@@ -99,3 +103,41 @@ setSelectedRecordId id tableModel =
 setSelectQuery : Maybe SelectQuery -> TableModel a b -> TableModel a b
 setSelectQuery sq tableModel =
     (\tm -> { tm | selectQuery = sq }) tableModel
+
+
+updateMedicationTypeById :
+    Int
+    -> ({ a | id : Int } -> { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
+updateMedicationTypeById id func records =
+    case records of
+        Success recs ->
+            case LE.findIndex (\r -> r.id == id) recs of
+                Just idx ->
+                    updateMedicationTypeByIndex idx func records
+
+                Nothing ->
+                    records
+
+        _ ->
+            records
+
+
+updateMedicationTypeByIndex :
+    Int
+    -> ({ a | id : Int } -> { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
+updateMedicationTypeByIndex idx func records =
+    case records of
+        Success recs ->
+            case LE.updateAt idx func recs of
+                Just updatedRecs ->
+                    RD.succeed updatedRecs
+
+                Nothing ->
+                    records
+
+        _ ->
+            records

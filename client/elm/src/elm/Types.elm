@@ -10,6 +10,7 @@ module Types
         , LabSuiteRecord
         , LabTestRecord
         , LabTestValueRecord
+        , MedicationTypeForm
         , MedicationTypeRecord
         , PregnoteTypeRecord
         , RiskCodeRecord
@@ -209,6 +210,13 @@ type alias MedicationTypeRecord =
     , description : String
     , sortOrder : Int
     , stateId : Maybe Int
+    }
+
+type alias MedicationTypeForm =
+    { id : Int
+    , name : String
+    , description : String
+    , sortOrder : Int
     }
 
 

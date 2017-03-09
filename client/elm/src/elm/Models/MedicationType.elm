@@ -31,14 +31,6 @@ initialMedicationTypeModel =
     }
 
 
-type alias MedicationTypeForm =
-    { id : Int
-    , name : String
-    , description : String
-    , sortOrder : Int
-    }
-
-
 
 -- VALIDATION
 
@@ -124,7 +116,7 @@ populateSelectedTableForm mtModel =
             case mtModel.editMode of
                 EditModeAdd ->
                     let
-                        nextSortOrder =
+                        sortOrderFldVal =
                             MU.getRecNextMax (\r -> r.sortOrder) data
                     in
                         mtModel
@@ -133,11 +125,11 @@ populateSelectedTableForm mtModel =
                                     (MedicationTypeRecord mtModel.nextPendingId
                                         ""
                                         ""
-                                        nextSortOrder
+                                        sortOrderFldVal
                                         Nothing
                                     )
                                 )
-                            |> MU.setNextPendingId (mtModel.nextPendingId + 1)
+                            |> MU.setNextPendingId (mtModel.nextPendingId - 1)
 
                 _ ->
                     case LE.find (\r -> r.id == (Maybe.withDefault 0 mtModel.selectedRecordId)) data of
