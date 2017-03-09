@@ -53,34 +53,34 @@ decodeSystemMessage payload =
 -- Tables.
 
 
-eventTypeTable : JD.Decoder EventTypeTable
+eventTypeTable : JD.Decoder EventTypeRecord
 eventTypeTable =
-    decode EventTypeTable
+    decode EventTypeRecord
         |> required "id" JD.int
         |> required "name" JD.string
         |> required "description" JD.string
 
 
-labSuiteTable : JD.Decoder LabSuiteTable
+labSuiteTable : JD.Decoder LabSuiteRecord
 labSuiteTable =
-    decode LabSuiteTable
+    decode LabSuiteRecord
         |> required "id" JD.int
         |> optional "name" JD.string ""
         |> optional "description" JD.string ""
         |> optional "category" JD.string ""
 
 
-labTestTable : JD.Decoder LabTestTable
+labTestTable : JD.Decoder LabTestRecord
 labTestTable =
     let
         -- The server sends bools as a 0 or 1 so convert to Bool.
-        handleBools : Int -> String -> String -> String -> String -> Float -> Float -> Int -> Int -> Int -> Int -> Int -> LabTestTable
+        handleBools : Int -> String -> String -> String -> String -> Float -> Float -> Int -> Int -> Int -> Int -> Int -> LabTestRecord
         handleBools id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isRange isText labSuite_id =
             let
                 ( isR, isT ) =
                     ( isRange == 1, isText == 1 )
             in
-                LabTestTable id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isR isT labSuite_id
+                LabTestRecord id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isR isT labSuite_id
     in
         decode handleBools
             |> required "id" JD.int
@@ -97,17 +97,17 @@ labTestTable =
             |> required "labSuite_id" JD.int
 
 
-labTestValueTable : JD.Decoder LabTestValueTable
+labTestValueTable : JD.Decoder LabTestValueRecord
 labTestValueTable =
-    decode LabTestValueTable
+    decode LabTestValueRecord
         |> required "id" JD.int
         |> required "value" JD.string
         |> required "labTest_id" JD.int
 
 
-medicationTypeTable : JD.Decoder MedicationTypeTable
+medicationTypeTable : JD.Decoder MedicationTypeRecord
 medicationTypeTable =
-    decode MedicationTypeTable
+    decode MedicationTypeRecord
         |> required "id" JD.int
         |> required "name" JD.string
         |> required "description" JD.string
@@ -158,7 +158,7 @@ decodeSelectQueryResponse payload =
         |> RD.fromResult
 
 
-decodeMedicationTypeRecord : Maybe String -> Maybe MedicationTypeTable
+decodeMedicationTypeRecord : Maybe String -> Maybe MedicationTypeRecord
 decodeMedicationTypeRecord payload =
     case payload of
         Just p ->
@@ -173,26 +173,26 @@ decodeMedicationTypeRecord payload =
             Nothing
 
 
-pregnoteTypeTable : JD.Decoder PregnoteTypeTable
+pregnoteTypeTable : JD.Decoder PregnoteTypeRecord
 pregnoteTypeTable =
-    decode PregnoteTypeTable
+    decode PregnoteTypeRecord
         |> required "id" JD.int
         |> required "name" JD.string
         |> required "description" JD.string
 
 
-riskCodeTable : JD.Decoder RiskCodeTable
+riskCodeTable : JD.Decoder RiskCodeRecord
 riskCodeTable =
-    decode RiskCodeTable
+    decode RiskCodeRecord
         |> required "id" JD.int
         |> required "name" JD.string
         |> required "riskType" JD.string
         |> required "description" JD.string
 
 
-vaccinationTypeTable : JD.Decoder VaccinationTypeTable
+vaccinationTypeTable : JD.Decoder VaccinationTypeRecord
 vaccinationTypeTable =
-    decode VaccinationTypeTable
+    decode VaccinationTypeRecord
         |> required "id" JD.int
         |> required "name" JD.string
         |> required "description" JD.string

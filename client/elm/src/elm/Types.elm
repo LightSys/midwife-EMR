@@ -6,24 +6,26 @@ module Types
         , EditMode(..)
         , emptySystemMessage
         , ErrorCode(..)
-        , EventTypeTable
-        , LabSuiteTable
-        , LabTestTable
-        , LabTestValueTable
-        , MedicationTypeTable
-        , PregnoteTypeTable
-        , RiskCodeTable
-        , RoleTable
+        , EventTypeRecord
+        , LabSuiteRecord
+        , LabTestRecord
+        , LabTestValueRecord
+        , MedicationTypeRecord
+        , PregnoteTypeRecord
+        , RiskCodeRecord
+        , RoleRecord
         , SelectQuery
         , SelectQueryResponse
         , SystemMessage
         , Table(..)
         , TableMetaInfo
+        , TableModel
         , TableResponse(..)
-        , UserTable
-        , VaccinationTypeTable
+        , UserRecord
+        , VaccinationTypeRecord
         )
 
+import Form exposing (Form)
 import RemoteData as RD exposing (RemoteData(..))
 
 
@@ -59,6 +61,16 @@ type Table
     | VaccinationType
 
 
+type alias TableModel a b =
+    { records : RemoteData String (List a)
+    , form : Form () b
+    , selectedRecordId : Maybe Int
+    , editMode : EditMode
+    , nextPendingId : Int
+    , selectQuery : Maybe SelectQuery
+    }
+
+
 type EditMode
     = EditModeAdd
     | EditModeEdit
@@ -67,9 +79,9 @@ type EditMode
 
 
 type TableResponse
-    = LabSuiteResp (List LabSuiteTable)
-    | LabTestResp (List LabTestTable)
-    | MedicationTypeResp (List MedicationTypeTable)
+    = LabSuiteResp (List LabSuiteRecord)
+    | LabTestResp (List LabTestRecord)
+    | MedicationTypeResp (List MedicationTypeRecord)
 
 
 type ErrorCode
@@ -129,7 +141,7 @@ type alias TableMetaInfo =
     }
 
 
-type alias UserTable =
+type alias UserRecord =
     { id : Int
     , username : String
     , firstname : String
@@ -146,21 +158,21 @@ type alias UserTable =
     }
 
 
-type alias RoleTable =
+type alias RoleRecord =
     { id : Int
     , name : String
     , description : String
     }
 
 
-type alias EventTypeTable =
+type alias EventTypeRecord =
     { id : Int
     , name : String
     , description : String
     }
 
 
-type alias LabSuiteTable =
+type alias LabSuiteRecord =
     { id : Int
     , name : String
     , description : String
@@ -168,7 +180,7 @@ type alias LabSuiteTable =
     }
 
 
-type alias LabTestTable =
+type alias LabTestRecord =
     { id : Int
     , name : String
     , abbrev : String
@@ -184,14 +196,14 @@ type alias LabTestTable =
     }
 
 
-type alias LabTestValueTable =
+type alias LabTestValueRecord =
     { id : Int
     , value : String
     , labTest_id : Int
     }
 
 
-type alias MedicationTypeTable =
+type alias MedicationTypeRecord =
     { id : Int
     , name : String
     , description : String
@@ -200,14 +212,14 @@ type alias MedicationTypeTable =
     }
 
 
-type alias PregnoteTypeTable =
+type alias PregnoteTypeRecord =
     { id : Int
     , name : String
     , description : String
     }
 
 
-type alias RiskCodeTable =
+type alias RiskCodeRecord =
     { id : Int
     , name : String
     , riskType : String
@@ -215,7 +227,7 @@ type alias RiskCodeTable =
     }
 
 
-type alias VaccinationTypeTable =
+type alias VaccinationTypeRecord =
     { id : Int
     , name : String
     , description : String

@@ -19,6 +19,7 @@ import Form.Validate as V
 import Decoders exposing (..)
 import Encoders as E
 import Model exposing (..)
+import ModelUtils as MU
 import Msg exposing (..)
 import Ports
 import Transactions as Trans
@@ -206,7 +207,7 @@ update msg model =
                         Success selQryResp ->
                             let
                                 selQry =
-                                    U.selectQueryResponseToSelectQuery selQryResp
+                                    MU.selectQueryResponseToSelectQuery selQryResp
                             in
                                 case selQryResp.data of
                                     MedicationTypeResp list ->
@@ -285,7 +286,7 @@ populateSelectedTableForm model =
             case t of
                 MedicationType ->
                     -- Is there data for that table?
-                    case model.medicationTypeModel.medicationType of
+                    case model.medicationTypeModel.records of
                         Success data ->
                             let
                                 -- Populate the form with the record we need.
@@ -297,7 +298,7 @@ populateSelectedTableForm model =
                                                 nextSortOrder =
                                                     getRecNextMax (\r -> r.sortOrder) data
                                             in
-                                                ( MedicationTypeTable model.nextPendingId "" "" nextSortOrder Nothing
+                                                ( MedicationTypeRecord model.nextPendingId "" "" nextSortOrder Nothing
                                                     |> MedType.medicationTypeInitialForm
                                                 , { model | nextPendingId = model.nextPendingId - 1 }
                                                 )
@@ -308,10 +309,10 @@ populateSelectedTableForm model =
                                                     ( MedType.medicationTypeInitialForm rec, model )
 
                                                 Nothing ->
-                                                    ( model.medicationTypeModel.medicationTypeForm, model )
+                                                    ( model.medicationTypeModel.form, model )
                             in
                                 newModel.medicationTypeModel
-                                    |> MedType.setMedicationTypeForm form
+                                    |> MU.setForm form
                                     |> asMedicationTypeModelIn newModel
 
                         _ ->
@@ -343,7 +344,7 @@ numRecsSelectedTable model =
         Just t ->
             case t of
                 MedicationType ->
-                    case model.medicationTypeModel.medicationType of
+                    case model.medicationTypeModel.records of
                         Success val ->
                             (List.length val)
 

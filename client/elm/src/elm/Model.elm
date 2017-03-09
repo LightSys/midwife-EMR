@@ -36,16 +36,16 @@ type alias Model =
     , selectedTable : Maybe Table
     , selectedTableRecord : Int
     , selectedTableEditMode : EditMode
-    , eventType : RemoteData String (List EventTypeTable)
-    , labSuite : RemoteData String (List LabSuiteTable)
-    , labTest : RemoteData String (List LabTestTable)
-    , labTestValue : RemoteData String (List LabTestValueTable)
+    , eventType : RemoteData String (List EventTypeRecord)
+    , labSuite : RemoteData String (List LabSuiteRecord)
+    , labTest : RemoteData String (List LabTestRecord)
+    , labTestValue : RemoteData String (List LabTestValueRecord)
     , medicationTypeModel : MedicationType.MedicationTypeModel
-    , pregnoteType : RemoteData String (List PregnoteTypeTable)
-    , riskCode : RemoteData String (List RiskCodeTable)
-    , vaccinationType : RemoteData String (List VaccinationTypeTable)
-    , role : RemoteData String RoleTable
-    , user : RemoteData String UserTable
+    , pregnoteType : RemoteData String (List PregnoteTypeRecord)
+    , riskCode : RemoteData String (List RiskCodeRecord)
+    , vaccinationType : RemoteData String (List VaccinationTypeRecord)
+    , role : RemoteData String RoleRecord
+    , user : RemoteData String UserRecord
     }
 
 

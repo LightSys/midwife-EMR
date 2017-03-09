@@ -10,25 +10,20 @@ import RemoteData as RD exposing (RemoteData(..))
 -- LOCAL IMPORTS
 
 import Types exposing (..)
+import ModelUtils as MU
 
 
 -- MODEL
 
 
 type alias MedicationTypeModel =
-    { medicationType : RemoteData String (List MedicationTypeTable)
-    , medicationTypeForm : Form () MedicationTypeForm
-    , selectedRecordId : Maybe Int
-    , editMode : EditMode
-    , nextPendingId : Int
-    , selectQuery : Maybe SelectQuery
-    }
+    TableModel MedicationTypeRecord MedicationTypeForm
 
 
 initialMedicationTypeModel : MedicationTypeModel
 initialMedicationTypeModel =
-    { medicationType = NotAsked
-    , medicationTypeForm = Form.initial [] medicationTypeValidate
+    { records = NotAsked
+    , form = Form.initial [] medicationTypeValidate
     , selectedRecordId = Nothing
     , editMode = EditModeTable
     , nextPendingId = -1
@@ -48,7 +43,7 @@ type alias MedicationTypeForm =
 -- VALIDATION
 
 
-medicationTypeInitialForm : MedicationTypeTable -> Form () MedicationTypeForm
+medicationTypeInitialForm : MedicationTypeRecord -> Form () MedicationTypeForm
 medicationTypeInitialForm table =
     Form.initial
         [ ( "id", Fld.string <| toString table.id )
@@ -72,60 +67,6 @@ medicationTypeValidate =
 -- FIELD UPDATES
 
 
-setMedicationType : RemoteData String (List MedicationTypeTable) -> MedicationTypeModel -> MedicationTypeModel
-setMedicationType mt mtModel =
-    (\mtModel -> { mtModel | medicationType = mt }) mtModel
-
-
-setMedicationTypeForm : Form () MedicationTypeForm -> MedicationTypeModel -> MedicationTypeModel
-setMedicationTypeForm mtf mtModel =
-    (\mtModel -> { mtModel | medicationTypeForm = mtf }) mtModel
-
-
-setSelectedRecordId : Maybe Int -> MedicationTypeModel -> MedicationTypeModel
-setSelectedRecordId id mtModel =
-    (\mtModel -> { mtModel | selectedRecordId = id }) mtModel
-
-
-setEditMode : EditMode -> MedicationTypeModel -> MedicationTypeModel
-setEditMode mode mtModel =
-    (\mtModel -> { mtModel | editMode = mode }) mtModel
-
-
-setNextPendingId : Int -> MedicationTypeModel -> MedicationTypeModel
-setNextPendingId id mtModel =
-    (\mtModel -> { mtModel | nextPendingId = id }) mtModel
-
-
-setSelectQuery : Maybe SelectQuery -> MedicationTypeModel -> MedicationTypeModel
-setSelectQuery sq mtModel =
-    (\mtModel -> { mtModel | selectQuery = sq }) mtModel
-
-{-| TODO: deletion is done here, but addition is done in Updates.MedicationType.
-Fix this. Also, this one only deals with medicationTypeModel, while other
-also includes Model.
--}
-delSelectedRecord : MedicationTypeModel -> MedicationTypeModel
-delSelectedRecord ({ medicationType, selectedRecordId } as mtModel) =
-    case ( medicationType, selectedRecordId ) of
-        ( Success data, Just id ) ->
-            RD.map (\list -> List.filter (\rec -> rec.id /= id) list) medicationType
-                |> flip setMedicationType mtModel
-
-        _ ->
-            mtModel
-
-
-getRecNextMax : (a -> Int) -> List a -> Int
-getRecNextMax func list =
-    case LE.maximumBy func list of
-        Just a ->
-            func a |> (+) 1
-
-        Nothing ->
-            0
-
-
 firstRecord : MedicationTypeModel -> MedicationTypeModel
 firstRecord mtModel =
     moveToRecord (\_ list -> list) List.head mtModel
@@ -147,14 +88,14 @@ lastRecord mtModel =
 
 
 moveToRecord :
-    (Int -> List MedicationTypeTable -> List MedicationTypeTable)
-    -> (List MedicationTypeTable -> Maybe MedicationTypeTable)
+    (Int -> List MedicationTypeRecord -> List MedicationTypeRecord)
+    -> (List MedicationTypeRecord -> Maybe MedicationTypeRecord)
     -> MedicationTypeModel
     -> MedicationTypeModel
-moveToRecord func1 func2 ({ medicationType, selectedRecordId } as mtModel) =
+moveToRecord func1 func2 ({ records, selectedRecordId } as mtModel) =
     let
         newId =
-            case ( RD.toMaybe medicationType, selectedRecordId ) of
+            case ( RD.toMaybe records, selectedRecordId ) of
                 ( Just recs, Just recId ) ->
                     case
                         List.sortBy .id recs
@@ -172,37 +113,37 @@ moveToRecord func1 func2 ({ medicationType, selectedRecordId } as mtModel) =
                 _ ->
                     Nothing
     in
-        setSelectedRecordId newId mtModel
+        MU.setSelectedRecordId newId mtModel
             |> populateSelectedTableForm
 
 
 populateSelectedTableForm : MedicationTypeModel -> MedicationTypeModel
 populateSelectedTableForm mtModel =
-    case mtModel.medicationType of
+    case mtModel.records of
         Success data ->
             case mtModel.editMode of
                 EditModeAdd ->
                     let
                         nextSortOrder =
-                            getRecNextMax (\r -> r.sortOrder) data
+                            MU.getRecNextMax (\r -> r.sortOrder) data
                     in
                         mtModel
-                            |> setMedicationTypeForm
+                            |> MU.setForm
                                 (medicationTypeInitialForm
-                                    (MedicationTypeTable mtModel.nextPendingId
+                                    (MedicationTypeRecord mtModel.nextPendingId
                                         ""
                                         ""
                                         nextSortOrder
                                         Nothing
                                     )
                                 )
-                            |> setNextPendingId (mtModel.nextPendingId + 1)
+                            |> MU.setNextPendingId (mtModel.nextPendingId + 1)
 
                 _ ->
                     case LE.find (\r -> r.id == (Maybe.withDefault 0 mtModel.selectedRecordId)) data of
                         Just rec ->
                             mtModel
-                                |> setMedicationTypeForm (medicationTypeInitialForm rec)
+                                |> MU.setForm (medicationTypeInitialForm rec)
 
                         Nothing ->
                             mtModel

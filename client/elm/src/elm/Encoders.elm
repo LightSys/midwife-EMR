@@ -35,7 +35,7 @@ selectQueryToValue sq =
         ]
 
 
-medicationTypeToValue : MedicationTypeTable -> JE.Value
+medicationTypeToValue : MedicationTypeRecord -> JE.Value
 medicationTypeToValue mt =
     JE.object
         [ ( "id", JE.int mt.id )

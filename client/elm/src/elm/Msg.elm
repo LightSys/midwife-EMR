@@ -23,20 +23,20 @@ type Msg
     | ChangeResponseMsg (Maybe ChangeResponse)
     | DelResponseMsg (Maybe DelResponse)
     | EditSelectedTable
-    | EventTypeResponse (RemoteData String (List EventTypeTable))
+    | EventTypeResponse (RemoteData String (List EventTypeRecord))
     | FirstRecord
-    | LabSuiteResponse (RemoteData String (List LabSuiteTable))
-    | LabTestResponse (RemoteData String (List LabTestTable))
-    | LabTestValueResponse (RemoteData String (List LabTestValueTable))
+    | LabSuiteResponse (RemoteData String (List LabSuiteRecord))
+    | LabTestResponse (RemoteData String (List LabTestRecord))
+    | LabTestValueResponse (RemoteData String (List LabTestValueRecord))
     | LastRecord
     | Mdl (Material.Msg Msg)
     | MedicationTypeMessages MedicationTypeMsg
     | NewSystemMessage SystemMessage
     | NextRecord
     | NoOp
-    | PregnoteTypeResponse (RemoteData String (List PregnoteTypeTable))
+    | PregnoteTypeResponse (RemoteData String (List PregnoteTypeRecord))
     | PreviousRecord
-    | RiskCodeResponse (RemoteData String (List RiskCodeTable))
+    | RiskCodeResponse (RemoteData String (List RiskCodeRecord))
     | SaveSelectedTable
     | SelectedTableEditMode EditMode (Maybe Int)
     | SelectQueryResponseMsg (RemoteData String SelectQueryResponse)
@@ -45,7 +45,7 @@ type Msg
     | SelectTab Tab
     | SessionExpired
     | Snackbar (Snackbar.Msg String)
-    | VaccinationTypeResponse (RemoteData String (List VaccinationTypeTable))
+    | VaccinationTypeResponse (RemoteData String (List VaccinationTypeRecord))
 
 
 type MedicationTypeMsg
@@ -59,7 +59,7 @@ type MedicationTypeMsg
     | MedicationTypeChgResponse ChangeResponse
     | MedicationTypeDelete (Maybe Int)
     | MedicationTypeDelResponse DelResponse
-    | MedicationTypeResponse (RemoteData String (List MedicationTypeTable)) (Maybe SelectQuery)
+    | MedicationTypeResponse (RemoteData String (List MedicationTypeRecord)) (Maybe SelectQuery)
     | NextMedicationTypeRecord
     | PrevMedicationTypeRecord
     | SelectedEditModeRecord EditMode (Maybe Int)

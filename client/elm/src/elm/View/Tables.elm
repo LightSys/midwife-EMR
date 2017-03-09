@@ -333,7 +333,7 @@ viewMedicationType : Model -> Html Msg
 viewMedicationType model =
     let
         data =
-            case model.medicationTypeModel.medicationType of
+            case model.medicationTypeModel.records of
                 Success recs ->
                     List.sortBy .sortOrder recs
 
@@ -472,7 +472,7 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
                     ]
 
         data =
-            case medicationTypeModel.medicationType of
+            case medicationTypeModel.records of
                 NotAsked ->
                     Html.text ""
 
@@ -483,7 +483,7 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
                     Html.text <| toString err
 
                 Success recs ->
-                    buildForm medicationTypeModel.medicationTypeForm
+                    buildForm medicationTypeModel.form
     in
         div []
             [ data ]
