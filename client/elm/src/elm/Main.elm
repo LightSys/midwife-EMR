@@ -24,31 +24,16 @@ init =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Ports.systemMessages Decoders.decodeSystemMessage
-            |> Sub.map NewSystemMessage
-        , Ports.eventType Decoders.decodeEventTypeTable
-            |> Sub.map EventTypeResponse
-        , Ports.labSuite Decoders.decodeLabSuiteTable
-            |> Sub.map LabSuiteResponse
-        , Ports.labTest Decoders.decodeLabTestTable
-            |> Sub.map LabTestResponse
-        , Ports.labTestValue Decoders.decodeLabTestValueTable
-            |> Sub.map LabTestValueResponse
-        , Ports.medicationType Decoders.decodeMedicationTypeTable
-            |> Sub.map MedicationTypeResponse
-            |> Sub.map MedicationTypeMessages
-        , Ports.pregnoteType Decoders.decodePregnoteTypeTable
-            |> Sub.map PregnoteTypeResponse
-        , Ports.riskCode Decoders.decodeRiskCodeTable
-            |> Sub.map RiskCodeResponse
-        , Ports.vaccinationType Decoders.decodeVaccinationTypeTable
-            |> Sub.map VaccinationTypeResponse
+        [ Ports.addResponse Decoders.decodeAddResponse
+            |> Sub.map AddResponseMsg
         , Ports.changeResponse Decoders.decodeChangeResponse
             |> Sub.map ChangeResponseMsg
-        , Ports.addResponse Decoders.decodeAddResponse
-            |> Sub.map AddResponseMsg
         , Ports.delResponse Decoders.decodeDelResponse
             |> Sub.map DelResponseMsg
+        , Ports.selectQueryResponse Decoders.decodeSelectQueryResponse
+            |> Sub.map SelectQueryResponseMsg
+        , Ports.systemMessages Decoders.decodeSystemMessage
+            |> Sub.map NewSystemMessage
         ]
 
 

@@ -17,48 +17,50 @@ import Types exposing (..)
 
 
 type Msg
-    = NoOp
-    | Mdl (Material.Msg Msg)
-    | Snackbar (Snackbar.Msg String)
-    | SelectTab Tab
-    | NewSystemMessage SystemMessage
-    | SelectQuerySelectTable SelectQuery
-    | SelectedTableEditMode EditMode (Maybe Int)
-    | SelectTableRecord Int
+    = AddResponseMsg (Maybe AddResponse)
     | AddSelectedTable
-    | EditSelectedTable
-    | SaveSelectedTable
     | CancelSelectedTable
-    | FirstRecord
-    | PreviousRecord
-    | NextRecord
-    | LastRecord
-    | MedicationTypeMessages MedicationTypeMsg
+    | ChangeResponseMsg (Maybe ChangeResponse)
+    | DelResponseMsg (Maybe DelResponse)
+    | EditSelectedTable
     | EventTypeResponse (RemoteData String (List EventTypeTable))
+    | FirstRecord
     | LabSuiteResponse (RemoteData String (List LabSuiteTable))
     | LabTestResponse (RemoteData String (List LabTestTable))
     | LabTestValueResponse (RemoteData String (List LabTestValueTable))
+    | LastRecord
+    | Mdl (Material.Msg Msg)
+    | MedicationTypeMessages MedicationTypeMsg
+    | NewSystemMessage SystemMessage
+    | NextRecord
+    | NoOp
     | PregnoteTypeResponse (RemoteData String (List PregnoteTypeTable))
+    | PreviousRecord
     | RiskCodeResponse (RemoteData String (List RiskCodeTable))
+    | SaveSelectedTable
+    | SelectedTableEditMode EditMode (Maybe Int)
+    | SelectQueryResponseMsg (RemoteData String SelectQueryResponse)
+    | SelectQuerySelectTable SelectQuery
+    | SelectTableRecord Int
+    | SelectTab Tab
+    | SessionExpired
+    | Snackbar (Snackbar.Msg String)
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeTable))
-    | ChangeResponseMsg (Maybe ChangeResponse)
-    | AddResponseMsg (Maybe AddResponse)
-    | DelResponseMsg (Maybe DelResponse)
 
 
 type MedicationTypeMsg
-    = FormMsg Form.Msg
-    | SelectedRecordId (Maybe Int)
-    | SelectedEditModeRecord EditMode (Maybe Int)
-    | MedicationTypeResponse (RemoteData String (List MedicationTypeTable))
-    | MedicationTypeSave
-    | MedicationTypeAdd
-    | MedicationTypeDelete (Maybe Int)
-    | MedicationTypeCancel
-    | MedicationTypeSaveResponse ChangeResponse
-    | MedicationTypeAddResponse AddResponse
-    | MedicationTypeDelResponse DelResponse
-    | FirstMedicationTypeRecord
-    | PrevMedicationTypeRecord
-    | NextMedicationTypeRecord
+    = FirstMedicationTypeRecord
+    | FormMsg Form.Msg
     | LastMedicationTypeRecord
+    | MedicationTypeAdd
+    | MedicationTypeAddResponse AddResponse
+    | MedicationTypeCancel
+    | MedicationTypeChg
+    | MedicationTypeChgResponse ChangeResponse
+    | MedicationTypeDelete (Maybe Int)
+    | MedicationTypeDelResponse DelResponse
+    | MedicationTypeResponse (RemoteData String (List MedicationTypeTable)) (Maybe SelectQuery)
+    | NextMedicationTypeRecord
+    | PrevMedicationTypeRecord
+    | SelectedEditModeRecord EditMode (Maybe Int)
+    | SelectedRecordId (Maybe Int)

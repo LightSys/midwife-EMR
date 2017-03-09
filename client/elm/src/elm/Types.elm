@@ -15,9 +15,11 @@ module Types
         , RiskCodeTable
         , RoleTable
         , SelectQuery
+        , SelectQueryResponse
         , SystemMessage
         , Table(..)
         , TableMetaInfo
+        , TableResponse(..)
         , UserTable
         , VaccinationTypeTable
         )
@@ -64,11 +66,37 @@ type EditMode
     | EditModeTable
 
 
+type TableResponse
+    = LabSuiteResp (List LabSuiteTable)
+    | LabTestResp (List LabTestTable)
+    | MedicationTypeResp (List MedicationTypeTable)
+
+
 type ErrorCode
     = NoErrorCode
     | UnknownErrorCode
     | SessionExpiredErrorCode
     | SqlErrorCode
+
+
+type alias SelectQuery =
+    { table : Table
+    , id : Maybe Int
+    , patient_id : Maybe Int
+    , pregnancy_id : Maybe Int
+    }
+
+
+type alias SelectQueryResponse =
+    { table : Table
+    , id : Maybe Int
+    , patient_id : Maybe Int
+    , pregnancy_id : Maybe Int
+    , success : Bool
+    , errorCode : ErrorCode
+    , msg : String
+    , data : TableResponse
+    }
 
 
 type alias SystemMessage =
@@ -91,14 +119,6 @@ emptySystemMessage =
     , workerId = ""
     , processedBy = []
     , systemLog = ""
-    }
-
-
-type alias SelectQuery =
-    { table : Table
-    , id : Maybe Int
-    , patient_id : Maybe Int
-    , pregnancy_id : Maybe Int
     }
 
 

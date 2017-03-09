@@ -137,6 +137,7 @@ var rx = require('rx')
   , returnStatusADD = require('./util').returnStatusADD
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
+  , returnStatusSELECT = require('./util').returnStatusSELECT
   , NoErrorCode = require('./util').NoErrorCode
   , SessionExpiredErrorCode = require('./util').SessionExpiredErrorCode
   , SqlErrorCode = require('./util').SqlErrorCode
@@ -848,23 +849,28 @@ var init = function(io, sessionMiddle) {
       console.log(data);
       var json = JSON.parse(data);
       var table = json.table? json.table: void 0;
+      var retAction;
+
+      if (! isValidSocketSession(socket)) {
+        retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired.");
+        console.log(retAction);
+        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
+      }
+
       // NOTE: data and error fields returned are optional.
       if (table) {
-        var response = _.clone(json);
         getLookupTable(table, function(err, data) {
           if (err) {
             logCommError(err);
-            response.error = err;
-            // TODO: test this path.
-            return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(response));
+            retAction = returnStatusSELECT(json, void 0, false, SqlErrorCode, err.msg);
+            return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
           }
-          response.data = data;
-          return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(response));
+          retAction = returnStatusSELECT(json, data);
+          return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
         });
       } else {
-        var response = _.clone(json);
-        response.error = 'Table not specified.';
-        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(response));
+        retAction = returnStatusSELECT(json, void 0, false, UnknownErrorCode, 'Table not specified.');
+        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
       }
     });
 

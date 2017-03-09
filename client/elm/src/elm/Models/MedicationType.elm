@@ -21,6 +21,7 @@ type alias MedicationTypeModel =
     , selectedRecordId : Maybe Int
     , editMode : EditMode
     , nextPendingId : Int
+    , selectQuery : Maybe SelectQuery
     }
 
 
@@ -31,6 +32,7 @@ initialMedicationTypeModel =
     , selectedRecordId = Nothing
     , editMode = EditModeTable
     , nextPendingId = -1
+    , selectQuery = Nothing
     }
 
 
@@ -94,6 +96,10 @@ setNextPendingId : Int -> MedicationTypeModel -> MedicationTypeModel
 setNextPendingId id mtModel =
     (\mtModel -> { mtModel | nextPendingId = id }) mtModel
 
+
+setSelectQuery : Maybe SelectQuery -> MedicationTypeModel -> MedicationTypeModel
+setSelectQuery sq mtModel =
+    (\mtModel -> { mtModel | selectQuery = sq }) mtModel
 
 {-| TODO: deletion is done here, but addition is done in Updates.MedicationType.
 Fix this. Also, this one only deals with medicationTypeModel, while other

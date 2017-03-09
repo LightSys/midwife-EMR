@@ -337,6 +337,13 @@ viewMedicationType model =
                 Success recs ->
                     List.sortBy .sortOrder recs
 
+                Failure e ->
+                    let
+                        _ =
+                            Debug.log "viewMedicationType" <| toString e
+                    in
+                        []
+
                 _ ->
                     []
     in
@@ -373,7 +380,7 @@ viewMedicationType model =
 {-| Viewing, editing, or adding a single record.
 -}
 viewMedicationTypeEdit : Model -> Html Msg
-viewMedicationTypeEdit ({medicationTypeModel} as model) =
+viewMedicationTypeEdit ({ medicationTypeModel } as model) =
     let
         -- Placeholder for now.
         isEditing =

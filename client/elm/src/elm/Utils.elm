@@ -5,6 +5,7 @@ module Utils
         , getIdxRemoteDataById
         , humanReadableError
         , maybeStringToInt
+        , selectQueryResponseToSelectQuery
         , stringToErrorCode
         , stringToTable
         , tableToString
@@ -320,3 +321,11 @@ stringToErrorCode str =
 
         _ ->
             UnknownErrorCode
+
+
+{-| Extract the SelectQuery portion from a SelectQueryResponse
+and return it.
+-}
+selectQueryResponseToSelectQuery : SelectQueryResponse -> SelectQuery
+selectQueryResponseToSelectQuery =
+    (\sqr -> SelectQuery sqr.table sqr.id sqr.patient_id sqr.pregnancy_id)

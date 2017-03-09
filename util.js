@@ -411,6 +411,19 @@ var returnStatusDEL = function(table, id, stateId, success, errCode, msg) {
   return retVal;
 };
 
+var returnStatusSELECT = function(obj, data, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+  var retVal = _.clone(obj);
+  retVal.data = data? data: [];
+  retVal.success = success;
+  retVal.errorCode = errCode? errCode: NoErrorCode;
+  retVal.msg = msgStr;
+  return retVal;
+};
+
 /* --------------------------------------------------------
  * validOrVoidDate()
  *
@@ -459,6 +472,7 @@ module.exports = {
   , returnStatusADD: returnStatusADD
   , returnStatusCHG: returnStatusCHG
   , returnStatusDEL: returnStatusDEL
+  , returnStatusSELECT: returnStatusSELECT
   , SessionExpiredErrorCode
   , SqlErrorCode
   , UnknownErrorCode

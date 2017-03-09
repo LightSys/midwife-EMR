@@ -39,7 +39,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                     if medicationTypeModel.editMode == EditModeAdd then
                         updateMedicationType MedicationTypeAdd model
                     else
-                        updateMedicationType MedicationTypeSave model
+                        updateMedicationType MedicationTypeChg model
 
                 _ ->
                     -- Otherwise, pass it through validation again.
@@ -70,18 +70,18 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
             )
                 ! []
 
-        MedicationTypeResponse medicationTypeTbl ->
+        MedicationTypeResponse medicationTypeTbl sq ->
             let
-                -- Load the form as well.
                 newModel =
                     medicationTypeModel
                         |> MedType.setMedicationType medicationTypeTbl
+                        |> MedType.setSelectedRecordId (Just 0)
+                        |> MedType.setSelectQuery sq
                         |> asMedicationTypeModelIn model
             in
-                -- TODO: fix this. Is it right yet?
-                newModel ! [ Task.perform SelectTableRecord (Task.succeed 0) ]
+                newModel ! [ ]
 
-        MedicationTypeSave ->
+        MedicationTypeChg ->
             -- User saved on medicationType form.
             --
             -- This is an optimistic workflow:
@@ -145,7 +145,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
             in
                 newModel ! []
 
-        MedicationTypeSaveResponse change ->
+        MedicationTypeChgResponse change ->
             let
                 -- Remove the state id no matter what.
                 noStateIdMedicationTypeRecords =
@@ -159,8 +159,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                             noStateIdMedicationTypeRecords
 
                         False ->
-                            -- Server rejected change. Reset record back to
-                            -- original and send a message to the user.
+                            -- Server rejected change. Reset record back to original.
                             case
                                 Trans.getState change.stateId model
                                     |> Decoders.decodeMedicationTypeRecord
@@ -202,8 +201,13 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                             |> flip U.addWarning newModel
                     else
                         ( newModel, Cmd.none )
+                newCmd3 =
+                    if change.errorCode == SessionExpiredErrorCode then
+                        Task.perform (always SessionExpired) (Task.succeed True)
+                    else
+                        Cmd.none
             in
-                newModel2 ! [ newCmd2 ]
+                newModel2 ! [ newCmd2, newCmd3 ]
 
         MedicationTypeDelete id ->
             -- This is an optimistic workflow.

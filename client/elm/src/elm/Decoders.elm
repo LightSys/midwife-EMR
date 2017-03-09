@@ -5,11 +5,11 @@ import Json.Encode as JE
 import Json.Decode.Pipeline
     exposing
         ( decode
-        , required
-        , requiredAt
+        , hardcoded
         , optional
         , optionalAt
-        , hardcoded
+        , required
+        , requiredAt
         )
 import Http
 import RemoteData as RD exposing (RemoteData(..))
@@ -61,12 +61,6 @@ eventTypeTable =
         |> required "description" JD.string
 
 
-decodeEventTypeTable : JE.Value -> RemoteData String (List EventTypeTable)
-decodeEventTypeTable payload =
-    JD.decodeValue (JD.list eventTypeTable) payload
-        |> RD.fromResult
-
-
 labSuiteTable : JD.Decoder LabSuiteTable
 labSuiteTable =
     decode LabSuiteTable
@@ -74,12 +68,6 @@ labSuiteTable =
         |> optional "name" JD.string ""
         |> optional "description" JD.string ""
         |> optional "category" JD.string ""
-
-
-decodeLabSuiteTable : JE.Value -> RemoteData String (List LabSuiteTable)
-decodeLabSuiteTable payload =
-    JD.decodeValue (JD.list labSuiteTable) payload
-        |> RD.fromResult
 
 
 labTestTable : JD.Decoder LabTestTable
@@ -109,24 +97,12 @@ labTestTable =
             |> required "labSuite_id" JD.int
 
 
-decodeLabTestTable : JE.Value -> RemoteData String (List LabTestTable)
-decodeLabTestTable payload =
-    JD.decodeValue (JD.list labTestTable) payload
-        |> RD.fromResult
-
-
 labTestValueTable : JD.Decoder LabTestValueTable
 labTestValueTable =
     decode LabTestValueTable
         |> required "id" JD.int
         |> required "value" JD.string
         |> required "labTest_id" JD.int
-
-
-decodeLabTestValueTable : JE.Value -> RemoteData String (List LabTestValueTable)
-decodeLabTestValueTable payload =
-    JD.decodeValue (JD.list labTestValueTable) payload
-        |> RD.fromResult
 
 
 medicationTypeTable : JD.Decoder MedicationTypeTable
@@ -139,9 +115,46 @@ medicationTypeTable =
         |> hardcoded Nothing
 
 
-decodeMedicationTypeTable : JE.Value -> RemoteData String (List MedicationTypeTable)
-decodeMedicationTypeTable payload =
-    JD.decodeValue (JD.list medicationTypeTable) payload
+partialSelectQueryResponse : JD.Decoder (TableResponse -> SelectQueryResponse)
+partialSelectQueryResponse =
+    decode SelectQueryResponse
+        |> required "table" decodeTable
+        |> required "id" (JD.nullable JD.int)
+        |> required "patient_id" (JD.nullable JD.int)
+        |> required "pregnancy_id" (JD.nullable JD.int)
+        |> required "success" JD.bool
+        |> required "errorCode" decodeErrorCode
+        |> required "msg" JD.string
+
+
+selectQueryResponse : JD.Decoder SelectQueryResponse
+selectQueryResponse =
+    let
+        decodeData : String -> JD.Decoder SelectQueryResponse
+        decodeData table =
+            case U.stringToTable table of
+                MedicationType ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map MedicationTypeResp (JD.list medicationTypeTable))
+
+                LabSuite ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map LabSuiteResp (JD.list labSuiteTable))
+
+                LabTest ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map LabTestResp (JD.list labTestTable))
+
+                _ ->
+                    JD.fail "Unknown table returned from select."
+    in
+        JD.field "table" JD.string
+            |> JD.andThen decodeData
+
+
+decodeSelectQueryResponse : JE.Value -> RemoteData String SelectQueryResponse
+decodeSelectQueryResponse payload =
+    JD.decodeValue selectQueryResponse payload
         |> RD.fromResult
 
 
@@ -168,12 +181,6 @@ pregnoteTypeTable =
         |> required "description" JD.string
 
 
-decodePregnoteTypeTable : JE.Value -> RemoteData String (List PregnoteTypeTable)
-decodePregnoteTypeTable payload =
-    JD.decodeValue (JD.list pregnoteTypeTable) payload
-        |> RD.fromResult
-
-
 riskCodeTable : JD.Decoder RiskCodeTable
 riskCodeTable =
     decode RiskCodeTable
@@ -183,12 +190,6 @@ riskCodeTable =
         |> required "description" JD.string
 
 
-decodeRiskCodeTable : JE.Value -> RemoteData String (List RiskCodeTable)
-decodeRiskCodeTable payload =
-    JD.decodeValue (JD.list riskCodeTable) payload
-        |> RD.fromResult
-
-
 vaccinationTypeTable : JD.Decoder VaccinationTypeTable
 vaccinationTypeTable =
     decode VaccinationTypeTable
@@ -196,12 +197,6 @@ vaccinationTypeTable =
         |> required "name" JD.string
         |> required "description" JD.string
         |> required "sortOrder" JD.int
-
-
-decodeVaccinationTypeTable : JE.Value -> RemoteData String (List VaccinationTypeTable)
-decodeVaccinationTypeTable payload =
-    JD.decodeValue (JD.list vaccinationTypeTable) payload
-        |> RD.fromResult
 
 
 decodeTable : JD.Decoder Table

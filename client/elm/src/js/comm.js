@@ -171,40 +171,14 @@ ioData.on(INFORM, function(data) {
   if (! app) return;
 });
 
+// --------------------------------------------------------
+// Client requesting data from the server.
+// --------------------------------------------------------
 ioData.on(SELECT_RESPONSE, function(data) {
   if (! app) return;
-  //console.log('SELECT_RESPONSE');
-  //console.log(data);
 
-  // --------------------------------------------------------
-  // Discern table and send it into Elm using the proper port.
-  // --------------------------------------------------------
   var json = JSON.parse(data);
-  var table = json.table? json.table: void 0;
-  if (table) {
-    switch (table) {
-      case 'eventType':
-        app.ports.eventType.send(json.data); break;
-      case 'labSuite':
-        app.ports.labSuite.send(json.data); break;
-      case 'labTest':
-        app.ports.labTest.send(json.data); break;
-      case 'labTestValue':
-        app.ports.labTestValue.send(json.data); break;
-      case 'medicationType':
-        app.ports.medicationType.send(json.data); break;
-      case 'pregnoteType':
-        app.ports.pregnoteType.send(json.data); break;
-      case 'riskCode':
-        app.ports.riskCode.send(json.data); break;
-      case 'vaccinationType':
-        app.ports.vaccinationType.send(json.data); break;
-      default:
-        console.log('ERROR in comm.js: unknown Elm port for table ' + table);
-    }
-  } else {
-    console.log('ERROR: data SELECT_RESPONSE received with no table.');
-  }
+  app.ports.selectQueryResponse.send(json);
 });
 
 // --------------------------------------------------------
