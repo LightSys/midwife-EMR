@@ -1,4 +1,4 @@
-module View.Tables exposing (view)
+module Views.Tables exposing (view)
 
 import Array
 import Color as Color
@@ -39,7 +39,7 @@ import Model exposing (..)
 import Msg exposing (Msg(..), MedicationTypeMsg(..))
 import Types exposing (..)
 import Utils as U
-import ViewUtils as VU
+import Views.Utils as VU
 
 
 type alias Mdl =
@@ -288,7 +288,7 @@ textFld lbl fld idx allowEdit model =
         tagger =
             FF.String
                 >> (Form.Input fld.path Form.Text)
-                >> FormMsg
+                >> FormMsgMedicationType
                 >> MedicationTypeMessages
     in
         Html.div []
@@ -363,7 +363,7 @@ viewMedicationType model =
                         (\rec ->
                             MTable.tr
                                 [ Options.onClick <|
-                                    MedicationTypeMessages (SelectedEditModeRecord EditModeView (Just rec.id))
+                                    MedicationTypeMessages (SelectedRecordEditModeMedicationType EditModeView (Just rec.id))
                                 ]
                                 [ MTable.td [ MTable.numeric ] [ Html.text <| toString rec.id ]
                                 , MTable.td [] [ Html.text rec.name ]
@@ -406,28 +406,28 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
                         [ Html.text lbl ]
 
                 editingContent =
-                    [ btn 301 (MedicationTypeMessages <| FormMsg Form.Submit) "Save"
-                    , btn 302 (MedicationTypeMessages <| MedicationTypeCancel) "Cancel"
+                    [ btn 301 (MedicationTypeMessages <| FormMsgMedicationType Form.Submit) "Save"
+                    , btn 302 (MedicationTypeMessages <| CancelEditMedicationType) "Cancel"
                     ]
 
                 viewingContent =
                     [ btn 300
-                        (SelectedEditModeRecord EditModeEdit medicationTypeModel.selectedRecordId
+                        (SelectedRecordEditModeMedicationType EditModeEdit medicationTypeModel.selectedRecordId
                             |> MedicationTypeMessages
                         )
                         "Edit"
                     , btn 303
-                        (SelectedEditModeRecord EditModeAdd medicationTypeModel.selectedRecordId
+                        (SelectedRecordEditModeMedicationType EditModeAdd medicationTypeModel.selectedRecordId
                             |> MedicationTypeMessages
                         )
                         "Add"
                     , btn 305
-                        (MedicationTypeDelete medicationTypeModel.selectedRecordId
+                        (DeleteMedicationType medicationTypeModel.selectedRecordId
                             |> MedicationTypeMessages
                         )
                         "Delete"
                     , btn 304
-                        (SelectedEditModeRecord EditModeTable Nothing
+                        (SelectedRecordEditModeMedicationType EditModeTable Nothing
                             |> MedicationTypeMessages
                         )
                         "Table"
@@ -463,10 +463,10 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
                         ]
                     , Card.actions [ Card.border ] <|
                         recordChanger
-                            ( MedicationTypeMessages FirstMedicationTypeRecord
-                            , MedicationTypeMessages PrevMedicationTypeRecord
-                            , MedicationTypeMessages NextMedicationTypeRecord
-                            , MedicationTypeMessages LastMedicationTypeRecord
+                            ( MedicationTypeMessages FirstMedicationType
+                            , MedicationTypeMessages PrevMedicationType
+                            , MedicationTypeMessages NextMedicationType
+                            , MedicationTypeMessages LastMedicationType
                             )
                             model
                     ]

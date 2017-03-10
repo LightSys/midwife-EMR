@@ -19,12 +19,12 @@ import Form.Validate as V
 import Decoders exposing (..)
 import Encoders as E
 import Model exposing (..)
-import ModelUtils as MU
+import Models.MedicationType as MedType
+import Models.Utils as MU
 import Msg exposing (..)
 import Ports
 import Transactions as Trans
 import Types exposing (..)
-import Models.MedicationType as MedType
 import Updates.MedicationType as Updates
 import Utils as U
 
@@ -36,19 +36,6 @@ type alias Mdl =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        AddResponseMsg add ->
-            case add of
-                Just a ->
-                    case a.table of
-                        MedicationType ->
-                            Updates.updateMedicationType (MedicationTypeAddResponse a) model
-
-                        _ ->
-                            model ! []
-
-                Nothing ->
-                    model ! []
-
         AddSelectedTable ->
             let
                 newModel =
@@ -65,12 +52,12 @@ update msg model =
             in
                 { newModel | selectedTableEditMode = EditModeView } ! []
 
-        ChangeResponseMsg change ->
-            case change of
-                Just c ->
-                    case c.table of
+        CreateResponseMsg add ->
+            case add of
+                Just a ->
+                    case a.table of
                         MedicationType ->
-                            Updates.updateMedicationType (MedicationTypeChgResponse c) model
+                            Updates.updateMedicationType (CreateResponseMedicationType a) model
 
                         _ ->
                             model ! []
@@ -78,12 +65,12 @@ update msg model =
                 Nothing ->
                     model ! []
 
-        DelResponseMsg del ->
+        DeleteResponseMsg del ->
             case del of
                 Just d ->
                     case d.table of
                         MedicationType ->
-                            Updates.updateMedicationType (MedicationTypeDelResponse d) model
+                            Updates.updateMedicationType (DeleteResponseMedicationType d) model
 
                         _ ->
                             model ! []
@@ -214,7 +201,7 @@ update msg model =
                                         -- Put the records into RemoteData format as expected and
                                         -- pass to update function for processing.
                                         Updates.updateMedicationType
-                                            (MedicationTypeResponse
+                                            (ReadResponseMedicationType
                                                 (RD.succeed list)
                                                 (Just selQry)
                                             )
@@ -273,6 +260,19 @@ update msg model =
             in
                 { model | snackbar = snackbar } ! [ Cmd.map Snackbar newCmd ]
 
+        UpdateResponseMsg change ->
+            case change of
+                Just c ->
+                    case c.table of
+                        MedicationType ->
+                            Updates.updateMedicationType (UpdateResponseMedicationType c) model
+
+                        _ ->
+                            model ! []
+
+                Nothing ->
+                    model ! []
+
         VaccinationTypeResponse vaccinationTypeTbl ->
             { model | vaccinationType = vaccinationTypeTbl } ! []
 
@@ -296,7 +296,7 @@ populateSelectedTableForm model =
                                             let
                                                 -- Get an unique sorting id as default value.
                                                 nextSortOrder =
-                                                    getRecNextMax (\r -> r.sortOrder) data
+                                                    MU.getRecNextMax (\r -> r.sortOrder) data
                                             in
                                                 ( MedicationTypeRecord model.nextPendingId "" "" nextSortOrder Nothing
                                                     |> MedType.medicationTypeInitialForm
@@ -323,16 +323,6 @@ populateSelectedTableForm model =
 
         Nothing ->
             model
-
-
-getRecNextMax : (a -> Int) -> List a -> Int
-getRecNextMax func list =
-    case LE.maximumBy func list of
-        Just a ->
-            func a |> (+) 1
-
-        Nothing ->
-            0
 
 
 {-| Returns the number of records in the selected table

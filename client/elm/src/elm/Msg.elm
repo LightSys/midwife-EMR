@@ -17,11 +17,10 @@ import Types exposing (..)
 
 
 type Msg
-    = AddResponseMsg (Maybe AddResponse)
-    | AddSelectedTable
+    = AddSelectedTable
     | CancelSelectedTable
-    | ChangeResponseMsg (Maybe ChangeResponse)
-    | DelResponseMsg (Maybe DelResponse)
+    | CreateResponseMsg (Maybe CreateResponse)
+    | DeleteResponseMsg (Maybe DeleteResponse)
     | EditSelectedTable
     | EventTypeResponse (RemoteData String (List EventTypeRecord))
     | FirstRecord
@@ -45,22 +44,23 @@ type Msg
     | SelectTab Tab
     | SessionExpired
     | Snackbar (Snackbar.Msg String)
+    | UpdateResponseMsg (Maybe UpdateResponse)
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeRecord))
 
 
 type MedicationTypeMsg
-    = FirstMedicationTypeRecord
-    | FormMsg Form.Msg
-    | LastMedicationTypeRecord
-    | MedicationTypeAdd
-    | MedicationTypeAddResponse AddResponse
-    | MedicationTypeCancel
-    | MedicationTypeChg
-    | MedicationTypeChgResponse ChangeResponse
-    | MedicationTypeDelete (Maybe Int)
-    | MedicationTypeDelResponse DelResponse
-    | MedicationTypeResponse (RemoteData String (List MedicationTypeRecord)) (Maybe SelectQuery)
-    | NextMedicationTypeRecord
-    | PrevMedicationTypeRecord
-    | SelectedEditModeRecord EditMode (Maybe Int)
-    | SelectedRecordId (Maybe Int)
+    = CancelEditMedicationType
+    | CreateMedicationType
+    | CreateResponseMedicationType CreateResponse
+    | DeleteMedicationType (Maybe Int)
+    | DeleteResponseMedicationType DeleteResponse
+    | FirstMedicationType
+    | FormMsgMedicationType Form.Msg
+    | LastMedicationType
+    | NextMedicationType
+    | PrevMedicationType
+    | ReadResponseMedicationType (RemoteData String (List MedicationTypeRecord)) (Maybe SelectQuery)
+    | SelectedRecordEditModeMedicationType EditMode (Maybe Int)
+    | SelectedRecordMedicationType (Maybe Int)
+    | UpdateMedicationType
+    | UpdateResponseMedicationType UpdateResponse

@@ -1,4 +1,4 @@
-module View.Users exposing (..)
+module Views.Users exposing (..)
 
 import Html as Html exposing (Html, div, p, text)
 

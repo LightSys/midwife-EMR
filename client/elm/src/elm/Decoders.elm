@@ -214,9 +214,9 @@ decodeErrorCode =
     JD.string |> JD.map U.stringToErrorCode
 
 
-changeResponse : JD.Decoder ChangeResponse
-changeResponse =
-    decode ChangeResponse
+updateResponse : JD.Decoder UpdateResponse
+updateResponse =
+    decode UpdateResponse
         |> required "id" JD.int
         |> required "table" decodeTable
         |> required "stateId" JD.int
@@ -225,23 +225,23 @@ changeResponse =
         |> required "msg" decodeErrMessage
 
 
-decodeChangeResponse : JE.Value -> Maybe ChangeResponse
-decodeChangeResponse payload =
-    case JD.decodeValue changeResponse payload of
+decodeUpdateResponse : JE.Value -> Maybe UpdateResponse
+decodeUpdateResponse payload =
+    case JD.decodeValue updateResponse payload of
         Ok val ->
             Just val
 
         Err message ->
             let
                 _ =
-                    Debug.log "Decoders.decodeChangeResponse decoding error" message
+                    Debug.log "Decoders.decodeUpdateResponse decoding error" message
             in
                 Nothing
 
 
-addResponse : JD.Decoder AddResponse
-addResponse =
-    decode AddResponse
+createResponse : JD.Decoder CreateResponse
+createResponse =
+    decode CreateResponse
         |> required "id" JD.int
         |> required "table" decodeTable
         |> required "pendingId" JD.int
@@ -250,23 +250,23 @@ addResponse =
         |> required "msg" decodeErrMessage
 
 
-decodeAddResponse : JE.Value -> Maybe AddResponse
-decodeAddResponse payload =
-    case JD.decodeValue addResponse payload of
+decodeCreateResponse : JE.Value -> Maybe CreateResponse
+decodeCreateResponse payload =
+    case JD.decodeValue createResponse payload of
         Ok val ->
             Just val
 
         Err message ->
             let
                 _ =
-                    Debug.log "Decoders.decodeAddResponse decoding error" message
+                    Debug.log "Decoders.decodeCreateResponse decoding error" message
             in
                 Nothing
 
 
-delResponse : JD.Decoder DelResponse
-delResponse =
-    decode DelResponse
+deleteResponse : JD.Decoder DeleteResponse
+deleteResponse =
+    decode DeleteResponse
         |> required "id" JD.int
         |> required "table" decodeTable
         |> required "stateId" JD.int
@@ -275,15 +275,15 @@ delResponse =
         |> required "msg" decodeErrMessage
 
 
-decodeDelResponse : JE.Value -> Maybe DelResponse
-decodeDelResponse payload =
-    case JD.decodeValue delResponse payload of
+decodeDeleteResponse : JE.Value -> Maybe DeleteResponse
+decodeDeleteResponse payload =
+    case JD.decodeValue deleteResponse payload of
         Ok val ->
             Just val
 
         Err message ->
             let
                 _ =
-                    Debug.log "Decoders.decodeDelResponse decoding error" message
+                    Debug.log "Decoders.decodeDeleteResponse decoding error" message
             in
                 Nothing

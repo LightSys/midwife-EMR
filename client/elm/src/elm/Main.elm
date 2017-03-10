@@ -24,16 +24,16 @@ init =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Ports.addResponse Decoders.decodeAddResponse
-            |> Sub.map AddResponseMsg
-        , Ports.changeResponse Decoders.decodeChangeResponse
-            |> Sub.map ChangeResponseMsg
-        , Ports.delResponse Decoders.decodeDelResponse
-            |> Sub.map DelResponseMsg
+        [ Ports.createResponse Decoders.decodeCreateResponse
+            |> Sub.map CreateResponseMsg
+        , Ports.deleteResponse Decoders.decodeDeleteResponse
+            |> Sub.map DeleteResponseMsg
         , Ports.selectQueryResponse Decoders.decodeSelectQueryResponse
             |> Sub.map SelectQueryResponseMsg
         , Ports.systemMessages Decoders.decodeSystemMessage
             |> Sub.map NewSystemMessage
+        , Ports.updateResponse Decoders.decodeUpdateResponse
+            |> Sub.map UpdateResponseMsg
         ]
 
 

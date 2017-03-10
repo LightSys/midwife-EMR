@@ -857,7 +857,6 @@ var init = function(io, sessionMiddle) {
         return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
       }
 
-      // NOTE: data and error fields returned are optional.
       if (table) {
         getLookupTable(table, function(err, data) {
           if (err) {
@@ -865,7 +864,7 @@ var init = function(io, sessionMiddle) {
             retAction = returnStatusSELECT(json, void 0, false, SqlErrorCode, err.msg);
             return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
           }
-          retAction = returnStatusSELECT(json, data);
+          retAction = returnStatusSELECT(json, data, true);
           return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
         });
       } else {

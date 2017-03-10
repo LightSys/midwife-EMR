@@ -1,14 +1,14 @@
 port module Ports
     exposing
-        ( addResponse
-        , changeResponse
-        , delResponse
+        ( createResponse
+        , deleteResponse
         , medicationTypeAdd
         , medicationTypeDel
         , medicationTypeUpdate
         , selectQuery
         , selectQueryResponse
         , systemMessages
+        , updateResponse
         )
 
 import Json.Decode as JD
@@ -25,13 +25,13 @@ import Msg exposing (Msg)
 -- INCOMING PORTS
 
 
-port addResponse : (JD.Value -> msg) -> Sub msg
+port createResponse : (JD.Value -> msg) -> Sub msg
 
 
-port changeResponse : (JD.Value -> msg) -> Sub msg
+port updateResponse : (JD.Value -> msg) -> Sub msg
 
 
-port delResponse : (JD.Value -> msg) -> Sub msg
+port deleteResponse : (JD.Value -> msg) -> Sub msg
 
 
 port selectQueryResponse : (JD.Value -> msg) -> Sub msg

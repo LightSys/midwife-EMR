@@ -21,9 +21,9 @@ import String
 import Model exposing (..)
 import Msg exposing (Msg(..))
 import Types exposing (..)
-import ViewUtils as VU
-import View.Users
-import View.Tables
+import Views.Utils as VU
+import Views.Users
+import Views.Tables
 
 
 type alias Mdl =
@@ -41,16 +41,16 @@ view model =
                 UserTab ->
                     case model.selectedPage of
                         UserSearchPage ->
-                            View.Users.viewUserSearch
+                            Views.Users.viewUserSearch
 
                         UserEditPage ->
-                            View.Users.viewUserEdit
+                            Views.Users.viewUserEdit
 
                         _ ->
-                            View.Users.viewUserSearch
+                            Views.Users.viewUserSearch
 
                 TablesTab ->
-                    View.Tables.view
+                    Views.Tables.view
 
                 ProfileTab ->
                     viewProfile

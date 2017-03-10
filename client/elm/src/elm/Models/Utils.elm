@@ -1,4 +1,4 @@
-module ModelUtils
+module Models.Utils
     exposing
         ( addRecord
         , delSelectedRecord
@@ -11,8 +11,8 @@ module ModelUtils
         , setRecords
         , setSelectedRecordId
         , setSelectQuery
-        , updateMedicationTypeById
-        , updateMedicationTypeByIndex
+        , updateById
+        , updateByIndex
         )
 
 import Form exposing (Form)
@@ -105,17 +105,17 @@ setSelectQuery sq tableModel =
     (\tm -> { tm | selectQuery = sq }) tableModel
 
 
-updateMedicationTypeById :
+updateById :
     Int
     -> ({ a | id : Int } -> { a | id : Int })
     -> RemoteData String (List { a | id : Int })
     -> RemoteData String (List { a | id : Int })
-updateMedicationTypeById id func records =
+updateById id func records =
     case records of
         Success recs ->
             case LE.findIndex (\r -> r.id == id) recs of
                 Just idx ->
-                    updateMedicationTypeByIndex idx func records
+                    updateByIndex idx func records
 
                 Nothing ->
                     records
@@ -124,12 +124,12 @@ updateMedicationTypeById id func records =
             records
 
 
-updateMedicationTypeByIndex :
+updateByIndex :
     Int
     -> ({ a | id : Int } -> { a | id : Int })
     -> RemoteData String (List { a | id : Int })
     -> RemoteData String (List { a | id : Int })
-updateMedicationTypeByIndex idx func records =
+updateByIndex idx func records =
     case records of
         Success recs ->
             case LE.updateAt idx func recs of

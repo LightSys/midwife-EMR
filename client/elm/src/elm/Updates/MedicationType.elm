@@ -13,7 +13,7 @@ import Decoders exposing (..)
 import Encoders as E
 import Model exposing (..)
 import Models.MedicationType as MedType
-import ModelUtils as MU
+import Models.Utils as MU
 import Msg exposing (..)
 import Ports
 import Transactions as Trans
@@ -24,44 +24,19 @@ import Utils as U
 updateMedicationType : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
 updateMedicationType msg ({ medicationTypeModel } as model) =
     case msg of
-        FirstMedicationTypeRecord ->
-            ( MedType.firstRecord medicationTypeModel
+        CancelEditMedicationType ->
+            -- User canceled, so reset data back to what we had before.
+            ( MedType.populateSelectedTableForm medicationTypeModel
+                |> MU.setEditMode EditModeView
                 |> asMedicationTypeModelIn model
             , Cmd.none
             )
 
-        FormMsg formMsg ->
-            case ( formMsg, Form.getOutput medicationTypeModel.form ) of
-                ( Form.Submit, Just records ) ->
-                    -- If we get here, it passed valiation.
-                    if medicationTypeModel.editMode == EditModeAdd then
-                        updateMedicationType MedicationTypeAdd model
-                    else
-                        updateMedicationType MedicationTypeChg model
-
-                _ ->
-                    -- Otherwise, pass it through validation again.
-                    (medicationTypeModel
-                        |> MU.setForm
-                            (Form.update MedType.medicationTypeValidate
-                                formMsg
-                                medicationTypeModel.form
-                            )
-                        |> asMedicationTypeModelIn model
-                    )
-                        ! []
-
-        LastMedicationTypeRecord ->
-            ( MedType.lastRecord medicationTypeModel
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        MedicationTypeAdd ->
+        CreateMedicationType ->
             let
                 -- Get the table record from the form.
                 medicationTypeRecord =
-                    medicationTypeForm2Table medicationTypeModel.form Nothing
+                    medicationTypeFormToRecord medicationTypeModel.form Nothing
 
                 -- Determine if the sortOrder field is unique. It would be best to
                 -- do this in validation instead of here if possible.
@@ -95,13 +70,13 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
             in
                 newModel ! [ newCmd ]
 
-        MedicationTypeAddResponse { id, pendingId, success, msg } ->
+        CreateResponseMedicationType { id, pendingId, success, msg } ->
             let
                 -- Update the model with the server assigned id for the record.
                 ( updatedRecords, ( newModel, newCmd ) ) =
                     case success of
                         True ->
-                            ( MU.updateMedicationTypeById pendingId
+                            ( MU.updateById pendingId
                                 (\r -> { r | id = id })
                                 medicationTypeModel.records
                             , ( model, Cmd.none )
@@ -128,131 +103,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
             in
                 newModel2 ! [ newCmd ]
 
-        MedicationTypeCancel ->
-            -- User canceled, so reset data back to what we had before.
-            ( MedType.populateSelectedTableForm medicationTypeModel
-                |> MU.setEditMode EditModeView
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        MedicationTypeChg ->
-            -- User saved on medicationType form. This is an optimistic workflow.
-            let
-                -- 1. Encode original entity record to a string and save the
-                --    original rec to transactions in exchange for a transaction id.
-                -- 2. Convert the form values which user just created into a table record.
-                ( newModel, stateId, mtTable ) =
-                    (case MU.getSelectedRecordAsString medicationTypeModel E.medicationTypeToValue of
-                        Just s ->
-                            Trans.setState s Nothing model
-
-                        Nothing ->
-                            ( model, Nothing )
-                    )
-                        |> (\( nm, sid ) ->
-                                ( nm
-                                , sid
-                                , medicationTypeForm2Table nm.medicationTypeModel.form sid
-                                )
-                           )
-
-                -- 3. Optimistic update of the record in the list of records.
-                updatedRecords =
-                    case medicationTypeModel.selectedRecordId of
-                        Just id ->
-                            MU.updateMedicationTypeById id
-                                (\r ->
-                                    { r
-                                        | stateId = stateId
-                                        , name = mtTable.name
-                                        , description = mtTable.description
-                                        , sortOrder = mtTable.sortOrder
-                                    }
-                                )
-                                newModel.medicationTypeModel.records
-
-                        Nothing ->
-                            newModel.medicationTypeModel.records
-
-                -- 4. Create the Cmd to send data to the server.
-                newCmd =
-                    Ports.medicationTypeUpdate <| E.medicationTypeToValue mtTable
-            in
-                ( newModel.medicationTypeModel
-                    |> MU.setRecords updatedRecords
-                    |> MU.setEditMode EditModeView
-                    |> asMedicationTypeModelIn newModel
-                    |> (\m -> { m | selectedTableEditMode = EditModeView })
-                , newCmd
-                )
-
-        MedicationTypeChgResponse change ->
-            let
-                -- Remove the state id no matter what.
-                noStateIdMedicationTypeRecords =
-                    MU.updateMedicationTypeById change.id
-                        (\r -> { r | stateId = Nothing })
-                        medicationTypeModel.records
-
-                updatedRecords =
-                    case change.success of
-                        True ->
-                            noStateIdMedicationTypeRecords
-
-                        False ->
-                            -- Server rejected change. Reset record back to original.
-                            case
-                                Trans.getState change.stateId model
-                                    |> Decoders.decodeMedicationTypeRecord
-                            of
-                                Just r ->
-                                    MU.updateMedicationTypeById change.id
-                                        (\rec ->
-                                            { rec
-                                                | name = r.name
-                                                , description = r.description
-                                                , sortOrder = r.sortOrder
-                                            }
-                                        )
-                                        medicationTypeModel.records
-
-                                Nothing ->
-                                    -- TODO: if we get here, something is really messed
-                                    -- up because we can't find our original record in
-                                    -- the transaction manager.
-                                    noStateIdMedicationTypeRecords
-
-                -- Save the records to the model, update the form,
-                -- and remove stored state from transaction manager.
-                ( newModel, _ ) =
-                    medicationTypeModel
-                        |> MU.setRecords updatedRecords
-                        |> MedType.populateSelectedTableForm
-                        |> asMedicationTypeModelIn model
-                        |> Trans.delState change.stateId
-
-                -- Give a message to the user upon failure.
-                ( newModel2, newCmd2 ) =
-                    if not change.success then
-                        (if String.length change.msg == 0 then
-                            "Sorry, the server rejected that change."
-                         else
-                            change.msg
-                        )
-                            |> flip U.addWarning newModel
-                    else
-                        ( newModel, Cmd.none )
-
-                newCmd3 =
-                    if change.errorCode == SessionExpiredErrorCode then
-                        Task.perform (always SessionExpired) (Task.succeed True)
-                    else
-                        Cmd.none
-            in
-                newModel2 ! [ newCmd2, newCmd3 ]
-
-        MedicationTypeDelete id ->
+        DeleteMedicationType id ->
             -- This is an optimistic workflow.
             -- NOTE: this assumes that a delete was performed with the correct record
             -- loaded in the form.
@@ -270,7 +121,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
 
                         -- Create command to send record to delete to the server.
                         newCmd2 =
-                            medicationTypeForm2Table newModel.medicationTypeModel.form stateId
+                            medicationTypeFormToRecord newModel.medicationTypeModel.form stateId
                                 |> E.medicationTypeToValue
                                 |> Ports.medicationTypeDel
 
@@ -287,7 +138,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                 Nothing ->
                     model ! []
 
-        MedicationTypeDelResponse response ->
+        DeleteResponseMedicationType response ->
             let
                 -- 1. Update the model according to success or failure.
                 ( newModel1, _ ) =
@@ -332,7 +183,52 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
             in
                 newModel2 ! [ newCmd2 ]
 
-        MedicationTypeResponse medicationTypeTbl sq ->
+        FirstMedicationType ->
+            ( MedType.firstRecord medicationTypeModel
+                |> asMedicationTypeModelIn model
+            , Cmd.none
+            )
+
+        FormMsgMedicationType formMsg ->
+            case ( formMsg, Form.getOutput medicationTypeModel.form ) of
+                ( Form.Submit, Just records ) ->
+                    -- If we get here, it passed valiation.
+                    if medicationTypeModel.editMode == EditModeAdd then
+                        updateMedicationType CreateMedicationType model
+                    else
+                        updateMedicationType UpdateMedicationType model
+
+                _ ->
+                    -- Otherwise, pass it through validation again.
+                    (medicationTypeModel
+                        |> MU.setForm
+                            (Form.update MedType.medicationTypeValidate
+                                formMsg
+                                medicationTypeModel.form
+                            )
+                        |> asMedicationTypeModelIn model
+                    )
+                        ! []
+
+        LastMedicationType ->
+            ( MedType.lastRecord medicationTypeModel
+                |> asMedicationTypeModelIn model
+            , Cmd.none
+            )
+
+        NextMedicationType ->
+            ( MedType.nextRecord medicationTypeModel
+                |> asMedicationTypeModelIn model
+            , Cmd.none
+            )
+
+        PrevMedicationType ->
+            ( MedType.prevRecord medicationTypeModel
+                |> asMedicationTypeModelIn model
+            , Cmd.none
+            )
+
+        ReadResponseMedicationType medicationTypeTbl sq ->
             ( medicationTypeModel
                 |> MU.setRecords medicationTypeTbl
                 |> MU.setSelectedRecordId (Just 0)
@@ -341,19 +237,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
             , Cmd.none
             )
 
-        NextMedicationTypeRecord ->
-            ( MedType.nextRecord medicationTypeModel
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        PrevMedicationTypeRecord ->
-            ( MedType.prevRecord medicationTypeModel
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        SelectedEditModeRecord mode id ->
+        SelectedRecordEditModeMedicationType mode id ->
             (medicationTypeModel
                 |> MU.setSelectedRecordId id
                 |> MU.setEditMode mode
@@ -367,12 +251,128 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
             )
                 ! []
 
-        SelectedRecordId id ->
+        SelectedRecordMedicationType id ->
             { model | medicationTypeModel = MU.setSelectedRecordId id medicationTypeModel } ! []
 
+        UpdateMedicationType ->
+            -- User saved on medicationType form. This is an optimistic workflow.
+            let
+                -- 1. Encode original entity record to a string and save the
+                --    original rec to transactions in exchange for a transaction id.
+                -- 2. Convert the form values which user just created into a table record.
+                ( newModel, stateId, mtTable ) =
+                    (case MU.getSelectedRecordAsString medicationTypeModel E.medicationTypeToValue of
+                        Just s ->
+                            Trans.setState s Nothing model
 
-medicationTypeForm2Table : Form () MedicationTypeForm -> Maybe Int -> MedicationTypeRecord
-medicationTypeForm2Table mt transId =
+                        Nothing ->
+                            ( model, Nothing )
+                    )
+                        |> (\( nm, sid ) ->
+                                ( nm
+                                , sid
+                                , medicationTypeFormToRecord nm.medicationTypeModel.form sid
+                                )
+                           )
+
+                -- 3. Optimistic update of the record in the list of records.
+                updatedRecords =
+                    case medicationTypeModel.selectedRecordId of
+                        Just id ->
+                            MU.updateById id
+                                (\r ->
+                                    { r
+                                        | stateId = stateId
+                                        , name = mtTable.name
+                                        , description = mtTable.description
+                                        , sortOrder = mtTable.sortOrder
+                                    }
+                                )
+                                newModel.medicationTypeModel.records
+
+                        Nothing ->
+                            newModel.medicationTypeModel.records
+
+                -- 4. Create the Cmd to send data to the server.
+                newCmd =
+                    Ports.medicationTypeUpdate <| E.medicationTypeToValue mtTable
+            in
+                ( newModel.medicationTypeModel
+                    |> MU.setRecords updatedRecords
+                    |> MU.setEditMode EditModeView
+                    |> asMedicationTypeModelIn newModel
+                    |> (\m -> { m | selectedTableEditMode = EditModeView })
+                , newCmd
+                )
+
+        UpdateResponseMedicationType change ->
+            let
+                -- Remove the state id no matter what.
+                noStateIdMedicationTypeRecords =
+                    MU.updateById change.id
+                        (\r -> { r | stateId = Nothing })
+                        medicationTypeModel.records
+
+                updatedRecords =
+                    case change.success of
+                        True ->
+                            noStateIdMedicationTypeRecords
+
+                        False ->
+                            -- Server rejected change. Reset record back to original.
+                            case
+                                Trans.getState change.stateId model
+                                    |> Decoders.decodeMedicationTypeRecord
+                            of
+                                Just r ->
+                                    MU.updateById change.id
+                                        (\rec ->
+                                            { rec
+                                                | name = r.name
+                                                , description = r.description
+                                                , sortOrder = r.sortOrder
+                                            }
+                                        )
+                                        medicationTypeModel.records
+
+                                Nothing ->
+                                    -- TODO: if we get here, something is really messed
+                                    -- up because we can't find our original record in
+                                    -- the transaction manager.
+                                    noStateIdMedicationTypeRecords
+
+                -- Save the records to the model, update the form,
+                -- and remove stored state from transaction manager.
+                ( newModel, _ ) =
+                    medicationTypeModel
+                        |> MU.setRecords updatedRecords
+                        |> MedType.populateSelectedTableForm
+                        |> asMedicationTypeModelIn model
+                        |> Trans.delState change.stateId
+
+                -- Give a message to the user upon failure.
+                ( newModel2, newCmd2 ) =
+                    if not change.success then
+                        (if String.length change.msg == 0 then
+                            "Sorry, the server rejected that change."
+                         else
+                            change.msg
+                        )
+                            |> flip U.addWarning newModel
+                    else
+                        ( newModel, Cmd.none )
+
+                newCmd3 =
+                    if change.errorCode == SessionExpiredErrorCode then
+                        Task.perform (always SessionExpired) (Task.succeed True)
+                    else
+                        Cmd.none
+            in
+                newModel2 ! [ newCmd2, newCmd3 ]
+
+
+medicationTypeFormToRecord : Form () MedicationTypeForm -> Maybe Int -> MedicationTypeRecord
+medicationTypeFormToRecord mt transId =
     let
         ( f_id, f_name, f_description, f_sortOrder ) =
             ( Form.getFieldAsString "id" mt

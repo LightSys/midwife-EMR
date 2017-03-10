@@ -1,8 +1,7 @@
 module Types
     exposing
-        ( AddResponse
-        , ChangeResponse
-        , DelResponse
+        ( CreateResponse
+        , DeleteResponse
         , EditMode(..)
         , emptySystemMessage
         , ErrorCode(..)
@@ -22,6 +21,7 @@ module Types
         , TableMetaInfo
         , TableModel
         , TableResponse(..)
+        , UpdateResponse
         , UserRecord
         , VaccinationTypeRecord
         )
@@ -243,7 +243,7 @@ type alias VaccinationTypeRecord =
     }
 
 
-type alias ChangeResponse =
+type alias UpdateResponse =
     { id : Int
     , table : Table
     , stateId : Int
@@ -253,7 +253,7 @@ type alias ChangeResponse =
     }
 
 
-type alias AddResponse =
+type alias CreateResponse =
     { id : Int
     , table : Table
     , pendingId : Int
@@ -263,7 +263,7 @@ type alias AddResponse =
     }
 
 
-type alias DelResponse =
+type alias DeleteResponse =
     { id : Int
     , table : Table
     , stateId : Int

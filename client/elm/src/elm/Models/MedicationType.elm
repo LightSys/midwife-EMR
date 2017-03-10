@@ -10,7 +10,7 @@ import RemoteData as RD exposing (RemoteData(..))
 -- LOCAL IMPORTS
 
 import Types exposing (..)
-import ModelUtils as MU
+import Models.Utils as MU
 
 
 -- MODEL
