@@ -45,3 +45,11 @@ label.mdl-textfield__label {
 .horizontal-scroll {
   overflow-x: auto;
 }
+
+/* Selected background color for list item. */
+.listItem {
+  border-bottom: 1px solid #999999;
+}
+.selectedListItem {
+  background-color: #999999;
+}

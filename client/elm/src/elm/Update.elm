@@ -185,9 +185,6 @@ update msg model =
 
         SelectQueryResponseMsg sqr ->
             let
-                _ =
-                    Debug.log "SelectQueryResponseMsg" <| toString sqr
-
                 ( newModel, newCmd ) =
                     -- Unwrap sqr from the RemoteData wrapper.
                     case sqr of
