@@ -1,4 +1,4 @@
-module Updates.MedicationType exposing (..)
+module Updates.MedicationType exposing (medicationTypeUpdate)
 
 import Form exposing (Form)
 import Json.Encode as JE
@@ -21,8 +21,8 @@ import Types exposing (..)
 import Utils as U
 
 
-updateMedicationType : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
-updateMedicationType msg ({ medicationTypeModel } as model) =
+medicationTypeUpdate : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
+medicationTypeUpdate msg ({ medicationTypeModel } as model) =
     case msg of
         CancelEditMedicationType ->
             -- User canceled, so reset data back to what we had before.
@@ -63,7 +63,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                     if not failedSortOrder then
                         ( MU.addRecord medicationTypeRecord medicationTypeModel
                             |> asMedicationTypeModelIn model
-                        , Ports.medicationTypeAdd <| E.medicationTypeToValue medicationTypeRecord
+                        , Ports.medicationTypeCreate <| E.medicationTypeToValue medicationTypeRecord
                         )
                     else
                         U.addMessage "The sort order number is not unique." model
@@ -123,7 +123,7 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                         newCmd2 =
                             medicationTypeFormToRecord newModel.medicationTypeModel.form stateId
                                 |> E.medicationTypeToValue
-                                |> Ports.medicationTypeDel
+                                |> Ports.medicationTypeDelete
 
                         -- Delete the record from the client and return to table view.
                         newModel2 =
@@ -194,9 +194,9 @@ updateMedicationType msg ({ medicationTypeModel } as model) =
                 ( Form.Submit, Just records ) ->
                     -- If we get here, it passed valiation.
                     if medicationTypeModel.editMode == EditModeAdd then
-                        updateMedicationType CreateMedicationType model
+                        medicationTypeUpdate CreateMedicationType model
                     else
-                        updateMedicationType UpdateMedicationType model
+                        medicationTypeUpdate UpdateMedicationType model
 
                 _ ->
                     -- Otherwise, pass it through validation again.

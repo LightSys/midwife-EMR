@@ -17,6 +17,7 @@ import RemoteData as RD exposing (RemoteData(..))
 
 -- LOCAL IMPORTS
 
+import Msg exposing (..)
 import Types exposing (..)
 import Utils as U
 
@@ -287,3 +288,52 @@ decodeDeleteResponse payload =
                     Debug.log "Decoders.decodeDeleteResponse decoding error" message
             in
                 Nothing
+
+
+getDecoderAdhocResponse : String -> JD.Decoder AdhocResponseMessage
+getDecoderAdhocResponse tag =
+    case tag of
+        "ADHOC_LOGIN_RESPONSE" ->
+            JD.map AdhocLoginResponseMsg loginResponse
+
+        _ ->
+            JD.map AdhocUnknownMsg <| JD.succeed ("Unknown adhoc message with tag: " ++ tag)
+
+
+adhocResponse : JD.Decoder AdhocResponseMessage
+adhocResponse =
+    JD.field "adhocType" JD.string
+        |> JD.andThen getDecoderAdhocResponse
+
+
+loginResponse : JD.Decoder LoginResponse
+loginResponse =
+    decode LoginResponse
+        |> required "adhocType" JD.string
+        |> required "success" JD.bool
+        |> required "errorCode" decodeErrorCode
+        |> required "msg" JD.string
+        |> optional "userId" (JD.maybe JD.int) Nothing
+        |> optional "username" (JD.maybe JD.string) Nothing
+        |> optional "firstname" (JD.maybe JD.string) Nothing
+        |> optional "lastname" (JD.maybe JD.string) Nothing
+        |> optional "email" (JD.maybe JD.string) Nothing
+        |> optional "lang" (JD.maybe JD.string) Nothing
+        |> optional "shortName" (JD.maybe JD.string) Nothing
+        |> optional "displayName" (JD.maybe JD.string) Nothing
+        |> optional "role_id" (JD.maybe JD.int) Nothing
+        |> required "isLoggedIn" JD.bool
+
+
+decodeAdhocResponse : JE.Value -> AdhocResponseMessage
+decodeAdhocResponse payload =
+    case JD.decodeValue adhocResponse payload of
+        Ok val ->
+            let
+                _ =
+                    Debug.log "decodeAdhocResponse" <| toString val
+            in
+                val
+
+        Err message ->
+            AdhocUnknownMsg message

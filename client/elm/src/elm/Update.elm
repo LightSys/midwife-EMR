@@ -25,7 +25,8 @@ import Msg exposing (..)
 import Ports
 import Transactions as Trans
 import Types exposing (..)
-import Updates.MedicationType as Updates
+import Updates.Adhoc as Updates exposing (adhocUpdate)
+import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
 import Utils as U
 
 
@@ -36,6 +37,13 @@ type alias Mdl =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        AdhocResponseMessages adhocResponse ->
+            let
+                _ =
+                    Debug.log "AdhocResponseMessages" <|toString adhocResponse
+            in
+                Updates.adhocUpdate adhocResponse model
+
         AddSelectedTable ->
             let
                 newModel =
@@ -57,7 +65,7 @@ update msg model =
                 Just a ->
                     case a.table of
                         MedicationType ->
-                            Updates.updateMedicationType (CreateResponseMedicationType a) model
+                            Updates.medicationTypeUpdate (CreateResponseMedicationType a) model
 
                         _ ->
                             model ! []
@@ -70,7 +78,7 @@ update msg model =
                 Just d ->
                     case d.table of
                         MedicationType ->
-                            Updates.updateMedicationType (DeleteResponseMedicationType d) model
+                            Updates.medicationTypeUpdate (DeleteResponseMedicationType d) model
 
                         _ ->
                             model ! []
@@ -111,11 +119,36 @@ update msg model =
             in
                 newModel ! []
 
+        Login ->
+            let
+                newCmd =
+                    case Form.getOutput model.loginForm of
+                        Just login ->
+                            Ports.login (E.loginFormToValue login)
+
+                        Nothing ->
+                            Cmd.none
+            in
+                model ! [ newCmd ]
+
+        LoginFormMsg formMsg ->
+            case ( formMsg, Form.getOutput model.loginForm ) of
+                ( Form.Submit, Just records ) ->
+                    -- If we get here, it passed valiation. Wait for user to submit.
+                    model ! []
+
+                _ ->
+                    -- Otherwise, pass it through validation again.
+                    ( Form.update loginFormValidate formMsg model.loginForm
+                        |> (\lf -> { model | loginForm = lf })
+                    , Cmd.none
+                    )
+
         Mdl matMsg ->
             Material.update Mdl matMsg model
 
         MedicationTypeMessages mtMsg ->
-            Updates.updateMedicationType mtMsg model
+            Updates.medicationTypeUpdate mtMsg model
 
         NewSystemMessage sysMsg ->
             -- We only keep the most recent 1000 messages.
@@ -185,6 +218,9 @@ update msg model =
 
         SelectQueryResponseMsg sqr ->
             let
+                _ =
+                    Debug.log "SelectQueryResponseMsg" <| toString sqr
+
                 ( newModel, newCmd ) =
                     -- Unwrap sqr from the RemoteData wrapper.
                     case sqr of
@@ -193,32 +229,48 @@ update msg model =
                                 selQry =
                                     MU.selectQueryResponseToSelectQuery selQryResp
                             in
-                                case selQryResp.data of
-                                    MedicationTypeResp list ->
-                                        -- Put the records into RemoteData format as expected and
-                                        -- pass to update function for processing.
-                                        Updates.updateMedicationType
-                                            (ReadResponseMedicationType
-                                                (RD.succeed list)
-                                                (Just selQry)
-                                            )
-                                            model
+                                case ( selQryResp.success, selQryResp.errorCode ) of
+                                    ( _, NoErrorCode ) ->
+                                        case selQryResp.data of
+                                            MedicationTypeResp list ->
+                                                -- Put the records into RemoteData format as expected and
+                                                -- pass to update function for processing.
+                                                Updates.medicationTypeUpdate
+                                                    (ReadResponseMedicationType
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
 
-                                    LabSuiteResp list ->
-                                        update (LabSuiteResponse (RD.succeed list)) model
+                                            LabSuiteResp list ->
+                                                update (LabSuiteResponse (RD.succeed list)) model
 
-                                    LabTestResp list ->
-                                        update (LabTestResponse (RD.succeed list)) model
+                                            LabTestResp list ->
+                                                update (LabTestResponse (RD.succeed list)) model
+
+                                    ( _, SessionExpiredErrorCode ) ->
+                                        update SessionExpired model
+
+                                    ( _, SqlErrorCode ) ->
+                                        -- TODO: handle SQL error.
+                                        model ! []
+
+                                    ( _, UnknownErrorCode ) ->
+                                        -- TODO: handle this too.
+                                        model ! []
+
+                                    ( _, _ ) ->
+                                        model ! []
 
                         Failure err ->
                             let
                                 _ =
                                     Debug.log "SelectQueryResponseMsg" <| toString err
                             in
-                                ( model, Cmd.none )
+                                model ! []
 
                         _ ->
-                            ( model, Cmd.none )
+                            model ! []
             in
                 ( newModel, newCmd )
 
@@ -243,12 +295,20 @@ update msg model =
                 newModel ! []
 
         SessionExpired ->
-            -- TODO: do something great here.
+            -- Set the isLoggedIn field in the user profile to False.
             let
-                _ =
-                    Debug.log "SessionExpired" "We just received the news..."
+                ( newModel, newCmd ) =
+                    U.addWarning "Your session has expired. Please login again." model
+
+                userProfile =
+                    case newModel.userProfile of
+                        Just up ->
+                            Just { up | isLoggedIn = False }
+
+                        Nothing ->
+                            Nothing
             in
-                model ! []
+                { newModel | userProfile = userProfile } ! [ newCmd ]
 
         Snackbar msg ->
             let
@@ -262,7 +322,7 @@ update msg model =
                 Just c ->
                     case c.table of
                         MedicationType ->
-                            Updates.updateMedicationType (UpdateResponseMedicationType c) model
+                            Updates.medicationTypeUpdate (UpdateResponseMedicationType c) model
 
                         _ ->
                             model ! []

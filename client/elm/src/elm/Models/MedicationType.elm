@@ -36,12 +36,12 @@ initialMedicationTypeModel =
 
 
 medicationTypeInitialForm : MedicationTypeRecord -> Form () MedicationTypeForm
-medicationTypeInitialForm table =
+medicationTypeInitialForm mtRecord =
     Form.initial
-        [ ( "id", Fld.string <| toString table.id )
-        , ( "name", Fld.string table.name )
-        , ( "description", Fld.string table.description )
-        , ( "sortOrder", Fld.string <| toString table.sortOrder )
+        [ ( "id", Fld.string <| toString mtRecord.id )
+        , ( "name", Fld.string mtRecord.name )
+        , ( "description", Fld.string mtRecord.description )
+        , ( "sortOrder", Fld.string <| toString mtRecord.sortOrder )
         ]
         medicationTypeValidate
 

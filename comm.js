@@ -89,6 +89,7 @@ var rx = require('rx')
   , _ = require('underscore')
   , moment = require('moment')
   , cfg = require('./config')
+  , User = require('./models').User
   , getLookupTable = require('./routes/api/lookupTables').getLookupTable
   , saveUser = require('./routes/comm/userRoles').saveUser
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
@@ -130,14 +131,20 @@ var rx = require('rx')
   , CHG_RESPONSE = 'CHG_RESPONSE'           // data change response.
   , DEL = 'DEL'                             // data delete request.
   , DEL_RESPONSE = 'DEL_RESPONSE'           // data delete response.
+  , ADHOC = 'ADHOC'                         // data adhoc request.
+  , ADHOC_RESPONSE = 'ADHOC_RESPONSE'       // data adhoc response.
+  , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
   , TABLE_medicationType = 'medicationType'
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
+  , returnLogin = require('./util').returnLogin
   , returnStatusADD = require('./util').returnStatusADD
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
   , returnStatusSELECT = require('./util').returnStatusSELECT
+  , LoginFailErrorCode = require('./util').LoginFailErrorCode
+  , LoginSuccessErrorCode = require('./util').LoginSuccessErrorCode
   , NoErrorCode = require('./util').NoErrorCode
   , SessionExpiredErrorCode = require('./util').SessionExpiredErrorCode
   , SqlErrorCode = require('./util').SqlErrorCode
@@ -447,6 +454,19 @@ var isValidSocketSession = function(socket) {
 };
 
 /* --------------------------------------------------------
+ * touchSocketSession()
+ *
+ * Touch the session within the socket passed in order to
+ * extend the expiry timeout accordingly.
+ *
+ * param       socket
+ * return      undefined
+ * -------------------------------------------------------- */
+var touchSocketSession = function(socket) {
+  socket.request.session.touch();
+};
+
+/* --------------------------------------------------------
   * getSocketSessionId()
   *
   * Return the socket session id if the session is valid and
@@ -458,6 +478,38 @@ var isValidSocketSession = function(socket) {
 var getSocketSessionId = function(socket) {
   if (! isValidSocketSession(socket)) return '';
   return socket.request.sessionID? socket.request.sessionID: '';
+};
+
+/* --------------------------------------------------------
+ * loginUser()
+ *
+ * Find the user by username. If there is no user with the
+ * given username, or the password is not correct, set the
+ * user to 'false' in order to indicate failure. Otherwise,
+ * return the authenticated user.
+ *
+ * param       username
+ * param       password
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
+var loginUser = function(username, password, cb) {
+  User.findByUsername(username, function(err, user) {
+    if (!user) { return cb(null, false, { message: 'Unknown user ' + username }); }
+    if (user.get('status') != 1) {
+      return cb(null, false, {
+        message: username + ' is not an active account.'
+      });
+    }
+    user.checkPassword(password, function(err, same) {
+      if (err) return cb(err);
+      if (same) {
+        return cb(null, user);
+      } else {
+        return cb(null, false, {message: 'Invalid password'});
+      }
+    });
+  });
 };
 
 /* --------------------------------------------------------
@@ -523,7 +575,7 @@ var handleData = function(evtName, payload, socket) {
   if (! isValidSocketSession(socket)) {
     retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired.");
     return socket.emit(responseEvt, JSON.stringify(retAction));
-  }
+  } else touchSocketSession(socket);
 
   switch (table) {
     case TABLE_medicationType:
@@ -552,6 +604,58 @@ var handleData = function(evtName, payload, socket) {
       console.log('=========== Unknown ' + evtName + ' request =============');
       console.log(wrapper);
   }
+};
+
+var handleLogin = function(json, socket) {
+  var username = json.data && json.data.username ? json.data.username: void 0;
+  var password = json.data && json.data.password ? json.data.password: void 0;
+  var retAction;
+  var msg;
+
+  if (! username || ! password ) {
+    msg = 'Username and/or password not supplied.';
+    retAction = returnLogin(false, LoginFailErrorCode, msg);
+    return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+  }
+
+  // Login the user.
+  loginUser(username, password, function(err, user, msgObj) {
+    if (err) {
+      // Unknown failure, not just a failed login.
+      console.log(err);
+      retAction = returnLogin(false, LoginFailErrorCode, err);
+      return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+    }
+
+    if (user) {
+      // Save user information into the session and return response to client.
+      socket.request.session.user = user.toJSON();
+      socket.request.session.roleInfo = {
+        isAuthenticated: true,
+        roleName: socket.request.session.user.role.name
+      };
+      socket.request.session.save(function(err) {
+        if (err) {
+          console.log('ERROR: login successful but unable to save to session.');
+          console.log(err);
+        }
+        retAction = returnLogin(true, LoginSuccessErrorCode);
+        _.extendOwn(retAction, _.pick(socket.request.session.user,
+            ['username', 'firstname', 'lastname', 'email', 'lang',
+            'shortName', 'displayName', 'role_id'])
+        );
+        retAction.userId = user.id;   // Field name change on the client.
+        retAction.isLoggedIn = true;
+        console.log(retAction);
+        return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+      });
+    } else {
+      // Failed login.
+      console.log(msgObj);
+      retAction = returnLogin(false, LoginFailErrorCode, msgObj.message);
+      return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+    }
+  });
 };
 
 /* --------------------------------------------------------
@@ -843,19 +947,38 @@ var init = function(io, sessionMiddle) {
     console.log('Number data websocket connections: ' + cntData);
 
     // --------------------------------------------------------
+    // ADHOC processing for the Elm client on the data channel.
+    // --------------------------------------------------------
+    socket.on(ADHOC, function(data) {
+      var json = JSON.parse(data);
+      var adhocType = json.adhocType;
+
+      switch (adhocType) {
+        case ADHOC_LOGIN:
+          handleLogin(json, socket);
+          break;
+
+        default:
+          console.log('UNKNOWN adhocType of ' + adhocType + ' encountered.');
+      }
+
+    });
+
+    // --------------------------------------------------------
     // SELECT event for the Elm client.
     // --------------------------------------------------------
     socket.on(DATA_SELECT, function(data) {
-      console.log(data);
       var json = JSON.parse(data);
       var table = json.table? json.table: void 0;
       var retAction;
+      console.log(socket.request.session.cookie.maxAge);
+      console.log(socket.request.session);
 
       if (! isValidSocketSession(socket)) {
         retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired.");
         console.log(retAction);
         return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
-      }
+      } else touchSocketSession(socket);
 
       if (table) {
         getLookupTable(table, function(err, data) {

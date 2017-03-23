@@ -318,6 +318,12 @@ stringToErrorCode str =
         "SqlErrorCode" ->
             SqlErrorCode
 
+        "LoginSuccessErrorCode" ->
+            LoginSuccessErrorCode
+
+        "LoginFailErrorCode" ->
+            LoginFailErrorCode
+
         _ ->
             UnknownErrorCode
 

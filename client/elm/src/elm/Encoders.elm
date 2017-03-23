@@ -49,3 +49,11 @@ medicationTypeToValue mt =
             Nothing ->
                 ( "stateId", JE.null )
         ]
+
+
+loginFormToValue : LoginForm -> JE.Value
+loginFormToValue login =
+    JE.object
+        [ ( "username", JE.string login.username )
+        , ( "password", JE.string login.password )
+        ]

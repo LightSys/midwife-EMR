@@ -3,14 +3,17 @@ module Model
         ( Model
         , Page(..)
         , Tab(..)
+        , UserProfile
         , initialModel
         , State
         , asMedicationTypeModelIn
         , setMedicationTypeModel
+        , loginFormValidate
         )
 
 import Date exposing (Date)
 import Form exposing (Form)
+import Form.Field as Fld
 import Form.Validate as V
 import Material
 import Material.Snackbar as Snackbar
@@ -25,27 +28,28 @@ import Types exposing (..)
 
 
 type alias Model =
-    { mdl : Material.Model
-    , snackbar : Snackbar.Model String
-    , transactions : States
-    , nextPendingId : Int
-    , selectedTab : Tab
-    , selectedPage : Page
-    , systemMessages : List SystemMessage
-    , userId : Int
-    , selectedTable : Maybe Table
-    , selectedTableRecord : Int
-    , selectedTableEditMode : EditMode
-    , eventType : RemoteData String (List EventTypeRecord)
+    { eventType : RemoteData String (List EventTypeRecord)
     , labSuite : RemoteData String (List LabSuiteRecord)
     , labTest : RemoteData String (List LabTestRecord)
     , labTestValue : RemoteData String (List LabTestValueRecord)
+    , loginForm : Form () LoginForm
+    , mdl : Material.Model
     , medicationTypeModel : MedicationType.MedicationTypeModel
+    , nextPendingId : Int
     , pregnoteType : RemoteData String (List PregnoteTypeRecord)
     , riskCode : RemoteData String (List RiskCodeRecord)
-    , vaccinationType : RemoteData String (List VaccinationTypeRecord)
     , role : RemoteData String RoleRecord
+    , selectedPage : Page
+    , selectedTableEditMode : EditMode
+    , selectedTable : Maybe Table
+    , selectedTableRecord : Int
+    , selectedTab : Tab
+    , snackbar : Snackbar.Model String
+    , systemMessages : List SystemMessage
+    , transactions : States
     , user : RemoteData String UserRecord
+    , userProfile : Maybe UserProfile
+    , vaccinationType : RemoteData String (List VaccinationTypeRecord)
     }
 
 
@@ -80,6 +84,24 @@ type alias State =
     }
 
 
+type alias UserProfile =
+    { userId : Int
+    , username : String
+    , firstname : String
+    , lastname : String
+    , email : String
+    , lang : String
+    , shortName : String
+    , displayName : String
+    , role_id : Int
+    , isLoggedIn : Bool
+    }
+
+
+initialUserProfile =
+    Nothing
+
+
 statesInit : States
 statesInit =
     emptyStates
@@ -94,32 +116,43 @@ emptyStates =
     }
 
 
+loginFormValidate : V.Validation () LoginForm
+loginFormValidate =
+    V.map2 LoginForm
+        (V.field "username" (V.string |> V.defaultValue "" |> V.andThen V.nonEmpty))
+        (V.field "password" (V.string |> V.defaultValue "" |> V.andThen V.nonEmpty))
+
+
 initialModel : Model
 initialModel =
-    { mdl = Material.model
-    , snackbar = Snackbar.model
-    , transactions = statesInit
-    , nextPendingId = -1
-    , selectedTab = HomeTab
-    , selectedPage = HomePage
-    , systemMessages = []
-    , userId = -1
-    , selectedTable = Nothing
-    , selectedTableRecord = 0
-    , selectedTableEditMode = EditModeView
-    , eventType = NotAsked
+    { eventType = NotAsked
     , labSuite = NotAsked
     , labTest = NotAsked
     , labTestValue = NotAsked
+    , loginForm = Form.initial [] loginFormValidate
+    , mdl = Material.model
     , medicationTypeModel = MedicationType.initialMedicationTypeModel
+    , nextPendingId = -1
     , pregnoteType = NotAsked
     , riskCode = NotAsked
-    , vaccinationType = NotAsked
     , role = NotAsked
+    , selectedPage = HomePage
+    , selectedTab = HomeTab
+    , selectedTableEditMode = EditModeView
+    , selectedTable = Nothing
+    , selectedTableRecord = 0
+    , snackbar = Snackbar.model
+    , systemMessages = []
+    , transactions = statesInit
     , user = NotAsked
+    , userProfile = initialUserProfile
+    , vaccinationType = NotAsked
     }
 
+
+
 -- Top-level Setters
+
 
 setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model
 setMedicationTypeModel mtm model =
@@ -129,4 +162,3 @@ setMedicationTypeModel mtm model =
 asMedicationTypeModelIn : Model -> MedicationType.MedicationTypeModel -> Model
 asMedicationTypeModelIn =
     flip setMedicationTypeModel
-

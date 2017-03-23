@@ -1,6 +1,7 @@
 module Msg
     exposing
         ( Msg(..)
+        , AdhocResponseMessage(..)
         , MedicationTypeMsg(..)
         )
 
@@ -18,6 +19,7 @@ import Types exposing (..)
 
 type Msg
     = AddSelectedTable
+    | AdhocResponseMessages AdhocResponseMessage
     | CancelSelectedTable
     | CreateResponseMsg (Maybe CreateResponse)
     | DeleteResponseMsg (Maybe DeleteResponse)
@@ -28,6 +30,8 @@ type Msg
     | LabTestResponse (RemoteData String (List LabTestRecord))
     | LabTestValueResponse (RemoteData String (List LabTestValueRecord))
     | LastRecord
+    | Login
+    | LoginFormMsg Form.Msg
     | Mdl (Material.Msg Msg)
     | MedicationTypeMessages MedicationTypeMsg
     | NewSystemMessage SystemMessage
@@ -64,3 +68,7 @@ type MedicationTypeMsg
     | SelectedRecordMedicationType (Maybe Int)
     | UpdateMedicationType
     | UpdateResponseMedicationType UpdateResponse
+
+type AdhocResponseMessage
+    = AdhocUnknownMsg String
+    | AdhocLoginResponseMsg LoginResponse

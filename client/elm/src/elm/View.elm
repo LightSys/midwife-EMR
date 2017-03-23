@@ -21,6 +21,7 @@ import String
 import Model exposing (..)
 import Msg exposing (Msg(..))
 import Types exposing (..)
+import Views.Login
 import Views.Utils as VU
 import Views.Users
 import Views.Tables
@@ -33,12 +34,23 @@ type alias Mdl =
 view : Model -> Html Msg
 view model =
     let
+        isLoggedIn =
+            case model.userProfile of
+                Just up ->
+                    up.isLoggedIn
+
+                Nothing ->
+                    False
+
         main =
-            case model.selectedTab of
-                HomeTab ->
+            case ( isLoggedIn, model.selectedTab ) of
+                ( False, _ ) ->
+                    Views.Login.view
+
+                ( _, HomeTab ) ->
                     viewHome
 
-                UserTab ->
+                ( _, UserTab ) ->
                     case model.selectedPage of
                         UserSearchPage ->
                             Views.Users.viewUserSearch
@@ -49,11 +61,22 @@ view model =
                         _ ->
                             Views.Users.viewUserSearch
 
-                TablesTab ->
+                ( _, TablesTab ) ->
                     Views.Tables.view
 
-                ProfileTab ->
+                ( _, ProfileTab ) ->
                     viewProfile
+
+        tabsList =
+            case model.userProfile of
+                Just up ->
+                    if up.isLoggedIn then
+                        [ "Home", "User", "Tables", "Profile" ]
+                    else
+                        []
+
+                Nothing ->
+                    []
     in
         Layout.render Mdl
             model.mdl
@@ -64,7 +87,7 @@ view model =
             ]
             { header = headerSmall "Midwife-EMR" model
             , drawer = []
-            , tabs = tabs [ "Home", "User", "Tables", "Profile" ]
+            , tabs = tabs tabsList
             , main =
                 [ main model
                 , Html.map (\m -> Snackbar m) <| Snackbar.view model.snackbar
@@ -130,17 +153,30 @@ tabs labels =
 headerSmall : String -> Model -> List (Html a)
 headerSmall title model =
     let
+        isLoggedIn =
+            case model.userProfile of
+                Just up ->
+                    up.isLoggedIn
+
+                Nothing ->
+                    False
+
         contents =
             [ Layout.row []
                 [ Layout.title []
                     [ Options.styled p [ Typo.headline ] [ text title ]
                     ]
                 , Layout.spacer
-                , Layout.link
-                    [ Layout.href "/logout" ]
-                    [ Icon.exit_to_app Color.white 20
-                    , text " Logout"
-                    ]
+                , if isLoggedIn then
+                    Layout.link
+                        [ Layout.href "/logout" ]
+                        [ Icon.exit_to_app Color.white 20
+                        , text " Logout"
+                        ]
+                  else
+                    Layout.title []
+                        [ Options.styled p [ Typo.body1 ] [ text "Please log in." ]
+                        ]
                 ]
             ]
     in

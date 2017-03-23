@@ -1,6 +1,5 @@
 module Views.Tables exposing (view)
 
-import Array
 import FNV
 import Html as Html exposing (Html, div, p, text)
 import Html.Attributes as HA
@@ -270,8 +269,8 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
 
                 -- Buttons available while editing.
                 editingContent =
-                    [ VU.button [ mdlContext, 301 ] (MedicationTypeMessages <| FormMsgMedicationType Form.Submit) "Save" model
-                    , VU.button [ mdlContext, 302 ] (MedicationTypeMessages <| CancelEditMedicationType) "Cancel" model
+                    [ VU.button [ mdlContext, 301 ] (MedicationTypeMessages <| FormMsgMedicationType Form.Submit) "Save" False False model.mdl
+                    , VU.button [ mdlContext, 302 ] (MedicationTypeMessages <| CancelEditMedicationType) "Cancel" False False model.mdl
                     ]
 
                 -- Buttons available while viewing.
@@ -281,25 +280,33 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
                             |> MedicationTypeMessages
                         )
                         "Edit"
-                        model
+                        False
+                        False
+                        model.mdl
                     , VU.button [ mdlContext, 303 ]
                         (SelectedRecordEditModeMedicationType EditModeAdd medicationTypeModel.selectedRecordId
                             |> MedicationTypeMessages
                         )
                         "Add"
-                        model
+                        False
+                        False
+                        model.mdl
                     , VU.button [ mdlContext, 305 ]
                         (DeleteMedicationType medicationTypeModel.selectedRecordId
                             |> MedicationTypeMessages
                         )
                         "Delete"
-                        model
+                        False
+                        False
+                        model.mdl
                     , VU.button [ mdlContext, 304 ]
                         (SelectedRecordEditModeMedicationType EditModeTable Nothing
                             |> MedicationTypeMessages
                         )
                         "Table"
-                        model
+                        False
+                        False
+                        model.mdl
                     ]
 
                 -- Get the FieldStates.
@@ -335,10 +342,10 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
                     , Card.text
                         [ MColor.text MColor.black
                         ]
-                        [ VU.textFld "Record id" recId [ mdlContext, 200 ] (tagger recId) False model
-                        , VU.textFld "Name" recName [ mdlContext, 201 ] (tagger recName) isEditing model
-                        , VU.textFld "Description" recDescription [ mdlContext, 202 ] (tagger recDescription) isEditing model
-                        , VU.textFld "Sort Order (must be unique)" recSortOrder [ mdlContext, 203 ] (tagger recSortOrder) isEditing model
+                        [ VU.textFld "Record id" recId [ mdlContext, 200 ] (tagger recId) False False model.mdl
+                        , VU.textFld "Name" recName [ mdlContext, 201 ] (tagger recName) isEditing False model.mdl
+                        , VU.textFld "Description" recDescription [ mdlContext, 202 ] (tagger recDescription) isEditing False model.mdl
+                        , VU.textFld "Sort Order (must be unique)" recSortOrder [ mdlContext, 203 ] (tagger recSortOrder) isEditing False model.mdl
                         ]
                     , Card.actions [ Card.border ] <|
                         VU.recordChanger

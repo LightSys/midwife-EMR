@@ -342,6 +342,8 @@ var isValidDate = function(dte, format) {
 // --------------------------------------------------------
 // ErrorCode values for returning to the Elm client.
 // --------------------------------------------------------
+var LoginSuccessErrorCode = 'LoginSuccessErrorCode';
+var LoginFailErrorCode = 'LoginFailErrorCode';
 var NoErrorCode = 'NoErrorCode';
 var SessionExpiredErrorCode = 'SessionExpiredErrorCode';
 var SqlErrorCode = 'SqlErrorCode';
@@ -424,6 +426,20 @@ var returnStatusSELECT = function(obj, data, success, errCode, msg) {
   return retVal;
 };
 
+// --------------------------------------------------------
+// Note, defaults isLoggedIn to false. Caller needs to set
+// explicitly along with other required fields.
+// --------------------------------------------------------
+var returnLogin = function(success, errCode, msg) {
+  return {
+    adhocType: 'ADHOC_LOGIN_RESPONSE',
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msg? msg: '',
+    isLoggedIn: false
+  };
+};
+
 /* --------------------------------------------------------
  * validOrVoidDate()
  *
@@ -468,7 +484,10 @@ module.exports = {
   , logError: logError
   , logInfo: logInfo
   , logWarn: logWarn
+  , LoginFailErrorCode
+  , LoginSuccessErrorCode
   , NoErrorCode
+  , returnLogin
   , returnStatusADD: returnStatusADD
   , returnStatusCHG: returnStatusCHG
   , returnStatusDEL: returnStatusDEL

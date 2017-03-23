@@ -1,6 +1,7 @@
 module Views.Utils
     exposing
         ( button
+        , buttonNoMsg
         , footerMini
         , fullSizeCellOpts
         , recordChanger
@@ -40,15 +41,33 @@ type alias Mdl =
     Material.Model
 
 
-button : List Int -> Msg -> String -> Model -> Html Msg
-button idx msg lbl model =
+button : List Int -> Msg -> String -> Bool -> Bool -> Material.Model -> Html Msg
+button idx msg lbl isDisabled isSubmit mdl =
     Button.render Mdl
         idx
-        model.mdl
+        mdl
+        [ Button.raised
+        , Button.ripple
+        , if isSubmit then
+            Button.type_ "submit"
+          else
+            Options.nop
+        , Options.css "margin-right" "5px"
+        , Options.onClick msg
+        , Options.disabled isDisabled
+        ]
+        [ Html.text lbl ]
+
+
+buttonNoMsg : List Int -> String -> Bool -> Material.Model -> Html Msg
+buttonNoMsg idx lbl isDisabled mdl =
+    Button.render Mdl
+        idx
+        mdl
         [ Button.raised
         , Button.ripple
         , Options.css "margin-right" "5px"
-        , Options.onClick msg
+        , Options.disabled isDisabled
         ]
         [ Html.text lbl ]
 
@@ -157,16 +176,20 @@ recordChanger ( first, prev, next, last ) mdlContext model =
         ]
 
 
-textFld : String -> Form.FieldState e String -> List Int -> (String -> Msg) -> Bool -> Model -> Html Msg
-textFld lbl fld idx tagger allowEdit model =
+textFld : String -> Form.FieldState e String -> List Int -> (String -> Msg) -> Bool -> Bool -> Material.Model -> Html Msg
+textFld lbl fld idx tagger allowEdit isPassword mdl =
     Html.div []
         [ Textfield.render Mdl
             idx
-            model.mdl
+            mdl
             [ Textfield.label lbl
             , Textfield.floatingLabel
             , Textfield.value <| Maybe.withDefault "" fld.value
             , Options.onInput tagger
+            , if isPassword then
+                Textfield.password
+              else
+                Options.nop
             , if not allowEdit then
                 Textfield.disabled
               else

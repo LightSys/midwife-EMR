@@ -9,6 +9,8 @@ module Types
         , LabSuiteRecord
         , LabTestRecord
         , LabTestValueRecord
+        , LoginForm
+        , LoginResponse
         , MedicationTypeForm
         , MedicationTypeRecord
         , PregnoteTypeRecord
@@ -62,6 +64,12 @@ type Table
     | VaccinationType
 
 
+{-| is this used?
+-}
+type AdhocOperation
+    = Login
+
+
 type alias TableModel a b =
     { records : RemoteData String (List a)
     , form : Form () b
@@ -90,6 +98,8 @@ type ErrorCode
     | UnknownErrorCode
     | SessionExpiredErrorCode
     | SqlErrorCode
+    | LoginSuccessErrorCode
+    | LoginFailErrorCode
 
 
 type alias SelectQuery =
@@ -204,6 +214,12 @@ type alias LabTestValueRecord =
     }
 
 
+type alias LoginForm =
+    { username : String
+    , password : String
+    }
+
+
 type alias MedicationTypeRecord =
     { id : Int
     , name : String
@@ -211,6 +227,7 @@ type alias MedicationTypeRecord =
     , sortOrder : Int
     , stateId : Maybe Int
     }
+
 
 type alias MedicationTypeForm =
     { id : Int
@@ -242,6 +259,22 @@ type alias VaccinationTypeRecord =
     , sortOrder : Int
     }
 
+type alias LoginResponse =
+    { adhocType : String
+    , success : Bool
+    , errorCode : ErrorCode
+    , msg : String
+    , userId : Maybe Int
+    , username : Maybe String
+    , firstname : Maybe String
+    , lastname : Maybe String
+    , email : Maybe String
+    , lang : Maybe String
+    , shortName : Maybe String
+    , displayName : Maybe String
+    , role_id : Maybe Int
+    , isLoggedIn : Bool
+    }
 
 type alias UpdateResponse =
     { id : Int

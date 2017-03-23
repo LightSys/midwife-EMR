@@ -109,10 +109,15 @@ var DEL = 'DEL';            // Client to server data deletion request in data na
 var DEL_RESPONSE = 'DEL_RESPONSE';  // Server to client data deletion response in data namespace.
 var SELECT = 'SELECT';      // Client to server data request in data namespace.
 var SELECT_RESPONSE = 'SELECT_RESPONSE';  // Server to client data request response in data namespace.
+var ADHOC = 'ADHOC';        // Server to client message type in the data namespace.
+var ADHOC_RESPONSE = 'ADHOC_RESPONSE';  // Server to client response in data namespace.
+var ADHOC_LOGIN = 'ADHOC_LOGIN';        // Client to server for login request, the adhocType of the ADHOC message.
+var ADHOC_LOGIN_RESPONSE = 'ADHOC_LOGIN_RESPONSE';    // Server to client login response, the adhocType of the message.
 
 // The site and system namespaces.
 var SITE = 'site';          // All site messages use this message key.
 var SYSTEM = 'system';      // All system messages use this message key.
+
 
 
 // ========================================================
@@ -154,6 +159,18 @@ var sendMsg = function(msg, payload) {
 var wrapData = function(tbl, data) {
   return {
     table: tbl,
+    data: data
+  };
+}
+
+/* --------------------------------------------------------
+ * wrapAdHoc()
+ *
+ * Wrap the adhocType and data fields passed in an object.
+ * -------------------------------------------------------- */
+var wrapAdHoc = function(adhocType, data) {
+  return {
+    adhocType: adhocType,
     data: data
   };
 }
@@ -201,6 +218,15 @@ ioData.on(DEL_RESPONSE, function(data) {
 });
 
 // --------------------------------------------------------
+// Responses from the server for ADHOC requests.
+// --------------------------------------------------------
+ioData.on(ADHOC_RESPONSE, function(data) {
+  if (! app) return;
+  console.log(data);
+  app.ports.adhocResponse.send(JSON.parse(data));
+});
+
+// --------------------------------------------------------
 // Client data request to the server. Payload will include
 // specifics regarding the request.
 // --------------------------------------------------------
@@ -240,24 +266,26 @@ ioSystem.on(SYSTEM, function(data) {
 var setApp = function(theApp) {
   app = theApp;
 
+  app.ports.login.subscribe(function(data) {
+    sendMsg(ADHOC, wrapAdHoc(ADHOC_LOGIN, data));
+  });
+
+  app.ports.medicationTypeUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('medicationType', data));
+  });
+
+  app.ports.medicationTypeCreate.subscribe(function(data) {
+    sendMsg(ADD, wrapData('medicationType', data));
+  });
+
+  app.ports.medicationTypeDelete.subscribe(function(data) {
+    sendMsg(DEL, wrapData('medicationType', data));
+  });
+
   app.ports.selectQuery.subscribe(function(query) {
     sendMsg(SELECT, query);
   });
 
-  app.ports.medicationTypeUpdate.subscribe(function(data) {
-    console.log(data);
-    sendMsg(CHG, wrapData('medicationType', data));
-  });
-
-  app.ports.medicationTypeAdd.subscribe(function(data) {
-    console.log(data);
-    sendMsg(ADD, wrapData('medicationType', data));
-  });
-
-  app.ports.medicationTypeDel.subscribe(function(data) {
-    console.log(data);
-    sendMsg(DEL, wrapData('medicationType', data));
-  });
 };
 
 module.exports = {
