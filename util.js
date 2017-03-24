@@ -28,6 +28,19 @@ var moment = require('moment')
   ;
 
 
+// --------------------------------------------------------
+// ErrorCode values for returning to the Elm client.
+// --------------------------------------------------------
+var LoginSuccessErrorCode = 'LoginSuccessErrorCode';
+var LoginFailErrorCode = 'LoginFailErrorCode';
+var UserProfileSuccessErrorCode = 'UserProfileSuccessErrorCode';
+var UserProfileFailErrorCode = 'UserProfileFailErrorCode';
+var NoErrorCode = 'NoErrorCode';
+var SessionExpiredErrorCode = 'SessionExpiredErrorCode';
+var SqlErrorCode = 'SqlErrorCode';
+var UnknownErrorCode = 'UnknownErrorCode';
+
+
 /* --------------------------------------------------------
  * formatDohID()
  *
@@ -339,17 +352,6 @@ var isValidDate = function(dte, format) {
 };
 
 
-// --------------------------------------------------------
-// ErrorCode values for returning to the Elm client.
-// --------------------------------------------------------
-var LoginSuccessErrorCode = 'LoginSuccessErrorCode';
-var LoginFailErrorCode = 'LoginFailErrorCode';
-var NoErrorCode = 'NoErrorCode';
-var SessionExpiredErrorCode = 'SessionExpiredErrorCode';
-var SqlErrorCode = 'SqlErrorCode';
-var UnknownErrorCode = 'UnknownErrorCode';
-
-
 /* --------------------------------------------------------
  * returnStatus()
  *
@@ -440,6 +442,21 @@ var returnLogin = function(success, errCode, msg) {
   };
 };
 
+// --------------------------------------------------------
+// Note, defaults to isLoggedIn to true. Caller needs to
+// not call this unless authentication has already been
+// established.
+// --------------------------------------------------------
+var returnUserProfile = function(success, errCode, msg) {
+  return {
+    adhocType: 'ADHOC_USER_PROFILE_RESPONSE',
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msg? msg: '',
+    isLoggedIn: true
+  };
+};
+
 /* --------------------------------------------------------
  * validOrVoidDate()
  *
@@ -492,9 +509,12 @@ module.exports = {
   , returnStatusCHG: returnStatusCHG
   , returnStatusDEL: returnStatusDEL
   , returnStatusSELECT: returnStatusSELECT
+  , returnUserProfile
   , SessionExpiredErrorCode
   , SqlErrorCode
   , UnknownErrorCode
+  , UserProfileSuccessErrorCode
+  , UserProfileFailErrorCode
   , validOrVoidDate: validOrVoidDate
 };
 

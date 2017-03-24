@@ -113,6 +113,8 @@ var ADHOC = 'ADHOC';        // Server to client message type in the data namespa
 var ADHOC_RESPONSE = 'ADHOC_RESPONSE';  // Server to client response in data namespace.
 var ADHOC_LOGIN = 'ADHOC_LOGIN';        // Client to server for login request, the adhocType of the ADHOC message.
 var ADHOC_LOGIN_RESPONSE = 'ADHOC_LOGIN_RESPONSE';    // Server to client login response, the adhocType of the message.
+var ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE';    // Client to server for user profile request.
+var ADHOC_USER_PROFILE_RESPONSE = 'ADHOC_USER_PROFILE_RESPONSE';  // Server to client user profile response.
 
 // The site and system namespaces.
 var SITE = 'site';          // All site messages use this message key.
@@ -280,6 +282,10 @@ var setApp = function(theApp) {
 
   app.ports.medicationTypeDelete.subscribe(function(data) {
     sendMsg(DEL, wrapData('medicationType', data));
+  });
+
+  app.ports.requestUserProfile.subscribe(function(uselessData) {
+    sendMsg(ADHOC, wrapAdHoc(ADHOC_USER_PROFILE, void 0));
   });
 
   app.ports.selectQuery.subscribe(function(query) {

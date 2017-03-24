@@ -7,6 +7,7 @@ port module Ports
         , medicationTypeCreate
         , medicationTypeDelete
         , medicationTypeUpdate
+        , requestUserProfile
         , selectQuery
         , selectQueryResponse
         , systemMessages

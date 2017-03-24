@@ -296,6 +296,9 @@ getDecoderAdhocResponse tag =
         "ADHOC_LOGIN_RESPONSE" ->
             JD.map AdhocLoginResponseMsg loginResponse
 
+        "ADHOC_USER_PROFILE_RESPONSE" ->
+            JD.map AdhocUserProfileResponseMsg userProfileResponse
+
         _ ->
             JD.map AdhocUnknownMsg <| JD.succeed ("Unknown adhoc message with tag: " ++ tag)
 
@@ -305,10 +308,28 @@ adhocResponse =
     JD.field "adhocType" JD.string
         |> JD.andThen getDecoderAdhocResponse
 
-
-loginResponse : JD.Decoder LoginResponse
+loginResponse : JD.Decoder AuthResponse
 loginResponse =
-    decode LoginResponse
+    decode AuthResponse
+        |> required "adhocType" JD.string
+        |> required "success" JD.bool
+        |> required "errorCode" decodeErrorCode
+        |> required "msg" JD.string
+        |> optional "userId" (JD.maybe JD.int) Nothing
+        |> optional "username" (JD.maybe JD.string) Nothing
+        |> optional "firstname" (JD.maybe JD.string) Nothing
+        |> optional "lastname" (JD.maybe JD.string) Nothing
+        |> optional "email" (JD.maybe JD.string) Nothing
+        |> optional "lang" (JD.maybe JD.string) Nothing
+        |> optional "shortName" (JD.maybe JD.string) Nothing
+        |> optional "displayName" (JD.maybe JD.string) Nothing
+        |> optional "role_id" (JD.maybe JD.int) Nothing
+        |> required "isLoggedIn" JD.bool
+
+
+userProfileResponse : JD.Decoder AuthResponse
+userProfileResponse =
+    decode AuthResponse
         |> required "adhocType" JD.string
         |> required "success" JD.bool
         |> required "errorCode" decodeErrorCode

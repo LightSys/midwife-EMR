@@ -191,6 +191,9 @@ update msg model =
             in
                 newModel ! []
 
+        RequestUserProfile ->
+            model ! [ Ports.requestUserProfile E.requestUserProfile ]
+
         RiskCodeResponse riskCodeTbl ->
             { model | riskCode = riskCodeTbl } ! []
 

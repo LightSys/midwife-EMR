@@ -39,6 +39,7 @@ type Msg
     | NoOp
     | PregnoteTypeResponse (RemoteData String (List PregnoteTypeRecord))
     | PreviousRecord
+    | RequestUserProfile
     | RiskCodeResponse (RemoteData String (List RiskCodeRecord))
     | SaveSelectedTable
     | SelectedTableEditMode EditMode (Maybe Int)
@@ -71,4 +72,5 @@ type MedicationTypeMsg
 
 type AdhocResponseMessage
     = AdhocUnknownMsg String
-    | AdhocLoginResponseMsg LoginResponse
+    | AdhocLoginResponseMsg AuthResponse
+    | AdhocUserProfileResponseMsg AuthResponse

@@ -14,29 +14,23 @@ adhocUpdate msg model =
             case ( resp.success, resp.errorCode ) of
                 ( True, LoginSuccessErrorCode ) ->
                     -- TODO: go back to last good location once we have navigation.
-                    let
-                        userProfile =
-                            case
-                                ( resp.userId
-                                , resp.username
-                                , resp.firstname
-                                , resp.lastname
-                                , resp.email
-                                , resp.lang
-                                , resp.shortName
-                                , resp.displayName
-                                , resp.role_id
-                                )
-                            of
-                                -- Build out an UserProfile if we have all the fields
-                                -- from the server that we need.
-                                ( Just userId, Just username, Just firstname, Just lastname, Just email, Just lang, Just shortName, Just displayName, Just role_id ) ->
-                                    Just <| UserProfile userId username firstname lastname email lang shortName displayName role_id True
+                    { model
+                        | userProfile = userProfileFromAuthResponse resp
+                        , loginForm = initialModel.loginForm
+                    }
+                        ! []
 
-                                _ ->
-                                    Nothing
+                ( _, _ ) ->
+                    let
+                        _ =
+                            Debug.log "AdhocLoginResponseMsg" <| toString resp
                     in
-                        { model | userProfile = userProfile } ! []
+                        model ! []
+
+        AdhocUserProfileResponseMsg resp ->
+            case ( resp.success, resp.errorCode ) of
+                ( True, UserProfileSuccessErrorCode ) ->
+                    { model | userProfile = userProfileFromAuthResponse resp } ! []
 
                 ( _, _ ) ->
                     let
@@ -51,3 +45,31 @@ adhocUpdate msg model =
                     Debug.log "AdhocUnknownMsg" <| toString msg
             in
                 model ! []
+
+
+userProfileFromAuthResponse : AuthResponse -> Maybe UserProfile
+userProfileFromAuthResponse resp =
+    case
+        ( resp.userId
+        , resp.username
+        , resp.firstname
+        , resp.lastname
+        , resp.role_id
+        )
+    of
+        -- Build out an UserProfile if we have a minimum of the fields from the server that we need.
+        ( Just userId, Just username, Just firstname, Just lastname, Just role_id ) ->
+            Just <|
+                UserProfile userId
+                    username
+                    firstname
+                    lastname
+                    (Maybe.withDefault "" resp.email)
+                    (Maybe.withDefault "" resp.lang)
+                    (Maybe.withDefault "" resp.shortName)
+                    (Maybe.withDefault "" resp.displayName)
+                    role_id
+                    resp.isLoggedIn
+
+        _ ->
+            Nothing

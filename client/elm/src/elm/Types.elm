@@ -1,6 +1,7 @@
 module Types
     exposing
-        ( CreateResponse
+        ( AuthResponse
+        , CreateResponse
         , DeleteResponse
         , EditMode(..)
         , emptySystemMessage
@@ -10,7 +11,6 @@ module Types
         , LabTestRecord
         , LabTestValueRecord
         , LoginForm
-        , LoginResponse
         , MedicationTypeForm
         , MedicationTypeRecord
         , PregnoteTypeRecord
@@ -100,6 +100,8 @@ type ErrorCode
     | SqlErrorCode
     | LoginSuccessErrorCode
     | LoginFailErrorCode
+    | UserProfileSuccessErrorCode
+    | UserProfileFailErrorCode
 
 
 type alias SelectQuery =
@@ -259,7 +261,7 @@ type alias VaccinationTypeRecord =
     , sortOrder : Int
     }
 
-type alias LoginResponse =
+type alias AuthResponse =
     { adhocType : String
     , success : Bool
     , errorCode : ErrorCode

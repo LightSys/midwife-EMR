@@ -324,6 +324,12 @@ stringToErrorCode str =
         "LoginFailErrorCode" ->
             LoginFailErrorCode
 
+        "UserProfileSuccessErrorCode" ->
+            UserProfileSuccessErrorCode
+
+        "UserProfileFailErrorCode" ->
+            UserProfileFailErrorCode
+
         _ ->
             UnknownErrorCode
 

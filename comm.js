@@ -134,17 +134,21 @@ var rx = require('rx')
   , ADHOC = 'ADHOC'                         // data adhoc request.
   , ADHOC_RESPONSE = 'ADHOC_RESPONSE'       // data adhoc response.
   , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
+  , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , TABLE_medicationType = 'medicationType'
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
   , returnLogin = require('./util').returnLogin
+  , returnUserProfile = require('./util').returnUserProfile
   , returnStatusADD = require('./util').returnStatusADD
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
   , returnStatusSELECT = require('./util').returnStatusSELECT
   , LoginFailErrorCode = require('./util').LoginFailErrorCode
   , LoginSuccessErrorCode = require('./util').LoginSuccessErrorCode
+  , UserProfileSuccessErrorCode = require('./util').UserProfileSuccessErrorCode
+  , UserProfileFailErrorCode = require('./util').UserProfileFailErrorCode
   , NoErrorCode = require('./util').NoErrorCode
   , SessionExpiredErrorCode = require('./util').SessionExpiredErrorCode
   , SqlErrorCode = require('./util').SqlErrorCode
@@ -594,7 +598,6 @@ var handleData = function(evtName, payload, socket) {
         } else {
           retAction = returnStatusFunc(table, data.id, data.stateId, true);
         }
-        console.log(retAction);
         return socket.emit(responseEvt, JSON.stringify(retAction));
       });
       break;
@@ -628,32 +631,77 @@ var handleLogin = function(json, socket) {
     }
 
     if (user) {
-      // Save user information into the session and return response to client.
-      socket.request.session.user = user.toJSON();
-      socket.request.session.roleInfo = {
-        isAuthenticated: true,
-        roleName: socket.request.session.user.role.name
-      };
-      socket.request.session.save(function(err) {
-        if (err) {
-          console.log('ERROR: login successful but unable to save to session.');
-          console.log(err);
-        }
-        retAction = returnLogin(true, LoginSuccessErrorCode);
-        _.extendOwn(retAction, _.pick(socket.request.session.user,
-            ['username', 'firstname', 'lastname', 'email', 'lang',
-            'shortName', 'displayName', 'role_id'])
-        );
-        retAction.userId = user.id;   // Field name change on the client.
-        retAction.isLoggedIn = true;
-        console.log(retAction);
-        return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
-      });
+      sendUserProfile(socket, user.toJSON(), LoginSuccessErrorCode);
     } else {
       // Failed login.
       console.log(msgObj);
       retAction = returnLogin(false, LoginFailErrorCode, msgObj.message);
       return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+    }
+  });
+};
+
+var handleUserProfile = function(socket) {
+  if (isValidSocketSession(socket)) {
+    if (socket.request.session.user) {
+      sendUserProfile(socket, socket.request.session.user, UserProfileSuccessErrorCode);
+    } else {
+      // Do not have the user in session, so fail.
+      sendUserProfile(socket, void 0, UserProfileFailErrorCode);
+    }
+  } else {
+    // Session has expired, so fail.
+    sendUserProfile(socket, void 0, UserProfileFailErrorCode);
+  }
+};
+
+/* --------------------------------------------------------
+ * sendUserProfile()
+ *
+ * Updates the session with user information, resets the
+ * session expiry, and sends the user profile to the client.
+ *
+ * param       socket
+ * param       user - assumes is a simple JSON object.
+ * param       errCode - error code to return to client.
+ * return      undefined
+ * -------------------------------------------------------- */
+var sendUserProfile = function(socket, user, errCode) {
+  var retAction;
+  // Reset session timeout.
+  touchSocketSession(socket);
+
+  // Save user information into the session and return response to client.
+  socket.request.session.user = user;
+  socket.request.session.roleInfo = {
+    isAuthenticated: true,
+    roleName: socket.request.session.user.role.name
+  };
+  socket.request.session.save(function(err) {
+    if (err) {
+      console.log('ERROR: login successful but unable to save to session.');
+      console.log(err);
+    }
+
+    switch (errCode) {
+      case LoginSuccessErrorCode:
+      case LoginFailErrorCode:
+        retAction = returnLogin(true, errCode);
+        break;
+      case UserProfileSuccessErrorCode:
+      case UserProfileFailErrorCode:
+        retAction = returnUserProfile(true, errCode);
+        break;
+    }
+
+    if (retAction) {
+      _.extendOwn(retAction, _.pick(socket.request.session.user,
+          ['username', 'firstname', 'lastname', 'email', 'lang',
+          'shortName', 'displayName', 'role_id'])
+      );
+      retAction.userId = user.id;   // Field name change on the client.
+      retAction.isLoggedIn = true;
+      socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
     }
   });
 };
@@ -958,6 +1006,10 @@ var init = function(io, sessionMiddle) {
           handleLogin(json, socket);
           break;
 
+        case ADHOC_USER_PROFILE:
+          handleUserProfile(socket);
+          break;
+
         default:
           console.log('UNKNOWN adhocType of ' + adhocType + ' encountered.');
       }
@@ -971,8 +1023,6 @@ var init = function(io, sessionMiddle) {
       var json = JSON.parse(data);
       var table = json.table? json.table: void 0;
       var retAction;
-      console.log(socket.request.session.cookie.maxAge);
-      console.log(socket.request.session);
 
       if (! isValidSocketSession(socket)) {
         retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired.");

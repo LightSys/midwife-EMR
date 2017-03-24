@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html
+import Task
 
 
 -- LOCAL IMPORTS
@@ -18,7 +19,7 @@ import View as View
 
 init : ( Model, Cmd Msg )
 init =
-    Model.initialModel ! []
+    Model.initialModel ! [Task.perform (always RequestUserProfile) (Task.succeed True) ]
 
 
 subscriptions : Model -> Sub Msg

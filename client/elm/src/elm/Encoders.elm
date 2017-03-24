@@ -57,3 +57,10 @@ loginFormToValue login =
         [ ( "username", JE.string login.username )
         , ( "password", JE.string login.password )
         ]
+
+
+{-| We don't care what we send to the server.
+-}
+requestUserProfile : JE.Value
+requestUserProfile =
+    JE.bool True
