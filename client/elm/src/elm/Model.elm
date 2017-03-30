@@ -1,8 +1,6 @@
 module Model
     exposing
         ( Model
-        , Page(..)
-        , Tab(..)
         , UserProfile
         , initialModel
         , State
@@ -51,21 +49,6 @@ type alias Model =
     , userProfile : Maybe UserProfile
     , vaccinationType : RemoteData String (List VaccinationTypeRecord)
     }
-
-
-type Page
-    = HomePage
-    | UserSearchPage
-    | UserEditPage
-    | TableMainPage
-    | ProfilePage
-
-
-type Tab
-    = HomeTab
-    | UserTab
-    | TablesTab
-    | ProfileTab
 
 
 type alias States =
@@ -136,7 +119,7 @@ initialModel =
     , pregnoteType = NotAsked
     , riskCode = NotAsked
     , role = NotAsked
-    , selectedPage = HomePage
+    , selectedPage = AdminHomePage
     , selectedTab = HomeTab
     , selectedTableEditMode = EditModeView
     , selectedTable = Nothing

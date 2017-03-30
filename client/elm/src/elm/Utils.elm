@@ -3,16 +3,20 @@ module Utils
         ( addMessage
         , addWarning
         , getIdxRemoteDataById
+        , getPageDef
         , humanReadableError
+        , locationToPage
         , maybeStringToInt
         , stringToErrorCode
         , stringToTable
+        , tabIndexToPage
         , tableToString
         )
 
 import Json.Encode as JE
 import List.Extra as LE
 import Material.Snackbar as Snackbar
+import Navigation exposing (Location)
 import RemoteData as RD exposing (RemoteData(..))
 import Regex as RX
 import Tuple
@@ -23,6 +27,62 @@ import Tuple
 import Model exposing (..)
 import Msg exposing (..)
 import Types exposing (..)
+
+
+{-| Returns the Page associated with the tab specified
+if found in the tabs of the PageDef passed, otherwise
+returns the currently selected page, i.e. does nothing.
+-}
+tabIndexToPage : Int -> Maybe PageDef -> Model -> Page
+tabIndexToPage idx pageDef model =
+    case pageDef of
+        Just pdef ->
+            case pdef.tabs of
+                Just tabs ->
+                    case LE.getAt idx tabs of
+                        Just pair ->
+                            -- Expects ( String, Page )
+                            Tuple.second pair
+
+                        Nothing ->
+                            model.selectedPage
+
+                Nothing ->
+                    model.selectedPage
+
+        Nothing ->
+            model.selectedPage
+
+
+{-| Returns the associated PageDef for any Page passed, or
+Nothing is not found.
+-}
+getPageDef : Page -> List PageDef -> Maybe PageDef
+getPageDef page pageDefs =
+    case LE.find (\pd -> pd.page == page) pageDefs of
+        Just pageDef ->
+            Just pageDef
+
+        Nothing ->
+            -- TODO: what is the default? 404? Home? Error message
+            -- because obviously if we were passed a Page, there
+            -- should be a PageDef?
+            Nothing
+
+
+{-| Returns the Page associated with the specified Location against
+the List of PageDefs provided. Returns a default PageDef in case an
+appropriate PageDef is not found.
+-}
+locationToPage : Location -> List PageDef -> Page
+locationToPage location pageDefs =
+    case LE.find (\pd -> pd.location == location.hash) pageDefs of
+        Just pageDef ->
+            pageDef.page
+
+        Nothing ->
+            -- TODO: need a default page here.
+            AdminHomePage
 
 
 tableToString : Table -> String
@@ -332,6 +392,3 @@ stringToErrorCode str =
 
         _ ->
             UnknownErrorCode
-
-
-

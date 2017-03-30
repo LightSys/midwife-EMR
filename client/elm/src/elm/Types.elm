@@ -1,6 +1,7 @@
 module Types
     exposing
-        ( AuthResponse
+        ( adminPages
+        , AuthResponse
         , CreateResponse
         , DeleteResponse
         , EditMode(..)
@@ -13,12 +14,15 @@ module Types
         , LoginForm
         , MedicationTypeForm
         , MedicationTypeRecord
+        , Page(..)
+        , PageDef
         , PregnoteTypeRecord
         , RiskCodeRecord
         , RoleRecord
         , SelectQuery
         , SelectQueryResponse
         , SystemMessage
+        , Tab(..)
         , Table(..)
         , TableMetaInfo
         , TableModel
@@ -28,7 +32,9 @@ module Types
         , VaccinationTypeRecord
         )
 
+import Dict exposing (Dict)
 import Form exposing (Form)
+import List.Extra as LE
 import RemoteData as RD exposing (RemoteData(..))
 
 
@@ -62,6 +68,52 @@ type Table
     | User
     | Vaccination
     | VaccinationType
+
+
+{-| Pages
+-}
+type Page
+    = AdminHomePage
+    | AdminTablesPage
+    | AdminUsersPage
+    | ProfilePage
+
+
+{-| Provides the definition of each Page including the url of the
+page, as well as the optional tab and List of tabs for the page.
+-}
+type alias PageDef =
+    { page : Page
+    , tab : Maybe Int
+    , tabs : Maybe (List ( String, Page ))
+    , location : String
+    }
+
+
+adminPages : List PageDef
+adminPages =
+    [ PageDef AdminHomePage (Just 0) (Just adminTabs) "#"
+    , PageDef AdminTablesPage (Just 2) (Just adminTabs) "#lookuptables"
+    , PageDef AdminUsersPage (Just 1) (Just adminTabs) "#users"
+    , PageDef ProfilePage Nothing (Just adminTabs) "#profile"
+    ]
+
+
+adminTabs : List ( String, Page )
+adminTabs =
+    [ ( "Home", AdminHomePage )
+    , ( "Users", AdminUsersPage )
+    , ( "Lookup Tables", AdminTablesPage )
+    ]
+
+
+{-| TODO: Get rid of this so that everything is in Page somehow.
+-}
+type Tab
+    = HomeTab
+    | UserTab
+    | TablesTab
+    | ProfileTab
 
 
 {-| is this used?
@@ -261,6 +313,7 @@ type alias VaccinationTypeRecord =
     , sortOrder : Int
     }
 
+
 type alias AuthResponse =
     { adhocType : String
     , success : Bool
@@ -277,6 +330,7 @@ type alias AuthResponse =
     , role_id : Maybe Int
     , isLoggedIn : Bool
     }
+
 
 type alias UpdateResponse =
     { id : Int

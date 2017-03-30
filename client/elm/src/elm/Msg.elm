@@ -8,6 +8,7 @@ module Msg
 import Form exposing (Form)
 import Material
 import Material.Snackbar as Snackbar
+import Navigation exposing (Location)
 import RemoteData as RD exposing (RemoteData(..))
 
 
@@ -46,10 +47,11 @@ type Msg
     | SelectQueryResponseMsg (RemoteData String SelectQueryResponse)
     | SelectQuerySelectTable SelectQuery
     | SelectTableRecord Int
-    | SelectTab Tab
+    | SelectPage Page
     | SessionExpired
     | Snackbar (Snackbar.Msg String)
     | UpdateResponseMsg (Maybe UpdateResponse)
+    | UrlChange Location
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeRecord))
 
 

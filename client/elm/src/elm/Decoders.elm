@@ -350,11 +350,7 @@ decodeAdhocResponse : JE.Value -> AdhocResponseMessage
 decodeAdhocResponse payload =
     case JD.decodeValue adhocResponse payload of
         Ok val ->
-            let
-                _ =
-                    Debug.log "decodeAdhocResponse" <| toString val
-            in
-                val
+            val
 
         Err message ->
             AdhocUnknownMsg message

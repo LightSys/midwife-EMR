@@ -224,7 +224,6 @@ ioData.on(DEL_RESPONSE, function(data) {
 // --------------------------------------------------------
 ioData.on(ADHOC_RESPONSE, function(data) {
   if (! app) return;
-  console.log(data);
   app.ports.adhocResponse.send(JSON.parse(data));
 });
 

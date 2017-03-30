@@ -22,6 +22,7 @@ import Model exposing (..)
 import Models.MedicationType as MedType
 import Models.Utils as MU
 import Msg exposing (..)
+import Navigation as Nav
 import Ports
 import Transactions as Trans
 import Types exposing (..)
@@ -38,11 +39,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         AdhocResponseMessages adhocResponse ->
-            let
-                _ =
-                    Debug.log "AdhocResponseMessages" <|toString adhocResponse
-            in
-                Updates.adhocUpdate adhocResponse model
+            Updates.adhocUpdate adhocResponse model
 
         AddSelectedTable ->
             let
@@ -286,8 +283,18 @@ update msg model =
             }
                 ! [ Ports.selectQuery (E.selectQueryToValue query) ]
 
-        SelectTab tab ->
-            { model | selectedTab = tab } ! []
+        SelectPage page ->
+            -- Set the selected Page as well as get the url in sync.
+            let
+                newCmd =
+                    case U.getPageDef page adminPages of
+                        Just pdef ->
+                            Nav.newUrl pdef.location
+
+                        Nothing ->
+                            Cmd.none
+            in
+                { model | selectedPage = page } ! [ newCmd ]
 
         SelectTableRecord rec ->
             let
@@ -332,6 +339,16 @@ update msg model =
 
                 Nothing ->
                     model ! []
+
+        UrlChange location ->
+            let
+                _ =
+                    Debug.log "UrlChange location" <| toString location
+
+                _ =
+                    Debug.log "UrlChange locationToPage" <| toString (U.locationToPage location adminPages)
+            in
+                { model | selectedPage = U.locationToPage location adminPages } ! []
 
         VaccinationTypeResponse vaccinationTypeTbl ->
             { model | vaccinationType = vaccinationTypeTbl } ! []

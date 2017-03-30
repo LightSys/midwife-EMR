@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html
+import Navigation exposing (Location)
 import Task
 
 
@@ -10,16 +11,22 @@ import Decoders exposing (..)
 import Model exposing (..)
 import Msg exposing (..)
 import Ports
+import Types exposing (adminPages)
 import Update exposing (update)
+import Utils exposing (locationToPage)
 import View as View
 
 
 -- MAIN
 
 
-init : ( Model, Cmd Msg )
-init =
-    Model.initialModel ! [Task.perform (always RequestUserProfile) (Task.succeed True) ]
+init : Location -> ( Model, Cmd Msg )
+init location =
+    let
+        model =
+            { initialModel | selectedPage = locationToPage location adminPages }
+    in
+        model ! [ Task.perform (always RequestUserProfile) (Task.succeed True) ]
 
 
 subscriptions : Model -> Sub Msg
@@ -42,9 +49,10 @@ subscriptions model =
 
 main : Program Never Model Msg
 main =
-    Html.program
+    Navigation.program
+        UrlChange
         { init = init
         , update = update
-        , view = View.view
         , subscriptions = subscriptions
+        , view = View.view
         }

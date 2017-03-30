@@ -3,6 +3,7 @@ module View exposing (..)
 import Color as Color
 import Html as Html exposing (Html, div, p, text)
 import Html.Attributes as HA
+import List.Extra as LE
 import Material
 import Material.Button as Button
 import Material.Color as MColor
@@ -21,10 +22,12 @@ import String
 import Model exposing (..)
 import Msg exposing (Msg(..))
 import Types exposing (..)
+import Utils exposing (getPageDef, tabIndexToPage)
 import Views.Login
+import Views.Profile
+import Views.Tables
 import Views.Utils as VU
 import Views.Users
-import Views.Tables
 
 
 type alias Mdl =
@@ -42,54 +45,61 @@ view model =
                 Nothing ->
                     False
 
-        main =
-            case ( isLoggedIn, model.selectedTab ) of
-                ( False, _ ) ->
-                    Views.Login.view
+        pageDef : Maybe PageDef
+        pageDef =
+            getPageDef model.selectedPage adminPages
 
-                ( _, HomeTab ) ->
-                    viewHome
+        ( selectedTab, tabsList ) =
+            case pageDef of
+                Just pdef ->
+                    case ( pdef.tab, pdef.tabs ) of
+                        ( Just t, Just ts ) ->
+                            -- Showing one of the tabs.
+                            ( t, List.map Tuple.first ts )
 
-                ( _, UserTab ) ->
-                    case model.selectedPage of
-                        UserSearchPage ->
-                            Views.Users.viewUserSearch
-
-                        UserEditPage ->
-                            Views.Users.viewUserEdit
+                        ( Nothing, Just ts ) ->
+                            -- Showing a page but not one of the tabs, like the
+                            -- Profile page.
+                            ( -1, List.map Tuple.first ts )
 
                         _ ->
-                            Views.Users.viewUserSearch
-
-                ( _, TablesTab ) ->
-                    Views.Tables.view
-
-                ( _, ProfileTab ) ->
-                    viewProfile
-
-        tabsList =
-            case model.userProfile of
-                Just up ->
-                    if up.isLoggedIn then
-                        [ "Home", "User", "Tables", "Profile" ]
-                    else
-                        []
+                            -- Showing a page without tabs.
+                            ( -1, [] )
 
                 Nothing ->
-                    []
+                    ( 0, [] )
+
+        theView =
+            case isLoggedIn of
+                False ->
+                    Views.Login.view
+
+                True ->
+                    case model.selectedPage of
+                        AdminHomePage ->
+                            viewHome
+
+                        AdminUsersPage ->
+                            Views.Users.viewUserSearch
+
+                        AdminTablesPage ->
+                            Views.Tables.view
+
+                        ProfilePage ->
+                            Views.Profile.view
     in
         Layout.render Mdl
             model.mdl
             [ Layout.fixedHeader
             , Layout.fixedTabs
-            , Layout.selectedTab (tabToInt model.selectedTab)
-            , Layout.onSelectTab (\t -> intToTab t |> SelectTab)
+            , Layout.selectedTab selectedTab
+            , Layout.onSelectTab (\idx -> tabIndexToPage idx pageDef model |> SelectPage)
             ]
             { header = headerSmall "Midwife-EMR" model
             , drawer = []
             , tabs = tabs tabsList
             , main =
-                [ main model
+                [ theView model
                 , Html.map (\m -> Snackbar m) <| Snackbar.view model.snackbar
                 ]
             }
@@ -150,7 +160,7 @@ tabs labels =
     )
 
 
-headerSmall : String -> Model -> List (Html a)
+headerSmall : String -> Model -> List (Html Msg)
 headerSmall title model =
     let
         isLoggedIn =
@@ -164,14 +174,25 @@ headerSmall title model =
         contents =
             [ Layout.row []
                 [ Layout.title []
-                    [ Options.styled p [ Typo.headline ] [ text title ]
+                    [ Options.styled p
+                        [ Typo.headline
+                        , Options.onClick (SelectPage AdminHomePage)
+                        ]
+                        [ text title ]
                     ]
                 , Layout.spacer
                 , if isLoggedIn then
-                    Layout.link
-                        [ Layout.href "/logout" ]
-                        [ Icon.exit_to_app Color.white 20
-                        , text " Logout"
+                    Layout.navigation []
+                        [ Layout.link
+                            [ Layout.href "#profile" ]
+                            [ Icon.exit_to_app Color.white 20
+                            , text " Profile"
+                            ]
+                        , Layout.link
+                            [ Layout.href "/logout" ]
+                            [ Icon.exit_to_app Color.white 20
+                            , text " Logout"
+                            ]
                         ]
                   else
                     Layout.title []
