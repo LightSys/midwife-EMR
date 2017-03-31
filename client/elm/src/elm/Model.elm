@@ -35,6 +35,7 @@ type alias Model =
     , medicationTypeModel : MedicationType.MedicationTypeModel
     , nextPendingId : Int
     , pregnoteType : RemoteData String (List PregnoteTypeRecord)
+    , pageDefs : Maybe (List PageDef)
     , riskCode : RemoteData String (List RiskCodeRecord)
     , role : RemoteData String RoleRecord
     , selectedPage : Page
@@ -77,6 +78,7 @@ type alias UserProfile =
     , shortName : String
     , displayName : String
     , role_id : Int
+    , roleName : String
     , isLoggedIn : Bool
     }
 
@@ -117,6 +119,7 @@ initialModel =
     , medicationTypeModel = MedicationType.initialMedicationTypeModel
     , nextPendingId = -1
     , pregnoteType = NotAsked
+    , pageDefs = Nothing
     , riskCode = NotAsked
     , role = NotAsked
     , selectedPage = AdminHomePage

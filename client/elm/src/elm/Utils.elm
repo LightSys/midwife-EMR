@@ -7,6 +7,8 @@ module Utils
         , humanReadableError
         , locationToPage
         , maybeStringToInt
+        , setDefaultSelectedPage
+        , setPageDefs
         , stringToErrorCode
         , stringToTable
         , tabIndexToPage
@@ -27,6 +29,60 @@ import Tuple
 import Model exposing (..)
 import Msg exposing (..)
 import Types exposing (..)
+
+
+{-| Sets the pageDefs field in the model as appropriate
+should the userProfile field be populated.
+-}
+setPageDefs : Model -> Model
+setPageDefs model =
+    case model.userProfile of
+        Just up ->
+            case up.roleName of
+                "administrator" ->
+                    { model | pageDefs = Just adminPages }
+
+                _ ->
+                    -- TODO: finish this for all of the roles.
+                    model
+
+        Nothing ->
+            model
+
+
+{-| Set the default selected page for the role if the pageDefs field
+is populated and the selectedPage is still set to ProfileNotLoadedPage.
+-}
+setDefaultSelectedPage : Model -> Model
+setDefaultSelectedPage model =
+    case model.pageDefs of
+        Just pageDefs ->
+            let
+                page =
+                    case model.selectedPage == ProfileNotLoadedPage of
+                        True ->
+                            -- Find either the default page for this role which we
+                            -- assume to be the first page...
+                            -- TODO: or if there is a location already specified,
+                            -- look up the page associated with that location if
+                            -- possible, falling back to the default page if necessary.
+                            -- TODO: probably need programWithFlags to send in the
+                            -- current location at load for this?
+                            case List.head pageDefs of
+                                Just pageDef ->
+                                    pageDef.page
+
+                                Nothing ->
+                                    -- We have an empty List in pageDefs?
+                                    model.selectedPage
+
+                        False ->
+                            model.selectedPage
+            in
+                { model | selectedPage = page }
+
+        Nothing ->
+            model
 
 
 {-| Returns the Page associated with the tab specified
@@ -57,16 +113,20 @@ tabIndexToPage idx pageDef model =
 {-| Returns the associated PageDef for any Page passed, or
 Nothing is not found.
 -}
-getPageDef : Page -> List PageDef -> Maybe PageDef
+getPageDef : Page -> Maybe (List PageDef) -> Maybe PageDef
 getPageDef page pageDefs =
-    case LE.find (\pd -> pd.page == page) pageDefs of
-        Just pageDef ->
-            Just pageDef
+    case pageDefs of
+        Just pageDefs ->
+            case LE.find (\pd -> pd.page == page) pageDefs of
+                Just pageDef ->
+                    Just pageDef
+
+                Nothing ->
+                    -- If we are looking for a Page without a corresponding
+                    -- PageDef, that means that something was not set up right.
+                    Just notFoundPageDef
 
         Nothing ->
-            -- TODO: what is the default? 404? Home? Error message
-            -- because obviously if we were passed a Page, there
-            -- should be a PageDef?
             Nothing
 
 
@@ -81,8 +141,8 @@ locationToPage location pageDefs =
             pageDef.page
 
         Nothing ->
-            -- TODO: need a default page here.
-            AdminHomePage
+            --PageNotFoundPage
+            PageDefNotFoundPage
 
 
 tableToString : Table -> String

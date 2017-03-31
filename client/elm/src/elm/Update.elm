@@ -287,7 +287,7 @@ update msg model =
             -- Set the selected Page as well as get the url in sync.
             let
                 newCmd =
-                    case U.getPageDef page adminPages of
+                    case U.getPageDef page model.pageDefs of
                         Just pdef ->
                             Nav.newUrl pdef.location
 
@@ -341,14 +341,7 @@ update msg model =
                     model ! []
 
         UrlChange location ->
-            let
-                _ =
-                    Debug.log "UrlChange location" <| toString location
-
-                _ =
-                    Debug.log "UrlChange locationToPage" <| toString (U.locationToPage location adminPages)
-            in
-                { model | selectedPage = U.locationToPage location adminPages } ! []
+            { model | selectedPage = U.locationToPage location adminPages } ! []
 
         VaccinationTypeResponse vaccinationTypeTbl ->
             { model | vaccinationType = vaccinationTypeTbl } ! []

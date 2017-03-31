@@ -14,6 +14,7 @@ module Types
         , LoginForm
         , MedicationTypeForm
         , MedicationTypeRecord
+        , notFoundPageDef
         , Page(..)
         , PageDef
         , PregnoteTypeRecord
@@ -73,14 +74,20 @@ type Table
 {-| Pages
 -}
 type Page
-    = AdminHomePage
+    = PageDefNotFoundPage
+    | PageNotFoundPage
+    | AdminHomePage
     | AdminTablesPage
     | AdminUsersPage
     | ProfilePage
+    | ProfileNotLoadedPage
 
 
 {-| Provides the definition of each Page including the url of the
 page, as well as the optional tab and List of tabs for the page.
+
+Note: when using hashes, location needs to be something other than
+the empty String or "#".
 -}
 type alias PageDef =
     { page : Page
@@ -90,9 +97,19 @@ type alias PageDef =
     }
 
 
+{-| This is the PageDef returns by getPageDef whenever the sought
+after PageDef is not found in the List of PageDefs that is not Nothing.
+-}
+notFoundPageDef : PageDef
+notFoundPageDef =
+    PageDef PageDefNotFoundPage Nothing Nothing "#pagedefnotfound"
+
+
+{-| List PageDef for the administrator role.
+-}
 adminPages : List PageDef
 adminPages =
-    [ PageDef AdminHomePage (Just 0) (Just adminTabs) "#"
+    [ PageDef AdminHomePage (Just 0) (Just adminTabs) "#home"
     , PageDef AdminTablesPage (Just 2) (Just adminTabs) "#lookuptables"
     , PageDef AdminUsersPage (Just 1) (Just adminTabs) "#users"
     , PageDef ProfilePage Nothing (Just adminTabs) "#profile"
@@ -328,6 +345,7 @@ type alias AuthResponse =
     , shortName : Maybe String
     , displayName : Maybe String
     , role_id : Maybe Int
+    , roleName : Maybe String
     , isLoggedIn : Bool
     }
 

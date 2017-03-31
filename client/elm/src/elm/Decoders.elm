@@ -324,6 +324,7 @@ loginResponse =
         |> optional "shortName" (JD.maybe JD.string) Nothing
         |> optional "displayName" (JD.maybe JD.string) Nothing
         |> optional "role_id" (JD.maybe JD.int) Nothing
+        |> optional "roleName" (JD.maybe JD.string) Nothing
         |> required "isLoggedIn" JD.bool
 
 
@@ -343,6 +344,7 @@ userProfileResponse =
         |> optional "shortName" (JD.maybe JD.string) Nothing
         |> optional "displayName" (JD.maybe JD.string) Nothing
         |> optional "role_id" (JD.maybe JD.int) Nothing
+        |> optional "roleName" (JD.maybe JD.string) Nothing
         |> required "isLoggedIn" JD.bool
 
 

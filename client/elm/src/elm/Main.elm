@@ -11,7 +11,7 @@ import Decoders exposing (..)
 import Model exposing (..)
 import Msg exposing (..)
 import Ports
-import Types exposing (adminPages)
+import Types exposing (Page(..), adminPages)
 import Update exposing (update)
 import Utils exposing (locationToPage)
 import View as View
@@ -20,11 +20,15 @@ import View as View
 -- MAIN
 
 
+{-| Set the selectedPage to the ProfileNotLoadedPage, which is
+not a page at all, and start the process of retrieving the
+user's profile information.
+-}
 init : Location -> ( Model, Cmd Msg )
 init location =
     let
         model =
-            { initialModel | selectedPage = locationToPage location adminPages }
+            { initialModel | selectedPage = ProfileNotLoadedPage }
     in
         model ! [ Task.perform (always RequestUserProfile) (Task.succeed True) ]
 

@@ -5,6 +5,7 @@ module Updates.Adhoc exposing (adhocUpdate)
 import Model exposing (..)
 import Msg exposing (..)
 import Types exposing (..)
+import Utils exposing (setPageDefs, setDefaultSelectedPage)
 
 
 adhocUpdate : AdhocResponseMessage -> Model -> ( Model, Cmd Msg )
@@ -14,10 +15,13 @@ adhocUpdate msg model =
             case ( resp.success, resp.errorCode ) of
                 ( True, LoginSuccessErrorCode ) ->
                     -- TODO: go back to last good location once we have navigation.
-                    { model
+                    ({ model
                         | userProfile = userProfileFromAuthResponse resp
                         , loginForm = initialModel.loginForm
-                    }
+                     }
+                        |> setPageDefs
+                        |> setDefaultSelectedPage
+                    )
                         ! []
 
                 ( _, _ ) ->
@@ -30,7 +34,13 @@ adhocUpdate msg model =
         AdhocUserProfileResponseMsg resp ->
             case ( resp.success, resp.errorCode ) of
                 ( True, UserProfileSuccessErrorCode ) ->
-                    { model | userProfile = userProfileFromAuthResponse resp } ! []
+                    ({ model
+                        | userProfile = userProfileFromAuthResponse resp
+                     }
+                        |> setPageDefs
+                        |> setDefaultSelectedPage
+                    )
+                        ! []
 
                 ( _, _ ) ->
                     let
@@ -55,10 +65,11 @@ userProfileFromAuthResponse resp =
         , resp.firstname
         , resp.lastname
         , resp.role_id
+        , resp.roleName
         )
     of
         -- Build out an UserProfile if we have a minimum of the fields from the server that we need.
-        ( Just userId, Just username, Just firstname, Just lastname, Just role_id ) ->
+        ( Just userId, Just username, Just firstname, Just lastname, Just role_id, Just roleName ) ->
             Just <|
                 UserProfile userId
                     username
@@ -69,6 +80,7 @@ userProfileFromAuthResponse resp =
                     (Maybe.withDefault "" resp.shortName)
                     (Maybe.withDefault "" resp.displayName)
                     role_id
+                    roleName
                     resp.isLoggedIn
 
         _ ->

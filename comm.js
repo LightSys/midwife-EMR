@@ -644,6 +644,10 @@ var handleLogin = function(json, socket) {
 var handleUserProfile = function(socket) {
   if (isValidSocketSession(socket)) {
     if (socket.request.session.user) {
+      // Testing
+      //setTimeout(function() {
+        //sendUserProfile(socket, socket.request.session.user, UserProfileSuccessErrorCode);
+      //}, 4000);
       sendUserProfile(socket, socket.request.session.user, UserProfileSuccessErrorCode);
     } else {
       // Do not have the user in session, so fail.
@@ -700,6 +704,7 @@ var sendUserProfile = function(socket, user, errCode) {
           'shortName', 'displayName', 'role_id'])
       );
       retAction.userId = user.id;   // Field name change on the client.
+      retAction.roleName = socket.request.session.user.role.name;
       retAction.isLoggedIn = true;
       socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
     }

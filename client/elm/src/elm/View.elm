@@ -37,17 +37,17 @@ type alias Mdl =
 view : Model -> Html Msg
 view model =
     let
-        isLoggedIn =
+        ( hasLoadedUserProfile, isLoggedIn ) =
             case model.userProfile of
                 Just up ->
-                    up.isLoggedIn
+                    ( True, up.isLoggedIn )
 
                 Nothing ->
-                    False
+                    ( False, False )
 
         pageDef : Maybe PageDef
         pageDef =
-            getPageDef model.selectedPage adminPages
+            getPageDef model.selectedPage model.pageDefs
 
         ( selectedTab, tabsList ) =
             case pageDef of
@@ -70,11 +70,14 @@ view model =
                     ( 0, [] )
 
         theView =
-            case isLoggedIn of
-                False ->
+            case ( hasLoadedUserProfile, isLoggedIn ) of
+                ( False, _ ) ->
+                    viewSplash
+
+                ( True, False ) ->
                     Views.Login.view
 
-                True ->
+                ( True, True ) ->
                     case model.selectedPage of
                         AdminHomePage ->
                             viewHome
@@ -87,6 +90,16 @@ view model =
 
                         ProfilePage ->
                             Views.Profile.view
+
+                        ProfileNotLoadedPage ->
+                            -- Show the splash page while loading the user profile.
+                            viewSplash
+
+                        PageDefNotFoundPage ->
+                            viewPageDefNotFound
+
+                        PageNotFoundPage ->
+                            viewPageNotFound
     in
         Layout.render Mdl
             model.mdl
@@ -97,53 +110,16 @@ view model =
             ]
             { header = headerSmall "Midwife-EMR" model
             , drawer = []
-            , tabs = tabs tabsList
+            , tabs =
+                if hasLoadedUserProfile then
+                    tabs tabsList
+                else
+                    tabs []
             , main =
                 [ theView model
                 , Html.map (\m -> Snackbar m) <| Snackbar.view model.snackbar
                 ]
             }
-
-
-{-| Translation from Tab to Int for the sake of MDL.
--}
-tabToInt : Tab -> Int
-tabToInt tab =
-    case tab of
-        HomeTab ->
-            0
-
-        UserTab ->
-            1
-
-        TablesTab ->
-            2
-
-        ProfileTab ->
-            3
-
-
-{-| Translation from Int to Tab for the sake of MDL. Since
-    MDL requires Ints to represent tabs, we cannot escape
-    these mappings.
--}
-intToTab : Int -> Tab
-intToTab num =
-    case num of
-        0 ->
-            HomeTab
-
-        1 ->
-            UserTab
-
-        2 ->
-            TablesTab
-
-        3 ->
-            ProfileTab
-
-        _ ->
-            HomeTab
 
 
 tabSpan : String -> Html a
@@ -177,6 +153,7 @@ headerSmall title model =
                     [ Options.styled p
                         [ Typo.headline
                         , Options.onClick (SelectPage AdminHomePage)
+                        , Options.css "cursor" "pointer"
                         ]
                         [ text title ]
                     ]
@@ -196,7 +173,14 @@ headerSmall title model =
                         ]
                   else
                     Layout.title []
-                        [ Options.styled p [ Typo.body1 ] [ text "Please log in." ]
+                        [ Options.styled p
+                            [ Typo.body1 ]
+                            [ text <|
+                                if model.userProfile == Nothing then
+                                    ""
+                                else
+                                    "Please log in."
+                            ]
                         ]
                 ]
             ]
@@ -260,6 +244,55 @@ viewHome model =
             ]
 
 
-viewProfile : Model -> Html Msg
-viewProfile model =
-    p [] [ text "Profile page" ]
+{-| Show a splash screen while the user's profile information is
+not yet loaded.
+-}
+viewSplash : Model -> Html Msg
+viewSplash model =
+    let
+        _ =
+            Debug.log "viewSplash" <| model.pageDefs
+    in
+        Grid.grid []
+            [ Grid.cell
+                [ Grid.size Grid.Desktop 4
+                , Grid.size Grid.Tablet 2
+                , Grid.size Grid.Phone 1
+                ]
+                []
+            , Grid.cell
+                [ Grid.size Grid.Desktop 4
+                , Grid.size Grid.Tablet 4
+                , Grid.size Grid.Phone 2
+                , Grid.align Grid.Middle
+                , Grid.stretch
+                , Grid.maxWidth "400px"
+                ]
+                [ Html.h3
+                    [ HA.style [ ( "color", "#999999" ) ]
+                    ]
+                    [ text "One moment as we load your user information ..." ]
+                ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 4
+                , Grid.size Grid.Tablet 2
+                , Grid.size Grid.Phone 1
+                ]
+                []
+            ]
+
+
+{-| This means that the PageDef was not put into the proper list of
+page definitions.
+-}
+viewPageDefNotFound : Model -> Html Msg
+viewPageDefNotFound model =
+    Html.text "The PageDef was not found in the list of page definitions."
+
+
+{-| This means that the proper Page data constructor was not put
+into the Page type.
+-}
+viewPageNotFound : Model -> Html Msg
+viewPageNotFound model =
+    Html.text "The Page was not found in the Page type."
