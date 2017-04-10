@@ -39,6 +39,7 @@ var NoErrorCode = 'NoErrorCode';
 var SessionExpiredErrorCode = 'SessionExpiredErrorCode';
 var SqlErrorCode = 'SqlErrorCode';
 var UnknownErrorCode = 'UnknownErrorCode';
+var UnknownTableErrorCode = 'UnknownTableErrorCode';
 
 
 /* --------------------------------------------------------
@@ -513,6 +514,7 @@ module.exports = {
   , SessionExpiredErrorCode
   , SqlErrorCode
   , UnknownErrorCode
+  , UnknownTableErrorCode
   , UserProfileSuccessErrorCode
   , UserProfileFailErrorCode
   , validOrVoidDate: validOrVoidDate

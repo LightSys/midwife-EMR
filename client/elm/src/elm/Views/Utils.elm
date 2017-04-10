@@ -2,10 +2,14 @@ module Views.Utils
     exposing
         ( button
         , buttonNoMsg
+        , checkBox
         , footerMini
         , fullSizeCellOpts
+        , isChecked
+        , radio
         , recordChanger
         , textFld
+        , textFldFocus
         )
 
 import Color as Color
@@ -28,6 +32,7 @@ import Material.Icons.Navigation as Icon
         )
 import Material.Options as Options exposing (Property)
 import Material.Textfield as Textfield
+import Material.Toggles as Toggles
 
 
 -- LOCAL IMPORTS
@@ -39,6 +44,41 @@ import Types exposing (..)
 
 type alias Mdl =
     Material.Model
+
+
+isChecked : Form.FieldState e Bool -> Bool
+isChecked fld =
+    case fld.value of
+        Just v ->
+            v
+
+        Nothing ->
+            False
+
+
+radio : String -> List Int -> Msg -> Bool -> String -> Material.Model -> Html Msg
+radio lbl idx msg val radioGroup mdl =
+    Toggles.radio Mdl
+        idx
+        mdl
+        [ Toggles.value val
+        , Toggles.group radioGroup
+        , Toggles.ripple
+        , Options.onToggle msg
+        ]
+        [ Html.text lbl ]
+
+
+checkBox : String -> List Int -> Msg -> Bool -> Material.Model -> Html Msg
+checkBox lbl idx msg val mdl =
+    Toggles.checkbox Mdl
+        idx
+        mdl
+        [ Options.onToggle msg
+        , Toggles.ripple
+        , Toggles.value val
+        ]
+        [ Html.text lbl ]
 
 
 button : List Int -> Msg -> String -> Bool -> Bool -> Material.Model -> Html Msg
@@ -186,6 +226,37 @@ textFld lbl fld idx tagger allowEdit isPassword mdl =
             , Textfield.floatingLabel
             , Textfield.value <| Maybe.withDefault "" fld.value
             , Options.onInput tagger
+            , if isPassword then
+                Textfield.password
+              else
+                Options.nop
+            , if not allowEdit then
+                Textfield.disabled
+              else
+                Options.nop
+            , if allowEdit then
+                Options.css "font-weight" "bold"
+              else
+                Options.nop
+            , Options.input
+                [ MColor.text MColor.primary
+                ]
+            ]
+            []
+        , errorFor fld lbl
+        ]
+
+textFldFocus : String -> Form.FieldState e String -> List Int -> (String -> Msg) -> Bool -> Bool -> Material.Model -> Html Msg
+textFldFocus lbl fld idx tagger allowEdit isPassword mdl =
+    Html.div []
+        [ Textfield.render Mdl
+            idx
+            mdl
+            [ Textfield.label lbl
+            , Textfield.floatingLabel
+            , Textfield.value <| Maybe.withDefault "" fld.value
+            , Options.onInput tagger
+            , Textfield.autofocus
             , if isPassword then
                 Textfield.password
               else

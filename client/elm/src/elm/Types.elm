@@ -19,17 +19,19 @@ module Types
         , PageDef
         , PregnoteTypeRecord
         , RiskCodeRecord
+        , RoleForm
         , RoleRecord
         , SelectQuery
         , SelectQueryResponse
         , SystemMessage
-        , Tab(..)
         , Table(..)
         , TableMetaInfo
         , TableModel
         , TableResponse(..)
         , UpdateResponse
+        , UserForm
         , UserRecord
+        , UserSearchForm
         , VaccinationTypeRecord
         )
 
@@ -116,27 +118,14 @@ adminPages =
     ]
 
 
+{-| List of tabs that the administrator role sees.
+-}
 adminTabs : List ( String, Page )
 adminTabs =
     [ ( "Home", AdminHomePage )
     , ( "Users", AdminUsersPage )
     , ( "Lookup Tables", AdminTablesPage )
     ]
-
-
-{-| TODO: Get rid of this so that everything is in Page somehow.
--}
-type Tab
-    = HomeTab
-    | UserTab
-    | TablesTab
-    | ProfileTab
-
-
-{-| is this used?
--}
-type AdhocOperation
-    = Login
 
 
 type alias TableModel a b =
@@ -160,6 +149,8 @@ type TableResponse
     = LabSuiteResp (List LabSuiteRecord)
     | LabTestResp (List LabTestRecord)
     | MedicationTypeResp (List MedicationTypeRecord)
+    | RoleResp (List RoleRecord)
+    | UserResp (List UserRecord)
 
 
 type ErrorCode
@@ -223,6 +214,30 @@ type alias TableMetaInfo =
     }
 
 
+type alias RoleForm =
+    { id : Int
+    , name : String
+    , description : String
+    }
+
+
+type alias UserForm =
+    { id : Int
+    , username : String
+    , firstname : String
+    , lastname : String
+    , password : String
+    , email : String
+    , lang : String
+    , shortName : String
+    , displayName : String
+    , status : Bool
+    , note : String
+    , isCurrentTeacher : Bool
+    , role_id : Int
+    }
+
+
 type alias UserRecord =
     { id : Int
     , username : String
@@ -236,7 +251,8 @@ type alias UserRecord =
     , status : Bool
     , note : String
     , isCurrentTeacher : Bool
-    , roleId : Int
+    , role_id : Int
+    , stateId : Maybe Int
     }
 
 
@@ -320,6 +336,18 @@ type alias RiskCodeRecord =
     , name : String
     , riskType : String
     , description : String
+    }
+
+
+type alias UserSearchForm =
+    { query : String
+    , isAdministrator : Bool
+    , isAttending : Bool
+    , isClerk : Bool
+    , isGuard : Bool
+    , isSupervisor : Bool
+    , isActive : Bool
+    , isInActive : Bool
     }
 
 

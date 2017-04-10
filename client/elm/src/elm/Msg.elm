@@ -3,6 +3,8 @@ module Msg
         ( Msg(..)
         , AdhocResponseMessage(..)
         , MedicationTypeMsg(..)
+        , RoleMsg(..)
+        , UserMsg(..)
         )
 
 import Form exposing (Form)
@@ -42,8 +44,10 @@ type Msg
     | PreviousRecord
     | RequestUserProfile
     | RiskCodeResponse (RemoteData String (List RiskCodeRecord))
+    | RoleMessages RoleMsg
     | SaveSelectedTable
     | SelectedTableEditMode EditMode (Maybe Int)
+    | SelectQueryMsg SelectQuery
     | SelectQueryResponseMsg (RemoteData String SelectQueryResponse)
     | SelectQuerySelectTable SelectQuery
     | SelectTableRecord Int
@@ -52,6 +56,7 @@ type Msg
     | Snackbar (Snackbar.Msg String)
     | UpdateResponseMsg (Maybe UpdateResponse)
     | UrlChange Location
+    | UserMessages UserMsg
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeRecord))
 
 
@@ -76,3 +81,24 @@ type AdhocResponseMessage
     = AdhocUnknownMsg String
     | AdhocLoginResponseMsg AuthResponse
     | AdhocUserProfileResponseMsg AuthResponse
+
+type RoleMsg
+    = ReadResponseRole (RemoteData String (List RoleRecord)) (Maybe SelectQuery)
+
+type UserMsg
+    = CancelEditUser
+    | CreateResponseUser CreateResponse
+    | CreateUser
+    | CreateUserForm
+    | DeleteResponseUser DeleteResponse
+    | DeleteUser (Maybe Int)
+    | FirstUser
+    | FormMsgUser Form.Msg
+    | FormMsgUserSearch Form.Msg
+    | LastUser
+    | NextUser
+    | PrevUser
+    | ReadResponseUser (RemoteData String (List UserRecord)) (Maybe SelectQuery)
+    | SelectedRecordEditModeUser EditMode (Maybe Int)
+    | UpdateResponseUser UpdateResponse
+    | UpdateUser

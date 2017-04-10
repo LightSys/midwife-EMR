@@ -1,5 +1,7 @@
 module Updates.Adhoc exposing (adhocUpdate)
 
+import Task
+
 -- LOCAL IMPORTS
 
 import Model exposing (..)
@@ -34,13 +36,19 @@ adhocUpdate msg model =
         AdhocUserProfileResponseMsg resp ->
             case ( resp.success, resp.errorCode ) of
                 ( True, UserProfileSuccessErrorCode ) ->
-                    ({ model
-                        | userProfile = userProfileFromAuthResponse resp
-                     }
-                        |> setPageDefs
-                        |> setDefaultSelectedPage
-                    )
-                        ! []
+                    let
+                        newModel =
+                            ({ model
+                                | userProfile = userProfileFromAuthResponse resp
+                            }
+                                |> setPageDefs
+                                |> setDefaultSelectedPage
+                            )
+
+                        newCmds =
+                            prefetchCmdsByRole newModel
+                    in
+                        newModel ! newCmds
 
                 ( _, _ ) ->
                     let
@@ -55,6 +63,29 @@ adhocUpdate msg model =
                     Debug.log "AdhocUnknownMsg" <| toString msg
             in
                 model ! []
+
+
+prefetchCmdsByRole : Model -> List ( Cmd Msg )
+prefetchCmdsByRole ({userProfile} as model) =
+    case userProfile of
+        Just profile ->
+            case profile.roleName of
+                "administrator" ->
+                    let
+                        qry1 =
+                            SelectQuery User Nothing Nothing Nothing
+
+                        qry2 =
+                            SelectQuery Role Nothing Nothing Nothing
+                    in
+                        [ Task.perform (always <| SelectQueryMsg qry1) (Task.succeed True)
+                        , Task.perform (always <| SelectQueryMsg qry2) (Task.succeed True)
+                        ]
+
+                _ ->
+                    []
+        Nothing ->
+            []
 
 
 userProfileFromAuthResponse : AuthResponse -> Maybe UserProfile

@@ -116,6 +116,71 @@ medicationTypeTable =
         |> hardcoded Nothing
 
 
+roleTable : JD.Decoder RoleRecord
+roleTable =
+    decode RoleRecord
+        |> required "id" JD.int
+        |> required "name" JD.string
+        |> required "description" JD.string
+
+
+userRecord : JD.Decoder UserRecord
+userRecord =
+    let
+        -- The server sends bools as a 0 or 1 so convert to Bool.
+        handleBools :
+            Int
+            -> String
+            -> String
+            -> String
+            -> String
+            -> String
+            -> Maybe String
+            -> String
+            -> Maybe String
+            -> Int
+            -> String
+            -> Int
+            -> Int
+            -> Maybe Int
+            -> UserRecord
+        handleBools id username firstname lastname password email lang shortName displayName status note isCurrentTeacher role_id statusId =
+            let
+                ( statusBool, ictBool ) =
+                    ( status == 1, isCurrentTeacher == 1 )
+            in
+                UserRecord id
+                    username
+                    firstname
+                    lastname
+                    password
+                    email
+                    (Maybe.withDefault "" lang)
+                    shortName
+                    (Maybe.withDefault "" displayName)
+                    statusBool
+                    note
+                    ictBool
+                    role_id
+                    Nothing
+    in
+        decode handleBools
+            |> required "id" JD.int
+            |> required "username" JD.string
+            |> required "firstname" JD.string
+            |> required "lastname" JD.string
+            |> required "password" JD.string
+            |> required "email" JD.string
+            |> optional "lang" (JD.maybe JD.string) Nothing
+            |> required "shortName" JD.string
+            |> optional "displayName" (JD.maybe JD.string) Nothing
+            |> required "status" JD.int
+            |> required "note" JD.string
+            |> required "isCurrentTeacher" JD.int
+            |> required "role_id" JD.int
+            |> hardcoded Nothing
+
+
 partialSelectQueryResponse : JD.Decoder (TableResponse -> SelectQueryResponse)
 partialSelectQueryResponse =
     decode SelectQueryResponse
@@ -134,10 +199,6 @@ selectQueryResponse =
         decodeData : String -> JD.Decoder SelectQueryResponse
         decodeData table =
             case U.stringToTable table of
-                MedicationType ->
-                    partialSelectQueryResponse
-                        |> required "data" (JD.map MedicationTypeResp (JD.list medicationTypeTable))
-
                 LabSuite ->
                     partialSelectQueryResponse
                         |> required "data" (JD.map LabSuiteResp (JD.list labSuiteTable))
@@ -146,8 +207,20 @@ selectQueryResponse =
                     partialSelectQueryResponse
                         |> required "data" (JD.map LabTestResp (JD.list labTestTable))
 
+                MedicationType ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map MedicationTypeResp (JD.list medicationTypeTable))
+
+                Role ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map RoleResp (JD.list roleTable))
+
+                User ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map UserResp (JD.list userRecord))
+
                 _ ->
-                    JD.fail "Unknown table returned from select."
+                    JD.fail "selectQueryResponse: Unknown table returned from server."
     in
         JD.field "table" JD.string
             |> JD.andThen decodeData
@@ -157,6 +230,25 @@ decodeSelectQueryResponse : JE.Value -> RemoteData String SelectQueryResponse
 decodeSelectQueryResponse payload =
     JD.decodeValue selectQueryResponse payload
         |> RD.fromResult
+
+
+decodeUserRecord : Maybe String -> Maybe UserRecord
+decodeUserRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString userRecord p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "decodeUserRecord" <| toString msg
+                    in
+                        Nothing
+
+        Nothing ->
+            Nothing
 
 
 decodeMedicationTypeRecord : Maybe String -> Maybe MedicationTypeRecord
@@ -307,6 +399,7 @@ adhocResponse : JD.Decoder AdhocResponseMessage
 adhocResponse =
     JD.field "adhocType" JD.string
         |> JD.andThen getDecoderAdhocResponse
+
 
 loginResponse : JD.Decoder AuthResponse
 loginResponse =

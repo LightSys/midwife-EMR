@@ -24,6 +24,7 @@ var LOOKUP_TABLES = [
   'pregnoteType',
   'riskCode',
   'role',
+  'user',
   'vaccinationType'
 ];
 
@@ -58,6 +59,16 @@ var getLookupTable = function(table, cb) {
   knex(table)
     .select()
     .then(function(rows) {
+      // --------------------------------------------------------
+      // We never return the password field to the client. Return
+      // an empty string instead.
+      // --------------------------------------------------------
+      if (table === 'user') {
+        rows = _.map(rows, function(rec) {
+          rec.password = '';
+          return rec;
+        });
+      }
       return cb(null, rows);
     })
     .catch(function(err) {

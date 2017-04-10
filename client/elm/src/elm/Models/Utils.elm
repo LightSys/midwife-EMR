@@ -13,9 +13,11 @@ module Models.Utils
         , setSelectQuery
         , updateById
         , updateByIndex
+        , validateOptionalEmail
         )
 
 import Form exposing (Form)
+import Form.Validate as V
 import Json.Encode as JE
 import List.Extra as LE
 import RemoteData as RD exposing (RemoteData(..))
@@ -24,6 +26,14 @@ import RemoteData as RD exposing (RemoteData(..))
 -- LOCAL IMPORTS
 
 import Types exposing (..)
+
+
+validateOptionalEmail : V.Validation () String
+validateOptionalEmail =
+    V.oneOf
+        [ V.emptyString |> V.map (\_ -> "")
+        , V.email
+        ]
 
 
 addRecord : a -> TableModel a b -> TableModel a b

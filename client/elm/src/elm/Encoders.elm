@@ -51,6 +51,37 @@ medicationTypeToValue mt =
         ]
 
 
+userToValue : UserRecord -> JE.Value
+userToValue user =
+    JE.object
+        [ ( "id", JE.int user.id )
+        , ( "username", JE.string user.username )
+        , ( "firstname", JE.string user.firstname )
+        , ( "lastname", JE.string user.lastname )
+        , ( "password", JE.string user.password )
+        , ( "email", JE.string user.email )
+        , ( "lang", JE.string user.lang )
+        , ( "shortName", JE.string user.shortName )
+        , ( "displayName", JE.string user.displayName )
+        , if user.status then
+            ( "status", JE.int 1 )
+          else
+            ( "status", JE.int 0 )
+        , ( "note", JE.string user.note )
+        , if user.isCurrentTeacher then
+            ( "isCurrentTeacher", JE.int 1 )
+          else
+            ( "isCurrentTeacher", JE.int 0 )
+        , ( "role_id", JE.int user.role_id )
+        , case user.stateId of
+            Just num ->
+                ( "stateId", JE.int num )
+
+            Nothing ->
+                ( "stateId", JE.null )
+        ]
+
+
 loginFormToValue : LoginForm -> JE.Value
 loginFormToValue login =
     JE.object

@@ -12,6 +12,9 @@ port module Ports
         , selectQueryResponse
         , systemMessages
         , updateResponse
+        , userCreate
+        , userDelete
+        , userUpdate
         )
 
 import Json.Decode as JD
@@ -62,13 +65,19 @@ port medicationTypeDelete : JE.Value -> Cmd msg
 port medicationTypeUpdate : JE.Value -> Cmd msg
 
 
-port searchUser : String -> Cmd msg
+port requestUserProfile : JE.Value -> Cmd msg
 
 
 port selectQuery : JE.Value -> Cmd msg
 
 
-port requestUserProfile : JE.Value -> Cmd msg
+port userCreate : JE.Value -> Cmd msg
+
+
+port userDelete : JE.Value -> Cmd msg
+
+
+port userUpdate : JE.Value -> Cmd msg
 
 
 port login : JE.Value -> Cmd msg

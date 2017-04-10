@@ -83,7 +83,7 @@ view model =
                             viewHome
 
                         AdminUsersPage ->
-                            Views.Users.viewUserSearch
+                            Views.Users.view
 
                         AdminTablesPage ->
                             Views.Tables.view

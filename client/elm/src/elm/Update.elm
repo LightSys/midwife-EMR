@@ -28,6 +28,8 @@ import Transactions as Trans
 import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
+import Updates.Role as Updates exposing (roleUpdate)
+import Updates.User as Updates exposing (userUpdate)
 import Utils as U
 
 
@@ -64,6 +66,9 @@ update msg model =
                         MedicationType ->
                             Updates.medicationTypeUpdate (CreateResponseMedicationType a) model
 
+                        User ->
+                            Updates.userUpdate (CreateResponseUser a) model
+
                         _ ->
                             model ! []
 
@@ -76,6 +81,9 @@ update msg model =
                     case d.table of
                         MedicationType ->
                             Updates.medicationTypeUpdate (DeleteResponseMedicationType d) model
+
+                        User ->
+                            Updates.userUpdate (DeleteResponseUser d) model
 
                         _ ->
                             model ! []
@@ -194,6 +202,9 @@ update msg model =
         RiskCodeResponse riskCodeTbl ->
             { model | riskCode = riskCodeTbl } ! []
 
+        RoleMessages roleMsg ->
+            Updates.roleUpdate roleMsg model
+
         SaveSelectedTable ->
             -- Note: the real save is done with other messages like MedicationTypeMessages
             { model | selectedTableEditMode = EditModeView } ! []
@@ -216,10 +227,17 @@ update msg model =
             in
                 newModel2 ! []
 
-        SelectQueryResponseMsg sqr ->
+        SelectQueryMsg query ->
             let
                 _ =
-                    Debug.log "SelectQueryResponseMsg" <| toString sqr
+                    Debug.log "SelectQueryMsg" <| toString query
+            in
+                model ! [ Ports.selectQuery (E.selectQueryToValue query) ]
+
+        SelectQueryResponseMsg sqr ->
+            let
+                --_ =
+                    --Debug.log "SelectQueryResponseMsg" <| toString sqr
 
                 ( newModel, newCmd ) =
                     -- Unwrap sqr from the RemoteData wrapper.
@@ -232,6 +250,12 @@ update msg model =
                                 case ( selQryResp.success, selQryResp.errorCode ) of
                                     ( _, NoErrorCode ) ->
                                         case selQryResp.data of
+                                            LabSuiteResp list ->
+                                                update (LabSuiteResponse (RD.succeed list)) model
+
+                                            LabTestResp list ->
+                                                update (LabTestResponse (RD.succeed list)) model
+
                                             MedicationTypeResp list ->
                                                 -- Put the records into RemoteData format as expected and
                                                 -- pass to update function for processing.
@@ -242,11 +266,21 @@ update msg model =
                                                     )
                                                     model
 
-                                            LabSuiteResp list ->
-                                                update (LabSuiteResponse (RD.succeed list)) model
+                                            RoleResp list ->
+                                                Updates.roleUpdate
+                                                    (ReadResponseRole
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
 
-                                            LabTestResp list ->
-                                                update (LabTestResponse (RD.succeed list)) model
+                                            UserResp list ->
+                                                Updates.userUpdate
+                                                    (ReadResponseUser
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
 
                                     ( _, SessionExpiredErrorCode ) ->
                                         update SessionExpired model
@@ -334,6 +368,9 @@ update msg model =
                         MedicationType ->
                             Updates.medicationTypeUpdate (UpdateResponseMedicationType c) model
 
+                        User ->
+                            Updates.userUpdate (UpdateResponseUser c) model
+
                         _ ->
                             model ! []
 
@@ -342,6 +379,9 @@ update msg model =
 
         UrlChange location ->
             { model | selectedPage = U.locationToPage location adminPages } ! []
+
+        UserMessages userMsg ->
+            Updates.userUpdate userMsg model
 
         VaccinationTypeResponse vaccinationTypeTbl ->
             { model | vaccinationType = vaccinationTypeTbl } ! []

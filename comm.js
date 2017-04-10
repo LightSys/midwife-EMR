@@ -136,9 +136,13 @@ var rx = require('rx')
   , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , TABLE_medicationType = 'medicationType'
+  , TABLE_user = 'user'
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
+  , addUser = require('./routes/comm/lookupTables').addUser
+  , delUser = require('./routes/comm/lookupTables').delUser
+  , updateUser = require('./routes/comm/lookupTables').updateUser
   , returnLogin = require('./util').returnLogin
   , returnUserProfile = require('./util').returnUserProfile
   , returnStatusADD = require('./util').returnStatusADD
@@ -152,6 +156,7 @@ var rx = require('rx')
   , NoErrorCode = require('./util').NoErrorCode
   , SessionExpiredErrorCode = require('./util').SessionExpiredErrorCode
   , SqlErrorCode = require('./util').SqlErrorCode
+  , UnknownTableErrorCode = require('./util').UnknownTableErrorCode
   , UnknownErrorCode = require('./util').UnknownErrorCode
   ;
 
@@ -516,6 +521,25 @@ var loginUser = function(username, password, cb) {
   });
 };
 
+var getFuncForTableOp = function(table, op) {
+  var func = void 0;
+  switch (table) {
+    case TABLE_medicationType:
+      switch (op) {
+        case ADD: func = addMedicationType; break;
+        case CHG: func = updateMedicationType; break;
+        case DEL: func = delMedicationType; break;
+      }
+    case TABLE_user:
+      switch (op) {
+        case ADD: func = addUser; break;
+        case CHG: func = updateUser; break;
+        case DEL: func = delUser; break;
+      }
+  }
+  return func;
+};
+
 /* --------------------------------------------------------
  * handleData()
  *
@@ -545,7 +569,6 @@ var handleData = function(evtName, payload, socket) {
         console.log('Data ADD request: Improper data sent from client!');
         return;
       }
-      dataFunc = addMedicationType;
       returnStatusFunc = returnStatusADD;
       responseEvt = ADD_RESPONSE;
       break;
@@ -556,7 +579,6 @@ var handleData = function(evtName, payload, socket) {
         console.log('Data CHG request: Improper data sent from client!');
         return;
       }
-      dataFunc = updateMedicationType;
       returnStatusFunc = returnStatusCHG;
       responseEvt = CHG_RESPONSE;
       break;
@@ -567,13 +589,20 @@ var handleData = function(evtName, payload, socket) {
         console.log('Data DEL request: Improper data sent from client!');
         return;
       }
-      dataFunc = delMedicationType;
       returnStatusFunc = returnStatusDEL;
       responseEvt = DEL_RESPONSE;
       break;
 
     default:
       console.log('UNKNOWN event of ' + evtName + ' in handeData().');
+      retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This event cannot be handled by the server: " + evtName + '.');
+      return socket.emit(responseEvt, JSON.stringify(retAction));
+  }
+
+  dataFunc = getFuncForTableOp(table, evtName);
+  if (! dataFunc) {
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This table cannot be handled by the server.");
+    return socket.emit(responseEvt, JSON.stringify(retAction));
   }
 
   if (! isValidSocketSession(socket)) {
@@ -581,32 +610,26 @@ var handleData = function(evtName, payload, socket) {
     return socket.emit(responseEvt, JSON.stringify(retAction));
   } else touchSocketSession(socket);
 
-  switch (table) {
-    case TABLE_medicationType:
-      dataFunc(data, userInfo, function(err, success, additionalData) {
-        if (err) {
-          logCommError(err);
-          if (evtName === ADD) {
-            retAction = returnStatusFunc(table, data.id, data.id, false, SqlErrorCode, err.message);
-          } else {
-            retAction = returnStatusFunc(table, data.id, data.stateId, false, SqlErrorCode, err.message);
-          }
-          return socket.emit(responseEvt, JSON.stringify(retAction));
-        }
-        if (evtName == ADD) {
-          retAction = returnStatusFunc(table, data.id, additionalData.id, true);
-        } else {
-          retAction = returnStatusFunc(table, data.id, data.stateId, true);
-        }
-        return socket.emit(responseEvt, JSON.stringify(retAction));
-      });
-      break;
+  dataFunc(data, userInfo, function(err, success, additionalData) {
+    var errMsg;
+    if (err) {
+      logCommError(err);
+      errMsg = err.message? err.message: err;
+      if (evtName === ADD) {
+        retAction = returnStatusFunc(table, data.id, data.id, false, SqlErrorCode, errMsg);
+      } else {
+        retAction = returnStatusFunc(table, data.id, data.stateId, false, SqlErrorCode, errMsg);
+      }
+      return socket.emit(responseEvt, JSON.stringify(retAction));
+    }
+    if (evtName == ADD) {
+      retAction = returnStatusFunc(table, data.id, additionalData.id, true);
+    } else {
+      retAction = returnStatusFunc(table, data.id, data.stateId, true);
+    }
+    return socket.emit(responseEvt, JSON.stringify(retAction));
+  });
 
-    default:
-      // TODO: send the proper msg back to the client???
-      console.log('=========== Unknown ' + evtName + ' request =============');
-      console.log(wrapper);
-  }
 };
 
 var handleLogin = function(json, socket) {
@@ -1060,7 +1083,7 @@ var init = function(io, sessionMiddle) {
 
     // --------------------------------------------------------
     // Data CHG request from the Elm client. Record will have
-    // a pendingId field with the client's transaction
+    // a stateId field with the client's transaction
     // id. This needs to be stripped and not inserted into DB,
     // but response needs to include it.
     // --------------------------------------------------------

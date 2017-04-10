@@ -53,3 +53,8 @@ label.mdl-textfield__label {
 .selectedListItem {
   background-color: #999999;
 }
+
+/* Background highlight for alternate rows. */
+.altRowBackground {
+  background-color: #f0f0f0;
+}

@@ -205,7 +205,6 @@ ioData.on(SELECT_RESPONSE, function(data) {
 // --------------------------------------------------------
 ioData.on(CHG_RESPONSE, function(data) {
   if (! app) return;
-  console.log(data);
   app.ports.updateResponse.send(JSON.parse(data));
 });
 
@@ -271,10 +270,6 @@ var setApp = function(theApp) {
     sendMsg(ADHOC, wrapAdHoc(ADHOC_LOGIN, data));
   });
 
-  app.ports.medicationTypeUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('medicationType', data));
-  });
-
   app.ports.medicationTypeCreate.subscribe(function(data) {
     sendMsg(ADD, wrapData('medicationType', data));
   });
@@ -283,12 +278,28 @@ var setApp = function(theApp) {
     sendMsg(DEL, wrapData('medicationType', data));
   });
 
+  app.ports.medicationTypeUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('medicationType', data));
+  });
+
   app.ports.requestUserProfile.subscribe(function(uselessData) {
     sendMsg(ADHOC, wrapAdHoc(ADHOC_USER_PROFILE, void 0));
   });
 
   app.ports.selectQuery.subscribe(function(query) {
     sendMsg(SELECT, query);
+  });
+
+  app.ports.userCreate.subscribe(function(data) {
+    sendMsg(ADD, wrapData('user', data));
+  });
+
+  app.ports.userDelete.subscribe(function(data) {
+    sendMsg(DEL, wrapData('user', data));
+  });
+
+  app.ports.userUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('user', data));
   });
 
 };

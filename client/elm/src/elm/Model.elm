@@ -1,12 +1,16 @@
 module Model
     exposing
-        ( Model
-        , UserProfile
+        ( asMedicationTypeModelIn
+        , asRoleModelIn
+        , asUserModelIn
         , initialModel
-        , State
-        , asMedicationTypeModelIn
-        , setMedicationTypeModel
         , loginFormValidate
+        , Model
+        , setMedicationTypeModel
+        , setRoleModel
+        , State
+        , UserProfile
+        , userSearchFormValidate
         )
 
 import Date exposing (Date)
@@ -22,6 +26,8 @@ import Time exposing (Time)
 -- LOCAL IMPORTS
 
 import Models.MedicationType as MedicationType
+import Models.Role as Role
+import Models.User as User
 import Types exposing (..)
 
 
@@ -38,16 +44,18 @@ type alias Model =
     , pageDefs : Maybe (List PageDef)
     , riskCode : RemoteData String (List RiskCodeRecord)
     , role : RemoteData String RoleRecord
+    , roleModel : Role.RoleModel
     , selectedPage : Page
     , selectedTableEditMode : EditMode
     , selectedTable : Maybe Table
     , selectedTableRecord : Int
-    , selectedTab : Tab
     , snackbar : Snackbar.Model String
     , systemMessages : List SystemMessage
     , transactions : States
     , user : RemoteData String UserRecord
+    , userModel : User.UserModel
     , userProfile : Maybe UserProfile
+    , userSearchForm : Form () UserSearchForm
     , vaccinationType : RemoteData String (List VaccinationTypeRecord)
     }
 
@@ -108,6 +116,19 @@ loginFormValidate =
         (V.field "password" (V.string |> V.defaultValue "" |> V.andThen V.nonEmpty))
 
 
+userSearchFormValidate : V.Validation () UserSearchForm
+userSearchFormValidate =
+    V.map8 UserSearchForm
+        (V.field "query" (V.string |> V.defaultValue ""))
+        (V.field "isAdministrator" V.bool)
+        (V.field "isAttending" V.bool)
+        (V.field "isClerk" V.bool)
+        (V.field "isGuard" V.bool)
+        (V.field "isSupervisor" V.bool)
+        (V.field "isActive" V.bool)
+        (V.field "isInActive" V.bool)
+
+
 initialModel : Model
 initialModel =
     { eventType = NotAsked
@@ -122,8 +143,8 @@ initialModel =
     , pageDefs = Nothing
     , riskCode = NotAsked
     , role = NotAsked
+    , roleModel = Role.initialRoleModel
     , selectedPage = AdminHomePage
-    , selectedTab = HomeTab
     , selectedTableEditMode = EditModeView
     , selectedTable = Nothing
     , selectedTableRecord = 0
@@ -131,7 +152,9 @@ initialModel =
     , systemMessages = []
     , transactions = statesInit
     , user = NotAsked
+    , userModel = User.initialUserModel
     , userProfile = initialUserProfile
+    , userSearchForm = Form.initial [] userSearchFormValidate
     , vaccinationType = NotAsked
     }
 
@@ -148,3 +171,23 @@ setMedicationTypeModel mtm model =
 asMedicationTypeModelIn : Model -> MedicationType.MedicationTypeModel -> Model
 asMedicationTypeModelIn =
     flip setMedicationTypeModel
+
+
+setRoleModel : Role.RoleModel -> Model -> Model
+setRoleModel rm model =
+    (\model -> { model | roleModel = rm }) model
+
+
+asRoleModelIn : Model -> Role.RoleModel -> Model
+asRoleModelIn =
+    flip setRoleModel
+
+
+setUserModel : User.UserModel -> Model -> Model
+setUserModel um model =
+    (\model -> { model | userModel = um }) model
+
+
+asUserModelIn : Model -> User.UserModel -> Model
+asUserModelIn =
+    flip setUserModel
