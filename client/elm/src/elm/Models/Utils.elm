@@ -4,6 +4,7 @@ module Models.Utils
         , delSelectedRecord
         , getRecNextMax
         , getSelectedRecordAsString
+        , mergeById
         , selectQueryResponseToSelectQuery
         , setEditMode
         , setForm
@@ -113,6 +114,37 @@ setSelectedRecordId id tableModel =
 setSelectQuery : Maybe SelectQuery -> TableModel a b -> TableModel a b
 setSelectQuery sq tableModel =
     (\tm -> { tm | selectQuery = sq }) tableModel
+
+
+{-| Merge the source RemoteData records into the target RemoteData
+records, updating the target with the source based upon id.
+-}
+mergeById :
+    RemoteData String (List { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
+mergeById source target =
+    case ( source, target ) of
+        ( Success srecs, Success trecs ) ->
+            List.map
+                (\trec ->
+                    case LE.find (\s -> s.id == trec.id) srecs of
+                        Just srec ->
+                            srec
+
+                        Nothing ->
+                            trec
+                )
+                trecs
+                    |> RD.succeed
+
+        ( Success srecs, _ ) ->
+            -- The target is empty so the source becomes all.
+            source
+
+        ( _, _ ) ->
+            -- Don't change anything.
+            target
 
 
 updateById :

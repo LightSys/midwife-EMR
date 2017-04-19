@@ -90,7 +90,7 @@ var rx = require('rx')
   , moment = require('moment')
   , cfg = require('./config')
   , User = require('./models').User
-  , getLookupTable = require('./routes/api/lookupTables').getLookupTable
+  , getLookupTable = require('./routes/comm/lookupTables').getLookupTable
   , saveUser = require('./routes/comm/userRoles').saveUser
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
   , savePrenatal = require('./routes/comm/pregnancy').savePrenatal
@@ -135,16 +135,20 @@ var rx = require('rx')
   , ADHOC_RESPONSE = 'ADHOC_RESPONSE'       // data adhoc response.
   , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
+  , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , TABLE_medicationType = 'medicationType'
   , TABLE_user = 'user'
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
-  , addUser = require('./routes/comm/lookupTables').addUser
-  , delUser = require('./routes/comm/lookupTables').delUser
-  , updateUser = require('./routes/comm/lookupTables').updateUser
+  , addUser = require('./routes/comm/userRoles').addUser
+  , delUser = require('./routes/comm/userRoles').delUser
+  , updateUser = require('./routes/comm/userRoles').updateUser
+  , updateUserProfile = require('./routes/comm/userRoles').updateUserProfile
+  , getUserProfile = require('./routes/comm/userRoles').getUserProfile
   , returnLogin = require('./util').returnLogin
   , returnUserProfile = require('./util').returnUserProfile
+  , returnUserProfileUpdate = require('./util').returnUserProfileUpdate
   , returnStatusADD = require('./util').returnStatusADD
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
@@ -153,11 +157,15 @@ var rx = require('rx')
   , LoginSuccessErrorCode = require('./util').LoginSuccessErrorCode
   , UserProfileSuccessErrorCode = require('./util').UserProfileSuccessErrorCode
   , UserProfileFailErrorCode = require('./util').UserProfileFailErrorCode
+  , UserProfileUpdateSuccessErrorCode = require('./util').UserProfileUpdateSuccessErrorCode
+  , UserProfileUpdateFailErrorCode = require('./util').UserProfileUpdateFailErrorCode
   , NoErrorCode = require('./util').NoErrorCode
   , SessionExpiredErrorCode = require('./util').SessionExpiredErrorCode
   , SqlErrorCode = require('./util').SqlErrorCode
   , UnknownTableErrorCode = require('./util').UnknownTableErrorCode
   , UnknownErrorCode = require('./util').UnknownErrorCode
+  , assertModule = require('./comm_assert')
+  , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
 
 
@@ -450,6 +458,7 @@ var subscribeData = function(onNext, onError, onCompleted) {
   * return      boolean
   * -------------------------------------------------------- */
 var isValidSocketSession = function(socket) {
+  if (DO_ASSERT) assertModule.isValidSocketSession(socket);
   var notExpired = false;
   var isValid = socket &&
                 socket.request &&
@@ -472,6 +481,7 @@ var isValidSocketSession = function(socket) {
  * return      undefined
  * -------------------------------------------------------- */
 var touchSocketSession = function(socket) {
+  if (DO_ASSERT) assertModule.touchSocketSession(socket);
   socket.request.session.touch();
 };
 
@@ -530,12 +540,14 @@ var getFuncForTableOp = function(table, op) {
         case CHG: func = updateMedicationType; break;
         case DEL: func = delMedicationType; break;
       }
+      break;
     case TABLE_user:
       switch (op) {
         case ADD: func = addUser; break;
         case CHG: func = updateUser; break;
         case DEL: func = delUser; break;
       }
+      break;
   }
   return func;
 };
@@ -551,6 +563,7 @@ var getFuncForTableOp = function(table, op) {
  * return       undefined
  * -------------------------------------------------------- */
 var handleData = function(evtName, payload, socket) {
+  if (DO_ASSERT) assertModule.handleData(evtName, payload, socket);
   var wrapper = JSON.parse(payload);
   var table = wrapper.table? wrapper.table: void 0
     , data = wrapper.data? wrapper.data: {}
@@ -610,6 +623,12 @@ var handleData = function(evtName, payload, socket) {
     return socket.emit(responseEvt, JSON.stringify(retAction));
   } else touchSocketSession(socket);
 
+  if (! userInfo) {
+    // NOTE: this is an error that occurs and I have not been able to track down yet.
+    console.log('ERROR: userInfo object not populated in comm.js handleData(). ABORTING!');
+    return;
+  }
+
   dataFunc(data, userInfo, function(err, success, additionalData) {
     var errMsg;
     if (err) {
@@ -633,6 +652,7 @@ var handleData = function(evtName, payload, socket) {
 };
 
 var handleLogin = function(json, socket) {
+  if (DO_ASSERT) assertModule.handleLogin(json, socket);
   var username = json.data && json.data.username ? json.data.username: void 0;
   var password = json.data && json.data.password ? json.data.password: void 0;
   var retAction;
@@ -664,14 +684,37 @@ var handleLogin = function(json, socket) {
   });
 };
 
-var handleUserProfile = function(socket) {
+var handleUserProfile = function(socket, data, userInfo) {
+  if (DO_ASSERT) assertModule.handleUserProfile(socket, data, userInfo);
+  var retAction;
+  var errCode;
   if (isValidSocketSession(socket)) {
     if (socket.request.session.user) {
-      // Testing
-      //setTimeout(function() {
-        //sendUserProfile(socket, socket.request.session.user, UserProfileSuccessErrorCode);
-      //}, 4000);
-      sendUserProfile(socket, socket.request.session.user, UserProfileSuccessErrorCode);
+      if (data && userInfo) {
+        // User is updating (hopefully) their own profile. updateUserProfile()
+        // will sanity check that they are only updating their own profile.
+        updateUserProfile(data, userInfo, function(err, success, id) {
+          if (err) {
+            console.log(err);
+            retAction = returnUserProfileUpdate(false, UserProfileUpdateFailErrorCode);
+            return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+          }
+          errCode = UserProfileUpdateFailErrorCode;
+          if (success) errCode = UserProfileUpdateSuccessErrorCode;
+          retAction = returnUserProfileUpdate(!!success, errCode);
+          return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+        });
+      } else {
+        // Get the user profile information.
+        getUserProfile(socket.request.session.user.id, function(err, success, userObj) {
+          if (err || ! success) {
+            console.log(err);
+            return sendUserProfile(socket, userObj, UserProfileFailErrorCode);
+          } else {
+            return sendUserProfile(socket, userObj, UserProfileSuccessErrorCode);
+          }
+        });
+      }
     } else {
       // Do not have the user in session, so fail.
       sendUserProfile(socket, void 0, UserProfileFailErrorCode);
@@ -694,44 +737,60 @@ var handleUserProfile = function(socket) {
  * return      undefined
  * -------------------------------------------------------- */
 var sendUserProfile = function(socket, user, errCode) {
+  if (DO_ASSERT) assertModule.sendUserProfile(socket, user, errCode);
   var retAction;
   // Reset session timeout.
   touchSocketSession(socket);
 
   // Save user information into the session and return response to client.
-  socket.request.session.user = user;
-  socket.request.session.roleInfo = {
-    isAuthenticated: true,
-    roleName: socket.request.session.user.role.name
-  };
-  socket.request.session.save(function(err) {
-    if (err) {
-      console.log('ERROR: login successful but unable to save to session.');
-      console.log(err);
-    }
+  if (user) {
+    socket.request.session.roleInfo = {
+      isAuthenticated: errCode === LoginSuccessErrorCode || errCode === UserProfileSuccessErrorCode? true: false,
+      roleName: user.roleName? user.roleName: user.role && user.role.name? user.role.name: ''
+    };
 
-    switch (errCode) {
-      case LoginSuccessErrorCode:
-      case LoginFailErrorCode:
-        retAction = returnLogin(true, errCode);
-        break;
-      case UserProfileSuccessErrorCode:
-      case UserProfileFailErrorCode:
-        retAction = returnUserProfile(true, errCode);
-        break;
-    }
+    socket.request.session.save(function(err) {
+      if (err) {
+        console.log('ERROR: login successful but unable to save to session.');
+        console.log(err);
+      }
 
-    if (retAction) {
-      _.extendOwn(retAction, _.pick(socket.request.session.user,
-          ['username', 'firstname', 'lastname', 'email', 'lang',
-          'shortName', 'displayName', 'role_id'])
-      );
-      retAction.userId = user.id;   // Field name change on the client.
-      retAction.roleName = socket.request.session.user.role.name;
-      retAction.isLoggedIn = true;
-      socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
-    }
-  });
+      switch (errCode) {
+        case LoginSuccessErrorCode:
+          retAction = returnLogin(true, errCode);
+          retAction.isLoggedIn = true;
+          break;
+        case LoginFailErrorCode:
+          retAction = returnLogin(false, errCode);
+          break;
+        case UserProfileSuccessErrorCode:
+          retAction = returnUserProfile(true, errCode);
+          retAction.isLoggedIn = true;
+          break;
+        case UserProfileFailErrorCode:
+          retAction = returnUserProfile(false, errCode);
+          break;
+        default:
+          throw new Error('Unknown errCode of ' + errCode + ' in comm/sendUserProfile().');
+      }
+
+      if (retAction && user) {
+        _.extendOwn(retAction, _.pick(user,
+            ['id', 'userId', 'username', 'firstname', 'lastname', 'email',
+            'lang', 'shortName', 'displayName', 'role_id', 'roleName'])
+        );
+        // User Profile uses userId instead of id. Massage data into correct format.
+        if (! retAction.userId && user.id) {
+          retAction.userId = user.id;
+          if (retAction.id) delete retAction.id;
+        }
+        // Assumes roleName assigned to session earlier in this function.
+        if (! retAction.roleName) retAction.roleName = socket.request.session.roleInfo.roleName;
+        socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+      }
+    });
+  }
+
 };
 
 /* --------------------------------------------------------
@@ -1026,8 +1085,10 @@ var init = function(io, sessionMiddle) {
     // ADHOC processing for the Elm client on the data channel.
     // --------------------------------------------------------
     socket.on(ADHOC, function(data) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_ADHOC(data);
       var json = JSON.parse(data);
       var adhocType = json.adhocType;
+      var userInfo = socketToUserInfo(socket);
 
       switch (adhocType) {
         case ADHOC_LOGIN:
@@ -1036,6 +1097,10 @@ var init = function(io, sessionMiddle) {
 
         case ADHOC_USER_PROFILE:
           handleUserProfile(socket);
+          break;
+
+        case ADHOC_USER_PROFILE_UPDATE:
+          handleUserProfile(socket, json.data, userInfo);
           break;
 
         default:
@@ -1048,8 +1113,8 @@ var init = function(io, sessionMiddle) {
     // SELECT event for the Elm client.
     // --------------------------------------------------------
     socket.on(DATA_SELECT, function(data) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_DATA_SELECT(data);
       var json = JSON.parse(data);
-      var table = json.table? json.table: void 0;
       var retAction;
 
       if (! isValidSocketSession(socket)) {
@@ -1058,8 +1123,8 @@ var init = function(io, sessionMiddle) {
         return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
       } else touchSocketSession(socket);
 
-      if (table) {
-        getLookupTable(table, function(err, data) {
+      if (json.table) {
+        getLookupTable(json.table, json.id, json.pregnancy_id, json.patient_id, function(err, data) {
           if (err) {
             logCommError(err);
             retAction = returnStatusSELECT(json, void 0, false, SqlErrorCode, err.msg);
@@ -1078,6 +1143,7 @@ var init = function(io, sessionMiddle) {
     // Data ADD request from the Elm client.
     // --------------------------------------------------------
     socket.on(ADD, function(payload) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_ADD(payload);
       handleData(ADD, payload, socket);
     });
 
@@ -1088,6 +1154,7 @@ var init = function(io, sessionMiddle) {
     // but response needs to include it.
     // --------------------------------------------------------
     socket.on(CHG, function(payload) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_CHG(payload);
       handleData(CHG, payload, socket);
     });
 
@@ -1098,8 +1165,18 @@ var init = function(io, sessionMiddle) {
     // but response needs to include it.
     // --------------------------------------------------------
     socket.on(DEL, function(payload) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_DEL(payload);
       handleData(DEL, payload, socket);
     });
+
+    // ========================================================
+    // ========================================================
+    // NOTE: the following two sections are the left-over code 
+    // from the React/Redux client that is no longer being used.
+    // socket.on(DATA_TABLE_REQUEST, ...
+    // socket.on(DATA_CHANGE, ...
+    // ========================================================
+    // ========================================================
 
     // --------------------------------------------------------
     // DATA_TABLE_REQUEST: this is used to populate the lookup

@@ -15,6 +15,7 @@ port module Ports
         , userCreate
         , userDelete
         , userUpdate
+        , userProfileUpdate
         )
 
 import Json.Decode as JD
@@ -79,6 +80,7 @@ port userDelete : JE.Value -> Cmd msg
 
 port userUpdate : JE.Value -> Cmd msg
 
+port userProfileUpdate : JE.Value -> Cmd msg
 
 port login : JE.Value -> Cmd msg
 

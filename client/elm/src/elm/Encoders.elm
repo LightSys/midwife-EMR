@@ -82,6 +82,22 @@ userToValue user =
         ]
 
 
+userProfileFormToValue : UserProfileForm -> JE.Value
+userProfileFormToValue upForm =
+    JE.object
+        [ ( "userId", JE.int upForm.userId )
+        , ( "username", JE.string upForm.username )
+        , ( "firstname", JE.string upForm.firstname )
+        , ( "lastname", JE.string upForm.lastname )
+        , ( "password", JE.string upForm.password )
+        , ( "email", JE.string upForm.email )
+        , ( "lang", JE.string upForm.lang )
+        , ( "shortName", JE.string upForm.shortName )
+        , ( "displayName", JE.string upForm.displayName )
+        , ( "role_id", JE.int upForm.role_id )
+        ]
+
+
 loginFormToValue : LoginForm -> JE.Value
 loginFormToValue login =
     JE.object

@@ -5,6 +5,7 @@ module Msg
         , MedicationTypeMsg(..)
         , RoleMsg(..)
         , UserMsg(..)
+        , UserProfileMsg(..)
         )
 
 import Form exposing (Form)
@@ -57,6 +58,7 @@ type Msg
     | UpdateResponseMsg (Maybe UpdateResponse)
     | UrlChange Location
     | UserMessages UserMsg
+    | UserProfileMessages UserProfileMsg
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeRecord))
 
 
@@ -81,9 +83,14 @@ type AdhocResponseMessage
     = AdhocUnknownMsg String
     | AdhocLoginResponseMsg AuthResponse
     | AdhocUserProfileResponseMsg AuthResponse
+    | AdhocUserProfileUpdateResponseMsg AdhocResponse
 
 type RoleMsg
     = ReadResponseRole (RemoteData String (List RoleRecord)) (Maybe SelectQuery)
+
+type UserProfileMsg
+    = FormMsgUserProfile Form.Msg
+    | UpdateUserProfile
 
 type UserMsg
     = CancelEditUser

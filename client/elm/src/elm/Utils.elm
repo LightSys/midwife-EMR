@@ -450,5 +450,11 @@ stringToErrorCode str =
         "UserProfileFailErrorCode" ->
             UserProfileFailErrorCode
 
+        "UserProfileUpdateSuccessErrorCode" ->
+            UserProfileUpdateSuccessErrorCode
+
+        "UserProfileUpdateFailErrorCode" ->
+            UserProfileUpdateFailErrorCode
+
         _ ->
             UnknownErrorCode

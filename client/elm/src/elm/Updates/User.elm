@@ -1,6 +1,7 @@
 module Updates.User exposing (userUpdate)
 
 import Form exposing (Form)
+import RemoteData as RD exposing (RemoteData(..))
 
 
 -- LOCAL IMPORTS
@@ -55,7 +56,12 @@ userUpdate msg ({ userSearchForm, userModel } as model) =
                 -- Update the form and remove stored state from transaction manager.
                 newModel2 =
                     MU.setRecords updatedRecords userModel
-                        |> MU.setEditMode (if success then EditModeTable else EditModeEdit)
+                        |> MU.setEditMode
+                            (if success then
+                                EditModeTable
+                             else
+                                EditModeEdit
+                            )
                         |> MU.setSelectedRecordId (Just id)
                         |> User.populateSelectedTableForm
                         |> asUserModelIn newModel
@@ -224,9 +230,11 @@ userUpdate msg ({ userSearchForm, userModel } as model) =
             )
 
         ReadResponseUser userTbl sq ->
-            ( userModel
-                |> MU.setRecords userTbl
-                |> MU.setSelectedRecordId (Just 0)
+            -- Getting either all of the user records back or maybe just a subset.
+            -- We merge what comes back with what we already have.
+            ( MU.mergeById userTbl userModel.records
+                |> (\recs -> { userModel | records = recs })
+                |> MU.setSelectedRecordId (Just 0)  -- Hold over from old code?
                 |> MU.setSelectQuery sq
                 |> asUserModelIn model
             , Cmd.none
@@ -241,7 +249,7 @@ userUpdate msg ({ userSearchForm, userModel } as model) =
                             User.populateSelectedTableForm um
                         else
                             um
-                    )
+                   )
                 |> asUserModelIn model
             )
                 ! []
@@ -308,7 +316,7 @@ userUpdate msg ({ userSearchForm, userModel } as model) =
                     if not change.success then
                         (if String.length change.msg == 0 then
                             "Sorry, the server rejected that change."
-                            else
+                         else
                             change.msg
                         )
                             |> flip U.addWarning newModel

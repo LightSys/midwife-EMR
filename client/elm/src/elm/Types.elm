@@ -1,6 +1,7 @@
 module Types
     exposing
-        ( adminPages
+        ( AdhocResponse
+        , adminPages
         , AuthResponse
         , CreateResponse
         , DeleteResponse
@@ -30,6 +31,7 @@ module Types
         , TableResponse(..)
         , UpdateResponse
         , UserForm
+        , UserProfileForm
         , UserRecord
         , UserSearchForm
         , VaccinationTypeRecord
@@ -162,6 +164,8 @@ type ErrorCode
     | LoginFailErrorCode
     | UserProfileSuccessErrorCode
     | UserProfileFailErrorCode
+    | UserProfileUpdateFailErrorCode
+    | UserProfileUpdateSuccessErrorCode
 
 
 type alias SelectQuery =
@@ -253,6 +257,20 @@ type alias UserRecord =
     , isCurrentTeacher : Bool
     , role_id : Int
     , stateId : Maybe Int
+    }
+
+
+type alias UserProfileForm =
+    { userId : Int
+    , username : String
+    , firstname : String
+    , lastname : String
+    , password : String
+    , email : String
+    , lang : String
+    , shortName : String
+    , displayName : String
+    , role_id : Int
     }
 
 
@@ -356,6 +374,14 @@ type alias VaccinationTypeRecord =
     , name : String
     , description : String
     , sortOrder : Int
+    }
+
+
+type alias AdhocResponse =
+    { adhocType : String
+    , success : Bool
+    , errorCode : ErrorCode
+    , msg : String
     }
 
 

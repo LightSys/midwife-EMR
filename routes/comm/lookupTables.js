@@ -17,114 +17,87 @@ var _ = require('underscore')
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
   , logError = require('../../util').logError
+  , assertModule = require('./lookupTables_assert')
+  , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
 
 
-var addUser = function(data, userInfo, cb) {
-  var rec = data;
-  var omitFlds = ['id', 'pendingId'];
-  var existingUser = User.forge({username: rec.username});
-  var user;
+// --------------------------------------------------------
+// These are the lookup tables that we service.
+// --------------------------------------------------------
+var LOOKUP_TABLES = [
+  'eventType',
+  'labSuite',
+  'labTest',
+  'medicationType',
+  'pregnoteType',
+  'riskCode',
+  'role',
+  'user',
+  'vaccinationType'
+];
+
+
+/* --------------------------------------------------------
+ * getLookupTable()
+ *
+ * Return all of the records for the lookup table passed.
+ * The requested lookup table must be one of the tables
+ * found in LOOKUP_TABLES.
+ *
+ * Returns an array of objects via the callback in standard
+ * Nodejs style.
+ *
+ * param       table        - the table name
+ * param       id           - the id of the record sought
+ * param       pregnancy_id - limit by pregnancy_id, if applicable
+ * param       patient_id   - limit by patient_id, if applicable
+ * param       cb
+ * -------------------------------------------------------- */
+var getLookupTable = function(table, id, pregnancy_id, patient_id, cb) {
+  if (DO_ASSERT) assertModule.getLookupTable(table, id, pregnancy_id, patient_id, cb);
+  var data = []
+    , knex = Bookshelf.DB.knex
+    , msg
+    , whereObj = {}
+    ;
 
   // --------------------------------------------------------
-  // Make sure the user does not already exist.
+  // Make sure that the table passed is allowed.
   // --------------------------------------------------------
-  existingUser.fetch().then(function(user) {
-    if (user) {
-      return cb('Username is already taken.', false);
-    }
+  if (! _.contains(LOOKUP_TABLES, table)) {
+    msg = 'lookupTables.getLookupTable(): ' + table + ' is not an allowed table.';
+    return cb(msg);
+  }
 
-    // --------------------------------------------------------
-    // Insure there is a password specified.
-    // --------------------------------------------------------
-    if (rec.password.length < 8) {
-      return cb('Password must be at least 8 characters long.', false);
-    }
+  // --------------------------------------------------------
+  // Construct the where clause.
+  // --------------------------------------------------------
+  if (id !== -1) whereObj.id = id;
+  if (pregnancy_id !== -1) whereObj.pregnancy_id = pregnancy_id;
+  if (patient_id !== -1) whereObj.patient_id = patient_id;
 
-    // --------------------------------------------------------
-    // Save the new user and return details to caller.
-    // --------------------------------------------------------
-    user = new User(_.omit(rec, omitFlds));
-    user.hashPassword(rec.password, function(err, success) {
-      if (err || ! success) {
-        return cb(err, false);
-      } else {
-        user
-          .setUpdatedBy(userInfo.user.id)
-          .setSupervisor(userInfo.user.supervisor)
-          .save({}, {method: 'insert'})
-          .then(function(user2) {
-            return cb(null, true, user2);
-          })
-          .caught(function(err) {
-            return cb(err, false);
-          });
+  knex(table)
+    .select()
+    .where(whereObj)
+    .then(function(rows) {
+      // --------------------------------------------------------
+      // We never return the password field to the client. Return
+      // an empty string instead.
+      // --------------------------------------------------------
+      if (table === 'user') {
+        rows = _.map(rows, function(rec) {
+          rec.password = '';
+          return rec;
+        });
       }
-    });
-  });
-};
-
-// --------------------------------------------------------
-// Note: we only delete a user when the user has not changed
-// any other records in the database. We use the database
-// deletion constraints to catch this.
-// --------------------------------------------------------
-var delUser = function(data, userInfo, cb) {
-  var rec = _.omit(data, ['stateId']);
-  new User({id: rec.id})
-    .destroy()
-    .then(function(deletedRec) {
-      return cb(null, true);
+      return cb(null, rows);
     })
-    .caught(function(err) {
+    .catch(function(err) {
+      logError(err);
       return cb(err);
     });
-};
-
-var updateUser = function(data, userInfo, cb) {
-  var rec = data;
-  var omitFlds = ['stateId', 'password'];
-  var user = new User({id: rec.id});
-
-  if (rec.password.length >= 8) {
-    user.fetch()
-      .then(function(user) {
-        user.hashPassword(rec.password, function(err, success) {
-          if (err || ! success) {
-            return cb(err, false);
-          } else {
-            user
-              .setUpdatedBy(userInfo.user.id)
-              .setSupervisor(userInfo.user.supervisor)
-              .save(_.omit(rec, omitFlds))
-              .then(function(rec2) {
-                return cb(null, true, rec2.id);
-              })
-              .caught(function(err) {
-                return cb(err, false);
-              });
-          }
-        });
-      });
-  } else {
-    user.fetch().then(function(user) {
-      if (user) {
-        user
-          .setUpdatedBy(userInfo.user.id)
-          .setSupervisor(userInfo.user.supervisor)
-          .save(_.omit(rec, omitFlds))
-          .then(function(rec2) {
-            return cb(null, true, rec2.id);
-          })
-          .caught(function(err) {
-            return cb(err, false);
-          });
-        } else {
-          return cb('User not found.', false);
-        }
-    });
-  }
-};
+}
 
 var updateMedicationType = function(data, userInfo, cb) {
   var rec = data;
@@ -174,11 +147,9 @@ var delMedicationType = function(data, userInfo, cb) {
 };
 
 module.exports = {
+  getLookupTable,
   addMedicationType,
   updateMedicationType,
-  addUser,
-  delUser,
-  updateUser,
   delMedicationType
 };
 

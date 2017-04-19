@@ -10,6 +10,8 @@ module Model
         , setRoleModel
         , State
         , UserProfile
+        , userProfileInitialForm
+        , userProfileFormValidate
         , userSearchFormValidate
         )
 
@@ -28,6 +30,7 @@ import Time exposing (Time)
 import Models.MedicationType as MedicationType
 import Models.Role as Role
 import Models.User as User
+import Models.Utils as MU
 import Types exposing (..)
 
 
@@ -55,6 +58,7 @@ type alias Model =
     , user : RemoteData String UserRecord
     , userModel : User.UserModel
     , userProfile : Maybe UserProfile
+    , userProfileForm : Form () UserProfileForm
     , userSearchForm : Form () UserSearchForm
     , vaccinationType : RemoteData String (List VaccinationTypeRecord)
     }
@@ -116,6 +120,50 @@ loginFormValidate =
         (V.field "password" (V.string |> V.defaultValue "" |> V.andThen V.nonEmpty))
 
 
+userProfileInitialForm : UserProfile -> Form () UserProfileForm
+userProfileInitialForm profile =
+    Form.initial
+        [ ( "userid", Fld.string <| toString profile.userId )
+        , ( "username", Fld.string profile.username )
+        , ( "firstname", Fld.string profile.firstname )
+        , ( "lastname", Fld.string profile.lastname )
+        , ( "password", Fld.string "" )
+        , ( "email", Fld.string profile.email )
+        , ( "lang", Fld.string profile.lang )
+        , ( "shortName", Fld.string profile.shortName )
+        , ( "displayName", Fld.string profile.displayName )
+        , ( "role_id", Fld.string <| toString profile.role_id )
+        ]
+        userProfileFormValidate
+
+optionalString : V.Validation e String
+optionalString =
+    V.oneOf
+        [ V.string
+        , V.emptyString
+        ]
+
+userProfileFormValidate : V.Validation () UserProfileForm
+userProfileFormValidate =
+    V.succeed UserProfileForm
+        |> V.andMap (V.field "userid" V.int)
+        |> V.andMap (V.field "username" V.string |> V.andThen V.nonEmpty)
+        |> V.andMap (V.field "firstname" V.string |> V.andThen V.nonEmpty)
+        |> V.andMap (V.field "lastname" V.string |> V.andThen V.nonEmpty)
+        |> V.andMap (V.field "password" optionalString)
+        |> V.andMap (V.field "email" MU.validateOptionalEmail)
+        |> V.andMap (V.field "lang" optionalString)
+        |> V.andMap (V.field "shortName" optionalString)
+        |> V.andMap (V.field "displayName" optionalString)
+        |> V.andMap
+            (V.field "role_id"
+                (V.int
+                    |> V.andThen (V.minInt 1)
+                    |> V.andThen (V.maxInt 5)
+                )
+            )
+
+
 userSearchFormValidate : V.Validation () UserSearchForm
 userSearchFormValidate =
     V.map8 UserSearchForm
@@ -154,6 +202,7 @@ initialModel =
     , user = NotAsked
     , userModel = User.initialUserModel
     , userProfile = initialUserProfile
+    , userProfileForm = Form.initial [] userProfileFormValidate
     , userSearchForm = Form.initial [] userSearchFormValidate
     , vaccinationType = NotAsked
     }

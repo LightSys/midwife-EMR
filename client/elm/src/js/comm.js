@@ -112,9 +112,8 @@ var SELECT_RESPONSE = 'SELECT_RESPONSE';  // Server to client data request respo
 var ADHOC = 'ADHOC';        // Server to client message type in the data namespace.
 var ADHOC_RESPONSE = 'ADHOC_RESPONSE';  // Server to client response in data namespace.
 var ADHOC_LOGIN = 'ADHOC_LOGIN';        // Client to server for login request, the adhocType of the ADHOC message.
-var ADHOC_LOGIN_RESPONSE = 'ADHOC_LOGIN_RESPONSE';    // Server to client login response, the adhocType of the message.
 var ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE';    // Client to server for user profile request.
-var ADHOC_USER_PROFILE_RESPONSE = 'ADHOC_USER_PROFILE_RESPONSE';  // Server to client user profile response.
+var ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE';  // User updates their own user profile.
 
 // The site and system namespaces.
 var SITE = 'site';          // All site messages use this message key.
@@ -300,6 +299,10 @@ var setApp = function(theApp) {
 
   app.ports.userUpdate.subscribe(function(data) {
     sendMsg(CHG, wrapData('user', data));
+  });
+
+  app.ports.userProfileUpdate.subscribe(function(data) {
+    sendMsg(ADHOC, wrapAdHoc(ADHOC_USER_PROFILE_UPDATE, data));
   });
 
 };

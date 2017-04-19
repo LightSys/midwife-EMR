@@ -35,12 +35,34 @@ var LoginSuccessErrorCode = 'LoginSuccessErrorCode';
 var LoginFailErrorCode = 'LoginFailErrorCode';
 var UserProfileSuccessErrorCode = 'UserProfileSuccessErrorCode';
 var UserProfileFailErrorCode = 'UserProfileFailErrorCode';
+var UserProfileUpdateSuccessErrorCode = 'UserProfileUpdateSuccessErrorCode';
+var UserProfileUpdateFailErrorCode = 'UserProfileUpdateFailErrorCode';
 var NoErrorCode = 'NoErrorCode';
 var SessionExpiredErrorCode = 'SessionExpiredErrorCode';
 var SqlErrorCode = 'SqlErrorCode';
 var UnknownErrorCode = 'UnknownErrorCode';
 var UnknownTableErrorCode = 'UnknownTableErrorCode';
 
+
+/* --------------------------------------------------------
+ * msg()
+ *
+ * Returns a partially applied function allowing caller to
+ * prefill the prefix (contextual) message and supply the
+ * specifics to the returned function as needed.
+ *
+ * Usage:
+ *    var m = msg('comm_assert/some_function()');
+ *    assert.ok(user, m('user'));
+ *
+ * param       prefix
+ * return      partially applied function
+ * -------------------------------------------------------- */
+function msg(prefix) {
+  return function(message) {
+    return prefix + (message? ': ' + message : '');
+  };
+}
 
 /* --------------------------------------------------------
  * formatDohID()
@@ -444,9 +466,8 @@ var returnLogin = function(success, errCode, msg) {
 };
 
 // --------------------------------------------------------
-// Note, defaults to isLoggedIn to true. Caller needs to
-// not call this unless authentication has already been
-// established.
+// Note, defaults isLoggedIn to false. Caller needs to set
+// explicitly along with other required fields.
 // --------------------------------------------------------
 var returnUserProfile = function(success, errCode, msg) {
   return {
@@ -454,7 +475,20 @@ var returnUserProfile = function(success, errCode, msg) {
     success: success,
     errorCode: errCode? errCode: NoErrorCode,
     msg: msg? msg: '',
-    isLoggedIn: true
+    isLoggedIn: false
+  };
+};
+
+// --------------------------------------------------------
+// Note, defaults isLoggedIn to false. Caller needs to set
+// explicitly along with other required fields.
+// --------------------------------------------------------
+var returnUserProfileUpdate = function(success, errCode, msg) {
+  return {
+    adhocType: 'ADHOC_USER_PROFILE_UPDATE_RESPONSE',
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msg? msg: ''
   };
 };
 
@@ -504,6 +538,7 @@ module.exports = {
   , logWarn: logWarn
   , LoginFailErrorCode
   , LoginSuccessErrorCode
+  , msg
   , NoErrorCode
   , returnLogin
   , returnStatusADD: returnStatusADD
@@ -511,12 +546,15 @@ module.exports = {
   , returnStatusDEL: returnStatusDEL
   , returnStatusSELECT: returnStatusSELECT
   , returnUserProfile
+  , returnUserProfileUpdate
   , SessionExpiredErrorCode
   , SqlErrorCode
   , UnknownErrorCode
   , UnknownTableErrorCode
   , UserProfileSuccessErrorCode
   , UserProfileFailErrorCode
+  , UserProfileUpdateSuccessErrorCode
+  , UserProfileUpdateFailErrorCode
   , validOrVoidDate: validOrVoidDate
 };
 

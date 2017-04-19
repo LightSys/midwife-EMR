@@ -28,6 +28,7 @@ import Transactions as Trans
 import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
+import Updates.Profile as Updates exposing (userProfileUpdate)
 import Updates.Role as Updates exposing (roleUpdate)
 import Updates.User as Updates exposing (userUpdate)
 import Utils as U
@@ -382,6 +383,9 @@ update msg model =
 
         UserMessages userMsg ->
             Updates.userUpdate userMsg model
+
+        UserProfileMessages userProfileMsg ->
+            Updates.userProfileUpdate userProfileMsg model
 
         VaccinationTypeResponse vaccinationTypeTbl ->
             { model | vaccinationType = vaccinationTypeTbl } ! []

@@ -18,10 +18,221 @@ var Bookshelf = require('bookshelf')
   , Role = require('../../models').Role
   , Roles = require('../../models').Roles
   , tf2Num = require('../api/utils').tf2Num
+  , assertModule = require('./userRoles_assert')
+  , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
+
+
+var addUser = function(data, userInfo, cb) {
+  var rec = data;
+  var omitFlds = ['id', 'pendingId'];
+  var existingUser = User.forge({username: rec.username});
+  var user;
+
+  // --------------------------------------------------------
+  // Make sure the user does not already exist.
+  // --------------------------------------------------------
+  existingUser.fetch().then(function(user) {
+    if (user) {
+      return cb('Username is already taken.', false);
+    }
+
+    // --------------------------------------------------------
+    // Insure there is a password specified.
+    // --------------------------------------------------------
+    if (rec.password.length < 8) {
+      return cb('Password must be at least 8 characters long.', false);
+    }
+
+    // --------------------------------------------------------
+    // Save the new user and return details to caller.
+    // --------------------------------------------------------
+    user = new User(_.omit(rec, omitFlds));
+    user.hashPassword(rec.password, function(err, success) {
+      if (err || ! success) {
+        return cb(err, false);
+      } else {
+        user
+          .setUpdatedBy(userInfo.user.id)
+          .setSupervisor(userInfo.user.supervisor)
+          .save({}, {method: 'insert'})
+          .then(function(user2) {
+            return cb(null, true, user2);
+          })
+          .caught(function(err) {
+            return cb(err, false);
+          });
+      }
+    });
+  });
+};
+
+
+// --------------------------------------------------------
+// Note: we only delete a user when the user has not changed
+// any other records in the database. We use the database
+// deletion constraints to catch this.
+// --------------------------------------------------------
+var delUser = function(data, userInfo, cb) {
+  var rec = _.omit(data, ['stateId']);
+  new User({id: rec.id})
+    .destroy()
+    .then(function(deletedRec) {
+      return cb(null, true);
+    })
+    .caught(function(err) {
+      return cb(err);
+    });
+};
+
+
+var updateUser = function(data, userInfo, cb) {
+  var rec = data;
+  var omitFlds = ['stateId', 'password'];
+  var user = new User({id: rec.id});
+
+  if (rec.password.length >= 8) {
+    user.fetch()
+      .then(function(user) {
+        user.hashPassword(rec.password, function(err, success) {
+          if (err || ! success) {
+            return cb(err, false);
+          } else {
+            user
+              .setUpdatedBy(userInfo.user.id)
+              .setSupervisor(userInfo.user.supervisor)
+              .save(_.omit(rec, omitFlds))
+              .then(function(rec2) {
+                return cb(null, true, rec2.id);
+              })
+              .caught(function(err) {
+                return cb(err, false);
+              });
+          }
+        });
+      });
+  } else {
+    user.fetch().then(function(user) {
+      if (user) {
+        user
+          .setUpdatedBy(userInfo.user.id)
+          .setSupervisor(userInfo.user.supervisor)
+          .save(_.omit(rec, omitFlds))
+          .then(function(rec2) {
+            return cb(null, true, rec2.id);
+          })
+          .caught(function(err) {
+            return cb(err, false);
+          });
+        } else {
+          return cb('User not found.', false);
+        }
+    });
+  }
+};
+
+
+var getUserProfile = function(id, cb) {
+  if (DO_ASSERT) assertModule.getUserProfile(id, cb);
+  var columns = ['id', 'username', 'firstname', 'lastname', 'email', 'lang',
+      'shortName', 'displayName', 'role_id'];
+  var user = new User({id: id});
+  user
+    .fetch({columns: columns, withRelated: ['role']})
+    .then(function(userObj) {
+      if (userObj) {
+        // Massage the data into the format the Elm client is expecting.
+        var profile = userObj.toJSON();
+        profile.userId = profile.id;
+        delete profile.id;
+        profile.roleName = profile.role.name;
+        delete profile.role;
+        return cb(null, true, profile);
+      } else {
+        return cb('User not found.', false);
+      }
+    })
+    .caught(function(err) {
+      return cb(err, false);
+    });
+};
+
+
+/* --------------------------------------------------------
+ * updateUserProfile()
+ *
+ * Allows the user to update certain fields which are a
+ * part of their user profile. Currently all of the allowed
+ * fields are within the user table.
+ *
+ * Note that the Elm client sends the id as userId.
+ * -------------------------------------------------------- */
+var updateUserProfile = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateUserProfile(data, userInfo, cb);
+  var rec = _.omit(data, ['role_id', 'username']);
+  rec.id = rec.userId;
+  delete rec.userId;
+  var omitFlds = ['password'];
+  var user = new User({id: rec.id});
+
+  // --------------------------------------------------------
+  // Sanity check that the current user is the same as the
+  // user information being sought to update.
+  // --------------------------------------------------------
+  if (rec.id !== userInfo.user.id) {
+    return cb("Error: you can only update your own user profile.", false);
+  }
+
+  if (rec.password.length >= 8) {
+    user.fetch()
+      .then(function(user) {
+        if (user) {
+          user.hashPassword(rec.password, function(err, success) {
+            if (err || ! success) {
+              return cb(err, false);
+            } else {
+              user
+                .setUpdatedBy(userInfo.user.id)
+                .setSupervisor(userInfo.user.supervisor)
+                .save(_.omit(rec, omitFlds), "", {}, {method:"update", patch:true})
+                .then(function(rec2) {
+                  return cb(null, true, rec2.id);
+                })
+                .caught(function(err) {
+                  return cb(err, false);
+                });
+            }
+          });
+        } else {
+          return cb('User not found.', false);
+        }
+      });
+  } else {
+    user.fetch().then(function(user) {
+      if (user) {
+        user
+          .setUpdatedBy(userInfo.user.id)
+          .setSupervisor(userInfo.user.supervisor)
+          .save(_.omit(rec, omitFlds), "", {}, {method:"update", patch:true})
+          .then(function(rec2) {
+            return cb(null, true, rec2.id);
+          })
+          .caught(function(err) {
+            return cb(err, false);
+          });
+        } else {
+          return cb('User not found.', false);
+        }
+    });
+  }
+};
+
 
 /* --------------------------------------------------------
  * saveUser()
+ *
+ * NOTE: this was developed for the React/Redux client and
+ * has not yet been repurposed for other uses.
  *
  * Adds or updates a user. Can be used by an administrator
  * to create or update a user or a user to update their
@@ -106,5 +317,10 @@ var saveUser = function(payload, userInfo, cb) {
 
 
 module.exports = {
-  saveUser: saveUser
+  addUser,
+  delUser,
+  getUserProfile,
+  updateUser,
+  updateUserProfile,
+  saveUser  // retired
 }

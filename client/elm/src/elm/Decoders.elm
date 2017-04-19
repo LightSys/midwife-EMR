@@ -220,7 +220,7 @@ selectQueryResponse =
                         |> required "data" (JD.map UserResp (JD.list userRecord))
 
                 _ ->
-                    JD.fail "selectQueryResponse: Unknown table returned from server."
+                    JD.fail <| "selectQueryResponse: Unknown table named " ++ table ++ " returned from server."
     in
         JD.field "table" JD.string
             |> JD.andThen decodeData
@@ -391,6 +391,9 @@ getDecoderAdhocResponse tag =
         "ADHOC_USER_PROFILE_RESPONSE" ->
             JD.map AdhocUserProfileResponseMsg userProfileResponse
 
+        "ADHOC_USER_PROFILE_UPDATE_RESPONSE" ->
+            JD.map AdhocUserProfileUpdateResponseMsg userProfileUpdateResponse
+
         _ ->
             JD.map AdhocUnknownMsg <| JD.succeed ("Unknown adhoc message with tag: " ++ tag)
 
@@ -421,6 +424,15 @@ loginResponse =
         |> required "isLoggedIn" JD.bool
 
 
+userProfileUpdateResponse : JD.Decoder AdhocResponse
+userProfileUpdateResponse =
+    decode AdhocResponse
+        |> required "adhocType" JD.string
+        |> required "success" JD.bool
+        |> required "errorCode" decodeErrorCode
+        |> required "msg" JD.string
+
+
 userProfileResponse : JD.Decoder AuthResponse
 userProfileResponse =
     decode AuthResponse
@@ -443,9 +455,13 @@ userProfileResponse =
 
 decodeAdhocResponse : JE.Value -> AdhocResponseMessage
 decodeAdhocResponse payload =
-    case JD.decodeValue adhocResponse payload of
-        Ok val ->
-            val
+    let
+        _ =
+            Debug.log "decodeAdhocResponse" <| toString payload
+    in
+        case JD.decodeValue adhocResponse payload of
+            Ok val ->
+                val
 
-        Err message ->
-            AdhocUnknownMsg message
+            Err message ->
+                AdhocUnknownMsg message
