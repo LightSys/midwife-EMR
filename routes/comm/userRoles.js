@@ -18,6 +18,10 @@ var Bookshelf = require('bookshelf')
   , Role = require('../../models').Role
   , Roles = require('../../models').Roles
   , tf2Num = require('../api/utils').tf2Num
+  , DATA_ADD = require('../../commUtils').getConstants('DATA_ADD')
+  , DATA_CHANGE = require('../../commUtils').getConstants('DATA_CHANGE')
+  , DATA_DELETE = require('../../commUtils').getConstants('DATA_DELETE')
+  , sendData = require('../../commUtils').sendData
   , assertModule = require('./userRoles_assert')
   , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
@@ -57,7 +61,18 @@ var addUser = function(data, userInfo, cb) {
           .setSupervisor(userInfo.user.supervisor)
           .save({}, {method: 'insert'})
           .then(function(user2) {
-            return cb(null, true, user2);
+            cb(null, true, user2);
+
+            // --------------------------------------------------------
+            // Notify all clients of the change.
+            // --------------------------------------------------------
+            var notify = {
+              table: 'user',
+              id: user2.id,
+              updatedBy: userInfo.user.id,
+              sessionID: userInfo.sessionID
+            };
+            return sendData(DATA_ADD, JSON.stringify(notify));
           })
           .caught(function(err) {
             return cb(err, false);
@@ -78,7 +93,18 @@ var delUser = function(data, userInfo, cb) {
   new User({id: rec.id})
     .destroy()
     .then(function(deletedRec) {
-      return cb(null, true);
+      cb(null, true);
+
+      // --------------------------------------------------------
+      // Notify all clients of the change.
+      // --------------------------------------------------------
+      var notify = {
+        table: 'user',
+        id: rec.id,
+        updatedBy: userInfo.user.id,
+        sessionID: userInfo.sessionID
+      };
+      return sendData(DATA_DELETE, JSON.stringify(notify));
     })
     .caught(function(err) {
       return cb(err);
@@ -103,7 +129,18 @@ var updateUser = function(data, userInfo, cb) {
               .setSupervisor(userInfo.user.supervisor)
               .save(_.omit(rec, omitFlds))
               .then(function(rec2) {
-                return cb(null, true, rec2.id);
+                cb(null, true, rec2.id);
+
+                // --------------------------------------------------------
+                // Notify all clients of the change.
+                // --------------------------------------------------------
+                var notify = {
+                  table: 'user',
+                  id: rec2.id,
+                  updatedBy: userInfo.user.id,
+                  sessionID: userInfo.sessionID
+                };
+                return sendData(DATA_CHANGE, JSON.stringify(notify));
               })
               .caught(function(err) {
                 return cb(err, false);
@@ -119,7 +156,18 @@ var updateUser = function(data, userInfo, cb) {
           .setSupervisor(userInfo.user.supervisor)
           .save(_.omit(rec, omitFlds))
           .then(function(rec2) {
-            return cb(null, true, rec2.id);
+            cb(null, true, rec2.id);
+
+            // --------------------------------------------------------
+            // Notify all clients of the change.
+            // --------------------------------------------------------
+            var notify = {
+              table: 'user',
+              id: rec2.id,
+              updatedBy: userInfo.user.id,
+              sessionID: userInfo.sessionID
+            };
+            return sendData(DATA_CHANGE, JSON.stringify(notify));
           })
           .caught(function(err) {
             return cb(err, false);
@@ -196,7 +244,18 @@ var updateUserProfile = function(data, userInfo, cb) {
                 .setSupervisor(userInfo.user.supervisor)
                 .save(_.omit(rec, omitFlds), "", {}, {method:"update", patch:true})
                 .then(function(rec2) {
-                  return cb(null, true, rec2.id);
+                  cb(null, true, rec2.id);
+
+                  // --------------------------------------------------------
+                  // Notify all clients of the change.
+                  // --------------------------------------------------------
+                  var notify = {
+                    table: 'user',
+                    id: rec2.id,
+                    updatedBy: userInfo.user.id,
+                    sessionID: userInfo.sessionID
+                  };
+                  return sendData(DATA_CHANGE, JSON.stringify(notify));
                 })
                 .caught(function(err) {
                   return cb(err, false);
@@ -215,7 +274,18 @@ var updateUserProfile = function(data, userInfo, cb) {
           .setSupervisor(userInfo.user.supervisor)
           .save(_.omit(rec, omitFlds), "", {}, {method:"update", patch:true})
           .then(function(rec2) {
-            return cb(null, true, rec2.id);
+            cb(null, true, rec2.id);
+
+            // --------------------------------------------------------
+            // Notify all clients of the change.
+            // --------------------------------------------------------
+            var notify = {
+              table: 'user',
+              id: rec2.id,
+              updatedBy: userInfo.user.id,
+              sessionID: userInfo.sessionID
+            };
+            return sendData(DATA_CHANGE, JSON.stringify(notify));
           })
           .caught(function(err) {
             return cb(err, false);
@@ -230,6 +300,8 @@ var updateUserProfile = function(data, userInfo, cb) {
 
 /* --------------------------------------------------------
  * saveUser()
+ *
+ * RETIRED
  *
  * NOTE: this was developed for the React/Redux client and
  * has not yet been repurposed for other uses.

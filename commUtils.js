@@ -6,6 +6,11 @@
  * -------------------------------------------------------------------------------
  */
 
+var buildChangeObject = require('./changes').buildChangeObject
+  , DATA_ADD = getConstants('DATA_ADD')
+  , DATA_CHANGE = getConstants('DATA_CHANGE')
+  , DATA_DELETE = getConstants('DATA_DELETE')
+  ;
 
 /* --------------------------------------------------------
  * socketToUserInfo()
@@ -32,8 +37,66 @@ var socketToUserInfo = function(socket) {
   return void 0;
 };
 
+/* --------------------------------------------------------
+ * getConstants()
+ *
+ * Return the constant requested by key passed. Allows
+ * multiple modules to reference the same set of constants.
+ *
+ * param       key
+ * return      object or string
+ * -------------------------------------------------------- */
+function getConstants(key) {
+  switch (key) {
+    case 'CONST':
+      return CONST = {
+        TYPE: {
+          SITE: 'site'
+          , SYSTEM: 'system'
+          , DATA: 'data'
+        }
+      };
+      break;
 
+    case 'DATA_ADD':
+      return 'DATA_ADD';
+      break;
+
+    case 'DATA_CHANGE':
+      return 'DATA_CHANGE';
+      break;
+
+    case 'DATA_DELETE':
+      return 'DATA_DELETE';
+      break;
+
+    default:
+      throw new Error('Unknown key used in getConstants() in commUtils.js.');
+  }
+}
+
+
+var sendData = function(key, val, scope) {
+  if (key !== DATA_ADD && key !== DATA_CHANGE && key !== DATA_DELETE) {
+    throw new Error('Error: sendData() in commUtils.js called with invalid key: ' + key);
+  }
+  try {
+    data = JSON.parse(val)
+  } catch (e) {
+    console.log('Error in makeSend processing data: ' + e.toString());
+    return;
+  }
+  buildChangeObject(data, key).then(function(data2) {
+    // --------------------------------------------------------
+    // Broadcast this to the other processes for distribution
+    // to all connected clients.
+    // --------------------------------------------------------
+    process.send({type: CONST.TYPE.DATA, data: data2});
+  });
+};
 
 module.exports = {
-  socketToUserInfo: socketToUserInfo
+  getConstants
+  , sendData
+  , socketToUserInfo
 };

@@ -5,6 +5,10 @@
  * Verifies parameters of functions in the comm.js module.
  * -------------------------------------------------------------------------------
  */
+
+var UserProfileFailErrorCode = require('./util').UserProfileFailErrorCode
+  ;
+
 var assert = require('assert')
     _ = require('underscore')
     msg = require('./util').msg
@@ -87,21 +91,23 @@ function sendUserProfile(socket, user, errCode) {
   if (verbose) console.log(m());
 
   assert.ok(socket, m('socket'));
-  assert.ok(user, m('user'));
+  assert.ok(user || errCode === UserProfileFailErrorCode, m('user'));
   assert.ok(errCode, m('errCode'));
 
   assert.ok(_.isFunction(socket.request.session.save), m('socket.save'));
 
-  assert.ok(user.roleName || user.role && user.role.name, m('user.roleName or user.role.name'));
-  assert.ok(user.userId || user.id, m('userId or id'));
-  assert.ok(user.username, m('username'));
-  assert.ok(user.firstname, m('firstname'));
-  assert.ok(user.lastname, m('lastname'));
-  assert.ok(_.isString(user.email), m('email'));
-  assert.ok(_.isString(user.lang), m('lang'));
-  assert.ok(_.isString(user.shortName), m('shortName'));
-  assert.ok(_.isString(user.displayName), m('displayName'));
-  assert.ok(_.isNumber(user.role_id), m('role_id'));
+  if (user) {
+    assert.ok(user.roleName || user.role && user.role.name, m('user.roleName or user.role.name'));
+    assert.ok(user.userId || user.id, m('userId or id'));
+    assert.ok(user.username, m('username'));
+    assert.ok(user.firstname, m('firstname'));
+    assert.ok(user.lastname, m('lastname'));
+    assert.ok(_.isString(user.email), m('email'));
+    assert.ok(_.isString(user.lang), m('lang'));
+    assert.ok(_.isString(user.shortName), m('shortName'));
+    assert.ok(_.isString(user.displayName), m('displayName'));
+    assert.ok(_.isNumber(user.role_id), m('role_id'));
+  }
 }
 
 function handleUserProfile(socket, data, userInfo) {

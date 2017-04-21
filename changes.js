@@ -36,15 +36,16 @@ var Bookshelf = require('bookshelf')
  *    type: 'DATA_CHANGE' }
  *
  * param       data - object with table, id, and updatedBy fields
+ * param       type - DATA_ADD or DATA_CHANGE or DATA_DELETE
  * return      Promise
  * -------------------------------------------------------- */
-var buildChangeObject = function(data) {
+var buildChangeObject = function(data, chgType) {
   const knex = Bookshelf.DB.knex
     , result = _.extend({}, data)
     ;
 
   // Add the type field.
-  result.type = DATA_CHANGE;
+  result.type = chgType;
 
   // Get the foreign keys of the table.
   if (util.dbType() === util.KnexMySQL) {

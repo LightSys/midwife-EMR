@@ -96,6 +96,7 @@ var rx = require('rx')
   , savePrenatal = require('./routes/comm/pregnancy').savePrenatal
   , buildChangeObject = require('./changes').buildChangeObject
   , socketToUserInfo = require('./commUtils').socketToUserInfo
+  , sendData = require('./commUtils').sendData
   , isInitialized = false
   , ioSystem          // our system socket
   , ioSite            // our site socket
@@ -111,8 +112,8 @@ var rx = require('rx')
   , siteSubjectData
   , systemSubject
   , dataSubject
-  , CONST
-  , DATA_CHANGE = 'DATA_CHANGE'
+  , CONST = require('./commUtils').getConstants('CONST')
+  , DATA_CHANGE = require('./commUtils').getConstants('DATA_CHANGE')  // Note: used in old code only.
   , SYSTEM_LOG = 'SYSTEM_LOG'
   , DATA_TABLE_REQUEST = 'DATA_TABLE_REQUEST'
   , DATA_TABLE_SUCCESS = 'DATA_TABLE_SUCCESS'
@@ -276,18 +277,6 @@ var logCommError = function(msg, doSysMsg) {
   if (doSysMsg) sendSystem(SYSTEM_LOG, message);
 };
 
-// --------------------------------------------------------
-// Constant definitions. Allow client of this module to use
-// constants to help avoid spelling issues.
-// --------------------------------------------------------
-CONST = {
-  TYPE: {
-    SITE: 'site'
-    , SYSTEM: 'system'
-    , DATA: 'data'
-  }
-};
-
 /* --------------------------------------------------------
  * wrap()
  *
@@ -362,28 +351,6 @@ function makeSend(type) {
         if (isInitialized) systemSubject.onNext(wrapped);
         break;
 
-      case CONST.TYPE.DATA:
-        if (key === DATA_CHANGE) {
-          try {
-            data = JSON.parse(val)
-          } catch (e) {
-            logCommError('Error in makeSend processing data: ' + e.toString());
-            return;
-          }
-          buildChangeObject(data).then(function(data2) {
-            // --------------------------------------------------------
-            // Broadcast this to the other processes for distribution
-            // to all connected clients.
-            // --------------------------------------------------------
-            process.send({type: CONST.TYPE.DATA, data: data2});
-          });
-          break;
-
-        } else {
-          // TODO: Handle response from lookup table request. Only send to caller.
-          // Intentional fall through to default.
-        }
-
       default:
         logCommError('Error: makeSend() unimplemented for this type: ' + type);
     }
@@ -393,7 +360,6 @@ function makeSend(type) {
 /* --------------------------------------------------------
  * sendSite()
  * sendSystem()
- * sendData()
  *
  * Send a message of a certain type.
  *
@@ -404,7 +370,8 @@ function makeSend(type) {
  * -------------------------------------------------------- */
 var sendSite = makeSend(CONST.TYPE.SITE);
 var sendSystem = makeSend(CONST.TYPE.SYSTEM);
-var sendData = makeSend(CONST.TYPE.DATA);
+// Note: sendData() has been refactored into commUtils.js.
+//var sendData = makeSend(CONST.TYPE.DATA);
 
 /* --------------------------------------------------------
  * subscribeSite()
@@ -646,7 +613,12 @@ var handleData = function(evtName, payload, socket) {
     } else {
       retAction = returnStatusFunc(table, data.id, data.stateId, true);
     }
-    return socket.emit(responseEvt, JSON.stringify(retAction));
+    socket.emit(responseEvt, JSON.stringify(retAction));
+
+    // --------------------------------------------------------
+    // Write out to the log and SYSTEM_LOG for administrators.
+    // --------------------------------------------------------
+    return logCommInfo(userInfo.user.username + ": " + table + ": " + evtName, true);
   });
 
 };
@@ -702,7 +674,12 @@ var handleUserProfile = function(socket, data, userInfo) {
           errCode = UserProfileUpdateFailErrorCode;
           if (success) errCode = UserProfileUpdateSuccessErrorCode;
           retAction = returnUserProfileUpdate(!!success, errCode);
-          return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+          socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+
+          // --------------------------------------------------------
+          // Write out to the log and SYSTEM_LOG for administrators.
+          // --------------------------------------------------------
+          return logCommInfo(userInfo.user.username + ": updated user profile", true);
         });
       } else {
         // Get the user profile information.
@@ -1171,10 +1148,18 @@ var init = function(io, sessionMiddle) {
 
     // ========================================================
     // ========================================================
-    // NOTE: the following two sections are the left-over code 
-    // from the React/Redux client that is no longer being used.
+    //
+    //
+    //
+    // NOTE: SOME of the following code from the React/Redux
+    // client that is no longer being used such as:
     // socket.on(DATA_TABLE_REQUEST, ...
     // socket.on(DATA_CHANGE, ...
+    //
+    // NOTE: this IS still being used:
+    // dataSubscription = dataSubject.subscribe(
+    //
+    //
     // ========================================================
     // ========================================================
 
@@ -1311,19 +1296,19 @@ var init = function(io, sessionMiddle) {
 
     // --------------------------------------------------------
     // Send all data messages out to the authenticated clients.
+    // Note: we ARE using this for the Elm client.
     // --------------------------------------------------------
     dataSubscription = dataSubject.subscribe(
       function(data) {
         // Don't do work unless logged in.
         if (! isValidSocketSession(socket)) return;
+
         // --------------------------------------------------------
-        // Send the data change notification to the client, unless we
-        // can detect that the data change was initiated by this socket.
+        // Send the data change notification to the client if the
+        // change originated with another client.
         // --------------------------------------------------------
-        if (! data.sessionID) {
-          socket.emit(CONST.TYPE.DATA, data);
-        } else if (getSocketSessionId(socket) !== data.sessionID) {
-          // We don't leak another client's sessionID.
+        if (data.sessionID && getSocketSessionId(socket) !== data.sessionID) {
+          // We don't leak sessionID to other clients.
           socket.emit(CONST.TYPE.DATA, _.omit(data, 'sessionID'));
         }
       },
@@ -1346,15 +1331,15 @@ var init = function(io, sessionMiddle) {
 function getIsInitialized() {return isInitialized;}
 
 module.exports = {
-  init: init
-  , getIsInitialized: getIsInitialized
-  , sendSite: sendSite
-  , sendSystem: sendSystem
-  , sendData: sendData
-  , subscribeSite: subscribeSite
-  , subscribeSystem: subscribeSystem
-  , subscribeData: subscribeData
-  , DATA_CHANGE: DATA_CHANGE
-  , SYSTEM_LOG: SYSTEM_LOG
+  init
+  , getIsInitialized
+  , makeSend
+  , sendSite
+  , sendSystem
+  , sendData
+  , subscribeSite
+  , subscribeSystem
+  , subscribeData
+  , SYSTEM_LOG
 };
 

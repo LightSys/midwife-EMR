@@ -17,6 +17,10 @@ var _ = require('underscore')
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
   , logError = require('../../util').logError
+  , DATA_ADD = require('../../commUtils').getConstants('DATA_ADD')
+  , DATA_CHANGE = require('../../commUtils').getConstants('DATA_CHANGE')
+  , DATA_DELETE = require('../../commUtils').getConstants('DATA_DELETE')
+  , sendData = require('../../commUtils').sendData
   , assertModule = require('./lookupTables_assert')
   , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
@@ -110,7 +114,18 @@ var updateMedicationType = function(data, userInfo, cb) {
         .setSupervisor(userInfo.user.supervisor)
         .save(_.omit(rec, omitFlds))
         .then(function(rec2) {
-          return cb(null, true, rec2.id);
+          cb(null, true, rec2.id);
+
+          // --------------------------------------------------------
+          // Notify all clients of the change.
+          // --------------------------------------------------------
+          var notify = {
+            table: 'medicationType',
+            id: rec2.id,
+            updatedBy: userInfo.user.id,
+            sessionID: userInfo.sessionID
+          };
+          return sendData(DATA_CHANGE, JSON.stringify(notify));
         })
         .caught(function(err) {
           return cb(err);
@@ -126,7 +141,18 @@ var addMedicationType = function(data, userInfo, cb) {
     .setSupervisor(userInfo.user.supervisor)
     .save({}, {method: 'insert'})
     .then(function(rec2) {
-      return cb(null, true, rec2);
+      cb(null, true, rec2);
+
+      // --------------------------------------------------------
+      // Notify all clients of the change.
+      // --------------------------------------------------------
+      var notify = {
+        table: 'medicationType',
+        id: rec2.id,
+        updatedBy: userInfo.user.id,
+        sessionID: userInfo.sessionID
+      };
+      return sendData(DATA_ADD, JSON.stringify(notify));
     })
     .caught(function(err) {
       return cb(err);
@@ -139,7 +165,18 @@ var delMedicationType = function(data, userInfo, cb) {
   new MedicationType({id: rec.id})
     .destroy()
     .then(function(deletedRec) {
-      return cb(null, true);
+      cb(null, true);
+
+      // --------------------------------------------------------
+      // Notify all clients of the change.
+      // --------------------------------------------------------
+      var notify = {
+        table: 'medicationType',
+        id: rec.id,
+        updatedBy: userInfo.user.id,
+        sessionID: userInfo.sessionID
+      };
+      return sendData(DATA_DELETE, JSON.stringify(notify));
     })
     .caught(function(err) {
       return cb(err);

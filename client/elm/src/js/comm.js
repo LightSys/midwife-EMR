@@ -189,6 +189,11 @@ ioData.on(INFORM, function(data) {
   if (! app) return;
 });
 
+// TESTING
+ioData.on('data', function(data) {
+  console.log(data);
+});
+
 // --------------------------------------------------------
 // Client requesting data from the server.
 // --------------------------------------------------------
