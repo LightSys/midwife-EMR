@@ -41,6 +41,13 @@ type alias Mdl =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        AddChgDelNotificationMessages acdNotification ->
+            let
+                _ =
+                    Debug.log "AddChgDelNotificationMessages" <| toString acdNotification
+            in
+                model ! []
+
         AdhocResponseMessages adhocResponse ->
             Updates.adhocUpdate adhocResponse model
 

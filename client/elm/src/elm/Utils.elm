@@ -10,6 +10,7 @@ module Utils
         , setDefaultSelectedPage
         , setPageDefs
         , stringToErrorCode
+        , stringToNotificationType
         , stringToTable
         , tabIndexToPage
         , tableToString
@@ -325,6 +326,21 @@ stringToTable name =
 
         _ ->
             Unknown
+
+stringToNotificationType : String -> NotificationType
+stringToNotificationType str =
+    case str of
+        "DATA_ADD" ->
+            AddNotificationType
+
+        "DATA_CHANGE" ->
+            ChgNotificationType
+
+        "DATA_DELETE" ->
+            DelNotificationType
+
+        _ ->
+            UnknownNotificationType
 
 
 {-| Converts a String to an Int using a default

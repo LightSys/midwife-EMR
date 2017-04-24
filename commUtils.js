@@ -53,7 +53,7 @@ function getConstants(key) {
         TYPE: {
           SITE: 'site'
           , SYSTEM: 'system'
-          , DATA: 'data'
+          , DATA: 'DATA_ADD_CHG_DELETE'
         }
       };
       break;

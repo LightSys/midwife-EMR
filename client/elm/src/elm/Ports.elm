@@ -1,6 +1,7 @@
 port module Ports
     exposing
-        ( adhocResponse
+        ( addChgDelNotification
+        , adhocResponse
         , createResponse
         , deleteResponse
         , login
@@ -30,6 +31,9 @@ import Msg exposing (Msg)
 
 
 -- INCOMING PORTS
+
+
+port addChgDelNotification : (JE.Value -> msg) -> Sub msg
 
 
 port adhocResponse : (JD.Value -> msg) -> Sub msg
@@ -80,7 +84,9 @@ port userDelete : JE.Value -> Cmd msg
 
 port userUpdate : JE.Value -> Cmd msg
 
+
 port userProfileUpdate : JE.Value -> Cmd msg
+
 
 port login : JE.Value -> Cmd msg
 

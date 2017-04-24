@@ -36,7 +36,9 @@ init location =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Ports.adhocResponse Decoders.decodeAdhocResponse
+        [ Ports.addChgDelNotification Decoders.decodeAddChgDelNotification
+            |> Sub.map AddChgDelNotificationMessages
+        , Ports.adhocResponse Decoders.decodeAdhocResponse
             |> Sub.map AdhocResponseMessages
         , Ports.createResponse Decoders.decodeCreateResponse
             |> Sub.map CreateResponseMsg

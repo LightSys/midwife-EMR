@@ -22,7 +22,8 @@ import Types exposing (..)
 
 
 type Msg
-    = AddSelectedTable
+    = AddChgDelNotificationMessages (Maybe AddChgDelNotification)
+    | AddSelectedTable
     | AdhocResponseMessages AdhocResponseMessage
     | CancelSelectedTable
     | CreateResponseMsg (Maybe CreateResponse)

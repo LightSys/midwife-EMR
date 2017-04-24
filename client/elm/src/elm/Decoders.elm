@@ -465,3 +465,39 @@ decodeAdhocResponse payload =
 
             Err message ->
                 AdhocUnknownMsg message
+
+decodeNotificationType : JD.Decoder NotificationType
+decodeNotificationType =
+    JD.string |> JD.map U.stringToNotificationType
+
+
+{-| The first three fields are what the server always sends
+and the others are foreign keys of the table in question, so
+they will vary. Will need to add foreign keys here when the
+client starts handling other tables.
+-}
+addChgDelNotification : JD.Decoder AddChgDelNotification
+addChgDelNotification =
+    decode AddChgDelNotification
+        |> required "notificationType" decodeNotificationType
+        |> required "table" decodeTable
+        |> required "id" JD.int
+        |> optional "role_id" (JD.maybe JD.int) (Nothing)
+
+
+decodeAddChgDelNotification : JE.Value -> Maybe AddChgDelNotification
+decodeAddChgDelNotification payload =
+    let
+        _ =
+            Debug.log "decodeAddChgDelNotification" <| toString payload
+    in
+        case JD.decodeValue addChgDelNotification payload of
+            Ok val ->
+                Just val
+
+            Err msg ->
+                let
+                    _ =
+                        Debug.log "decodeAddChgDelNotification Error" msg
+                in
+                    Nothing

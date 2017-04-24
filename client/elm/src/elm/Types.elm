@@ -1,6 +1,7 @@
 module Types
     exposing
-        ( AdhocResponse
+        ( AddChgDelNotification
+        , AdhocResponse
         , adminPages
         , AuthResponse
         , CreateResponse
@@ -16,6 +17,7 @@ module Types
         , MedicationTypeForm
         , MedicationTypeRecord
         , notFoundPageDef
+        , NotificationType(..)
         , Page(..)
         , PageDef
         , PregnoteTypeRecord
@@ -73,6 +75,13 @@ type Table
     | User
     | Vaccination
     | VaccinationType
+
+
+type NotificationType
+    = AddNotificationType
+    | ChgNotificationType
+    | DelNotificationType
+    | UnknownNotificationType
 
 
 {-| Pages
@@ -431,4 +440,21 @@ type alias DeleteResponse =
     , success : Bool
     , errorCode : ErrorCode
     , msg : String
+    }
+
+
+{-| Represents what the server is sending to notify us of
+data changes that other clients have made.
+
+Note that the fields beyond the first three are optional
+and will vary depending upon the table that is changed
+because these additional fields are the foreign keys
+of the table in question. This means that as we bring on
+more tables, we will need to add their foreign keys here.
+-}
+type alias AddChgDelNotification =
+    { notificationType : NotificationType
+    , table : Table
+    , id : Int
+    , role_id : Maybe Int
     }

@@ -45,7 +45,7 @@ var buildChangeObject = function(data, chgType) {
     ;
 
   // Add the type field.
-  result.type = chgType;
+  result.notificationType = chgType;
 
   // Get the foreign keys of the table.
   if (util.dbType() === util.KnexMySQL) {
