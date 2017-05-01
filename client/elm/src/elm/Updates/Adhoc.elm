@@ -48,9 +48,9 @@ adhocUpdate msg model =
                 ( True, UserProfileSuccessErrorCode ) ->
                     let
                         newModel =
-                            ({ model
+                            { model
                                 | userProfile = userProfileFromAuthResponse resp
-                             }
+                            }
                                 |> setPageDefs
                                 |> setDefaultSelectedPage
                                 -- Populate the user profile form
@@ -63,7 +63,17 @@ adhocUpdate msg model =
                                             Nothing ->
                                                 m
                                     )
-                            )
+                                -- Register a subscription to any changes in our own
+                                -- user record via the data notifications feature.
+                                |> (\model -> case model.userProfile of
+                                    Just profile ->
+                                        Model.addNotificationSubscription
+                                            (NotificationSubscription User (NotifySubQualifierId profile.userId))
+                                            model
+
+                                    Nothing ->
+                                        model
+                                   )
 
                         newCmds =
                             prefetchCmdsByRole newModel

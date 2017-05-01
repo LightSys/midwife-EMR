@@ -5,13 +5,14 @@ module Update
 
 import Form exposing (Form)
 import Form.Field as Fld
+import Form.Validate as V
 import Json.Decode as JD
 import Json.Encode as JE
 import List.Extra as LE
 import Material
 import Material.Snackbar as Snackbar
 import RemoteData as RD exposing (RemoteData(..))
-import Form.Validate as V
+import Task
 
 
 -- LOCAL IMPORTS
@@ -42,11 +43,8 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         AddChgDelNotificationMessages acdNotification ->
-            let
-                _ =
-                    Debug.log "AddChgDelNotificationMessages" <| toString acdNotification
-            in
-                model ! []
+            -- Determine if we are subscribed to the table affected by the change.
+            model ! (processDataNotification acdNotification model)
 
         AdhocResponseMessages adhocResponse ->
             Updates.adhocUpdate adhocResponse model
@@ -82,6 +80,30 @@ update msg model =
 
                 Nothing ->
                     model ! []
+
+        DeleteRecord table id ->
+            -- Delete a record out of the model as required by processing AddChgDelNotificationMessages.
+            let
+                newModel =
+                    case table of
+                        MedicationType ->
+                            MU.deleteById id model.medicationTypeModel.records
+                                |> flip MU.setRecords model.medicationTypeModel
+                                |> (\tblModel -> { model | medicationTypeModel = tblModel})
+
+                        User ->
+                            MU.deleteById id model.userModel.records
+                                |> flip MU.setRecords model.userModel
+                                |> (\tblModel -> { model | userModel = tblModel})
+
+                        _ ->
+                            let
+                                _ =
+                                    Debug.log "DeleteRecord Warning" <| "Unhandled table: " ++ (U.tableToString table)
+                            in
+                                model
+            in
+                newModel ! []
 
         DeleteResponseMsg del ->
             case del of
@@ -244,9 +266,6 @@ update msg model =
 
         SelectQueryResponseMsg sqr ->
             let
-                --_ =
-                    --Debug.log "SelectQueryResponseMsg" <| toString sqr
-
                 ( newModel, newCmd ) =
                     -- Unwrap sqr from the RemoteData wrapper.
                     case sqr of
@@ -476,3 +495,84 @@ numRecsSelectedTable model =
 
         Nothing ->
             0
+
+
+{-| Create a list of Cmds necessary to respond to the server notification
+sent against our own subscriptions to those notifications.
+-}
+processDataNotification : Maybe AddChgDelNotification -> Model -> List (Cmd Msg)
+processDataNotification acdNotification model =
+    case acdNotification of
+        Nothing ->
+            []
+
+        Just notification ->
+            List.filter (\sub -> sub.table == notification.table)
+                model.dataNotificationSubscriptions
+                |> List.map (deriveDataNotificationCmd notification)
+
+
+{-| Determine the correct Cmd in order to handle the server's notification of
+a data change and our subscriptions to the same.
+
+Upon a match, ADD and CHG events result in requesting the affected record from
+the server while DEL events result in the affected record being deleted in the
+model.
+-}
+deriveDataNotificationCmd : AddChgDelNotification -> NotificationSubscription -> Cmd Msg
+deriveDataNotificationCmd notification sub =
+    let
+        qry =
+            SelectQuery notification.table (Just notification.id) Nothing Nothing
+    in
+        case sub.qualifier of
+            NotifySubQualifierNone ->
+                -- Subscribe to all changes to the table irrespective of key field.
+                case notification.notificationType of
+                    UnknownNotificationType ->
+                        Cmd.none
+
+                    DelNotificationType ->
+                        Task.perform (DeleteRecord notification.table)
+                            (Task.succeed notification.id)
+
+                    _ ->
+                        -- ADD and CHG
+                        Task.perform SelectQueryMsg (Task.succeed qry)
+
+            NotifySubQualifierId id ->
+                -- Only interested in this particular key field.
+                if id == notification.id then
+                    case notification.notificationType of
+                        UnknownNotificationType ->
+                            Cmd.none
+
+                        DelNotificationType ->
+                            Task.perform (DeleteRecord notification.table)
+                                (Task.succeed notification.id)
+
+                        _ ->
+                            -- ADD and CHG
+                            Task.perform SelectQueryMsg (Task.succeed qry)
+                else
+                    Cmd.none
+
+            NotifySubQualifierFK ( tbl, id ) ->
+                -- Interested in all rows affected by this foreign key.
+                -- Note: notification is a list of ( Table, Int ).
+                case LE.find (\( notTbl, notId ) -> notTbl == tbl && notId == id) notification.foreignKeys of
+                    Just ( _, _ ) ->
+                        case notification.notificationType of
+                            UnknownNotificationType ->
+                                Cmd.none
+
+                            DelNotificationType ->
+                                Task.perform (DeleteRecord notification.table)
+                                    (Task.succeed notification.id)
+
+                            _ ->
+                                -- ADD and CHG
+                                Task.perform SelectQueryMsg (Task.succeed qry)
+
+                    Nothing ->
+                        Cmd.none

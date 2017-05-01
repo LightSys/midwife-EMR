@@ -1,6 +1,7 @@
 module Model
     exposing
-        ( asMedicationTypeModelIn
+        ( addNotificationSubscription
+        , asMedicationTypeModelIn
         , asRoleModelIn
         , asUserModelIn
         , initialModel
@@ -35,7 +36,8 @@ import Types exposing (..)
 
 
 type alias Model =
-    { eventType : RemoteData String (List EventTypeRecord)
+    { dataNotificationSubscriptions : List NotificationSubscription
+    , eventType : RemoteData String (List EventTypeRecord)
     , labSuite : RemoteData String (List LabSuiteRecord)
     , labTest : RemoteData String (List LabTestRecord)
     , labTestValue : RemoteData String (List LabTestValueRecord)
@@ -136,12 +138,14 @@ userProfileInitialForm profile =
         ]
         userProfileFormValidate
 
+
 optionalString : V.Validation e String
 optionalString =
     V.oneOf
         [ V.string
         , V.emptyString
         ]
+
 
 userProfileFormValidate : V.Validation () UserProfileForm
 userProfileFormValidate =
@@ -179,7 +183,8 @@ userSearchFormValidate =
 
 initialModel : Model
 initialModel =
-    { eventType = NotAsked
+    { dataNotificationSubscriptions = []
+    , eventType = NotAsked
     , labSuite = NotAsked
     , labTest = NotAsked
     , labTestValue = NotAsked
@@ -210,6 +215,24 @@ initialModel =
 
 
 -- Top-level Setters
+
+
+{-| Add a subscription to our list of subscriptions, but do not allow
+duplicates.
+
+TODO: removeNotificationSubscription
+-}
+addNotificationSubscription : NotificationSubscription -> Model -> Model
+addNotificationSubscription subscription model =
+    if List.member subscription model.dataNotificationSubscriptions then
+        model
+    else
+        (\model ->
+            { model
+                | dataNotificationSubscriptions = subscription :: model.dataNotificationSubscriptions
+            }
+        )
+            model
 
 
 setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model

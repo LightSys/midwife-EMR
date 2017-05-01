@@ -229,13 +229,22 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
             )
 
         ReadResponseMedicationType medicationTypeTbl sq ->
-            ( medicationTypeModel
-                |> MU.setRecords medicationTypeTbl
-                |> MU.setSelectedRecordId (Just 0)
-                |> MU.setSelectQuery sq
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
+            -- Merge records from the server into our model, update
+            -- our form as necessary, and make sure we are subscribed
+            -- to changes from the server.
+            let
+                subscription =
+                    NotificationSubscription MedicationType NotifySubQualifierNone
+            in
+                ( MU.mergeById medicationTypeTbl medicationTypeModel.records
+                    |> (\recs -> { medicationTypeModel | records = recs })
+                    |>
+                        MU.setSelectQuery sq
+                    |> MedType.populateSelectedTableForm
+                    |> asMedicationTypeModelIn model
+                    |> Model.addNotificationSubscription subscription
+                , Cmd.none
+                )
 
         SelectedRecordEditModeMedicationType mode id ->
             (medicationTypeModel

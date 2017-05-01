@@ -1100,6 +1100,10 @@ var init = function(io, sessionMiddle) {
         return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
       } else touchSocketSession(socket);
 
+      // --------------------------------------------------------
+      // TODO: handle all tables, not just certain ones and handle
+      // requests for individual records instead of all records.
+      // --------------------------------------------------------
       if (json.table) {
         getLookupTable(json.table, json.id, json.pregnancy_id, json.patient_id, function(err, data) {
           if (err) {

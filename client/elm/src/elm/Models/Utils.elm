@@ -1,6 +1,8 @@
 module Models.Utils
     exposing
         ( addRecord
+        , deleteById
+        , deleteByIndex
         , delSelectedRecord
         , getRecNextMax
         , getSelectedRecordAsString
@@ -145,6 +147,37 @@ mergeById source target =
         ( _, _ ) ->
             -- Don't change anything.
             target
+
+
+deleteById :
+    Int
+    -> RemoteData String (List { a | id: Int })
+    -> RemoteData String (List { a | id: Int })
+deleteById id records =
+    case records of
+        Success recs ->
+            case LE.findIndex (\r -> r.id == id) recs of
+                Just idx ->
+                    deleteByIndex idx records
+
+                Nothing ->
+                    records
+
+        _ ->
+            records
+
+
+deleteByIndex :
+    Int
+    -> RemoteData String (List { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
+deleteByIndex idx records =
+    case records of
+        Success recs ->
+            LE.removeAt idx recs |> RD.succeed
+
+        _ ->
+            records
 
 
 updateById :

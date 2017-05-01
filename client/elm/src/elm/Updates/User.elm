@@ -232,13 +232,38 @@ userUpdate msg ({ userSearchForm, userModel } as model) =
         ReadResponseUser userTbl sq ->
             -- Getting either all of the user records back or maybe just a subset.
             -- We merge what comes back with what we already have.
-            ( MU.mergeById userTbl userModel.records
-                |> (\recs -> { userModel | records = recs })
-                |> MU.setSelectedRecordId (Just 0)  -- Hold over from old code?
-                |> MU.setSelectQuery sq
-                |> asUserModelIn model
-            , Cmd.none
-            )
+            let
+                -- Subscribe to all changes from the user table.
+                subscription =
+                    NotificationSubscription User NotifySubQualifierNone
+
+                -- If we are receiving a subset per the SelectQuery and the
+                -- user id is this user's id, we also request the user profile
+                -- again in order to keep the user's profile in sync.
+                newCmd =
+                    case sq of
+                        Just query ->
+                            case ( query.id, model.userProfile ) of
+                                ( Just id, Just profile ) ->
+                                    if id == profile.userId then
+                                        Task.perform (always RequestUserProfile) (Task.succeed True)
+                                    else
+                                        Cmd.none
+
+                                ( _, _ ) ->
+                                    Cmd.none
+
+                        Nothing ->
+                            Cmd.none
+            in
+                ( MU.mergeById userTbl userModel.records
+                    |> (\recs -> { userModel | records = recs })
+                    |>
+                        MU.setSelectQuery sq
+                    |> asUserModelIn model
+                    |> Model.addNotificationSubscription subscription
+                , newCmd
+                )
 
         SelectedRecordEditModeUser mode id ->
             (userModel

@@ -17,11 +17,15 @@ roleUpdate : RoleMsg -> Model -> ( Model, Cmd Msg )
 roleUpdate msg ({roleModel} as model) =
     case msg of
         ReadResponseRole roleTbl sq ->
-            ( roleModel
-                |> MU.setRecords roleTbl
-                |> MU.setSelectedRecordId (Just 0)
-                |> MU.setSelectQuery sq
-                |> asRoleModelIn model
-            , Cmd.none
-            )
+            let
+                subscription =
+                    NotificationSubscription Role NotifySubQualifierNone
+            in
+                ( MU.mergeById roleTbl roleModel.records
+                    |> (\recs -> { roleModel | records = recs })
+                    |> MU.setSelectQuery sq
+                    |> asRoleModelIn model
+                    |> Model.addNotificationSubscription subscription
+                , Cmd.none
+                )
 

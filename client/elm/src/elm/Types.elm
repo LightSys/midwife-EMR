@@ -17,7 +17,9 @@ module Types
         , MedicationTypeForm
         , MedicationTypeRecord
         , notFoundPageDef
+        , NotificationSubscription
         , NotificationType(..)
+        , NotifySubQualifier(..)
         , Page(..)
         , PageDef
         , PregnoteTypeRecord
@@ -456,5 +458,32 @@ type alias AddChgDelNotification =
     { notificationType : NotificationType
     , table : Table
     , id : Int
-    , role_id : Maybe Int
+    , foreignKeys : List ( Table, Int )
     }
+
+
+type NotifySubQualifier
+    = NotifySubQualifierNone
+    | NotifySubQualifierId Int
+    | NotifySubQualifierFK ( Table, Int )
+
+
+{-| Used to allow a client to register a subscription to
+server notifications.
+
+Examples:
+
+- `NotificationSubscription User NotifySubQualifierNone`: Subscribes to all records
+from the user table with no additional qualifications.
+- `NotificationSubscription Pregnancy (NotifySubQualifierId 2309)`: Subscribes to the
+pregnancy table record with the id of 2309.
+- `NotificationSubscription Prenatal (NotifiySubQualifierFK ( Pregnancy, 2309 ))`:
+Subscribes to any prenatal table records that have a foreign key relationship
+to the pregnancy table on id 2309.
+-}
+type alias NotificationSubscription =
+    { table : Table
+    , qualifier : NotifySubQualifier
+    }
+
+

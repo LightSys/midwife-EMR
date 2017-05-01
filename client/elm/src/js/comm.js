@@ -198,12 +198,7 @@ ioData.on(INFORM, function(data) {
 ioData.on('DATA_ADD_CHG_DELETE', function(data) {
   if (! app) return;
 
-  // Note: stripping some fields here that the server sends
-  // but the client does not yet have a need for. These are
-  // foreign keys, which the server is sending, but in the
-  // case of these two, the client does not need them.
-  var json = _.omit(data, ['updatedBy', 'supervisor']);
-  app.ports.addChgDelNotification.send(json);
+  app.ports.addChgDelNotification.send(data);
 });
 
 // --------------------------------------------------------

@@ -27,6 +27,7 @@ type Msg
     | AdhocResponseMessages AdhocResponseMessage
     | CancelSelectedTable
     | CreateResponseMsg (Maybe CreateResponse)
+    | DeleteRecord Table Int
     | DeleteResponseMsg (Maybe DeleteResponse)
     | EditSelectedTable
     | EventTypeResponse (RemoteData String (List EventTypeRecord))

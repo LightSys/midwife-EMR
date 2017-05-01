@@ -471,6 +471,13 @@ decodeNotificationType =
     JD.string |> JD.map U.stringToNotificationType
 
 
+decodeTableId : JD.Decoder ( Table, Int )
+decodeTableId =
+    JD.map2 (,)
+        (JD.field "table" decodeTable)
+        (JD.field "id" JD.int)
+
+
 {-| The first three fields are what the server always sends
 and the others are foreign keys of the table in question, so
 they will vary. Will need to add foreign keys here when the
@@ -482,7 +489,7 @@ addChgDelNotification =
         |> required "notificationType" decodeNotificationType
         |> required "table" decodeTable
         |> required "id" JD.int
-        |> optional "role_id" (JD.maybe JD.int) (Nothing)
+        |> required "foreignKeys" (JD.list decodeTableId)
 
 
 decodeAddChgDelNotification : JE.Value -> Maybe AddChgDelNotification

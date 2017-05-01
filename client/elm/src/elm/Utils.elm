@@ -399,7 +399,6 @@ not a SQL error message.
 humanReadableError : String -> String
 humanReadableError msg =
     msg
-        |> Debug.log "humanReadableError"
         |> RX.split (RX.AtMost 1) (RX.regex " - ER_")
         |> List.drop 1
         |> List.head

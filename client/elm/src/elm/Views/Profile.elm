@@ -4,6 +4,7 @@ import FNV
 import Form
 import Form.Field as FF
 import Html as Html exposing (Html, div, p, text)
+import Html.Attributes as HA
 import Material
 import Material.Card as Card
 import Material.Color as MColor
@@ -16,12 +17,45 @@ import Material.Options as Options
 import Model exposing (..)
 import Msg exposing (Msg(..), UserProfileMsg(..))
 import Models.Role as MU
+import Types exposing (NotificationSubscription)
+import Utils as U
 import Views.Utils as VU
 
 
 mdlContext : Int
 mdlContext =
     FNV.hashString "Views.Profile"
+
+
+doShowSubscriptions : Bool
+doShowSubscriptions =
+    True
+
+
+showSubscriptions : Model -> Html Msg
+showSubscriptions model =
+    let
+        subItem : NotificationSubscription -> Html Msg
+        subItem ntfySub =
+            Html.li [ HA.style [ ( "list-style", "none" ) ] ]
+                [ Html.text <|
+                    (U.tableToString ntfySub.table)
+                        ++ ": "
+                        ++ (toString ntfySub.qualifier)
+                ]
+    in
+        if doShowSubscriptions then
+            Html.div
+                [ HA.style
+                    [ ( "padding", "20px" )
+                    , ( "background-color", "#bcbcbc" )
+                    ]
+                ]
+                [ Html.h6 [] [ Html.text "Subscriptions (Debugging)" ]
+                , Html.div [] <| List.map subItem model.dataNotificationSubscriptions
+                ]
+        else
+            Html.div [] []
 
 
 view : Model -> Html Msg
@@ -173,4 +207,6 @@ view ({ userModel } as model) =
                     Html.text ""
     in
         Html.div []
-            [ data ]
+            [ data
+            , showSubscriptions model
+            ]
