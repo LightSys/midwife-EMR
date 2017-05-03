@@ -1,0 +1,84 @@
+extends layouts/default_layout
+
+block medicationAddEditForm
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var formId = 'medicationAddEdit';
+  - var formName = 'medicationAddEditForm';
+  - var labsMainPath = '/pregnancy/' + rec.id + '/labs';
+  //- Default of adding a medication
+  - var formAction = '/pregnancy/' + rec.id + '/medication';
+  - var medicationDate = libs.mmt().format('YYYY-MM-DD');
+  - var medicationNote = '';
+  - var numberDispensed = '';
+  - var isUpdate = false;
+  - var medicationDeletePath;
+  //- If editing a medication
+  - if (medicationRec && medicationRec.id) {
+  -   formAction ='/pregnancy/' + rec.id + '/medication/' + medicationRec.id;
+  -   medicationDate = medicationRec.date? libs.mmt(medicationRec.date).format('YYYY-MM-DD'): medicationDate;
+  -   medicationNote = medicationRec.note || '';
+  -   numberDispensed = medicationRec.numberDispensed || '';
+  -   isUpdate = true;
+  -   medicationDeletePath = '/pregnancy/' + rec.id + '/medication/' + medicationRec.id + '/delete';
+  - }
+
+  div
+    form(id=formId, class='dirty-check disable-on-submit', role='form', name=formName, action=formAction, method='post')
+      div.row
+        div(class='col-xs-12')
+          label= gettext('Date of the medication')
+          input(id='date', type='date', class='form-control', tabindex='1', name='date', value=medicationDate)
+      div.row
+        div(class='col-xs-12')
+          label= gettext('Type of medication')
+          - if (! isUpdate) {
+          +select('form-control', 'medicationType', 2, medicationType)
+          - } else {
+            p= gettext(medicationRec.medType)
+          - }
+      div.row
+        div(class='col-xs-4')
+          label= gettext('# Dispensed')
+          input(class='form-control', type='number', tabindex='3', autocomplete="off", name='numberDispensed', value=numberDispensed)
+        div(class='col-xs-8')
+          label= gettext('Notes')
+          textarea(class='form-control input-lg', tabindex="4", autocomplete="off", rows=2, name='note')= medicationNote
+      div.row
+        div(class='col-xs-4')
+          span &nbsp;
+      div.row
+        div(class='col-xs-4')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          button(type='submit', class='btn btn-primary btn-block')= gettext('Save')
+        div(class='col-xs-8')
+          +jumpto(['prenatalLatest'], ['Latest prenatal exam'], 'Save then ...', true)
+      div.row
+        div(class='col-xs-4')
+          span &nbsp;
+      div.row
+        div(class='col-xs-8')
+          a(href=labsMainPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to the Labs Page')
+        - if (isUpdate) {
+        div(class='col-xs-4')
+          a(class='btn btn-warning disable-on-change pull-right', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+        - }
+
+    - if (isUpdate) {
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deleteMedicationEditForm', role='form', name='MedicationEditForm', action=medicationDeletePath, method='post')
+        div(class='modal-dialog', role='document')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='medicationId', value=medicationRec.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')
+    - }

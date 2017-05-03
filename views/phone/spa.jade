@@ -1,0 +1,10 @@
+extends layouts/spa_layout
+
+block spa
+  div(ui-view='historyControl')
+    h3 Loading ...
+  div(ui-view='title', id='historyPageTitle')
+  div(ui-view='tabs')
+  div(ui-view='patientWell')
+  div(ui-view='content')
+  div(ui-view='footer')

@@ -1,0 +1,152 @@
+extends layouts/default_layout
+
+block prenatalAddEditExam
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var prenatalPath = '/pregnancy/' + rec.id + '/prenatal';
+  - var prenatalExamDeletePath;
+  - var defaultDate = libs.mmt().format('YYYY-MM-DD');
+
+  //- Default for adding a new prenatal exam.
+  - var formId = 'addPrenatalExamForm';
+  - var formName = 'prenatalAddExam';
+  - var formAction = '/pregnancy/' + rec.id + '/prenatalexam';
+  - var returnDate;
+  - var ga = rec.ga;
+
+  //- Adjust for editing an existing prenatal exam.
+  - if (prenatalExam) {
+  -   formId = 'editPrenatalExamForm';
+  -   formName = 'prenatalEditExam';
+  -   formAction = '/pregnancy/' + rec.id + '/prenatalexam/' + prenatalExam.id;
+  -   defaultDate = libs.mmt(prenatalExam.date).format('YYYY-MM-DD');
+  -   returnDate = libs.mmt(prenatalExam.returnDate).format('YYYY-MM-DD');
+  -   prenatalExamDeletePath = '/pregnancy/' + rec.id + '/prenatalexam/' + prenatalExam.id + '/delete';
+  -   ga = prenatalExam.ga;
+  - } else {
+  -   // So that exceptions are not thrown in value attributes below.
+  -   prenatalExam = {};
+  - }
+
+  div.clearfix
+    a(class='pull-right', href=prenatalPath)= gettext('Back to the Prenatal page')
+
+  div
+    form(id=formId, class='dirty-check disable-on-submit', role='form', name=formName, action=formAction, method='post')
+      div.row
+        div(class='form-group col-xs-7')
+          label(class='')= gettext('Mother Information')
+          div= gettext('Date')
+          input(id='date', class='form-control input-lg', type='date', tabindex="1", autocomplete="off", name='date', value=defaultDate)
+          span= gettext('Weight')
+          input(id='weight', class='form-control input-lg', type='number', step="0.1", min="30", max="200", tabindex="2", autocomplete="off", name='weight', autofocus, disabled=readonlyFields.weight, value=prenatalExam.weight)
+          div.row
+            div.col-xs-6
+              span= gettext('Systolic')
+              input(id='systolic', class='form-control input-lg', type='number', tabindex="3", autocomplete="off", name='systolic', disabled=readonlyFields.systolic, value=prenatalExam.systolic)
+            div.col-xs-6
+              span= gettext('Diastolic')
+              input(id='diastolic', class='form-control input-lg', type='number', tabindex="4", autocomplete="off", name='diastolic', disabled=readonlyFields.diastolic, value=prenatalExam.diastolic)
+          div.row
+            div.col-xs-6
+              div= gettext('CR')
+              input(id='cr', class='form-control input-lg', type='number', tabindex="5", autocomplete="off", name='cr', disabled=readonlyFields.cr, value=prenatalExam.cr)
+            div.col-xs-6
+              div= gettext('RR')
+              input(id='cr', class='form-control input-lg', type='number', tabindex="7", autocomplete="off", name='respiratoryRate', disabled=readonlyFields.respiratoryRate, value=prenatalExam.respiratoryRate)
+          div.row
+            div.col-xs-12
+              div= gettext('Temperature')
+              input(id='cr', class='form-control input-lg', type='number', step="0.1", tabindex="6", autocomplete="off", name='temperature', disabled=readonlyFields.temperature, value=prenatalExam.temperature)
+
+        div(class='form-group col-xs-5')
+          label(class='')= gettext('Fetus Information')
+          div= gettext('GA')
+          input(id='ga', class='form-control input-lg', type='text', autocomplete="off", name='ga', disabled=true, value=ga)
+          div.row
+            div.col-xs-12
+              span= gettext('FH')
+              input(id='fh', class='form-control input-lg', type='number', tabindex="8", autocomplete="off", name='fh', disabled=readonlyFields.fh, value=prenatalExam.fh)
+          div.row
+            div.col-xs-12
+              span= gettext('FH Note')
+              +textarea('fhNote', 'fhNote', 'form-control', '9', prenatalExam.fhNote, readonlyFields.fhNote)
+          div.row
+            div.col-xs-12
+              span= gettext('FHT')
+              input(id='fht', class='form-control input-lg', type='number', tabindex="10", autocomplete="off", name='fht', disabled=readonlyFields.fht, value=prenatalExam.fht)
+          div.row
+            div.col-xs-12
+              span= gettext('FHT Note')
+              +textarea('fhtNote', 'fhtNote', 'form-control', '11', prenatalExam.fhtNote, readonlyFields.fhtNote)
+          span= gettext('Position (saved all caps)')
+          input(id='pos', class='form-control input-lg', type='text', tabindex="12", autocomplete="off", name='pos', disabled=readonlyFields.pos, value=prenatalExam.pos)
+
+      div.row
+        div(class='form-group col-xs-6')
+          div.checkbox
+            label
+              input(type='checkbox', name='mvmt', tabindex="13", disabled=readonlyFields.mvmt, value=1, checked=prenatalExam.mvmt==true)
+              = gettext('Mvmt')
+        div(class='form-group col-xs-6')
+          div.checkbox
+            label
+              +select('form-control', 'edema', 14, edema, readonlyFields.edema)
+                = gettext('Edema')
+      div.row
+        div(class='form-group col-xs-6')
+          div.checkbox
+            label
+              input(type='checkbox', name='vitamin', tabindex="15", disabled=readonlyFields.vitamin, value=1, checked=prenatalExam.vitamin==true)
+              = gettext('Vitamin')
+        div(class='form-group col-xs-6')
+          div.checkbox
+            label
+              input(type='checkbox', name='pray', tabindex="16", disabled=readonlyFields.pray, value=1, checked=prenatalExam.pray==true)
+              = gettext('Pray')
+
+      div.row
+        div(class='form-group col-xs-5')
+          span= gettext('Risk note')
+          +textarea('risk', 'risk', 'form-control', '17', prenatalExam.risk, readonlyFields.risk)
+        div(class='form-group col-xs-7')
+          div= gettext('Return Date')
+          input(id='returnDate', class='form-control input-lg', type='date', tabindex="18", autocomplete="off", name='returnDate', disabled=readonlyFields.returnDate, value=returnDate)
+      div.row
+        div(class='form-group col-xs-12')
+          span= gettext('Notes')
+          +textarea('note', 'note', 'form-control', '19', prenatalExam.note, readonlyFields.note)
+
+      div.row
+        div(class='col-xs-4')
+          button(class='btn btn-primary btn-block', type='submit')= gettext('Save')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          input(type='hidden', name='id', value=prenatalExam.id)
+        div(class='form-group col-xs-8')
+          +jumpto(['labs', 'medicationAdd', 'vaccinationAdd'], ['labs page', 'add medication', 'add vaccination'], 'Save then ...', true)
+      div.row
+        div(class='col-xs-8')
+          a(href=prenatalPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to the Prenatal Page')
+        div(class='col-xs-4')
+          - if (prenatalExamDeletePath) {
+          a(class='btn btn-warning pull-right disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+          - }
+
+    - if (prenatalExamDeletePath) {
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deletePrenatalExamForm', role='form', name='prenatalExamDelete', action=prenatalExamDeletePath, method='post')
+        div(class='modal-dialog', role='document')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='id', value=prenatalExam.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')
+    - }

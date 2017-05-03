@@ -1,0 +1,104 @@
+extends layouts/default_layout
+
+block midwifeInterviewEditPreg
+  +titleMsg(title)
+  +patientWell(rec)
+
+  - var pregHistEditPath = '/pregnancy/' + rec.id + '/preghistory/' + pregHist.id;
+  - var pregHistDeletePath = '/pregnancy/' + rec.id + '/preghistory/' + pregHist.id + '/delete';
+  - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
+
+  div
+    form(id='editPregForm', class='dirty-check disable-on-submit', role='form', name='pregnancyHistoryEditPreg', action=pregHistEditPath, method='post')
+      div.row
+        div(class='form-group col-xs-4')
+          span= gettext('Month')
+          input(id='month', class='form-control', type='number', tabindex="90", autocomplete="off", name='month', value=pregHist.month, autofocus)
+        div(class='form-group col-xs-4')
+          span= gettext('Day')
+          input(id='day', class='form-control', type='number', tabindex="95", autocomplete="off", name='day', value=pregHist.day)
+        div(class='form-group col-xs-4')
+          span= gettext('Year')
+          input(id='year', class='form-control', type='number', tabindex="101", autocomplete="off", name='year', value=pregHist.year)
+
+      div.row
+        div(class='form-group col-xs-4')
+          div.checkbox
+            label
+              input(type='checkbox', name='FT', tabindex="102", value=1, checked=pregHist.FT==true)
+              = gettext('Full Term?')
+        div(class='form-group col-xs-4')
+          span= gettext('GA')
+          input(id='finalGA', class='form-control', type='number', tabindex="103", autocomplete="off", name='finalGA', value=pregHist.finalGA)
+        div(class='form-group col-xs-4')
+          span= gettext('Weeks or Months')
+          +select('form-control', 'finalGAPeriod', 104, finalGAPeriod)
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Sex of baby')
+          +select('form-control', 'sexOfBaby', 105, sexOfBaby)
+        div(class='form-group col-xs-6')
+          span= gettext('Place of birth')
+          +select('form-control', 'placeOfBirth', 106, placeOfBirth)
+
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Attendant')
+          +select('form-control', 'attendant', 107, attendant)
+        div(class='form-group col-xs-6')
+          span= gettext('Type of Delivery')
+          input(id='typeOfDelivery', class='form-control', type='text', tabindex="108", autocomplete="off", name='typeOfDelivery', value=pregHist.typeOfDelivery)
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Labor (hours)')
+          input(id='lengthOfLabor', class='form-control', type='number', tabindex="109", autocomplete="off", name='lengthOfLabor', value=pregHist.lengthOfLabor)
+        div(class='form-group col-xs-6')
+          span= gettext('Birth Weight (kg)')
+          input(id='birthWeight', class='form-control', type="tel", placeholder="Kg only", pattern="[0-9]|[0-9]\.[0-9]|[0-9]\.[0-9]{2}", title="Ex. 2 or 2.3 or 2.37 (in Kg only)", tabindex="110", name='birthWeight', value=pregHist.birthWeight)
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Epis Tear?')
+          +select('form-control', 'episTear', 111, episTear)
+        div(class='form-group col-xs-6')
+          span= gettext('Repaired?')
+          +select('form-control', 'repaired', 112, repaired)
+
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Breast Fed')
+          input(id='howLongBFed', class='form-control', type='number', tabindex="113", autocomplete="off", name='howLongBFed', value=pregHist.howLongBFed)
+        div(class='form-group col-xs-6')
+          span= gettext('Weeks/Months/Years')
+          +select('form-control', 'howLongBFedPeriod', 114, howLongBFedPeriod)
+
+      div.row
+        div(class='form-group col-xs-12')
+          span= gettext('Comment')
+          +textarea('note', 'note', 'form-control', '115', pregHist.note)
+
+      div.row
+        div(class='form-group col-xs-4')
+          button(class='btn btn-primary btn-block', type='submit')= gettext('Save')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+          input(type='hidden', name='id', value=pregHist.id)
+      div.row
+        div(class='col-xs-8')
+          a(href=midwifeInterviewPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to Midwife Interview')
+        div(class='form-group col-xs-4')
+          a(class='btn pull-right btn-warning disable-on-change', data-toggle='modal', data-target="#delete-modal")= gettext('Delete')
+
+    div(id='delete-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='deleteModalheader', aria-hidden='true')
+      form(id='deletePregForm', role='form', name='pregnancyHistoryDeletePreg', action=pregHistDeletePath, method='post')
+        div(class='modal-dialog', role='document')
+          div(class='modal-content')
+            div(class='modal-header')
+              h3(id='deleteModalHeader', class='modal-title text-center')= gettext('Are you sure?')
+            div(class='modal-body')
+              p(class='text-warning lead')= gettext('The deletion cannot be undone. Press Delete or Cancel.')
+            div(class='modal-footer')
+              input(type='hidden', name='_csrf', value=token)
+              input(type='hidden', name='pregnancy_id', value=rec.id)
+              input(type='hidden', name='id', value=pregHist.id)
+              button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+              button(type='submit', class='btn btn-primary')= gettext('Delete')

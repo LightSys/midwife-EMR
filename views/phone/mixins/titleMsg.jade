@@ -1,0 +1,22 @@
+mixin titleMsg(title)
+  - var pregId = rec && rec.id? rec.id: void 0;
+  - var patId = rec && rec.patient_id? rec.patient_id: void 0;
+  div.row
+    div(class='col-xs-8')
+      h2= title
+    div(class='col-xs-4')
+      - if (pregId && roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('attending') || roleInfo.hasRole('supervisor')))
+        +addPregnancy(patId, otherPregnancies)
+  div.row
+    div(class='col-xs-4 col-xs-offset-8')
+      - if (pregId && roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('attending') || roleInfo.hasRole('supervisor')))
+        a(type='button', class='btn btn-default', href='/report/summary/' + pregId)= gettext('Summary Rpt')
+  div.row
+    div(class='col-xs-12')
+      +flash(messages)
+      - if (rec && rec.flags && rec.flags.length > 0) {
+        div(class='flags alert alert-info')
+          - rec.flags.forEach(function(f) {
+            p(class='')= f
+          - });
+      - }

@@ -1,0 +1,42 @@
+extends layouts/default_layout
+
+block profileEditForm
+  +titleMsg(title)
+  div.userEditBox
+    - var action = '/profile';
+      form(class='dirty-check', class='disable-on-submit', role='form', name='profileForm', action=action, method='post')
+
+        div.form-group
+          span= gettext('Id: ') + profile.id
+        div.form-group
+          span= gettext('Username: ') + profile.username
+        div.form-group
+          span= gettext('Firstname')
+          input(class='form-control', type='text', name='firstname', autocomplete="off", tabindex="1", autofocus, value=profile.firstname)
+        div.form-group
+          span= gettext('Lastname')
+          input(class='form-control', type='text', name='lastname', autocomplete="off", tabindex="2", value=profile.lastname)
+        div.form-group
+          span= gettext('Password')
+          input(class='form-control', type='password', tabindex="3", name='password')
+        div.form-group
+          span= gettext('Password confirmation')
+          input(class='form-control', type='password', tabindex="4", name='password2')
+        div.form-group
+          span= gettext('Language')
+          +select('form-control input-lg', 'lang', 5, profile.lang)
+        div.form-group
+          span= gettext('Email')
+          input(class='form-control', type='text', name='email', autocomplete="off", tabindex="6", value=profile.email)
+        div.form-group
+          span= gettext('Short name or initials')
+          input(class='form-control', type='text', name='shortName', autocomplete="off", tabindex="7", value=profile.shortName)
+        div.form-group
+          span= gettext('Display name')
+          input(class='form-control', type='text', name='displayName', autocomplete="off", tabindex="8", value=profile.displayName)
+
+        input(class='btn btn-default', type='submit', value=gettext('Save'))
+
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=profile.id)
+

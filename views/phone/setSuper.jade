@@ -1,0 +1,24 @@
+extends layouts/default_layout
+
+block setSuper
+  +titleMsg(title)
+
+  if supervisor
+    h4= gettext('Your current supervisor is: ')
+      span.text-primary= supervisor
+  else
+    p= gettext('Please choose your supervisor from the dropdown menu before proceeding.')
+
+  div.formBox
+    form(role='form', name='setSuperForm', action='/setsuper', method='post')
+      div.form-group
+        if supervisor
+          p= gettext('Choose a different supervisor')
+        select(class='form-control input-lg', name="supervisor")
+          option(value='')= ''
+          each u in userList
+            option(value=u.id)= u.lastname + ', ' + u.firstname + ' (' + u.username + ')'
+
+      input(class='btn btn-default btn-primary', type='submit', value=gettext('Set Supervisor'))
+      input(type='hidden', name='_csrf', value=token)
+

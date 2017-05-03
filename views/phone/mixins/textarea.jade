@@ -1,0 +1,9 @@
+//- Auto expanding text area.
+//- Adapted from [Expanding Text Areas Made Elegant](http://alistapart.com/article/expanding-text-areas-made-elegant).
+//- Assumes that supporting CSS and JS is in place.
+mixin textarea(id, name, classes, tabindex, value)
+  div(class='expandingArea')
+    pre
+      span
+      br
+    textarea(class=classes, name=name, tabindex=tabindex)= value
