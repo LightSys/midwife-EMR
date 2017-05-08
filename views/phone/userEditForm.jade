@@ -1,0 +1,79 @@
+extends layouts/default_layout
+
+block search
+  +titleMsg(title)
+
+  div.userEditBox
+    - var action = '/user/' + editUser.id + '/update';
+      form(class='dirty-check', role='form', name='userForm', action=action, method='post')
+
+        div.form-group
+          span= 'Id: ' + editUser.id
+        div.form-group
+          span= gettext('Username')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='username', autofocus, value=editUser.username)
+        div.form-group
+          span= gettext('Firstname')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='firstname', value=editUser.firstname)
+        div.form-group
+          span= gettext('Lastname')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='lastname', value=editUser.lastname)
+        div.form-group
+          span= gettext('Password')
+          input(class='form-control input-lg', type='password', name='password')
+        div.form-group
+          span= gettext('Password confirmation')
+          input(class='form-control input-lg', type='password', name='password2')
+        div.form-group
+          span= gettext('Email')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='email', value=editUser.email)
+        div.form-group
+          span= gettext('Short name or initials')
+          input(class='form-control input-lg', type='text', tabindex=7, autocomplete="off", name='shortName', value=editUser.shortName)
+        div.form-group
+          span= gettext('Display name')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='displayName', value=editUser.displayName)
+        div.form-group
+          input(type='checkbox', name='isCurrentTeacher', value=1, checked=editUser.isCurrentTeacher==true)
+          span &nbsp;&nbsp;
+          span= gettext(' Is currently a teacher? ')
+        div.form-group
+          label.radio-inline
+            input(type='radio', name='status', value='1' checked=editUser.status==1)
+            = gettext('Active')
+          label.radio-inline
+            input(type='radio', name='status', value='0' checked=editUser.status==0)
+            = gettext('Inactive')
+        div.form-group
+          span= gettext('Comment')
+          input(class='form-control input-lg', type='text', autocomplete="off", name='note', value=editUser.note)
+
+        input(class='btn btn-default btn-primary', type='submit', value=gettext('Save'))
+
+        input(type='hidden', name='_csrf', value=token)
+        input(type='hidden', name='id', value=editUser.id)
+
+      h3= gettext('Roles')
+
+      p= gettext('Check the roles that this user should belong to and press Save Role Assignments.')
+
+    - var action = '/user/' + editUser.id + '/role/changeroles';
+      form(class='dirty-check', role='form', name='userForm', action=action, method='post')
+
+        div.form-group
+          if roles
+            for role in roles
+              - var isChecked = false;
+              if editUser.roles
+                for r in editUser.roles
+                  - if (r.id == role.id)
+                    - isChecked = true
+                    - break
+              label.radio
+                input(type='radio', name='roles', value=role.id, checked=isChecked)
+                = role.name
+
+          input(class='btn btn-default btn-primary', type='submit', value=gettext('Save Role Assignments'))
+          input(type='hidden', name='_csrf', value=token)
+
+

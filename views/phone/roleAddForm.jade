@@ -1,0 +1,19 @@
+extends layouts/default_layout
+
+block roleAddForm
+  +titleMsg(title)
+
+  div.roleEditBox
+    - var action = '/role';
+      form(role='form', name='roleAddForm', action=action, method='post')
+
+        div.form-group
+          span= gettext('Name')
+          input(class='form-control input-lg', type='text', name='name')
+        div.form-group
+          span= gettext('Description')
+          input(class='form-control input-lg', type='text', name='description')
+
+        input(class='btn btn-default btn-primary', type='submit', value=gettext('Create Role'))
+        input(type='hidden', name='_csrf', value=token)
+

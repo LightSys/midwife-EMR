@@ -1,0 +1,22 @@
+extends layouts/default_layout
+
+block login
+  h1= title
+
+  div.loginbox
+    //- index.js in the Passport section does not have access to the req object.
+    p.text-warning
+      = message
+    +flash(messages)
+    form(role='form', name='login', action='/login', method='post')
+      div.form-group
+        span= gettext('Username')
+        input(class='form-control input-lg', type='text', autocomplete="off", autofocus, name='username')
+      div.form-group
+        span= gettext('Password')
+        input(class='form-control input-lg', type='password', name='password')
+      input(class='btn btn-default btn-primary', type='submit', value=gettext('Login'))
+      input(type='hidden', name='_csrf', value=token)
+
+
+

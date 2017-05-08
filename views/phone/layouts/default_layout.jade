@@ -1,0 +1,150 @@
+include ../mixins/flash
+include ../mixins/datalist
+include ../mixins/select
+include ../mixins/historyData
+include ../mixins/pregnancyTab
+include ../mixins/patientWell
+include ../mixins/titleMsg
+include ../mixins/labTest
+include ../mixins/jumpto
+include ../mixins/addPregnancy
+include ../mixins/textarea
+
+doctype html
+html(lang="en")
+  head
+    title= title
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible" content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0, maximum-scale=1.0")
+    link(href="/font-awesome/css/font-awesome.min.css", rel="stylesheet")
+    link(href="/css/midwife-emr-combined.css", rel="stylesheet")
+
+    //- As per Bootstap documentation.
+    //- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries.
+    //- WARNING: Respond.js doesn't work if you view the page via file.
+    script(src='/js/midwife-emr-header.min.js')
+  body
+    div#wrapper
+      //- Header
+      nav(class='navbar navbar-inverse navbar-fixed-top')
+        div.navbar-header
+          button(type="button", class="navbar-toggle", data-toggle="collapse", data-target=".navbar-ex1-collapse")
+            span(class="sr-only")= gettext('Toggle navigation')
+            span(class="icon-bar")
+            span(class="icon-bar")
+            span(class="icon-bar")
+          a.navbar-brand(href="/")
+            if title
+              = siteTitle
+
+        //- Left sidebar
+        div(class="collapse navbar-collapse navbar-ex1-collapse")
+          if roleInfo && roleInfo.isAuthenticated
+            ul(class="nav navbar-nav side-nav")
+              li
+                a(href="/") <i class="fa fa-fw fa-home"></i>
+                  = gettext('Home')
+              if roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending') || roleInfo.hasRole('guard'))
+                li
+                  a(href="/search") <i class="fa fa-fw fa-search"></i>
+                    = gettext('Search')
+              if roleInfo && roleInfo.hasRole('administrator')
+                li
+                  a(href="/user") <i class="fa fa-fw fa-users"></i>
+                    = gettext('Users')
+              if roleInfo && roleInfo.hasRole('guard')
+                li
+                  a(href="/checkin") <i class="fa fa-fw fa-check-circle-o"></i>
+                    = gettext('New Client Check In')
+              if roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending'))
+                li
+                  a(href="/pregnancy/new") <i class="fa fa-fw fa-user-md"></i>
+                    = gettext('New Client')
+              if roleInfo && (roleInfo.hasRole('guard') || roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending') || roleInfo.hasRole('clerk'))
+                li
+                  a(href="/checkout") <i class="fa fa-fw fa-circle-o"></i>
+                    = gettext('Check Out')
+              if roleInfo && (roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor'))
+                li
+                  a(href="/report/form") <i class="fa fa-fw fa-file-text-o"></i>
+                    = gettext('Reports')
+                li
+                  a(href="/priorityList") <i class="fa fa-fw fa-list-alt"></i>
+                    = gettext('Priority')
+              li
+                a(href="/logout") <i class="fa fa-fw fa-power-off"></i>
+                  = gettext('Logout')
+
+          //- Header menu options on the right
+          ul(class="nav navbar-nav navbar-right navbar-user")
+            - var appRev = applicationRevision? gettext('version') + ': ' + applicationRevision: '';
+            if rec && rec.id && roleInfo && roleInfo.isAuthenticated && roleInfo.hasRole('supervisor')
+              li
+                a(href='/spa/history' + currUrl)= gettext('View History')
+            li
+              span= appRev
+            if roleInfo && roleInfo.hasRole('attending')
+              - var superV = (supervisor || gettext('Not yet set'))
+              li
+                a(href='/setsuper')= gettext('Your supervisor is ') + superV
+            if roleInfo && roleInfo.isAuthenticated && user
+              li(class="dropdown user-dropdown")
+                a(href="#", class="dropdown-toggle", data-toggle="dropdown")
+                  <i class="fa fa-user"></i>
+                  = ' ' + user.shortName + ' '
+                  <b class="caret"></b>
+                ul(class="dropdown-menu")
+                  li
+                    a(href="/profile") <i class="fa fa-user"></i>
+                      = gettext('Profile')
+                  li.divider
+                  li
+                    a(href="/logout") <i class="fa fa-power-off"></i>
+                      = gettext('Log Out')
+
+      div#page-wrapper
+        div.row
+          div.col-xs-12
+            div.container-fluid
+              if user
+                block home
+                block search
+                block searchResults
+                block userList
+                block userAddForm
+                block userEditForm
+                block roleList
+                block roleAddForm
+                block roleEditForm
+                block profileEditForm
+                block setSuper
+                block pregnancyAdd
+                block pregnancyEdit
+                block pregnancyQuestionnaire
+                block errorPage
+                block history
+                block midwifeInterview
+                block midwifeInterviewAddPreg
+                block midwifeInterviewEditPreg
+                block prenatal
+                block prenatalAddEditExam
+                block labs
+                block defaultLab
+                block referralAddEditForm
+                block reportsForm
+                block vaccinationAddEditForm
+                block medicationAddEditForm
+                block checkinout
+                block checkout
+                block priorityList
+                block teachingAddEditForm
+                block pregnoteAddEditForm
+              else
+                block login
+                block logout
+
+    //- Used to display notice to the user when there are unsaved changes.
+    <span id='dirty-notice-tablet' class="fa fa-save"> changed</span>
+
+    script(src='/js/midwife-emr-footer.min.js')

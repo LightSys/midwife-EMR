@@ -1,0 +1,15 @@
+extends layouts/default_layout
+
+block home
+  h1= title
+
+  div.row
+    div(class='col-xs-12')
+      h3(class='charts')= gettext('Scheduled Prenatal Exams')
+      div(id='prenatalScheduled', data-data=prenatalScheduled, data-options=prenatalScheduledOptions)
+  div.row
+    div(class='col-xs-12')
+      h3(class='charts')= gettext('Prenatal History By Month')
+      div(id='prenatalHistoryByMonth', data-data=prenatalHistoryByMonthData, data-options=prenatalHistoryByMonthOptions)
+
+  hr

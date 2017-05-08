@@ -1,0 +1,10 @@
+extends layouts/default_layout
+
+block logout
+  h1= title
+
+  div
+    hr
+    p(class='lead text-info')= gettext('When you are ready to login ...')
+    a(class='btn btn-primary btn-lg', href='/login')= gettext('Login again')
+

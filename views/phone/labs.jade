@@ -1,0 +1,350 @@
+extends layouts/default_layout
+
+block labs
+  +titleMsg(title)
+  +pregnancyTab('labs')
+  +patientWell(rec)
+
+  // Lab tests
+  - var addLabModalHeaderLabel = 'Add Lab Result';
+  - var addLabPath = '/pregnancy/' + rec.id + '/labtestaddform';
+
+  //- Referrals
+  - var addReferralFormPath = '/pregnancy/' + rec.id + '/referral';
+
+  //- Progress Notes
+  - var addProgressNotePath = '/pregnancy/' + rec.id + '/pregnote';
+
+  // Health Teachings
+  - var addTeachingFormPath = '/pregnancy/' + rec.id + '/teaching';
+
+  //- Vaccinations
+  - var addVaccinationFormPath = '/pregnancy/' + rec.id + '/vaccination';
+
+  //- Medications
+  - var addMedicationFormPath = '/pregnancy/' + rec.id + '/medication';
+
+  //- Latest prenatal exam
+  - var latestPrenatalExamPath = '/pregnancy/' + rec.id + '/prenatalexamlatest';
+
+  //- Doctor/dentist dates
+  - var doctorConsultDate = rec.doctorConsultDate? libs.mmt(rec.doctorConsultDate).format('YYYY-MM-DD'): '';
+  - var dentistConsultDate = rec.dentistConsultDate? libs.mmt(rec.dentistConsultDate).format('YYYY-MM-DD'): '';
+
+  div.row
+    //- -------------------------------------------------
+    //- In the desktop view these are on the left but for
+    //- tablets we take the whole screen for this.
+    //- -------------------------------------------------
+    div(class='col-xs-12')
+      div.row
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Lab Results')
+              table(id='labTestResults', class='table table-striped table-bordered table-hover table-condensed')
+                thead
+                  tr
+                    td= gettext('Exam')
+                    td(class='table-cell-date')= gettext('Date')
+                    td= gettext('Result')
+                    td= gettext('Warn')
+                - var pregId = 'pregnancyId-' + rec.id;
+                - var testDate, testWarn, testResult, labTestResultId;
+                - var testResultOverflow;
+                tbody(id=pregId)
+                  each ltr in labTestResults
+                    - labTestResultId = 'labTestResult-' + ltr.id;
+                    - labTestResultOverflowId = 'labTestResultOverflow-' + ltr.id;
+                    - testDate = ltr.testDate? libs.mmt(ltr.testDate).format('MM-DD-YYYY'): '';
+                    - testWarn = ltr.warn == 1? gettext('Yes'): '';
+                    - testResult = ltr.result2? ltr.result + ' - ' + ltr.result2: ltr.result;
+                    - if (testResult.length > 100) {
+                    -   testResultOverflow = testResult;
+                    -   testResult = 'See below';
+                    - } else {
+                    -   testResultOverflow = void 0;
+                    - }
+                    tr(class='labTestResultsRow', id=labTestResultId)
+                      td= ltr.name
+                      td= testDate
+                      td= testResult
+                      td= testWarn
+                    - if (testResultOverflow) {
+                    tr(class='labTestResultsRow', id=labTestResultOverflowId)
+                      td(class='table-cell-subrow', colspan='4')= testResultOverflow
+                    - }
+
+          //- Add Lab Test modal dialog and form.
+          div.row
+            div(class='col-xs-6 col-xs-offset-6')
+              a(class='btn btn-primary', data-toggle='modal', data-target="#addLab-modal")= gettext('Add Lab Result')
+
+              div(id='addLab-modal', class='modal fade', tabindex='-1', role='dialog', aria-labelledby='addLabModalHeaderLabel', aria-hidden='true')
+                div(class='modal-dialog', role='document')
+                  div(class='modal-content')
+                    div(class='modal-header')
+                      h3(id='addLabModalHeader', class='modal-title text-center')= gettext('Choose the lab tests to enter for a specific date.')
+                    div(class='modal-body')
+                      form(id='addLabFormId', role='form', name='addLabForm', action=addLabPath, method='post')
+                        div.row
+                          div(class='col-xs-12')
+                            div(class='panel panel-default')
+                              div(class='panel-body')
+                                label= gettext('The date the tests were done')
+                                input(type='date', class='form-control input-lg', tabindex='3', name='labTestDate', value='', placeholder='Unknown')
+                        div.row
+                          div(class='col-xs-12')
+                            div(id='addLabsParent', class='panel-group', role='tablist', aria-multiselectable="true")
+                              each suite in labTests
+                                div(class='panel panel-primary')
+                                  div(class='panel-heading', role='tab', id='addLabsSuite-' + suite.id)
+                                    h4(class='panel-title')
+                                      a(data-toggle='collapse', data-parent='#addLabsParent', href='#addLabsSuite-' + suite.id + '-Content', aria-expanded='false', aria-controls='addLabsSuite-' + suite.id + '-Content')= suite.name
+                                  div(id='addLabsSuite-' + suite.id + '-Content', class='panel-collapse collapse', role='tabpanel', aria-labelledby='addLabsSuite-' + suite.id)
+                                    div(class='panel-body')
+                                      each test in suite.tests
+                                        div(class='checkbox labModalCheckbox')
+                                          input(type='checkbox', name='labtest' + '-' + test.id, value=1, checked=false)
+                                          label= test.name
+
+                        div(class='modal-footer')
+                          input(type='hidden', name='_csrf', value=token)
+                          input(type='hidden', name='pregnancy_id', value=rec.id)
+                          button(type='button', class='btn btn-default', data-dismiss='modal')= gettext('Cancel')
+                          button(type='submit', class='btn btn-primary')= gettext('Add Lab')
+
+      div.row
+        //- Progress Notes
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Progress Notes')
+              table(id='ProgressNotes', class='table table-striped table-bordered table-hover table-condensed')
+                thead
+                  tr
+                    td(class='table-cell-date')= gettext('Date')
+                    td= gettext('Note')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each note in rec.pregnote
+                    - var noteDate = '';
+                    - if (libs.mmt(note.noteDate).isValid()) {
+                    -   noteDate = libs.mmt(note.noteDate).format('MM-DD-YYYY');
+                    - }
+                    tr(class='pregnoteRow', id='pregnote-'+note.id)
+                      td(class='table-cell-date')= noteDate
+                      td= note.note
+
+          div.row
+            div(class='col-xs-12')
+              //- Add Progress Notes button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  - if (roleInfo.hasRole('clerk')) {
+                      a(class='btn btn-primary pull-right', disabled=true, href=addProgressNotePath)= gettext('Add Progress Note')
+                  - } else {
+                      a(class='btn btn-primary pull-right', href=addProgressNotePath)= gettext('Add Progress Note')
+                  - }
+
+      div.row
+        //- Medications
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Medications')
+              table(id='Medications', class='table table-striped table-bordered table-hover table-condensed')
+                thead
+                  tr
+                    td= gettext('Date')
+                    td= gettext('Name')
+                    td= gettext('# dispensed')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each med in medications
+                    - var medName = med.name;
+                    - var medDate = libs.mmt(med.date).format('MM-DD-YYYY');
+                    tr(class='medicationsRow', id='medication-'+med.id)
+                      td= medDate
+                      td= medName
+                      td= med.numberDispensed
+          div.row
+            div(class='col-xs-12')
+              //- Add Medications button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  - if (roleInfo.hasRole('clerk')) {
+                      a(class='btn btn-primary pull-right', disabled=true, href=addMedicationFormPath)= gettext('Add Medication')
+                  - } else {
+                      a(class='btn btn-primary pull-right', href=addMedicationFormPath)= gettext('Add Medication')
+                  - }
+
+    //- -------------------------------------------------
+    //- In the desktop view these are on the right but
+    //- in the tablet they are underneath the labs and meds.
+    //- -------------------------------------------------
+    div(class='col-xs-12')
+      div.row
+        //- Referrals
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Referrals')
+              table(id='Referrals', class='table table-striped table-bordered table-hover table-condensed')
+                thead
+                  tr
+                    td= gettext('Date')
+                    td= gettext('Referred to')
+                    td= gettext('Reason')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each ref in referrals
+                    - var refDate = ref.date? libs.mmt(ref.date).format('MM-DD-YYYY'): '';
+                    tr(class='referralsRow', id='referral-'+ref.id)
+                      td= refDate
+                      td= ref.referral
+                      td= ref.reason
+
+          div.row
+            div(class='col-xs-12')
+              //- Add Referrals button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  - if (roleInfo.hasRole('clerk')) {
+                      a(class='btn btn-primary pull-right', disabled=true, href=addReferralFormPath)= gettext('Add Referral')
+                  - } else {
+                      a(class='btn btn-primary pull-right', href=addReferralFormPath)= gettext('Add Referral')
+                  - }
+
+    //- Health teachings
+    div(class='col-xs-12')
+      div.row
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Health Teachings')
+              table(id='Teachings', class='table table-striped table-bordered table-hover table-condensed')
+                thead
+                  tr
+                    td= gettext('Date')
+                    td= gettext('Topic')
+                    td= gettext('Teacher')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each topic in teachings
+                    - var topicDate = topic.date? libs.mmt(topic.date).format('MM-DD-YYYY'): '';
+                    - var teacherName = userMap[topic.teacher].lastname + ', ' + userMap[topic.teacher].firstname;
+                    tr(class='teachingsRow', id='teaching-'+topic.id)
+                      td= topicDate
+                      td= topic.topic
+                      td= teacherName
+
+          div.row
+            div(class='col-xs-12')
+              //- Add Health Teachings button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  a(class='btn btn-primary pull-right', href=addTeachingFormPath)= gettext('Add Health Teaching')
+
+      div.row
+        //- Doctor/Dentist consult dates
+        div(class='col-xs-12 panel panel-default spacing')
+          form(class='dirty-check', role='form', name='docDenConsultDates', action='/pregnancy/' + rec.id + '/doctordentist', method='post')
+            div.row
+              div(class='col-xs-6')
+                label= gettext('Doctor consult date')
+                input(type='date', class='form-control', tabindex='3', name='doctorConsultDate', value=doctorConsultDate)
+              div(class='col-xs-6')
+                label= gettext('Dentist consult date')
+                input(type='date', class='form-control', tabindex='4', name='dentistConsultDate', value=dentistConsultDate)
+            div(class='row spacing-row')
+              div(class='col-xs-4 col-xs-offset-8')
+                - if (roleInfo.hasRole('clerk')) {
+                    input(class='btn btn-primary pull-right', disabled=true, type='submit', value=gettext('Save Dates'))
+                - } else {
+                    input(class='btn btn-primary pull-right', type='submit', value=gettext('Save Dates'))
+                - }
+                input(type='hidden', name='_csrf', value=token)
+
+
+      div.row
+        //- Vaccinations
+        div(class='col-xs-12 panel panel-default spacing')
+          div.row
+            div(class='col-xs-12')
+              label= gettext('Vaccinations')
+              table(id='Vaccinations', class='table table-striped table-bordered table-hover table-condensed')
+                thead
+                  tr
+                    td= gettext('Type')
+                    td= gettext('Date')
+                    td= gettext('Administered by')
+                - var pregId = 'pregnancyId-' + rec.id;
+                tbody(id=pregId)
+                  each vac in vaccinations
+                    - var vacName = vac.name;
+                    - var vacDate;
+                    - var by = vac.administeredInternally? 'Internal': 'External';
+                    - if (vac.vacDate) {
+                    -   vacDate = libs.mmt(vac.vacDate).format('MM-DD-YYYY');
+                    - } else {
+                    -   if (vac.vacMonth && vac.vacYear) {
+                    -     vacDate = vac.vacMonth + ' - ' + vac.vacYear;
+                    -   } else {
+                    -     if (vac.vacYear) {
+                    -       vacDate = vac.vacYear;
+                    -     }
+                    -   }
+                    - }
+                    tr(class='vaccinationsRow', id='vaccination-'+vac.id)
+                      td= vacName
+                      td= vacDate
+                      td= by
+          div.row
+            div(class='col-xs-12')
+              //- Note that the save for this is handled via AJAX.
+              label= gettext('Number of required tetanus ')
+          div.row
+            div(class='col-xs-12')
+              label(class='radio-inline inline-label-space')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='0', checked=rec.numberRequiredTetanus==2)
+                = gettext('0')
+              label(class='radio-inline inline-label-space')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='1', checked=rec.numberRequiredTetanus==1)
+                = gettext('1')
+              label(class='radio-inline inline-label-space')
+                input(type='radio', data-recId=rec.id, data-token=token, name='numberRequiredTetanus', value='2', checked=rec.numberRequiredTetanus==2)
+                = gettext('2')
+            div(class='col-xs-12')
+              - var tetMsg;
+              - var tetGood = false;
+              - if (! rec.lmp || libs._.isNull(rec.lmp) || rec.lmp.length === 0 || rec.lmp === '0000-00-00') {
+              -   tetMsg = 'Set LMP';
+              - } else {
+              -   if (tetanusComplete === 1) {
+              -     tetMsg = 'Tetanus Complete';
+              -     tetGood = true;
+              -   } else {
+              -     tetMsg = 'Tetanus Incomplete';
+              -   }
+              - }
+              - if (tetGood) {
+                strong(class='text-primary fa fa-check')= gettext(tetMsg)
+              - } else {
+                strong(class='text-warning')= gettext(tetMsg)
+              - }
+
+          div.row
+            div(class='col-xs-12')
+              //- Add Vaccinations button
+              div.row
+                div(class='col-xs-4 col-xs-offset-8')
+                  - if (roleInfo.hasRole('clerk')) {
+                      a(class='btn btn-primary pull-right', disabled=true, href=addVaccinationFormPath)= gettext('Add Vaccination')
+                  - } else {
+                      a(class='btn btn-primary pull-right', href=addVaccinationFormPath)= gettext('Add Vaccination')
+                  - }
+
+        div.row
+          div(class='col-xs-12')
+            a(href=latestPrenatalExamPath, class='btn btn-primary')= gettext('Go to latest prenatal exam')

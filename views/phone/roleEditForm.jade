@@ -1,0 +1,24 @@
+extends layouts/default_layout
+
+block roleEditForm
+  +titleMsg(title)
+
+  p.clearfix
+    a.pull-right(href='/role')= gettext('Back to the List of roles')
+
+  div.roleEditBox
+
+    - var action = '/role/' + editRole.id + '/update';
+      form(role='form', name='roleEditForm', action=action, method='post')
+
+        div.form-group
+          span= gettext('Name')
+          input(class='form-control input-lg', type='text', name='name', value=editRole.name, READONLY)
+        div.form-group
+          span= gettext('Description')
+          input(class='form-control input-lg', type='text', name='description', autofocus, value=editRole.description)
+
+        input(class='btn btn-default btn-primary', type='submit', value=gettext('Update Role'))
+        input(type='hidden', name='id', value=editRole.id)
+        input(type='hidden', name='_csrf', value=token)
+

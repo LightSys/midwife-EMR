@@ -1,0 +1,135 @@
+extends layouts/default_layout
+
+block pregnancyQuestionnaire
+  +titleMsg(title)
+  +pregnancyTab('quesEdit')
+  +patientWell(rec)
+
+  - var tabIdx = 1;
+  - var pComplaints = [];
+  - pComplaints.push({name: 'currentlyVomiting', label: 'Vomiting'});
+  - pComplaints.push({name: 'currentlyDizzy', label: 'Dizzy'});
+  - pComplaints.push({name: 'currentlyFainting', label: 'Fainted'});
+  - pComplaints.push({name: 'currentlyBleeding', label: 'Bleeding'});
+  - pComplaints.push({name: 'currentlyUrinationPain', label: 'Pain in urinating'});
+  - pComplaints.push({name: 'currentlyBlurryVision', label: 'Blurry vision'});
+  - pComplaints.push({name: 'currentlySwelling', label: 'Swelling'});
+  - pComplaints.push({name: 'currentlyVaginalPain', label: 'Vaginal pain'});
+  - pComplaints.push({name: 'currentlyVaginalItching', label: 'Vaginal itching'});
+  - pComplaints.push({name: 'currentlyNone', label: 'None of the above'});
+
+  - var fHistory = [];
+  - fHistory.push({name: 'familyHistoryTwins', label: 'Twins'});
+  - fHistory.push({name: 'familyHistoryHighBloodPressure', label: 'High blood pressure'});
+  - fHistory.push({name: 'familyHistoryDiabetes', label: 'Diabetes'});
+  - fHistory.push({name: 'familyHistoryHeartProblems', label: 'Heart problems'});
+  - fHistory.push({name: 'familyHistoryTB', label: 'TB'});
+  - fHistory.push({name: 'familyHistorySmoking', label: 'Smoking'});
+  - fHistory.push({name: 'familyHistoryNone', label: 'None of the above'});
+
+  - var pHistory = [];
+  - pHistory.push({name: 'historyFoodAllergy', label: 'Food allergy'});
+  - pHistory.push({name: 'historyMedicineAllergy', label: 'Medicine allergy'});
+  - pHistory.push({name: 'historyAsthma', label: 'Asthma'});
+  - pHistory.push({name: 'historyHeartProblems', label: 'Heart problems'});
+  - pHistory.push({name: 'historyKidneyProblems', label: 'Kidney problems'});
+  - pHistory.push({name: 'historyHepatitis', label: 'Hepatitis'});
+  - pHistory.push({name: 'historyGoiter', label: 'Goiter'});
+  - pHistory.push({name: 'historyHighBloodPressure', label: 'High blood pressure'});
+  - pHistory.push({name: 'historyHospitalOperation', label: 'Operation in the hospital'});
+  - pHistory.push({name: 'historyBloodTransfusion', label: 'Blood transfusion'});
+  - pHistory.push({name: 'historySmoking', label: 'Smoking'});
+  - pHistory.push({name: 'historyDrinking', label: 'Drinking'});
+  - pHistory.push({name: 'historyNone', label: 'None of the above'});
+
+  form(class='dirty-check disable-on-submit', role='form', name='pregnancyQuestionnaire', action='/pregnancy/' + rec.id + '/quesUpdate', method='post')
+    div.row
+      div(class='form-group col-xs-6')
+        a(class="btn btn-default" data-toggle="collapse" href="#presentComplaints" data-parent="#readonlyPresentComplaints" aria-expanded="false" aria-controls="presentComplaints")= gettext('Present Complaints')
+
+        //- Only show the symptoms already selected be default.
+        div(id="readonlyPresentComplaints" class="readonlyCheckmark")
+          each cb in pComplaints
+            - if (rec[cb.name] == true) {
+              div(class="fa fa-check")= ' ' + cb.label
+              br
+            - }
+
+        div(id="presentComplaints" class="collapse")
+          each cb in pComplaints
+            div.checkbox
+              label
+                input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
+
+        a(class="btn btn-default" data-toggle="collapse" href="#familyHistory" data-parent="#readonlyFamilyHistory" aria-expanded="false" aria-controls="familyHistory")= gettext('Family History')
+        - tabIdx = 18;
+
+        //- Only show the symptoms already selected be default.
+        div(id="readonlyFamilyHistory" class="readonlyCheckmark")
+          each cb in fHistory
+            - if (rec[cb.name] == true) {
+              div(class="fa fa-check")= ' ' + cb.label
+              br
+            - }
+
+        div(id="familyHistory" class="collapse")
+          each cb in fHistory
+            div.checkbox
+              label
+                input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
+
+        a(class="btn btn-default" data-toggle="collapse" href="#personalHistory" data-parent="#readonlyPersonalHistory" aria-expanded="false" aria-controls="personalHistory")= gettext('Personal History')
+        - tabIdx = 26;
+
+        //- Only show the symptoms already selected be default.
+        div(id="readonlyPersonalHistory" class="readonlyCheckmark")
+          each cb in pHistory
+            - if (rec[cb.name] == true) {
+              div(class="fa fa-check")= ' ' + cb.label
+              br
+            - }
+
+        div(id="personalHistory" class="collapse")
+          each cb in pHistory
+            div.checkbox
+              label
+                input(type='checkbox', name=cb.name, tabindex=tabIdx++, value=1, checked=rec[cb.name]==true)
+                = gettext(cb.label)
+
+
+      div(class='form-group col-xs-6')
+        p(class='text-primary lead')= gettext('Other')
+          div(class='separate-section')
+            span= gettext('Use iodized salt')
+            +select('form-control', 'useIodizedSalt', 11, useIodizedSalt)
+          div(class='separate-section')
+            span= gettext('Taking medication')
+            +select('form-control', 'takingMedication', 12, takingMedication)
+          div(class='separate-section')
+            span= gettext('Plan to breastfeed')
+            +select('form-control', 'planToBreastFeed', 13, planToBreastFeed)
+        div(class='separate-section')
+          span= gettext('Where do you plan to give birth')
+          input(class='form-control', type='text', tabindex="14", autocomplete="off", name='whereDeliver', value=rec.whereDeliver)
+        div(class='separate-section')
+          span= gettext('Companion during childbirth')
+          input(class='form-control', type='text', tabindex="15", autocomplete="off", name='birthCompanion', value=rec.birthCompanion)
+        div.checkbox
+          label
+            input(type='checkbox', name='practiceFamilyPlanning', tabindex="16", value=1, checked=rec.practiceFamilyPlanning==true)
+            = gettext('Practiced family planning')
+        div(class='separate-section')
+          span= gettext('Family planning comments')
+          input(class='form-control', type='text', tabindex="17", spellcheck="off", autocomplete="off", name='practiceFamilyPlanningDetails', value=rec.practiceFamilyPlanningDetails)
+
+        span= gettext('Notes')
+        +textarea('questionnaireNote', 'questionnaireNote', 'form-control', '25', rec.questionnaireNote)
+
+
+    div.row
+      input(class='btn btn-primary', type='submit', value=gettext('Save Changes'))
+      input(type='hidden', name='_csrf', value=token)
+      input(type='hidden', name='id', value=rec.id)
+

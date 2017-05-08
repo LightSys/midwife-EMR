@@ -1,0 +1,25 @@
+mixin pregnancyTab(activePath)
+  - var noClasses = '';
+  - var activeClasses = 'active';
+  - var classes = noClasses;
+  - var tabs = [];
+  - if (roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending')) {
+      - tabs.push({path: 'prenatal', name: 'Prenatal'});
+      - tabs.push({path: 'labs', name: 'Labs'});
+      - tabs.push({path: 'quesEdit', name: 'Questionnaire'});
+      - tabs.push({path: 'midwifeinterview', name: 'Midwife Interview'});
+      - tabs.push({path: 'edit', name: 'General'});
+  - } else if (roleInfo.hasRole('clerk')) {
+      - tabs.push({path: 'prenatal', name: 'Prenatal'});
+      - tabs.push({path: 'labs', name: 'Labs'});
+      - tabs.push({path: 'quesEdit', name: 'Questionnaire'});
+      - tabs.push({path: 'edit', name: 'General'});
+  - }
+  ul(class='nav nav-pills')
+    each tab in tabs
+      - classes = noClasses;
+      - if (tab.path == activePath) classes = activeClasses;
+      li(class=classes)
+        a(href=tab.path)= tab.name
+
+

@@ -1,0 +1,74 @@
+extends layouts/default_layout
+
+block search
+  +titleMsg(title)
+
+  p= gettext('Search by one or more fields.')
+
+  div.searchbox
+    form(role='form', class='disable-on-submit', name='search', action='/search', method='post')
+      div.row
+        div(class='form-group')
+          div(class='col-xs-12')
+            input(class='btn btn-default', type='submit', value=gettext('Search'))
+      div.row
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('Last name')
+            input(class='form-control', type='text', autofocus, name='lastname')
+            span.help-block= gettext('Use the % sign as a wildcard. E.g. Weid% or %maven or Wei%en')
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('First name')
+            input(class='form-control', type='text', name='firstname')
+            span.help-block= gettext('Use the % sign as a wildcard. E.g. Eliza% or %beth')
+      div.row
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('Date of birth')
+            input(class='form-control', type='date', name='dob')
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('MMC #')
+            input(class='form-control', type='number', name='doh')
+      div.row
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('Priority # or Priority barcode')
+            input(class='form-control', type='number', name='priority')
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('Phil health ID')
+            input(class='form-control', type='number', name='philHealth')
+      div.row
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('Prenatal Day')
+            +select('form-control input-lg', 'prenatalDay', 7, prenatalDay)
+        div(class='col-xs-6')
+          div.form-group
+            span= gettext('Prental Location')
+            +select('form-control input-lg', 'prenatalLocation', 8, prenatalLocation)
+      div.row
+        div(class='col-xs-6')
+          div.checkbox
+            label
+              input(type='checkbox', name='transferOfCare', tabindex="9", value=1)
+              = gettext('Include only Transfer of Care clients')
+        div(class='col-xs-3')
+          div.form-group
+            span= gettext('Transferred After')
+            input(class='form-control', type='date', tabindex='10', name='transferAfter')
+        div(class='col-xs-3')
+          div.form-group
+            span= gettext('Transferred Before')
+            input(class='form-control', type='date', tabindex='11', name='transferBefore')
+
+      div.row
+        div.col-xs-12 &nbsp;
+      div.row
+        div(class='form-group')
+          div(class='col-xs-12')
+            input(class='btn btn-default', type='submit', value=gettext('Search'))
+            input(type='hidden', name='searchType', value='new')
+            input(type='hidden', name='_csrf', value=token)

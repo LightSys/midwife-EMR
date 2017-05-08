@@ -1,0 +1,83 @@
+extends layouts/default_layout
+
+block midwifeInterviewAddPreg
+  +titleMsg(title)
+
+  - var pregHistAddPath = '/pregnancy/' + rec.id + '/preghistory';
+  - var midwifeInterviewPath = '/pregnancy/' + rec.id + '/midwifeinterview';
+
+  div
+    form(id='addPregForm', class='dirty-check disable-on-submit', role='form', name='pregnancyHistoryAddPreg', action=pregHistAddPath, method='post')
+      div.row
+        div(class='form-group col-xs-4')
+          span= gettext('Month')
+          input(id='month', class='form-control', type='number', tabindex="90", autocomplete="off", name='month', autofocus)
+        div(class='form-group col-xs-4')
+          span= gettext('Day')
+          input(id='day', class='form-control', type='number', tabindex="95", autocomplete="off", name='day')
+        div(class='form-group col-xs-4')
+          span= gettext('Year')
+          input(id='year', class='form-control', type='number', tabindex="101", autocomplete="off", name='year')
+
+      div.row
+        div(class='form-group col-xs-4')
+          div.checkbox
+            label
+              input(type='checkbox', name='FT', tabindex="102", value=1, checked=rec.FT==true)
+              = gettext('Full Term?')
+        div(class='form-group col-xs-4')
+          span= gettext('GA')
+          input(id='finalGA', class='form-control', type='number', tabindex="103", autocomplete="off", name='finalGA')
+        div(class='form-group col-xs-4')
+          span= gettext('Weeks or Months')
+          +select('form-control', 'finalGAPeriod', 104, finalGAPeriod)
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Sex of baby')
+          +select('form-control', 'sexOfBaby', 105, sexOfBaby)
+        div(class='form-group col-xs-6')
+          span= gettext('Place of birth')
+          +select('form-control', 'placeOfBirth', 106, placeOfBirth)
+
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Attendant')
+          +select('form-control', 'attendant', 107, attendant)
+        div(class='form-group col-xs-6')
+          span= gettext('Type of Delivery')
+          input(id='typeOfDelivery', class='form-control', type='text', tabindex="108", autocomplete="off", name='typeOfDelivery', value=defaultTypeOfDelivery)
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Labor (hours)')
+          input(id='lengthOfLabor', class='form-control', type='number', tabindex="109", autocomplete="off", name='lengthOfLabor')
+        div(class='form-group col-xs-6')
+          span= gettext('Birth Weight (kg)')
+          input(id='birthWeight', class='form-control', type="tel", placeholder="Kg only", pattern="[0-9]|[0-9]\.[0-9]|[0-9]\.[0-9]{2}", title="Ex. 2 or 2.3 or 2.37 (in Kg only)", tabindex="110", autocomplete="off", name='birthWeight')
+
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Epis Tear?')
+          +select('form-control', 'episTear', 111, episTear)
+        div(class='form-group col-xs-6')
+          span= gettext('Repaired?')
+          +select('form-control', 'repaired', 112, repaired)
+
+      div.row
+        div(class='form-group col-xs-6')
+          span= gettext('Breast Fed')
+          input(id='howLongBFed', class='form-control', type='number', tabindex="113", autocomplete="off", name='howLongBFed')
+        div(class='form-group col-xs-6')
+          span= gettext('Weeks/Months/Years')
+          +select('form-control', 'howLongBFedPeriod', 114, howLongBFedPeriod)
+
+      div.row
+        div(class='form-group col-xs-12')
+          span= gettext('Comment')
+          +textarea('note', 'note', 'form-control', '115', '')
+
+        div(class='col-xs-4')
+          button(class='btn btn-primary btn-block', type='submit')= gettext('Save')
+          input(type='hidden', name='_csrf', value=token)
+          input(type='hidden', name='pregnancy_id', value=rec.id)
+        div(class='col-xs-8')
+          a(href=midwifeInterviewPath, class='btn btn-default btn-block disable-on-change', role='button')= gettext('Back to Midwife Interview')

@@ -1,0 +1,30 @@
+extends layouts/default_layout
+
+block reportsForm
+  +titleMsg(title)
+
+  - var reportPath = '/report/run';
+
+  form(id='reportsForm', class='disable-on-submit', role='form', name='reportsForm', action=reportPath, method='post')
+    div.row
+      div(class='col-xs-6')
+        label= gettext('Report from:')
+        input(type='date', class='form-control', tabindex='1', name='dateFrom')
+      div(class='col-xs-6')
+        label= gettext('Report to:')
+        input(type='date', class='form-control', tabindex='2', name='dateTo')
+    div.row
+      div(class='col-xs-12')
+        label= gettext('Select the report:')
+        +select('form-control input-lg', 'report', 3, reportType)
+    div.row
+      div(class='col-xs-12')
+        label= gettext('Select the in-charge:')
+        +select('form-control input-lg', 'inCharge', 4, inCharge)
+    div.row
+      div(class='col-xs-12')
+        <span>&nbsp;</span>
+    div.row
+      div(class='col-xs-6')
+        input(class='btn btn-primary', type='submit', value=gettext('Run Report'))
+        input(type='hidden', name='_csrf', value=token)
