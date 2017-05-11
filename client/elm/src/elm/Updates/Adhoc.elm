@@ -17,23 +17,44 @@ adhocUpdate : AdhocResponseMessage -> Model -> ( Model, Cmd Msg )
 adhocUpdate msg model =
     case msg of
         AdhocLoginResponseMsg resp ->
-            case ( resp.success, resp.errorCode ) of
-                ( True, LoginSuccessErrorCode ) ->
-                    -- TODO: go back to last good location once we have navigation.
-                    ({ model
-                        | userProfile = userProfileFromAuthResponse resp
-                        , loginForm = initialModel.loginForm
-                     }
-                        |> setPageDefs
-                        |> setDefaultSelectedPage
-                    )
-                        ! []
+            let
+                _ =
+                    Debug.log "AdhocLoginResponseMsg" <| toString resp
+            in
+                case ( resp.success, resp.errorCode ) of
+                    ( True, LoginSuccessErrorCode ) ->
+                        -- TODO: go back to last good location once we have navigation.
+                        ({ model
+                            | userProfile = userProfileFromAuthResponse resp
+                            , loginForm = initialModel.loginForm
+                         }
+                            |> setPageDefs
+                            |> setDefaultSelectedPage
+                        )
+                            ! []
 
-                ( _, _ ) ->
-                    let
-                        _ =
-                            Debug.log "AdhocLoginResponseMsg" <| toString resp
-                    in
+                    ( True, LoginSuccessDifferentUserErrorCode ) ->
+                        -- User logged in again from SPA login prompt, but as a different
+                        -- user than previously. We totally clear the model by starting with
+                        -- the initial model and request required info from the server again.
+                        let
+                            newModel =
+                                ({ initialModel
+                                    | userProfile = userProfileFromAuthResponse resp
+                                    , loginForm = initialModel.loginForm
+                                }
+                                    |> setPageDefs
+                                    |> setDefaultSelectedPage
+                                    |> populateUserProfileForm
+                                    |> registerUserProfileChanges
+                                )
+
+                            newCmds =
+                                prefetchCmdsByRole newModel
+                        in
+                            newModel ! newCmds
+
+                    ( _, _ ) ->
                         model ! []
 
         AdhocUnknownMsg msg ->
@@ -53,27 +74,8 @@ adhocUpdate msg model =
                             }
                                 |> setPageDefs
                                 |> setDefaultSelectedPage
-                                -- Populate the user profile form
-                                |>
-                                    (\m ->
-                                        case m.userProfile of
-                                            Just profile ->
-                                                { m | userProfileForm = userProfileInitialForm profile }
-
-                                            Nothing ->
-                                                m
-                                    )
-                                -- Register a subscription to any changes in our own
-                                -- user record via the data notifications feature.
-                                |> (\model -> case model.userProfile of
-                                    Just profile ->
-                                        Model.addNotificationSubscription
-                                            (NotificationSubscription User (NotifySubQualifierId profile.userId))
-                                            model
-
-                                    Nothing ->
-                                        model
-                                   )
+                                |> populateUserProfileForm
+                                |> registerUserProfileChanges
 
                         newCmds =
                             prefetchCmdsByRole newModel
@@ -139,6 +141,28 @@ adhocUpdate msg model =
                                 ( model, Cmd.none )
             in
                 { newModel | userProfile = newUserProfile } ! [ newCmd ]
+
+
+registerUserProfileChanges : Model -> Model
+registerUserProfileChanges model =
+    case model.userProfile of
+        Just profile ->
+            Model.addNotificationSubscription
+                (NotificationSubscription User (NotifySubQualifierId profile.userId))
+                model
+
+        Nothing ->
+            model
+
+
+populateUserProfileForm : Model -> Model
+populateUserProfileForm model =
+    case model.userProfile of
+        Just profile ->
+            { model | userProfileForm = userProfileInitialForm profile }
+
+        Nothing ->
+            model
 
 
 prefetchCmdsByRole : Model -> List (Cmd Msg)

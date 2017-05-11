@@ -32,6 +32,7 @@ var moment = require('moment')
 // ErrorCode values for returning to the Elm client.
 // --------------------------------------------------------
 var LoginSuccessErrorCode = 'LoginSuccessErrorCode';
+var LoginSuccessDifferentUserErrorCode = 'LoginSuccessDifferentUserErrorCode';
 var LoginFailErrorCode = 'LoginFailErrorCode';
 var UserProfileSuccessErrorCode = 'UserProfileSuccessErrorCode';
 var UserProfileFailErrorCode = 'UserProfileFailErrorCode';
@@ -538,6 +539,7 @@ module.exports = {
   , logWarn: logWarn
   , LoginFailErrorCode
   , LoginSuccessErrorCode
+  , LoginSuccessDifferentUserErrorCode
   , msg
   , NoErrorCode
   , returnLogin

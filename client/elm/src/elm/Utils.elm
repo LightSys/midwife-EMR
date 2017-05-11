@@ -456,6 +456,9 @@ stringToErrorCode str =
         "LoginSuccessErrorCode" ->
             LoginSuccessErrorCode
 
+        "LoginSuccessDifferentUserErrorCode" ->
+            LoginSuccessDifferentUserErrorCode
+
         "LoginFailErrorCode" ->
             LoginFailErrorCode
 

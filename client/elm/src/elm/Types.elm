@@ -172,6 +172,7 @@ type ErrorCode
     | SessionExpiredErrorCode
     | SqlErrorCode
     | LoginSuccessErrorCode
+    | LoginSuccessDifferentUserErrorCode
     | LoginFailErrorCode
     | UserProfileSuccessErrorCode
     | UserProfileFailErrorCode

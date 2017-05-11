@@ -156,6 +156,7 @@ var rx = require('rx')
   , returnStatusSELECT = require('./util').returnStatusSELECT
   , LoginFailErrorCode = require('./util').LoginFailErrorCode
   , LoginSuccessErrorCode = require('./util').LoginSuccessErrorCode
+  , LoginSuccessDifferentUserErrorCode = require('./util').LoginSuccessDifferentUserErrorCode
   , UserProfileSuccessErrorCode = require('./util').UserProfileSuccessErrorCode
   , UserProfileFailErrorCode = require('./util').UserProfileFailErrorCode
   , UserProfileUpdateSuccessErrorCode = require('./util').UserProfileUpdateSuccessErrorCode
@@ -627,6 +628,7 @@ var handleLogin = function(json, socket) {
   if (DO_ASSERT) assertModule.handleLogin(json, socket);
   var username = json.data && json.data.username ? json.data.username: void 0;
   var password = json.data && json.data.password ? json.data.password: void 0;
+  var isDifferentUser = false;
   var retAction;
   var msg;
 
@@ -635,6 +637,15 @@ var handleLogin = function(json, socket) {
     retAction = returnLogin(false, LoginFailErrorCode, msg);
     return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
   }
+
+  // Check if this is the same user as is possibly in the session now.
+  if (socket.request.session &&
+      socket.request.session.user &&
+      socket.request.session.user.username &&
+      socket.request.session.user.username !== username) {
+    isDifferentUser = true;
+  }
+
 
   // Login the user.
   loginUser(username, password, function(err, user, msgObj) {
@@ -646,7 +657,11 @@ var handleLogin = function(json, socket) {
     }
 
     if (user) {
-      sendUserProfile(socket, user.toJSON(), LoginSuccessErrorCode);
+      if (isDifferentUser) {
+        sendUserProfile(socket, user.toJSON(), LoginSuccessDifferentUserErrorCode);
+      } else {
+        sendUserProfile(socket, user.toJSON(), LoginSuccessErrorCode);
+      }
     } else {
       // Failed login.
       console.log(msgObj);
@@ -722,7 +737,9 @@ var sendUserProfile = function(socket, user, errCode) {
   // Save user information into the session and return response to client.
   if (user) {
     socket.request.session.roleInfo = {
-      isAuthenticated: errCode === LoginSuccessErrorCode || errCode === UserProfileSuccessErrorCode? true: false,
+      isAuthenticated: errCode === LoginSuccessErrorCode ||
+        errCode === UserProfileSuccessErrorCode ||
+        errCode === LoginSuccessDifferentUserErrorCode? true: false,
       roleName: user.roleName? user.roleName: user.role && user.role.name? user.role.name: ''
     };
 
@@ -734,6 +751,10 @@ var sendUserProfile = function(socket, user, errCode) {
 
       switch (errCode) {
         case LoginSuccessErrorCode:
+          retAction = returnLogin(true, errCode);
+          retAction.isLoggedIn = true;
+          break;
+        case LoginSuccessDifferentUserErrorCode:
           retAction = returnLogin(true, errCode);
           retAction.isLoggedIn = true;
           break;
