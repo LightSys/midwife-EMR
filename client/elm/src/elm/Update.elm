@@ -21,6 +21,7 @@ import Decoders exposing (..)
 import Encoders as E
 import Model exposing (..)
 import Models.MedicationType as MedType
+import Models.VaccinationType as VacType
 import Models.Utils as MU
 import Msg exposing (..)
 import Navigation as Nav
@@ -29,6 +30,7 @@ import Transactions as Trans
 import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
+import Updates.VaccinationType as Updates exposing (vaccinationTypeUpdate)
 import Updates.Profile as Updates exposing (userProfileUpdate)
 import Updates.Role as Updates exposing (roleUpdate)
 import Updates.User as Updates exposing (userUpdate)
@@ -74,6 +76,9 @@ update msg model =
 
                         User ->
                             Updates.userUpdate (CreateResponseUser a) model
+
+                        VaccinationType ->
+                            Updates.vaccinationTypeUpdate (CreateResponseVaccinationType a) model
 
                         _ ->
                             model ! []
@@ -309,6 +314,17 @@ update msg model =
                                                     )
                                                     model
 
+                                            VaccinationTypeResp list ->
+                                                -- Put the records into RemoteData format as expected and
+                                                -- pass to update function for processing.
+                                                Updates.vaccinationTypeUpdate
+                                                    (ReadResponseVaccinationType
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
+
+
                                     ( _, SessionExpiredErrorCode ) ->
                                         update SessionExpired model
 
@@ -399,7 +415,11 @@ update msg model =
                             Updates.userUpdate (UpdateResponseUser c) model
 
                         _ ->
-                            model ! []
+                            let
+                                _ =
+                                    Debug.log "Unhandled UpdateResponseMsg" <| toString change
+                            in
+                                model ! []
 
                 Nothing ->
                     model ! []
@@ -412,6 +432,9 @@ update msg model =
 
         UserProfileMessages userProfileMsg ->
             Updates.userProfileUpdate userProfileMsg model
+
+        VaccinationTypeMessages vtMsg ->
+            Updates.vaccinationTypeUpdate vtMsg model
 
         VaccinationTypeResponse vaccinationTypeTbl ->
             { model | vaccinationType = vaccinationTypeTbl } ! []

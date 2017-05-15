@@ -51,6 +51,22 @@ medicationTypeToValue mt =
         ]
 
 
+vaccinationTypeToValue : VaccinationTypeRecord -> JE.Value
+vaccinationTypeToValue mt =
+    JE.object
+        [ ( "id", JE.int mt.id )
+        , ( "name", JE.string mt.name )
+        , ( "description", JE.string mt.description )
+        , ( "sortOrder", JE.int mt.sortOrder )
+        , case mt.stateId of
+            Just num ->
+                ( "stateId", JE.int num )
+
+            Nothing ->
+                ( "stateId", JE.null )
+        ]
+
+
 userToValue : UserRecord -> JE.Value
 userToValue user =
     JE.object

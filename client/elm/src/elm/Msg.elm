@@ -6,6 +6,7 @@ module Msg
         , RoleMsg(..)
         , UserMsg(..)
         , UserProfileMsg(..)
+        , VaccinationTypeMsg(..)
         )
 
 import Form exposing (Form)
@@ -61,6 +62,7 @@ type Msg
     | UrlChange Location
     | UserMessages UserMsg
     | UserProfileMessages UserProfileMsg
+    | VaccinationTypeMessages VaccinationTypeMsg
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeRecord))
 
 
@@ -81,18 +83,40 @@ type MedicationTypeMsg
     | UpdateMedicationType
     | UpdateResponseMedicationType UpdateResponse
 
+
+type VaccinationTypeMsg
+    = CancelEditVaccinationType
+    | CreateVaccinationType
+    | CreateResponseVaccinationType CreateResponse
+    | DeleteVaccinationType (Maybe Int)
+    | DeleteResponseVaccinationType DeleteResponse
+    | FirstVaccinationType
+    | FormMsgVaccinationType Form.Msg
+    | LastVaccinationType
+    | NextVaccinationType
+    | PrevVaccinationType
+    | ReadResponseVaccinationType (RemoteData String (List VaccinationTypeRecord)) (Maybe SelectQuery)
+    | SelectedRecordEditModeVaccinationType EditMode (Maybe Int)
+    | SelectedRecordVaccinationType (Maybe Int)
+    | UpdateVaccinationType
+    | UpdateResponseVaccinationType UpdateResponse
+
+
 type AdhocResponseMessage
     = AdhocUnknownMsg String
     | AdhocLoginResponseMsg AuthResponse
     | AdhocUserProfileResponseMsg AuthResponse
     | AdhocUserProfileUpdateResponseMsg AdhocResponse
 
+
 type RoleMsg
     = ReadResponseRole (RemoteData String (List RoleRecord)) (Maybe SelectQuery)
+
 
 type UserProfileMsg
     = FormMsgUserProfile Form.Msg
     | UpdateUserProfile
+
 
 type UserMsg
     = CancelEditUser

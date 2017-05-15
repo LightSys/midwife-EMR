@@ -27,7 +27,7 @@ import String
 
 import Constants as C
 import Model exposing (..)
-import Msg exposing (Msg(..), MedicationTypeMsg(..))
+import Msg exposing (Msg(..), MedicationTypeMsg(..), VaccinationTypeMsg(..))
 import Types exposing (..)
 import Utils as U
 import Views.Utils as VU
@@ -198,6 +198,182 @@ viewLabSuite model =
                         )
                 )
             ]
+
+
+{-| The default table view which is a table.
+-}
+viewVaccinationType : Model -> Html Msg
+viewVaccinationType model =
+    let
+        data =
+            case model.vaccinationTypeModel.records of
+                Success recs ->
+                    List.sortBy .sortOrder recs
+
+                Failure e ->
+                    let
+                        _ =
+                            Debug.log "viewVaccinationType" <| toString e
+                    in
+                        []
+
+                _ ->
+                    []
+    in
+        Html.div
+            [ HA.class "horizontal-scroll" ]
+            [ MTable.table []
+                [ MTable.thead []
+                    [ MTable.tr []
+                        [ MTable.th [] [ Html.text "Id" ]
+                        , MTable.th [] [ Html.text "Name" ]
+                        , MTable.th [] [ Html.text "Description" ]
+                        , MTable.th [] [ Html.text "Sort order" ]
+                        ]
+                    ]
+                , MTable.tbody []
+                    (List.map
+                        (\rec ->
+                            MTable.tr
+                                [ Options.onClick <|
+                                    VaccinationTypeMessages (SelectedRecordEditModeVaccinationType EditModeView (Just rec.id))
+                                ]
+                                [ MTable.td [ MTable.numeric ] [ Html.text <| toString rec.id ]
+                                , MTable.td [] [ Html.text rec.name ]
+                                , MTable.td [] [ Html.text rec.description ]
+                                , MTable.td [ MTable.numeric ] [ Html.text <| toString rec.sortOrder ]
+                                ]
+                        )
+                        data
+                    )
+                ]
+            ]
+
+
+{-| Viewing, editing, or adding a single record.
+-}
+viewVaccinationTypeEdit : Model -> Html Msg
+viewVaccinationTypeEdit ({ vaccinationTypeModel } as model) =
+    let
+        -- Placeholder for now.
+        isEditing =
+            vaccinationTypeModel.editMode
+                == EditModeEdit
+                || vaccinationTypeModel.editMode
+                == EditModeAdd
+
+        buildForm form =
+            let
+                tableStr =
+                    "vaccinationType"
+
+                -- Buttons available while editing.
+                editingContent =
+                    [ VU.button [ mdlContext, 301 ] (VaccinationTypeMessages <| FormMsgVaccinationType Form.Submit) "Save" False False model.mdl
+                    , VU.button [ mdlContext, 302 ] (VaccinationTypeMessages <| CancelEditVaccinationType) "Cancel" False False model.mdl
+                    ]
+
+                -- Buttons available while viewing.
+                viewingContent =
+                    [ VU.button [ mdlContext, 300 ]
+                        (SelectedRecordEditModeVaccinationType EditModeEdit vaccinationTypeModel.selectedRecordId
+                            |> VaccinationTypeMessages
+                        )
+                        "Edit"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 303 ]
+                        (SelectedRecordEditModeVaccinationType EditModeAdd vaccinationTypeModel.selectedRecordId
+                            |> VaccinationTypeMessages
+                        )
+                        "Add"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 305 ]
+                        (DeleteVaccinationType vaccinationTypeModel.selectedRecordId
+                            |> VaccinationTypeMessages
+                        )
+                        "Delete"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 304 ]
+                        (SelectedRecordEditModeVaccinationType EditModeTable Nothing
+                            |> VaccinationTypeMessages
+                        )
+                        "Table"
+                        False
+                        False
+                        model.mdl
+                    ]
+
+                -- Get the FieldStates.
+                ( recId, recName, recDescription, recSortOrder ) =
+                    ( Form.getFieldAsString "id" form
+                    , Form.getFieldAsString "name" form
+                    , Form.getFieldAsString "description" form
+                    , Form.getFieldAsString "sortOrder" form
+                    )
+
+                -- The helper function used to create the partially applied
+                -- (String -> Msg) function for each textFld.
+                tagger : Form.FieldState e String -> String -> Msg
+                tagger fld =
+                    FF.String
+                        >> (Form.Input fld.path Form.Text)
+                        >> FormMsgVaccinationType
+                        >> VaccinationTypeMessages
+            in
+                Card.view
+                    [ Options.css "width" "100%" ]
+                    [ Card.title []
+                        [ Card.head []
+                            [ Html.text tableStr ]
+                        ]
+                    , Card.text []
+                        [ Card.head [] <|
+                            if isEditing then
+                                editingContent
+                            else
+                                viewingContent
+                        ]
+                    , Card.text
+                        [ MColor.text MColor.black
+                        ]
+                        [ VU.textFld "Record id" recId [ mdlContext, 200 ] (tagger recId) False False model.mdl
+                        , VU.textFld "Name" recName [ mdlContext, 201 ] (tagger recName) isEditing False model.mdl
+                        , VU.textFld "Description" recDescription [ mdlContext, 202 ] (tagger recDescription) isEditing False model.mdl
+                        , VU.textFld "Sort Order (must be unique)" recSortOrder [ mdlContext, 203 ] (tagger recSortOrder) isEditing False model.mdl
+                        ]
+                    , Card.actions [ Card.border ] <|
+                        VU.recordChanger
+                            ( VaccinationTypeMessages FirstVaccinationType
+                            , VaccinationTypeMessages PrevVaccinationType
+                            , VaccinationTypeMessages NextVaccinationType
+                            , VaccinationTypeMessages LastVaccinationType
+                            )
+                            mdlContext
+                            model
+                    ]
+
+        data =
+            case vaccinationTypeModel.records of
+                NotAsked ->
+                    Html.text ""
+
+                Loading ->
+                    Html.text "Loading"
+
+                Failure err ->
+                    Html.text <| toString err
+
+                Success recs ->
+                    buildForm vaccinationTypeModel.form
+    in
+        div []
+            [ data ]
 
 
 {-| The default table view which is a table.
@@ -377,7 +553,7 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
 
 
 view : Model -> Html Msg
-view ({ medicationTypeModel } as model) =
+view ({ medicationTypeModel, vaccinationTypeModel } as model) =
     let
         ( selectedTable, dataView ) =
             case model.selectedTable of
@@ -397,6 +573,14 @@ view ({ medicationTypeModel } as model) =
 
                                 _ ->
                                     viewMedicationTypeEdit
+
+                        VaccinationType ->
+                            case vaccinationTypeModel.editMode of
+                                EditModeTable ->
+                                    viewVaccinationType
+
+                                _ ->
+                                    viewVaccinationTypeEdit
 
                         _ ->
                             viewNoTable

@@ -4,11 +4,13 @@ module Model
         , asMedicationTypeModelIn
         , asRoleModelIn
         , asUserModelIn
+        , asVaccinationTypeModelIn
         , initialModel
         , loginFormValidate
         , Model
         , setMedicationTypeModel
         , setRoleModel
+        , setVaccinationTypeModel
         , State
         , UserProfile
         , userProfileInitialForm
@@ -29,6 +31,7 @@ import Time exposing (Time)
 -- LOCAL IMPORTS
 
 import Models.MedicationType as MedicationType
+import Models.VaccinationType as VaccinationType
 import Models.Role as Role
 import Models.User as User
 import Models.Utils as MU
@@ -63,6 +66,7 @@ type alias Model =
     , userProfileForm : Form () UserProfileForm
     , userSearchForm : Form () UserSearchForm
     , vaccinationType : RemoteData String (List VaccinationTypeRecord)
+    , vaccinationTypeModel : VaccinationType.VaccinationTypeModel
     }
 
 
@@ -210,6 +214,7 @@ initialModel =
     , userProfileForm = Form.initial [] userProfileFormValidate
     , userSearchForm = Form.initial [] userSearchFormValidate
     , vaccinationType = NotAsked
+    , vaccinationTypeModel = VaccinationType.initialVaccinationTypeModel
     }
 
 
@@ -243,6 +248,16 @@ setMedicationTypeModel mtm model =
 asMedicationTypeModelIn : Model -> MedicationType.MedicationTypeModel -> Model
 asMedicationTypeModelIn =
     flip setMedicationTypeModel
+
+
+setVaccinationTypeModel : VaccinationType.VaccinationTypeModel -> Model -> Model
+setVaccinationTypeModel vtm model =
+    (\model -> { model | vaccinationTypeModel = vtm }) model
+
+
+asVaccinationTypeModelIn : Model -> VaccinationType.VaccinationTypeModel -> Model
+asVaccinationTypeModelIn =
+    flip setVaccinationTypeModel
 
 
 setRoleModel : Role.RoleModel -> Model -> Model

@@ -138,10 +138,14 @@ var rx = require('rx')
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , TABLE_medicationType = 'medicationType'
+  , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
-  , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
+  , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
+  , addVaccinationType = require('./routes/comm/lookupTables').addVaccinationType
+  , delVaccinationType = require('./routes/comm/lookupTables').delVaccinationType
+  , updateVaccinationType = require('./routes/comm/lookupTables').updateVaccinationType
   , addUser = require('./routes/comm/userRoles').addUser
   , delUser = require('./routes/comm/userRoles').delUser
   , updateUser = require('./routes/comm/userRoles').updateUser
@@ -516,6 +520,13 @@ var getFuncForTableOp = function(table, op) {
         case DEL: func = delUser; break;
       }
       break;
+    case TABLE_vaccinationType:
+      switch (op) {
+        case ADD: func = addVaccinationType; break;
+        case CHG: func = updateVaccinationType; break;
+        case DEL: func = delVaccinationType; break;
+      }
+      break;
   }
   return func;
 };
@@ -583,11 +594,13 @@ var handleData = function(evtName, payload, socket) {
   dataFunc = getFuncForTableOp(table, evtName);
   if (! dataFunc) {
     retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This table cannot be handled by the server.");
+    console.log(retAction);
     return socket.emit(responseEvt, JSON.stringify(retAction));
   }
 
   if (! isValidSocketSession(socket)) {
     retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired.");
+    console.log(retAction);
     return socket.emit(responseEvt, JSON.stringify(retAction));
   } else touchSocketSession(socket);
 

@@ -17,6 +17,9 @@ port module Ports
         , userDelete
         , userUpdate
         , userProfileUpdate
+        , vaccinationTypeCreate
+        , vaccinationTypeDelete
+        , vaccinationTypeUpdate
         )
 
 import Json.Decode as JD
@@ -61,6 +64,9 @@ port userProfile : (JD.Value -> msg) -> Sub msg
 -- OUTGOING PORTS
 
 
+port login : JE.Value -> Cmd msg
+
+
 port medicationTypeCreate : JE.Value -> Cmd msg
 
 
@@ -88,11 +94,10 @@ port userUpdate : JE.Value -> Cmd msg
 port userProfileUpdate : JE.Value -> Cmd msg
 
 
-port login : JE.Value -> Cmd msg
+port vaccinationTypeCreate : JE.Value -> Cmd msg
 
 
+port vaccinationTypeDelete : JE.Value -> Cmd msg
 
-{- :
-   port medicationTypeAdd : JE.Value -> Cmd msg
-   port medicationTypeDelete : JE.Value -> Cmd msg
--}
+
+port vaccinationTypeUpdate : JE.Value -> Cmd msg

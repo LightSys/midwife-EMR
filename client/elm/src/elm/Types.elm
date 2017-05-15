@@ -38,6 +38,7 @@ module Types
         , UserProfileForm
         , UserRecord
         , UserSearchForm
+        , VaccinationTypeForm
         , VaccinationTypeRecord
         )
 
@@ -164,6 +165,7 @@ type TableResponse
     | MedicationTypeResp (List MedicationTypeRecord)
     | RoleResp (List RoleRecord)
     | UserResp (List UserRecord)
+    | VaccinationTypeResp (List VaccinationTypeRecord)
 
 
 type ErrorCode
@@ -381,11 +383,20 @@ type alias UserSearchForm =
     }
 
 
+type alias VaccinationTypeForm =
+    { id : Int
+    , name : String
+    , description : String
+    , sortOrder : Int
+    }
+
+
 type alias VaccinationTypeRecord =
     { id : Int
     , name : String
     , description : String
     , sortOrder : Int
+    , stateId : Maybe Int
     }
 
 

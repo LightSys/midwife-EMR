@@ -219,6 +219,10 @@ selectQueryResponse =
                     partialSelectQueryResponse
                         |> required "data" (JD.map UserResp (JD.list userRecord))
 
+                VaccinationType ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map VaccinationTypeResp (JD.list vaccinationTypeTable))
+
                 _ ->
                     JD.fail <| "selectQueryResponse: Unknown table named " ++ table ++ " returned from server."
     in
@@ -283,6 +287,21 @@ riskCodeTable =
         |> required "description" JD.string
 
 
+decodeVaccinationTypeRecord : Maybe String -> Maybe VaccinationTypeRecord
+decodeVaccinationTypeRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString vaccinationTypeTable p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    Nothing
+
+        Nothing ->
+            Nothing
+
+
 vaccinationTypeTable : JD.Decoder VaccinationTypeRecord
 vaccinationTypeTable =
     decode VaccinationTypeRecord
@@ -290,6 +309,7 @@ vaccinationTypeTable =
         |> required "name" JD.string
         |> required "description" JD.string
         |> required "sortOrder" JD.int
+        |> hardcoded Nothing
 
 
 decodeTable : JD.Decoder Table

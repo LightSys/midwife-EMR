@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , cfg = require('../../config')
   , MedicationType = require('../../models').MedicationType
+  , VaccinationType = require('../../models').VaccinationType
   , User = require('../../models').User
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
@@ -103,13 +104,63 @@ var getLookupTable = function(table, id, pregnancy_id, patient_id, cb) {
     });
 }
 
-var updateMedicationType = function(data, userInfo, cb) {
+var addTable = function(data, userInfo, cb, modelObj, tableStr) {
+  var rec = _.omit(data, ['id', 'pendingId']);
+
+  modelObj.forge(rec)
+    .setUpdatedBy(userInfo.user.id)
+    .setSupervisor(userInfo.user.supervisor)
+    .save({}, {method: 'insert'})
+    .then(function(rec2) {
+      cb(null, true, rec2);
+
+      // --------------------------------------------------------
+      // Notify all clients of the change.
+      // --------------------------------------------------------
+      var notify = {
+        table: tableStr,
+        id: rec2.id,
+        updatedBy: userInfo.user.id,
+        sessionID: userInfo.sessionID
+      };
+      return sendData(DATA_ADD, JSON.stringify(notify));
+    })
+    .caught(function(err) {
+      return cb(err);
+    });
+};
+
+var delTable = function(data, userInfo, cb, modelObj, tableStr) {
+  var rec = _.omit(data, ['stateId']);
+
+  new modelObj({id: rec.id})
+    .destroy()
+    .then(function(deletedRec) {
+      cb(null, true);
+
+      // --------------------------------------------------------
+      // Notify all clients of the change.
+      // --------------------------------------------------------
+      var notify = {
+        table: tableStr,
+        id: rec.id,
+        updatedBy: userInfo.user.id,
+        sessionID: userInfo.sessionID
+      };
+      return sendData(DATA_DELETE, JSON.stringify(notify));
+    })
+    .caught(function(err) {
+      return cb(err);
+    });
+};
+
+var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
   var rec = data;
   var omitFlds = ['stateId'];
 
-  MedicationType.forge({id: rec.id})
-    .fetch().then(function(medicationType) {
-      medicationType
+  modelObj.forge({id: rec.id})
+    .fetch().then(function(table) {
+      table
         .setUpdatedBy(userInfo.user.id)
         .setSupervisor(userInfo.user.supervisor)
         .save(_.omit(rec, omitFlds))
@@ -120,7 +171,7 @@ var updateMedicationType = function(data, userInfo, cb) {
           // Notify all clients of the change.
           // --------------------------------------------------------
           var notify = {
-            table: 'medicationType',
+            table: tableStr,
             id: rec2.id,
             updatedBy: userInfo.user.id,
             sessionID: userInfo.sessionID
@@ -133,60 +184,39 @@ var updateMedicationType = function(data, userInfo, cb) {
     });
 };
 
-var addMedicationType = function(data, userInfo, cb) {
-  var rec = _.omit(data, ['id', 'pendingId']);
-
-  MedicationType.forge(rec)
-    .setUpdatedBy(userInfo.user.id)
-    .setSupervisor(userInfo.user.supervisor)
-    .save({}, {method: 'insert'})
-    .then(function(rec2) {
-      cb(null, true, rec2);
-
-      // --------------------------------------------------------
-      // Notify all clients of the change.
-      // --------------------------------------------------------
-      var notify = {
-        table: 'medicationType',
-        id: rec2.id,
-        updatedBy: userInfo.user.id,
-        sessionID: userInfo.sessionID
-      };
-      return sendData(DATA_ADD, JSON.stringify(notify));
-    })
-    .caught(function(err) {
-      return cb(err);
-    });
+var updateMedicationType = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
 
 var delMedicationType = function(data, userInfo, cb) {
-  var rec = _.omit(data, ['stateId']);
-
-  new MedicationType({id: rec.id})
-    .destroy()
-    .then(function(deletedRec) {
-      cb(null, true);
-
-      // --------------------------------------------------------
-      // Notify all clients of the change.
-      // --------------------------------------------------------
-      var notify = {
-        table: 'medicationType',
-        id: rec.id,
-        updatedBy: userInfo.user.id,
-        sessionID: userInfo.sessionID
-      };
-      return sendData(DATA_DELETE, JSON.stringify(notify));
-    })
-    .caught(function(err) {
-      return cb(err);
-    });
+  delTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
+
+var addMedicationType = function(data, userInfo, cb) {
+  addTable(data, userInfo, cb, MedicationType, 'medicationType');
+};
+
+var updateVaccinationType = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
+};
+
+var delVaccinationType = function(data, userInfo, cb) {
+  delTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
+};
+
+var addVaccinationType = function(data, userInfo, cb) {
+  addTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
+};
+
+
 
 module.exports = {
   getLookupTable,
   addMedicationType,
+  addVaccinationType,
+  delMedicationType,
+  delVaccinationType,
   updateMedicationType,
-  delMedicationType
+  updateVaccinationType
 };
 

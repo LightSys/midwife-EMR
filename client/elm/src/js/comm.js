@@ -317,6 +317,18 @@ var setApp = function(theApp) {
     sendMsg(ADHOC, wrapAdHoc(ADHOC_USER_PROFILE_UPDATE, data));
   });
 
+  app.ports.vaccinationTypeCreate.subscribe(function(data) {
+    sendMsg(ADD, wrapData('vaccinationType', data));
+  });
+
+  app.ports.vaccinationTypeDelete.subscribe(function(data) {
+    sendMsg(DEL, wrapData('vaccinationType', data));
+  });
+
+  app.ports.vaccinationTypeUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('vaccinationType', data));
+  });
+
 };
 
 module.exports = {
