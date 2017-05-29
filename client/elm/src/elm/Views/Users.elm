@@ -264,6 +264,7 @@ viewUserEdit ({ userModel } as model) =
                                     [ mdlContext, 229 ]
                                     (taggerBool recStatus (not (VU.isChecked recStatus)))
                                     (VU.isChecked recStatus)
+                                    True
                                     model.mdl
                                 , VU.textFld "Note"
                                     recNote
@@ -276,6 +277,7 @@ viewUserEdit ({ userModel } as model) =
                                     [ mdlContext, 231 ]
                                     (taggerBool recIsCurrentTeacher (not (VU.isChecked recIsCurrentTeacher)))
                                     (VU.isChecked recIsCurrentTeacher)
+                                    True
                                     model.mdl
                                 ]
                             , Grid.cell
@@ -489,30 +491,35 @@ viewSearchForm model =
                     VU.checkBox "Administrators"
                         [ mdlContext, 201 ]
                         (taggerBool isAdministrator (not (VU.isChecked isAdministrator)))
+                        True
                         (VU.isChecked isAdministrator)
                         model.mdl
                 , wrapDiv <|
                     VU.checkBox "Attendings"
                         [ mdlContext, 202 ]
                         (taggerBool isAttending (not (VU.isChecked isAttending)))
+                        True
                         (VU.isChecked isAttending)
                         model.mdl
                 , wrapDiv <|
                     VU.checkBox "Clerks"
                         [ mdlContext, 203 ]
                         (taggerBool isClerk (not (VU.isChecked isClerk)))
+                        True
                         (VU.isChecked isClerk)
                         model.mdl
                 , wrapDiv <|
                     VU.checkBox "Guards"
                         [ mdlContext, 204 ]
                         (taggerBool isGuard (not (VU.isChecked isGuard)))
+                        True
                         (VU.isChecked isGuard)
                         model.mdl
                 , wrapDiv <|
                     VU.checkBox "Supervisors"
                         [ mdlContext, 205 ]
                         (taggerBool isSupervisor (not (VU.isChecked isSupervisor)))
+                        True
                         (VU.isChecked isSupervisor)
                         model.mdl
                 , Html.label [ HA.style [ ( "font-weight", "bold" ) ] ] [ Html.text "Limit to active or inactive status" ]
@@ -520,12 +527,14 @@ viewSearchForm model =
                     VU.checkBox "Active"
                         [ mdlContext, 210 ]
                         (taggerBool isActive (not (VU.isChecked isActive)))
+                        True
                         (VU.isChecked isActive)
                         model.mdl
                 , wrapDiv <|
                     VU.checkBox "InActive"
                         [ mdlContext, 211 ]
                         (taggerBool isInActive (not (VU.isChecked isInActive)))
+                        True
                         (VU.isChecked isInActive)
                         model.mdl
                 ]

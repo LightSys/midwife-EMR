@@ -6,6 +6,7 @@ import Html.Attributes as HA
 import Html.Events
 import Form
 import Form.Field as FF
+import List.Extra as LE
 import Material
 import Material.Button as Button
 import Material.Card as Card
@@ -27,7 +28,7 @@ import String
 
 import Constants as C
 import Model exposing (..)
-import Msg exposing (Msg(..), MedicationTypeMsg(..), VaccinationTypeMsg(..))
+import Msg exposing (Msg(..), MedicationTypeMsg(..), SelectDataMsg(..), VaccinationTypeMsg(..))
 import Types exposing (..)
 import Utils as U
 import Views.Utils as VU
@@ -552,8 +553,217 @@ viewMedicationTypeEdit ({ medicationTypeModel } as model) =
             [ data ]
 
 
+{-| Note that for the sake of simplicity, we assume that the label
+and the selectKey fields are the same because there is no reason that
+the user needs to try to understand what the difference is between
+them. Therefore, that means that the label field across a group by
+the name field must be unique.
+-}
+viewSelectData : Model -> Html Msg
+viewSelectData model =
+    let
+        data =
+            case model.selectDataModel.records of
+                Success recs ->
+                    List.filter
+                        (\r ->
+                            case U.editableStringToSelectDataName r.name of
+                                Just sdn ->
+                                    True
+
+                                Nothing ->
+                                    False
+                        )
+                        recs
+                        |> List.sortBy .name
+
+                Failure e ->
+                    let
+                        _ =
+                            Debug.log "viewSelectData" <| toString e
+                    in
+                        []
+
+                _ ->
+                    []
+    in
+        Html.div
+            [ HA.class "horizontal-scroll" ]
+            [ MTable.table []
+                [ MTable.thead []
+                    [ MTable.tr []
+                        [ MTable.th [] [ Html.text "Id" ]
+                        , MTable.th [] [ Html.text "Name" ]
+                        , MTable.th [] [ Html.text "Label" ]
+                        , MTable.th [] [ Html.text "Default (zero or one per name group)" ]
+                        ]
+                    ]
+                , MTable.tbody []
+                    (List.map
+                        (\rec ->
+                            MTable.tr
+                                [ Options.onClick <|
+                                    SelectDataMessages (SelectedRecordEditModeSelectData EditModeView (Just rec.id) Nothing)
+                                ]
+                                [ MTable.td [ MTable.numeric ] [ Html.text <| toString rec.id ]
+                                , MTable.td [] [ Html.text rec.name ]
+                                , MTable.td [] [ Html.text rec.label ]
+                                , MTable.td [] [ Html.text <| toString rec.selected ]
+                                ]
+                        )
+                        data
+                    )
+                ]
+            ]
+
+
+{-| Viewing, editing, or adding a single record.
+-}
+viewSelectDataEdit : Model -> Html Msg
+viewSelectDataEdit ({ selectDataModel } as model) =
+    let
+        -- Placeholder for now.
+        isEditing =
+            selectDataModel.editMode
+                == EditModeEdit
+                || selectDataModel.editMode
+                == EditModeAdd
+
+        name =
+            case selectDataModel.selectedRecordId of
+                Just id ->
+                    case selectDataModel.records of
+                        Success recs ->
+                            case LE.find (\r -> r.id == id) recs of
+                                Just rec ->
+                                    rec.name
+
+                                Nothing ->
+                                    ""
+
+                        _ ->
+                            ""
+
+                Nothing ->
+                    ""
+
+        buildForm form =
+            let
+                tableStr =
+                    "selectData"
+
+                -- Buttons available while editing.
+                editingContent =
+                    [ VU.button [ mdlContext, 301 ] (SelectDataMessages <| FormMsgSelectData Form.Submit) "Save" False False model.mdl
+                    , VU.button [ mdlContext, 302 ] (SelectDataMessages <| CancelEditSelectData) "Cancel" False False model.mdl
+                    ]
+
+                -- Buttons available while viewing.
+                viewingContent =
+                    [ VU.button [ mdlContext, 300 ]
+                        (SelectedRecordEditModeSelectData EditModeEdit selectDataModel.selectedRecordId Nothing
+                            |> SelectDataMessages
+                        )
+                        "Edit"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 303 ]
+                        (SelectedRecordEditModeSelectData EditModeAdd selectDataModel.selectedRecordId (Just name)
+                            |> SelectDataMessages
+                        )
+                        ("Add " ++ name)
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 305 ]
+                        (DeleteSelectData selectDataModel.selectedRecordId
+                            |> SelectDataMessages
+                        )
+                        "Delete"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 304 ]
+                        (SelectedRecordEditModeSelectData EditModeTable Nothing Nothing
+                            |> SelectDataMessages
+                        )
+                        "Table"
+                        False
+                        False
+                        model.mdl
+                    ]
+
+                -- Get the FieldStates.
+                ( recId, recName, recLabel, recSelected ) =
+                    ( Form.getFieldAsString "id" form
+                    , Form.getFieldAsString "name" form
+                    , Form.getFieldAsString "label" form
+                    , Form.getFieldAsBool "selected" form
+                    )
+
+                -- The helper function used to create the partially applied
+                -- (String -> Msg) function for each textFld.
+                tagger : Form.FieldState e String -> String -> Msg
+                tagger fld =
+                    FF.String
+                        >> (Form.Input fld.path Form.Text)
+                        >> FormMsgSelectData
+                        >> SelectDataMessages
+
+                -- The helper function used to create the partially applied
+                -- (Bool -> Msg) function for each checkBox.
+                taggerBool : Form.FieldState e Bool -> Bool -> Msg
+                taggerBool fld =
+                    FF.Bool
+                        >> (Form.Input fld.path Form.Checkbox)
+                        >> FormMsgSelectData
+                        >> SelectDataMessages
+            in
+                Card.view
+                    [ Options.css "width" "100%" ]
+                    [ Card.title []
+                        [ Card.head []
+                            [ Html.text tableStr ]
+                        ]
+                    , Card.text []
+                        [ Card.head [] <|
+                            if isEditing then
+                                editingContent
+                            else
+                                viewingContent
+                        ]
+                    , Card.text
+                        [ MColor.text MColor.black
+                        ]
+                        [ VU.textFld "Record id" recId [ mdlContext, 200 ] (tagger recId) False False model.mdl
+                        , VU.textFld "Name" recName [ mdlContext, 201 ] (tagger recName) False False model.mdl
+                        , VU.textFld "Label" recLabel [ mdlContext, 202 ] (tagger recLabel) isEditing False model.mdl
+                        , VU.checkBox "Default" [ mdlContext, 203 ] (taggerBool recSelected (not (VU.isChecked recSelected)))
+                            isEditing (VU.isChecked recSelected) model.mdl
+                        ]
+                    ]
+
+        data =
+            case selectDataModel.records of
+                NotAsked ->
+                    Html.text ""
+
+                Loading ->
+                    Html.text "Loading"
+
+                Failure err ->
+                    Html.text <| toString err
+
+                Success recs ->
+                    buildForm selectDataModel.form
+    in
+        div []
+            [ data ]
+
+
 view : Model -> Html Msg
-view ({ medicationTypeModel, vaccinationTypeModel } as model) =
+view ({ medicationTypeModel, selectDataModel, vaccinationTypeModel } as model) =
     let
         ( selectedTable, dataView ) =
             case model.selectedTable of
@@ -573,6 +783,14 @@ view ({ medicationTypeModel, vaccinationTypeModel } as model) =
 
                                 _ ->
                                     viewMedicationTypeEdit
+
+                        SelectData ->
+                            case selectDataModel.editMode of
+                                EditModeTable ->
+                                    viewSelectData
+
+                                _ ->
+                                    viewSelectDataEdit
 
                         VaccinationType ->
                             case vaccinationTypeModel.editMode of

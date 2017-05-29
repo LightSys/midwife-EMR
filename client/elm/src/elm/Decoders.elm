@@ -215,6 +215,10 @@ selectQueryResponse =
                     partialSelectQueryResponse
                         |> required "data" (JD.map RoleResp (JD.list roleTable))
 
+                SelectData ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map SelectDataResp (JD.list selectDataTable))
+
                 User ->
                     partialSelectQueryResponse
                         |> required "data" (JD.map UserResp (JD.list userRecord))
@@ -285,6 +289,42 @@ riskCodeTable =
         |> required "name" JD.string
         |> required "riskType" JD.string
         |> required "description" JD.string
+
+
+selectDataTable : JD.Decoder SelectDataRecord
+selectDataTable =
+    let
+        -- The server sends bools as a 0 or 1 so convert to Bool.
+        handleBools : Int -> String -> String -> String -> Int -> Maybe Int -> SelectDataRecord
+        handleBools id name selectKey label selected stateId =
+            let
+                isSelected =
+                    selected == 1
+            in
+                SelectDataRecord id name selectKey label isSelected stateId
+    in
+        decode handleBools
+            |> required "id" JD.int
+            |> required "name" JD.string
+            |> required "selectKey" JD.string
+            |> required "label" JD.string
+            |> required "selected" JD.int
+            |> hardcoded Nothing
+
+
+decodeSelectDataRecord : Maybe String -> Maybe SelectDataRecord
+decodeSelectDataRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString selectDataTable p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    Nothing
+
+        Nothing ->
+            Nothing
 
 
 decodeVaccinationTypeRecord : Maybe String -> Maybe VaccinationTypeRecord
@@ -485,6 +525,7 @@ decodeAdhocResponse payload =
 
             Err message ->
                 AdhocUnknownMsg message
+
 
 decodeNotificationType : JD.Decoder NotificationType
 decodeNotificationType =

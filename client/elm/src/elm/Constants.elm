@@ -23,6 +23,7 @@ listLookupTables =
     , TableMetaInfo LabTest "labTest" "Defines individual laboratory tests."
     , TableMetaInfo MedicationType "medicationType" "Defines medications."
     , TableMetaInfo VaccinationType "vaccinationType" "Defines vaccinations."
+    , TableMetaInfo SelectData "selectData" "Various system wide multiple choice definitions."
     ]
 
 

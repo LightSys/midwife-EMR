@@ -24,6 +24,7 @@ import Form.Validate as V
 import Json.Encode as JE
 import List.Extra as LE
 import RemoteData as RD exposing (RemoteData(..))
+import Set
 
 
 -- LOCAL IMPORTS
@@ -120,6 +121,9 @@ setSelectQuery sq tableModel =
 
 {-| Merge the source RemoteData records into the target RemoteData
 records, updating the target with the source based upon id.
+
+For records in source but not in target, they are added to target.
+For records in target but not in source, they are ignored.
 -}
 mergeById :
     RemoteData String (List { a | id : Int })
@@ -128,16 +132,35 @@ mergeById :
 mergeById source target =
     case ( source, target ) of
         ( Success srecs, Success trecs ) ->
-            List.map
-                (\trec ->
-                    case LE.find (\s -> s.id == trec.id) srecs of
-                        Just srec ->
-                            srec
+            let
+                ( sIds, tIds ) =
+                    ( List.map .id srecs |> Set.fromList, List.map .id trecs |> Set.fromList )
 
-                        Nothing ->
-                            trec
-                )
-                trecs
+                -- For records with a corresponding match by in in source
+                -- and target, we update the target with the source.
+                updates =
+                    List.map
+                        (\trec ->
+                            case LE.find (\s -> s.id == trec.id) srecs of
+                                Just srec ->
+                                    srec
+
+                                Nothing ->
+                                    trec
+                        )
+                        trecs
+
+                -- For records in source but not in target, we add them
+                -- to target.
+                inserts =
+                    Set.diff sIds tIds
+                        |> Set.toList
+                        |> List.filterMap
+                            (\id ->
+                                LE.find (\rec -> rec.id == id) srecs
+                            )
+            in
+                ( updates ++ inserts )
                     |> RD.succeed
 
         ( Success srecs, _ ) ->
@@ -151,8 +174,8 @@ mergeById source target =
 
 deleteById :
     Int
-    -> RemoteData String (List { a | id: Int })
-    -> RemoteData String (List { a | id: Int })
+    -> RemoteData String (List { a | id : Int })
+    -> RemoteData String (List { a | id : Int })
 deleteById id records =
     case records of
         Success recs ->

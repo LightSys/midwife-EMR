@@ -32,6 +32,7 @@ import Updates.Adhoc as Updates exposing (adhocUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
 import Updates.VaccinationType as Updates exposing (vaccinationTypeUpdate)
 import Updates.Profile as Updates exposing (userProfileUpdate)
+import Updates.SelectData as Updates exposing (selectDataUpdate)
 import Updates.Role as Updates exposing (roleUpdate)
 import Updates.User as Updates exposing (userUpdate)
 import Utils as U
@@ -73,6 +74,9 @@ update msg model =
                     case a.table of
                         MedicationType ->
                             Updates.medicationTypeUpdate (CreateResponseMedicationType a) model
+
+                        SelectData ->
+                            Updates.selectDataUpdate (CreateResponseSelectData a) model
 
                         User ->
                             Updates.userUpdate (CreateResponseUser a) model
@@ -116,6 +120,9 @@ update msg model =
                     case d.table of
                         MedicationType ->
                             Updates.medicationTypeUpdate (DeleteResponseMedicationType d) model
+
+                        SelectData ->
+                            Updates.selectDataUpdate (DeleteResponseSelectData d) model
 
                         User ->
                             Updates.userUpdate (DeleteResponseUser d) model
@@ -244,6 +251,9 @@ update msg model =
             -- Note: the real save is done with other messages like MedicationTypeMessages
             { model | selectedTableEditMode = EditModeView } ! []
 
+        SelectDataMessages sdMsg ->
+            Updates.selectDataUpdate sdMsg model
+
         SelectedTableEditMode mode id ->
             let
                 -- TODO: fix this because it is passed record id but
@@ -301,6 +311,14 @@ update msg model =
                                             RoleResp list ->
                                                 Updates.roleUpdate
                                                     (ReadResponseRole
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
+
+                                            SelectDataResp list ->
+                                                Updates.selectDataUpdate
+                                                    (ReadResponseSelectData
                                                         (RD.succeed list)
                                                         (Just selQry)
                                                     )
@@ -413,6 +431,9 @@ update msg model =
 
                         User ->
                             Updates.userUpdate (UpdateResponseUser c) model
+
+                        SelectData ->
+                            Updates.selectDataUpdate (UpdateResponseSelectData  c) model
 
                         _ ->
                             let

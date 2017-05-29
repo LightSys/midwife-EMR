@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , cfg = require('../../config')
   , MedicationType = require('../../models').MedicationType
+  , SelectData = require('../../models').SelectData
   , VaccinationType = require('../../models').VaccinationType
   , User = require('../../models').User
   , hasRole = require('../../auth').hasRole
@@ -42,6 +43,14 @@ var LOOKUP_TABLES = [
   'vaccinationType'
 ];
 
+// --------------------------------------------------------
+// These are more lookup tables that do not have pregnancy_id
+// or patient_id fields.
+// --------------------------------------------------------
+var LOOKUP_TABLES_NON_PATIENT = [
+  'selectData'
+];
+
 
 /* --------------------------------------------------------
  * getLookupTable()
@@ -70,17 +79,21 @@ var getLookupTable = function(table, id, pregnancy_id, patient_id, cb) {
   // --------------------------------------------------------
   // Make sure that the table passed is allowed.
   // --------------------------------------------------------
-  if (! _.contains(LOOKUP_TABLES, table)) {
+  if ((! _.contains(LOOKUP_TABLES, table)) &&
+      (! _.contains(LOOKUP_TABLES_NON_PATIENT, table))) {
     msg = 'lookupTables.getLookupTable(): ' + table + ' is not an allowed table.';
     return cb(msg);
   }
 
   // --------------------------------------------------------
-  // Construct the where clause.
+  // Construct the where clause, but only for tables that have
+  // those fields.
   // --------------------------------------------------------
   if (id !== -1) whereObj.id = id;
-  if (pregnancy_id !== -1) whereObj.pregnancy_id = pregnancy_id;
-  if (patient_id !== -1) whereObj.patient_id = patient_id;
+  if (! _.contains(LOOKUP_TABLES_NON_PATIENT, table)) {
+    if (pregnancy_id !== -1) whereObj.pregnancy_id = pregnancy_id;
+    if (patient_id !== -1) whereObj.patient_id = patient_id;
+  }
 
   knex(table)
     .select()
@@ -103,6 +116,59 @@ var getLookupTable = function(table, id, pregnancy_id, patient_id, cb) {
       return cb(err);
     });
 }
+
+/* --------------------------------------------------------
+ * setSelectDataSingleDefault()
+ *
+ * Makes sure that at most 1 record in a selectData group
+ * by name is set as default. Takes the id of the record
+ * that is to be the default for all of the records with the
+ * same name.
+ *
+ * Note that it is allowed that there are no default records
+ * in a group.
+ * -------------------------------------------------------- */
+var setSelectDataSingleDefault = function(id) {
+  var knex = Bookshelf.DB.knex
+    , name = void 0
+    ;
+
+  SelectData.forge({id: id})
+    .fetch()
+    .then(function(rec) {
+      name = rec.get('name');
+
+      return knex('selectData')
+        .where({name: name})
+        .whereNot({id: id})
+        .update({selected: 0});
+    });
+};
+
+/* --------------------------------------------------------
+ * setSelectDataNoDefaultByName()
+ *
+ * Makes sure that zero records in a selectData group
+ * by name are set as default. Takes the name of the records
+ * to set all selected fields to false. This allows a subsequent
+ * operation that adds a record with the same name and a
+ * the selected field set to true to be the default record
+ * for that name group.
+ *
+ * Note that it is allowed that there are no default records
+ * in a group.
+ * -------------------------------------------------------- */
+var setSelectDataNoDefaultByName = function(name, cb) {
+  var knex = Bookshelf.DB.knex
+    ;
+
+  knex('selectData')
+    .where({name: name})
+    .update({selected: 0})
+    .then(function() {
+      return cb(null);
+    });
+};
 
 var addTable = function(data, userInfo, cb, modelObj, tableStr) {
   var rec = _.omit(data, ['id', 'pendingId']);
@@ -184,28 +250,56 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
     });
 };
 
-var updateMedicationType = function(data, userInfo, cb) {
-  updateTable(data, userInfo, cb, MedicationType, 'medicationType');
+var addMedicationType = function(data, userInfo, cb) {
+  addTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
 
 var delMedicationType = function(data, userInfo, cb) {
   delTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
 
-var addMedicationType = function(data, userInfo, cb) {
-  addTable(data, userInfo, cb, MedicationType, 'medicationType');
+var updateMedicationType = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
 
-var updateVaccinationType = function(data, userInfo, cb) {
-  updateTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
+var addSelectData = function(data, userInfo, cb) {
+  // Insure that at most one record in a group by name,
+  // and since this additional record wants to be the
+  // default selected record, first set all other
+  // records in the name group to not be selected.
+  if (data.selected) {
+    setSelectDataNoDefaultByName(data.name, function() {
+      addTable(data, userInfo, cb, SelectData, 'selectData');
+    });
+  } else {
+    addTable(data, userInfo, cb, SelectData, 'selectData');
+  }
+};
+
+var delSelectData = function(data, userInfo, cb) {
+  delTable(data, userInfo, cb, SelectData, 'selectData');
+};
+
+var updateSelectData = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, SelectData, 'selectData');
+
+  // Insure that at most one record in a group by name
+  // is the default record. Zero default records are allowed.
+  if (data.selected) {
+    setSelectDataSingleDefault(data.id);
+  }
+};
+
+var addVaccinationType = function(data, userInfo, cb) {
+  addTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
 };
 
 var delVaccinationType = function(data, userInfo, cb) {
   delTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
 };
 
-var addVaccinationType = function(data, userInfo, cb) {
-  addTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
+var updateVaccinationType = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
 };
 
 
@@ -213,10 +307,13 @@ var addVaccinationType = function(data, userInfo, cb) {
 module.exports = {
   getLookupTable,
   addMedicationType,
+  addSelectData,
   addVaccinationType,
   delMedicationType,
+  delSelectData,
   delVaccinationType,
   updateMedicationType,
+  updateSelectData,
   updateVaccinationType
 };
 

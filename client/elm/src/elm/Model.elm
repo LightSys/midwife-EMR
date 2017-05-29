@@ -3,6 +3,7 @@ module Model
         ( addNotificationSubscription
         , asMedicationTypeModelIn
         , asRoleModelIn
+        , asSelectDataModelIn
         , asUserModelIn
         , asVaccinationTypeModelIn
         , initialModel
@@ -10,6 +11,7 @@ module Model
         , Model
         , setMedicationTypeModel
         , setRoleModel
+        , setSelectDataModel
         , setVaccinationTypeModel
         , State
         , UserProfile
@@ -31,6 +33,7 @@ import Time exposing (Time)
 -- LOCAL IMPORTS
 
 import Models.MedicationType as MedicationType
+import Models.SelectData as SelectData
 import Models.VaccinationType as VaccinationType
 import Models.Role as Role
 import Models.User as User
@@ -53,6 +56,7 @@ type alias Model =
     , riskCode : RemoteData String (List RiskCodeRecord)
     , role : RemoteData String RoleRecord
     , roleModel : Role.RoleModel
+    , selectDataModel : SelectData.SelectDataModel
     , selectedPage : Page
     , selectedTableEditMode : EditMode
     , selectedTable : Maybe Table
@@ -201,6 +205,7 @@ initialModel =
     , riskCode = NotAsked
     , role = NotAsked
     , roleModel = Role.initialRoleModel
+    , selectDataModel = SelectData.initialSelectDataModel
     , selectedPage = AdminHomePage
     , selectedTableEditMode = EditModeView
     , selectedTable = Nothing
@@ -241,13 +246,23 @@ addNotificationSubscription subscription model =
 
 
 setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model
-setMedicationTypeModel mtm model =
-    (\model -> { model | medicationTypeModel = mtm }) model
+setMedicationTypeModel tm model =
+    (\model -> { model | medicationTypeModel = tm }) model
 
 
 asMedicationTypeModelIn : Model -> MedicationType.MedicationTypeModel -> Model
 asMedicationTypeModelIn =
     flip setMedicationTypeModel
+
+
+setSelectDataModel : SelectData.SelectDataModel -> Model -> Model
+setSelectDataModel tm model =
+    (\model -> { model | selectDataModel = tm }) model
+
+
+asSelectDataModelIn : Model -> SelectData.SelectDataModel -> Model
+asSelectDataModelIn =
+    flip setSelectDataModel
 
 
 setVaccinationTypeModel : VaccinationType.VaccinationTypeModel -> Model -> Model

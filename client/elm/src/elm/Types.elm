@@ -26,6 +26,9 @@ module Types
         , RiskCodeRecord
         , RoleForm
         , RoleRecord
+        , SelectDataForm
+        , EditableSelectDataName(..)
+        , SelectDataRecord
         , SelectQuery
         , SelectQueryResponse
         , SystemMessage
@@ -159,11 +162,26 @@ type EditMode
     | EditModeTable
 
 
+{-| These correspond to the selectData table's name
+field that we allow the user to edit.
+-}
+type EditableSelectDataName
+    = AttendantSDN
+    | EducationSDN
+    | LocationSDN
+    | MaritalStatusSDN
+    | PlaceOfBirthSDN
+    | ReferralsSDN
+    | ReligionSDN
+    | TeachingTopicsSDN
+
+
 type TableResponse
     = LabSuiteResp (List LabSuiteRecord)
     | LabTestResp (List LabTestRecord)
     | MedicationTypeResp (List MedicationTypeRecord)
     | RoleResp (List RoleRecord)
+    | SelectDataResp (List SelectDataRecord)
     | UserResp (List UserRecord)
     | VaccinationTypeResp (List VaccinationTypeRecord)
 
@@ -356,6 +374,30 @@ type alias MedicationTypeForm =
     }
 
 
+{-| The selectKey field is intentionally missing from
+the form because the user should not see it. The user
+edits the label field and we add the selectKey field
+on interactions with the server assuming that it is
+always the same as the label field.
+-}
+type alias SelectDataForm =
+    { id : Int
+    , name : String
+    , label : String
+    , selected : Bool
+    }
+
+
+type alias SelectDataRecord =
+    { id : Int
+    , name : String
+    , selectKey : String
+    , label : String
+    , selected : Bool
+    , stateId : Maybe Int
+    }
+
+
 type alias PregnoteTypeRecord =
     { id : Int
     , name : String
@@ -497,5 +539,3 @@ type alias NotificationSubscription =
     { table : Table
     , qualifier : NotifySubQualifier
     }
-
-

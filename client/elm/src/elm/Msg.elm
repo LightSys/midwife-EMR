@@ -4,6 +4,7 @@ module Msg
         , AdhocResponseMessage(..)
         , MedicationTypeMsg(..)
         , RoleMsg(..)
+        , SelectDataMsg(..)
         , UserMsg(..)
         , UserProfileMsg(..)
         , VaccinationTypeMsg(..)
@@ -50,6 +51,7 @@ type Msg
     | RiskCodeResponse (RemoteData String (List RiskCodeRecord))
     | RoleMessages RoleMsg
     | SaveSelectedTable
+    | SelectDataMessages SelectDataMsg
     | SelectedTableEditMode EditMode (Maybe Int)
     | SelectQueryMsg SelectQuery
     | SelectQueryResponseMsg (RemoteData String SelectQueryResponse)
@@ -82,6 +84,20 @@ type MedicationTypeMsg
     | SelectedRecordMedicationType (Maybe Int)
     | UpdateMedicationType
     | UpdateResponseMedicationType UpdateResponse
+
+
+type SelectDataMsg
+    = CancelEditSelectData
+    | CreateSelectData
+    | CreateResponseSelectData CreateResponse
+    | DeleteSelectData (Maybe Int)
+    | DeleteResponseSelectData DeleteResponse
+    | FormMsgSelectData Form.Msg
+    | ReadResponseSelectData (RemoteData String (List SelectDataRecord)) (Maybe SelectQuery)
+    | SelectedRecordEditModeSelectData EditMode (Maybe Int) (Maybe String)
+    | SelectedRecordSelectData (Maybe Int)
+    | UpdateSelectData
+    | UpdateResponseSelectData UpdateResponse
 
 
 type VaccinationTypeMsg

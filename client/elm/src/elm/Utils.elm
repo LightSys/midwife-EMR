@@ -2,6 +2,8 @@ module Utils
     exposing
         ( addMessage
         , addWarning
+        , editableSelectDataNameToString
+        , editableStringToSelectDataName
         , getIdxRemoteDataById
         , getPageDef
         , humanReadableError
@@ -326,6 +328,69 @@ stringToTable name =
 
         _ ->
             Unknown
+
+
+{-| Note that the strings are specific to what the server is
+expecting.
+-}
+editableSelectDataNameToString : EditableSelectDataName -> String
+editableSelectDataNameToString sdn =
+    case sdn of
+        AttendantSDN ->
+            "attendant"
+
+        EducationSDN ->
+            "education"
+
+        LocationSDN ->
+            "location"
+
+        MaritalStatusSDN ->
+            "maritalStatus"
+
+        PlaceOfBirthSDN ->
+            "placeOfBirth"
+
+        ReferralsSDN ->
+            "referrals"
+
+        ReligionSDN ->
+            "religion"
+
+        TeachingTopicsSDN ->
+            "teachingTopics"
+
+
+editableStringToSelectDataName : String -> Maybe EditableSelectDataName
+editableStringToSelectDataName str =
+    case str of
+        "attendant" ->
+            Just AttendantSDN
+
+        "education" ->
+            Just EducationSDN
+
+        "location" ->
+            Just LocationSDN
+
+        "maritalStatus" ->
+            Just MaritalStatusSDN
+
+        "placeOfBirth" ->
+            Just PlaceOfBirthSDN
+
+        "referrals" ->
+            Just ReferralsSDN
+
+        "religion" ->
+            Just ReligionSDN
+
+        "teachingTopics" ->
+            Just TeachingTopicsSDN
+
+        _ ->
+            Nothing
+
 
 stringToNotificationType : String -> NotificationType
 stringToNotificationType str =

@@ -138,11 +138,15 @@ var rx = require('rx')
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , TABLE_medicationType = 'medicationType'
+  , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
+  , addSelectData = require('./routes/comm/lookupTables').addSelectData
+  , delSelectData = require('./routes/comm/lookupTables').delSelectData
+  , updateSelectData = require('./routes/comm/lookupTables').updateSelectData
   , addVaccinationType = require('./routes/comm/lookupTables').addVaccinationType
   , delVaccinationType = require('./routes/comm/lookupTables').delVaccinationType
   , updateVaccinationType = require('./routes/comm/lookupTables').updateVaccinationType
@@ -511,6 +515,13 @@ var getFuncForTableOp = function(table, op) {
         case ADD: func = addMedicationType; break;
         case CHG: func = updateMedicationType; break;
         case DEL: func = delMedicationType; break;
+      }
+      break;
+    case TABLE_selectData:
+      switch (op) {
+        case ADD: func = addSelectData; break;
+        case CHG: func = updateSelectData; break;
+        case DEL: func = delSelectData; break;
       }
       break;
     case TABLE_user:

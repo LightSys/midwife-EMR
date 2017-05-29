@@ -69,14 +69,18 @@ radio lbl idx msg val radioGroup mdl =
         [ Html.text lbl ]
 
 
-checkBox : String -> List Int -> Msg -> Bool -> Material.Model -> Html Msg
-checkBox lbl idx msg val mdl =
+checkBox : String -> List Int -> Msg -> Bool -> Bool -> Material.Model -> Html Msg
+checkBox lbl idx msg allowEdit val mdl =
     Toggles.checkbox Mdl
         idx
         mdl
         [ Options.onToggle msg
         , Toggles.ripple
         , Toggles.value val
+        , if not allowEdit then
+            Toggles.disabled
+            else
+            Options.nop
         ]
         [ Html.text lbl ]
 

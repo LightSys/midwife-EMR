@@ -297,6 +297,18 @@ var setApp = function(theApp) {
     sendMsg(ADHOC, wrapAdHoc(ADHOC_USER_PROFILE, void 0));
   });
 
+  app.ports.selectDataCreate.subscribe(function(data) {
+    sendMsg(ADD, wrapData('selectData', data));
+  });
+
+  app.ports.selectDataDelete.subscribe(function(data) {
+    sendMsg(DEL, wrapData('selectData', data));
+  });
+
+  app.ports.selectDataUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('selectData', data));
+  });
+
   app.ports.selectQuery.subscribe(function(query) {
     sendMsg(SELECT, query);
   });

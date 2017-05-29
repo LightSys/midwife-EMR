@@ -9,6 +9,9 @@ port module Ports
         , medicationTypeDelete
         , medicationTypeUpdate
         , requestUserProfile
+        , selectDataCreate
+        , selectDataDelete
+        , selectDataUpdate
         , selectQuery
         , selectQueryResponse
         , systemMessages
@@ -77,6 +80,16 @@ port medicationTypeUpdate : JE.Value -> Cmd msg
 
 
 port requestUserProfile : JE.Value -> Cmd msg
+
+
+port selectDataCreate : JE.Value -> Cmd msg
+
+
+port selectDataDelete : JE.Value -> Cmd msg
+
+
+port selectDataUpdate : JE.Value -> Cmd msg
+
 
 
 port selectQuery : JE.Value -> Cmd msg

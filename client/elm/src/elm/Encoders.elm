@@ -51,14 +51,31 @@ medicationTypeToValue mt =
         ]
 
 
-vaccinationTypeToValue : VaccinationTypeRecord -> JE.Value
-vaccinationTypeToValue mt =
+selectDataToValue : SelectDataRecord -> JE.Value
+selectDataToValue sd =
     JE.object
-        [ ( "id", JE.int mt.id )
-        , ( "name", JE.string mt.name )
-        , ( "description", JE.string mt.description )
-        , ( "sortOrder", JE.int mt.sortOrder )
-        , case mt.stateId of
+        [ ( "id", JE.int sd.id )
+        , ( "name", JE.string sd.name )
+        , ( "selectKey", JE.string sd.selectKey )
+        , ( "label", JE.string sd.label )
+        , ( "selected", JE.bool sd.selected )
+        , case sd.stateId of
+            Just num ->
+                ( "stateId", JE.int num )
+
+            Nothing ->
+                ( "stateId", JE.null )
+        ]
+
+
+vaccinationTypeToValue : VaccinationTypeRecord -> JE.Value
+vaccinationTypeToValue vt =
+    JE.object
+        [ ( "id", JE.int vt.id )
+        , ( "name", JE.string vt.name )
+        , ( "description", JE.string vt.description )
+        , ( "sortOrder", JE.int vt.sortOrder )
+        , case vt.stateId of
             Just num ->
                 ( "stateId", JE.int num )
 
