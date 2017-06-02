@@ -6,6 +6,7 @@ module Views.Utils
         , footerMini
         , fullSizeCellOpts
         , isChecked
+        , msgLeftElementRight
         , radio
         , recordChanger
         , textFld
@@ -33,6 +34,7 @@ import Material.Icons.Navigation as Icon
 import Material.Options as Options exposing (Property)
 import Material.Textfield as Textfield
 import Material.Toggles as Toggles
+import Material.Typography as Typo
 
 
 -- LOCAL IMPORTS
@@ -54,6 +56,30 @@ isChecked fld =
 
         Nothing ->
             False
+
+
+msgLeftElementRight : String -> Html Msg -> Html Msg
+msgLeftElementRight text element =
+    Html.div
+        [ HA.style
+            [ ( "margin-top", "10px" )
+            , ( "margin-bottom", "10px" )
+            , ( "position", "relative" )
+            ]
+        ]
+        [ Options.styled Html.span
+            [ Typo.left
+            , Typo.subhead
+            ]
+            [ Html.text text ]
+        , Html.span
+            [ HA.style
+                [ ( "float", "right" )
+                , ( "margin-bottom", "10px" )
+                ]
+            ]
+            [ element ]
+        ]
 
 
 radio : String -> List Int -> Msg -> Bool -> String -> Material.Model -> Html Msg

@@ -11,6 +11,7 @@ var _ = require('underscore')
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
   , cfg = require('../../config')
+  , LabSuite = require('../../models').LabSuite
   , MedicationType = require('../../models').MedicationType
   , SelectData = require('../../models').SelectData
   , VaccinationType = require('../../models').VaccinationType
@@ -35,6 +36,7 @@ var LOOKUP_TABLES = [
   'eventType',
   'labSuite',
   'labTest',
+  'labTestValue',
   'medicationType',
   'pregnoteType',
   'riskCode',
@@ -94,6 +96,8 @@ var getLookupTable = function(table, id, pregnancy_id, patient_id, cb) {
     if (pregnancy_id !== -1) whereObj.pregnancy_id = pregnancy_id;
     if (patient_id !== -1) whereObj.patient_id = patient_id;
   }
+
+  console.log('getLookupTable() for ' + table);
 
   knex(table)
     .select()
@@ -250,6 +254,18 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
     });
 };
 
+var addLabSuite = function(data, userInfo, cb) {
+  addTable(data, userInfo, cb, LabSuite, 'labSuite');
+};
+
+var delLabSuite = function(data, userInfo, cb) {
+  delTable(data, userInfo, cb, LabSuite, 'labSuite');
+};
+
+var updateLabSuite = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, LabSuite, 'labSuite');
+};
+
 var addMedicationType = function(data, userInfo, cb) {
   addTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
@@ -306,12 +322,15 @@ var updateVaccinationType = function(data, userInfo, cb) {
 
 module.exports = {
   getLookupTable,
+  addLabSuite,
   addMedicationType,
   addSelectData,
   addVaccinationType,
+  delLabSuite,
   delMedicationType,
   delSelectData,
   delVaccinationType,
+  updateLabSuite,
   updateMedicationType,
   updateSelectData,
   updateVaccinationType

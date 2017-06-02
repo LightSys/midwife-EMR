@@ -137,10 +137,14 @@ var rx = require('rx')
   , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
+  , TABLE_labSuite = 'labSuite'
   , TABLE_medicationType = 'medicationType'
   , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
+  , addLabSuite = require('./routes/comm/lookupTables').addLabSuite
+  , delLabSuite = require('./routes/comm/lookupTables').delLabSuite
+  , updateLabSuite = require('./routes/comm/lookupTables').updateLabSuite
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
@@ -510,6 +514,13 @@ var loginUser = function(username, password, cb) {
 var getFuncForTableOp = function(table, op) {
   var func = void 0;
   switch (table) {
+    case TABLE_labSuite:
+      switch (op) {
+        case ADD: func = addLabSuite; break;
+        case CHG: func = updateLabSuite; break;
+        case DEL: func = delLabSuite; break;
+      }
+      break;
     case TABLE_medicationType:
       switch (op) {
         case ADD: func = addMedicationType; break;

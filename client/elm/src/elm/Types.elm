@@ -10,6 +10,7 @@ module Types
         , emptySystemMessage
         , ErrorCode(..)
         , EventTypeRecord
+        , LabSuiteForm
         , LabSuiteRecord
         , LabTestRecord
         , LabTestValueRecord
@@ -160,6 +161,7 @@ type EditMode
     | EditModeEdit
     | EditModeView
     | EditModeTable
+    | EditModeOther
 
 
 {-| These correspond to the selectData table's name
@@ -179,6 +181,7 @@ type EditableSelectDataName
 type TableResponse
     = LabSuiteResp (List LabSuiteRecord)
     | LabTestResp (List LabTestRecord)
+    | LabTestValueResp (List LabTestValueRecord)
     | MedicationTypeResp (List MedicationTypeRecord)
     | RoleResp (List RoleRecord)
     | SelectDataResp (List SelectDataRecord)
@@ -319,12 +322,24 @@ type alias EventTypeRecord =
     , description : String
     }
 
+{-| The category field is intentionally missing from
+the form because the user should not see it. The user
+edits the name field and we add the category field
+on interactions with the server assuming that it is
+always the same as the name field.
+-}
+type alias LabSuiteForm =
+    { id : Int
+    , name : String
+    , description : String
+    }
 
 type alias LabSuiteRecord =
     { id : Int
     , name : String
     , description : String
     , category : String
+    , stateId : Maybe Int
     }
 
 
@@ -334,10 +349,10 @@ type alias LabTestRecord =
     , abbrev : String
     , normal : String
     , unit : String
-    , minRangeDecimal : Float
-    , maxRangeDecimal : Float
-    , minRangeInteger : Int
-    , maxRangeInteger : Int
+    , minRangeDecimal : Maybe Float
+    , maxRangeDecimal : Maybe Float
+    , minRangeInteger : Maybe Int
+    , maxRangeInteger : Maybe Int
     , isRange : Bool
     , isText : Bool
     , labSuite_id : Int

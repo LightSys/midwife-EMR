@@ -34,6 +34,20 @@ selectQueryToValue sq =
         , ( "pregnancy_id", maybeIntToNegOne sq.pregnancy_id )
         ]
 
+labSuiteToValue : LabSuiteRecord -> JE.Value
+labSuiteToValue lsr =
+    JE.object
+        [ ( "id", JE.int lsr.id )
+        , ( "name", JE.string lsr.name )
+        , ( "description", JE.string lsr.description )
+        , ( "category", JE.string lsr.category )
+        , case lsr.stateId of
+            Just num ->
+                ( "stateId", JE.int num )
+
+            Nothing ->
+                ( "stateId", JE.null )
+        ]
 
 medicationTypeToValue : MedicationTypeRecord -> JE.Value
 medicationTypeToValue mt =

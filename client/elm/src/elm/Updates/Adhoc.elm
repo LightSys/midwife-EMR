@@ -130,7 +130,7 @@ adhocUpdate msg model =
                             Just up ->
                                 if up.roleName == "administrator" then
                                     ( model
-                                    , SelectQuery User (Just up.userId) Nothing Nothing
+                                    , [ SelectQuery User (Just up.userId) Nothing Nothing ]
                                         |> Task.succeed
                                         |> Task.perform SelectQueryMsg
                                     )
@@ -178,9 +178,7 @@ prefetchCmdsByRole ({ userProfile } as model) =
                         qry2 =
                             SelectQuery Role Nothing Nothing Nothing
                     in
-                        [ Task.succeed qry1 |> Task.perform SelectQueryMsg
-                        , Task.succeed qry2 |> Task.perform SelectQueryMsg
-                        ]
+                        [ Task.succeed [ qry1, qry1 ] |> Task.perform SelectQueryMsg ]
 
                 _ ->
                     []

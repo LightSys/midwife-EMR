@@ -1,6 +1,7 @@
 module Model
     exposing
         ( addNotificationSubscription
+        , asLabSuiteModelIn
         , asMedicationTypeModelIn
         , asRoleModelIn
         , asSelectDataModelIn
@@ -9,6 +10,7 @@ module Model
         , initialModel
         , loginFormValidate
         , Model
+        , setLabSuiteModel
         , setMedicationTypeModel
         , setRoleModel
         , setSelectDataModel
@@ -21,6 +23,7 @@ module Model
         )
 
 import Date exposing (Date)
+import Dict
 import Form exposing (Form)
 import Form.Field as Fld
 import Form.Validate as V
@@ -32,6 +35,7 @@ import Time exposing (Time)
 
 -- LOCAL IMPORTS
 
+import Models.LabSuite as LabSuite
 import Models.MedicationType as MedicationType
 import Models.SelectData as SelectData
 import Models.VaccinationType as VaccinationType
@@ -44,7 +48,7 @@ import Types exposing (..)
 type alias Model =
     { dataNotificationSubscriptions : List NotificationSubscription
     , eventType : RemoteData String (List EventTypeRecord)
-    , labSuite : RemoteData String (List LabSuiteRecord)
+    , labSuiteModel : LabSuite.LabSuiteModel
     , labTest : RemoteData String (List LabTestRecord)
     , labTestValue : RemoteData String (List LabTestValueRecord)
     , loginForm : Form () LoginForm
@@ -65,6 +69,7 @@ type alias Model =
     , systemMessages : List SystemMessage
     , transactions : States
     , user : RemoteData String UserRecord
+    , userChoice : Dict.Dict String String
     , userModel : User.UserModel
     , userProfile : Maybe UserProfile
     , userProfileForm : Form () UserProfileForm
@@ -193,7 +198,7 @@ initialModel : Model
 initialModel =
     { dataNotificationSubscriptions = []
     , eventType = NotAsked
-    , labSuite = NotAsked
+    , labSuiteModel = LabSuite.initialLabSuiteModel
     , labTest = NotAsked
     , labTestValue = NotAsked
     , loginForm = Form.initial [] loginFormValidate
@@ -214,6 +219,7 @@ initialModel =
     , systemMessages = []
     , transactions = statesInit
     , user = NotAsked
+    , userChoice = Dict.empty
     , userModel = User.initialUserModel
     , userProfile = initialUserProfile
     , userProfileForm = Form.initial [] userProfileFormValidate
@@ -244,6 +250,15 @@ addNotificationSubscription subscription model =
         )
             model
 
+
+setLabSuiteModel : LabSuite.LabSuiteModel -> Model -> Model
+setLabSuiteModel vtm model =
+    (\model -> { model | labSuiteModel = vtm }) model
+
+
+asLabSuiteModelIn : Model -> LabSuite.LabSuiteModel -> Model
+asLabSuiteModelIn =
+    flip setLabSuiteModel
 
 setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model
 setMedicationTypeModel tm model =

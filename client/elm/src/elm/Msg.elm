@@ -2,6 +2,7 @@ module Msg
     exposing
         ( Msg(..)
         , AdhocResponseMessage(..)
+        , LabSuiteMsg(..)
         , MedicationTypeMsg(..)
         , RoleMsg(..)
         , SelectDataMsg(..)
@@ -34,7 +35,8 @@ type Msg
     | EditSelectedTable
     | EventTypeResponse (RemoteData String (List EventTypeRecord))
     | FirstRecord
-    | LabSuiteResponse (RemoteData String (List LabSuiteRecord))
+    | LabSuiteMessages LabSuiteMsg
+    --| LabSuiteResponse (RemoteData String (List LabSuiteRecord))
     | LabTestResponse (RemoteData String (List LabTestRecord))
     | LabTestValueResponse (RemoteData String (List LabTestValueRecord))
     | LastRecord
@@ -53,15 +55,17 @@ type Msg
     | SaveSelectedTable
     | SelectDataMessages SelectDataMsg
     | SelectedTableEditMode EditMode (Maybe Int)
-    | SelectQueryMsg SelectQuery
+    | SelectQueryMsg (List SelectQuery)
     | SelectQueryResponseMsg (RemoteData String SelectQueryResponse)
-    | SelectQuerySelectTable SelectQuery
+    | SelectQuerySelectTable Table (List SelectQuery)
     | SelectTableRecord Int
     | SelectPage Page
     | SessionExpired
     | Snackbar (Snackbar.Msg String)
     | UpdateResponseMsg (Maybe UpdateResponse)
     | UrlChange Location
+    | UserChoiceSet String String
+    | UserChoiceUnset String
     | UserMessages UserMsg
     | UserProfileMessages UserProfileMsg
     | VaccinationTypeMessages VaccinationTypeMsg
@@ -99,6 +103,17 @@ type SelectDataMsg
     | UpdateSelectData
     | UpdateResponseSelectData UpdateResponse
 
+type LabSuiteMsg
+    = CancelEditLabSuite
+    | CreateLabSuite
+    | CreateResponseLabSuite CreateResponse
+    | DeleteLabSuite (Maybe Int)
+    | DeleteResponseLabSuite DeleteResponse
+    | FormMsgLabSuite Form.Msg
+    | ReadResponseLabSuite (RemoteData String (List LabSuiteRecord)) (Maybe SelectQuery)
+    | SelectedRecordEditModeLabSuite EditMode (Maybe Int)
+    | UpdateLabSuite
+    | UpdateResponseLabSuite UpdateResponse
 
 type VaccinationTypeMsg
     = CancelEditVaccinationType

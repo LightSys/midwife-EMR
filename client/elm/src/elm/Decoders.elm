@@ -69,13 +69,14 @@ labSuiteTable =
         |> optional "name" JD.string ""
         |> optional "description" JD.string ""
         |> optional "category" JD.string ""
+        |> hardcoded Nothing
 
 
 labTestTable : JD.Decoder LabTestRecord
 labTestTable =
     let
         -- The server sends bools as a 0 or 1 so convert to Bool.
-        handleBools : Int -> String -> String -> String -> String -> Float -> Float -> Int -> Int -> Int -> Int -> Int -> LabTestRecord
+        handleBools : Int -> String -> String -> String -> String -> Maybe Float -> Maybe Float -> Maybe Int -> Maybe Int -> Int -> Int -> Int -> LabTestRecord
         handleBools id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isRange isText labSuite_id =
             let
                 ( isR, isT ) =
@@ -89,10 +90,10 @@ labTestTable =
             |> optional "abbrev" JD.string ""
             |> optional "normal" JD.string ""
             |> optional "unit" JD.string ""
-            |> optional "minRangeDecimal" JD.float 0.0
-            |> optional "maxRangeDecimal" JD.float 0.0
-            |> optional "minRangeInteger" JD.int 0
-            |> optional "maxRangeInteger" JD.int 0
+            |> optional "minRangeDecimal" (JD.oneOf [JD.maybe JD.float, JD.null Nothing]) Nothing
+            |> optional "maxRangeDecimal" (JD.oneOf [JD.maybe JD.float, JD.null Nothing]) Nothing
+            |> optional "minRangeInteger" (JD.oneOf [JD.maybe JD.int, JD.null Nothing]) Nothing
+            |> optional "maxRangeInteger" (JD.oneOf [JD.maybe JD.int, JD.null Nothing]) Nothing
             |> optional "isRange" JD.int 0
             |> optional "isText" JD.int 0
             |> required "labSuite_id" JD.int
@@ -207,6 +208,10 @@ selectQueryResponse =
                     partialSelectQueryResponse
                         |> required "data" (JD.map LabTestResp (JD.list labTestTable))
 
+                LabTestValue ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map LabTestValueResp (JD.list labTestValueTable))
+
                 MedicationType ->
                     partialSelectQueryResponse
                         |> required "data" (JD.map MedicationTypeResp (JD.list medicationTypeTable))
@@ -238,6 +243,26 @@ decodeSelectQueryResponse : JE.Value -> RemoteData String SelectQueryResponse
 decodeSelectQueryResponse payload =
     JD.decodeValue selectQueryResponse payload
         |> RD.fromResult
+
+
+
+decodeLabSuiteRecord : Maybe String -> Maybe LabSuiteRecord
+decodeLabSuiteRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString labSuiteTable p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "decodeLabSuiterecord" <| toString msg
+                    in
+                        Nothing
+
+        Nothing ->
+            Nothing
 
 
 decodeUserRecord : Maybe String -> Maybe UserRecord

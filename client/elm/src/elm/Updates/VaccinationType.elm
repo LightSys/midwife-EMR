@@ -21,7 +21,6 @@ import Types exposing (..)
 import Utils as U
 
 
-
 vaccinationTypeUpdate : VaccinationTypeMsg -> Model -> ( Model, Cmd Msg )
 vaccinationTypeUpdate msg ({ vaccinationTypeModel } as model) =
     case msg of
@@ -239,8 +238,7 @@ vaccinationTypeUpdate msg ({ vaccinationTypeModel } as model) =
             in
                 ( MU.mergeById vaccinationTypeTbl vaccinationTypeModel.records
                     |> (\recs -> { vaccinationTypeModel | records = recs })
-                    |>
-                        MU.setSelectQuery sq
+                    |> MU.setSelectQuery sq
                     |> VacType.populateSelectedTableForm
                     |> asVaccinationTypeModelIn model
                     |> Model.addNotificationSubscription subscription
@@ -252,10 +250,18 @@ vaccinationTypeUpdate msg ({ vaccinationTypeModel } as model) =
                 |> MU.setSelectedRecordId id
                 |> MU.setEditMode mode
                 |> (\vtm ->
-                        if mode /= EditModeTable && id /= Nothing then
-                            VacType.populateSelectedTableForm vtm
-                        else
-                            vtm
+                        case ( mode, id ) of
+                            ( EditModeAdd, _ ) ->
+                                VacType.populateSelectedTableForm vtm
+
+                            ( EditModeEdit, Just _ ) ->
+                                VacType.populateSelectedTableForm vtm
+
+                            ( EditModeView, Just _ ) ->
+                                VacType.populateSelectedTableForm vtm
+
+                            ( _, _ ) ->
+                                vtm
                    )
                 |> asVaccinationTypeModelIn model
             )

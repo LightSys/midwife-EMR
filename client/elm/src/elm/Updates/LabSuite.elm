@@ -1,4 +1,4 @@
-module Updates.MedicationType exposing (medicationTypeUpdate)
+module Updates.LabSuite exposing (labSuiteUpdate)
 
 import Form exposing (Form)
 import Json.Encode as JE
@@ -12,7 +12,7 @@ import Task
 import Decoders exposing (..)
 import Encoders as E
 import Model exposing (..)
-import Models.MedicationType as MedType
+import Models.LabSuite as LabSuite
 import Models.Utils as MU
 import Msg exposing (..)
 import Ports
@@ -21,56 +21,35 @@ import Types exposing (..)
 import Utils as U
 
 
-medicationTypeUpdate : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
-medicationTypeUpdate msg ({ medicationTypeModel } as model) =
+labSuiteUpdate : LabSuiteMsg -> Model -> ( Model, Cmd Msg )
+labSuiteUpdate msg ({ labSuiteModel } as model) =
     case msg of
-        CancelEditMedicationType ->
+        CancelEditLabSuite ->
             -- User canceled, so reset data back to what we had before.
-            ( MedType.populateSelectedTableForm medicationTypeModel
+            ( LabSuite.populateSelectedTableForm labSuiteModel
                 |> MU.setEditMode EditModeView
-                |> asMedicationTypeModelIn model
+                |> asLabSuiteModelIn model
             , Cmd.none
             )
 
-        CreateMedicationType ->
+        CreateLabSuite ->
             let
                 -- Get the table record from the form.
-                medicationTypeRecord =
-                    medicationTypeFormToRecord medicationTypeModel.form Nothing
-
-                -- Determine if the sortOrder field is unique. It would be best to
-                -- do this in validation instead of here if possible.
-                failedSortOrder =
-                    case RD.toMaybe medicationTypeModel.records of
-                        Just recs ->
-                            case
-                                LE.find (\r -> r.sortOrder == medicationTypeRecord.sortOrder) recs
-                            of
-                                Just r ->
-                                    True
-
-                                Nothing ->
-                                    False
-
-                        Nothing ->
-                            -- What should this be?
-                            False
+                labSuiteRecord =
+                    labSuiteFormToRecord labSuiteModel.form Nothing
 
                 -- Optimistic add of the record to the model with a pending id
                 -- and create the Cmd to send data to the server. Or give a message
                 -- to the user to effect that the sort order is wrong.
                 ( newModel, newCmd ) =
-                    if not failedSortOrder then
-                        ( MU.addRecord medicationTypeRecord medicationTypeModel
-                            |> asMedicationTypeModelIn model
-                        , Ports.medicationTypeCreate <| E.medicationTypeToValue medicationTypeRecord
-                        )
-                    else
-                        U.addMessage "The sort order number is not unique." model
+                    ( MU.addRecord labSuiteRecord labSuiteModel
+                        |> asLabSuiteModelIn model
+                    , Ports.labSuiteCreate <| E.labSuiteToValue labSuiteRecord
+                    )
             in
                 newModel ! [ newCmd ]
 
-        CreateResponseMedicationType { id, pendingId, success, msg } ->
+        CreateResponseLabSuite { id, pendingId, success, msg } ->
             let
                 -- Update the model with the server assigned id for the record.
                 ( updatedRecords, ( newModel, newCmd ) ) =
@@ -78,13 +57,13 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                         True ->
                             ( MU.updateById pendingId
                                 (\r -> { r | id = id })
-                                medicationTypeModel.records
+                                labSuiteModel.records
                             , ( model, Cmd.none )
                             )
 
                         False ->
                             -- Give a message to the user upon failure.
-                            ( medicationTypeModel.records
+                            ( labSuiteModel.records
                             , (if String.length msg == 0 then
                                 "Sorry, the server rejected that addition."
                                else
@@ -95,15 +74,15 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
 
                 -- Update the form and remove stored state from transaction manager.
                 newModel2 =
-                    MU.setRecords updatedRecords medicationTypeModel
+                    MU.setRecords updatedRecords labSuiteModel
                         |> MU.setEditMode EditModeView
                         |> MU.setSelectedRecordId (Just id)
-                        |> MedType.populateSelectedTableForm
-                        |> asMedicationTypeModelIn newModel
+                        |> LabSuite.populateSelectedTableForm
+                        |> asLabSuiteModelIn newModel
             in
                 newModel2 ! [ newCmd ]
 
-        DeleteMedicationType id ->
+        DeleteLabSuite id ->
             -- This is an optimistic workflow.
             -- NOTE: this assumes that a delete was performed with the correct record
             -- loaded in the form.
@@ -112,7 +91,7 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                     let
                         -- Save current rec as a transaction.
                         ( newModel, stateId ) =
-                            case MU.getSelectedRecordAsString medicationTypeModel E.medicationTypeToValue of
+                            case MU.getSelectedRecordAsString labSuiteModel E.labSuiteToValue of
                                 Just s ->
                                     Trans.setState s Nothing model
 
@@ -121,24 +100,24 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
 
                         -- Create command to send record to delete to the server.
                         newCmd2 =
-                            medicationTypeFormToRecord newModel.medicationTypeModel.form stateId
-                                |> E.medicationTypeToValue
-                                |> Ports.medicationTypeDelete
+                            labSuiteFormToRecord newModel.labSuiteModel.form stateId
+                                |> E.labSuiteToValue
+                                |> Ports.labSuiteDelete
 
                         -- Delete the record from the client and return to table view.
                         newModel2 =
-                            newModel.medicationTypeModel
+                            newModel.labSuiteModel
                                 |> MU.delSelectedRecord
                                 |> MU.setSelectedRecordId Nothing
                                 |> MU.setEditMode EditModeTable
-                                |> asMedicationTypeModelIn newModel
+                                |> asLabSuiteModelIn newModel
                     in
                         newModel2 ! [ newCmd2 ]
 
                 Nothing ->
                     model ! []
 
-        DeleteResponseMedicationType response ->
+        DeleteResponseLabSuite response ->
             let
                 -- 1. Update the model according to success or failure.
                 ( newModel1, _ ) =
@@ -153,14 +132,14 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                             -- Finally, remove transaction record.
                             case
                                 Trans.getState response.stateId model
-                                    |> Decoders.decodeMedicationTypeRecord
+                                    |> Decoders.decodeLabSuiteRecord
                             of
                                 Just r ->
-                                    MU.addRecord r medicationTypeModel
+                                    MU.addRecord r labSuiteModel
                                         |> MU.setSelectedRecordId (Just response.id)
-                                        |> MedType.populateSelectedTableForm
+                                        |> LabSuite.populateSelectedTableForm
                                         |> MU.setEditMode EditModeView
-                                        |> asMedicationTypeModelIn model
+                                        |> asLabSuiteModelIn model
                                         |> Trans.delState response.stateId
 
                                 Nothing ->
@@ -183,102 +162,73 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
             in
                 newModel2 ! [ newCmd2 ]
 
-        FirstMedicationType ->
-            ( MedType.firstRecord medicationTypeModel
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        FormMsgMedicationType formMsg ->
-            case ( formMsg, Form.getOutput medicationTypeModel.form ) of
+        FormMsgLabSuite formMsg ->
+            case ( formMsg, Form.getOutput labSuiteModel.form ) of
                 ( Form.Submit, Just records ) ->
                     -- If we get here, it passed valiation.
-                    if medicationTypeModel.editMode == EditModeAdd then
-                        medicationTypeUpdate CreateMedicationType model
+                    if labSuiteModel.editMode == EditModeAdd then
+                        labSuiteUpdate CreateLabSuite model
                     else
-                        medicationTypeUpdate UpdateMedicationType model
+                        labSuiteUpdate UpdateLabSuite model
 
                 _ ->
                     -- Otherwise, pass it through validation again.
-                    (medicationTypeModel
+                    (labSuiteModel
                         |> MU.setForm
-                            (Form.update MedType.medicationTypeValidate
+                            (Form.update LabSuite.labSuiteValidate
                                 formMsg
-                                medicationTypeModel.form
+                                labSuiteModel.form
                             )
-                        |> asMedicationTypeModelIn model
+                        |> asLabSuiteModelIn model
                     )
                         ! []
 
-        LastMedicationType ->
-            ( MedType.lastRecord medicationTypeModel
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        NextMedicationType ->
-            ( MedType.nextRecord medicationTypeModel
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        PrevMedicationType ->
-            ( MedType.prevRecord medicationTypeModel
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
-
-        ReadResponseMedicationType medicationTypeTbl sq ->
+        ReadResponseLabSuite labSuiteTbl sq ->
             -- Merge records from the server into our model, update
             -- our form as necessary, and make sure we are subscribed
             -- to changes from the server.
             let
                 subscription =
-                    NotificationSubscription MedicationType NotifySubQualifierNone
+                    NotificationSubscription LabSuite NotifySubQualifierNone
             in
-                ( MU.mergeById medicationTypeTbl medicationTypeModel.records
-                    |> (\recs -> { medicationTypeModel | records = recs })
-                    |>
-                        MU.setSelectQuery sq
-                    |> MedType.populateSelectedTableForm
-                    |> asMedicationTypeModelIn model
+                ( MU.mergeById labSuiteTbl labSuiteModel.records
+                    |> (\recs -> { labSuiteModel | records = recs })
+                    |> MU.setSelectQuery sq
+                    |> LabSuite.populateSelectedTableForm
+                    |> asLabSuiteModelIn model
                     |> Model.addNotificationSubscription subscription
                 , Cmd.none
                 )
 
-        SelectedRecordEditModeMedicationType mode id ->
-            (medicationTypeModel
+        SelectedRecordEditModeLabSuite mode id ->
+            (labSuiteModel
                 |> MU.setSelectedRecordId id
                 |> MU.setEditMode mode
-                |> (\mtm ->
+                |> (\tableModel ->
                         case (mode, id) of
-                            ( EditModeAdd, _ ) ->
-                                MedType.populateSelectedTableForm mtm
+                            (EditModeAdd, _) ->
+                                LabSuite.populateSelectedTableForm tableModel
 
-                            ( EditModeEdit, Just _ ) ->
-                                MedType.populateSelectedTableForm mtm
+                            (EditModeView, _) ->
+                                LabSuite.populateSelectedTableForm tableModel
+                            (EditModeEdit, _) ->
+                                LabSuite.populateSelectedTableForm tableModel
 
-                            ( EditModeView, Just _ ) ->
-                                MedType.populateSelectedTableForm mtm
-
-                            ( _, _ ) ->
-                                mtm
+                            (_, _) ->
+                                tableModel
                    )
-                |> asMedicationTypeModelIn model
+                |> asLabSuiteModelIn model
             )
                 ! []
 
-        SelectedRecordMedicationType id ->
-            { model | medicationTypeModel = MU.setSelectedRecordId id medicationTypeModel } ! []
-
-        UpdateMedicationType ->
-            -- User saved on medicationType form. This is an optimistic workflow.
+        UpdateLabSuite ->
+            -- User saved on labSuite form. This is an optimistic workflow.
             let
                 -- 1. Encode original entity record to a string and save the
                 --    original rec to transactions in exchange for a transaction id.
                 -- 2. Convert the form values which user just created into a table record.
                 ( newModel, stateId, mtTable ) =
-                    (case MU.getSelectedRecordAsString medicationTypeModel E.medicationTypeToValue of
+                    (case MU.getSelectedRecordAsString labSuiteModel E.labSuiteToValue of
                         Just s ->
                             Trans.setState s Nothing model
 
@@ -288,13 +238,13 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                         |> (\( nm, sid ) ->
                                 ( nm
                                 , sid
-                                , medicationTypeFormToRecord nm.medicationTypeModel.form sid
+                                , labSuiteFormToRecord nm.labSuiteModel.form sid
                                 )
                            )
 
                 -- 3. Optimistic update of the record in the list of records.
                 updatedRecords =
-                    case medicationTypeModel.selectedRecordId of
+                    case labSuiteModel.selectedRecordId of
                         Just id ->
                             MU.updateById id
                                 (\r ->
@@ -302,44 +252,44 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                                         | stateId = stateId
                                         , name = mtTable.name
                                         , description = mtTable.description
-                                        , sortOrder = mtTable.sortOrder
+                                        , category = mtTable.category
                                     }
                                 )
-                                newModel.medicationTypeModel.records
+                                newModel.labSuiteModel.records
 
                         Nothing ->
-                            newModel.medicationTypeModel.records
+                            newModel.labSuiteModel.records
 
                 -- 4. Create the Cmd to send data to the server.
                 newCmd =
-                    Ports.medicationTypeUpdate <| E.medicationTypeToValue mtTable
+                    Ports.labSuiteUpdate <| E.labSuiteToValue mtTable
             in
-                ( newModel.medicationTypeModel
+                ( newModel.labSuiteModel
                     |> MU.setRecords updatedRecords
                     |> MU.setEditMode EditModeView
-                    |> asMedicationTypeModelIn newModel
+                    |> asLabSuiteModelIn newModel
                     |> (\m -> { m | selectedTableEditMode = EditModeView })
                 , newCmd
                 )
 
-        UpdateResponseMedicationType change ->
+        UpdateResponseLabSuite change ->
             let
                 -- Remove the state id no matter what.
-                noStateIdMedicationTypeRecords =
+                noStateIdLabSuiteRecords =
                     MU.updateById change.id
                         (\r -> { r | stateId = Nothing })
-                        medicationTypeModel.records
+                        labSuiteModel.records
 
                 updatedRecords =
                     case change.success of
                         True ->
-                            noStateIdMedicationTypeRecords
+                            noStateIdLabSuiteRecords
 
                         False ->
                             -- Server rejected change. Reset record back to original.
                             case
                                 Trans.getState change.stateId model
-                                    |> Decoders.decodeMedicationTypeRecord
+                                    |> Decoders.decodeLabSuiteRecord
                             of
                                 Just r ->
                                     MU.updateById change.id
@@ -347,24 +297,24 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                                             { rec
                                                 | name = r.name
                                                 , description = r.description
-                                                , sortOrder = r.sortOrder
+                                                , category = r.category
                                             }
                                         )
-                                        medicationTypeModel.records
+                                        labSuiteModel.records
 
                                 Nothing ->
                                     -- TODO: if we get here, something is really messed
                                     -- up because we can't find our original record in
                                     -- the transaction manager.
-                                    noStateIdMedicationTypeRecords
+                                    noStateIdLabSuiteRecords
 
                 -- Save the records to the model, update the form,
                 -- and remove stored state from transaction manager.
                 ( newModel, _ ) =
-                    medicationTypeModel
+                    labSuiteModel
                         |> MU.setRecords updatedRecords
-                        |> MedType.populateSelectedTableForm
-                        |> asMedicationTypeModelIn model
+                        |> LabSuite.populateSelectedTableForm
+                        |> asLabSuiteModelIn model
                         |> Trans.delState change.stateId
 
                 -- Give a message to the user upon failure.
@@ -388,22 +338,21 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                 newModel2 ! [ newCmd2, newCmd3 ]
 
 
-medicationTypeFormToRecord : Form () MedicationTypeForm -> Maybe Int -> MedicationTypeRecord
-medicationTypeFormToRecord mt transId =
+labSuiteFormToRecord : Form () LabSuiteForm -> Maybe Int -> LabSuiteRecord
+labSuiteFormToRecord form transId =
     let
-        ( f_id, f_name, f_description, f_sortOrder ) =
-            ( Form.getFieldAsString "id" mt
+        ( f_id, f_name, f_description ) =
+            ( Form.getFieldAsString "id" form
                 |> .value
                 |> U.maybeStringToInt -1
-            , Form.getFieldAsString "name" mt
+            , Form.getFieldAsString "name" form
                 |> .value
                 |> Maybe.withDefault ""
-            , Form.getFieldAsString "description" mt
+            , Form.getFieldAsString "description" form
                 |> .value
                 |> Maybe.withDefault ""
-            , Form.getFieldAsString "sortOrder" mt
-                |> .value
-                |> U.maybeStringToInt -1
             )
     in
-        MedicationTypeRecord f_id f_name f_description f_sortOrder transId
+        -- We pass the f_name field twice because the category field
+        -- is the same as the name field.
+        LabSuiteRecord f_id f_name f_description f_name transId

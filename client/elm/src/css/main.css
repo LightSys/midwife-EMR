@@ -58,3 +58,8 @@ label.mdl-textfield__label {
 .altRowBackground {
   background-color: #f0f0f0;
 }
+
+/* Padding for a span in a MDL list item. */
+span.bodyItem {
+  margin-right: 10px;
+}

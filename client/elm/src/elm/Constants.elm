@@ -19,11 +19,10 @@ causing issues with the server application.
 -}
 listLookupTables : List TableMetaInfo
 listLookupTables =
-    [ TableMetaInfo LabSuite "labSuite" "Lists the various laboratory suites of tests."
-    , TableMetaInfo LabTest "labTest" "Defines individual laboratory tests."
-    , TableMetaInfo MedicationType "medicationType" "Defines medications."
-    , TableMetaInfo VaccinationType "vaccinationType" "Defines vaccinations."
-    , TableMetaInfo SelectData "selectData" "Various system wide multiple choice definitions."
+    [ TableMetaInfo LabSuite "Labs" "Lists the various laboratory suites of tests and their definitions."
+    , TableMetaInfo MedicationType "Medication Types" "Defines medications."
+    , TableMetaInfo VaccinationType "Vaccination Types" "Defines vaccinations."
+    , TableMetaInfo SelectData "Miscellaneous" "Various system wide multiple choice definitions."
     ]
 
 

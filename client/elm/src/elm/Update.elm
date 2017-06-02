@@ -3,6 +3,7 @@ module Update
         ( update
         )
 
+import Dict
 import Form exposing (Form)
 import Form.Field as Fld
 import Form.Validate as V
@@ -29,6 +30,7 @@ import Ports
 import Transactions as Trans
 import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
+import Updates.LabSuite as Updates exposing (labSuiteUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
 import Updates.VaccinationType as Updates exposing (vaccinationTypeUpdate)
 import Updates.Profile as Updates exposing (userProfileUpdate)
@@ -72,6 +74,9 @@ update msg model =
             case add of
                 Just a ->
                     case a.table of
+                        LabSuite ->
+                            Updates.labSuiteUpdate (CreateResponseLabSuite a) model
+
                         MedicationType ->
                             Updates.medicationTypeUpdate (CreateResponseMedicationType a) model
 
@@ -118,6 +123,9 @@ update msg model =
             case del of
                 Just d ->
                     case d.table of
+                        LabSuite ->
+                            Updates.labSuiteUpdate (DeleteResponseLabSuite d) model
+
                         MedicationType ->
                             Updates.medicationTypeUpdate (DeleteResponseMedicationType d) model
 
@@ -147,8 +155,11 @@ update msg model =
             in
                 newModel ! []
 
-        LabSuiteResponse labSuiteTbl ->
-            { model | labSuite = labSuiteTbl } ! []
+        LabSuiteMessages labSuiteMsg ->
+            Updates.labSuiteUpdate labSuiteMsg model
+
+        --LabSuiteResponse labSuiteTbl ->
+            --{ model | labSuite = labSuiteTbl } ! []
 
         LabTestResponse labTestTbl ->
             { model | labTest = labTestTbl } ! []
@@ -272,12 +283,15 @@ update msg model =
             in
                 newModel2 ! []
 
-        SelectQueryMsg query ->
+        SelectQueryMsg queries ->
             let
                 _ =
-                    Debug.log "SelectQueryMsg" <| toString query
+                    Debug.log "SelectQueryMsg" <| toString queries
+
+                newCmds =
+                    List.map (\q -> Ports.selectQuery (E.selectQueryToValue q)) queries
             in
-                model ! [ Ports.selectQuery (E.selectQueryToValue query) ]
+                model ! newCmds
 
         SelectQueryResponseMsg sqr ->
             let
@@ -293,10 +307,19 @@ update msg model =
                                     ( _, NoErrorCode ) ->
                                         case selQryResp.data of
                                             LabSuiteResp list ->
-                                                update (LabSuiteResponse (RD.succeed list)) model
+                                                --update (LabSuiteResponse (RD.succeed list)) model
+                                                Updates.labSuiteUpdate
+                                                    (ReadResponseLabSuite
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
 
                                             LabTestResp list ->
                                                 update (LabTestResponse (RD.succeed list)) model
+
+                                            LabTestValueResp list ->
+                                                update (LabTestValueResponse (RD.succeed list)) model
 
                                             MedicationTypeResp list ->
                                                 -- Put the records into RemoteData format as expected and
@@ -369,14 +392,15 @@ update msg model =
             in
                 ( newModel, newCmd )
 
-        SelectQuerySelectTable query ->
-            -- Perform a SelectQuery and set the selectTable field.
+        SelectQuerySelectTable table queries ->
+            -- Perform a SelectQuery and set the selectTable field for the sake of
+            -- knowing which lookup table the user is working with at the moment.
             { model
-                | selectedTable = Just query.table
+                | selectedTable = Just table
                 , selectedTableRecord = 0
                 , selectedTableEditMode = EditModeTable
             }
-                ! [ Ports.selectQuery (E.selectQueryToValue query) ]
+                ! [ Task.perform SelectQueryMsg (Task.succeed queries) ]
 
         SelectPage page ->
             -- Set the selected Page as well as get the url in sync.
@@ -426,6 +450,9 @@ update msg model =
             case change of
                 Just c ->
                     case c.table of
+                        LabSuite ->
+                            Updates.labSuiteUpdate (UpdateResponseLabSuite c) model
+
                         MedicationType ->
                             Updates.medicationTypeUpdate (UpdateResponseMedicationType c) model
 
@@ -447,6 +474,12 @@ update msg model =
 
         UrlChange location ->
             { model | selectedPage = U.locationToPage location adminPages } ! []
+
+        UserChoiceSet key val ->
+            { model | userChoice = Dict.insert key val model.userChoice } ! []
+
+        UserChoiceUnset key ->
+            { model | userChoice = Dict.remove key model.userChoice } ! []
 
         UserMessages userMsg ->
             Updates.userUpdate userMsg model
@@ -582,7 +615,7 @@ deriveDataNotificationCmd notification sub =
 
                     _ ->
                         -- ADD and CHG
-                        Task.perform SelectQueryMsg (Task.succeed qry)
+                        Task.perform SelectQueryMsg (Task.succeed [qry])
 
             NotifySubQualifierId id ->
                 -- Only interested in this particular key field.
@@ -597,7 +630,7 @@ deriveDataNotificationCmd notification sub =
 
                         _ ->
                             -- ADD and CHG
-                            Task.perform SelectQueryMsg (Task.succeed qry)
+                            Task.perform SelectQueryMsg (Task.succeed [qry])
                 else
                     Cmd.none
 
@@ -616,7 +649,7 @@ deriveDataNotificationCmd notification sub =
 
                             _ ->
                                 -- ADD and CHG
-                                Task.perform SelectQueryMsg (Task.succeed qry)
+                                Task.perform SelectQueryMsg (Task.succeed [qry])
 
                     Nothing ->
                         Cmd.none

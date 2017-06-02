@@ -281,6 +281,18 @@ var setApp = function(theApp) {
     sendMsg(ADHOC, wrapAdHoc(ADHOC_LOGIN, data));
   });
 
+  app.ports.labSuiteCreate.subscribe(function(data) {
+    sendMsg(ADD, wrapData('labSuite', data));
+  });
+
+  app.ports.labSuiteDelete.subscribe(function(data) {
+    sendMsg(DEL, wrapData('labSuite', data));
+  });
+
+  app.ports.labSuiteUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('labSuite', data));
+  });
+
   app.ports.medicationTypeCreate.subscribe(function(data) {
     sendMsg(ADD, wrapData('medicationType', data));
   });

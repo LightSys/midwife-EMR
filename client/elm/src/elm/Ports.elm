@@ -4,6 +4,9 @@ port module Ports
         , adhocResponse
         , createResponse
         , deleteResponse
+        , labSuiteCreate
+        , labSuiteDelete
+        , labSuiteUpdate
         , login
         , medicationTypeCreate
         , medicationTypeDelete
@@ -65,6 +68,14 @@ port userProfile : (JD.Value -> msg) -> Sub msg
 
 
 -- OUTGOING PORTS
+
+port labSuiteCreate : JE.Value -> Cmd msg
+
+
+port labSuiteDelete : JE.Value -> Cmd msg
+
+
+port labSuiteUpdate : JE.Value -> Cmd msg
 
 
 port login : JE.Value -> Cmd msg
