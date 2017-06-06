@@ -64,7 +64,11 @@ roleToString roleId roleModel =
                     ""
 
         _ ->
-            ""
+            let
+                _ =
+                    Debug.log "roleToString" "Warning: Role records are not yet loaded."
+            in
+                ""
 
 idNameTuples : RoleModel -> List ( Int, String )
 idNameTuples roleModel =
