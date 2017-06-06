@@ -3,6 +3,7 @@ module Msg
         ( Msg(..)
         , AdhocResponseMessage(..)
         , LabSuiteMsg(..)
+        , LabTestMsg(..)
         , MedicationTypeMsg(..)
         , RoleMsg(..)
         , SelectDataMsg(..)
@@ -36,8 +37,9 @@ type Msg
     | EventTypeResponse (RemoteData String (List EventTypeRecord))
     | FirstRecord
     | LabSuiteMessages LabSuiteMsg
+    | LabTestMessages LabTestMsg
     --| LabSuiteResponse (RemoteData String (List LabSuiteRecord))
-    | LabTestResponse (RemoteData String (List LabTestRecord))
+    --| LabTestResponse (RemoteData String (List LabTestRecord))
     | LabTestValueResponse (RemoteData String (List LabTestValueRecord))
     | LastRecord
     | Login
@@ -114,6 +116,18 @@ type LabSuiteMsg
     | SelectedRecordEditModeLabSuite EditMode (Maybe Int)
     | UpdateLabSuite
     | UpdateResponseLabSuite UpdateResponse
+
+type LabTestMsg
+    = CancelEditLabTest
+    | CreateLabTest
+    | CreateResponseLabTest CreateResponse
+    | DeleteLabTest (Maybe Int)
+    | DeleteResponseLabTest DeleteResponse
+    | FormMsgLabTest Form.Msg
+    | ReadResponseLabTest (RemoteData String (List LabTestRecord)) (Maybe SelectQuery)
+    | SelectedRecordEditModeLabTest EditMode (Maybe Int)
+    | UpdateLabTest
+    | UpdateResponseLabTest UpdateResponse
 
 type VaccinationTypeMsg
     = CancelEditVaccinationType

@@ -8,7 +8,10 @@ module Utils
         , getPageDef
         , humanReadableError
         , locationToPage
+        , maybeStringToFloat
         , maybeStringToInt
+        , maybeStringToMaybeFloat
+        , maybeStringToMaybeInt
         , setDefaultSelectedPage
         , setPageDefs
         , stringToErrorCode
@@ -416,6 +419,43 @@ maybeStringToInt default str =
     Maybe.withDefault "" str
         |> String.toInt
         |> Result.withDefault default
+
+
+maybeStringToFloat : Float -> Maybe String -> Float
+maybeStringToFloat default str =
+    Maybe.withDefault "" str
+        |> String.toFloat
+        |> Result.withDefault default
+
+
+maybeStringToMaybeInt : Maybe String -> Maybe Int
+maybeStringToMaybeInt str =
+    case str of
+        Just v1 ->
+            case String.toInt v1 of
+                Ok v2 ->
+                    Just v2
+
+                Err _ ->
+                    Nothing
+
+        Nothing ->
+            Nothing
+
+
+maybeStringToMaybeFloat : Maybe String -> Maybe Float
+maybeStringToMaybeFloat str =
+    case str of
+        Just v1 ->
+            case String.toFloat v1 of
+                Ok v2 ->
+                    Just v2
+
+                Err _ ->
+                    Nothing
+
+        Nothing ->
+            Nothing
 
 
 addMessage : String -> Model -> ( Model, Cmd Msg )

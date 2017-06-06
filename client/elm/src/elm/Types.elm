@@ -12,6 +12,7 @@ module Types
         , EventTypeRecord
         , LabSuiteForm
         , LabSuiteRecord
+        , LabTestForm
         , LabTestRecord
         , LabTestValueRecord
         , LoginForm
@@ -322,6 +323,7 @@ type alias EventTypeRecord =
     , description : String
     }
 
+
 {-| The category field is intentionally missing from
 the form because the user should not see it. The user
 edits the name field and we add the category field
@@ -334,12 +336,32 @@ type alias LabSuiteForm =
     , description : String
     }
 
+
 type alias LabSuiteRecord =
     { id : Int
     , name : String
     , description : String
     , category : String
     , stateId : Maybe Int
+    }
+
+
+{-| The labSuite_id field is meant to be read-only
+from the perspective of the user.
+-}
+type alias LabTestForm =
+    { id : Int
+    , name : String
+    , abbrev : String
+    , normal : String
+    , unit : String
+    , minRangeDecimal : String
+    , maxRangeDecimal : String
+    , minRangeInteger : String
+    , maxRangeInteger : String
+    , isRange : Bool
+    , isText : Bool
+    , labSuite_id : Int
     }
 
 
@@ -356,6 +378,7 @@ type alias LabTestRecord =
     , isRange : Bool
     , isText : Bool
     , labSuite_id : Int
+    , stateId : Maybe Int
     }
 
 

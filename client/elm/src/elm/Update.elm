@@ -31,6 +31,7 @@ import Transactions as Trans
 import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
 import Updates.LabSuite as Updates exposing (labSuiteUpdate)
+import Updates.LabTest as Updates exposing (labTestUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
 import Updates.VaccinationType as Updates exposing (vaccinationTypeUpdate)
 import Updates.Profile as Updates exposing (userProfileUpdate)
@@ -76,6 +77,9 @@ update msg model =
                     case a.table of
                         LabSuite ->
                             Updates.labSuiteUpdate (CreateResponseLabSuite a) model
+
+                        LabTest ->
+                            Updates.labTestUpdate (CreateResponseLabTest a) model
 
                         MedicationType ->
                             Updates.medicationTypeUpdate (CreateResponseMedicationType a) model
@@ -126,6 +130,9 @@ update msg model =
                         LabSuite ->
                             Updates.labSuiteUpdate (DeleteResponseLabSuite d) model
 
+                        LabTest ->
+                            Updates.labTestUpdate (DeleteResponseLabTest d) model
+
                         MedicationType ->
                             Updates.medicationTypeUpdate (DeleteResponseMedicationType d) model
 
@@ -158,11 +165,14 @@ update msg model =
         LabSuiteMessages labSuiteMsg ->
             Updates.labSuiteUpdate labSuiteMsg model
 
+        LabTestMessages labTestMsg ->
+            Updates.labTestUpdate labTestMsg model
+
         --LabSuiteResponse labSuiteTbl ->
             --{ model | labSuite = labSuiteTbl } ! []
 
-        LabTestResponse labTestTbl ->
-            { model | labTest = labTestTbl } ! []
+        --LabTestResponse labTestTbl ->
+            --{ model | labTest = labTestTbl } ! []
 
         LabTestValueResponse labTestValueTbl ->
             { model | labTestValue = labTestValueTbl } ! []
@@ -316,7 +326,13 @@ update msg model =
                                                     model
 
                                             LabTestResp list ->
-                                                update (LabTestResponse (RD.succeed list)) model
+                                                --update (LabTestResponse (RD.succeed list)) model
+                                                Updates.labTestUpdate
+                                                    (ReadResponseLabTest
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
 
                                             LabTestValueResp list ->
                                                 update (LabTestValueResponse (RD.succeed list)) model
@@ -452,6 +468,9 @@ update msg model =
                     case c.table of
                         LabSuite ->
                             Updates.labSuiteUpdate (UpdateResponseLabSuite c) model
+
+                        LabTest ->
+                            Updates.labTestUpdate (UpdateResponseLabTest c) model
 
                         MedicationType ->
                             Updates.medicationTypeUpdate (UpdateResponseMedicationType c) model

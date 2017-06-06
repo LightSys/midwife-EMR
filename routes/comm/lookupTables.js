@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , cfg = require('../../config')
   , LabSuite = require('../../models').LabSuite
+  , LabTest = require('../../models').LabTest
   , MedicationType = require('../../models').MedicationType
   , SelectData = require('../../models').SelectData
   , VaccinationType = require('../../models').VaccinationType
@@ -266,6 +267,18 @@ var updateLabSuite = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, LabSuite, 'labSuite');
 };
 
+var addLabTest = function(data, userInfo, cb) {
+  addTable(data, userInfo, cb, LabTest, 'labTest');
+};
+
+var delLabTest = function(data, userInfo, cb) {
+  delTable(data, userInfo, cb, LabTest, 'labTest');
+};
+
+var updateLabTest = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, LabTest, 'labTest');
+};
+
 var addMedicationType = function(data, userInfo, cb) {
   addTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
@@ -323,14 +336,17 @@ var updateVaccinationType = function(data, userInfo, cb) {
 module.exports = {
   getLookupTable,
   addLabSuite,
+  addLabTest,
   addMedicationType,
   addSelectData,
   addVaccinationType,
   delLabSuite,
+  delLabTest,
   delMedicationType,
   delSelectData,
   delVaccinationType,
   updateLabSuite,
+  updateLabTest,
   updateMedicationType,
   updateSelectData,
   updateVaccinationType

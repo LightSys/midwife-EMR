@@ -82,7 +82,7 @@ labTestTable =
                 ( isR, isT ) =
                     ( isRange == 1, isText == 1 )
             in
-                LabTestRecord id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isR isT labSuite_id
+                LabTestRecord id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isR isT labSuite_id Nothing
     in
         decode handleBools
             |> required "id" JD.int
@@ -258,6 +258,25 @@ decodeLabSuiteRecord payload =
                     let
                         _ =
                             Debug.log "decodeLabSuiterecord" <| toString msg
+                    in
+                        Nothing
+
+        Nothing ->
+            Nothing
+
+
+decodeLabTestRecord : Maybe String -> Maybe LabTestRecord
+decodeLabTestRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString labTestTable p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "decodeLabTestrecord" <| toString msg
                     in
                         Nothing
 

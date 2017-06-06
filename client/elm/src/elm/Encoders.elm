@@ -25,6 +25,24 @@ maybeIntToNegOne int =
             JE.int -1
 
 
+maybeFloatToNull : Maybe Float -> JE.Value
+maybeFloatToNull flt =
+    case flt of
+        Just f ->
+            JE.float f
+
+        Nothing ->
+            JE.null
+
+maybeIntToNull : Maybe Int -> JE.Value
+maybeIntToNull int =
+    case int of
+        Just i ->
+            JE.int i
+
+        Nothing ->
+            JE.null
+
 selectQueryToValue : SelectQuery -> JE.Value
 selectQueryToValue sq =
     JE.object
@@ -33,6 +51,7 @@ selectQueryToValue sq =
         , ( "patient_id", maybeIntToNegOne sq.patient_id )
         , ( "pregnancy_id", maybeIntToNegOne sq.pregnancy_id )
         ]
+
 
 labSuiteToValue : LabSuiteRecord -> JE.Value
 labSuiteToValue lsr =
@@ -48,6 +67,31 @@ labSuiteToValue lsr =
             Nothing ->
                 ( "stateId", JE.null )
         ]
+
+
+labTestToValue : LabTestRecord -> JE.Value
+labTestToValue rec =
+    JE.object
+        [ ( "id", JE.int rec.id )
+        , ( "name", JE.string rec.name )
+        , ( "abbrev", JE.string rec.abbrev )
+        , ( "normal", JE.string rec.normal )
+        , ( "unit", JE.string rec.unit )
+        , ( "minRangeDecimal", (maybeFloatToNull rec.minRangeDecimal) )
+        , ( "maxRangeDecimal", (maybeFloatToNull rec.maxRangeDecimal) )
+        , ( "minRangeInteger", (maybeIntToNull rec.minRangeInteger) )
+        , ( "maxRangeInteger", (maybeIntToNull rec.maxRangeInteger) )
+        , ( "isRange", JE.bool rec.isRange )
+        , ( "isText", JE.bool rec.isText )
+        , ( "labSuite_id", JE.int rec.labSuite_id )
+        , case rec.stateId of
+            Just num ->
+                ( "stateId", JE.int num )
+
+            Nothing ->
+                ( "stateId", JE.null )
+        ]
+
 
 medicationTypeToValue : MedicationTypeRecord -> JE.Value
 medicationTypeToValue mt =

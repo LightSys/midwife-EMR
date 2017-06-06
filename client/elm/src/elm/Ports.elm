@@ -7,6 +7,9 @@ port module Ports
         , labSuiteCreate
         , labSuiteDelete
         , labSuiteUpdate
+        , labTestCreate
+        , labTestDelete
+        , labTestUpdate
         , login
         , medicationTypeCreate
         , medicationTypeDelete
@@ -69,6 +72,7 @@ port userProfile : (JD.Value -> msg) -> Sub msg
 
 -- OUTGOING PORTS
 
+
 port labSuiteCreate : JE.Value -> Cmd msg
 
 
@@ -76,6 +80,15 @@ port labSuiteDelete : JE.Value -> Cmd msg
 
 
 port labSuiteUpdate : JE.Value -> Cmd msg
+
+
+port labTestCreate : JE.Value -> Cmd msg
+
+
+port labTestDelete : JE.Value -> Cmd msg
+
+
+port labTestUpdate : JE.Value -> Cmd msg
 
 
 port login : JE.Value -> Cmd msg
@@ -100,7 +113,6 @@ port selectDataDelete : JE.Value -> Cmd msg
 
 
 port selectDataUpdate : JE.Value -> Cmd msg
-
 
 
 port selectQuery : JE.Value -> Cmd msg

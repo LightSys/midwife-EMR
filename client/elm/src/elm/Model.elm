@@ -2,6 +2,7 @@ module Model
     exposing
         ( addNotificationSubscription
         , asLabSuiteModelIn
+        , asLabTestModelIn
         , asMedicationTypeModelIn
         , asRoleModelIn
         , asSelectDataModelIn
@@ -11,6 +12,7 @@ module Model
         , loginFormValidate
         , Model
         , setLabSuiteModel
+        , setLabTestModel
         , setMedicationTypeModel
         , setRoleModel
         , setSelectDataModel
@@ -36,6 +38,7 @@ import Time exposing (Time)
 -- LOCAL IMPORTS
 
 import Models.LabSuite as LabSuite
+import Models.LabTest as LabTest
 import Models.MedicationType as MedicationType
 import Models.SelectData as SelectData
 import Models.VaccinationType as VaccinationType
@@ -49,7 +52,9 @@ type alias Model =
     { dataNotificationSubscriptions : List NotificationSubscription
     , eventType : RemoteData String (List EventTypeRecord)
     , labSuiteModel : LabSuite.LabSuiteModel
-    , labTest : RemoteData String (List LabTestRecord)
+    , labTestModel :
+        LabTest.LabTestModel
+        --, labTest : RemoteData String (List LabTestRecord)
     , labTestValue : RemoteData String (List LabTestValueRecord)
     , loginForm : Form () LoginForm
     , mdl : Material.Model
@@ -199,7 +204,9 @@ initialModel =
     { dataNotificationSubscriptions = []
     , eventType = NotAsked
     , labSuiteModel = LabSuite.initialLabSuiteModel
-    , labTest = NotAsked
+    , labTestModel =
+        LabTest.initialLabTestModel
+        --, labTest = NotAsked
     , labTestValue = NotAsked
     , loginForm = Form.initial [] loginFormValidate
     , mdl = Material.model
@@ -259,6 +266,17 @@ setLabSuiteModel vtm model =
 asLabSuiteModelIn : Model -> LabSuite.LabSuiteModel -> Model
 asLabSuiteModelIn =
     flip setLabSuiteModel
+
+
+setLabTestModel : LabTest.LabTestModel -> Model -> Model
+setLabTestModel vtm model =
+    (\model -> { model | labTestModel = vtm }) model
+
+
+asLabTestModelIn : Model -> LabTest.LabTestModel -> Model
+asLabTestModelIn =
+    flip setLabTestModel
+
 
 setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model
 setMedicationTypeModel tm model =

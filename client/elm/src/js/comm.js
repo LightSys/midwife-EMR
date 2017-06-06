@@ -293,6 +293,18 @@ var setApp = function(theApp) {
     sendMsg(CHG, wrapData('labSuite', data));
   });
 
+  app.ports.labTestCreate.subscribe(function(data) {
+    sendMsg(ADD, wrapData('labTest', data));
+  });
+
+  app.ports.labTestDelete.subscribe(function(data) {
+    sendMsg(DEL, wrapData('labTest', data));
+  });
+
+  app.ports.labTestUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('labTest', data));
+  });
+
   app.ports.medicationTypeCreate.subscribe(function(data) {
     sendMsg(ADD, wrapData('medicationType', data));
   });
