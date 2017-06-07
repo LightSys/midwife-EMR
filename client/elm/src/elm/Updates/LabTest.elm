@@ -382,6 +382,12 @@ labTestUpdate msg ({ labTestModel } as model) =
                 newModel2 ! [ newCmd2, newCmd3 ]
 
 
+{-| The isRange field is computed programmatically depending
+upon whether any of the four range fields were populated.
+
+TODO: do the same with isText based somehow upon whether there
+are corresponding labTestValue records.
+-}
 labTestFormToRecord : Form () LabTestForm -> Maybe Int -> LabTestRecord
 labTestFormToRecord form transId =
     let
@@ -406,7 +412,7 @@ labTestFormToRecord form transId =
                 |> U.maybeStringToMaybeFloat
             )
 
-        ( f_maxRDec, f_minRInt, f_maxRInt, f_isRange, f_isText, f_labSuite_id ) =
+        ( f_maxRDec, f_minRInt, f_maxRInt, f_isText, f_labSuite_id ) =
             ( Form.getFieldAsString "maxRangeDecimal" form
                 |> .value
                 |> U.maybeStringToMaybeFloat
@@ -416,9 +422,6 @@ labTestFormToRecord form transId =
             , Form.getFieldAsString "maxRangeInteger" form
                 |> .value
                 |> U.maybeStringToMaybeInt
-            , Form.getFieldAsBool "isRange" form
-                |> .value
-                |> Maybe.withDefault False
             , Form.getFieldAsBool "istext" form
                 |> .value
                 |> Maybe.withDefault False
@@ -426,6 +429,14 @@ labTestFormToRecord form transId =
                 |> .value
                 |> U.maybeStringToInt -1
             )
+
+        f_isRange =
+            case ( f_minRDec, f_maxRDec, f_minRInt, f_maxRInt ) of
+                ( Nothing, Nothing, Nothing, Nothing ) ->
+                    False
+
+                ( _, _, _, _ ) ->
+                    True
     in
         LabTestRecord f_id
             f_name

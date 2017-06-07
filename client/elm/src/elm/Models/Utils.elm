@@ -6,6 +6,9 @@ module Models.Utils
         , delSelectedRecord
         , getRecNextMax
         , getSelectedRecordAsString
+        , maybeFloatToString
+        , maybeIntToString
+        , maybeString
         , mergeById
         , selectQueryResponseToSelectQuery
         , setEditMode
@@ -30,6 +33,40 @@ import Set
 -- LOCAL IMPORTS
 
 import Types exposing (..)
+
+
+{-| Convert a Maybe Float to a String using a default.
+Note: this is not in Utils due to circular references.
+-}
+maybeFloatToString : String -> Maybe Float -> String
+maybeFloatToString default num =
+    case num of
+        Just f ->
+            toString f
+
+        Nothing ->
+            default
+
+
+{-| Convert a Maybe Int to a String using a default.
+Note: this is not in Utils due to circular references.
+-}
+maybeIntToString : String -> Maybe Int -> String
+maybeIntToString default num =
+    case num of
+        Just i ->
+            toString i
+
+        Nothing ->
+            default
+
+
+maybeString : V.Validation e (Maybe String)
+maybeString =
+    V.oneOf
+        [ V.emptyString |> V.map (\_ -> Nothing)
+        , V.string |> V.map Just
+        ]
 
 
 validateOptionalEmail : V.Validation () String
@@ -160,7 +197,7 @@ mergeById source target =
                                 LE.find (\rec -> rec.id == id) srecs
                             )
             in
-                ( updates ++ inserts )
+                (updates ++ inserts)
                     |> RD.succeed
 
         ( Success srecs, _ ) ->
