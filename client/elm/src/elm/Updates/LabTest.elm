@@ -22,8 +22,34 @@ import Types exposing (..)
 import Utils as U
 
 
+{-| Handle certain error responses from the server here.
+Let the update detail function do all of the heavy lifting.
+-}
 labTestUpdate : LabTestMsg -> Model -> ( Model, Cmd Msg )
-labTestUpdate msg ({ labTestModel } as model) =
+labTestUpdate msg model =
+    let
+        ( newModel, newCmd ) =
+            labTestUpdateDetail msg model
+
+        newCmd2 =
+            case msg of
+                CreateResponseLabTest response ->
+                    U.handleSessionExpired response.errorCode
+
+                DeleteResponseLabTest response ->
+                    U.handleSessionExpired response.errorCode
+
+                UpdateResponseLabTest response ->
+                    U.handleSessionExpired response.errorCode
+
+                _ ->
+                    Cmd.none
+    in
+        ( newModel, Cmd.batch [ newCmd, newCmd2 ] )
+
+
+labTestUpdateDetail : LabTestMsg -> Model -> ( Model, Cmd Msg )
+labTestUpdateDetail msg ({ labTestModel } as model) =
     case msg of
         CancelEditLabTest ->
             -- User canceled, so reset data back to what we had before.
@@ -50,7 +76,7 @@ labTestUpdate msg ({ labTestModel } as model) =
             in
                 newModel ! [ newCmd ]
 
-        CreateResponseLabTest { id, pendingId, success, msg } ->
+        CreateResponseLabTest ({ id, pendingId, success, msg } as response) ->
             let
                 -- Update the model with the server assigned id for the record.
                 ( updatedRecords, ( newModel, newCmd ) ) =
@@ -174,19 +200,15 @@ labTestUpdate msg ({ labTestModel } as model) =
 
                 _ ->
                     -- Otherwise, pass it through validation again.
-                    let
-                        _ =
-                            Debug.log "FormMsgLabTest" <| toString <| Form.getErrors labTestModel.form
-                    in
-                        (labTestModel
-                            |> MU.setForm
-                                (Form.update LabTest.labTestValidate
-                                    formMsg
-                                    labTestModel.form
-                                )
-                            |> asLabTestModelIn model
-                        )
-                            ! []
+                    (labTestModel
+                        |> MU.setForm
+                            (Form.update LabTest.labTestValidate
+                                formMsg
+                                labTestModel.form
+                            )
+                        |> asLabTestModelIn model
+                    )
+                        ! []
 
         ReadResponseLabTest labTestTbl sq ->
             -- Merge records from the server into our model, update
@@ -309,27 +331,27 @@ labTestUpdate msg ({ labTestModel } as model) =
                 , newCmd
                 )
 
-        UpdateResponseLabTest change ->
+        UpdateResponseLabTest response ->
             let
                 -- Remove the state id no matter what.
                 noStateIdLabTestRecords =
-                    MU.updateById change.id
+                    MU.updateById response.id
                         (\r -> { r | stateId = Nothing })
                         labTestModel.records
 
                 updatedRecords =
-                    case change.success of
+                    case response.success of
                         True ->
                             noStateIdLabTestRecords
 
                         False ->
                             -- Server rejected change. Reset record back to original.
                             case
-                                Trans.getState change.stateId model
+                                Trans.getState response.stateId model
                                     |> Decoders.decodeLabTestRecord
                             of
                                 Just r ->
-                                    MU.updateById change.id
+                                    MU.updateById response.id
                                         (\rec ->
                                             { rec
                                                 | name = r.name
@@ -359,27 +381,21 @@ labTestUpdate msg ({ labTestModel } as model) =
                         |> MU.setRecords updatedRecords
                         |> LabTest.populateSelectedTableForm
                         |> asLabTestModelIn model
-                        |> Trans.delState change.stateId
+                        |> Trans.delState response.stateId
 
                 -- Give a message to the user upon failure.
                 ( newModel2, newCmd2 ) =
-                    if not change.success then
-                        (if String.length change.msg == 0 then
+                    if not response.success then
+                        (if String.length response.msg == 0 then
                             "Sorry, the server rejected that change."
                          else
-                            change.msg
+                            response.msg
                         )
                             |> flip U.addWarning newModel
                     else
                         ( newModel, Cmd.none )
-
-                newCmd3 =
-                    if change.errorCode == SessionExpiredErrorCode then
-                        Task.perform (always SessionExpired) (Task.succeed True)
-                    else
-                        Cmd.none
             in
-                newModel2 ! [ newCmd2, newCmd3 ]
+                newModel2 ! [ newCmd2, newCmd2 ]
 
 
 {-| The isRange field is computed programmatically depending

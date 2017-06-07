@@ -81,25 +81,11 @@ populateSelectedTableForm lsModel =
         Success data ->
             case lsModel.editMode of
                 EditModeAdd ->
-                    lsModel
-                        |> MU.setForm
-                            (labTestInitialForm
-                                (LabTestRecord lsModel.nextPendingId
-                                    ""
-                                    ""
-                                    ""
-                                    ""
-                                    Nothing
-                                    Nothing
-                                    Nothing
-                                    Nothing
-                                    False
-                                    False
-                                    -1
-                                    Nothing
-                                )
-                            )
-                        |> MU.setNextPendingId (lsModel.nextPendingId - 1)
+                    let
+                        _ =
+                            Debug.log "populateSelectedTableForm for labTest" "Warning: should call populateSelectedTableFormWithSuiteId for EditModeAdd."
+                    in
+                        lsModel
 
                 _ ->
                     case LE.find (\r -> r.id == (Maybe.withDefault 0 lsModel.selectedRecordId)) data of
@@ -141,13 +127,11 @@ populateSelectedTableFormWithSuiteId suiteId lsModel =
                         |> MU.setNextPendingId (lsModel.nextPendingId - 1)
 
                 _ ->
-                    case LE.find (\r -> r.id == (Maybe.withDefault 0 lsModel.selectedRecordId)) data of
-                        Just rec ->
-                            lsModel
-                                |> MU.setForm (labTestInitialForm rec)
-
-                        Nothing ->
-                            lsModel
+                    let
+                        _ =
+                            Debug.log "populateSelectedTableFormWithSuiteId" "Warning: should only call this function for EditModeAdd."
+                    in
+                        lsModel
 
         _ ->
             lsModel

@@ -21,8 +21,34 @@ import Types exposing (..)
 import Utils as U
 
 
+{-| Handle certain error responses from the server here.
+Let the update detail function do all of the heavy lifting.
+-}
 medicationTypeUpdate : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
-medicationTypeUpdate msg ({ medicationTypeModel } as model) =
+medicationTypeUpdate msg model =
+    let
+        ( newModel, newCmd ) =
+            medicationTypeUpdateDetail msg model
+
+        newCmd2 =
+            case msg of
+                CreateResponseMedicationType response ->
+                    U.handleSessionExpired response.errorCode
+
+                DeleteResponseMedicationType response ->
+                    U.handleSessionExpired response.errorCode
+
+                UpdateResponseMedicationType response ->
+                    U.handleSessionExpired response.errorCode
+
+                _ ->
+                    Cmd.none
+    in
+        ( newModel, Cmd.batch [ newCmd, newCmd2 ] )
+
+
+medicationTypeUpdateDetail : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
+medicationTypeUpdateDetail msg ({ medicationTypeModel } as model) =
     case msg of
         CancelEditMedicationType ->
             -- User canceled, so reset data back to what we had before.
@@ -238,8 +264,7 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
             in
                 ( MU.mergeById medicationTypeTbl medicationTypeModel.records
                     |> (\recs -> { medicationTypeModel | records = recs })
-                    |>
-                        MU.setSelectQuery sq
+                    |> MU.setSelectQuery sq
                     |> MedType.populateSelectedTableForm
                     |> asMedicationTypeModelIn model
                     |> Model.addNotificationSubscription subscription
@@ -251,7 +276,7 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                 |> MU.setSelectedRecordId id
                 |> MU.setEditMode mode
                 |> (\mtm ->
-                        case (mode, id) of
+                        case ( mode, id ) of
                             ( EditModeAdd, _ ) ->
                                 MedType.populateSelectedTableForm mtm
 
@@ -378,14 +403,8 @@ medicationTypeUpdate msg ({ medicationTypeModel } as model) =
                             |> flip U.addWarning newModel
                     else
                         ( newModel, Cmd.none )
-
-                newCmd3 =
-                    if change.errorCode == SessionExpiredErrorCode then
-                        Task.perform (always SessionExpired) (Task.succeed True)
-                    else
-                        Cmd.none
             in
-                newModel2 ! [ newCmd2, newCmd3 ]
+                newModel2 ! [ newCmd2, newCmd2 ]
 
 
 medicationTypeFormToRecord : Form () MedicationTypeForm -> Maybe Int -> MedicationTypeRecord

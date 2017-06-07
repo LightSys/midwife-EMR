@@ -259,8 +259,8 @@ addNotificationSubscription subscription model =
 
 
 setLabSuiteModel : LabSuite.LabSuiteModel -> Model -> Model
-setLabSuiteModel vtm model =
-    (\model -> { model | labSuiteModel = vtm }) model
+setLabSuiteModel tableModel model =
+    (\model -> { model | labSuiteModel = tableModel }) model
 
 
 asLabSuiteModelIn : Model -> LabSuite.LabSuiteModel -> Model
@@ -269,8 +269,8 @@ asLabSuiteModelIn =
 
 
 setLabTestModel : LabTest.LabTestModel -> Model -> Model
-setLabTestModel vtm model =
-    (\model -> { model | labTestModel = vtm }) model
+setLabTestModel tableModel model =
+    (\model -> { model | labTestModel = tableModel }) model
 
 
 asLabTestModelIn : Model -> LabTest.LabTestModel -> Model
@@ -279,8 +279,8 @@ asLabTestModelIn =
 
 
 setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model
-setMedicationTypeModel tm model =
-    (\model -> { model | medicationTypeModel = tm }) model
+setMedicationTypeModel tableModel model =
+    (\model -> { model | medicationTypeModel = tableModel }) model
 
 
 asMedicationTypeModelIn : Model -> MedicationType.MedicationTypeModel -> Model
@@ -289,8 +289,8 @@ asMedicationTypeModelIn =
 
 
 setSelectDataModel : SelectData.SelectDataModel -> Model -> Model
-setSelectDataModel tm model =
-    (\model -> { model | selectDataModel = tm }) model
+setSelectDataModel tableModel model =
+    (\model -> { model | selectDataModel = tableModel }) model
 
 
 asSelectDataModelIn : Model -> SelectData.SelectDataModel -> Model
@@ -299,8 +299,8 @@ asSelectDataModelIn =
 
 
 setVaccinationTypeModel : VaccinationType.VaccinationTypeModel -> Model -> Model
-setVaccinationTypeModel vtm model =
-    (\model -> { model | vaccinationTypeModel = vtm }) model
+setVaccinationTypeModel tableModel model =
+    (\model -> { model | vaccinationTypeModel = tableModel }) model
 
 
 asVaccinationTypeModelIn : Model -> VaccinationType.VaccinationTypeModel -> Model
@@ -309,8 +309,8 @@ asVaccinationTypeModelIn =
 
 
 setRoleModel : Role.RoleModel -> Model -> Model
-setRoleModel rm model =
-    (\model -> { model | roleModel = rm }) model
+setRoleModel tableModel model =
+    (\model -> { model | roleModel = tableModel }) model
 
 
 asRoleModelIn : Model -> Role.RoleModel -> Model
@@ -319,8 +319,8 @@ asRoleModelIn =
 
 
 setUserModel : User.UserModel -> Model -> Model
-setUserModel um model =
-    (\model -> { model | userModel = um }) model
+setUserModel tableModel model =
+    (\model -> { model | userModel = tableModel }) model
 
 
 asUserModelIn : Model -> User.UserModel -> Model

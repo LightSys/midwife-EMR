@@ -21,8 +21,34 @@ import Types exposing (..)
 import Utils as U
 
 
+{-| Handle certain error responses from the server here.
+Let the update detail function do all of the heavy lifting.
+-}
 vaccinationTypeUpdate : VaccinationTypeMsg -> Model -> ( Model, Cmd Msg )
-vaccinationTypeUpdate msg ({ vaccinationTypeModel } as model) =
+vaccinationTypeUpdate msg model =
+    let
+        ( newModel, newCmd ) =
+            vaccinationTypeUpdateDetail msg model
+
+        newCmd2 =
+            case msg of
+                CreateResponseVaccinationType response ->
+                    U.handleSessionExpired response.errorCode
+
+                DeleteResponseVaccinationType response ->
+                    U.handleSessionExpired response.errorCode
+
+                UpdateResponseVaccinationType response ->
+                    U.handleSessionExpired response.errorCode
+
+                _ ->
+                    Cmd.none
+    in
+        ( newModel, Cmd.batch [ newCmd, newCmd2 ] )
+
+
+vaccinationTypeUpdateDetail : VaccinationTypeMsg -> Model -> ( Model, Cmd Msg )
+vaccinationTypeUpdateDetail msg ({ vaccinationTypeModel } as model) =
     case msg of
         CancelEditVaccinationType ->
             -- User canceled, so reset data back to what we had before.
@@ -377,14 +403,8 @@ vaccinationTypeUpdate msg ({ vaccinationTypeModel } as model) =
                             |> flip U.addWarning newModel
                     else
                         ( newModel, Cmd.none )
-
-                newCmd3 =
-                    if change.errorCode == SessionExpiredErrorCode then
-                        Task.perform (always SessionExpired) (Task.succeed True)
-                    else
-                        Cmd.none
             in
-                newModel2 ! [ newCmd2, newCmd3 ]
+                newModel2 ! [ newCmd2, newCmd2 ]
 
 
 vaccinationTypeFormToRecord : Form () VaccinationTypeForm -> Maybe Int -> VaccinationTypeRecord

@@ -6,6 +6,7 @@ module Utils
         , editableStringToSelectDataName
         , getIdxRemoteDataById
         , getPageDef
+        , handleSessionExpired
         , humanReadableError
         , locationToPage
         , maybeStringToFloat
@@ -27,6 +28,7 @@ import Material.Snackbar as Snackbar
 import Navigation exposing (Location)
 import RemoteData as RD exposing (RemoteData(..))
 import Regex as RX
+import Task
 import Tuple
 
 
@@ -35,6 +37,14 @@ import Tuple
 import Model exposing (..)
 import Msg exposing (..)
 import Types exposing (..)
+
+
+handleSessionExpired : ErrorCode -> Cmd Msg
+handleSessionExpired errCode =
+    if errCode == SessionExpiredErrorCode then
+        Task.perform (always SessionExpired) (Task.succeed True)
+    else
+        Cmd.none
 
 
 {-| Sets the pageDefs field in the model as appropriate

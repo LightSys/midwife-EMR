@@ -19,8 +19,34 @@ import Types exposing (..)
 import Utils as U
 
 
+{-| Handle certain error responses from the server here.
+Let the update detail function do all of the heavy lifting.
+-}
 userUpdate : UserMsg -> Model -> ( Model, Cmd Msg )
-userUpdate msg ({ userSearchForm, userModel } as model) =
+userUpdate msg model =
+    let
+        ( newModel, newCmd ) =
+            userUpdateDetail msg model
+
+        newCmd2 =
+            case msg of
+                CreateResponseUser response ->
+                    U.handleSessionExpired response.errorCode
+
+                DeleteResponseUser response ->
+                    U.handleSessionExpired response.errorCode
+
+                UpdateResponseUser response ->
+                    U.handleSessionExpired response.errorCode
+
+                _ ->
+                    Cmd.none
+    in
+        ( newModel, Cmd.batch [ newCmd, newCmd2 ] )
+
+
+userUpdateDetail : UserMsg -> Model -> ( Model, Cmd Msg )
+userUpdateDetail msg ({ userSearchForm, userModel } as model) =
     case msg of
         CancelEditUser ->
             -- User canceled, so reset data back to what we had before.
@@ -258,8 +284,7 @@ userUpdate msg ({ userSearchForm, userModel } as model) =
             in
                 ( MU.mergeById userTbl userModel.records
                     |> (\recs -> { userModel | records = recs })
-                    |>
-                        MU.setSelectQuery sq
+                    |> MU.setSelectQuery sq
                     |> asUserModelIn model
                     |> Model.addNotificationSubscription subscription
                 , newCmd
@@ -347,14 +372,8 @@ userUpdate msg ({ userSearchForm, userModel } as model) =
                             |> flip U.addWarning newModel
                     else
                         ( newModel, Cmd.none )
-
-                newCmd3 =
-                    if change.errorCode == SessionExpiredErrorCode then
-                        Task.perform (always SessionExpired) (Task.succeed True)
-                    else
-                        Cmd.none
             in
-                newModel2 ! [ newCmd2, newCmd3 ]
+                newModel2 ! [ newCmd2, newCmd2 ]
 
         UpdateUser ->
             -- User saved on user form. This is an optimistic workflow.

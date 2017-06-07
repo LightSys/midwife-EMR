@@ -20,9 +20,34 @@ import Transactions as Trans
 import Types exposing (..)
 import Utils as U
 
-
+{-| Handle certain error responses from the server here.
+Let the update detail function do all of the heavy lifting.
+-}
 labSuiteUpdate : LabSuiteMsg -> Model -> ( Model, Cmd Msg )
-labSuiteUpdate msg ({ labSuiteModel } as model) =
+labSuiteUpdate msg model =
+    let
+        ( newModel, newCmd ) =
+            labSuiteUpdateDetail msg model
+
+        newCmd2 =
+            case msg of
+                CreateResponseLabSuite response ->
+                    U.handleSessionExpired response.errorCode
+
+                DeleteResponseLabSuite response ->
+                    U.handleSessionExpired response.errorCode
+
+                UpdateResponseLabSuite response ->
+                    U.handleSessionExpired response.errorCode
+
+                _ ->
+                    Cmd.none
+    in
+        ( newModel, Cmd.batch [ newCmd, newCmd2 ] )
+
+
+labSuiteUpdateDetail : LabSuiteMsg -> Model -> ( Model, Cmd Msg )
+labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
     case msg of
         CancelEditLabSuite ->
             -- User canceled, so reset data back to what we had before.
@@ -328,14 +353,8 @@ labSuiteUpdate msg ({ labSuiteModel } as model) =
                             |> flip U.addWarning newModel
                     else
                         ( newModel, Cmd.none )
-
-                newCmd3 =
-                    if change.errorCode == SessionExpiredErrorCode then
-                        Task.perform (always SessionExpired) (Task.succeed True)
-                    else
-                        Cmd.none
             in
-                newModel2 ! [ newCmd2, newCmd3 ]
+                newModel2 ! [ newCmd2, newCmd2 ]
 
 
 labSuiteFormToRecord : Form () LabSuiteForm -> Maybe Int -> LabSuiteRecord

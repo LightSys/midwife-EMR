@@ -21,8 +21,34 @@ import Types exposing (..)
 import Utils as U
 
 
+{-| Handle certain error responses from the server here.
+Let the update detail function do all of the heavy lifting.
+-}
 selectDataUpdate : SelectDataMsg -> Model -> ( Model, Cmd Msg )
-selectDataUpdate msg ({ selectDataModel } as model) =
+selectDataUpdate msg model =
+    let
+        ( newModel, newCmd ) =
+            selectDataUpdateDetail msg model
+
+        newCmd2 =
+            case msg of
+                CreateResponseSelectData response ->
+                    U.handleSessionExpired response.errorCode
+
+                DeleteResponseSelectData response ->
+                    U.handleSessionExpired response.errorCode
+
+                UpdateResponseSelectData response ->
+                    U.handleSessionExpired response.errorCode
+
+                _ ->
+                    Cmd.none
+    in
+        ( newModel, Cmd.batch [ newCmd, newCmd2 ] )
+
+
+selectDataUpdateDetail : SelectDataMsg -> Model -> ( Model, Cmd Msg )
+selectDataUpdateDetail msg ({ selectDataModel } as model) =
     case msg of
         CancelEditSelectData ->
             -- User canceled, so reset data back to what we had before.
@@ -358,14 +384,8 @@ selectDataUpdate msg ({ selectDataModel } as model) =
                                 SelectQuery SelectData Nothing Nothing Nothing
                             )
                         )
-
-                newCmd3 =
-                    if change.errorCode == SessionExpiredErrorCode then
-                        Task.perform (always SessionExpired) (Task.succeed True)
-                    else
-                        Cmd.none
             in
-                newModel2 ! [ newCmd2, newCmd3 ]
+                newModel2 ! [ newCmd2, newCmd2 ]
 
 
 {-| Note: We have a simplified user edit form that only shows and allows the
