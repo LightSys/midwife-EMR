@@ -81,8 +81,14 @@ labTestToValue rec =
         , ( "maxRangeDecimal", (maybeFloatToNull rec.maxRangeDecimal) )
         , ( "minRangeInteger", (maybeIntToNull rec.minRangeInteger) )
         , ( "maxRangeInteger", (maybeIntToNull rec.maxRangeInteger) )
-        , ( "isRange", JE.bool rec.isRange )
-        , ( "isText", JE.bool rec.isText )
+        , if rec.isRange then
+            ( "isRange", JE.int 1 )
+          else
+            ( "isRange", JE.int 0 )
+        , if rec.isText then
+            ( "isText", JE.int 1 )
+          else
+            ( "isText", JE.int 0 )
         , ( "labSuite_id", JE.int rec.labSuite_id )
         , case rec.stateId of
             Just num ->
@@ -91,6 +97,21 @@ labTestToValue rec =
             Nothing ->
                 ( "stateId", JE.null )
         ]
+
+labTestValueToValue : LabTestValueRecord -> JE.Value
+labTestValueToValue rec =
+    JE.object
+        [ ( "id", JE.int rec.id )
+        , ( "value", JE.string rec.value )
+        , ( "labTest_id", JE.int rec.labTest_id )
+        , case rec.stateId of
+            Just num ->
+                ( "stateId", JE.int num )
+
+            Nothing ->
+                ( "stateId", JE.null )
+        ]
+
 
 
 medicationTypeToValue : MedicationTypeRecord -> JE.Value

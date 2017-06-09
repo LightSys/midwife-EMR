@@ -10,6 +10,9 @@ port module Ports
         , labTestCreate
         , labTestDelete
         , labTestUpdate
+        , labTestValueCreate
+        , labTestValueDelete
+        , labTestValueUpdate
         , login
         , medicationTypeCreate
         , medicationTypeDelete
@@ -89,6 +92,15 @@ port labTestDelete : JE.Value -> Cmd msg
 
 
 port labTestUpdate : JE.Value -> Cmd msg
+
+
+port labTestValueCreate : JE.Value -> Cmd msg
+
+
+port labTestValueDelete : JE.Value -> Cmd msg
+
+
+port labTestValueUpdate : JE.Value -> Cmd msg
 
 
 port login : JE.Value -> Cmd msg

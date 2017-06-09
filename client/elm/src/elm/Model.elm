@@ -3,6 +3,7 @@ module Model
         ( addNotificationSubscription
         , asLabSuiteModelIn
         , asLabTestModelIn
+        , asLabTestValueModelIn
         , asMedicationTypeModelIn
         , asRoleModelIn
         , asSelectDataModelIn
@@ -13,6 +14,7 @@ module Model
         , Model
         , setLabSuiteModel
         , setLabTestModel
+        , setLabTestValueModel
         , setMedicationTypeModel
         , setRoleModel
         , setSelectDataModel
@@ -39,6 +41,7 @@ import Time exposing (Time)
 
 import Models.LabSuite as LabSuite
 import Models.LabTest as LabTest
+import Models.LabTestValue as LabTestValue
 import Models.MedicationType as MedicationType
 import Models.SelectData as SelectData
 import Models.VaccinationType as VaccinationType
@@ -52,10 +55,8 @@ type alias Model =
     { dataNotificationSubscriptions : List NotificationSubscription
     , eventType : RemoteData String (List EventTypeRecord)
     , labSuiteModel : LabSuite.LabSuiteModel
-    , labTestModel :
-        LabTest.LabTestModel
-        --, labTest : RemoteData String (List LabTestRecord)
-    , labTestValue : RemoteData String (List LabTestValueRecord)
+    , labTestModel : LabTest.LabTestModel
+    , labTestValueModel : LabTestValue.LabTestValueModel
     , loginForm : Form () LoginForm
     , mdl : Material.Model
     , medicationTypeModel : MedicationType.MedicationTypeModel
@@ -204,10 +205,8 @@ initialModel =
     { dataNotificationSubscriptions = []
     , eventType = NotAsked
     , labSuiteModel = LabSuite.initialLabSuiteModel
-    , labTestModel =
-        LabTest.initialLabTestModel
-        --, labTest = NotAsked
-    , labTestValue = NotAsked
+    , labTestModel = LabTest.initialLabTestModel
+    , labTestValueModel = LabTestValue.initialLabTestValueModel
     , loginForm = Form.initial [] loginFormValidate
     , mdl = Material.model
     , medicationTypeModel = MedicationType.initialMedicationTypeModel
@@ -276,6 +275,16 @@ setLabTestModel tableModel model =
 asLabTestModelIn : Model -> LabTest.LabTestModel -> Model
 asLabTestModelIn =
     flip setLabTestModel
+
+
+setLabTestValueModel : LabTestValue.LabTestValueModel -> Model -> Model
+setLabTestValueModel tableModel model =
+    (\model -> { model | labTestValueModel = tableModel }) model
+
+
+asLabTestValueModelIn : Model -> LabTestValue.LabTestValueModel -> Model
+asLabTestValueModelIn =
+    flip setLabTestValueModel
 
 
 setMedicationTypeModel : MedicationType.MedicationTypeModel -> Model -> Model

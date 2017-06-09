@@ -13,6 +13,7 @@ var _ = require('underscore')
   , cfg = require('../../config')
   , LabSuite = require('../../models').LabSuite
   , LabTest = require('../../models').LabTest
+  , LabTestValue = require('../../models').LabTestValue
   , MedicationType = require('../../models').MedicationType
   , SelectData = require('../../models').SelectData
   , VaccinationType = require('../../models').VaccinationType
@@ -279,6 +280,18 @@ var updateLabTest = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, LabTest, 'labTest');
 };
 
+var addLabTestValue = function(data, userInfo, cb) {
+  addTable(data, userInfo, cb, LabTestValue, 'labTestValue');
+};
+
+var delLabTestValue = function(data, userInfo, cb) {
+  delTable(data, userInfo, cb, LabTestValue, 'labTestValue');
+};
+
+var updateLabTestValue = function(data, userInfo, cb) {
+  updateTable(data, userInfo, cb, LabTestValue, 'labTestValue');
+};
+
 var addMedicationType = function(data, userInfo, cb) {
   addTable(data, userInfo, cb, MedicationType, 'medicationType');
 };
@@ -337,16 +350,19 @@ module.exports = {
   getLookupTable,
   addLabSuite,
   addLabTest,
+  addLabTestValue,
   addMedicationType,
   addSelectData,
   addVaccinationType,
   delLabSuite,
   delLabTest,
+  delLabTestValue,
   delMedicationType,
   delSelectData,
   delVaccinationType,
   updateLabSuite,
   updateLabTest,
+  updateLabTestValue,
   updateMedicationType,
   updateSelectData,
   updateVaccinationType

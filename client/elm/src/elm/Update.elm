@@ -32,6 +32,7 @@ import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
 import Updates.LabSuite as Updates exposing (labSuiteUpdate)
 import Updates.LabTest as Updates exposing (labTestUpdate)
+import Updates.LabTestValue as Updates exposing (labTestValueUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
 import Updates.VaccinationType as Updates exposing (vaccinationTypeUpdate)
 import Updates.Profile as Updates exposing (userProfileUpdate)
@@ -81,6 +82,9 @@ update msg model =
                         LabTest ->
                             Updates.labTestUpdate (CreateResponseLabTest a) model
 
+                        LabTestValue ->
+                            Updates.labTestValueUpdate (CreateResponseLabTestValue a) model
+
                         MedicationType ->
                             Updates.medicationTypeUpdate (CreateResponseMedicationType a) model
 
@@ -94,7 +98,11 @@ update msg model =
                             Updates.vaccinationTypeUpdate (CreateResponseVaccinationType a) model
 
                         _ ->
-                            model ! []
+                            let
+                                _ =
+                                    Debug.log "Unhandled CreateResponseMsg" <| toString add
+                            in
+                                model ! []
 
                 Nothing ->
                     model ! []
@@ -133,6 +141,9 @@ update msg model =
                         LabTest ->
                             Updates.labTestUpdate (DeleteResponseLabTest d) model
 
+                        LabTestValue ->
+                            Updates.labTestValueUpdate (DeleteResponseLabTestValue d) model
+
                         MedicationType ->
                             Updates.medicationTypeUpdate (DeleteResponseMedicationType d) model
 
@@ -143,7 +154,11 @@ update msg model =
                             Updates.userUpdate (DeleteResponseUser d) model
 
                         _ ->
-                            model ! []
+                            let
+                                _ =
+                                    Debug.log "Unhandled DeleteResponseMsg" <| toString del
+                            in
+                                model ! []
 
                 Nothing ->
                     model ! []
@@ -168,14 +183,8 @@ update msg model =
         LabTestMessages labTestMsg ->
             Updates.labTestUpdate labTestMsg model
 
-        --LabSuiteResponse labSuiteTbl ->
-            --{ model | labSuite = labSuiteTbl } ! []
-
-        --LabTestResponse labTestTbl ->
-            --{ model | labTest = labTestTbl } ! []
-
-        LabTestValueResponse labTestValueTbl ->
-            { model | labTestValue = labTestValueTbl } ! []
+        LabTestValueMessages labTestValueMsg ->
+            Updates.labTestValueUpdate labTestValueMsg model
 
         LastRecord ->
             let
@@ -335,7 +344,13 @@ update msg model =
                                                     model
 
                                             LabTestValueResp list ->
-                                                update (LabTestValueResponse (RD.succeed list)) model
+                                                --update (LabTestValueResponse (RD.succeed list)) model
+                                                Updates.labTestValueUpdate
+                                                    (ReadResponseLabTestValue
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
 
                                             MedicationTypeResp list ->
                                                 -- Put the records into RemoteData format as expected and
@@ -471,6 +486,9 @@ update msg model =
 
                         LabTest ->
                             Updates.labTestUpdate (UpdateResponseLabTest c) model
+
+                        LabTestValue ->
+                            Updates.labTestValueUpdate (UpdateResponseLabTestValue c) model
 
                         MedicationType ->
                             Updates.medicationTypeUpdate (UpdateResponseMedicationType c) model

@@ -67,7 +67,7 @@ labTestValidate =
         |> V.andMap (V.field "minRangeInteger" (V.string |> V.defaultValue ""))
         |> V.andMap (V.field "minRangeInteger" (V.string |> V.defaultValue ""))
         |> V.andMap (V.field "isRange" V.bool)
-        |> V.andMap (V.field "maxRangeInteger" V.bool)
+        |> V.andMap (V.field "isText" V.bool)
         |> V.andMap (V.field "labSuite_id" V.int)
 
 

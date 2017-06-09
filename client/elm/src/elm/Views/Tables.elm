@@ -30,16 +30,18 @@ import String
 -- LOCAL IMPORTS
 
 import Constants as C
-import Model exposing (..)
 import Msg
     exposing
         ( LabSuiteMsg(..)
         , LabTestMsg(..)
+        , LabTestValueMsg(..)
         , Msg(..)
         , MedicationTypeMsg(..)
         , SelectDataMsg(..)
         , VaccinationTypeMsg(..)
         )
+import Model exposing (..)
+import Models.Utils as MU
 import Types exposing (..)
 import Utils as U
 import Views.Utils as VU
@@ -57,6 +59,11 @@ mdlContext =
 labSuiteKey : String
 labSuiteKey =
     "labSuiteSelected"
+
+
+labTestKey : String
+labTestKey =
+    "labTestSelected"
 
 
 {-| Displays a list of "tables" to choose from. If the table is
@@ -187,14 +194,224 @@ viewLabTest model =
             ]
 
 
+viewLabTestValueTable : Model -> Html Msg
+viewLabTestValueTable ({ labTestModel, labTestValueModel } as model ) =
+    let
+        fKey =
+            case labTestModel.selectedRecordId of
+                Just id ->
+                    id
+
+                Nothing ->
+                    -- If not set for some reason, at least we display nothing.
+                    -1
+
+        testName =
+            Maybe.withDefault "" <| MU.getNameById fKey labTestModel.records
+
+        data =
+            case labTestValueModel.records of
+                NotAsked ->
+                    []
+
+                Loading ->
+                    []
+
+                Failure err ->
+                    let
+                        _ =
+                            Debug.log "viewLabTestValueTable" err
+                    in
+                        []
+
+                Success data ->
+                    List.filter (\r -> r.labTest_id == fKey) data
+    in
+        Html.div []
+            [ Card.view
+                [ Options.css "width" "100%" ]
+                [ Card.title []
+                    [ Card.head []
+                        [ Html.text testName ]
+                    ]
+                , Card.text
+                    [ MColor.text MColor.accent
+                    , MColor.background MColor.accentContrast
+                    , Elevation.e6
+                    , Options.css "margin-bottom" "20px"
+                    ]
+                    [ Html.text "These records limit the choices for this particular test to the values in this list." ]
+                ]
+            , Html.div []
+                [ VU.button [ mdlContext, 450 ]
+                    (LabTestMessages <| SelectedRecordEditModeLabTest EditModeView labTestModel.selectedRecordId)
+                    "Back to Lab Test"
+                    False
+                    False
+                    model.mdl
+                ]
+            , VU.msgLeftElementRight "Click on a row to edit or delete." <|
+                VU.button [ mdlContext, 451 ]
+                    (SelectedRecordEditModeLabTestValue EditModeAdd Nothing
+                        |> LabTestValueMessages
+                    )
+                    "Add"
+                    False
+                    False
+                    model.mdl
+            , MTable.table
+                [ Options.css "width" "100%" ]
+                [ MTable.thead []
+                    [ MTable.tr []
+                        [ MTable.th [] [ Html.text "Id" ]
+                        , MTable.th [] [ Html.text "Value" ]
+                        ]
+                    ]
+                , MTable.tbody []
+                    (data
+                        |> List.map
+                            (\row ->
+                                MTable.tr
+                                    [ Options.onClick <|
+                                        LabTestValueMessages (SelectedRecordEditModeLabTestValue EditModeView (Just row.id))
+                                    ]
+                                    [ MTable.td [ MTable.numeric ] [ Html.text <| toString row.id ]
+                                    , MTable.td [] [ Html.text row.value ]
+                                    ]
+                            )
+                    )
+                ]
+            ]
+
+
+viewLabTestValueRecord : Model -> Html Msg
+viewLabTestValueRecord ({ labTestModel, labTestValueModel } as model) =
+    let
+        isEditing =
+            labTestValueModel.editMode
+                == EditModeEdit
+                || labTestValueModel.editMode
+                == EditModeAdd
+
+        buildForm form =
+            let
+                tableStr =
+                    "labTestValue"
+
+                -- Buttons available while editing.
+                editingContent =
+                    [ VU.button [ mdlContext, 441 ] (LabTestValueMessages <| FormMsgLabTestValue Form.Submit) "Save" False False model.mdl
+                    , VU.button [ mdlContext, 442 ] (LabTestValueMessages <| CancelEditLabTestValue) "Cancel" False False model.mdl
+                    ]
+
+                -- Buttons available while viewing.
+                viewingContent =
+                    [ VU.button [ mdlContext, 444 ]
+                        (SelectedRecordEditModeLabTestValue EditModeTable Nothing
+                            |> LabTestValueMessages
+                        )
+                        "Back to Lab Test Values"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 440 ]
+                        (SelectedRecordEditModeLabTestValue EditModeEdit labTestValueModel.selectedRecordId
+                            |> LabTestValueMessages
+                        )
+                        "Edit"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 445 ]
+                        (DeleteLabTestValue labTestValueModel.selectedRecordId
+                            |> LabTestValueMessages
+                        )
+                        "Delete"
+                        False
+                        False
+                        model.mdl
+                    ]
+
+                -- Get the FieldStates.
+                ( recId, recValue ) =
+                    ( Form.getFieldAsString "id" form
+                    , Form.getFieldAsString "value" form
+                    )
+
+                -- The helper function used to create the partially applied
+                -- (String -> Msg) function for each textFld.
+                tagger : Form.FieldState e String -> String -> Msg
+                tagger fld =
+                    FF.String
+                        >> (Form.Input fld.path Form.Text)
+                        >> FormMsgLabTestValue
+                        >> LabTestValueMessages
+            in
+                Card.view
+                    [ Options.css "width" "100%" ]
+                    [ Card.title []
+                        [ Card.head []
+                            [ Html.text tableStr ]
+                        ]
+                    , Card.text []
+                        [ Card.head [] <|
+                            if isEditing then
+                                editingContent
+                            else
+                                viewingContent
+                        ]
+                    , Card.text
+                        [ MColor.text MColor.black
+                        ]
+                        [ VU.textFld "Record id" recId [ mdlContext, 450 ] (tagger recId) False False model.mdl
+                        , VU.textFld "Value" recValue [ mdlContext, 451 ] (tagger recValue) isEditing False model.mdl
+                        ]
+                    ]
+
+        data =
+            case labTestValueModel.records of
+                NotAsked ->
+                    Html.text ""
+
+                Loading ->
+                    Html.text "Loading"
+
+                Failure err ->
+                    Html.text <| toString err
+
+                Success recs ->
+                    buildForm labTestValueModel.form
+    in
+        div []
+            [ data ]
+
+
 viewLabTestRecord : Model -> Html Msg
-viewLabTestRecord ({ labTestModel } as model) =
+viewLabTestRecord ({ labSuiteModel, labTestModel, labTestValueModel } as model) =
     let
         isEditing =
             labTestModel.editMode
                 == EditModeEdit
                 || labTestModel.editMode
                 == EditModeAdd
+
+        labTestValueData =
+            case labTestValueModel.records of
+                NotAsked ->
+                    []
+
+                Loading ->
+                    []
+
+                Failure err ->
+                    let
+                        _ =
+                            Debug.log "labTestValue" err
+                    in
+                        []
+
+                Success data ->
+                    data
 
         buildForm form =
             let
@@ -230,6 +447,14 @@ viewLabTestRecord ({ labTestModel } as model) =
                             |> LabTestMessages
                         )
                         "Delete"
+                        False
+                        False
+                        model.mdl
+                    , VU.button [ mdlContext, 426 ]
+                        (SelectedRecordEditModeLabTestValue EditModeTable Nothing
+                            |> LabTestValueMessages
+                        )
+                        "Add or Edit Acceptable Test Values"
                         False
                         False
                         model.mdl
@@ -420,10 +645,10 @@ viewLabSuiteRecord ({ labSuiteModel } as model) =
 
 
 viewLabSuiteTable : Model -> Html Msg
-viewLabSuiteTable model =
+viewLabSuiteTable ({ labSuiteModel } as model) =
     let
         data =
-            case model.labSuiteModel.records of
+            case labSuiteModel.records of
                 NotAsked ->
                     []
 
@@ -443,7 +668,7 @@ viewLabSuiteTable model =
         Html.div []
             [ Html.div []
                 [ VU.button [ mdlContext, 450 ]
-                    (LabSuiteMessages <| SelectedRecordEditModeLabSuite EditModeOther Nothing)
+                    (LabSuiteMessages <| SelectedRecordEditModeLabSuite EditModeOther labSuiteModel.selectedRecordId)
                     "Back to Labs Overview"
                     False
                     False
@@ -451,7 +676,7 @@ viewLabSuiteTable model =
                 ]
             , VU.msgLeftElementRight "Click on a row to edit or delete." <|
                 VU.button [ mdlContext, 451 ]
-                    (SelectedRecordEditModeLabSuite EditModeAdd model.labSuiteModel.selectedRecordId
+                    (SelectedRecordEditModeLabSuite EditModeAdd Nothing
                         |> LabSuiteMessages
                     )
                     "Add"
@@ -486,10 +711,10 @@ viewLabSuiteTable model =
 
 
 viewLabs : Model -> Html Msg
-viewLabs model =
+viewLabs ({ labSuiteModel, labTestModel, labTestValueModel } as model) =
     let
         labSuiteData =
-            case model.labSuiteModel.records of
+            case labSuiteModel.records of
                 NotAsked ->
                     []
 
@@ -508,7 +733,7 @@ viewLabs model =
                         |> List.sortBy .name
 
         labTestData =
-            case model.labTestModel.records of
+            case labTestModel.records of
                 NotAsked ->
                     []
 
@@ -526,7 +751,7 @@ viewLabs model =
                     data
 
         labTestValue =
-            case model.labTestValue of
+            case labTestValueModel.records of
                 NotAsked ->
                     []
 
@@ -545,20 +770,16 @@ viewLabs model =
 
         -- labTest records have a labSuite_id foreign key that is never negative.
         selectedLabSuiteId =
-            case Dict.get labSuiteKey model.userChoice of
-                Just id ->
-                    Result.withDefault -1 (String.toInt id)
+            Maybe.withDefault -1 labSuiteModel.selectedRecordId
+            --case Dict.get labSuiteKey model.userChoice of
+                --Just id ->
+                    --Result.withDefault -1 (String.toInt id)
 
-                Nothing ->
-                    -1
+                --Nothing ->
+                    ---1
 
         selectedLabSuiteName =
-            case LE.find (\r -> r.id == selectedLabSuiteId) labSuiteData of
-                Just rec ->
-                    rec.name
-
-                Nothing ->
-                    ""
+            Maybe.withDefault "" <| MU.getNameById selectedLabSuiteId labSuiteModel.records
 
         getMinMax row =
             case ( row.minRangeDecimal, row.maxRangeDecimal, row.minRangeInteger, row.maxRangeInteger ) of
@@ -626,7 +847,7 @@ viewLabs model =
             [ Html.div
                 [ HA.style [ ( "margin-bottom", "10px" ) ] ]
                 [ VU.button [ mdlContext, 420 ]
-                    (LabSuiteMessages <| SelectedRecordEditModeLabSuite EditModeTable Nothing)
+                    (LabSuiteMessages <| SelectedRecordEditModeLabSuite EditModeTable labSuiteModel.selectedRecordId)
                     "Add/Edit Lab Suites"
                     False
                     False
@@ -647,7 +868,8 @@ viewLabs model =
                                     [ Toggles.value (selectedLabSuiteId == row.id)
                                     , Toggles.group "labSuite"
                                     , Toggles.ripple
-                                    , Options.onToggle (UserChoiceSet labSuiteKey (toString row.id))
+                                    --, Options.onToggle (UserChoiceSet labSuiteKey (toString row.id))
+                                    , Options.onToggle (LabSuiteMessages <| SelectedRecordEditModeLabSuite EditModeOther (Just row.id))
                                     ]
                                     [ Html.text row.name ]
                                 ]
@@ -1250,7 +1472,7 @@ viewSelectDataEdit ({ selectDataModel } as model) =
 
 
 view : Model -> Html Msg
-view ({ labSuiteModel, labTestModel, medicationTypeModel, selectDataModel, vaccinationTypeModel } as model) =
+view ({ labSuiteModel, labTestModel, labTestValueModel, medicationTypeModel, selectDataModel, vaccinationTypeModel } as model) =
     let
         ( selectedTable, dataView ) =
             case model.selectedTable of
@@ -1290,6 +1512,23 @@ view ({ labSuiteModel, labTestModel, medicationTypeModel, selectDataModel, vacci
 
                                 _ ->
                                     (\_ -> Html.div [] [ Html.text <| "Editmode is: " ++ (toString labTestModel.editMode) ])
+
+                        LabTestValue ->
+                            case labTestValueModel.editMode of
+                                EditModeTable ->
+                                    viewLabTestValueTable
+
+                                EditModeView ->
+                                    viewLabTestValueRecord
+
+                                EditModeEdit ->
+                                    viewLabTestValueRecord
+
+                                EditModeAdd ->
+                                    viewLabTestValueRecord
+
+                                _ ->
+                                    (\_ -> Html.div [] [ Html.text <| "Editmode for labTestValue is: " ++ (toString labTestValueModel.editMode) ])
 
                         MedicationType ->
                             case medicationTypeModel.editMode of

@@ -51,12 +51,19 @@ vaccinationTypeUpdateDetail : VaccinationTypeMsg -> Model -> ( Model, Cmd Msg )
 vaccinationTypeUpdateDetail msg ({ vaccinationTypeModel } as model) =
     case msg of
         CancelEditVaccinationType ->
-            -- User canceled, so reset data back to what we had before.
-            ( VacType.populateSelectedTableForm vaccinationTypeModel
-                |> MU.setEditMode EditModeView
-                |> asVaccinationTypeModelIn model
-            , Cmd.none
-            )
+            let
+                editMode =
+                    if vaccinationTypeModel.selectedRecordId == Nothing then
+                        EditModeTable
+                    else
+                        EditModeView
+            in
+                -- User canceled, so reset data back to what we had before.
+                ( VacType.populateSelectedTableForm vaccinationTypeModel
+                    |> MU.setEditMode editMode
+                    |> asVaccinationTypeModelIn model
+                , Cmd.none
+                )
 
         CreateVaccinationType ->
             let

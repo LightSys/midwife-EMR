@@ -52,12 +52,19 @@ labTestUpdateDetail : LabTestMsg -> Model -> ( Model, Cmd Msg )
 labTestUpdateDetail msg ({ labTestModel } as model) =
     case msg of
         CancelEditLabTest ->
-            -- User canceled, so reset data back to what we had before.
-            ( LabTest.populateSelectedTableForm labTestModel
-                |> MU.setEditMode EditModeView
-                |> asLabTestModelIn model
-            , Cmd.none
-            )
+            let
+                editMode =
+                    if labTestModel.selectedRecordId == Nothing then
+                        EditModeTable
+                    else
+                        EditModeView
+            in
+                -- User canceled, so reset data back to what we had before.
+                ( LabTest.populateSelectedTableForm labTestModel
+                    |> MU.setEditMode editMode
+                    |> asLabTestModelIn model
+                , Cmd.none
+                )
 
         CreateLabTest ->
             let
@@ -151,7 +158,13 @@ labTestUpdateDetail msg ({ labTestModel } as model) =
                     case response.success of
                         True ->
                             -- Optimistic update, so nothing to do.
-                            ( model, Nothing )
+                            --
+                            -- We set the selectedTable back to LabSuite
+                            -- because the screen we are returning to
+                            -- after the delete is driven by LabSuite.
+                            ( { model | selectedTable = Just LabSuite }
+                            , Nothing
+                            )
 
                         False ->
                             -- Server rejected change. Insert record back,
@@ -170,10 +183,11 @@ labTestUpdateDetail msg ({ labTestModel } as model) =
                                         |> Trans.delState response.stateId
 
                                 Nothing ->
-                                    -- TODO: if we get here, something is really messed
-                                    -- up because we can't find our original record in
-                                    -- the transaction manager.
-                                    ( model, Nothing )
+                                    let
+                                        _ =
+                                            Debug.log "DeleteResponseLabTest" "We can't find our original record in the transaction manager."
+                                    in
+                                        ( model, Nothing )
 
                 -- Give a message to the user upon failure.
                 ( newModel2, newCmd2 ) =
@@ -236,14 +250,24 @@ labTestUpdateDetail msg ({ labTestModel } as model) =
             --
             -- Also, the model.userChoice field denotes the user selected
             -- labSuite_id, which we need to properly populate the form
-            -- on an EditModeAdd below.
+            -- on an EditModeAdd below. This is set in the model from an
+            -- UserChoiceSet event which is triggered by the user when
+            -- they select the radio button selecting which labSuite to
+            -- view details upon.
             let
                 selectedLabSuiteId =
-                    case Dict.get "labSuiteSelected" model.userChoice of
+                    --case Dict.get "labSuiteSelected" model.userChoice of
+                        --Just id ->
+                            --Result.withDefault -1 (String.toInt id)
+
+                        --Nothing ->
+                            ---1
+                    case model.labSuiteModel.selectedRecordId of
                         Just id ->
-                            Result.withDefault -1 (String.toInt id)
+                            id
 
                         Nothing ->
+                            -- If we use this, it will fail, but we shouldn't get here.
                             -1
             in
                 (labTestModel

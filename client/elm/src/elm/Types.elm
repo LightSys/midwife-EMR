@@ -14,6 +14,7 @@ module Types
         , LabSuiteRecord
         , LabTestForm
         , LabTestRecord
+        , LabTestValueForm
         , LabTestValueRecord
         , LoginForm
         , MedicationTypeForm
@@ -381,11 +382,17 @@ type alias LabTestRecord =
     , stateId : Maybe Int
     }
 
+type alias LabTestValueForm =
+    { id : Int
+    , value : String
+    , labTest_id : Int
+    }
 
 type alias LabTestValueRecord =
     { id : Int
     , value : String
     , labTest_id : Int
+    , stateId : Maybe Int
     }
 
 

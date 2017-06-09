@@ -90,10 +90,10 @@ labTestTable =
             |> optional "abbrev" JD.string ""
             |> optional "normal" JD.string ""
             |> optional "unit" JD.string ""
-            |> optional "minRangeDecimal" (JD.oneOf [JD.maybe JD.float, JD.null Nothing]) Nothing
-            |> optional "maxRangeDecimal" (JD.oneOf [JD.maybe JD.float, JD.null Nothing]) Nothing
-            |> optional "minRangeInteger" (JD.oneOf [JD.maybe JD.int, JD.null Nothing]) Nothing
-            |> optional "maxRangeInteger" (JD.oneOf [JD.maybe JD.int, JD.null Nothing]) Nothing
+            |> optional "minRangeDecimal" (JD.oneOf [ JD.maybe JD.float, JD.null Nothing ]) Nothing
+            |> optional "maxRangeDecimal" (JD.oneOf [ JD.maybe JD.float, JD.null Nothing ]) Nothing
+            |> optional "minRangeInteger" (JD.oneOf [ JD.maybe JD.int, JD.null Nothing ]) Nothing
+            |> optional "maxRangeInteger" (JD.oneOf [ JD.maybe JD.int, JD.null Nothing ]) Nothing
             |> optional "isRange" JD.int 0
             |> optional "isText" JD.int 0
             |> required "labSuite_id" JD.int
@@ -105,6 +105,7 @@ labTestValueTable =
         |> required "id" JD.int
         |> required "value" JD.string
         |> required "labTest_id" JD.int
+        |> hardcoded Nothing
 
 
 medicationTypeTable : JD.Decoder MedicationTypeRecord
@@ -245,7 +246,6 @@ decodeSelectQueryResponse payload =
         |> RD.fromResult
 
 
-
 decodeLabSuiteRecord : Maybe String -> Maybe LabSuiteRecord
 decodeLabSuiteRecord payload =
     case payload of
@@ -276,7 +276,26 @@ decodeLabTestRecord payload =
                 Err msg ->
                     let
                         _ =
-                            Debug.log "decodeLabTestrecord" <| toString msg
+                            Debug.log "decodeLabTestRecord" <| toString msg
+                    in
+                        Nothing
+
+        Nothing ->
+            Nothing
+
+
+decodeLabTestValueRecord : Maybe String -> Maybe LabTestValueRecord
+decodeLabTestValueRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString labTestValueTable p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "decodeLabTestValuerecord" <| toString msg
                     in
                         Nothing
 

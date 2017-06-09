@@ -51,12 +51,19 @@ medicationTypeUpdateDetail : MedicationTypeMsg -> Model -> ( Model, Cmd Msg )
 medicationTypeUpdateDetail msg ({ medicationTypeModel } as model) =
     case msg of
         CancelEditMedicationType ->
-            -- User canceled, so reset data back to what we had before.
-            ( MedType.populateSelectedTableForm medicationTypeModel
-                |> MU.setEditMode EditModeView
-                |> asMedicationTypeModelIn model
-            , Cmd.none
-            )
+            let
+                editMode =
+                    if medicationTypeModel.selectedRecordId == Nothing then
+                        EditModeTable
+                    else
+                        EditModeView
+            in
+                -- User canceled, so reset data back to what we had before.
+                ( MedType.populateSelectedTableForm medicationTypeModel
+                    |> MU.setEditMode editMode
+                    |> asMedicationTypeModelIn model
+                , Cmd.none
+                )
 
         CreateMedicationType ->
             let

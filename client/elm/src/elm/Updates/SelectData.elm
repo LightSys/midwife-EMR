@@ -53,7 +53,7 @@ selectDataUpdateDetail msg ({ selectDataModel } as model) =
         CancelEditSelectData ->
             -- User canceled, so reset data back to what we had before.
             ( SelectData.populateSelectedTableForm selectDataModel
-                |> MU.setEditMode EditModeView
+                |> MU.setEditMode EditModeTable
                 |> asSelectDataModelIn model
             , Cmd.none
             )

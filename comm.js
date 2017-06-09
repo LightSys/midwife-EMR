@@ -139,6 +139,7 @@ var rx = require('rx')
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , TABLE_labSuite = 'labSuite'
   , TABLE_labTest = 'labTest'
+  , TABLE_labTestValue = 'labTestValue'
   , TABLE_medicationType = 'medicationType'
   , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
@@ -149,6 +150,9 @@ var rx = require('rx')
   , addLabTest = require('./routes/comm/lookupTables').addLabTest
   , delLabTest = require('./routes/comm/lookupTables').delLabTest
   , updateLabTest = require('./routes/comm/lookupTables').updateLabTest
+  , addLabTestValue = require('./routes/comm/lookupTables').addLabTestValue
+  , delLabTestValue = require('./routes/comm/lookupTables').delLabTestValue
+  , updateLabTestValue = require('./routes/comm/lookupTables').updateLabTestValue
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
@@ -530,6 +534,13 @@ var getFuncForTableOp = function(table, op) {
         case ADD: func = addLabTest; break;
         case CHG: func = updateLabTest; break;
         case DEL: func = delLabTest; break;
+      }
+      break;
+    case TABLE_labTestValue:
+      switch (op) {
+        case ADD: func = addLabTestValue; break;
+        case CHG: func = updateLabTestValue; break;
+        case DEL: func = delLabTestValue; break;
       }
       break;
     case TABLE_medicationType:

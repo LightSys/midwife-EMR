@@ -1,5 +1,6 @@
-module Updates.LabSuite exposing (labSuiteUpdate)
+module Updates.LabTestValue exposing (labTestValueUpdate)
 
+import Dict
 import Form exposing (Form)
 import Json.Encode as JE
 import List.Extra as LE
@@ -12,7 +13,7 @@ import Task
 import Decoders exposing (..)
 import Encoders as E
 import Model exposing (..)
-import Models.LabSuite as LabSuite
+import Models.LabTestValue as LabTestValue
 import Models.Utils as MU
 import Msg exposing (..)
 import Ports
@@ -20,24 +21,25 @@ import Transactions as Trans
 import Types exposing (..)
 import Utils as U
 
+
 {-| Handle certain error responses from the server here.
 Let the update detail function do all of the heavy lifting.
 -}
-labSuiteUpdate : LabSuiteMsg -> Model -> ( Model, Cmd Msg )
-labSuiteUpdate msg model =
+labTestValueUpdate : LabTestValueMsg -> Model -> ( Model, Cmd Msg )
+labTestValueUpdate msg model =
     let
         ( newModel, newCmd ) =
-            labSuiteUpdateDetail msg model
+            labTestValueUpdateDetail msg model
 
         newCmd2 =
             case msg of
-                CreateResponseLabSuite response ->
+                CreateResponseLabTestValue response ->
                     U.handleSessionExpired response.errorCode
 
-                DeleteResponseLabSuite response ->
+                DeleteResponseLabTestValue response ->
                     U.handleSessionExpired response.errorCode
 
-                UpdateResponseLabSuite response ->
+                UpdateResponseLabTestValue response ->
                     U.handleSessionExpired response.errorCode
 
                 _ ->
@@ -46,42 +48,42 @@ labSuiteUpdate msg model =
         ( newModel, Cmd.batch [ newCmd, newCmd2 ] )
 
 
-labSuiteUpdateDetail : LabSuiteMsg -> Model -> ( Model, Cmd Msg )
-labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
+labTestValueUpdateDetail : LabTestValueMsg -> Model -> ( Model, Cmd Msg )
+labTestValueUpdateDetail msg ({ labTestValueModel } as model) =
     case msg of
-        CancelEditLabSuite ->
+        CancelEditLabTestValue ->
             let
                 editMode =
-                    if labSuiteModel.selectedRecordId == Nothing then
+                    if labTestValueModel.selectedRecordId == Nothing then
                         EditModeTable
                     else
                         EditModeView
             in
                 -- User canceled, so reset data back to what we had before.
-                ( LabSuite.populateSelectedTableForm labSuiteModel
+                ( LabTestValue.populateSelectedTableForm labTestValueModel
                     |> MU.setEditMode editMode
-                    |> asLabSuiteModelIn model
+                    |> asLabTestValueModelIn model
                 , Cmd.none
                 )
 
-        CreateLabSuite ->
+        CreateLabTestValue ->
             let
                 -- Get the table record from the form.
-                labSuiteRecord =
-                    labSuiteFormToRecord labSuiteModel.form Nothing
+                labTestValueRecord =
+                    labTestValueFormToRecord labTestValueModel.form Nothing
 
                 -- Optimistic add of the record to the model with a pending id
                 -- and create the Cmd to send data to the server. Or give a message
                 -- to the user to effect that the sort order is wrong.
                 ( newModel, newCmd ) =
-                    ( MU.addRecord labSuiteRecord labSuiteModel
-                        |> asLabSuiteModelIn model
-                    , Ports.labSuiteCreate <| E.labSuiteToValue labSuiteRecord
+                    ( MU.addRecord labTestValueRecord labTestValueModel
+                        |> asLabTestValueModelIn model
+                    , Ports.labTestValueCreate <| E.labTestValueToValue labTestValueRecord
                     )
             in
                 newModel ! [ newCmd ]
 
-        CreateResponseLabSuite { id, pendingId, success, msg } ->
+        CreateResponseLabTestValue ({ id, pendingId, success, msg } as response) ->
             let
                 -- Update the model with the server assigned id for the record.
                 ( updatedRecords, ( newModel, newCmd ) ) =
@@ -89,13 +91,13 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
                         True ->
                             ( MU.updateById pendingId
                                 (\r -> { r | id = id })
-                                labSuiteModel.records
+                                labTestValueModel.records
                             , ( model, Cmd.none )
                             )
 
                         False ->
                             -- Give a message to the user upon failure.
-                            ( labSuiteModel.records
+                            ( labTestValueModel.records
                             , (if String.length msg == 0 then
                                 "Sorry, the server rejected that addition."
                                else
@@ -106,15 +108,15 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
 
                 -- Update the form and remove stored state from transaction manager.
                 newModel2 =
-                    MU.setRecords updatedRecords labSuiteModel
+                    MU.setRecords updatedRecords labTestValueModel
                         |> MU.setEditMode EditModeView
                         |> MU.setSelectedRecordId (Just id)
-                        |> LabSuite.populateSelectedTableForm
-                        |> asLabSuiteModelIn newModel
+                        |> LabTestValue.populateSelectedTableForm
+                        |> asLabTestValueModelIn newModel
             in
                 newModel2 ! [ newCmd ]
 
-        DeleteLabSuite id ->
+        DeleteLabTestValue id ->
             -- This is an optimistic workflow.
             -- NOTE: this assumes that a delete was performed with the correct record
             -- loaded in the form.
@@ -123,7 +125,7 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
                     let
                         -- Save current rec as a transaction.
                         ( newModel, stateId ) =
-                            case MU.getSelectedRecordAsString labSuiteModel E.labSuiteToValue of
+                            case MU.getSelectedRecordAsString labTestValueModel E.labTestValueToValue of
                                 Just s ->
                                     Trans.setState s Nothing model
 
@@ -132,24 +134,24 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
 
                         -- Create command to send record to delete to the server.
                         newCmd2 =
-                            labSuiteFormToRecord newModel.labSuiteModel.form stateId
-                                |> E.labSuiteToValue
-                                |> Ports.labSuiteDelete
+                            labTestValueFormToRecord newModel.labTestValueModel.form stateId
+                                |> E.labTestValueToValue
+                                |> Ports.labTestValueDelete
 
                         -- Delete the record from the client and return to table view.
                         newModel2 =
-                            newModel.labSuiteModel
+                            newModel.labTestValueModel
                                 |> MU.delSelectedRecord
                                 |> MU.setSelectedRecordId Nothing
                                 |> MU.setEditMode EditModeTable
-                                |> asLabSuiteModelIn newModel
+                                |> asLabTestValueModelIn newModel
                     in
                         newModel2 ! [ newCmd2 ]
 
                 Nothing ->
                     model ! []
 
-        DeleteResponseLabSuite response ->
+        DeleteResponseLabTestValue response ->
             let
                 -- 1. Update the model according to success or failure.
                 ( newModel1, _ ) =
@@ -164,14 +166,14 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
                             -- Finally, remove transaction record.
                             case
                                 Trans.getState response.stateId model
-                                    |> Decoders.decodeLabSuiteRecord
+                                    |> Decoders.decodeLabTestValueRecord
                             of
                                 Just r ->
-                                    MU.addRecord r labSuiteModel
+                                    MU.addRecord r labTestValueModel
                                         |> MU.setSelectedRecordId (Just response.id)
-                                        |> LabSuite.populateSelectedTableForm
+                                        |> LabTestValue.populateSelectedTableForm
                                         |> MU.setEditMode EditModeView
-                                        |> asLabSuiteModelIn model
+                                        |> asLabTestValueModelIn model
                                         |> Trans.delState response.stateId
 
                                 Nothing ->
@@ -194,73 +196,93 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
             in
                 newModel2 ! [ newCmd2 ]
 
-        FormMsgLabSuite formMsg ->
-            case ( formMsg, Form.getOutput labSuiteModel.form ) of
+        FormMsgLabTestValue formMsg ->
+            case ( formMsg, Form.getOutput labTestValueModel.form ) of
                 ( Form.Submit, Just records ) ->
                     -- If we get here, it passed valiation.
-                    if labSuiteModel.editMode == EditModeAdd then
-                        labSuiteUpdate CreateLabSuite model
+                    if labTestValueModel.editMode == EditModeAdd then
+                        labTestValueUpdate CreateLabTestValue model
                     else
-                        labSuiteUpdate UpdateLabSuite model
+                        labTestValueUpdate UpdateLabTestValue model
 
                 _ ->
                     -- Otherwise, pass it through validation again.
-                    (labSuiteModel
+                    (labTestValueModel
                         |> MU.setForm
-                            (Form.update LabSuite.labSuiteValidate
+                            (Form.update LabTestValue.labTestValueValidate
                                 formMsg
-                                labSuiteModel.form
+                                labTestValueModel.form
                             )
-                        |> asLabSuiteModelIn model
+                        |> asLabTestValueModelIn model
                     )
                         ! []
 
-        ReadResponseLabSuite labSuiteTbl sq ->
+        ReadResponseLabTestValue labTestValueTbl sq ->
             -- Merge records from the server into our model, update
             -- our form as necessary, and make sure we are subscribed
             -- to changes from the server.
             let
                 subscription =
-                    NotificationSubscription LabSuite NotifySubQualifierNone
+                    NotificationSubscription LabTestValue NotifySubQualifierNone
             in
-                ( MU.mergeById labSuiteTbl labSuiteModel.records
-                    |> (\recs -> { labSuiteModel | records = recs })
+                ( MU.mergeById labTestValueTbl labTestValueModel.records
+                    |> (\recs -> { labTestValueModel | records = recs })
                     |> MU.setSelectQuery sq
-                    |> LabSuite.populateSelectedTableForm
-                    |> asLabSuiteModelIn model
+                    |> LabTestValue.populateSelectedTableForm
+                    |> asLabTestValueModelIn model
                     |> Model.addNotificationSubscription subscription
                 , Cmd.none
                 )
 
-        SelectedRecordEditModeLabSuite mode id ->
-            (labSuiteModel
-                |> MU.setSelectedRecordId id
-                |> MU.setEditMode mode
-                |> (\tableModel ->
-                        case (mode, id) of
-                            (EditModeAdd, _) ->
-                                LabSuite.populateSelectedTableForm tableModel
+        SelectedRecordEditModeLabTestValue mode id ->
+            let
+                -- labTestValue is a known child table, so assume that
+                -- EditModeTable means that the foreign key to use is
+                -- the selected record of the labTestModel.
+                selectedLabTestId =
+                    case model.labTestModel.selectedRecordId of
+                        Just id ->
+                            id
 
-                            (EditModeView, _) ->
-                                LabSuite.populateSelectedTableForm tableModel
-                            (EditModeEdit, _) ->
-                                LabSuite.populateSelectedTableForm tableModel
+                        Nothing ->
+                            -- If we use this, it will fail, but we shouldn't get here.
+                            -1
+            in
+                (labTestValueModel
+                    |> MU.setSelectedRecordId id
+                    |> MU.setEditMode mode
+                    |> (\tableModel ->
+                            case ( mode, id ) of
+                                ( EditModeAdd, _ ) ->
+                                    LabTestValue.populateSelectedTableFormWithTestId selectedLabTestId tableModel
 
-                            (_, _) ->
-                                tableModel
-                   )
-                |> asLabSuiteModelIn model
-            )
-                ! []
+                                ( EditModeView, _ ) ->
+                                    LabTestValue.populateSelectedTableForm tableModel
 
-        UpdateLabSuite ->
-            -- User saved on labSuite form. This is an optimistic workflow.
+                                ( EditModeEdit, _ ) ->
+                                    LabTestValue.populateSelectedTableForm tableModel
+
+                                ( _, _ ) ->
+                                    tableModel
+                       )
+                    |> asLabTestValueModelIn model
+                    |> (\m ->
+                            if mode == EditModeOther then
+                                { m | selectedTable = Just LabTest }
+                            else
+                                { m | selectedTable = Just LabTestValue }
+                       )
+                )
+                    ! []
+
+        UpdateLabTestValue ->
+            -- User saved on labTestValue form. This is an optimistic workflow.
             let
                 -- 1. Encode original entity record to a string and save the
                 --    original rec to transactions in exchange for a transaction id.
                 -- 2. Convert the form values which user just created into a table record.
-                ( newModel, stateId, mtTable ) =
-                    (case MU.getSelectedRecordAsString labSuiteModel E.labSuiteToValue of
+                ( newModel, stateId, record ) =
+                    (case MU.getSelectedRecordAsString labTestValueModel E.labTestValueToValue of
                         Just s ->
                             Trans.setState s Nothing model
 
@@ -270,92 +292,86 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
                         |> (\( nm, sid ) ->
                                 ( nm
                                 , sid
-                                , labSuiteFormToRecord nm.labSuiteModel.form sid
+                                , labTestValueFormToRecord nm.labTestValueModel.form sid
                                 )
                            )
 
                 -- 3. Optimistic update of the record in the list of records.
                 updatedRecords =
-                    case labSuiteModel.selectedRecordId of
+                    case labTestValueModel.selectedRecordId of
                         Just id ->
                             MU.updateById id
                                 (\r ->
                                     { r
                                         | stateId = stateId
-                                        , name = mtTable.name
-                                        , description = mtTable.description
-                                        , category = mtTable.category
+                                        , value = record.value
                                     }
                                 )
-                                newModel.labSuiteModel.records
+                                newModel.labTestValueModel.records
 
                         Nothing ->
-                            newModel.labSuiteModel.records
+                            newModel.labTestValueModel.records
 
                 -- 4. Create the Cmd to send data to the server.
                 newCmd =
-                    Ports.labSuiteUpdate <| E.labSuiteToValue mtTable
+                    Ports.labTestValueUpdate <| E.labTestValueToValue record
             in
-                ( newModel.labSuiteModel
+                ( newModel.labTestValueModel
                     |> MU.setRecords updatedRecords
                     |> MU.setEditMode EditModeView
-                    |> asLabSuiteModelIn newModel
+                    |> asLabTestValueModelIn newModel
                     |> (\m -> { m | selectedTableEditMode = EditModeView })
                 , newCmd
                 )
 
-        UpdateResponseLabSuite change ->
+        UpdateResponseLabTestValue response ->
             let
                 -- Remove the state id no matter what.
-                noStateIdLabSuiteRecords =
-                    MU.updateById change.id
+                noStateIdLabTestValueRecords =
+                    MU.updateById response.id
                         (\r -> { r | stateId = Nothing })
-                        labSuiteModel.records
+                        labTestValueModel.records
 
                 updatedRecords =
-                    case change.success of
+                    case response.success of
                         True ->
-                            noStateIdLabSuiteRecords
+                            noStateIdLabTestValueRecords
 
                         False ->
                             -- Server rejected change. Reset record back to original.
                             case
-                                Trans.getState change.stateId model
-                                    |> Decoders.decodeLabSuiteRecord
+                                Trans.getState response.stateId model
+                                    |> Decoders.decodeLabTestValueRecord
                             of
                                 Just r ->
-                                    MU.updateById change.id
+                                    MU.updateById response.id
                                         (\rec ->
-                                            { rec
-                                                | name = r.name
-                                                , description = r.description
-                                                , category = r.category
-                                            }
+                                            { rec | value = r.value }
                                         )
-                                        labSuiteModel.records
+                                        labTestValueModel.records
 
                                 Nothing ->
                                     -- TODO: if we get here, something is really messed
                                     -- up because we can't find our original record in
                                     -- the transaction manager.
-                                    noStateIdLabSuiteRecords
+                                    noStateIdLabTestValueRecords
 
                 -- Save the records to the model, update the form,
                 -- and remove stored state from transaction manager.
                 ( newModel, _ ) =
-                    labSuiteModel
+                    labTestValueModel
                         |> MU.setRecords updatedRecords
-                        |> LabSuite.populateSelectedTableForm
-                        |> asLabSuiteModelIn model
-                        |> Trans.delState change.stateId
+                        |> LabTestValue.populateSelectedTableForm
+                        |> asLabTestValueModelIn model
+                        |> Trans.delState response.stateId
 
                 -- Give a message to the user upon failure.
                 ( newModel2, newCmd2 ) =
-                    if not change.success then
-                        (if String.length change.msg == 0 then
+                    if not response.success then
+                        (if String.length response.msg == 0 then
                             "Sorry, the server rejected that change."
                          else
-                            change.msg
+                            response.msg
                         )
                             |> flip U.addWarning newModel
                     else
@@ -364,21 +380,22 @@ labSuiteUpdateDetail msg ({ labSuiteModel } as model) =
                 newModel2 ! [ newCmd2, newCmd2 ]
 
 
-labSuiteFormToRecord : Form () LabSuiteForm -> Maybe Int -> LabSuiteRecord
-labSuiteFormToRecord form transId =
+labTestValueFormToRecord : Form () LabTestValueForm -> Maybe Int -> LabTestValueRecord
+labTestValueFormToRecord form transId =
     let
-        ( f_id, f_name, f_description ) =
+        ( f_id, f_value, f_labTest_id ) =
             ( Form.getFieldAsString "id" form
                 |> .value
                 |> U.maybeStringToInt -1
-            , Form.getFieldAsString "name" form
+            , Form.getFieldAsString "value" form
                 |> .value
                 |> Maybe.withDefault ""
-            , Form.getFieldAsString "description" form
+            , Form.getFieldAsString "labTest_id" form
                 |> .value
-                |> Maybe.withDefault ""
+                |> U.maybeStringToInt -1
             )
     in
-        -- We pass the f_name field twice because the category field
-        -- is the same as the name field.
-        LabSuiteRecord f_id f_name f_description f_name transId
+        LabTestValueRecord f_id
+            f_value
+            f_labTest_id
+            transId

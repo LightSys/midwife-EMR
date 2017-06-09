@@ -4,6 +4,7 @@ module Models.Utils
         , deleteById
         , deleteByIndex
         , delSelectedRecord
+        , getNameById
         , getRecNextMax
         , getSelectedRecordAsString
         , maybeFloatToString
@@ -276,3 +277,19 @@ updateByIndex idx func records =
 
         _ ->
             records
+
+
+getNameById : Int -> RemoteData e (List { a | id : Int, name : String }) -> Maybe String
+getNameById id records =
+    case records of
+        Success recs ->
+            case LE.find (\r -> r.id == id) recs of
+                Just rec ->
+                    Just rec.name
+
+                Nothing ->
+                    Nothing
+
+        _ ->
+            Nothing
+
