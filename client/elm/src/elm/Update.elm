@@ -510,7 +510,11 @@ update msg model =
                     model ! []
 
         UrlChange location ->
-            { model | selectedPage = U.locationToPage location adminPages } ! []
+            let
+                _ =
+                    Debug.log "UrlChange" <| toString location
+            in
+                { model | selectedPage = U.locationToPage location adminPages } ! []
 
         UserChoiceSet key val ->
             { model | userChoice = Dict.insert key val model.userChoice } ! []

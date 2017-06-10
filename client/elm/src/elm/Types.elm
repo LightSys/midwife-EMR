@@ -3,6 +3,7 @@ module Types
         ( AddChgDelNotification
         , AdhocResponse
         , adminPages
+        , allPages
         , AuthResponse
         , CreateResponse
         , DeleteResponse
@@ -136,6 +137,13 @@ adminPages =
     , PageDef AdminUsersPage (Just 1) (Just adminTabs) "#users"
     , PageDef ProfilePage Nothing (Just adminTabs) "#profile"
     ]
+
+
+{-| Add pages for various roles here.
+-}
+allPages : List PageDef
+allPages =
+    adminPages
 
 
 {-| List of tabs that the administrator role sees.

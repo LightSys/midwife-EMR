@@ -11,7 +11,7 @@ import Decoders exposing (..)
 import Model exposing (..)
 import Msg exposing (..)
 import Ports
-import Types exposing (Page(..), adminPages)
+import Types exposing (Page(..), adminPages, allPages)
 import Update exposing (update)
 import Utils exposing (locationToPage)
 import View as View
@@ -20,15 +20,27 @@ import View as View
 -- MAIN
 
 
-{-| Set the selectedPage to the ProfileNotLoadedPage, which is
-not a page at all, and start the process of retrieving the
-user's profile information.
+{-| Set the selectedPage to the page specified in location
+as much as possible and load the profile as soon as
+possible as well.
+
+TODO: after adding a different role, make sure that this
+does not allow inappropriate pages per the role.
 -}
 init : Location -> ( Model, Cmd Msg )
 init location =
     let
+        page =
+            locationToPage location allPages
+                |> (\p ->
+                        if p == PageDefNotFoundPage then
+                            ProfileNotLoadedPage
+                        else
+                            p
+                   )
+
         model =
-            { initialModel | selectedPage = ProfileNotLoadedPage }
+            { initialModel | selectedPage = page }
     in
         model ! [ Task.perform (always RequestUserProfile) (Task.succeed True) ]
 
