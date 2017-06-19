@@ -11,6 +11,7 @@ var _ = require('underscore')
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
   , cfg = require('../../config')
+  , KeyValue = require('../../models').KeyValue
   , LabSuite = require('../../models').LabSuite
   , LabTest = require('../../models').LabTest
   , LabTestValue = require('../../models').LabTestValue
@@ -52,6 +53,7 @@ var LOOKUP_TABLES = [
 // or patient_id fields.
 // --------------------------------------------------------
 var LOOKUP_TABLES_NON_PATIENT = [
+  'keyValue',
   'selectData'
 ];
 
@@ -256,6 +258,14 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
     });
 };
 
+// --------------------------------------------------------
+// We only allow updates to the keyValue table and even at
+// that, we only allow the kvValue field to be modified.
+// --------------------------------------------------------
+var updateKeyValue = function(data, userInfo, cb) {
+  updateTable(_.pick(data, ['id', 'kvValue']), userInfo, cb, KeyValue, 'keyValue');
+};
+
 var addLabSuite = function(data, userInfo, cb) {
   addTable(data, userInfo, cb, LabSuite, 'labSuite');
 };
@@ -360,6 +370,7 @@ module.exports = {
   delMedicationType,
   delSelectData,
   delVaccinationType,
+  updateKeyValue,
   updateLabSuite,
   updateLabTest,
   updateLabTestValue,

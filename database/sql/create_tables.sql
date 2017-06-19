@@ -6,6 +6,17 @@ Create the tables that do not already exist.
 
 SET foreign_key_checks = 0;
 
+CREATE TABLE IF NOT EXISTS `keyValue` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  kvKey VARCHAR(50) NOT NULL,
+  kvValue VARCHAR(200) NULL,
+  description VARCHAR(200) NULL,
+  valueType ENUM('text', 'list', 'integer', 'decimal', 'date', 'boolean') NOT NULL,
+  acceptableValues VARCHAR(500) NULL,
+  systemOnly TINYINT NOT NULL DEFAULT 0,
+  UNIQUE(kvKey)
+);
+
 CREATE TABLE IF NOT EXISTS `user` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL,

@@ -1,6 +1,7 @@
 module Model
     exposing
         ( addNotificationSubscription
+        , asKeyValueModelIn
         , asLabSuiteModelIn
         , asLabTestModelIn
         , asLabTestValueModelIn
@@ -12,6 +13,7 @@ module Model
         , initialModel
         , loginFormValidate
         , Model
+        , setKeyValueModel
         , setLabSuiteModel
         , setLabTestModel
         , setLabTestValueModel
@@ -39,6 +41,7 @@ import Time exposing (Time)
 
 -- LOCAL IMPORTS
 
+import Models.KeyValue as KeyValue
 import Models.LabSuite as LabSuite
 import Models.LabTest as LabTest
 import Models.LabTestValue as LabTestValue
@@ -54,6 +57,7 @@ import Types exposing (..)
 type alias Model =
     { dataNotificationSubscriptions : List NotificationSubscription
     , eventType : RemoteData String (List EventTypeRecord)
+    , keyValueModel : KeyValue.KeyValueModel
     , labSuiteModel : LabSuite.LabSuiteModel
     , labTestModel : LabTest.LabTestModel
     , labTestValueModel : LabTestValue.LabTestValueModel
@@ -204,6 +208,7 @@ initialModel : Model
 initialModel =
     { dataNotificationSubscriptions = []
     , eventType = NotAsked
+    , keyValueModel = KeyValue.initialKeyValueModel
     , labSuiteModel = LabSuite.initialLabSuiteModel
     , labTestModel = LabTest.initialLabTestModel
     , labTestValueModel = LabTestValue.initialLabTestValueModel
@@ -255,6 +260,15 @@ addNotificationSubscription subscription model =
             }
         )
             model
+
+setKeyValueModel : KeyValue.KeyValueModel -> Model -> Model
+setKeyValueModel tableModel model =
+    (\model -> { model | keyValueModel = tableModel }) model
+
+
+asKeyValueModelIn : Model -> KeyValue.KeyValueModel -> Model
+asKeyValueModelIn =
+    flip setKeyValueModel
 
 
 setLabSuiteModel : LabSuite.LabSuiteModel -> Model -> Model

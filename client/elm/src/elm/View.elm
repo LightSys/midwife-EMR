@@ -23,6 +23,7 @@ import Model exposing (..)
 import Msg exposing (Msg(..))
 import Types exposing (..)
 import Utils exposing (getPageDef, tabIndexToPage)
+import Views.KeyValue
 import Views.Login
 import Views.Profile
 import Views.Tables
@@ -81,6 +82,9 @@ view model =
                     case model.selectedPage of
                         AdminHomePage ->
                             viewHome
+
+                        AdminConfigPage ->
+                            Views.KeyValue.view
 
                         AdminUsersPage ->
                             Views.Users.view

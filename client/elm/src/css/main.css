@@ -63,3 +63,14 @@ label.mdl-textfield__label {
 span.bodyItem {
   margin-right: 10px;
 }
+
+/* A not too big label. */
+.smallLabel {
+  color: #666666;
+  font: 16px;
+}
+.smallLabelBold {
+  color: #323232;
+  font: 16px;
+  font-weight: bold;
+}

@@ -11,6 +11,9 @@ module Types
         , emptySystemMessage
         , ErrorCode(..)
         , EventTypeRecord
+        , KeyValueForm
+        , KeyValueRecord
+        , KeyValueType(..)
         , LabSuiteForm
         , LabSuiteRecord
         , LabTestForm
@@ -62,6 +65,7 @@ type Table
     | Event
     | EventType
     | HealthTeaching
+    | KeyValue
     | LabSuite
     | LabTest
     | LabTestResult
@@ -99,6 +103,7 @@ type NotificationType
 type Page
     = PageDefNotFoundPage
     | PageNotFoundPage
+    | AdminConfigPage
     | AdminHomePage
     | AdminTablesPage
     | AdminUsersPage
@@ -133,8 +138,9 @@ notFoundPageDef =
 adminPages : List PageDef
 adminPages =
     [ PageDef AdminHomePage (Just 0) (Just adminTabs) "#home"
-    , PageDef AdminTablesPage (Just 2) (Just adminTabs) "#lookuptables"
     , PageDef AdminUsersPage (Just 1) (Just adminTabs) "#users"
+    , PageDef AdminTablesPage (Just 2) (Just adminTabs) "#lookuptables"
+    , PageDef AdminConfigPage (Just 3) (Just adminTabs) "#config"
     , PageDef ProfilePage Nothing (Just adminTabs) "#profile"
     ]
 
@@ -153,6 +159,7 @@ adminTabs =
     [ ( "Home", AdminHomePage )
     , ( "Users", AdminUsersPage )
     , ( "Lookup Tables", AdminTablesPage )
+    , ( "Configuration", AdminConfigPage )
     ]
 
 
@@ -189,7 +196,8 @@ type EditableSelectDataName
 
 
 type TableResponse
-    = LabSuiteResp (List LabSuiteRecord)
+    = KeyValueResp (List KeyValueRecord)
+    | LabSuiteResp (List LabSuiteRecord)
     | LabTestResp (List LabTestRecord)
     | LabTestValueResp (List LabTestValueRecord)
     | MedicationTypeResp (List MedicationTypeRecord)
@@ -212,6 +220,14 @@ type ErrorCode
     | UserProfileUpdateFailErrorCode
     | UserProfileUpdateSuccessErrorCode
 
+
+type KeyValueType
+    = KeyValueText
+    | KeyValueList
+    | KeyValueInteger
+    | KeyValueDecimal
+    | KeyValueDate
+    | KeyValueBoolean
 
 type alias SelectQuery =
     { table : Table
@@ -333,6 +349,29 @@ type alias EventTypeRecord =
     }
 
 
+type alias KeyValueForm =
+    { id : Int
+    , kvKey : String
+    , kvValue : String
+    , description : String
+    , valueType : String
+    , acceptableValues : String
+    , systemOnly : Bool
+    }
+
+
+type alias KeyValueRecord =
+    { id : Int
+    , kvKey : String
+    , kvValue : String
+    , description : String
+    , valueType : KeyValueType
+    , acceptableValues : String
+    , systemOnly : Bool
+    , stateId : Maybe Int
+    }
+
+
 {-| The category field is intentionally missing from
 the form because the user should not see it. The user
 edits the name field and we add the category field
@@ -390,11 +429,13 @@ type alias LabTestRecord =
     , stateId : Maybe Int
     }
 
+
 type alias LabTestValueForm =
     { id : Int
     , value : String
     , labTest_id : Int
     }
+
 
 type alias LabTestValueRecord =
     { id : Int

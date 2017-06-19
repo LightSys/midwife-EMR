@@ -34,6 +34,7 @@ maybeFloatToNull flt =
         Nothing ->
             JE.null
 
+
 maybeIntToNull : Maybe Int -> JE.Value
 maybeIntToNull int =
     case int of
@@ -43,6 +44,7 @@ maybeIntToNull int =
         Nothing ->
             JE.null
 
+
 selectQueryToValue : SelectQuery -> JE.Value
 selectQueryToValue sq =
     JE.object
@@ -50,6 +52,20 @@ selectQueryToValue sq =
         , ( "id", maybeIntToNegOne sq.id )
         , ( "patient_id", maybeIntToNegOne sq.patient_id )
         , ( "pregnancy_id", maybeIntToNegOne sq.pregnancy_id )
+        ]
+
+
+keyValueToValue : KeyValueRecord -> JE.Value
+keyValueToValue kvr =
+    JE.object
+        [ ( "id", JE.int kvr.id )
+        , ( "kvValue", JE.string kvr.kvValue )
+        , case kvr.stateId of
+            Just num ->
+                ( "stateId", JE.int num )
+
+            Nothing ->
+                ( "stateId", JE.null )
         ]
 
 
@@ -98,6 +114,7 @@ labTestToValue rec =
                 ( "stateId", JE.null )
         ]
 
+
 labTestValueToValue : LabTestValueRecord -> JE.Value
 labTestValueToValue rec =
     JE.object
@@ -111,7 +128,6 @@ labTestValueToValue rec =
             Nothing ->
                 ( "stateId", JE.null )
         ]
-
 
 
 medicationTypeToValue : MedicationTypeRecord -> JE.Value

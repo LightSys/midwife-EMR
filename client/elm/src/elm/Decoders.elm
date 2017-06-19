@@ -19,6 +19,7 @@ import RemoteData as RD exposing (RemoteData(..))
 
 import Msg exposing (..)
 import Types exposing (..)
+import Models.Utils as MU
 import Utils as U
 
 
@@ -60,6 +61,35 @@ eventTypeTable =
         |> required "id" JD.int
         |> required "name" JD.string
         |> required "description" JD.string
+
+
+decodeValueType : JD.Decoder KeyValueType
+decodeValueType =
+    JD.string |> JD.map MU.stringToKeyValueType
+
+
+keyValueTable : JD.Decoder KeyValueRecord
+keyValueTable =
+    let
+        decodeRec : Int -> String -> String -> String -> KeyValueType -> String -> Int -> KeyValueRecord
+        decodeRec id key val desc vt av so =
+            let
+                sysOnly =
+                    if so == 1 then
+                        True
+                    else
+                        False
+            in
+                KeyValueRecord id key val desc vt av sysOnly Nothing
+    in
+        decode decodeRec
+            |> required "id" JD.int
+            |> required "kvKey" JD.string
+            |> required "kvValue" JD.string
+            |> required "description" JD.string
+            |> required "valueType" decodeValueType
+            |> required "acceptableValues" JD.string
+            |> required "systemOnly" JD.int
 
 
 labSuiteTable : JD.Decoder LabSuiteRecord
@@ -201,6 +231,10 @@ selectQueryResponse =
         decodeData : String -> JD.Decoder SelectQueryResponse
         decodeData table =
             case U.stringToTable table of
+                KeyValue ->
+                    partialSelectQueryResponse
+                        |> required "data" (JD.map KeyValueResp (JD.list keyValueTable))
+
                 LabSuite ->
                     partialSelectQueryResponse
                         |> required "data" (JD.map LabSuiteResp (JD.list labSuiteTable))
@@ -244,6 +278,21 @@ decodeSelectQueryResponse : JE.Value -> RemoteData String SelectQueryResponse
 decodeSelectQueryResponse payload =
     JD.decodeValue selectQueryResponse payload
         |> RD.fromResult
+
+
+decodeKeyValueRecord : Maybe String -> Maybe KeyValueRecord
+decodeKeyValueRecord payload =
+    case payload of
+        Just p ->
+            case JD.decodeString keyValueTable p of
+                Ok val ->
+                    Just val
+
+                Err msg ->
+                    Nothing
+
+        Nothing ->
+            Nothing
 
 
 decodeLabSuiteRecord : Maybe String -> Maybe LabSuiteRecord
@@ -578,16 +627,12 @@ userProfileResponse =
 
 decodeAdhocResponse : JE.Value -> AdhocResponseMessage
 decodeAdhocResponse payload =
-    let
-        _ =
-            Debug.log "decodeAdhocResponse" <| toString payload
-    in
-        case JD.decodeValue adhocResponse payload of
-            Ok val ->
-                val
+    case JD.decodeValue adhocResponse payload of
+        Ok val ->
+            val
 
-            Err message ->
-                AdhocUnknownMsg message
+        Err message ->
+            AdhocUnknownMsg message
 
 
 decodeNotificationType : JD.Decoder NotificationType

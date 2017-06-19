@@ -137,6 +137,7 @@ var rx = require('rx')
   , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
+  , TABLE_keyValue = 'keyValue'
   , TABLE_labSuite = 'labSuite'
   , TABLE_labTest = 'labTest'
   , TABLE_labTestValue = 'labTestValue'
@@ -144,6 +145,7 @@ var rx = require('rx')
   , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
+  , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
   , addLabSuite = require('./routes/comm/lookupTables').addLabSuite
   , delLabSuite = require('./routes/comm/lookupTables').delLabSuite
   , updateLabSuite = require('./routes/comm/lookupTables').updateLabSuite
@@ -522,6 +524,12 @@ var loginUser = function(username, password, cb) {
 var getFuncForTableOp = function(table, op) {
   var func = void 0;
   switch (table) {
+    case TABLE_keyValue:
+      switch (op) {
+        // keyValue table can only be updated.
+        case CHG: func = updateKeyValue; break;
+      }
+      break;
     case TABLE_labSuite:
       switch (op) {
         case ADD: func = addLabSuite; break;

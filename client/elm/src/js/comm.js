@@ -281,6 +281,10 @@ var setApp = function(theApp) {
     sendMsg(ADHOC, wrapAdHoc(ADHOC_LOGIN, data));
   });
 
+  app.ports.keyValueUpdate.subscribe(function(data) {
+    sendMsg(CHG, wrapData('keyValue', data));
+  });
+
   app.ports.labSuiteCreate.subscribe(function(data) {
     sendMsg(ADD, wrapData('labSuite', data));
   });

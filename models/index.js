@@ -25,6 +25,8 @@ module.exports = {
   , EventTypes: require('./EventType').EventTypes
   , SelectData: require('./SelectData').SelectData
   , SelectDatas: require('./SelectData').SelectDatas
+  , KeyValue: require('./KeyValue').KeyValue
+  , KeyValues: require('./KeyValue').KeyValues
   , LabSuite: require('./LabSuite').LabSuite
   , LabSuites: require('./LabSuite').LabSuites
   , LabTest: require('./LabTest').LabTest

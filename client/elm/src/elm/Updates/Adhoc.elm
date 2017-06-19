@@ -177,8 +177,11 @@ prefetchCmdsByRole ({ userProfile } as model) =
 
                         qry2 =
                             SelectQuery Role Nothing Nothing Nothing
+
+                        qry3 =
+                            SelectQuery KeyValue Nothing Nothing Nothing
                     in
-                        [ Task.succeed [ qry1, qry2 ] |> Task.perform SelectQueryMsg ]
+                        [ Task.succeed [ qry1, qry2, qry3 ] |> Task.perform SelectQueryMsg ]
 
                 _ ->
                     []

@@ -182,6 +182,9 @@ tableToString table =
         HealthTeaching ->
             "healthTeaching"
 
+        KeyValue ->
+            "keyValue"
+
         LabSuite ->
             "labSuite"
 
@@ -269,6 +272,9 @@ stringToTable name =
 
         "healthTeaching" ->
             HealthTeaching
+
+        "keyValue" ->
+            KeyValue
 
         "labSuite" ->
             LabSuite

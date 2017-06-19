@@ -7,6 +7,7 @@ module Models.Utils
         , getNameById
         , getRecNextMax
         , getSelectedRecordAsString
+        , keyValueTypeToString
         , maybeFloatToString
         , maybeIntToString
         , maybeString
@@ -18,6 +19,7 @@ module Models.Utils
         , setRecords
         , setSelectedRecordId
         , setSelectQuery
+        , stringToKeyValueType
         , updateById
         , updateByIndex
         , validateOptionalEmail
@@ -34,6 +36,54 @@ import Set
 -- LOCAL IMPORTS
 
 import Types exposing (..)
+
+
+keyValueTypeToString : KeyValueType -> String
+keyValueTypeToString kvt =
+    case kvt of
+        KeyValueText ->
+            "text"
+
+        KeyValueList ->
+            "list"
+
+        KeyValueInteger ->
+            "integer"
+
+        KeyValueDecimal ->
+            "decimal"
+
+        KeyValueDate ->
+            "date"
+
+        KeyValueBoolean ->
+            "boolean"
+
+
+stringToKeyValueType : String -> KeyValueType
+stringToKeyValueType str =
+    case str of
+        "text" ->
+            KeyValueText
+
+        "list" ->
+            KeyValueList
+
+        "integer" ->
+            KeyValueInteger
+
+        "decimal" ->
+            KeyValueDecimal
+
+        "date" ->
+            KeyValueDate
+
+        "boolean" ->
+            KeyValueBoolean
+
+        _ ->
+            -- Default to text.
+            KeyValueText
 
 
 {-| Convert a Maybe Float to a String using a default.
@@ -292,4 +342,3 @@ getNameById id records =
 
         _ ->
             Nothing
-

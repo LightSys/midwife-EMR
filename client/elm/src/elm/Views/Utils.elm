@@ -10,6 +10,7 @@ module Views.Utils
         , radio
         , recordChanger
         , textFld
+        , textFldDate
         , textFldFocus
         )
 
@@ -105,7 +106,7 @@ checkBox lbl idx msg allowEdit val mdl =
         , Toggles.value val
         , if not allowEdit then
             Toggles.disabled
-            else
+          else
             Options.nop
         ]
         [ Html.text lbl ]
@@ -275,6 +276,39 @@ textFld lbl fld idx tagger allowEdit isPassword mdl =
             []
         , errorFor fld lbl
         ]
+
+
+textFldDate : String -> Form.FieldState e String -> List Int -> (String -> Msg) -> Bool -> Bool -> Material.Model -> Html Msg
+textFldDate lbl fld idx tagger allowEdit isPassword mdl =
+    Html.div []
+        [ Textfield.render Mdl
+            idx
+            mdl
+            [ Textfield.label lbl
+            , Textfield.floatingLabel
+            , Textfield.value <| Maybe.withDefault "" fld.value
+            , Options.attribute <| HA.type_ "date"
+            , Options.onInput tagger
+            , if isPassword then
+                Textfield.password
+              else
+                Options.nop
+            , if not allowEdit then
+                Textfield.disabled
+              else
+                Options.nop
+            , if allowEdit then
+                Options.css "font-weight" "bold"
+              else
+                Options.nop
+            , Options.input
+                [ MColor.text MColor.primary
+                ]
+            ]
+            []
+        , errorFor fld lbl
+        ]
+
 
 textFldFocus : String -> Form.FieldState e String -> List Int -> (String -> Msg) -> Bool -> Bool -> Material.Model -> Html Msg
 textFldFocus lbl fld idx tagger allowEdit isPassword mdl =

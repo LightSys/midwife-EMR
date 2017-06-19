@@ -30,6 +30,7 @@ import Ports
 import Transactions as Trans
 import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
+import Updates.KeyValue as Updates exposing (keyValueUpdate)
 import Updates.LabSuite as Updates exposing (labSuiteUpdate)
 import Updates.LabTest as Updates exposing (labTestUpdate)
 import Updates.LabTestValue as Updates exposing (labTestValueUpdate)
@@ -177,6 +178,9 @@ update msg model =
             in
                 newModel ! []
 
+        KeyValueMessages keyValueMsg ->
+            Updates.keyValueUpdate keyValueMsg model
+
         LabSuiteMessages labSuiteMsg ->
             Updates.labSuiteUpdate labSuiteMsg model
 
@@ -304,9 +308,6 @@ update msg model =
 
         SelectQueryMsg queries ->
             let
-                _ =
-                    Debug.log "SelectQueryMsg" <| toString queries
-
                 newCmds =
                     List.map (\q -> Ports.selectQuery (E.selectQueryToValue q)) queries
             in
@@ -325,8 +326,15 @@ update msg model =
                                 case ( selQryResp.success, selQryResp.errorCode ) of
                                     ( _, NoErrorCode ) ->
                                         case selQryResp.data of
+                                            KeyValueResp list ->
+                                                Updates.keyValueUpdate
+                                                    (ReadResponseKeyValue
+                                                        (RD.succeed list)
+                                                        (Just selQry)
+                                                    )
+                                                    model
+
                                             LabSuiteResp list ->
-                                                --update (LabSuiteResponse (RD.succeed list)) model
                                                 Updates.labSuiteUpdate
                                                     (ReadResponseLabSuite
                                                         (RD.succeed list)
@@ -335,7 +343,6 @@ update msg model =
                                                     model
 
                                             LabTestResp list ->
-                                                --update (LabTestResponse (RD.succeed list)) model
                                                 Updates.labTestUpdate
                                                     (ReadResponseLabTest
                                                         (RD.succeed list)
@@ -344,7 +351,6 @@ update msg model =
                                                     model
 
                                             LabTestValueResp list ->
-                                                --update (LabTestValueResponse (RD.succeed list)) model
                                                 Updates.labTestValueUpdate
                                                     (ReadResponseLabTestValue
                                                         (RD.succeed list)
@@ -353,8 +359,6 @@ update msg model =
                                                     model
 
                                             MedicationTypeResp list ->
-                                                -- Put the records into RemoteData format as expected and
-                                                -- pass to update function for processing.
                                                 Updates.medicationTypeUpdate
                                                     (ReadResponseMedicationType
                                                         (RD.succeed list)
@@ -387,8 +391,6 @@ update msg model =
                                                     model
 
                                             VaccinationTypeResp list ->
-                                                -- Put the records into RemoteData format as expected and
-                                                -- pass to update function for processing.
                                                 Updates.vaccinationTypeUpdate
                                                     (ReadResponseVaccinationType
                                                         (RD.succeed list)
@@ -481,6 +483,9 @@ update msg model =
             case change of
                 Just c ->
                     case c.table of
+                        KeyValue ->
+                            Updates.keyValueUpdate (UpdateResponseKeyValue c) model
+
                         LabSuite ->
                             Updates.labSuiteUpdate (UpdateResponseLabSuite c) model
 
@@ -510,11 +515,7 @@ update msg model =
                     model ! []
 
         UrlChange location ->
-            let
-                _ =
-                    Debug.log "UrlChange" <| toString location
-            in
-                { model | selectedPage = U.locationToPage location adminPages } ! []
+            { model | selectedPage = U.locationToPage location adminPages } ! []
 
         UserChoiceSet key val ->
             { model | userChoice = Dict.insert key val model.userChoice } ! []

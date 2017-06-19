@@ -2,6 +2,7 @@ module Msg
     exposing
         ( Msg(..)
         , AdhocResponseMessage(..)
+        , KeyValueMsg(..)
         , LabSuiteMsg(..)
         , LabTestMsg(..)
         , LabTestValueMsg(..)
@@ -37,12 +38,10 @@ type Msg
     | EditSelectedTable
     | EventTypeResponse (RemoteData String (List EventTypeRecord))
     | FirstRecord
+    | KeyValueMessages KeyValueMsg
     | LabSuiteMessages LabSuiteMsg
     | LabTestMessages LabTestMsg
     | LabTestValueMessages LabTestValueMsg
-    --| LabSuiteResponse (RemoteData String (List LabSuiteRecord))
-    --| LabTestResponse (RemoteData String (List LabTestRecord))
-    --| LabTestValueResponse (RemoteData String (List LabTestValueRecord))
     | LastRecord
     | Login
     | LoginFormMsg Form.Msg
@@ -75,6 +74,15 @@ type Msg
     | VaccinationTypeMessages VaccinationTypeMsg
     | VaccinationTypeResponse (RemoteData String (List VaccinationTypeRecord))
 
+
+type KeyValueMsg
+    = CancelEditKeyValue
+    | FormMsgKeyValue Form.Msg
+    | ReadResponseKeyValue (RemoteData String (List KeyValueRecord)) (Maybe SelectQuery)
+    | SelectedRecordEditModeKeyValue EditMode (Maybe Int)
+    | SelectedRecordKeyValue (Maybe Int)
+    | UpdateKeyValue
+    | UpdateResponseKeyValue UpdateResponse
 
 type MedicationTypeMsg
     = CancelEditMedicationType
