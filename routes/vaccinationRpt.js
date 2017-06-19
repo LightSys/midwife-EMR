@@ -202,11 +202,18 @@ var doColumnHeader = function(doc, opts) {
   centerInCol(doc, tmpStr, colPos[18], colPos[19], y);
 
   // TT
-  tmpStr = 'TT' + opts.reportNum;
+  tmpStr = 'TT';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
   centerInCol(doc, tmpStr, colPos[19], colPos[20], y);
+
+  // Td
+  tmpStr = 'Td';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, tmpStr, colPos[20], colPos[21], y);
 };
 
 
@@ -243,7 +250,8 @@ var getColXpos = function(opts) {
   x += 45; xPos.push(x);                // HBSAG
   x += 22; xPos.push(x);                // Hct
   x += 22; xPos.push(x);                // Hgb
-  x += 45; xPos.push(x);                // TT date
+  x += 22; xPos.push(x);                // TT
+  x += 20; xPos.push(x);                // Td
 
   return xPos;
 };
@@ -728,9 +736,17 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
     }
   }
 
-  // TT - note that this is exactly the same as the date field.
-  tmpStr = moment(data.vacDate).format('MM/DD/YYYY');
+  // TT
+  // For these next two fields we are totally dependent upon how the
+  // vaccination is named in the vaccinationType table. It would
+  // be better to show the full name of the vaccination but there
+  // are space issues.
+  tmpStr = data.name.startsWith('Tetanus T')? 'X': '';
   centerInCol(doc, tmpStr, colPos[19], colPos[20], textY);
+
+  // Td
+  tmpStr = data.name.startsWith('Tetanus D')? 'X': '';
+  centerInCol(doc, tmpStr, colPos[20], colPos[21], textY);
 };
 
 
@@ -799,7 +815,7 @@ var doReport = function(flds, writable, logisticsName) {
         , layout: 'landscape'
         , size: 'folio'
         , info: {
-            Title: 'TT' + reportNum + ' Report'
+            Title: 'TT/Td ' + reportNum + ' Report'
             , Author: 'Midwife-EMR Application'
             , Subject: 'Vaccination Given Report'
         }
