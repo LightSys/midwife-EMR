@@ -12,7 +12,6 @@ var Knex = require('knex')
   , fs = require('fs')
   , path = require('path')
   , sqlite3 = require('sqlite3').verbose()
-  , cfg = require('../config')
   , util = require('../util')
     // Note: file references from the perspective of the top-level directory.
   , sqliteCreateSchemaFile = './database/sql/create_sqlite_schema.sql'
@@ -27,10 +26,11 @@ var Knex = require('knex')
  * a MySQL or a SQLite3 database based upon the settings
  * passed.
  *
- * param       settings - configuration object
+ * param       cfg      - configuration object
  * return      cb       - (err, success) Node style
  * -------------------------------------------------------- */
-const init = (settings, cb) => {
+const init = (cfg, cb) => {
+  let settings = cfg.database
   let dbConn
   let databaseFile
 

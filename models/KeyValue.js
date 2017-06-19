@@ -9,6 +9,8 @@
 var moment = require('moment')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
+  , _ = require('underscore')
+  , Promise = require('bluebird')
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
   , KeyValue = {}
   ;
@@ -27,6 +29,39 @@ CREATE TABLE `keyValue` (
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1
 */
 
+// --------------------------------------------------------
+// Return all of the records in the keyValue table in the
+// format that the configuration object expects.
+//
+// Example usage on how to update cfg object with keyValues.
+//
+// var cfg = require('./config');
+// var KeyValue = require('./models').KeyValue;
+// KeyValue.getKeyValues().then(function(data) {
+//   cfg = _.extend(data, cfg);
+//   // cfg is ready to use here
+// })
+// .caught(function(err) {
+//   console.log(err);
+// });
+// --------------------------------------------------------
+var getKeyValues = function() {
+  return new Promise(function(resolve, reject) {
+    KeyValue
+      .fetchAll()
+      .then(function(recs) {
+        var config = {};
+        _.each(recs.toJSON(), function(rec) {
+          config[rec.kvKey] = rec.kvValue;
+        });
+        resolve(config);
+      })
+      .caught(function(err) {
+        reject(err);
+      });
+  });
+};
+
 KeyValue = Bookshelf.Model.extend({
   tableName: 'keyValue'
 
@@ -44,6 +79,13 @@ KeyValue = Bookshelf.Model.extend({
     // --------------------------------------------------------
   , noLogging: true
 
+}, {
+  // --------------------------------------------------------
+  // Class Properties.
+  // --------------------------------------------------------
+  getKeyValues: function() {
+    return getKeyValues();
+  }
 });
 
 KeyValues = Bookshelf.Collection.extend({

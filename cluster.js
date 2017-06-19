@@ -35,7 +35,7 @@ if (cfg.database.file) config.workers = 1;
 // Check that the database already exists and create it if
 // it does not.
 // --------------------------------------------------------
-database.init(cfg.database, (err, success) => {
+database.init(cfg, (err, success) => {
   if (err) {
     console.log(err)
     console.log('ABORTING due to database error.')
