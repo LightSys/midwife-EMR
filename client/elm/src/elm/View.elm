@@ -23,6 +23,7 @@ import Model exposing (..)
 import Msg exposing (Msg(..))
 import Types exposing (..)
 import Utils exposing (getPageDef, tabIndexToPage)
+import Views.Barcodes
 import Views.KeyValue
 import Views.Login
 import Views.Profile
@@ -82,6 +83,9 @@ view model =
                     case model.selectedPage of
                         AdminHomePage ->
                             viewHome
+
+                        AdminBarcodesPage ->
+                            Views.Barcodes.view
 
                         AdminConfigPage ->
                             Views.KeyValue.view
@@ -218,7 +222,7 @@ systemLog model =
     in
         Html.div []
             [ Html.h4 []
-                [ text "System Log "
+                [ text "Midwife-EMR Activity "
                 , Html.small []
                     [ text "Most recent 300, newest at the top" ]
                 ]

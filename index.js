@@ -62,6 +62,7 @@ var express = require('express')
   , report = require('./routes').report
   , dewormingRpt = require('./routes').dewormingRpt
   , priorityList = require('./routes').priorityList
+  , generateBarcodes = require('./routes').generateBarcodes
   , invWork = require('./routes').invWork
   , logInfo = require('./util').logInfo
   , logWarn = require('./util').logWarn
@@ -192,6 +193,11 @@ app.use(device.capture());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
+
+// --------------------------------------------------------
+// Insure that our priority numbers are prepped and ready.
+// --------------------------------------------------------
+generateBarcodes();
 
 // --------------------------------------------------------
 // Deliver these JS libraries to the templating system.

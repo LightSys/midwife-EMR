@@ -103,6 +103,7 @@ type NotificationType
 type Page
     = PageDefNotFoundPage
     | PageNotFoundPage
+    | AdminBarcodesPage
     | AdminConfigPage
     | AdminHomePage
     | AdminTablesPage
@@ -141,6 +142,7 @@ adminPages =
     , PageDef AdminUsersPage (Just 1) (Just adminTabs) "#users"
     , PageDef AdminTablesPage (Just 2) (Just adminTabs) "#lookuptables"
     , PageDef AdminConfigPage (Just 3) (Just adminTabs) "#config"
+    , PageDef AdminBarcodesPage (Just 4) (Just adminTabs) "#barcodes"
     , PageDef ProfilePage Nothing (Just adminTabs) "#profile"
     ]
 
@@ -160,6 +162,7 @@ adminTabs =
     , ( "Users", AdminUsersPage )
     , ( "Lookup Tables", AdminTablesPage )
     , ( "Configuration", AdminConfigPage )
+    , ( "Barcodes", AdminBarcodesPage )
     ]
 
 
