@@ -11,7 +11,8 @@ var path = require('path');
 const CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin
 const OccurenceOrderPlugin = webpack.optimize.OccurenceOrderPlugin
 
-const ELM_START = path.resolve(__dirname, 'client', 'elm', 'src', 'index.js')
+const ELM_ADMIN = path.resolve(__dirname, 'client', 'elm', 'src', 'administrator.js')
+const ELM_MEDICAL = path.resolve(__dirname, 'client', 'elm', 'src', 'medical.js')
 const BUILD_PATH = path.resolve(__dirname, 'static', 'js')
 const MODULE_DIRS = ['node_modules']
 const ELM_SOURCE = path.resolve(__dirname, 'client', 'elm')
@@ -21,7 +22,8 @@ module.exports = {
     'elm-vendor': [
       'socket.io-client/lib/index.js'
     ],
-    'elm': ELM_START
+    'administrator': ELM_ADMIN,
+    'medical': ELM_MEDICAL
   },
   resolve: {
     root: __dirname,
@@ -35,7 +37,7 @@ module.exports = {
   },
   plugins: [
     new OccurenceOrderPlugin(),
-    new ExtractTextPlugin('elm.styles.css')
+    new ExtractTextPlugin('[name].styles.css')
   ],
   module: {
     loaders: [

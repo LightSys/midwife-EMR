@@ -88,6 +88,7 @@ var doSpa = function(req, res, next) {
     , connSid
     , data
     , newMenu
+    , pageName
     ;
 
   // --------------------------------------------------------
@@ -184,7 +185,19 @@ var doSpa = function(req, res, next) {
         return res.redirect('/');
       }
 
-      return res.render('main_elm');
+      // --------------------------------------------------------
+      // Each role has it's own starting jade page for the sake
+      // of customization by role as well as only loading what is
+      // necessary for the role.
+      // --------------------------------------------------------
+      switch (req.session.user.role.name) {
+        case 'administrator': pageName = 'start_administrator'; break;
+        case 'guard': pageName = 'start_guard'; break;
+        case 'supervisor': pageName = 'start_supervisor'; break;
+        default: pageName = '';
+      }
+
+      return res.render(pageName);
     }
   }
   return next();

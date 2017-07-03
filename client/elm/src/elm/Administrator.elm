@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Administrator exposing (..)
 
 import Html
 import Navigation exposing (Location)
