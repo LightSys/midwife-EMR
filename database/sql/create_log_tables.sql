@@ -1,3 +1,13 @@
+-- Creating keyValueLog
+SELECT 'keyValueLog' AS Creating FROM DUAL;
+CREATE TABLE keyValueLog LIKE keyValue;
+ALTER TABLE keyValueLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE keyValueLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE keyValueLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE keyValueLog DROP PRIMARY KEY;
+ALTER TABLE keyValueLog ADD PRIMARY KEY (id, replacedAt);
+--
+--
 -- Creating userLog
 SELECT 'userLog' AS Creating FROM DUAL;
 CREATE TABLE userLog LIKE user;

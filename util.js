@@ -28,6 +28,43 @@ var moment = require('moment')
   ;
 
 
+// --------------------------------------------------------
+// ErrorCode values for returning to the Elm client.
+// --------------------------------------------------------
+var LoginSuccessErrorCode = 'LoginSuccessErrorCode';
+var LoginSuccessDifferentUserErrorCode = 'LoginSuccessDifferentUserErrorCode';
+var LoginFailErrorCode = 'LoginFailErrorCode';
+var UserProfileSuccessErrorCode = 'UserProfileSuccessErrorCode';
+var UserProfileFailErrorCode = 'UserProfileFailErrorCode';
+var UserProfileUpdateSuccessErrorCode = 'UserProfileUpdateSuccessErrorCode';
+var UserProfileUpdateFailErrorCode = 'UserProfileUpdateFailErrorCode';
+var NoErrorCode = 'NoErrorCode';
+var SessionExpiredErrorCode = 'SessionExpiredErrorCode';
+var SqlErrorCode = 'SqlErrorCode';
+var UnknownErrorCode = 'UnknownErrorCode';
+var UnknownTableErrorCode = 'UnknownTableErrorCode';
+
+
+/* --------------------------------------------------------
+ * msg()
+ *
+ * Returns a partially applied function allowing caller to
+ * prefill the prefix (contextual) message and supply the
+ * specifics to the returned function as needed.
+ *
+ * Usage:
+ *    var m = msg('comm_assert/some_function()');
+ *    assert.ok(user, m('user'));
+ *
+ * param       prefix
+ * return      partially applied function
+ * -------------------------------------------------------- */
+function msg(prefix) {
+  return function(message) {
+    return prefix + (message? ': ' + message : '');
+  };
+}
+
 /* --------------------------------------------------------
  * formatDohID()
  *
@@ -340,6 +377,123 @@ var isValidDate = function(dte, format) {
 
 
 /* --------------------------------------------------------
+ * returnStatus()
+ *
+ * Utility function to build an object based on the fields
+ * passed.
+ *
+ * param       op         - the operation
+ * param       table      - the table name
+ * param       id         - the id
+ * param       otherId    - an id with a name depending on the operation
+ * param       success    - boolean
+ * param       msg        - message about error, etc.
+ * return      rec
+ * -------------------------------------------------------- */
+var returnStatusCHG = function(table, id, stateId, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+  var retVal = {
+    table: table,
+    id: id,
+    stateId: stateId,
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msgStr
+  };
+  return retVal;
+};
+
+
+var returnStatusADD = function(table, originalId, newId, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+  var retVal = {
+    id: newId,
+    table: table,
+    pendingId: originalId,
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msgStr
+  };
+  return retVal;
+};
+
+var returnStatusDEL = function(table, id, stateId, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+  var retVal = {
+    table: table,
+    id: id,
+    stateId: stateId,
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msgStr
+  };
+  return retVal;
+};
+
+var returnStatusSELECT = function(obj, data, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+  var retVal = _.clone(obj);
+  retVal.data = data? data: [];
+  retVal.success = success;
+  retVal.errorCode = errCode? errCode: NoErrorCode;
+  retVal.msg = msgStr;
+  return retVal;
+};
+
+// --------------------------------------------------------
+// Note, defaults isLoggedIn to false. Caller needs to set
+// explicitly along with other required fields.
+// --------------------------------------------------------
+var returnLogin = function(success, errCode, msg) {
+  return {
+    adhocType: 'ADHOC_LOGIN_RESPONSE',
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msg? msg: '',
+    isLoggedIn: false
+  };
+};
+
+// --------------------------------------------------------
+// Note, defaults isLoggedIn to false. Caller needs to set
+// explicitly along with other required fields.
+// --------------------------------------------------------
+var returnUserProfile = function(success, errCode, msg) {
+  return {
+    adhocType: 'ADHOC_USER_PROFILE_RESPONSE',
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msg? msg: '',
+    isLoggedIn: false
+  };
+};
+
+// --------------------------------------------------------
+// Note, defaults isLoggedIn to false. Caller needs to set
+// explicitly along with other required fields.
+// --------------------------------------------------------
+var returnUserProfileUpdate = function(success, errCode, msg) {
+  return {
+    adhocType: 'ADHOC_USER_PROFILE_UPDATE_RESPONSE',
+    success: success,
+    errorCode: errCode? errCode: NoErrorCode,
+    msg: msg? msg: ''
+  };
+};
+
+/* --------------------------------------------------------
  * validOrVoidDate()
  *
  * Insure that the parameter passed in either a valid Date
@@ -369,21 +523,41 @@ var dbType = function() {
 }
 
 module.exports = {
-  logInfo: logInfo
-  , logWarn: logWarn
-  , logError: logError
-  , getGA: getGA
-  , calcEdd: calcEdd
+  addBlankSelectData: addBlankSelectData
   , adjustSelectData: adjustSelectData
-  , addBlankSelectData: addBlankSelectData
-  , getAbbr: getAbbr
-  , formatDohID: formatDohID
-  , isValidDate: isValidDate
-  , validOrVoidDate: validOrVoidDate
-  , getProcessId
+  , calcEdd: calcEdd
   , dbType
-  , KnexSQLite3
+  , formatDohID: formatDohID
+  , getAbbr: getAbbr
+  , getGA: getGA
+  , getProcessId
+  , isValidDate: isValidDate
   , KnexMySQL
+  , KnexSQLite3
+  , logError: logError
+  , logInfo: logInfo
+  , logWarn: logWarn
+  , LoginFailErrorCode
+  , LoginSuccessErrorCode
+  , LoginSuccessDifferentUserErrorCode
+  , msg
+  , NoErrorCode
+  , returnLogin
+  , returnStatusADD: returnStatusADD
+  , returnStatusCHG: returnStatusCHG
+  , returnStatusDEL: returnStatusDEL
+  , returnStatusSELECT: returnStatusSELECT
+  , returnUserProfile
+  , returnUserProfileUpdate
+  , SessionExpiredErrorCode
+  , SqlErrorCode
+  , UnknownErrorCode
+  , UnknownTableErrorCode
+  , UserProfileSuccessErrorCode
+  , UserProfileFailErrorCode
+  , UserProfileUpdateSuccessErrorCode
+  , UserProfileUpdateFailErrorCode
+  , validOrVoidDate: validOrVoidDate
 };
 
 

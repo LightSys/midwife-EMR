@@ -89,12 +89,14 @@ var rx = require('rx')
   , _ = require('underscore')
   , moment = require('moment')
   , cfg = require('./config')
-  , getLookupTable = require('./routes/api/lookupTables').getLookupTable
+  , User = require('./models').User
+  , getLookupTable = require('./routes/comm/lookupTables').getLookupTable
   , saveUser = require('./routes/comm/userRoles').saveUser
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
   , savePrenatal = require('./routes/comm/pregnancy').savePrenatal
   , buildChangeObject = require('./changes').buildChangeObject
   , socketToUserInfo = require('./commUtils').socketToUserInfo
+  , sendData = require('./commUtils').sendData
   , isInitialized = false
   , ioSystem          // our system socket
   , ioSite            // our site socket
@@ -110,8 +112,8 @@ var rx = require('rx')
   , siteSubjectData
   , systemSubject
   , dataSubject
-  , CONST
-  , DATA_CHANGE = 'DATA_CHANGE'
+  , CONST = require('./commUtils').getConstants('CONST')
+  , DATA_CHANGE = require('./commUtils').getConstants('DATA_CHANGE')  // Note: used in old code only.
   , SYSTEM_LOG = 'SYSTEM_LOG'
   , DATA_TABLE_REQUEST = 'DATA_TABLE_REQUEST'
   , DATA_TABLE_SUCCESS = 'DATA_TABLE_SUCCESS'
@@ -119,6 +121,75 @@ var rx = require('rx')
   , ADD_USER_REQUEST = 'ADD_USER_REQUEST'
   , SAVE_PRENATAL_REQUEST = 'SAVE_PRENATAL_REQUEST'
   , CHECK_IN_OUT_REQUEST = 'CHECK_IN_OUT_REQUEST'
+  , DATA_SELECT = 'SELECT'                    // SELECT event in the data namespace.
+  , DATA_SELECT_RESPONSE = 'SELECT_RESPONSE'  // SELECT_RESPONSE event in the data namespace.
+  //
+  // Elm Client stuff - corresponds with comm.js on the client.
+  //
+  , ADD = 'ADD'                             // data add request.
+  , ADD_RESPONSE = 'ADD_RESPONSE'           // data add response.
+  , CHG = 'CHG'                             // data change request.
+  , CHG_RESPONSE = 'CHG_RESPONSE'           // data change response.
+  , DEL = 'DEL'                             // data delete request.
+  , DEL_RESPONSE = 'DEL_RESPONSE'           // data delete response.
+  , ADHOC = 'ADHOC'                         // data adhoc request.
+  , ADHOC_RESPONSE = 'ADHOC_RESPONSE'       // data adhoc response.
+  , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
+  , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
+  , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
+  , TABLE_keyValue = 'keyValue'
+  , TABLE_labSuite = 'labSuite'
+  , TABLE_labTest = 'labTest'
+  , TABLE_labTestValue = 'labTestValue'
+  , TABLE_medicationType = 'medicationType'
+  , TABLE_selectData = 'selectData'
+  , TABLE_vaccinationType = 'vaccinationType'
+  , TABLE_user = 'user'
+  , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
+  , addLabSuite = require('./routes/comm/lookupTables').addLabSuite
+  , delLabSuite = require('./routes/comm/lookupTables').delLabSuite
+  , updateLabSuite = require('./routes/comm/lookupTables').updateLabSuite
+  , addLabTest = require('./routes/comm/lookupTables').addLabTest
+  , delLabTest = require('./routes/comm/lookupTables').delLabTest
+  , updateLabTest = require('./routes/comm/lookupTables').updateLabTest
+  , addLabTestValue = require('./routes/comm/lookupTables').addLabTestValue
+  , delLabTestValue = require('./routes/comm/lookupTables').delLabTestValue
+  , updateLabTestValue = require('./routes/comm/lookupTables').updateLabTestValue
+  , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
+  , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
+  , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
+  , addSelectData = require('./routes/comm/lookupTables').addSelectData
+  , delSelectData = require('./routes/comm/lookupTables').delSelectData
+  , updateSelectData = require('./routes/comm/lookupTables').updateSelectData
+  , addVaccinationType = require('./routes/comm/lookupTables').addVaccinationType
+  , delVaccinationType = require('./routes/comm/lookupTables').delVaccinationType
+  , updateVaccinationType = require('./routes/comm/lookupTables').updateVaccinationType
+  , addUser = require('./routes/comm/userRoles').addUser
+  , delUser = require('./routes/comm/userRoles').delUser
+  , updateUser = require('./routes/comm/userRoles').updateUser
+  , updateUserProfile = require('./routes/comm/userRoles').updateUserProfile
+  , getUserProfile = require('./routes/comm/userRoles').getUserProfile
+  , returnLogin = require('./util').returnLogin
+  , returnUserProfile = require('./util').returnUserProfile
+  , returnUserProfileUpdate = require('./util').returnUserProfileUpdate
+  , returnStatusADD = require('./util').returnStatusADD
+  , returnStatusCHG = require('./util').returnStatusCHG
+  , returnStatusDEL = require('./util').returnStatusDEL
+  , returnStatusSELECT = require('./util').returnStatusSELECT
+  , LoginFailErrorCode = require('./util').LoginFailErrorCode
+  , LoginSuccessErrorCode = require('./util').LoginSuccessErrorCode
+  , LoginSuccessDifferentUserErrorCode = require('./util').LoginSuccessDifferentUserErrorCode
+  , UserProfileSuccessErrorCode = require('./util').UserProfileSuccessErrorCode
+  , UserProfileFailErrorCode = require('./util').UserProfileFailErrorCode
+  , UserProfileUpdateSuccessErrorCode = require('./util').UserProfileUpdateSuccessErrorCode
+  , UserProfileUpdateFailErrorCode = require('./util').UserProfileUpdateFailErrorCode
+  , NoErrorCode = require('./util').NoErrorCode
+  , SessionExpiredErrorCode = require('./util').SessionExpiredErrorCode
+  , SqlErrorCode = require('./util').SqlErrorCode
+  , UnknownTableErrorCode = require('./util').UnknownTableErrorCode
+  , UnknownErrorCode = require('./util').UnknownErrorCode
+  , assertModule = require('./comm_assert')
+  , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
 
 
@@ -229,18 +300,6 @@ var logCommError = function(msg, doSysMsg) {
   if (doSysMsg) sendSystem(SYSTEM_LOG, message);
 };
 
-// --------------------------------------------------------
-// Constant definitions. Allow client of this module to use
-// constants to help avoid spelling issues.
-// --------------------------------------------------------
-CONST = {
-  TYPE: {
-    SITE: 'site'
-    , SYSTEM: 'system'
-    , DATA: 'data'
-  }
-};
-
 /* --------------------------------------------------------
  * wrap()
  *
@@ -315,28 +374,6 @@ function makeSend(type) {
         if (isInitialized) systemSubject.onNext(wrapped);
         break;
 
-      case CONST.TYPE.DATA:
-        if (key === DATA_CHANGE) {
-          try {
-            data = JSON.parse(val)
-          } catch (e) {
-            logCommError('Error in makeSend processing data: ' + e.toString());
-            return;
-          }
-          buildChangeObject(data).then(function(data2) {
-            // --------------------------------------------------------
-            // Broadcast this to the other processes for distribution
-            // to all connected clients.
-            // --------------------------------------------------------
-            process.send({type: CONST.TYPE.DATA, data: data2});
-          });
-          break;
-
-        } else {
-          // TODO: Handle response from lookup table request. Only send to caller.
-          // Intentional fall through to default.
-        }
-
       default:
         logCommError('Error: makeSend() unimplemented for this type: ' + type);
     }
@@ -346,7 +383,6 @@ function makeSend(type) {
 /* --------------------------------------------------------
  * sendSite()
  * sendSystem()
- * sendData()
  *
  * Send a message of a certain type.
  *
@@ -357,7 +393,8 @@ function makeSend(type) {
  * -------------------------------------------------------- */
 var sendSite = makeSend(CONST.TYPE.SITE);
 var sendSystem = makeSend(CONST.TYPE.SYSTEM);
-var sendData = makeSend(CONST.TYPE.DATA);
+// Note: sendData() has been refactored into commUtils.js.
+//var sendData = makeSend(CONST.TYPE.DATA);
 
 /* --------------------------------------------------------
  * subscribeSite()
@@ -411,13 +448,31 @@ var subscribeData = function(onNext, onError, onCompleted) {
   * return      boolean
   * -------------------------------------------------------- */
 var isValidSocketSession = function(socket) {
+  if (DO_ASSERT) assertModule.isValidSocketSession(socket);
+  var notExpired = false;
   var isValid = socket &&
                 socket.request &&
                 socket.request.session &&
                 socket.request.session.roleInfo &&
                 socket.request.session.roleInfo.isAuthenticated? true: false;
-  //if (isValid) console.dir(socket.request.session);
-  return isValid;
+  if (isValid && socket.request.session.cookie._expires) {
+    notExpired = moment().isBefore(moment(socket.request.session.cookie._expires, moment.ISO_8601));
+  }
+  return !! (isValid && notExpired);
+};
+
+/* --------------------------------------------------------
+ * touchSocketSession()
+ *
+ * Touch the session within the socket passed in order to
+ * extend the expiry timeout accordingly.
+ *
+ * param       socket
+ * return      undefined
+ * -------------------------------------------------------- */
+var touchSocketSession = function(socket) {
+  if (DO_ASSERT) assertModule.touchSocketSession(socket);
+  socket.request.session.touch();
 };
 
 /* --------------------------------------------------------
@@ -432,6 +487,373 @@ var isValidSocketSession = function(socket) {
 var getSocketSessionId = function(socket) {
   if (! isValidSocketSession(socket)) return '';
   return socket.request.sessionID? socket.request.sessionID: '';
+};
+
+/* --------------------------------------------------------
+ * loginUser()
+ *
+ * Find the user by username. If there is no user with the
+ * given username, or the password is not correct, set the
+ * user to 'false' in order to indicate failure. Otherwise,
+ * return the authenticated user.
+ *
+ * param       username
+ * param       password
+ * param       cb
+ * return      undefined
+ * -------------------------------------------------------- */
+var loginUser = function(username, password, cb) {
+  User.findByUsername(username, function(err, user) {
+    if (!user) { return cb(null, false, { message: 'Unknown user ' + username }); }
+    if (user.get('status') != 1) {
+      return cb(null, false, {
+        message: username + ' is not an active account.'
+      });
+    }
+    user.checkPassword(password, function(err, same) {
+      if (err) return cb(err);
+      if (same) {
+        return cb(null, user);
+      } else {
+        return cb(null, false, {message: 'Invalid password'});
+      }
+    });
+  });
+};
+
+var getFuncForTableOp = function(table, op) {
+  var func = void 0;
+  switch (table) {
+    case TABLE_keyValue:
+      switch (op) {
+        // keyValue table can only be updated.
+        case CHG: func = updateKeyValue; break;
+      }
+      break;
+    case TABLE_labSuite:
+      switch (op) {
+        case ADD: func = addLabSuite; break;
+        case CHG: func = updateLabSuite; break;
+        case DEL: func = delLabSuite; break;
+      }
+      break;
+    case TABLE_labTest:
+      switch (op) {
+        case ADD: func = addLabTest; break;
+        case CHG: func = updateLabTest; break;
+        case DEL: func = delLabTest; break;
+      }
+      break;
+    case TABLE_labTestValue:
+      switch (op) {
+        case ADD: func = addLabTestValue; break;
+        case CHG: func = updateLabTestValue; break;
+        case DEL: func = delLabTestValue; break;
+      }
+      break;
+    case TABLE_medicationType:
+      switch (op) {
+        case ADD: func = addMedicationType; break;
+        case CHG: func = updateMedicationType; break;
+        case DEL: func = delMedicationType; break;
+      }
+      break;
+    case TABLE_selectData:
+      switch (op) {
+        case ADD: func = addSelectData; break;
+        case CHG: func = updateSelectData; break;
+        case DEL: func = delSelectData; break;
+      }
+      break;
+    case TABLE_user:
+      switch (op) {
+        case ADD: func = addUser; break;
+        case CHG: func = updateUser; break;
+        case DEL: func = delUser; break;
+      }
+      break;
+    case TABLE_vaccinationType:
+      switch (op) {
+        case ADD: func = addVaccinationType; break;
+        case CHG: func = updateVaccinationType; break;
+        case DEL: func = delVaccinationType; break;
+      }
+      break;
+  }
+  return func;
+};
+
+/* --------------------------------------------------------
+ * handleData()
+ *
+ * Handle a Socket.io event in the DATA namespace.
+ *
+ * param        evtName
+ * param        payload
+ * param        socket
+ * return       undefined
+ * -------------------------------------------------------- */
+var handleData = function(evtName, payload, socket) {
+  if (DO_ASSERT) assertModule.handleData(evtName, payload, socket);
+  var wrapper = JSON.parse(payload);
+  var table = wrapper.table? wrapper.table: void 0
+    , data = wrapper.data? wrapper.data: {}
+    , recId = data? data.id: -1
+    , userInfo = socketToUserInfo(socket)
+    , retAction
+    , dataFunc
+    , returnStatusFunc
+    , responseEvt
+  ;
+  console.log('handleData() for ' + evtName + ' with payload of: ' + payload);
+  switch (evtName) {
+    case ADD:
+      if (! table || ! data || (! recId < 0) ) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data ADD request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusADD;
+      responseEvt = ADD_RESPONSE;
+      break;
+
+    case CHG:
+      if (! table || ! data || recId === -1 || data.stateId === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data CHG request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusCHG;
+      responseEvt = CHG_RESPONSE;
+      break;
+
+    case DEL:
+      if (! table || ! data || recId === -1 || data.stateId === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data DEL request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusDEL;
+      responseEvt = DEL_RESPONSE;
+      break;
+
+    default:
+      console.log('UNKNOWN event of ' + evtName + ' in handeData().');
+      retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This event cannot be handled by the server: " + evtName + '.');
+      return socket.emit(responseEvt, JSON.stringify(retAction));
+  }
+
+  dataFunc = getFuncForTableOp(table, evtName);
+  if (! dataFunc) {
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This table cannot be handled by the server.");
+    console.log(retAction);
+    return socket.emit(responseEvt, JSON.stringify(retAction));
+  }
+
+  if (! isValidSocketSession(socket)) {
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired.");
+    console.log(retAction);
+    return socket.emit(responseEvt, JSON.stringify(retAction));
+  } else touchSocketSession(socket);
+
+  if (! userInfo) {
+    // NOTE: this is an error that occurs and I have not been able to track down yet.
+    console.log('ERROR: userInfo object not populated in comm.js handleData(). ABORTING!');
+    return;
+  }
+
+  dataFunc(data, userInfo, function(err, success, additionalData) {
+    var errMsg;
+    if (err) {
+      logCommError(err);
+      errMsg = err.message? err.message: err;
+      if (evtName === ADD) {
+        retAction = returnStatusFunc(table, data.id, data.id, false, SqlErrorCode, errMsg);
+      } else {
+        retAction = returnStatusFunc(table, data.id, data.stateId, false, SqlErrorCode, errMsg);
+      }
+      return socket.emit(responseEvt, JSON.stringify(retAction));
+    }
+    if (evtName == ADD) {
+      retAction = returnStatusFunc(table, data.id, additionalData.id, true);
+    } else {
+      retAction = returnStatusFunc(table, data.id, data.stateId, true);
+    }
+    socket.emit(responseEvt, JSON.stringify(retAction));
+
+    // --------------------------------------------------------
+    // Write out to the log and SYSTEM_LOG for administrators.
+    // --------------------------------------------------------
+    return logCommInfo(userInfo.user.username + ": " + table + ": " + evtName, true);
+  });
+
+};
+
+var handleLogin = function(json, socket) {
+  if (DO_ASSERT) assertModule.handleLogin(json, socket);
+  var username = json.data && json.data.username ? json.data.username: void 0;
+  var password = json.data && json.data.password ? json.data.password: void 0;
+  var isDifferentUser = false;
+  var retAction;
+  var msg;
+
+  if (! username || ! password ) {
+    msg = 'Username and/or password not supplied.';
+    retAction = returnLogin(false, LoginFailErrorCode, msg);
+    return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+  }
+
+  // Check if this is the same user as is possibly in the session now.
+  if (socket.request.session &&
+      socket.request.session.user &&
+      socket.request.session.user.username &&
+      socket.request.session.user.username !== username) {
+    isDifferentUser = true;
+  }
+
+
+  // Login the user.
+  loginUser(username, password, function(err, user, msgObj) {
+    if (err) {
+      // Unknown failure, not just a failed login.
+      console.log(err);
+      retAction = returnLogin(false, LoginFailErrorCode, err);
+      return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+    }
+
+    if (user) {
+      if (isDifferentUser) {
+        sendUserProfile(socket, user.toJSON(), LoginSuccessDifferentUserErrorCode);
+      } else {
+        sendUserProfile(socket, user.toJSON(), LoginSuccessErrorCode);
+      }
+    } else {
+      // Failed login.
+      console.log(msgObj);
+      retAction = returnLogin(false, LoginFailErrorCode, msgObj.message);
+      return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+    }
+  });
+};
+
+var handleUserProfile = function(socket, data, userInfo) {
+  if (DO_ASSERT) assertModule.handleUserProfile(socket, data, userInfo);
+  var retAction;
+  var errCode;
+  if (isValidSocketSession(socket)) {
+    if (socket.request.session.user) {
+      if (data && userInfo) {
+        // User is updating (hopefully) their own profile. updateUserProfile()
+        // will sanity check that they are only updating their own profile.
+        updateUserProfile(data, userInfo, function(err, success, id) {
+          if (err) {
+            console.log(err);
+            retAction = returnUserProfileUpdate(false, UserProfileUpdateFailErrorCode);
+            return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+          }
+          errCode = UserProfileUpdateFailErrorCode;
+          if (success) errCode = UserProfileUpdateSuccessErrorCode;
+          retAction = returnUserProfileUpdate(!!success, errCode);
+          socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+
+          // --------------------------------------------------------
+          // Write out to the log and SYSTEM_LOG for administrators.
+          // --------------------------------------------------------
+          return logCommInfo(userInfo.user.username + ": updated user profile", true);
+        });
+      } else {
+        // Get the user profile information.
+        getUserProfile(socket.request.session.user.id, function(err, success, userObj) {
+          if (err || ! success) {
+            console.log(err);
+            return sendUserProfile(socket, userObj, UserProfileFailErrorCode);
+          } else {
+            return sendUserProfile(socket, userObj, UserProfileSuccessErrorCode);
+          }
+        });
+      }
+    } else {
+      // Do not have the user in session, so fail.
+      sendUserProfile(socket, void 0, UserProfileFailErrorCode);
+    }
+  } else {
+    // Session has expired, so fail.
+    sendUserProfile(socket, void 0, UserProfileFailErrorCode);
+  }
+};
+
+/* --------------------------------------------------------
+ * sendUserProfile()
+ *
+ * Updates the session with user information, resets the
+ * session expiry, and sends the user profile to the client.
+ *
+ * param       socket
+ * param       user - assumes is a simple JSON object.
+ * param       errCode - error code to return to client.
+ * return      undefined
+ * -------------------------------------------------------- */
+var sendUserProfile = function(socket, user, errCode) {
+  if (DO_ASSERT) assertModule.sendUserProfile(socket, user, errCode);
+  var retAction;
+  // Reset session timeout.
+  touchSocketSession(socket);
+
+  // Save user information into the session and return response to client.
+  if (user) {
+    socket.request.session.roleInfo = {
+      isAuthenticated: errCode === LoginSuccessErrorCode ||
+        errCode === UserProfileSuccessErrorCode ||
+        errCode === LoginSuccessDifferentUserErrorCode? true: false,
+      roleName: user.roleName? user.roleName: user.role && user.role.name? user.role.name: ''
+    };
+
+    socket.request.session.save(function(err) {
+      if (err) {
+        console.log('ERROR: login successful but unable to save to session.');
+        console.log(err);
+      }
+
+      switch (errCode) {
+        case LoginSuccessErrorCode:
+          retAction = returnLogin(true, errCode);
+          retAction.isLoggedIn = true;
+          break;
+        case LoginSuccessDifferentUserErrorCode:
+          retAction = returnLogin(true, errCode);
+          retAction.isLoggedIn = true;
+          break;
+        case LoginFailErrorCode:
+          retAction = returnLogin(false, errCode);
+          break;
+        case UserProfileSuccessErrorCode:
+          retAction = returnUserProfile(true, errCode);
+          retAction.isLoggedIn = true;
+          break;
+        case UserProfileFailErrorCode:
+          retAction = returnUserProfile(false, errCode);
+          break;
+        default:
+          throw new Error('Unknown errCode of ' + errCode + ' in comm/sendUserProfile().');
+      }
+
+      if (retAction && user) {
+        _.extendOwn(retAction, _.pick(user,
+            ['id', 'userId', 'username', 'firstname', 'lastname', 'email',
+            'lang', 'shortName', 'displayName', 'role_id', 'roleName'])
+        );
+        // User Profile uses userId instead of id. Massage data into correct format.
+        if (! retAction.userId && user.id) {
+          retAction.userId = user.id;
+          if (retAction.id) delete retAction.id;
+        }
+        // Assumes roleName assigned to session earlier in this function.
+        if (! retAction.roleName) retAction.roleName = socket.request.session.roleInfo.roleName;
+        socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+      }
+    });
+  }
+
 };
 
 /* --------------------------------------------------------
@@ -714,11 +1136,122 @@ var init = function(io, sessionMiddle) {
   //  - receive update on field value another client changed
   // --------------------------------------------------------
   ioData.on('connection', function(socket) {
-    // TODO: report number of connections to site messages.
+    // TODO: report number of connections to data messages.
     socket.on('disconnect', function() {
       cntData--;
+      console.log('Number data websocket connections: ' + cntData);
     });
     cntData++;
+    console.log('Number data websocket connections: ' + cntData);
+
+    // --------------------------------------------------------
+    // ADHOC processing for the Elm client on the data channel.
+    // --------------------------------------------------------
+    socket.on(ADHOC, function(data) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_ADHOC(data);
+      var json = JSON.parse(data);
+      var adhocType = json.adhocType;
+      var userInfo = socketToUserInfo(socket);
+
+      switch (adhocType) {
+        case ADHOC_LOGIN:
+          handleLogin(json, socket);
+          break;
+
+        case ADHOC_USER_PROFILE:
+          handleUserProfile(socket);
+          break;
+
+        case ADHOC_USER_PROFILE_UPDATE:
+          handleUserProfile(socket, json.data, userInfo);
+          break;
+
+        default:
+          console.log('UNKNOWN adhocType of ' + adhocType + ' encountered.');
+      }
+
+    });
+
+    // --------------------------------------------------------
+    // SELECT event for the Elm client.
+    // --------------------------------------------------------
+    socket.on(DATA_SELECT, function(data) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_DATA_SELECT(data);
+      var json = JSON.parse(data);
+      var retAction;
+
+      if (! isValidSocketSession(socket)) {
+        retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired.");
+        console.log(retAction);
+        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
+      } else touchSocketSession(socket);
+
+      // --------------------------------------------------------
+      // TODO: handle all tables, not just certain ones and handle
+      // requests for individual records instead of all records.
+      // --------------------------------------------------------
+      if (json.table) {
+        getLookupTable(json.table, json.id, json.pregnancy_id, json.patient_id, function(err, data) {
+          if (err) {
+            logCommError(err);
+            retAction = returnStatusSELECT(json, void 0, false, SqlErrorCode, err.msg);
+            return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
+          }
+          retAction = returnStatusSELECT(json, data, true);
+          return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
+        });
+      } else {
+        retAction = returnStatusSELECT(json, void 0, false, UnknownErrorCode, 'Table not specified.');
+        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
+      }
+    });
+
+    // --------------------------------------------------------
+    // Data ADD request from the Elm client.
+    // --------------------------------------------------------
+    socket.on(ADD, function(payload) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_ADD(payload);
+      handleData(ADD, payload, socket);
+    });
+
+    // --------------------------------------------------------
+    // Data CHG request from the Elm client. Record will have
+    // a stateId field with the client's transaction
+    // id. This needs to be stripped and not inserted into DB,
+    // but response needs to include it.
+    // --------------------------------------------------------
+    socket.on(CHG, function(payload) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_CHG(payload);
+      handleData(CHG, payload, socket);
+    });
+
+    // --------------------------------------------------------
+    // Data DEL request from the Elm client. Record will have
+    // a stateId field with the client's transaction
+    // id. This needs to be stripped and not inserted into DB,
+    // but response needs to include it.
+    // --------------------------------------------------------
+    socket.on(DEL, function(payload) {
+      if (DO_ASSERT) assertModule.ioData_socket_on_DEL(payload);
+      handleData(DEL, payload, socket);
+    });
+
+    // ========================================================
+    // ========================================================
+    //
+    //
+    //
+    // NOTE: SOME of the following code from the React/Redux
+    // client that is no longer being used such as:
+    // socket.on(DATA_TABLE_REQUEST, ...
+    // socket.on(DATA_CHANGE, ...
+    //
+    // NOTE: this IS still being used:
+    // dataSubscription = dataSubject.subscribe(
+    //
+    //
+    // ========================================================
+    // ========================================================
 
     // --------------------------------------------------------
     // DATA_TABLE_REQUEST: this is used to populate the lookup
@@ -853,19 +1386,19 @@ var init = function(io, sessionMiddle) {
 
     // --------------------------------------------------------
     // Send all data messages out to the authenticated clients.
+    // Note: we ARE using this for the Elm client.
     // --------------------------------------------------------
     dataSubscription = dataSubject.subscribe(
       function(data) {
         // Don't do work unless logged in.
         if (! isValidSocketSession(socket)) return;
+
         // --------------------------------------------------------
-        // Send the data change notification to the client, unless we
-        // can detect that the data change was initiated by this socket.
+        // Send the data change notification to the client if the
+        // change originated with another client.
         // --------------------------------------------------------
-        if (! data.sessionID) {
-          socket.emit(CONST.TYPE.DATA, data);
-        } else if (getSocketSessionId(socket) !== data.sessionID) {
-          // We don't leak another client's sessionID.
+        if (data.sessionID && getSocketSessionId(socket) !== data.sessionID) {
+          // We don't leak sessionID to other clients.
           socket.emit(CONST.TYPE.DATA, _.omit(data, 'sessionID'));
         }
       },
@@ -888,15 +1421,15 @@ var init = function(io, sessionMiddle) {
 function getIsInitialized() {return isInitialized;}
 
 module.exports = {
-  init: init
-  , getIsInitialized: getIsInitialized
-  , sendSite: sendSite
-  , sendSystem: sendSystem
-  , sendData: sendData
-  , subscribeSite: subscribeSite
-  , subscribeSystem: subscribeSystem
-  , subscribeData: subscribeData
-  , DATA_CHANGE: DATA_CHANGE
-  , SYSTEM_LOG: SYSTEM_LOG
+  init
+  , getIsInitialized
+  , makeSend
+  , sendSite
+  , sendSystem
+  , sendData
+  , subscribeSite
+  , subscribeSystem
+  , subscribeData
+  , SYSTEM_LOG
 };
 

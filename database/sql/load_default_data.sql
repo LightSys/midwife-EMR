@@ -464,3 +464,18 @@ INSERT INTO `pregnoteType`
 VALUES
   ('prenatalProgress', 'Progress notes for prenatal exams.');
 
+SELECT 'keyValue' AS 'Loading' FROM DUAL;
+INSERT INTO keyValue
+  (kvKey, kvValue, description, valueType, acceptableValues, systemOnly)
+VALUES
+  ('siteShortName', 'YourClinic', 'A relatively short name for the clinic, i.e. under 10 characters.', 'text', '', 0),
+  ('siteLongName', 'Your Full Clinic Name', 'The full name for the clinic.', 'text', '', 0),
+  ('address1', 'Street Address Line 1', 'The first line of the street address.', 'text', '', 0),
+  ('address2', 'Street Address Line 2', 'The second line of the street address.', 'text', '', 0),
+  ('address3', 'Street Address Line 3', 'The third line of the street address, if there is one.', 'text', '', 0),
+  ('defaultCity', 'Home Town Name', 'The default locality you want to use that most of your patients come from.', 'text', '', 0),
+  ('searchRowsPerPage', '20', 'The number of rows of search results to display per page.', 'integer', '', 0),
+  ('customField1', 'Custom1', 'The label on the custom field on the general prenatal tab.', 'text', '', 0),
+  ('dateFormat', 'YYYY-MM-DD', 'The date format to use.', 'list', 'MM-DD-YYYY|DD-MM-YYYY|YYYY-MM-DD|MM/DD/YYYY|DD/MM/YYYY|YYYY/MM/DD|MM.DD.YYYY|DD.MM.YYYY|YY.MM.DD', 0)
+;
+

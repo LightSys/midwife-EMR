@@ -40,7 +40,7 @@ var vaccinationAddForm = function(req, res) {
         // --------------------------------------------------------
         var vacTypes = []
           ;
-        _.each(list.toJSON(), function(vType) {
+        _.each(_.sortBy(list.toJSON(), 'sortOrder'), function(vType) {
           var obj = {};
           obj.selectKey = vType.id;
           obj.label = vType.name;

@@ -1,6 +1,13 @@
 # Change Log
 
-## Phase2 branch - pre-release
+## 0.8.0
+
+- Uses Elm on the client for the administrator role, but not as default.
+  - React administrator role is no longer used.
+  - React guard role could be used if user comment field starts with PHASE2REACT.
+  - Admin user with comment field starting with PHASE2ELM will activate Elm client.
+
+## 0.7.0
 
 - Assumes use of Node 6.x line.
 - Upgraded many third-party packages to current or near current.

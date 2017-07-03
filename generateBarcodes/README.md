@@ -1,5 +1,8 @@
 # Generate Barcodes
 
+**Note: this program is superceded by the routes/barcodes.js module that has
+been incorporated directly into Midwife-EMR.**
+
 Barcodes are used in conjunction with the priority system to insure that the
 priority numbers input into the system upon client arrival are accurate. Using
 barcodes insures that by accepting as input the barcodes, which are random 6

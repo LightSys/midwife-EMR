@@ -88,6 +88,7 @@ var doSpa = function(req, res, next) {
     , connSid
     , data
     , newMenu
+    , pageName
     ;
 
   // --------------------------------------------------------
@@ -108,11 +109,11 @@ var doSpa = function(req, res, next) {
 
   if (req.session.user && req.session.user.role) {
     if ((req.session.user.role.name === 'administrator' &&
-         req.session.user.note.startsWith('PHASE2')) ||
+         req.session.user.note.startsWith('PHASE2REACT')) ||
         (req.session.user.role.name === 'guard' &&
-         req.session.user.note.startsWith('PHASE2')) ||
+         req.session.user.note.startsWith('PHASE2REACT')) ||
         (req.session.user.role.name === 'supervisor' &&
-         req.session.user.note.startsWith('PHASE2'))) {
+         req.session.user.note.startsWith('PHASE2REACT'))) {
       newMenu = buildMenu(req);
       data = {
         cfg: {
@@ -166,6 +167,37 @@ var doSpa = function(req, res, next) {
       }
 
       return res.render('main', {cfg: data});
+    } else if ((req.session.user.role.name === 'administrator' &&
+                req.session.user.note.startsWith('PHASE2ELM')) ||
+                (req.session.user.role.name === 'guard' &&
+                req.session.user.note.startsWith('PHASE2ELM')) ||
+                (req.session.user.role.name === 'supervisor' &&
+                req.session.user.note.startsWith('PHASE2ELM'))) {
+
+      // --------------------------------------------------------
+      // Store the fact that this user's routes are all SPA or
+      // phase two routes in the session. This allows page
+      // refreshes to be properly handled.
+      // --------------------------------------------------------
+      req.session.isSpaOnly = true;
+
+      if (req.url !== '/') {
+        return res.redirect('/');
+      }
+
+      // --------------------------------------------------------
+      // Each role has it's own starting jade page for the sake
+      // of customization by role as well as only loading what is
+      // necessary for the role.
+      // --------------------------------------------------------
+      switch (req.session.user.role.name) {
+        case 'administrator': pageName = 'start_administrator'; break;
+        case 'guard': pageName = 'start_guard'; break;
+        case 'supervisor': pageName = 'start_supervisor'; break;
+        default: pageName = '';
+      }
+
+      return res.render(pageName);
     }
   }
   return next();
