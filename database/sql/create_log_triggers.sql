@@ -84,6 +84,48 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: keyValue_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS keyValue_after_insert;
+CREATE TRIGGER keyValue_after_insert AFTER INSERT ON keyValue
+FOR EACH ROW
+BEGIN
+  INSERT INTO keyValueLog
+  (id, kvKey, kvValue, description, valueType, acceptableValues, systemOnly, op, replacedAt)
+  VALUES (NEW.id, NEW.kvKey, NEW.kvValue, NEW.description, NEW.valueType, NEW.acceptableValues, NEW.systemOnly, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: keyValue_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS keyValue_after_update;
+CREATE TRIGGER keyValue_after_update AFTER UPDATE ON keyValue
+FOR EACH ROW
+BEGIN
+  INSERT INTO keyValueLog
+  (id, kvKey, kvValue, description, valueType, acceptableValues, systemOnly, op, replacedAt)
+  VALUES (NEW.id, NEW.kvKey, NEW.kvValue, NEW.description, NEW.valueType, NEW.acceptableValues, NEW.systemOnly, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: keyValue_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS keyValue_after_delete;
+CREATE TRIGGER keyValue_after_delete AFTER DELETE ON keyValue
+FOR EACH ROW
+BEGIN
+  INSERT INTO keyValueLog
+  (id, kvKey, kvValue, description, valueType, acceptableValues, systemOnly, op, replacedAt)
+  VALUES (OLD.id, OLD.kvKey, OLD.kvValue, OLD.description, OLD.valueType, OLD.acceptableValues, OLD.systemOnly, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: labSuite_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$
