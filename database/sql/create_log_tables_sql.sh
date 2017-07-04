@@ -25,6 +25,7 @@ uniq_abbrev_tbls='labTestLog'
 uniq_pregnancy_tbls='scheduleLog riskLog'
 uniq_custom_field_tbls='customFieldLog'
 uniq_sortOrder_tbls='medicationTypeLog vaccinationTypeLog'
+uniq_kvKey_tbls='keyValueLog'
 
 # Get the list of tables from the creation script.
 tbls=$(grep "CREATE TABLE" create_tables.sql |grep -v $excludepat |sed -e 's/CREATE TABLE IF NOT EXISTS `//' |sed -e 's/` (//'|tr '\n' " ")
@@ -82,7 +83,6 @@ do
       echo "ALTER TABLE $lt DROP KEY customFieldType_id;"
     fi
   done
-  echo "--"
   for ut in $uniq_sortOrder_tbls
   do
     if [ $ut = $lt ]
@@ -90,6 +90,14 @@ do
       echo "ALTER TABLE $lt DROP KEY sortOrder;"
     fi
   done
+  for ut in $uniq_kvKey_tbls
+  do
+    if [ $ut = $lt ]
+    then
+      echo "ALTER TABLE $lt DROP KEY kvKey;"
+    fi
+  done
+
   echo "--"
 done
 

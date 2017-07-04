@@ -1,16 +1,14 @@
 # Midwife EMR
 
 Midwife-EMR (Midwife Electronic Medical Record) is custom patient management
-software for a large charity maternity clinic in the Philippines serving a low
-income community. This software is specifically designed for one particular
-clinic, though anyone can use parts or all of it freely as you see fit. See
-LICENSE.txt for details.
+software for large charity maternity clinics in the Philippines serving the low
+income community.
 
-Phase one of the application had a focus upon upon prenatal care. It was
-installed in February 2015 and is currently being used on a daily basis in the
-central facility. Design and development for phase two, which includes
-post-prenatal care (labor, delivery, and postpartum), is ongoing at the
-current time.
+Phase one of the application focused upon upon prenatal care. It was installed
+in February 2015 in one large clinic and is currently being used on a daily
+basis in the central facility. Design and development for phase two, which
+includes post-prenatal care (labor, delivery, and postpartum), is ongoing at
+the current time.
 
 ## Features at a glance
 
@@ -53,6 +51,7 @@ current time.
       - The queuing system uses priority badges/tags and scanners can be used to
       quickly access the patient's records as they proceed through the exam
       processes.
+      - Administration screen allows administrator to easily download barcode PDF to create badges, etc.
 - User management (staff, etc.)
    - Roles
       - Supervisor
@@ -64,7 +63,7 @@ current time.
    - Any number of users/staff allowed.
 - Web browser and mobile browser compatible
 - Full logging of all changes to the database
-   - All historical changes reviewable by supervisor role.
+   - All historical medical changes reviewable by supervisor role.
       - Allows supervisor to traverse forward and backword "through time"
         viewing the screens as they appeared across all pages of the application,
         or review only changes that occurred on a specific page.
@@ -100,7 +99,7 @@ XU3-Lite](http://www.hardkernel.com/main/products/prdt_info.php?g_code=G14135188
 single board computer. This allows the wireless router and the server running
 the Midwife-EMR application to stay operational for 5+ hours during a power
 outage while running on a 600 watt UPS. The application itself is accessed
-using tablets (mostly Nexus 7 right now), some smartphones, and laptops. It is
+using 7 inch tablets, some smartphones, laptops, and desktops. It is
 normal for 12 or so users to be using the application, which is itself running on
 the ODroid XU3-Lite, at any one time without any issues or any hint of
 performance degradation.
@@ -114,10 +113,8 @@ A few facts about the specific XU3-Lite setup that we are using.
 The SD card is solely used for automated backups. Additionally, encrypted
 backups are automatically stored on a remote VPS.
 
-**Note that as of this time (September 2015) the ODroid XU3-Lite is being
-retired by Hardkernel in favor of the XU4. We have not begun testing
-Midwife-EMR on the XU4 yet, though we do not foresee any issues with doing
-so.**
+**Note that as of this time the ODroid XU3-Lite is being retired by Hardkernel
+in favor of the XU4.**
 
 ## Status
 
@@ -129,9 +126,11 @@ designed and developed.
 
 ## Technology Used
 
-- Nodejs - version v0.10.40 (upgrade to Node 4.x is in pending dependencies).
+- Nodejs - version v6.x.x
 - MySQL
 - Nginx - reverse proxy for the application (optional)
+- Socket.io
+- Elm
 
 Web based and compatible with tablet browsers.
 
@@ -139,8 +138,6 @@ Web based and compatible with tablet browsers.
 
 These are the ongoing, high-level plans for the project.
 
-- Upgrade/migrate most/all third-party node modules to current.
-- Refactor the database design.
 - Implement labor, delivery, and postpartum.
 - Refactor the application for SPA clients.
 

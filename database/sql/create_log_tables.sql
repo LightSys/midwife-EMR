@@ -6,7 +6,7 @@ ALTER TABLE keyValueLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE keyValueLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE keyValueLog DROP PRIMARY KEY;
 ALTER TABLE keyValueLog ADD PRIMARY KEY (id, replacedAt);
---
+ALTER TABLE keyValueLog DROP KEY kvKey;
 --
 -- Creating userLog
 SELECT 'userLog' AS Creating FROM DUAL;
@@ -18,7 +18,6 @@ ALTER TABLE userLog DROP PRIMARY KEY;
 ALTER TABLE userLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE userLog DROP KEY username;
 --
---
 -- Creating roleLog
 SELECT 'roleLog' AS Creating FROM DUAL;
 CREATE TABLE roleLog LIKE role;
@@ -29,7 +28,6 @@ ALTER TABLE roleLog DROP PRIMARY KEY;
 ALTER TABLE roleLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE roleLog DROP KEY name;
 --
---
 -- Creating patientLog
 SELECT 'patientLog' AS Creating FROM DUAL;
 CREATE TABLE patientLog LIKE patient;
@@ -39,7 +37,6 @@ ALTER TABLE patientLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE patientLog DROP PRIMARY KEY;
 ALTER TABLE patientLog ADD PRIMARY KEY (id, replacedAt);
 --
---
 -- Creating pregnancyLog
 SELECT 'pregnancyLog' AS Creating FROM DUAL;
 CREATE TABLE pregnancyLog LIKE pregnancy;
@@ -48,7 +45,6 @@ ALTER TABLE pregnancyLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE pregnancyLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnancyLog DROP PRIMARY KEY;
 ALTER TABLE pregnancyLog ADD PRIMARY KEY (id, replacedAt);
---
 --
 -- Creating riskLog
 SELECT 'riskLog' AS Creating FROM DUAL;
@@ -60,7 +56,6 @@ ALTER TABLE riskLog DROP PRIMARY KEY;
 ALTER TABLE riskLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE riskLog DROP KEY pregnancy_id;
 --
---
 -- Creating vaccinationTypeLog
 SELECT 'vaccinationTypeLog' AS Creating FROM DUAL;
 CREATE TABLE vaccinationTypeLog LIKE vaccinationType;
@@ -70,7 +65,6 @@ ALTER TABLE vaccinationTypeLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE vaccinationTypeLog DROP PRIMARY KEY;
 ALTER TABLE vaccinationTypeLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE vaccinationTypeLog DROP KEY name;
---
 ALTER TABLE vaccinationTypeLog DROP KEY sortOrder;
 --
 -- Creating vaccinationLog
@@ -82,7 +76,6 @@ ALTER TABLE vaccinationLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE vaccinationLog DROP PRIMARY KEY;
 ALTER TABLE vaccinationLog ADD PRIMARY KEY (id, replacedAt);
 --
---
 -- Creating healthTeachingLog
 SELECT 'healthTeachingLog' AS Creating FROM DUAL;
 CREATE TABLE healthTeachingLog LIKE healthTeaching;
@@ -91,7 +84,6 @@ ALTER TABLE healthTeachingLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE healthTeachingLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE healthTeachingLog DROP PRIMARY KEY;
 ALTER TABLE healthTeachingLog ADD PRIMARY KEY (id, replacedAt);
---
 --
 -- Creating medicationTypeLog
 SELECT 'medicationTypeLog' AS Creating FROM DUAL;
@@ -102,7 +94,6 @@ ALTER TABLE medicationTypeLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE medicationTypeLog DROP PRIMARY KEY;
 ALTER TABLE medicationTypeLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE medicationTypeLog DROP KEY name;
---
 ALTER TABLE medicationTypeLog DROP KEY sortOrder;
 --
 -- Creating medicationLog
@@ -114,7 +105,6 @@ ALTER TABLE medicationLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE medicationLog DROP PRIMARY KEY;
 ALTER TABLE medicationLog ADD PRIMARY KEY (id, replacedAt);
 --
---
 -- Creating pregnancyHistoryLog
 SELECT 'pregnancyHistoryLog' AS Creating FROM DUAL;
 CREATE TABLE pregnancyHistoryLog LIKE pregnancyHistory;
@@ -123,7 +113,6 @@ ALTER TABLE pregnancyHistoryLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE pregnancyHistoryLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnancyHistoryLog DROP PRIMARY KEY;
 ALTER TABLE pregnancyHistoryLog ADD PRIMARY KEY (id, replacedAt);
---
 --
 -- Creating prenatalExamLog
 SELECT 'prenatalExamLog' AS Creating FROM DUAL;
@@ -134,7 +123,6 @@ ALTER TABLE prenatalExamLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE prenatalExamLog DROP PRIMARY KEY;
 ALTER TABLE prenatalExamLog ADD PRIMARY KEY (id, replacedAt);
 --
---
 -- Creating labSuiteLog
 SELECT 'labSuiteLog' AS Creating FROM DUAL;
 CREATE TABLE labSuiteLog LIKE labSuite;
@@ -144,7 +132,6 @@ ALTER TABLE labSuiteLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE labSuiteLog DROP PRIMARY KEY;
 ALTER TABLE labSuiteLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE labSuiteLog DROP KEY name;
---
 --
 -- Creating labTestLog
 SELECT 'labTestLog' AS Creating FROM DUAL;
@@ -157,7 +144,6 @@ ALTER TABLE labTestLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE labTestLog DROP KEY name;
 ALTER TABLE labTestLog DROP KEY abbrev;
 --
---
 -- Creating labTestValueLog
 SELECT 'labTestValueLog' AS Creating FROM DUAL;
 CREATE TABLE labTestValueLog LIKE labTestValue;
@@ -168,7 +154,6 @@ ALTER TABLE labTestValueLog DROP PRIMARY KEY;
 ALTER TABLE labTestValueLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE labTestValueLog DROP KEY labTest_id;
 --
---
 -- Creating labTestResultLog
 SELECT 'labTestResultLog' AS Creating FROM DUAL;
 CREATE TABLE labTestResultLog LIKE labTestResult;
@@ -178,7 +163,6 @@ ALTER TABLE labTestResultLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE labTestResultLog DROP PRIMARY KEY;
 ALTER TABLE labTestResultLog ADD PRIMARY KEY (id, replacedAt);
 --
---
 -- Creating referralLog
 SELECT 'referralLog' AS Creating FROM DUAL;
 CREATE TABLE referralLog LIKE referral;
@@ -187,7 +171,6 @@ ALTER TABLE referralLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE referralLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE referralLog DROP PRIMARY KEY;
 ALTER TABLE referralLog ADD PRIMARY KEY (id, replacedAt);
---
 --
 -- Creating selectDataLog
 SELECT 'selectDataLog' AS Creating FROM DUAL;
@@ -199,7 +182,6 @@ ALTER TABLE selectDataLog DROP PRIMARY KEY;
 ALTER TABLE selectDataLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE selectDataLog DROP KEY name;
 --
---
 -- Creating scheduleLog
 SELECT 'scheduleLog' AS Creating FROM DUAL;
 CREATE TABLE scheduleLog LIKE schedule;
@@ -209,7 +191,6 @@ ALTER TABLE scheduleLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE scheduleLog DROP PRIMARY KEY;
 ALTER TABLE scheduleLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE scheduleLog DROP KEY pregnancy_id;
---
 --
 -- Creating customFieldLog
 SELECT 'customFieldLog' AS Creating FROM DUAL;
@@ -221,7 +202,6 @@ ALTER TABLE customFieldLog DROP PRIMARY KEY;
 ALTER TABLE customFieldLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE customFieldLog DROP KEY customFieldType_id;
 --
---
 -- Creating pregnoteTypeLog
 SELECT 'pregnoteTypeLog' AS Creating FROM DUAL;
 CREATE TABLE pregnoteTypeLog LIKE pregnoteType;
@@ -231,7 +211,6 @@ ALTER TABLE pregnoteTypeLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnoteTypeLog DROP PRIMARY KEY;
 ALTER TABLE pregnoteTypeLog ADD PRIMARY KEY (id, replacedAt);
 --
---
 -- Creating pregnoteLog
 SELECT 'pregnoteLog' AS Creating FROM DUAL;
 CREATE TABLE pregnoteLog LIKE pregnote;
@@ -240,5 +219,4 @@ ALTER TABLE pregnoteLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE pregnoteLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnoteLog DROP PRIMARY KEY;
 ALTER TABLE pregnoteLog ADD PRIMARY KEY (id, replacedAt);
---
 --
