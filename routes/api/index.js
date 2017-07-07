@@ -116,6 +116,10 @@ var doSpa = function(req, res, next) {
                 ! req.session.user.note.startsWith('LEGACY')) ||
                 (req.session.user.role.name === 'guard' &&
                 req.session.user.note.startsWith('PHASE2ELM')) ||
+                (req.session.user.role.name === 'attending' &&
+                req.session.user.note.startsWith('PHASE2ELM')) ||
+                (req.session.user.role.name === 'clerk' &&
+                req.session.user.note.startsWith('PHASE2ELM')) ||
                 (req.session.user.role.name === 'supervisor' &&
                 req.session.user.note.startsWith('PHASE2ELM'))) {
 
@@ -145,7 +149,9 @@ var doSpa = function(req, res, next) {
       switch (req.session.user.role.name) {
         case 'administrator': pageName = 'start_administrator'; break;
         case 'guard': pageName = 'start_guard'; break;
-        case 'supervisor': pageName = 'start_supervisor'; break;
+        case 'supervisor': pageName = 'start_medical'; break;
+        case 'clerk': pageName = 'start_medical'; break;
+        case 'attending': pageName = 'start_medical'; break;
         default: pageName = '';
       }
 

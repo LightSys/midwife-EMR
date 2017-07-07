@@ -17,12 +17,16 @@ const MODULE_DIRS = ['node_modules']
 const ELM_ADMIN_TOP = path.resolve(__dirname, 'client', 'elm', 'admin')
 const ELM_ADMIN_MAIN = path.resolve(ELM_ADMIN_TOP, 'src', 'administrator.js')
 
+const ELM_MEDICAL_TOP = path.resolve(__dirname, 'client', 'elm', 'medical')
+const ELM_MEDICAL_MAIN = path.resolve(ELM_MEDICAL_TOP, 'src', 'medical.js')
+
 module.exports = {
   entry: {
-    'elm-vendor': [
+    'vendor-socketio': [
       'socket.io-client/lib/index.js'
     ],
-    'administrator': ELM_ADMIN_MAIN
+    'administrator': ELM_ADMIN_MAIN,
+    'medical': ELM_MEDICAL_MAIN
   },
   resolve: {
     root: __dirname,
@@ -50,6 +54,12 @@ module.exports = {
         exclude: [/elm-stuff/, /node_modules/],
         include: [ELM_ADMIN_TOP],
         loader: 'elm-webpack?cwd=' + ELM_ADMIN_TOP
+      },
+      {
+        test: /\.elm$/,
+        exclude: [/elm-stuff/, /node_modules/],
+        include: [ELM_MEDICAL_TOP],
+        loader: 'elm-webpack?cwd=' + ELM_MEDICAL_TOP
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,

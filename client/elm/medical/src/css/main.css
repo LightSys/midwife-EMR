@@ -1,0 +1,76 @@
+
+/* System Log */
+.system-log {
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+  border-left: 1px solid #E9E9E9;
+  border-right: 1px solid #E9E9E9;
+  height: 300px;
+  max-height: 300px;
+  overflow-y: scroll;
+  margin-left: 0;
+  padding-left: 0;
+}
+.system-log-line {
+  font-weight: bold;
+  list-style: none;
+}
+.system-log-line-even {
+  background-color: #E9E9E9;
+}
+.system-log-line-odd {
+  background-color: white;
+}
+
+/* Make labels easier to see. */
+label.mdl-textfield__label {
+  color: black !important;
+}
+
+/* Warnings and notices */
+.footer-warning-header {
+  color: white;
+  font-weight: bold;
+  padding-bottom: 0.5em;
+}
+
+/* Field level errors/warnings. */
+.error-field {
+  color: #FF6464;
+  font-weight: bold;
+  margin-left: 1em;
+}
+
+/* Allow contents to scroll sideways if necessary. */
+.horizontal-scroll {
+  overflow-x: auto;
+}
+
+/* Selected background color for list item. */
+.listItem {
+  border-bottom: 1px solid #999999;
+}
+.selectedListItem {
+  background-color: #999999;
+}
+
+/* Background highlight for alternate rows. */
+.altRowBackground {
+  background-color: #f0f0f0;
+}
+
+/* Padding for a span in a MDL list item. */
+span.bodyItem {
+  margin-right: 10px;
+}
+
+/* A not too big label. */
+.smallLabel {
+  color: #666666;
+  font: 16px;
+}
+.smallLabelBold {
+  color: #323232;
+  font: 16px;
+  font-weight: bold;
+}
