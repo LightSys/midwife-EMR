@@ -253,11 +253,7 @@ type alias SelectQueryResponse =
 
 
 type alias SystemMessage =
-    { id : String
-    , msgType : String
-    , updatedAt : Int
-    , workerId : String
-    , processedBy : List String
+    { updatedAt : Int
     , systemLog : String
     }
 
@@ -266,11 +262,7 @@ type alias SystemMessage =
 -}
 emptySystemMessage : SystemMessage
 emptySystemMessage =
-    { id = "ERROR"
-    , msgType = ""
-    , updatedAt = 0
-    , workerId = ""
-    , processedBy = []
+    { updatedAt = 0
     , systemLog = ""
     }
 

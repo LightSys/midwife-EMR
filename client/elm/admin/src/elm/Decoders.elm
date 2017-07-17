@@ -29,11 +29,7 @@ import Utils as U
 systemMessage : JD.Decoder SystemMessage
 systemMessage =
     decode SystemMessage
-        |> required "id" JD.string
-        |> required "msgType" JD.string
         |> required "updatedAt" JD.int
-        |> required "workerId" JD.string
-        |> required "processedBy" (JD.list JD.string)
         |> required "systemLog" JD.string
 
 
@@ -663,17 +659,13 @@ addChgDelNotification =
 
 decodeAddChgDelNotification : JE.Value -> Maybe AddChgDelNotification
 decodeAddChgDelNotification payload =
-    let
-        _ =
-            Debug.log "decodeAddChgDelNotification" <| toString payload
-    in
-        case JD.decodeValue addChgDelNotification payload of
-            Ok val ->
-                Just val
+    case JD.decodeValue addChgDelNotification payload of
+        Ok val ->
+            Just val
 
-            Err msg ->
-                let
-                    _ =
-                        Debug.log "decodeAddChgDelNotification Error" msg
-                in
-                    Nothing
+        Err msg ->
+            let
+                _ =
+                    Debug.log "decodeAddChgDelNotification Error" msg
+            in
+                Nothing

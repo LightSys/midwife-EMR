@@ -3,7 +3,9 @@
  * comm.js
  *
  * Interface between the server via Socket.io and the Elm client via ports. We use
- * Socket.io namespaces to separate communications into several broad categories:
+ * a single Socket.io namespace but distinguish various types of messages with the
+ * "namespace" key within the message. We do not use more than one Socket.io
+ * namespace in order to retain a degree of compatibility with standard websocket.
  *
  *    data: bi-directional for any and all data, whether it is changed or not.
  *    site: server to client stats regarding the application.
@@ -11,76 +13,14 @@
  *
  * We do not use Socket.io rooms.
  *
- * We use custom events within namespaces to further differentiate the types of
- * communications.
+ * Sub-protocol:
  *
- *    system namespace: the only custom event used is 'system'.
- *    site namespace: the only custom event used is 'site'.
- *    data namespace: more than one event is used within the data interface.
- *
- *        The 'data' event is used for server initiated communications to the
- *        client within the data namespace.
- *
- *        The 'DATA_CHANGE' event is used by either the server or the client to
- *        inform the other about changed data.
- *
- *            When the client changes data, the message will use a DATA_CHANGE
- *            event and the payload will contain a transactionId. The server
- *            will respond with a payload that also contains a transactionId but
- *            the event will be the transactionId as well. This allows the interface
- *            on the client to clear any timeouts and do anything else to insure
- *            that there is always a one to one correspondence between the client's
- *            data change request and the server's response, or else reliably
- *            detect if that is not the case.
- *
- *        The 'DATA_TABLE_REQUEST' is used by the client to ask for a lookup table.
- *
- *        The 'DATA_TABLE_SUCCESS' or 'DATA_TABLE_FAILURE' events are used by the
- *        server to respond to a DATA_TABLE_REQUEST from the client.
- *
- *    THE WAY THAT IT SHOULD BE:
- *
- *        - Retire the 'data' event. We already have the data namespace and that
- *          is not adding value to a significant degree.
- *        - The 'ADD' event will be used by the client to request a data addition
- *          for the server. The client will send the transactionId as the
- *          pendingId field within the record, which the server will
- *          strip and use accordingly. The client will not send a populated id
- *          field.
- *        - The 'CHG' event will be used by the client to request a data change
- *          from the server. The client will send the transactionId as the
- *          stateId field within the record, which the server will
- *          strip and use accordingly.
- *        - The 'DEL' event will be used by the client to request a data deletion
- *          on the server. The client will send the transactionId as the
- *          stateId field within the record, which the server will
- *          strip and use accordingly. In this case the client will only send
- *          the table name and the primary key.
- *        - The 'ADD_RESPONSE' event will be used by the server in response to
- *          data addition requests from the client. The response will specify the
- *          pendingId (as passed by the client originally), the result
- *          of the addition request, and a human readable message in case of failure.
- *        - The 'CHG_RESPONSE' event will be used by the server in response to
- *          data change requests from the client. The response will specify the
- *          stateId (as passed by the client originally), the result
- *          of the change request, and a human readable message in case of failure.
- *        - The 'DEL_RESPONSE' event will be used by the server in response to
- *          data deletion requests from the client. The response will specify the
- *          stateId (as passed by the client originally), the result
- *          of the deletion request, and a human readable message in case of failure.
- *        - The 'INFORM' event will be used by the server to inform the client
- *          of data changes that the client may be interested in.
- *        - The 'SELECT' event will be used by the client to retrieve data from
- *          the server. The payload will specify details such as a lookup table
- *          in it's entirety or a query by specified criteria.
- *        - The 'SELECT_RESPONSE' event will be used by the server to return data
- *          to the client that was requested with a prior 'SELECT' event to the
- *          server. This response may contain a failure and the client needs to
- *          check the payload accordingly.
- *
- *
- * Finally, messages are wrapped in an object that has a type field, which is
- * known as msgType within Elm due to the conflict with the 'type' keyword.
+ * - All messages are passed as a string, but are from JSON that has been stringified.
+ * - After parsing the message into JSON, the top level of the object has three fields:
+ *   - namespace: either 'data', 'system', or 'site'.
+ *   - msgType: application specific.
+ *   - payload: the data being passed.
+ * - Routing is accomplished using the namespace and msgType fields.
  * -------------------------------------------------------------------------------
  */
 
@@ -90,18 +30,20 @@ var app;      // Required: set by caller via setApp().
 
 
 // --------------------------------------------------------
-// Setup three different Socket.io namespaces for data,
-// site, and system communications with the server.
+// Setup a single Socket.io connection to the server.
 // --------------------------------------------------------
-var ioData = io.connect(window.location.origin + '/data');
-var ioSite = io.connect(window.location.origin + '/site');
-var ioSystem = io.connect(window.location.origin + '/system');
+var ioSocket = io.connect(window.location.origin + '/');
 
 // --------------------------------------------------------
 // Socket.io event types that we will use.
 // --------------------------------------------------------
-// The data namespace.
-var INFORM = 'INFORM';      // Server to client data change notification in data namespace.
+// The message key and sub-protocol namespace keys.
+var MESSAGE = 'message';    // All messages use this key so that we are most compatible with websocket API.
+var SITE = 'SITE';          // All site messages use this key for the namespace.
+var SYSTEM = 'SYSTEM';      // All system messages use this key for the namespace.
+var DATA = 'DATA';          // All data messages use this key for the namespace.
+
+// The msgTypes from the data namespace.
 var ADD = 'ADD';            // Client to server data addition request in data namespace.
 var ADD_RESPONSE = 'ADD_RESPONSE';  // Server to client data add response in data namespace.
 var CHG = 'CHG';            // Client to server data change request in data namespace.
@@ -115,10 +57,7 @@ var ADHOC_RESPONSE = 'ADHOC_RESPONSE';  // Server to client response in data nam
 var ADHOC_LOGIN = 'ADHOC_LOGIN';        // Client to server for login request, the adhocType of the ADHOC message.
 var ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE';    // Client to server for user profile request.
 var ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE';  // User updates their own user profile.
-
-// The site and system namespaces.
-var SITE = 'site';          // All site messages use this message key.
-var SYSTEM = 'system';      // All system messages use this message key.
+var ADD_CHG_DELETE = 'ADD_CHG_DELETE';
 
 
 
@@ -129,17 +68,24 @@ var SYSTEM = 'system';      // All system messages use this message key.
 // ========================================================
 
 /* --------------------------------------------------------
- * getNextTransactionId()
+ * wrapByType()
  *
- * Returns the next transaction id to use. This is used for
- * the data namespace with client initiated change requests.
- * The server will respond with an event of 'CHG:' + the
- * transaction id that the client sent.
+ * Wrap a message with a outer object with a field named
+ * namespace that specifies the course level type of message
+ * this is, which is one of 'SYSTEM', 'SITE', or 'DATA'.
+ * Another field named payload contains the data
+ * passed. Return a stringifed object to the caller.
+ *
+ * param       namespace
+ * param       msgType
+ * param       data
+ * return      stringifed object
  * -------------------------------------------------------- */
-var nextTransactionId = 0
-var getNextTransactionId = function() {
-  return ++nextTransactionId;
+var wrapByType = function(namespace, msgType, data) {
+  return JSON.stringify({namespace: namespace, msgType: msgType, payload: data});
 };
+var wrapData = function(msgType, data) { return wrapByType(DATA, msgType, data); };
+
 
 /* --------------------------------------------------------
  * sendMsg()
@@ -149,204 +95,284 @@ var getNextTransactionId = function() {
  * not ever used to send client to server messages.
  * -------------------------------------------------------- */
 var sendMsg = function(msg, payload) {
-  ioData.emit(msg, JSON.stringify(payload));
+  ioSocket.send(wrapData(msg, payload));
 }
 
 /* --------------------------------------------------------
- * wrapData()
+ * wrapTableChange()
  *
  * Wrap the tbl and data passed in an object assigned to
  * table and data fields respectively.
  * -------------------------------------------------------- */
-var wrapData = function(tbl, data) {
+var wrapTableChange = function(tbl, data) {
   return {
     table: tbl,
     data: data
   };
 }
 
-/* --------------------------------------------------------
- * wrapAdHoc()
- *
- * Wrap the adhocType and data fields passed in an object.
- * -------------------------------------------------------- */
-var wrapAdHoc = function(adhocType, data) {
-  return {
-    adhocType: adhocType,
-    data: data
-  };
+// ========================================================
+// ========================================================
+// Handling server to client messages.
+// ========================================================
+// ========================================================
+
+// --------------------------------------------------------
+// Handle incoming messages for the data namespace. Note
+// that our single parameter is already JSON.
+// --------------------------------------------------------
+var handleData = function(json) {
+  // Sanity checks.
+  if (! app) {
+    console.log('ERROR: handleData() called when app has not been set.');
+    return;
+  }
+  if (! json || ! json.msgType) {
+    console.log('ERROR: improper data sent to handleData().');
+    console.log(json);
+    return;
+  }
+
+  switch (json.msgType) {
+    case ADD_CHG_DELETE:
+      // This is for notifications from the server about data changes that
+      // other clients have made that our client may be interested in.
+      console.log('ADD_CHG_DELETE');
+      app.ports.addChgDelNotification.send(json.payload);
+      break;
+
+    case ADHOC_RESPONSE:
+      // Responses from the server for requests for work that we have made.
+      app.ports.adhocResponse.send(json.payload);
+      break;
+
+    case SELECT_RESPONSE:
+      // Responses from the server for data that we have requested.
+      console.log('Loading: ' + json.payload.table);
+      app.ports.selectQueryResponse.send(json.payload);
+      break;
+
+    case ADD_RESPONSE:
+      // Response from the server about a record add request we have made.
+      app.ports.createResponse.send(json.payload);
+      break;
+
+    case CHG_RESPONSE:
+      // Response from the server about a record change request we have made.
+      app.ports.updateResponse.send(json.payload);
+      break;
+
+    case DEL_RESPONSE:
+      // Response from the server about a record delete request we have made.
+      app.ports.deleteResponse.send(json.payload);
+      break;
+
+    default:
+      console.log('ERROR: unknown msgType of ' + json.msgType);
+  }
+};
+
+// --------------------------------------------------------
+// Handle incoming messages for the site namespace. Note
+// that our single parameter is already JSON.
+//
+// TODO: set this up.
+// --------------------------------------------------------
+var handleSite = function(json) {
+  console.log('Received SITE msg: unprocessed.');
 }
 
-// ========================================================
-// ========================================================
-// The data namespace.
-// ========================================================
-// ========================================================
-
 // --------------------------------------------------------
-// Server to client data change notifications.
+// Handle incoming messages for the system namespace. Note
+// that our single parameter is already JSON.
 // --------------------------------------------------------
-ioData.on(INFORM, function(data) {
-  if (! app) return;
-});
-
-// --------------------------------------------------------
-// Client receiving notifications of data changes from the
-// server caused by other clients.
-// Note: data is coming from the server as an object already.
-// --------------------------------------------------------
-ioData.on('DATA_ADD_CHG_DELETE', function(data) {
-  if (! app) return;
-
-  app.ports.addChgDelNotification.send(data);
-});
-
-// --------------------------------------------------------
-// Client requesting data from the server.
-// --------------------------------------------------------
-ioData.on(SELECT_RESPONSE, function(data) {
-  if (! app) return;
-
-  var json = JSON.parse(data);
-  app.ports.selectQueryResponse.send(json);
-});
-
-// --------------------------------------------------------
-// Responses from the server due to client change requests.
-// --------------------------------------------------------
-ioData.on(CHG_RESPONSE, function(data) {
-  if (! app) return;
-  app.ports.updateResponse.send(JSON.parse(data));
-});
-
-ioData.on(ADD_RESPONSE, function(data) {
-  if (! app) return;
-  app.ports.createResponse.send(JSON.parse(data));
-});
-
-ioData.on(DEL_RESPONSE, function(data) {
-  if (! app) return;
-  app.ports.deleteResponse.send(JSON.parse(data));
-});
-
-// --------------------------------------------------------
-// Responses from the server for ADHOC requests.
-// --------------------------------------------------------
-ioData.on(ADHOC_RESPONSE, function(data) {
-  if (! app) return;
-  app.ports.adhocResponse.send(JSON.parse(data));
-});
-
-// --------------------------------------------------------
-// Client data request to the server. Payload will include
-// specifics regarding the request.
-// --------------------------------------------------------
-
-// ========================================================
-// ========================================================
-// The system namespace.
-// ========================================================
-// ========================================================
-ioSystem.on(SYSTEM, function(data) {
-  if (! app) return;
-
-  // type is a reserved term in Elm, so we rename it before sending it in.
-  if (data.type) {
-    data.msgType = data.type;
-    delete data.type;
+var handleSystem = function(json) {
+  if (! json.payload) {
+    console.log('=== ERROR: missing payload.');
+    console.log(json);
+    console.log('=== End ERROR: missing payload.');
+    return;
   }
 
   // Elm does not like uppercase keys in records, so rename and remove
   // extraneous nesting while we are at it.
-  if (data.data && data.data.SYSTEM_LOG) {
-    data.systemLog = data.data.SYSTEM_LOG;
-    delete data.data;
+  // TODO: fix this on the server to not use upper case.
+  if (json.payload.data && json.payload.data.SYSTEM_LOG) {
+    json.payload.systemLog = json.payload.data.SYSTEM_LOG;
+    delete json.payload.data;
   }
-  app.ports.systemMessages.send(data);
+  app.ports.systemMessages.send(json.payload);
+};
+
+// --------------------------------------------------------
+// Error handling.
+// --------------------------------------------------------
+ioSocket.on('error', function(err) {
+  // TODO: catch error such as session timeouts, etc. and deal with properly.
+  // Maybe means sending a message via a port to Elm about this?
+  if (! app) return;
+  console.log('=== Error ==>');
+  console.log(err);
+  console.log('<== Error ===');
 });
 
+ioSocket.on('reconnect_error', function(err) {
+  if (! app) return;
+  console.log('=== Reconnect Error ==>');
+  console.log(err);
+  console.log('<== Reconnect Error ===');
+});
+
+ioSocket.on('connect_error', function(err) {
+  if (! app) return;
+  console.log('=== Connect Error ==>');
+  console.log(err);
+  console.log('<== Connect Error ===');
+});
+
+// --------------------------------------------------------
+// Handle all messages coming from the server by parsing to
+// JSON, performing nominal sanity checks, and passing out
+// to handlers for processing.
+// --------------------------------------------------------
+ioSocket.on(MESSAGE, function(data) {
+  // Sanity checks
+  if (! app) {
+    console.log('ERROR: message received from the server before app has been initialized.');
+    return;
+  }
+  if (! data) {
+    console.log('ERROR: message received from the server with no content.');
+    return;
+  }
+
+  // Parsing to JSON.
+  var json;
+  try {
+    json = JSON.parse(data);
+  } catch (e) {
+    console.log('ERROR parsing JSON.');
+    console.log(e);
+    return;
+  }
+
+  // More sanity checks.
+  if (! json || ! json.namespace || ! json.msgType || ! json.payload) {
+    console.log('ERROR: message received from the server is in improper format.');
+    //console.log(json);
+  }
+
+  // Forward work to handlers.
+  if (json && json.namespace) {
+    switch (json.namespace) {
+      case SYSTEM:
+        handleSystem(json);
+        break;
+
+      case SITE:
+        handleSite(json.payload);
+        break;
+
+      case DATA:
+        handleData(json);
+        break;
+
+      default:
+        console.log('ERROR: unknown or missing namespace of: ' + json.namespace);
+        break;
+    }
+  }
+});
+
+// ========================================================
+// ========================================================
+// Handling Elm client to server messages.
+// ========================================================
+// ========================================================
 
 /* --------------------------------------------------------
  * setApp()
  *
- * Save the reference to the Elm client. Nearly everything
- * in this module requires this so this needs to be set by
- * the caller as soon as possbile after the Elm client is
- * created.
+ * Save the reference to the Elm client. Everything here
+ * requires this so this needs to be set by the caller as
+ * soon as possbile after the Elm client is created.
+ *
+ * Listen for messages coming from the Elm client and send
+ * them to the server.
  * -------------------------------------------------------- */
 var setApp = function(theApp) {
   app = theApp;
 
   app.ports.login.subscribe(function(data) {
-    sendMsg(ADHOC, wrapAdHoc(ADHOC_LOGIN, data));
+    sendMsg(ADHOC_LOGIN, data);
   });
 
   app.ports.keyValueUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('keyValue', data));
+    sendMsg(CHG, wrapTableChange('keyValue', data));
   });
 
   app.ports.labSuiteCreate.subscribe(function(data) {
-    sendMsg(ADD, wrapData('labSuite', data));
+    sendMsg(ADD, wrapTableChange('labSuite', data));
   });
 
   app.ports.labSuiteDelete.subscribe(function(data) {
-    sendMsg(DEL, wrapData('labSuite', data));
+    sendMsg(DEL, wrapTableChange('labSuite', data));
   });
 
   app.ports.labSuiteUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('labSuite', data));
+    sendMsg(CHG, wrapTableChange('labSuite', data));
   });
 
   app.ports.labTestCreate.subscribe(function(data) {
-    sendMsg(ADD, wrapData('labTest', data));
+    sendMsg(ADD, wrapTableChange('labTest', data));
   });
 
   app.ports.labTestDelete.subscribe(function(data) {
-    sendMsg(DEL, wrapData('labTest', data));
+    sendMsg(DEL, wrapTableChange('labTest', data));
   });
 
   app.ports.labTestUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('labTest', data));
+    sendMsg(CHG, wrapTableChange('labTest', data));
   });
 
   app.ports.labTestValueCreate.subscribe(function(data) {
-    sendMsg(ADD, wrapData('labTestValue', data));
+    sendMsg(ADD, wrapTableChange('labTestValue', data));
   });
 
   app.ports.labTestValueDelete.subscribe(function(data) {
-    sendMsg(DEL, wrapData('labTestValue', data));
+    sendMsg(DEL, wrapTableChange('labTestValue', data));
   });
 
   app.ports.labTestValueUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('labTestValue', data));
+    sendMsg(CHG, wrapTableChange('labTestValue', data));
   });
 
   app.ports.medicationTypeCreate.subscribe(function(data) {
-    sendMsg(ADD, wrapData('medicationType', data));
+    sendMsg(ADD, wrapTableChange('medicationType', data));
   });
 
   app.ports.medicationTypeDelete.subscribe(function(data) {
-    sendMsg(DEL, wrapData('medicationType', data));
+    sendMsg(DEL, wrapTableChange('medicationType', data));
   });
 
   app.ports.medicationTypeUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('medicationType', data));
+    sendMsg(CHG, wrapTableChange('medicationType', data));
   });
 
   app.ports.requestUserProfile.subscribe(function(uselessData) {
-    sendMsg(ADHOC, wrapAdHoc(ADHOC_USER_PROFILE, void 0));
+    sendMsg(ADHOC_USER_PROFILE, {});
   });
 
   app.ports.selectDataCreate.subscribe(function(data) {
-    sendMsg(ADD, wrapData('selectData', data));
+    sendMsg(ADD, wrapTableChange('selectData', data));
   });
 
   app.ports.selectDataDelete.subscribe(function(data) {
-    sendMsg(DEL, wrapData('selectData', data));
+    sendMsg(DEL, wrapTableChange('selectData', data));
   });
 
   app.ports.selectDataUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('selectData', data));
+    sendMsg(CHG, wrapTableChange('selectData', data));
   });
 
   app.ports.selectQuery.subscribe(function(query) {
@@ -354,31 +380,31 @@ var setApp = function(theApp) {
   });
 
   app.ports.userCreate.subscribe(function(data) {
-    sendMsg(ADD, wrapData('user', data));
+    sendMsg(ADD, wrapTableChange('user', data));
   });
 
   app.ports.userDelete.subscribe(function(data) {
-    sendMsg(DEL, wrapData('user', data));
+    sendMsg(DEL, wrapTableChange('user', data));
   });
 
   app.ports.userUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('user', data));
+    sendMsg(CHG, wrapTableChange('user', data));
   });
 
   app.ports.userProfileUpdate.subscribe(function(data) {
-    sendMsg(ADHOC, wrapAdHoc(ADHOC_USER_PROFILE_UPDATE, data));
+    sendMsg(ADHOC_USER_PROFILE_UPDATE, data);
   });
 
   app.ports.vaccinationTypeCreate.subscribe(function(data) {
-    sendMsg(ADD, wrapData('vaccinationType', data));
+    sendMsg(ADD, wrapTableChange('vaccinationType', data));
   });
 
   app.ports.vaccinationTypeDelete.subscribe(function(data) {
-    sendMsg(DEL, wrapData('vaccinationType', data));
+    sendMsg(DEL, wrapTableChange('vaccinationType', data));
   });
 
   app.ports.vaccinationTypeUpdate.subscribe(function(data) {
-    sendMsg(CHG, wrapData('vaccinationType', data));
+    sendMsg(CHG, wrapTableChange('vaccinationType', data));
   });
 
 };

@@ -51,9 +51,9 @@ function getConstants(key) {
     case 'CONST':
       return CONST = {
         TYPE: {
-          SITE: 'site'
-          , SYSTEM: 'system'
-          , DATA: 'DATA_ADD_CHG_DELETE'
+          SITE: 'SITE'
+          , SYSTEM: 'SYSTEM'
+          , DATA: 'DATA'
         }
       };
       break;
@@ -91,7 +91,7 @@ var sendData = function(key, val, scope) {
     // Broadcast this to the other processes for distribution
     // to all connected clients.
     // --------------------------------------------------------
-    process.send({type: CONST.TYPE.DATA, data: data2});
+    process.send({namespace: CONST.TYPE.DATA, data: data2});
   });
 };
 

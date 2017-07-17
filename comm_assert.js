@@ -19,21 +19,21 @@ function ioData_socket_on_ADD(payload) {
   var m = msg('comm_assert/ioData_socket_on_ADD()');
   if (verbose) console.log(m());
 
-  assert.ok(_.isString(payload), m('payload'));
+  assert.ok(_.isObject(payload), m('payload'));
 }
 
 function ioData_socket_on_CHG(payload) {
   var m = msg('comm_assert/ioData_socket_on_CHG()');
   if (verbose) console.log(m());
 
-  assert.ok(_.isString(payload), m('payload'));
+  assert.ok(_.isObject(payload), m('payload'));
 }
 
 function ioData_socket_on_DEL(payload) {
   var m = msg('comm_assert/ioData_socket_on_DEL()');
   if (verbose) console.log(m());
 
-  assert.ok(_.isString(payload), m('payload'));
+  assert.ok(_.isObject(payload), m('payload'));
 }
 
 function ioData_socket_on_DATA_SELECT(data) {
@@ -66,13 +66,11 @@ function handleData(evtName, payload, socket) {
   assert.ok(_.isString(evtName), m('evtName'));
   assert.ok(evtName === 'ADD' || evtName === 'CHG' || evtName === 'DEL', m('evtName values'));
 
-  assert.ok(_.isString(payload), m('payload'));
-  assert.ok(JSON.parse(payload), m('JSON.parse'));
+  assert.ok(_.isObject(payload), m('payload'));
 
-  var json = JSON.parse(payload);
-  assert.ok(_.has(json, 'table') && _.isString(json.table), m('payload.table'));
-  assert.ok(_.has(json, 'data') && _.isObject(json.data), m('payload.data'));
-  assert.ok(_.has(json.data, 'id') && _.isNumber(json.data.id), m('payload.data.id'));
+  assert.ok(_.has(payload, 'table') && _.isString(payload.table), m('payload.table'));
+  assert.ok(_.has(payload, 'data') && _.isObject(payload.data), m('payload.data'));
+  assert.ok(_.has(payload.data, 'id') && _.isNumber(payload.data.id), m('payload.data.id'));
 }
 
 function handleLogin(json, socket) {

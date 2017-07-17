@@ -235,7 +235,7 @@ update msg model =
             -- We only keep the most recent 1000 messages.
             let
                 newSysMessages =
-                    if sysMsg.id /= "ERROR" then
+                    if sysMsg.updatedAt /= 0 then
                         sysMsg
                             :: model.systemMessages
                             |> List.take 1000
