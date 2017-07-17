@@ -285,6 +285,7 @@ userUpdateDetail msg ({ userSearchForm, userModel } as model) =
                 ( MU.mergeById userTbl userModel.records
                     |> (\recs -> { userModel | records = recs })
                     |> MU.setSelectQuery sq
+                    |> User.populateSelectedTableForm
                     |> asUserModelIn model
                     |> Model.addNotificationSubscription subscription
                 , newCmd
