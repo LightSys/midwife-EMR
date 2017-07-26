@@ -85,6 +85,10 @@ html(lang="en")
 
           //- Header menu options on the right
           ul(class="nav navbar-nav navbar-right navbar-user")
+            if roleInfo && roleInfo.isAuthenticated && (roleInfo.hasRole('attending') || roleInfo.hasRole('clerk') || roleInfo.hasRole('supervisor'))
+              li
+                if (rec && rec.id)
+                  a(href='/tolabor/' + rec.id)= gettext('Labor/Delivery')
             - var appRev = applicationRevision? gettext('version') + ': ' + applicationRevision: '';
             if (rec && rec.id && roleInfo && roleInfo.isAuthenticated && (roleInfo.hasRole('supervisor') || roleInfo.hasRole('attending') || roleInfo.hasRole('clerk')))
               li

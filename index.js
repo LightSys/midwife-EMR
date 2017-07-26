@@ -444,15 +444,28 @@ KeyValue.getKeyValues().then(function(data) {
   // but don't handle the API calls.
   // --------------------------------------------------------
   app.use(function(req, res, next) {
+    // If url is anything /api, ignore.
     if (/^\/api\//.test(req.url)) return next();
+
+    // If url is for transitioning from SPA to full page load, ignore.
+    if (/^\/toprenatal/.test(req.url)) return next();
+
     if (req.session && req.session.isSpaOnly) return api.doSpa(req, res, next);
     next();
   });
 
   // --------------------------------------------------------
-  // Home
+  // Home for phase one prenatal (full page load) and the
+  // labor/delivery/postpartum SPA.
   // --------------------------------------------------------
   app.get(cfg.path.home, common, hasSuper, api.doSpa, home.home);
+
+  // --------------------------------------------------------
+  // Handle transitions between prenatal full page loads and
+  // labor/delivery/postpartum SPA.
+  // --------------------------------------------------------
+  app.get(cfg.path.toPrenatal, common, hasSuper, home.handleSPA);
+  app.get(cfg.path.toLabor, common, hasSuper, home.handleSPA);
 
   // --------------------------------------------------------
   // Search

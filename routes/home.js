@@ -322,6 +322,92 @@ var getPrenatalHistory = function(cb) {
   });
 };
 
+// --------------------------------------------------------
+// handleSPA()
+//
+// While some parts of the application use full page loads
+// (prenatal) while others use an SPA (labor, delivery, pp),
+// so provide routes which allow users to switch between them
+// easily.
+//
+// Calling cfg.path.toLabor will set the isSpaOnly field to
+// true in the caller's session. Calling cfg.path.toPrenatal
+// will set it to false. This is the handler for both paths.
+//
+// An optional pregnancy id can be passed as part of the url,
+// e.g. '/tolabor/2314' or '/toprenatal/1244'.
+//
+// This handler will redirect with the following logic:
+//  - prenatal without id: sets isSpaOnly to false, redirects
+//    to '/'.
+//  - prenatal with id: sets isSpaOnly to false, redirects to
+//    '/prenatal/xxxx'.
+//  - labor without id: sets isSpaOnly to true, redirects
+//    to '/'.
+//  - labor with id: sets isSpaOnly to true, sets pregId as
+//    a temporary flag in the session, redirects to '/',
+//    subsequent handler passes pregId as flag to Elm client.
+// --------------------------------------------------------
+var handleSPA = function(req, res) {
+  var re_for_url = /(.*)\//
+    , laborUrl = cfg.path.toLabor.match(re_for_url)[1]
+    , prenatalUrl = cfg.path.toPrenatal.match(re_for_url)[1]
+    , pregId = req.params.pregId? req.params.pregId: void 0
+    , newUrl
+    , pageName
+    ;
+
+  // --------------------------------------------------------
+  // Sanity check. Only authenticated sessions should get here.
+  // --------------------------------------------------------
+  if (! req.session ||
+      ! req.session.user ||
+      ! req.session.user.role ||
+      ! req.session.user.role.name) {
+    return login(req, res);
+  }
+
+  if (req.url.startsWith(laborUrl)) {
+    req.session.isSpaOnly = true;
+
+    if (pregId) {
+      // --------------------------------------------------------
+      // Store the pregnancy id in the session so that it can be
+      // picked up again after the redirect, which is needed in
+      // order to correct the url to '/'. After the redirect, the
+      // pregnancy id is fed to the ELm client as a flag.
+      // --------------------------------------------------------
+      req.session.transitionPregId = pregId;
+    }
+
+    // --------------------------------------------------------
+    // Redirect in order to restore the url in the browser if
+    // it is anything other that '/'. The handler after the
+    // redirect will load the SPA itself as well as the optional
+    // pregnancy id.
+    // --------------------------------------------------------
+    return res.redirect('/');
+
+  } else if (req.url.startsWith(prenatalUrl)) {
+
+    // --------------------------------------------------------
+    // Turn off SPA only mode.
+    // --------------------------------------------------------
+    req.session.isSpaOnly = false;
+    req.session.transitionPrenatal = true;
+
+    if (pregId) {
+      return res.redirect('/pregnancy/' + pregId + '/prenatal');
+    } else {
+      return res.redirect('/');
+    }
+
+  } else {
+    logError('Unhandled url in handleSPA(): ' + req.url);
+    return res.redirect('/');
+  }
+};
+
 /* --------------------------------------------------------
  * home()
  *
@@ -460,10 +546,11 @@ var logout = function(req, res) {
 
 
 module.exports = {
-  home: home
-  , login: login
-  , loginPost: loginPost
-  , logout: logout
+  handleSPA
+  , home
+  , login
+  , loginPost
+  , logout
 };
 
 

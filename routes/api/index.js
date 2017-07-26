@@ -79,9 +79,9 @@ var buildMenu = function(req) {
  * doSpa()
  *
  * Determine if the request should load a SPA response or
- * not based upon the role the user has. This affords a
- * transition of the application from full page loads to
- * SPA in stages.
+ * not based upon the role the user has and other criteria.
+ * This affords a transition of the application from full
+ * page loads to SPA in stages.
  * -------------------------------------------------------- */
 var doSpa = function(req, res, next) {
   var appRev = req.app.locals.applicationRevision
@@ -108,38 +108,49 @@ var doSpa = function(req, res, next) {
   });
 
   if (req.session.user && req.session.user.role) {
+
     // --------------------------------------------------------
-    // Note: we have completely retired the React code.
-    // TODO: remove all React code from the code base.
+    // The administrator role is SPA only using the Elm client.
     // --------------------------------------------------------
-    if ((req.session.user.role.name === 'administrator' &&
-                ! req.session.user.note.startsWith('LEGACY')) ||
-                (req.session.user.role.name === 'guard' &&
-                req.session.user.note.startsWith('PHASE2ELM')) ||
-                (req.session.user.role.name === 'attending' &&
-                req.session.user.note.startsWith('PHASE2ELM')) ||
-                (req.session.user.role.name === 'clerk' &&
-                req.session.user.note.startsWith('PHASE2ELM')) ||
-                (req.session.user.role.name === 'supervisor' &&
-                req.session.user.note.startsWith('PHASE2ELM'))) {
+    if (req.session.user.role.name === 'administrator') {
 
       // --------------------------------------------------------
-      // Note: we default now to the Elm client for the
-      // administrator role. But if the administrator's note
-      // field starts with LEGACY, then the full page load code
-      // will be used instead.
-      // --------------------------------------------------------
-
-      // --------------------------------------------------------
-      // Store the fact that this user's routes are all SPA or
-      // phase two routes in the session. This allows page
-      // refreshes to be properly handled.
+      // Store the fact that this user's routes are all SPA.
+      // This allows page refreshes to be properly handled.
       // --------------------------------------------------------
       req.session.isSpaOnly = true;
 
       if (req.url !== '/') {
         return res.redirect('/');
       }
+
+      pageName = 'start_administrator';
+      return res.render(pageName);
+
+    } else if (req.session.user.role.name === 'guard') {
+      // --------------------------------------------------------
+      // The guard is still full page load.
+      // --------------------------------------------------------
+      return next();
+
+    } else if (req.session.isSpaOnly) {
+      // --------------------------------------------------------
+      // The current session is flagged as SPA. The flag is set
+      // via the route handling for cfg.path.toLabor and
+      // cfg.path.toPrenatal. The SPA portion of that route is
+      // actualized here.
+      // --------------------------------------------------------
+      var data = {};
+
+      // --------------------------------------------------------
+      // The request to transition to SPA comes with a pregnancy
+      // id to load immediately. Pass that onto the client via
+      // an Elm flag.
+      // --------------------------------------------------------
+      if (req.session.transitionPregId) {
+        data.pregId = req.session.transitionPregId;
+      }
+      req.session.transitionPregId = void 0;
 
       // --------------------------------------------------------
       // Each role has it's own starting jade page for the sake
@@ -155,9 +166,12 @@ var doSpa = function(req, res, next) {
         default: pageName = '';
       }
 
-      return res.render(pageName);
+      return res.render(pageName, data);
     }
   }
+
+  // Apparently either do not have user and user.role in the session (weird)
+  // or not meeting the criteria for an SPA.
   return next();
 }
 
