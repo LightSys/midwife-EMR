@@ -950,6 +950,7 @@ var handleData = function(evtName, payload, socket) {
  * return      undefined
  * -------------------------------------------------------- */
 var getTable = function(socket, json) {
+  if (DO_ASSERT) assertModule.getTable(socket, json);
   if (json.payload && json.payload.table) {
     getLookupTable(json.payload.table, json.payload.id,
       json.payload.pregnancy_id, json.payload.patient_id, function(err, data) {

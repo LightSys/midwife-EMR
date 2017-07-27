@@ -74,7 +74,9 @@ var ADD_CHG_DELETE = 'ADD_CHG_DELETE';
  * namespace that specifies the course level type of message
  * this is, which is one of 'SYSTEM', 'SITE', or 'DATA'.
  * Another field named payload contains the data
- * passed. Return a stringifed object to the caller.
+ * passed. Yet another field named version is added to specify
+ * the sub-protocol version being used. Return a stringifed
+ * object to the caller.
  *
  * param       namespace
  * param       msgType
@@ -82,7 +84,12 @@ var ADD_CHG_DELETE = 'ADD_CHG_DELETE';
  * return      stringifed object
  * -------------------------------------------------------- */
 var wrapByType = function(namespace, msgType, data) {
-  return JSON.stringify({namespace: namespace, msgType: msgType, payload: data});
+  return JSON.stringify({
+    namespace: namespace,
+    msgType: msgType,
+    version: 1,
+    payload: data
+  });
 };
 var wrapData = function(msgType, data) { return wrapByType(DATA, msgType, data); };
 

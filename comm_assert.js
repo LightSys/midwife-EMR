@@ -59,6 +59,22 @@ function ioData_socket_on_ADHOC(data) {
   assert.ok(_.has(json, 'adhocType'), m('adhocType'));
 }
 
+function getTable(socket, json) {
+  var m = msg('comm_assert/getTable()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(json), m('json'));
+  assert.ok(_.has(json, 'version'), m('version'));
+  assert.ok(_.isNumber(json.version) && (json.version === 1), m('version value'));
+
+  // Version 1 fields within the payload field
+  assert.ok(_.has(json, 'payload') && _.isObject(json.payload), m('json.payload'));
+  assert.ok(_.has(json.payload, 'id'), m('json.payload.id'));
+  assert.ok(_.has(json.payload, 'patient_id'), m('json.payload.patient_id'));
+  assert.ok(_.has(json.payload, 'pregnancy_id'), m('json.payload.pregnancy_id'));
+
+}
+
 function handleData(evtName, payload, socket) {
   var m = msg('comm_assert/handleData()');
   if (verbose) console.log(m());
@@ -135,6 +151,7 @@ function touchSocketSession(socket) {
 }
 
 module.exports = {
+  getTable,
   handleData,
   handleLogin,
   handleUserProfile,
