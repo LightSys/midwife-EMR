@@ -88,6 +88,7 @@ var rx = require('rx')
   , cfg = require('./config')
   , User = require('./models').User
   , getLookupTable = require('./routes/comm/lookupTables').getLookupTable
+  , getTable2 = require('./routes/comm/lookupTables').getTable2
   , saveUser = require('./routes/comm/userRoles').saveUser
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
   , savePrenatal = require('./routes/comm/pregnancy').savePrenatal
@@ -433,7 +434,9 @@ var sendSystem = makeSend(CONST.TYPE.SYSTEM);
 var wrapByType = function(namespace, msgType, data) {
   // We do not allow fields used solely for routing between the
   // process and RxJS systems to go to the client.
-  var payload = _.omit(data, ['msgId', 'workerId', 'processedBy', 'scope']);
+  // Also, namespace is already specified one level up so
+  // no need to repeat it if it exists.
+  var payload = _.omit(data, ['namespace', 'msgId', 'workerId', 'processedBy', 'scope']);
 
   // Temporary sanity checks.
   if (! msgType) {
@@ -950,23 +953,44 @@ var handleData = function(evtName, payload, socket) {
  * return      undefined
  * -------------------------------------------------------- */
 var getTable = function(socket, json) {
+  var retVal = _.omit(json, 'payload'); // version 2 only
+
   if (DO_ASSERT) assertModule.getTable(socket, json);
+
   if (json.payload && json.payload.table) {
-    getLookupTable(json.payload.table, json.payload.id,
-      json.payload.pregnancy_id, json.payload.patient_id, function(err, data) {
-      if (err) {
-        logCommError(err);
-        retAction = returnStatusSELECT(json.payload, void 0, false, SqlErrorCode, err.msg);
-        console.log('=== Socket id: ' + socket.id + ' ===');
+    console.log('=== Socket id: ' + socket.id + ', table: ' + json.payload.table + ', id: ' + json.payload.id);
+
+    if (json.version && json.version === 2) {
+      // Version 2
+      getTable2(json.payload.table, json.payload.id, json.payload.related, function(err, data) {
+        if (err) {
+          logCommError(err);
+          retVal.response = returnStatusSELECT({}, void 0, false, SqlErrorCode, err && err.msg? err.msg: '');
+          // TEMP
+          console.log(JSON.stringify(retVal));
+          return socket.send(JSON.stringify(retVal));
+        }
+        retVal.response = returnStatusSELECT({}, data, true);
+        // TEMP
+        console.log(JSON.stringify(retVal));
+        return socket.send(JSON.stringify(retVal));
+      });
+    } else {
+      // Legacy version.
+      getLookupTable(json.payload.table, json.payload.id,
+        json.payload.pregnancy_id, json.payload.patient_id, function(err, data) {
+        if (err) {
+          logCommError(err);
+          retAction = returnStatusSELECT(json.payload, void 0, false, SqlErrorCode, err.msg);
+          return socket.send(wrapData(DATA_SELECT_RESPONSE, retAction));
+        }
+        retAction = returnStatusSELECT(json.payload, data, true);
         return socket.send(wrapData(DATA_SELECT_RESPONSE, retAction));
-      }
-      retAction = returnStatusSELECT(json.payload, data, true);
-      console.log('=== Socket id: ' + socket.id + ', table: ' + json.payload.table + ', id: ' + json.payload.id);
-      return socket.send(wrapData(DATA_SELECT_RESPONSE, retAction));
-    });
+      });
+    }
   } else {
-    retAction = returnStatusSELECT(json.payload, void 0, false, UnknownErrorCode, 'Table not specified.');
     console.log('=== Socket id: ' + socket.id + ' ===');
+    retAction = returnStatusSELECT(json.payload, void 0, false, UnknownErrorCode, 'Table not specified.');
     return socket.send(wrapData(DATA_SELECT_RESPONSE, retAction));
   }
 };
@@ -1182,60 +1206,73 @@ var init = function(io, sessionMiddle) {
       assert(json.namespace && json.msgType);
 
       // --------------------------------------------------------
+      // Sanity check that the client is not trying to send
+      // messages using an invalid namespace.
+      // --------------------------------------------------------
+      if (json.namespace !== CONST.TYPE.DATA) {
+          console.log('##### ERROR: invalid namespace received from client: ' + json.namespace);
+          return;
+      }
+
+      // --------------------------------------------------------
       // Handle incoming message from the clients in the DATA
       // namespace.
+      //
+      // Differentiate between different versions of messages.
+      // The Elm admin client uses the original message type that
+      // does not have a version field, while the Elm medical
+      // client uses the newer message type that has a version
+      // field with a value of 2.
       // --------------------------------------------------------
-      switch (json.namespace) {
-        case CONST.TYPE.DATA:
-          switch (json.msgType) {
-            case ADHOC_LOGIN:
-              handleLogin(json.payload, socket);
-              break;
+      if (_.has(json, "version") && json.version === 2) {
+        // Medical Elm client.
+        switch (json.msgType) {
+          case DATA_SELECT:
+            getTable(socket, json);
+            break;
 
-            case ADHOC_USER_PROFILE:
-              handleUserProfile(socket);
-              break;
+          default:
+            console.log('ERROR: unhandled data msgType of: ' + json.msgType);
+            console.log(json);
+        }
+      } else {
+        // Admin Elm client.
+        switch (json.msgType) {
+          case ADHOC_LOGIN:
+            handleLogin(json.payload, socket);
+            break;
 
-            case ADHOC_USER_PROFILE_UPDATE:
-              handleUserProfile(socket, json.payload, userInfo);
-              break;
+          case ADHOC_USER_PROFILE:
+            handleUserProfile(socket);
+            break;
 
-            case DATA_SELECT:
-              getTable(socket, json);
-              break;
+          case ADHOC_USER_PROFILE_UPDATE:
+            handleUserProfile(socket, json.payload, userInfo);
+            break;
 
-            case ADD:
-              if (DO_ASSERT) assertModule.ioData_socket_on_ADD(json.payload);
-              handleData(ADD, json.payload, socket);
-              break;
+          case DATA_SELECT:
+            getTable(socket, json);
+            break;
 
-            case CHG:
-              if (DO_ASSERT) assertModule.ioData_socket_on_CHG(json.payload);
-              handleData(CHG, json.payload, socket);
-              break;
+          case ADD:
+            if (DO_ASSERT) assertModule.ioData_socket_on_ADD(json.payload);
+            handleData(ADD, json.payload, socket);
+            break;
 
-            case DEL:
-              if (DO_ASSERT) assertModule.ioData_socket_on_DEL(json.payload);
-              handleData(DEL, json.payload, socket);
-              break;
+          case CHG:
+            if (DO_ASSERT) assertModule.ioData_socket_on_CHG(json.payload);
+            handleData(CHG, json.payload, socket);
+            break;
 
-            default:
-              console.log('ERROR: unhandled data msgType of: ' + json.msgType);
-              console.log(json);
-          }
-          break;
+          case DEL:
+            if (DO_ASSERT) assertModule.ioData_socket_on_DEL(json.payload);
+            handleData(DEL, json.payload, socket);
+            break;
 
-        case CONST.TYPE.SITE:
-          console.log('##### ERROR: invalid namespace received from client: ' + json.namespace);
-          break;
-
-        case CONST.TYPE.SYSTEM:
-          console.log('##### ERROR: invalid namespace received from client: ' + json.namespace);
-          break;
-
-        default:
-          console.log('##### ERROR: unknown namespace of: ' + json.namespace);
-          console.log(json);
+          default:
+            console.log('ERROR: unhandled data msgType of: ' + json.msgType);
+            console.log(json);
+        }
       }
     });
 
@@ -1310,6 +1347,9 @@ var init = function(io, sessionMiddle) {
         // Don't do work unless logged in.
         if (! isValidSocketSession(socket)) return;
         console.log('=== Socket id: ' + socket.id + ' ===');
+        console.log('**********************');
+        console.log(data);
+        console.log('**********************');
         socket.send(wrapSite(CONST.TYPE.SITE, data));
       },
       function(err) {

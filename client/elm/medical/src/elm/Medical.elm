@@ -4,44 +4,30 @@ import Html as H exposing (Html)
 import Json.Decode as JD
 import Json.Decode.Pipeline as Pipeline exposing (decode, optional, required)
 import Navigation exposing (Location)
-import Task
+import Task exposing (Task)
 import Window
 
 
 -- LOCAL IMPORTS --
 
+import Data.Message exposing (IncomingMessage(..))
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
+import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session)
+import Data.TableRecord exposing (TableRecord(..))
+import Model exposing (Model, Page(..), PageState(..))
+import Msg exposing (Msg(..), ProcessType(..))
 import Page.Errored as Errored exposing (PageLoadError, view)
-import Page.LaborDelIpp as LaborDelIpp
+import Page.LaborDelIpp as PageLaborDelIpp
 import Page.NotFound as NotFound exposing (view)
+import Ports
 import Route exposing (fromLocation, Route(..))
+import Processing
 import Views.Page as Page exposing (ActivePage)
 import Util exposing ((=>))
 
 
-type Page
-    = Blank
-    | NotFound
-    | Errored PageLoadError
-    | LaborDelIpp LaborDelIpp.Model
-
-
-type PageState
-    = Loaded Page
-    | TransitioningFrom Page
-
-
-
 -- MODEL --
-
-
-type alias Model =
-    { pageState : PageState
-    , session : Session
-    , currPregId : Maybe PregnancyId
-    , window: Maybe Window.Size
-    }
 
 
 type alias Flags =
@@ -74,27 +60,13 @@ init flags location =
                 Nothing ->
                     Nothing
 
-        (newModel, newCmd) =
-            setRoute (Route.fromLocation location)
-                { pageState = Loaded <| initialPage pregId
-                , session = { user = Nothing }
-                , currPregId = pregId
-                , window = Nothing
-                }
+        ( newModel, newCmd ) =
+            setRoute (Route.fromLocation location) <|
+                Model.initialModel pregId
     in
-    ( newModel
-    , Cmd.batch [ newCmd, Task.perform (\s -> WindowResize (Just s)) Window.size ]
-    )
-
-
-initialPage : Maybe PregnancyId -> Page
-initialPage pregId =
-    case pregId of
-        Just pid ->
-            LaborDelIpp { pregnancy_id = pid }
-
-        Nothing ->
-            Blank
+        ( newModel
+        , Cmd.batch [ newCmd, Task.perform (\s -> WindowResize (Just s)) Window.size ]
+        )
 
 
 
@@ -103,16 +75,12 @@ initialPage pregId =
 
 view : Model -> Html Msg
 view model =
-    let
-        _ =
-            Debug.log "view" <| toString model
-    in
-        case model.pageState of
-            Loaded page ->
-                viewPage model.window model.currPregId model.session False page
+    case model.pageState of
+        Loaded page ->
+            viewPage model.window model.currPregId model.session False page
 
-            TransitioningFrom page ->
-                viewPage model.window model.currPregId model.session True page
+        TransitioningFrom page ->
+            viewPage model.window model.currPregId model.session True page
 
 
 viewPage : Maybe Window.Size -> Maybe PregnancyId -> Session -> Bool -> Page -> Html Msg
@@ -130,9 +98,8 @@ viewPage winSize pregId session isLoading page =
                     |> frame Page.Other
 
             LaborDelIpp subModel ->
-                LaborDelIpp.view winSize session subModel
+                PageLaborDelIpp.view winSize session subModel
                     |> frame Page.LaborDelIpp
-                    |> H.map LaborDelIppMsg
 
             Errored subModel ->
                 Errored.view session subModel
@@ -153,34 +120,97 @@ getPage pageState =
 -- UPDATE --
 
 
-type Msg
-    = Noop
-    | WindowResize (Maybe Window.Size)
-    | SetRoute (Maybe Route)
-    | LaborDelIppLoaded (Result PageLoadError LaborDelIpp.Model)
-    | LaborDelIppMsg LaborDelIpp.Msg
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Noop ->
             model => Cmd.none
 
+        LogConsole msg ->
+            let
+                _ =
+                    Debug.log "update: LogConsole" msg
+            in
+                model => Cmd.none
+
         WindowResize size ->
             { model | window = size } => Cmd.none
+
+        Message incoming ->
+            updateMessage incoming model
+
+        LaborDelIppLoaded ->
+            { model | pageState = Loaded (getPage model.pageState) } => Cmd.none
 
         _ ->
             model => Cmd.none
 
 
+{-| Handle all Msg.Message variations.
+-}
+updateMessage : IncomingMessage -> Model -> ( Model, Cmd Msg )
+updateMessage incoming model =
+    case incoming of
+        UnknownMessage str ->
+            model => (logConsole <| "UnknownMessage: " ++ str)
+
+        SiteMessage siteMsg ->
+            -- Note: we are discarding siteMsg.payload.updatedAt until we need it.
+            { model | siteMessages = siteMsg.payload.data } => Cmd.none
+
+        DataMessage dataMsg ->
+            let
+                -- Use the messageId returned from the server to acquire the
+                -- Msg reserved in our store by the originating "event".
+                ( processType, processStore ) =
+                    Processing.remove (ProcessId dataMsg.messageId) model.processStore
+
+                -- Store any data sent from the server into the model.
+                newModel =
+                    case dataMsg.response.success of
+                        True ->
+                            List.foldl
+                                (\tr mdl ->
+                                    case tr of
+                                        TableRecordPatient recs ->
+                                            -- We only ever want one patient in our store at a time.
+                                            { mdl | patientRecord = List.head recs }
+
+                                        TableRecordPregnancy recs ->
+                                            -- We only ever want one pregnancy in our store at a time.
+                                            { mdl | pregnancyRecord = List.head recs }
+                                )
+                                model
+                                dataMsg.response.data
+
+                        False ->
+                            -- TODO: handle failure better here.
+                            model
+            in
+                case processType of
+                    Just (SelectQueryType msg sq) ->
+                        { newModel | processStore = processStore }
+                            => Task.perform (always msg) (Task.succeed True)
+
+                    Nothing ->
+                        newModel => Cmd.none
+
+
+
+logConsole : String -> Cmd Msg
+logConsole msg =
+    Task.perform LogConsole (Task.succeed msg)
+
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     let
-        transition toMsg task =
-            { model | pageState = TransitioningFrom (getPage model.pageState) }
-                => Task.attempt toMsg task
+        transition processStore cmd =
+            { model
+                | pageState = TransitioningFrom (getPage model.pageState)
+                , processStore = processStore
+            }
+                => cmd
 
         errored =
             pageErrored model
@@ -189,10 +219,11 @@ setRoute maybeRoute model =
             Nothing ->
                 { model | pageState = Loaded NotFound } => Cmd.none
 
-            Just (Route.LaborDelIpp) ->
+            Just (Route.LaborDelIppRoute) ->
                 case model.currPregId of
                     Just pid ->
-                        transition LaborDelIppLoaded (LaborDelIpp.init pid model.session)
+                        PageLaborDelIpp.init pid model.session model.processStore
+                            |> (\( store, cmd ) -> transition store cmd)
 
                     Nothing ->
                         { model | pageState = Loaded NotFound } => Cmd.none
@@ -214,7 +245,10 @@ pageErrored model activePage errorMessage =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Window.resizes (\s -> WindowResize (Just s)) ]
+        [ Window.resizes (\s -> WindowResize (Just s))
+        , Ports.incoming Data.Message.decodeIncoming
+            |> Sub.map Message
+        ]
 
 
 

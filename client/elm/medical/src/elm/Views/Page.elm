@@ -27,8 +27,20 @@ frame winSize isLoading pregId user page content =
         [ viewHeader winSize pregId user isLoading page
         , H.div
             []
-            [ content ]
+            [ (if isLoading then
+                viewLoading winSize
+               else
+                content
+              )
+            ]
         ]
+
+
+{-| TODO: finish this.
+-}
+viewLoading : Maybe Window.Size -> Html msg
+viewLoading winSize =
+    H.div [] [ H.text "Loading ..." ]
 
 
 {-| Display the navigation menus at the top, adjusting for the size of the screen.
@@ -43,9 +55,6 @@ viewHeader winSize pregId user isLoading page =
 
                 Nothing ->
                     "/toprenatal"
-
-        _ =
-            Debug.log "viewHeader" <| toString page
     in
         case winSize of
             Nothing ->
@@ -60,18 +69,18 @@ viewHeader winSize pregId user isLoading page =
                                 [ H.ul
                                     -- Top navigation bar.
                                     [ HA.class "c-nav c-nav--inline primary-bg primary-contrast-fg" ]
-                                    [ (buildNavItem Large False False (AsRoute Route.LaborDelIpp) "Midwife-EMR")
+                                    [ (buildNavItem Large False False (AsRoute Route.LaborDelIppRoute) "Midwife-EMR")
                                     , (buildNavItem (FA "fa fa-sign-out") True False (AsLink "/logout") " Logout")
-                                    , (buildNavItem (FA "fa fa-file-text") True False (AsRoute Route.LaborDelIpp) " Reports")
+                                    , (buildNavItem (FA "fa fa-file-text") True False (AsRoute Route.LaborDelIppRoute) " Reports")
                                     , (buildNavItem (FA "fa fa-stethoscope") True False (AsLink toPrenatalUrl) " Prenatal")
                                     ]
                                 , H.ul
                                     -- Bottom navigation bar.
                                     [ HA.class "c-nav c-nav--inline nav-override-small accent-bg accent-contrast-fg" ]
-                                    [ (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIpp) "Labor-Delivery-IPP")
-                                    , (buildNavItem Small False False (AsRoute Route.LaborDelIpp) "Cont-Postpartum")
-                                    , (buildNavItem Small False False (AsRoute Route.LaborDelIpp) "Postpartum")
-                                    , (buildNavItem Small False False (AsRoute Route.LaborDelIpp) "Birth-Cert")
+                                    [ (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIppRoute) "Labor-Delivery-IPP")
+                                    , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Cont-Postpartum")
+                                    , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Postpartum")
+                                    , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Birth-Cert")
                                     ]
                                 ]
                             ]
@@ -91,18 +100,18 @@ viewHeader winSize pregId user isLoading page =
                                         [ H.ul
                                             -- Top navigation bar.
                                             [ HA.class "c-nav c-nav--inline primary-bg primary-contrast-fg" ]
-                                            [ (buildNavItem Large False False (AsRoute Route.LaborDelIpp) "Midwife-EMR")
+                                            [ (buildNavItem Large False False (AsRoute Route.LaborDelIppRoute) "Midwife-EMR")
                                             , (buildNavItem (FA "fa fa-sign-out") True False (AsLink "/logout") " Logout")
-                                            , (buildNavItem (FA "fa fa-file-text") True False (AsRoute Route.LaborDelIpp) " Reports")
+                                            , (buildNavItem (FA "fa fa-file-text") True False (AsRoute Route.LaborDelIppRoute) " Reports")
                                             , (buildNavItem (FA "fa fa-stethoscope") True False (AsLink toPrenatalUrl) " Prenatal")
                                             ]
                                         , H.ul
                                             -- Bottom navigation bar.
                                             [ HA.class "c-nav c-nav--inline nav-override-small accent-bg accent-contrast-fg" ]
-                                            [ (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIpp) "LD")
-                                            , (buildNavItem Small False False (AsRoute Route.LaborDelIpp) "CPP")
-                                            , (buildNavItem Small False False (AsRoute Route.LaborDelIpp) "PP")
-                                            , (buildNavItem Small False False (AsRoute Route.LaborDelIpp) "Cert")
+                                            [ (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIppRoute) "LD")
+                                            , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "CPP")
+                                            , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "PP")
+                                            , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Cert")
                                             ]
                                         ]
                                     ]

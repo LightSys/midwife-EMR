@@ -65,14 +65,21 @@ function getTable(socket, json) {
 
   assert.ok(_.isObject(json), m('json'));
   assert.ok(_.has(json, 'version'), m('version'));
-  assert.ok(_.isNumber(json.version) && (json.version === 1), m('version value'));
+  assert.ok(_.isNumber(json.version) && (json.version === 1 || json.version === 2), m('version value'));
 
-  // Version 1 fields within the payload field
   assert.ok(_.has(json, 'payload') && _.isObject(json.payload), m('json.payload'));
   assert.ok(_.has(json.payload, 'id'), m('json.payload.id'));
-  assert.ok(_.has(json.payload, 'patient_id'), m('json.payload.patient_id'));
-  assert.ok(_.has(json.payload, 'pregnancy_id'), m('json.payload.pregnancy_id'));
 
+  // Fields within the payload field.
+  if (json.version === 1) {
+    // Version 1.
+    assert.ok(_.has(json.payload, 'patient_id'), m('json.payload.patient_id'));
+    assert.ok(_.has(json.payload, 'pregnancy_id'), m('json.payload.pregnancy_id'));
+  } else {
+    // Version 2.
+    assert.ok(_.has(json.payload, 'related'), m('json.payload.related'));
+    assert.ok(_.isArray(json.payload.related), m('json.payload.related isArray'));
+  }
 }
 
 function handleData(evtName, payload, socket) {

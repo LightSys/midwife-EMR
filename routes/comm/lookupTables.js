@@ -1,9 +1,9 @@
-/* 
+/*
  * -------------------------------------------------------------------------------
  * lookupTables.js
  *
  * Management of various lookup tables.
- * ------------------------------------------------------------------------------- 
+ * -------------------------------------------------------------------------------
  */
 
 var _ = require('underscore')
@@ -42,6 +42,8 @@ var LOOKUP_TABLES = [
   'labTest',
   'labTestValue',
   'medicationType',
+  'patient',
+  'pregnancy',
   'pregnoteType',
   'riskCode',
   'role',
@@ -57,6 +59,130 @@ var LOOKUP_TABLES_NON_PATIENT = [
   'keyValue',
   'selectData'
 ];
+
+
+/* --------------------------------------------------------
+ * getTable2()
+ *
+ * Return the records requested per version 2 of the
+ * sub-protocol.
+ *
+ * param      table
+ * param      id
+ * param      related
+ * param      cb
+ * -------------------------------------------------------- */
+var getTable2 = function(table, id, related, cb) {
+  if (DO_ASSERT) assertModule.getTable2(table, id, related, cb);
+  var data = []
+    , whereObj = {}
+    , relatedInProcess = 0
+    , msg
+    ;
+
+  // --------------------------------------------------------
+  // Make sure that the table passed is allowed.
+  // --------------------------------------------------------
+  if ((! _.contains(LOOKUP_TABLES, table)) &&
+      (! _.contains(LOOKUP_TABLES_NON_PATIENT, table))) {
+    msg = 'lookupTables.getLookupTable(): ' + table + ' is not an allowed table.';
+    return cb(msg);
+  }
+
+  // --------------------------------------------------------
+  // Remove any duplicates and related tables that are not
+  // allowed.
+  // --------------------------------------------------------
+  related = _.intersection(related, _.union(LOOKUP_TABLES, LOOKUP_TABLES_NON_PATIENT));
+
+  // --------------------------------------------------------
+  // Get the data for the primary table.
+  // --------------------------------------------------------
+  getRecords(table, 'id', id, function(err, recs) {
+    if (err) return cb(err);
+    data.push(buildData(table, recs));
+
+    // --------------------------------------------------------
+    // Now get the related tables, if there are any.
+    // --------------------------------------------------------
+    if (related.length > 0) {
+      for (let relatedTbl of related) {
+        relatedInProcess++;
+
+        if (relatedTbl === 'patient' && table === 'pregnancy' && id !== -1) {
+          // Handle our convoluted schema discrepancy for one patient record.
+          getRecords(relatedTbl, 'id', recs[0].patient_id, function(err, recs) {
+            if (err) return cb(err);
+            data.push(buildData(relatedTbl, recs));
+
+            // Return results if we are done.
+            if (relatedInProcess === related.length) return cb(null, data);
+          });
+        } else {
+          // Normal relationships using database naming practices for schema.
+          getRecords(relatedTbl, table+'_id', id, function(err, recs) {
+            if (err) return cb(err);
+            data.push(buildData(relatedTbl, recs));
+
+            // Return results if we are done.
+            if (relatedInProcess === related.length) return cb(null, data);
+          });
+        }
+      }
+    } else {
+      // No related tables.
+      return cb(null, data);
+    }
+  });
+}
+
+/* --------------------------------------------------------
+ * buildData()
+ *
+ * Wrap the data for a version 2 record in the expected format.
+ * -------------------------------------------------------- */
+function buildData(table, records) {
+  return {table: table, records: records};
+}
+
+/* --------------------------------------------------------
+ * getRecords()
+ *
+ * Retrieves the data for getTable2() for the table
+ * specified.
+ * -------------------------------------------------------- */
+function getRecords(table, key, value, cb) {
+  var data = []
+    , knex = Bookshelf.DB.knex
+    , whereObj = {}
+    ;
+
+  // --------------------------------------------------------
+  // Construct the where clause.
+  // --------------------------------------------------------
+  if (value !== -1) whereObj[key] = value;
+
+  knex(table)
+    .select()
+    .where(whereObj)
+    .then(function(rows) {
+      // --------------------------------------------------------
+      // We never return the password field to the client. Return
+      // an empty string instead.
+      // --------------------------------------------------------
+      if (table === 'user') {
+        rows = _.map(rows, function(rec) {
+          rec.password = '';
+          return rec;
+        });
+      }
+      return cb(null, rows);
+    })
+    .catch(function(err) {
+      logError(err);
+      return cb(err);
+    });
+}
 
 
 /* --------------------------------------------------------
@@ -373,6 +499,7 @@ var updateVaccinationType = function(data, userInfo, cb) {
 
 module.exports = {
   getLookupTable,
+  getTable2,
   addLabSuite,
   addLabTest,
   addLabTestValue,
