@@ -35,6 +35,10 @@
   background-color: #5B5B5B;
 }
 
+/* Colors, etc. for specific components */
+.pregnancy-header-bg {
+  background-color: #EEEEEE;
+}
 
 .headerLink {
   text-decoration: none; 
@@ -66,4 +70,21 @@
   .nav-item-has-icon {
     display: none;
   }
+}
+
+/* Field level adjustments */
+.margin-left-abit {
+  margin-left: 0.5em;
+}
+.align-right-3em {
+  display: inline-block;
+  width: 3em;
+  min-width: 3em;
+  text-align: right;
+}
+.align-right-5em {
+  display: inline-block;
+  width: 5em;
+  min-width: 5em;
+  text-align: right;
 }

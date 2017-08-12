@@ -8,5 +8,5 @@ var comm = require('./js/comm');
 var elm = require('./elm/Medical.elm');
 var node = document.getElementById('app');
 var pregId = node.getAttribute('data-pregId');
-var app = elm.Medical.embed(node, {pregId: pregId});
+var app = elm.Medical.embed(node, {pregId: pregId, currTime: Date.now()});
 comm.setApp(app);

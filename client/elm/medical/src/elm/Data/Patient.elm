@@ -15,7 +15,7 @@ updatedAt, and supervisor fields.
 -}
 type alias PatientRecord =
     { id : Int
-    , dohID : String
+    , dohID : Maybe String
     , dob : Maybe Date
     , generalInfo : Maybe String
     , ageOfMenarche : Maybe Int
@@ -28,7 +28,7 @@ patientRecord : JD.Decoder PatientRecord
 patientRecord =
     JDP.decode PatientRecord
         |> JDP.required "id" JD.int
-        |> JDP.required "dohID" JD.string
+        |> JDP.required "dohID" (JD.maybe JD.string)
         |> JDP.required "dob" (JD.maybe JDE.date)
         |> JDP.required "generalInfo" (JD.maybe JD.string)
         |> JDP.required "ageOfMenarche" (JD.maybe JD.int)

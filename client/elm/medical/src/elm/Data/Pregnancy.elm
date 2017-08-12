@@ -11,6 +11,9 @@ import Json.Decode as JD
 import Json.Decode.Extra as JDE
 import Json.Decode.Pipeline as JDP
 
+-- LOCAL IMPORTS
+
+import Util as U
 
 type PregnancyId
     = PregnancyId Int
@@ -146,25 +149,25 @@ pregnancyRecord =
         |> JDP.required "country" (JD.maybe JD.string)
         |> JDP.required "gravidaNumber" (JD.maybe JD.int)
         |> JDP.required "lmp" (JD.maybe JDE.date)
-        |> JDP.required "sureLMP" (JD.maybe JD.bool)
-        |> JDP.required "warning" (JD.maybe JD.bool)
+        |> JDP.required "sureLMP" U.maybeIntToMaybeBool
+        |> JDP.required "warning" U.maybeIntToMaybeBool
         |> JDP.required "riskNote" (JD.maybe JD.string)
         |> JDP.required "alternateEdd" (JD.maybe JDE.date)
-        |> JDP.required "useAlternateEdd" (JD.maybe JD.bool)
+        |> JDP.required "useAlternateEdd" U.maybeIntToMaybeBool
         |> JDP.required "doctorConsultDate" (JD.maybe JDE.date)
         |> JDP.required "dentistConsultDate" (JD.maybe JDE.date)
-        |> JDP.required "mbBook" (JD.maybe JD.bool)
+        |> JDP.required "mbBook" U.maybeIntToMaybeBool
         |> JDP.required "whereDeliver" (JD.maybe JD.string)
         |> JDP.required "fetuses" (JD.maybe JD.int)
-        |> JDP.required "monozygotic" (JD.maybe JD.bool)
+        |> JDP.required "monozygotic" U.maybeIntToMaybeBool
         |> JDP.required "pregnancyEndDate" (JD.maybe JDE.date)
         |> JDP.required "pregnancyEndResult" (JD.maybe JD.string)
-        |> JDP.required "iugr" (JD.maybe JD.bool)
+        |> JDP.required "iugr" U.maybeIntToMaybeBool
         |> JDP.required "note" (JD.maybe JD.string)
         |> JDP.required "numberRequiredTetanus" (JD.maybe JD.int)
-        |> JDP.required "invertedNipples" (JD.maybe JD.bool)
-        |> JDP.required "hasUS" (JD.maybe JD.bool)
-        |> JDP.required "wantsUS" (JD.maybe JD.bool)
+        |> JDP.required "invertedNipples" U.maybeIntToMaybeBool
+        |> JDP.required "hasUS" U.maybeIntToMaybeBool
+        |> JDP.required "wantsUS" U.maybeIntToMaybeBool
         |> JDP.required "gravida" (JD.maybe JD.int)
         |> JDP.required "stillBirths" (JD.maybe JD.int)
         |> JDP.required "abortions" (JD.maybe JD.int)
@@ -172,48 +175,48 @@ pregnancyRecord =
         |> JDP.required "para" (JD.maybe JD.int)
         |> JDP.required "term" (JD.maybe JD.int)
         |> JDP.required "preterm" (JD.maybe JD.int)
-        |> JDP.required "philHealthMCP" (JD.maybe JD.bool)
-        |> JDP.required "philHealthNCP" (JD.maybe JD.bool)
+        |> JDP.required "philHealthMCP" U.maybeIntToMaybeBool
+        |> JDP.required "philHealthNCP" U.maybeIntToMaybeBool
         |> JDP.required "philHealthID" (JD.maybe JD.string)
-        |> JDP.required "philHealthApproved" (JD.maybe JD.bool)
+        |> JDP.required "philHealthApproved" U.maybeIntToMaybeBool
         |> JDP.required "transferOfCare" (JD.maybe JDE.date)
         |> JDP.required "transferOfCareNote" (JD.maybe JD.string)
-        |> JDP.required "currentlyVomiting" (JD.maybe JD.bool)
-        |> JDP.required "currentlyDizzy" (JD.maybe JD.bool)
-        |> JDP.required "currentlyFainting" (JD.maybe JD.bool)
-        |> JDP.required "currentlyBleeding" (JD.maybe JD.bool)
-        |> JDP.required "currentlyUrinationPain" (JD.maybe JD.bool)
-        |> JDP.required "currentlyBlurryVision" (JD.maybe JD.bool)
-        |> JDP.required "currentlySwelling" (JD.maybe JD.bool)
-        |> JDP.required "currentlyVaginalPain" (JD.maybe JD.bool)
-        |> JDP.required "currentlyVaginalItching" (JD.maybe JD.bool)
-        |> JDP.required "currentlyNone" (JD.maybe JD.bool)
+        |> JDP.required "currentlyVomiting" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyDizzy" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyFainting" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyBleeding" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyUrinationPain" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyBlurryVision" U.maybeIntToMaybeBool
+        |> JDP.required "currentlySwelling" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyVaginalPain" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyVaginalItching" U.maybeIntToMaybeBool
+        |> JDP.required "currentlyNone" U.maybeIntToMaybeBool
         |> JDP.required "useIodizedSalt" (JD.maybe JD.string)
         |> JDP.required "takingMedication" (JD.maybe JD.string)
         |> JDP.required "planToBreastFeed" (JD.maybe JD.string)
         |> JDP.required "birthCompanion" (JD.maybe JD.string)
-        |> JDP.required "practiceFamilyPlanning" (JD.maybe JD.bool)
+        |> JDP.required "practiceFamilyPlanning" U.maybeIntToMaybeBool
         |> JDP.required "practiceFamilyPlanningDetails" (JD.maybe JD.string)
-        |> JDP.required "familyHistoryTwins" (JD.maybe JD.bool)
-        |> JDP.required "familyHistoryHighBloodPressure" (JD.maybe JD.bool)
-        |> JDP.required "familyHistoryDiabetes" (JD.maybe JD.bool)
-        |> JDP.required "familyHistoryHeartProblems" (JD.maybe JD.bool)
-        |> JDP.required "familyHistoryTB" (JD.maybe JD.bool)
-        |> JDP.required "familyHistorySmoking" (JD.maybe JD.bool)
-        |> JDP.required "familyHistoryNone" (JD.maybe JD.bool)
-        |> JDP.required "historyFoodAllergy" (JD.maybe JD.bool)
-        |> JDP.required "historyMedicineAllergy" (JD.maybe JD.bool)
-        |> JDP.required "historyAsthma" (JD.maybe JD.bool)
-        |> JDP.required "historyHeartProblems" (JD.maybe JD.bool)
-        |> JDP.required "historyKidneyProblems" (JD.maybe JD.bool)
-        |> JDP.required "historyHepatitis" (JD.maybe JD.bool)
-        |> JDP.required "historyGoiter" (JD.maybe JD.bool)
-        |> JDP.required "historyHighBloodPressure" (JD.maybe JD.bool)
-        |> JDP.required "historyHospitalOperation" (JD.maybe JD.bool)
-        |> JDP.required "historyBloodTransfusion" (JD.maybe JD.bool)
-        |> JDP.required "historySmoking" (JD.maybe JD.bool)
-        |> JDP.required "historyDrinking" (JD.maybe JD.bool)
-        |> JDP.required "historyNone" (JD.maybe JD.bool)
+        |> JDP.required "familyHistoryTwins" U.maybeIntToMaybeBool
+        |> JDP.required "familyHistoryHighBloodPressure" U.maybeIntToMaybeBool
+        |> JDP.required "familyHistoryDiabetes" U.maybeIntToMaybeBool
+        |> JDP.required "familyHistoryHeartProblems" U.maybeIntToMaybeBool
+        |> JDP.required "familyHistoryTB" U.maybeIntToMaybeBool
+        |> JDP.required "familyHistorySmoking" U.maybeIntToMaybeBool
+        |> JDP.required "familyHistoryNone" U.maybeIntToMaybeBool
+        |> JDP.required "historyFoodAllergy" U.maybeIntToMaybeBool
+        |> JDP.required "historyMedicineAllergy" U.maybeIntToMaybeBool
+        |> JDP.required "historyAsthma" U.maybeIntToMaybeBool
+        |> JDP.required "historyHeartProblems" U.maybeIntToMaybeBool
+        |> JDP.required "historyKidneyProblems" U.maybeIntToMaybeBool
+        |> JDP.required "historyHepatitis" U.maybeIntToMaybeBool
+        |> JDP.required "historyGoiter" U.maybeIntToMaybeBool
+        |> JDP.required "historyHighBloodPressure" U.maybeIntToMaybeBool
+        |> JDP.required "historyHospitalOperation" U.maybeIntToMaybeBool
+        |> JDP.required "historyBloodTransfusion" U.maybeIntToMaybeBool
+        |> JDP.required "historySmoking" U.maybeIntToMaybeBool
+        |> JDP.required "historyDrinking" U.maybeIntToMaybeBool
+        |> JDP.required "historyNone" U.maybeIntToMaybeBool
         |> JDP.required "questionnaireNote" (JD.maybe JD.string)
         |> JDP.required "partnerFirstname" (JD.maybe JD.string)
         |> JDP.required "partnerLastname" (JD.maybe JD.string)
@@ -223,6 +226,7 @@ pregnancyRecord =
         |> JDP.required "partnerIncome" (JD.maybe JD.int)
         |> JDP.required "partnerIncomePeriod" (JD.maybe JD.string)
         |> JDP.required "patient_id" JD.int
+
 
 getPregId : PregnancyId -> Int
 getPregId (PregnancyId id) =

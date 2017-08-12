@@ -7,6 +7,7 @@ module Model
         )
 
 import Dict exposing (Dict)
+import Time exposing (Time)
 import Window
 
 
@@ -34,7 +35,8 @@ type PageState
 
 
 type alias Model =
-    { currPregId : Maybe PregnancyId
+    { currTime : Time
+    , currPregId : Maybe PregnancyId
     , pageState : PageState
     , session : Session
     , processStore : ProcessStore
@@ -45,9 +47,10 @@ type alias Model =
     }
 
 
-initialModel : Maybe PregnancyId -> Model
-initialModel pregId =
-    { currPregId = pregId
+initialModel : Maybe PregnancyId -> Time -> Model
+initialModel pregId time =
+    { currTime = time
+    , currPregId = pregId
     , pageState = Loaded <| initialPage pregId
     , session = { user = Nothing }
     , processStore = Processing.processStoreInit
@@ -62,7 +65,12 @@ initialPage : Maybe PregnancyId -> Page
 initialPage pregId =
     case pregId of
         Just pid ->
-            LaborDelIpp { pregnancy_id = pid }
+            LaborDelIpp
+                { currTime = 0
+                , pregnancy_id = pid
+                , patientRecord = Nothing
+                , pregnancyRecord = Nothing
+                }
 
         Nothing ->
             Blank

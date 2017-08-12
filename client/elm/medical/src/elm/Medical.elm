@@ -24,6 +24,7 @@ import Ports
 import Route exposing (fromLocation, Route(..))
 import Processing
 import Views.Page as Page exposing (ActivePage)
+import Time exposing (Time)
 import Util exposing ((=>))
 
 
@@ -32,6 +33,7 @@ import Util exposing ((=>))
 
 type alias Flags =
     { pregId : Maybe String
+    , currTime : Float
     }
 
 
@@ -39,19 +41,23 @@ flagsDecoder : JD.Decoder Flags
 flagsDecoder =
     decode Flags
         |> required "pregId" (JD.nullable JD.string)
+        |> required "currTime" JD.float
 
 
 decodeFlagsFromJson : JD.Value -> Flags
 decodeFlagsFromJson json =
     JD.decodeValue flagsDecoder json
-        |> Result.withDefault (Flags Nothing)
+        |> Result.withDefault (Flags Nothing 0)
 
 
 init : JD.Value -> Location -> ( Model, Cmd Msg )
 init flags location =
     let
+        flagsDecoded =
+            decodeFlagsFromJson flags
+
         pregId =
-            case (decodeFlagsFromJson flags).pregId of
+            case flagsDecoded.pregId of
                 Just pid ->
                     String.toInt pid
                         |> Result.map PregnancyId
@@ -60,9 +66,12 @@ init flags location =
                 Nothing ->
                     Nothing
 
+        currTime =
+            flagsDecoded.currTime
+
         ( newModel, newCmd ) =
             setRoute (Route.fromLocation location) <|
-                Model.initialModel pregId
+                Model.initialModel pregId currTime
     in
         ( newModel
         , Cmd.batch [ newCmd, Task.perform (\s -> WindowResize (Just s)) Window.size ]
@@ -77,32 +86,32 @@ view : Model -> Html Msg
 view model =
     case model.pageState of
         Loaded page ->
-            viewPage model.window model.currPregId model.session False page
+            viewPage model False page
 
         TransitioningFrom page ->
-            viewPage model.window model.currPregId model.session True page
+            viewPage model True page
 
 
-viewPage : Maybe Window.Size -> Maybe PregnancyId -> Session -> Bool -> Page -> Html Msg
-viewPage winSize pregId session isLoading page =
+viewPage : Model -> Bool -> Page -> Html Msg
+viewPage model isLoading page =
     let
         frame =
-            Page.frame winSize isLoading pregId session.user
+            Page.frame model.window isLoading model.currPregId model.session.user
     in
         case page of
             Blank ->
                 H.text "Blank page"
 
             NotFound ->
-                NotFound.view session
+                NotFound.view model.session
                     |> frame Page.Other
 
             LaborDelIpp subModel ->
-                PageLaborDelIpp.view winSize session subModel
+                PageLaborDelIpp.view model.window model.session subModel
                     |> frame Page.LaborDelIpp
 
             Errored subModel ->
-                Errored.view session subModel
+                Errored.view model.session subModel
                     |> frame Page.Other
 
 
@@ -126,6 +135,9 @@ update msg model =
         Noop ->
             model => Cmd.none
 
+        Tick time ->
+            { model | currTime = time } => Cmd.none
+
         LogConsole msg ->
             let
                 _ =
@@ -139,8 +151,14 @@ update msg model =
         Message incoming ->
             updateMessage incoming model
 
-        LaborDelIppLoaded ->
-            { model | pageState = Loaded (getPage model.pageState) } => Cmd.none
+        LaborDelIppLoaded pregId ->
+            { model
+                | pageState =
+                    PageLaborDelIpp.buildModel model.currTime pregId model.patientRecord model.pregnancyRecord
+                        |> LaborDelIpp
+                        |> Loaded
+            }
+                => Cmd.none
 
         _ ->
             model => Cmd.none
@@ -196,7 +214,6 @@ updateMessage incoming model =
                         newModel => Cmd.none
 
 
-
 logConsole : String -> Cmd Msg
 logConsole msg =
     Task.perform LogConsole (Task.succeed msg)
@@ -246,6 +263,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Window.resizes (\s -> WindowResize (Just s))
+        , Time.every Time.second Tick
         , Ports.incoming Data.Message.decodeIncoming
             |> Sub.map Message
         ]
