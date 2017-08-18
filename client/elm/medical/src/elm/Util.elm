@@ -9,9 +9,12 @@ module Util
         , getGA
         , maybeIntToMaybeBool
         , maybeIntToNegOne
+        , nbsp
         )
 
 import Date exposing (Date)
+import Html as H exposing (Html)
+import Html.Attributes as HA
 import Json.Decode as JD
 import Json.Encode as JE
 import Time.DateTime as TDT
@@ -77,7 +80,7 @@ calcEdd theLmp =
             Nothing
 
 
-getGA : Date -> Date -> String
+getGA : Date -> Date -> ( String, String )
 getGA edd rdate =
     let
         -- Zero out to the day, excluding hours, minutes, etc.
@@ -96,25 +99,24 @@ getGA edd rdate =
         days =
             (TDT.delta dtRdate (TDT.addDays -280 dtEdd)).days - 1
 
-        gaStr =
-            (toString <| days // 7)
-                ++ " "
-                ++ (toString <| rem days 7)
-                ++ "/7"
+        ga =
+            (toString <| days // 7, rem days 7 |> toString |> flip (++) "/7")
     in
         case TDT.compare dtRdate dtEdd of
             GT ->
                 -- Limit to reasonable values.
-                if days > 322 then
-                    ""
+                --if days > 322 then
+                -- TESTING
+                if days > 900 then
+                    ( "", "" )
                 else
-                    gaStr
+                    ga
 
             EQ ->
-                "40 0/7"
+                ( "40", "0/7" )
 
             LT ->
-                gaStr
+                ga
 
 
 formatDohId : Maybe String -> String
@@ -146,3 +148,15 @@ maybeIntToMaybeBool =
                     Nothing ->
                         Nothing
             )
+
+
+{-| Put a non-breaking space in between two strings within a span. Adapted from:
+https://stackoverflow.com/questions/33971362/how-can-i-get-special-characters-using-elm-html-module
+-}
+nbsp : String -> String -> Html msg
+nbsp pre post =
+    H.span []
+        [ H.span [] [ H.text pre ]
+        , H.span [ HA.property "innerHTML" (JE.string "&nbsp;") ] []
+        , H.span [] [ H.text post ]
+        ]

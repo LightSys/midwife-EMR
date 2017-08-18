@@ -36,12 +36,8 @@
 }
 
 /* Colors, etc. for specific components */
-.pregnancy-header-bg {
-  background-color: #EEEEEE;
-}
-
 .headerLink {
-  text-decoration: none; 
+  text-decoration: none;
   color: #FFFFFF;
 
 }
@@ -56,13 +52,21 @@
   line-height: 2.5em;
 }
 
+/* Display the longer text instead of the shorter for larger screens. */
+.buildNavItem-text {
+  display: inline-block;
+}
+.buildNavItem-smallText {
+  display: none;
+}
+
 @media (max-width: 350px) {
   /* Reduce the size of the site name in the navigation menu. */
   .c-nav__item .u-xlarge {
     font-size: 1.0em;
   }
 }
-@media (max-width: 599px) {
+@media (max-width: 610px) {
   .c-nav__item {
     font-size: 90%;
   }
@@ -70,11 +74,39 @@
   .nav-item-has-icon {
     display: none;
   }
+  /* Display the shorter text instead of the longer for smaller screens. */
+  .buildNavItem-text {
+    display: none;
+  }
+  .buildNavItem-smallText {
+    display: inline-block;
+  }
 }
 
 /* Field level adjustments */
-.margin-left-abit {
-  margin-left: 0.5em;
+.label-2.5em {
+  display: inline-block;
+  width: 2.5em;
+  min-width: 2.5em;
+  text-align: left;
+}
+.label-3em {
+  display: inline-block;
+  width: 3em;
+  min-width: 3em;
+  text-align: left;
+}
+.label-6em {
+  display: inline-block;
+  width: 6em;
+  min-width: 6em;
+  text-align: left;
+}
+.align-right-2.5em {
+  display: inline-block;
+  width: 2.5em;
+  min-width: 2.5em;
+  text-align: right;
 }
 .align-right-3em {
   display: inline-block;
@@ -87,4 +119,50 @@
   width: 5em;
   min-width: 5em;
   text-align: right;
+}
+
+/*
+ * Pregnancy Headers
+ */
+.pregnancy-header-wrapper {
+  background-color: #EEEEEE;
+  padding: 0 0.5em;
+}
+.pregnancy-header {
+  /* The pregnancy header is a series of nested flexboxes. This
+   * outer flexbox wraps pregnancy-header-col instances. */
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.c-card--accordion > input:checked + .c-card__item + .c-card__item.pregnancy-header {
+  /* Use of a flexbox within BlazeCss's accordion are cross purposes
+   * with one another in that Blaze sets display to block when showing
+   * the contents of the accordion but we need it to be flex. */
+  display: flex;
+}
+.pregnancy-header-col {
+  /* This second level flexbox wraps pregnancy-header-col-fldval
+   * instances as children. */
+  display: flex;
+  flex-flow: column wrap;
+  align-items: flex-start;
+}
+.pregnancy-header-fldval {
+  /* This third level wraps a pair consisting of the field label
+   * and it's associated value, which are pregnancy-header-fld
+   * and pregnancy-header-val respectively. */
+  display: flex;
+  flex-flow: row no-wrap;
+  justify-content: center;
+  align-items: baseline;
+}
+.pregnancy-header-fld {
+  text-align: right;
+}
+.pregnancy-header-val {
+  /* This effectively fits to the size of the content. */
+  width: auto;
+  flex: 0 0 auto;
 }

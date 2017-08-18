@@ -69,7 +69,7 @@ view size session model =
         pregHeader =
             case (model.patientRecord, model.pregnancyRecord) of
                 (Just patRec, Just pregRec) ->
-                    viewPrenatal patRec pregRec model.currTime
+                    viewPrenatal patRec pregRec model.currTime size
 
                 (_, _) ->
                     H.text ""

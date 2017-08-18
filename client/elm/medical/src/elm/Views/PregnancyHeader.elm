@@ -6,12 +6,15 @@ module Views.PregnancyHeader
 import Date
 import Html as H exposing (Html)
 import Html.Attributes as HA
+import Json.Encode as JE
 import Time exposing (Time)
 import Time.DateTime as TDT
+import Window
 
 
 -- LOCAL IMPORTS --
 
+import Const
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
 import Util as U
@@ -19,50 +22,64 @@ import Util as U
 
 {-| Note that the currTime passed is currently static, though it
 will have been accurate as of when this page was first called.
-
-TODO: refactor to work on tablets and phones.
 -}
-viewPrenatal : PatientRecord -> PregnancyRecord -> Time -> Html msg
-viewPrenatal patRec pregRec currTime =
-    H.div [ HA.class "o-grid u-high pregnancy-header-bg" ]
-        [ H.div [ HA.class "o-grid__cell o-grid__cell--width-33" ]
-            [ prenatalColumnOne patRec pregRec ]
-        , H.div [ HA.class "o-grid__cell o-grid__cell--width-33" ]
-            [ prenatalColumnTwo patRec pregRec currTime ]
-        , H.div [ HA.class "o-grid__cell o-grid__cell--width-33" ]
-            [ prenatalColumnThree patRec pregRec currTime ]
-        ]
+viewPrenatal : PatientRecord -> PregnancyRecord -> Time -> Maybe Window.Size -> Html msg
+viewPrenatal patRec pregRec currTime winSize =
+    let
+        nickname =
+            case pregRec.nickname of
+                Just nn ->
+                    if String.length nn > 0 then
+                        " (" ++ nn ++ ")"
+                    else
+                        ""
 
+                Nothing ->
+                    ""
 
-prenatalColumnOne : PatientRecord -> PregnancyRecord -> Html msg
-prenatalColumnOne patRec pregRec =
-    H.div []
-        [ H.div [ HA.class "c-text--loud" ]
-            [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ]
-        , H.div []
-            [ fieldLabel "Nickname"
-            , fieldValue pregRec.nickname
+        edd =
+            case ( pregRec.lmp, pregRec.useAlternateEdd, pregRec.alternateEdd ) of
+                ( Just lmp, Just useAlt, Just altEdd ) ->
+                    if useAlt then
+                        Just altEdd
+                    else
+                        U.calcEdd (Just lmp)
+
+                ( Just lmp, _, _ ) ->
+                    U.calcEdd (Just lmp)
+
+                ( _, _, _ ) ->
+                    Nothing
+
+        -- Display the GA with a non-breaking space serving as the whitespace.
+        gaSpan =
+            case edd of
+                Just ed ->
+                    let
+                        ( wks, days ) =
+                            U.getGA ed (Date.fromTime currTime)
+                    in
+                        U.nbsp wks days
+
+                Nothing ->
+                    H.span [] []
+    in
+        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
+            [ H.input [ HA.type_ "checkbox", HA.id "pregnancy_header_accordion" ] []
+            , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
+                [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
+                , gaSpan
+                ]
+            , H.div [ HA.class "c-card__item pregnancy-header" ]
+                [ prenatalColumnOne patRec pregRec currTime
+                , prenatalColumnTwo patRec pregRec currTime
+                , prenatalColumnThree patRec pregRec currTime
+                ]
             ]
-        , H.div []
-            [ fieldLabel "G"
-            , fieldValue <| Maybe.map toString pregRec.gravida
-            , H.span [] [ H.text " " ]
-            , fieldLabelWithClass "margin-left-abit" "P"
-            , fieldValue <| Maybe.map toString pregRec.para
-            , H.span [] [ H.text " " ]
-            , fieldLabelWithClass "margin-left-abit" "A"
-            , fieldValue <| Maybe.map toString pregRec.abortions
-            , H.span [] [ H.text " " ]
-            , fieldLabelWithClass "margin-left-abit" "S"
-            , fieldValue <| Maybe.map toString pregRec.stillBirths
-            , H.span [] [ H.text " " ]
-            , fieldLabelWithClass "margin-left-abit" "L"
-            , fieldValue <| Maybe.map toString pregRec.living
-            ]
-        ]
 
-prenatalColumnTwo : PatientRecord -> PregnancyRecord -> Time -> Html msg
-prenatalColumnTwo patRec pregRec currTime =
+
+prenatalColumnOne : PatientRecord -> PregnancyRecord -> Time -> Html msg
+prenatalColumnOne patRec pregRec currTime =
     let
         age =
             case patRec.dob of
@@ -81,45 +98,54 @@ prenatalColumnTwo patRec pregRec currTime =
 
                 Nothing ->
                     Just ""
-
-        lmp =
-            case pregRec.lmp of
-                Just lmp ->
-                    Just <| U.dateToDateString lmp "-"
-
-                Nothing ->
-                    Just ""
     in
-        H.div []
-            [ H.div [ HA.style [ ("position", "relative") ] ]
-                [ fieldLabelWithClass "align-right-3em" "Age"
+        H.div [ HA.class "pregnancy-header-col" ]
+            [ H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "G" "3em"
+                , fieldValue <| Maybe.map toString pregRec.gravida
+                , H.span [] [ H.text " " ]
+                , fieldLabel "P" "1.5em"
+                , fieldValue <| Maybe.map toString pregRec.para
+                , H.span [] [ H.text " " ]
+                , fieldLabel "A" "1.5em"
+                , fieldValue <| Maybe.map toString pregRec.abortions
+                , H.span [] [ H.text " " ]
+                , fieldLabel "S" "1.5em"
+                , fieldValue <| Maybe.map toString pregRec.stillBirths
+                , H.span [] [ H.text " " ]
+                , fieldLabel "L" "1.5em"
+                , fieldValue <| Maybe.map toString pregRec.living
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Age" "3em"
                 , fieldValue age
-                ]
-            , H.div []
-                [ fieldLabelWithClass "align-right-3em" "id"
-                , fieldValue <| Just (U.formatDohId patRec.dohID)
-                ]
-            , H.div []
-                [ fieldLabelWithClass "align-right-3em" "LMP"
-                , fieldValue lmp
                 ]
             ]
 
-prenatalColumnThree : PatientRecord -> PregnancyRecord -> Time -> Html msg
-prenatalColumnThree patRec pregRec currTime =
+
+prenatalColumnTwo : PatientRecord -> PregnancyRecord -> Time -> Html msg
+prenatalColumnTwo patRec pregRec currTime =
     let
+        lmp =
+            case pregRec.lmp of
+                Just lmp ->
+                    U.dateToDateString lmp "-"
+
+                Nothing ->
+                    ""
+
         edd =
-            case (pregRec.lmp, pregRec.useAlternateEdd, pregRec.alternateEdd) of
-                (Just lmp, Just useAlt, Just altEdd) ->
+            case ( pregRec.lmp, pregRec.useAlternateEdd, pregRec.alternateEdd ) of
+                ( Just lmp, Just useAlt, Just altEdd ) ->
                     if useAlt then
                         Just altEdd
                     else
                         U.calcEdd (Just lmp)
 
-                (Just lmp, _, _) ->
+                ( Just lmp, _, _ ) ->
                     U.calcEdd (Just lmp)
 
-                (_, _, _) ->
+                ( _, _, _ ) ->
                     Nothing
 
         eddString =
@@ -129,43 +155,44 @@ prenatalColumnThree patRec pregRec currTime =
 
                 Nothing ->
                     ""
-        ga =
-            case edd of
-                Just ed ->
-                    U.getGA ed (Date.fromTime currTime)
-
-                Nothing ->
-                    ""
     in
-        H.div []
-            [ H.div []
-                [ fieldLabelWithClass "align-right-5em" "Curr GA"
-                , fieldValue <| Just ga
+        H.div [ HA.class "pregnancy-header-col" ]
+            [ H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "LMP" "3em"
+                , fieldValue <| Just lmp
                 ]
-            , H.div []
-                [ fieldLabelWithClass "align-right-5em" "Prenatal"
-                -- TODO: replace hard code with actual from schedule table.
-                , fieldValue <| Just "Tue @ Mercy"
-                ]
-            , H.div []
-                [ fieldLabelWithClass "align-right-5em" "EDD"
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "EDD" "3em"
                 , fieldValue <| Just eddString
                 ]
             ]
 
-fieldLabel : String -> Html msg
-fieldLabel lbl =
-    H.span [ HA.class "c-text--quiet" ]
-        [ H.text <| lbl ++ ": " ]
+
+prenatalColumnThree : PatientRecord -> PregnancyRecord -> Time -> Html msg
+prenatalColumnThree patRec pregRec currTime =
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "ID" "3em"
+            , fieldValue <| Just (U.formatDohId patRec.dohID)
+            ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Appt" "3em"
+              -- TODO: replace hard code with actual from schedule table.
+            , fieldValue <| Just "Tue @ MMC"
+            ]
+        ]
 
 
-fieldLabelWithClass : String -> String -> Html msg
-fieldLabelWithClass class lbl =
-    H.span [ HA.class <| "c-text--quiet " ++ class ]
+fieldLabel : String -> String -> Html msg
+fieldLabel lbl minWidth =
+    H.span
+        [ HA.style [ ( "min-width", minWidth ) ]
+        , HA.class "c-text--quiet u-xsmall pregnancy-header-fld"
+        ]
         [ H.text <| lbl ++ ": " ]
 
 
 fieldValue : Maybe String -> Html msg
 fieldValue val =
-    H.span [ HA.class "c-text--loud c-text--mono" ]
+    H.span [ HA.class "c-text--loud c-text--mono u-small pregnancy-header-val" ]
         [ H.text <| Maybe.withDefault "" val ]
