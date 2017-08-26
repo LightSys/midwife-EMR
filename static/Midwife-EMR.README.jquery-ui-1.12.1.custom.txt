@@ -1,0 +1,11 @@
+August 23, 2017
+
+Created a custom version of jQueryUI with only a datepicker and the "humanity"
+theme using the jQuery builder[1], which closely aligns with the theme I am
+using for the medical portion of phase 2 written in Elm. The only widget
+included is the datepicker and the core "jQuery 1.7 Support" option was
+checked as well.
+
+This is for the Elm client, which will call out to the datepicker via ports.
+
+[1] https://jqueryui.com/download/

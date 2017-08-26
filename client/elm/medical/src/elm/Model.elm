@@ -35,7 +35,8 @@ type PageState
 
 
 type alias Model =
-    { currTime : Time
+    { browserSupportsDate : Bool
+    , currTime : Time
     , currPregId : Maybe PregnancyId
     , pageState : PageState
     , session : Session
@@ -47,11 +48,12 @@ type alias Model =
     }
 
 
-initialModel : Maybe PregnancyId -> Time -> Model
-initialModel pregId time =
-    { currTime = time
+initialModel : Bool -> Maybe PregnancyId -> Time -> Model
+initialModel browserSupportsDate pregId time =
+    { browserSupportsDate = browserSupportsDate
+    , currTime = time
     , currPregId = pregId
-    , pageState = Loaded <| initialPage pregId
+    , pageState = Loaded <| initialPage browserSupportsDate pregId
     , session = { user = Nothing }
     , processStore = Processing.processStoreInit
     , window = Nothing
@@ -61,15 +63,19 @@ initialModel pregId time =
     }
 
 
-initialPage : Maybe PregnancyId -> Page
-initialPage pregId =
+initialPage : Bool -> Maybe PregnancyId -> Page
+initialPage browserSupportsDate pregId =
     case pregId of
         Just pid ->
             LaborDelIpp
-                { currTime = 0
+                { browserSupportsDate = browserSupportsDate
+                , currTime = 0
                 , pregnancy_id = pid
                 , patientRecord = Nothing
                 , pregnancyRecord = Nothing
+                , admitForLabor = False
+                , admittanceDate = Nothing
+                , laborDate = Nothing
                 }
 
         Nothing ->

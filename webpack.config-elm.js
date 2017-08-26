@@ -61,6 +61,15 @@ module.exports = {
         include: [ELM_MEDICAL_TOP],
         loader: 'elm-webpack?cwd=' + ELM_MEDICAL_TOP
       },
+      // Left over from initial failed attempt to load jquery ui for the datepicker widget
+      // while properly resolving jQuery itself.
+      //{
+        //test: /\.(jpe?g|png|gif|svg)$/i,
+        //loaders: [
+          //'file-loader?hash=sha512&digest=hex&name=[hash].[ext]',
+          //'image-webpack-loader?{gifsicle: {interlaced: true}, optipng: {optimizationLevel: 7}, pngquant:{quality: "65-90", speed: 4}, mozjpeg: {quality: 65}}'
+        //]
+      //},
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: "url-loader?limit=10000&minetype=application/font-woff"

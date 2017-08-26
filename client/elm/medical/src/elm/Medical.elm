@@ -3,6 +3,7 @@ module Medical exposing (..)
 import Html as H exposing (Html)
 import Json.Decode as JD
 import Json.Decode.Pipeline as Pipeline exposing (decode, optional, required)
+import Json.Encode as JE
 import Navigation exposing (Location)
 import Task exposing (Task)
 import Window
@@ -10,13 +11,15 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
+import Data.LaborDelIpp
 import Data.Message exposing (IncomingMessage(..))
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session)
 import Data.TableRecord exposing (TableRecord(..))
 import Model exposing (Model, Page(..), PageState(..))
-import Msg exposing (Msg(..), ProcessType(..))
+import Msg exposing (logConsole, Msg(..), ProcessType(..))
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
 import Page.NotFound as NotFound exposing (view)
@@ -34,6 +37,7 @@ import Util exposing ((=>))
 type alias Flags =
     { pregId : Maybe String
     , currTime : Float
+    , browserSupportsDate : Bool
     }
 
 
@@ -42,12 +46,13 @@ flagsDecoder =
     decode Flags
         |> required "pregId" (JD.nullable JD.string)
         |> required "currTime" JD.float
+        |> required "browserSupportsDate" JD.bool
 
 
 decodeFlagsFromJson : JD.Value -> Flags
 decodeFlagsFromJson json =
     JD.decodeValue flagsDecoder json
-        |> Result.withDefault (Flags Nothing 0)
+        |> Result.withDefault (Flags Nothing 0 False)
 
 
 init : JD.Value -> Location -> ( Model, Cmd Msg )
@@ -66,12 +71,11 @@ init flags location =
                 Nothing ->
                     Nothing
 
-        currTime =
-            flagsDecoded.currTime
-
         ( newModel, newCmd ) =
             setRoute (Route.fromLocation location) <|
-                Model.initialModel pregId currTime
+                Model.initialModel flagsDecoded.browserSupportsDate
+                    pregId
+                    flagsDecoded.currTime
     in
         ( newModel
         , Cmd.batch [ newCmd, Task.perform (\s -> WindowResize (Just s)) Window.size ]
@@ -109,6 +113,7 @@ viewPage model isLoading page =
             LaborDelIpp subModel ->
                 PageLaborDelIpp.view model.window model.session subModel
                     |> frame Page.LaborDelIpp
+                    |> H.map LaborDelIppMsg
 
             Errored subModel ->
                 Errored.view model.session subModel
@@ -131,37 +136,72 @@ getPage pageState =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Noop ->
-            model => Cmd.none
+    let
+        page =
+            getPage model.pageState
 
-        Tick time ->
-            { model | currTime = time } => Cmd.none
-
-        LogConsole msg ->
+        updateForPage page routingMsg subUpdate subMsg subModel =
             let
-                _ =
-                    Debug.log "update: LogConsole" msg
+                ( newModel, innerCmd, outerCmd ) =
+                    subUpdate subMsg subModel
             in
+                ( { model | pageState = Loaded (page newModel) }, Cmd.batch [ outerCmd, Cmd.map routingMsg innerCmd ] )
+    in
+        case ( msg, page ) of
+            ( Noop, _ ) ->
                 model => Cmd.none
 
-        WindowResize size ->
-            { model | window = size } => Cmd.none
+            ( Tick time, _ ) ->
+                { model | currTime = time } => Cmd.none
 
-        Message incoming ->
-            updateMessage incoming model
+            ( LogConsole msg, _ ) ->
+                let
+                    _ =
+                        Debug.log "update: LogConsole" msg
+                in
+                    model => Cmd.none
 
-        LaborDelIppLoaded pregId ->
-            { model
-                | pageState =
-                    PageLaborDelIpp.buildModel model.currTime pregId model.patientRecord model.pregnancyRecord
-                        |> LaborDelIpp
-                        |> Loaded
-            }
-                => Cmd.none
+            ( WindowResize size, _ ) ->
+                { model | window = size } => Cmd.none
 
-        _ ->
-            model => Cmd.none
+            ( Message incoming, _ ) ->
+                updateMessage incoming model
+
+            ( LaborDelIppLoaded pregId, _ ) ->
+                { model
+                    | pageState =
+                        PageLaborDelIpp.buildModel model.browserSupportsDate
+                            model.currTime
+                            pregId
+                            model.patientRecord
+                            model.pregnancyRecord
+                            |> LaborDelIpp
+                            |> Loaded
+                }
+                    => Cmd.none
+
+            ( LaborDelIppMsg subMsg, LaborDelIpp subModel ) ->
+                updateForPage LaborDelIpp LaborDelIppMsg (PageLaborDelIpp.update model.session) subMsg subModel
+
+            ( SetRoute route, _ ) ->
+                let
+                    _ =
+                        Debug.log "update SetRoute" <| toString route
+                in
+                    setRoute route model
+
+            ( OpenDatePicker id, _ ) ->
+                model => Ports.openDatePicker (JE.string id)
+
+            ( IncomingDatePicker dateFieldMsg, LaborDelIpp subModel ) ->
+                updateForPage LaborDelIpp
+                    LaborDelIppMsg
+                    (PageLaborDelIpp.update model.session)
+                    (Data.LaborDelIpp.DateFieldSubMsg dateFieldMsg)
+                    subModel
+
+            ( _, _ ) ->
+                model => (logConsole "Unhandled msg and page in Medical.update.")
 
 
 {-| Handle all Msg.Message variations.
@@ -214,11 +254,6 @@ updateMessage incoming model =
                         newModel => Cmd.none
 
 
-logConsole : String -> Cmd Msg
-logConsole msg =
-    Task.perform LogConsole (Task.succeed msg)
-
-
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
 setRoute maybeRoute model =
     let
@@ -266,6 +301,8 @@ subscriptions model =
         , Time.every Time.second Tick
         , Ports.incoming Data.Message.decodeIncoming
             |> Sub.map Message
+        , Ports.selectedDate DDP.decodeSelectedDate
+            |> Sub.map IncomingDatePicker
         ]
 
 

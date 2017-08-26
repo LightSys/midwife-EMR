@@ -42,6 +42,12 @@
 
 }
 
+/* Content area. */
+.content-wrapper {
+  margin: 1em 1em;
+  padding: 0;
+}
+
 /* ===============================================
  * Navigation bar/menu.
  * =============================================== */
@@ -166,3 +172,36 @@
   width: auto;
   flex: 0 0 auto;
 }
+
+/* Headers, etc. */
+.mw-header-3 {
+  line-height: 0.5;
+}
+
+/* Forms and fields */
+.form-wrapper {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.form-wrapper-end {
+  display: flex;
+  flex-flow: row-reverse nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.cancel-save-buttons button {
+  margin: 0 0;
+  /* Separate the two buttons a bit. */
+  margin-left: 1em;
+}
+.mw-form-field {
+  width: 10em;
+  margin: 0 0;
+}
+.mw-form-field-wide {
+  width: 100%;
+  margin: 0 0;
+}
+

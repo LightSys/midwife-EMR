@@ -1,14 +1,18 @@
 module Msg
     exposing
-        ( Msg(..)
+        ( logConsole
+        , Msg(..)
         , ProcessType(..)
         )
 
+import Task
 import Time exposing (Time)
 import Window
 
+
 -- LOCAL IMPORTS --
 
+import Data.DatePicker exposing (DateField, DateFieldMessage)
 import Data.LaborDelIpp as LaborDelIpp
 import Data.Message as Message exposing (IncomingMessage(..))
 import Data.Pregnancy exposing (PregnancyId)
@@ -25,8 +29,16 @@ type Msg
     | WindowResize (Maybe Window.Size)
     | SetRoute (Maybe Route)
     | LaborDelIppLoaded PregnancyId
-    | LaborDelIppMsg LaborDelIpp.InternalMsg
+    | LaborDelIppMsg LaborDelIpp.SubMsg
     | Message IncomingMessage
+    | OpenDatePicker String
+    | IncomingDatePicker DateFieldMessage
+
+
+
+logConsole : String -> Cmd Msg
+logConsole msg =
+    Task.perform LogConsole (Task.succeed msg)
 
 
 {-| The data that is stored in the process store. This is used as
@@ -35,4 +47,3 @@ request and receiving the response from the server.
 -}
 type ProcessType
     = SelectQueryType Msg SelectQuery
-

@@ -5,11 +5,19 @@ require('../vendor/blaze.min.css');
 require('./css/main.css');
 
 var comm = require('./js/comm');
+var datepicker = require('./js/datepicker');
+var tests = require('./js/tests');
 var elm = require('./elm/Medical.elm');
 var node = document.getElementById('app');
 var pregId = node.getAttribute('data-pregId');
-var app = elm.Medical.embed(node, {pregId: pregId, currTime: Date.now()});
+var supportsDate = tests.supportsDateInput? tests.supportsDateInput(): false;
+var app = elm.Medical.embed( node,
+    {pregId: pregId
+    , currTime: Date.now()
+    , browserSupportsDate: supportsDate
+    });
 comm.setApp(app);
+datepicker.setApp(app);
 
 // Websocket testing.
 var WS_TEST = 0;  // Set to 1 to use.

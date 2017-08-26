@@ -20,6 +20,9 @@ import Json.Encode as JE
 import Time.DateTime as TDT
 
 
+-- LOCAL IMPORTS --
+
+
 (=>) : a -> b -> ( a, b )
 (=>) =
     (,)
@@ -100,7 +103,7 @@ getGA edd rdate =
             (TDT.delta dtRdate (TDT.addDays -280 dtEdd)).days - 1
 
         ga =
-            (toString <| days // 7, rem days 7 |> toString |> flip (++) "/7")
+            ( toString <| days // 7, rem days 7 |> toString |> flip (++) "/7" )
     in
         case TDT.compare dtRdate dtEdd of
             GT ->

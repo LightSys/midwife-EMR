@@ -1,5 +1,6 @@
 io = require('socket.io-client');
 var MESSAGE = 'message';    // All messages use this key so that we are most compatible with websocket API.
+var app;                    // Set by setApp().
 
 // --------------------------------------------------------
 // Setup a single Socket.io connection to the server.
