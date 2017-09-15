@@ -602,6 +602,22 @@ CREATE TABLE IF NOT EXISTS `labor` (
 );
 SHOW WARNINGS;
 
+CREATE TABLE IF NOT EXISTS `laborStage1` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fullDialation DATETIME NOT NULL,
+  mobility VARCHAR(200) NULL,
+  durationLatent INT NULL,
+  durationActive INT NULL,
+  comments VARCHAR(500) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
 SET foreign_key_checks = 1;
 
 

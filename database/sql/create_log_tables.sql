@@ -229,3 +229,12 @@ ALTER TABLE laborLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE laborLog DROP PRIMARY KEY;
 ALTER TABLE laborLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating laborStage1Log
+SELECT 'laborStage1Log' AS Creating FROM DUAL;
+CREATE TABLE laborStage1Log LIKE laborStage1;
+ALTER TABLE laborStage1Log ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE laborStage1Log ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE laborStage1Log MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE laborStage1Log DROP PRIMARY KEY;
+ALTER TABLE laborStage1Log ADD PRIMARY KEY (id, replacedAt);
+--

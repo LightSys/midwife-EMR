@@ -336,6 +336,48 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: laborStage1_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS laborStage1_after_insert;
+CREATE TRIGGER laborStage1_after_insert AFTER INSERT ON laborStage1
+FOR EACH ROW
+BEGIN
+  INSERT INTO laborStage1Log
+  (id, fullDialation, mobility, durationLatent, durationActive, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.fullDialation, NEW.mobility, NEW.durationLatent, NEW.durationActive, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: laborStage1_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS laborStage1_after_update;
+CREATE TRIGGER laborStage1_after_update AFTER UPDATE ON laborStage1
+FOR EACH ROW
+BEGIN
+  INSERT INTO laborStage1Log
+  (id, fullDialation, mobility, durationLatent, durationActive, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.fullDialation, NEW.mobility, NEW.durationLatent, NEW.durationActive, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: laborStage1_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS laborStage1_after_delete;
+CREATE TRIGGER laborStage1_after_delete AFTER DELETE ON laborStage1
+FOR EACH ROW
+BEGIN
+  INSERT INTO laborStage1Log
+  (id, fullDialation, mobility, durationLatent, durationActive, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.fullDialation, OLD.mobility, OLD.durationLatent, OLD.durationActive, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: medication_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$
