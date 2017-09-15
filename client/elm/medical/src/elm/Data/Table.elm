@@ -15,6 +15,7 @@ type Table
     = Unknown
     | Patient
     | Pregnancy
+    | Labor
 
 
 
@@ -32,6 +33,9 @@ tableToString tbl =
         Unknown ->
             "unknown"
 
+        Labor ->
+            "labor"
+
         Patient ->
             "patient"
 
@@ -42,6 +46,9 @@ tableToString tbl =
 stringToTable : String -> Table
 stringToTable tbl =
     case tbl of
+        "labor" ->
+            Labor
+
         "patient" ->
             Patient
 

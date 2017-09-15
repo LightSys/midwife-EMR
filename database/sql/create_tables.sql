@@ -579,6 +579,29 @@ CREATE TABLE IF NOT EXISTS `pregnote` (
 );
 SHOW WARNINGS;
 
+CREATE TABLE IF NOT EXISTS `labor` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  admittanceDate DATETIME NOT NULL,
+  startLaborDate DATETIME NOT NULL,
+  endLaborDate DATETIME NULL,
+  falseLabor TINYINT NOT NULL DEFAULT 0,
+  pos VARCHAR(10) NULL,
+  fh INT NULL,
+  fht INT NULL,
+  systolic INT NULL,
+  diastolic INT NULL,
+  cr INT NULL,
+  temp DECIMAL(4,1) NULL,
+  comments VARCHAR(300),
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  pregnancy_id INT NOT NULL,
+  FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
 SET foreign_key_checks = 1;
 
 

@@ -13,6 +13,7 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.Labor exposing (LaborRecord)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyRecord, PregnancyId(..))
 import Data.Session as Session exposing (Session)
@@ -43,6 +44,7 @@ type alias Model =
     , processStore : ProcessStore
     , window : Maybe Window.Size
     , siteMessages : Dict String SiteKeyValue
+    , laborRecord : Maybe (List LaborRecord)
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
     }
@@ -58,6 +60,7 @@ initialModel browserSupportsDate pregId time =
     , processStore = Processing.processStoreInit
     , window = Nothing
     , siteMessages = Dict.empty
+    , laborRecord = Nothing
     , patientRecord = Nothing
     , pregnancyRecord = Nothing
     }
@@ -68,15 +71,12 @@ initialPage browserSupportsDate pregId =
     case pregId of
         Just pid ->
             LaborDelIpp
-                { browserSupportsDate = browserSupportsDate
-                , currTime = 0
-                , pregnancy_id = pid
-                , patientRecord = Nothing
-                , pregnancyRecord = Nothing
-                , admitForLabor = False
-                , admittanceDate = Nothing
-                , laborDate = Nothing
-                }
+                <| PageLaborDelIpp.buildModel browserSupportsDate
+                      0
+                      pid
+                      Nothing
+                      Nothing
+                      Nothing
 
         Nothing ->
             Blank

@@ -199,6 +199,10 @@ Pregnancy = Bookshelf.Model.extend({
   // Relationships
   // --------------------------------------------------------
 
+  , labor: function() {
+      return this.hasMany(require('./Labor').Labor, 'pregnancy_id');
+    }
+
   , patient: function() {
       return this.belongsTo(require('./Patient').Patient, 'patient_id');
     }

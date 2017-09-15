@@ -38,6 +38,7 @@ var _ = require('underscore')
 // --------------------------------------------------------
 var LOOKUP_TABLES = [
   'eventType',
+  'labor',
   'labSuite',
   'labTest',
   'labTestValue',
@@ -107,13 +108,13 @@ var getTable2 = function(table, id, related, cb) {
     // --------------------------------------------------------
     if (related.length > 0) {
       for (let relatedTbl of related) {
-        relatedInProcess++;
 
         if (relatedTbl === 'patient' && table === 'pregnancy' && id !== -1) {
           // Handle our convoluted schema discrepancy for one patient record.
           getRecords(relatedTbl, 'id', recs[0].patient_id, function(err, recs) {
             if (err) return cb(err);
             data.push(buildData(relatedTbl, recs));
+            relatedInProcess++;
 
             // Return results if we are done.
             if (relatedInProcess === related.length) return cb(null, data);
@@ -123,6 +124,7 @@ var getTable2 = function(table, id, related, cb) {
           getRecords(relatedTbl, table+'_id', id, function(err, recs) {
             if (err) return cb(err);
             data.push(buildData(relatedTbl, recs));
+            relatedInProcess++;
 
             // Return results if we are done.
             if (relatedInProcess === related.length) return cb(null, data);

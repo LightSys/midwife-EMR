@@ -27,7 +27,11 @@ frame winSize isLoading pregId user page content =
     let
         frameContents =
             H.div
-                [ HA.class "o-container o-container--large c-text" ]
+                [ HA.class "o-container o-container--large c-text"
+                  -- BlazeCSS: overlays require a parent that with
+                  -- a position of relative.
+                , HA.style [ ( "position", "relative" ) ]
+                ]
                 [ viewHeader winSize pregId user isLoading page
                 , H.div
                     []

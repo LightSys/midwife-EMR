@@ -406,6 +406,36 @@ var returnStatusCHG = function(table, id, stateId, success, errCode, msg) {
   return retVal;
 };
 
+/* --------------------------------------------------------
+ * returnStatusADD2()
+ *
+ * Return status format for DATA messages, version 2, of
+ * msgType ADD.
+ *
+ * Note: for version 2, msgType is either ADD, CHG, or DEL
+ * for both directions.
+ * -------------------------------------------------------- */
+var returnStatusADD2 = function(msgType, messageId, table, newId, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+  // TODO: need to work out the structure of what is returned in light of wrapData().
+  var retVal = {
+    messageId: messageId,
+    namespace: 'DATA',
+    msgType: msgType,
+    version: 2,
+    response: {
+      table: table,
+      id: newId,
+      success: success,
+      errorCode: errCode? errCode: NoErrorCode,
+      msg: msgStr
+    }
+  };
+  return retVal;
+};
 
 var returnStatusADD = function(table, originalId, newId, success, errCode, msg) {
   var msgStr = msg? msg: '';
@@ -439,6 +469,7 @@ var returnStatusDEL = function(table, id, stateId, success, errCode, msg) {
   return retVal;
 };
 
+// Used for version 2 as well as legacy messages.
 var returnStatusSELECT = function(obj, data, success, errCode, msg) {
   var msgStr = msg? msg: '';
   if (msg && typeof msg === 'object') {
@@ -543,10 +574,11 @@ module.exports = {
   , msg
   , NoErrorCode
   , returnLogin
-  , returnStatusADD: returnStatusADD
-  , returnStatusCHG: returnStatusCHG
-  , returnStatusDEL: returnStatusDEL
-  , returnStatusSELECT: returnStatusSELECT
+  , returnStatusADD
+  , returnStatusADD2
+  , returnStatusCHG
+  , returnStatusDEL
+  , returnStatusSELECT
   , returnUserProfile
   , returnUserProfileUpdate
   , SessionExpiredErrorCode

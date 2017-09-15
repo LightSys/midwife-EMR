@@ -12,8 +12,9 @@ import Window
 -- LOCAL IMPORTS --
 
 import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
-import Data.LaborDelIpp
-import Data.Message exposing (IncomingMessage(..))
+import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
+import Data.LaborDelIpp exposing (SubMsg(..))
+import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session)
@@ -28,10 +29,7 @@ import Route exposing (fromLocation, Route(..))
 import Processing
 import Views.Page as Page exposing (ActivePage)
 import Time exposing (Time)
-import Util exposing ((=>))
-
-
--- MODEL --
+import Util as U exposing ((=>))
 
 
 type alias Flags =
@@ -152,22 +150,40 @@ update msg model =
                 model => Cmd.none
 
             ( Tick time, _ ) ->
+                -- Keep the current time in the Model.
                 { model | currTime = time } => Cmd.none
 
             ( LogConsole msg, _ ) ->
+                -- Write a message out to the console.
                 let
                     _ =
-                        Debug.log "update: LogConsole" msg
+                        Debug.log "LogConsole" msg
                 in
                     model => Cmd.none
 
             ( WindowResize size, _ ) ->
+                -- Keep the current window size in the Model.
                 { model | window = size } => Cmd.none
 
             ( Message incoming, _ ) ->
+                -- All messages from the server come through here first.
                 updateMessage incoming model
 
+            ( ProcessTypeMsg processType msgType jeVal, _ ) ->
+                -- Send a message to the server and store the required information
+                -- in the model for processing the server response.
+                let
+                    ( processId, processStore ) =
+                        Processing.add processType Nothing model.processStore
+                    _ =
+                        Debug.log "ProcessTypeMsg" <| toString jeVal
+                in
+                    ( { model | processStore = processStore }
+                    , Ports.outgoing <| wrapPayload processId msgType jeVal
+                    )
+
             ( LaborDelIppLoaded pregId, _ ) ->
+                -- This page has all it needs from the server and is ready to go.
                 { model
                     | pageState =
                         PageLaborDelIpp.buildModel model.browserSupportsDate
@@ -175,15 +191,24 @@ update msg model =
                             pregId
                             model.patientRecord
                             model.pregnancyRecord
+                            model.laborRecord
                             |> LaborDelIpp
                             |> Loaded
                 }
                     => Cmd.none
 
             ( LaborDelIppMsg subMsg, LaborDelIpp subModel ) ->
+                let
+                    _ =
+                        Debug.log "LaborDelIppMsg top-level" <| toString model.laborRecord
+                    _ =
+                        Debug.log "LaborDelIppMsg subModel" <| toString subModel
+                in
+                -- All LaborDelIpp page sub messages are routed here.
                 updateForPage LaborDelIpp LaborDelIppMsg (PageLaborDelIpp.update model.session) subMsg subModel
 
             ( SetRoute route, _ ) ->
+                -- Handle route changes.
                 let
                     _ =
                         Debug.log "update SetRoute" <| toString route
@@ -191,17 +216,35 @@ update msg model =
                     setRoute route model
 
             ( OpenDatePicker id, _ ) ->
+                -- For browsers without native date support in the input element,
+                -- open a jQueryUI datepicker for the user.
                 model => Ports.openDatePicker (JE.string id)
 
             ( IncomingDatePicker dateFieldMsg, LaborDelIpp subModel ) ->
+                -- For browsers without native date support in the input element,
+                -- receive the user's date selection from the jQueryUI datepicker.
                 updateForPage LaborDelIpp
                     LaborDelIppMsg
                     (PageLaborDelIpp.update model.session)
                     (Data.LaborDelIpp.DateFieldSubMsg dateFieldMsg)
                     subModel
 
-            ( _, _ ) ->
-                model => (logConsole "Unhandled msg and page in Medical.update.")
+            ( AddLabor, LaborDelIpp subModel ) ->
+                -- TODO: Is this being used?
+                model => Cmd.none
+
+            ( theMsg, thePage ) ->
+                -- We should never get here.
+                -- TODO: properly raise an error here.
+                let
+                    message =
+                        "Unhandled msg of "
+                            ++ (toString theMsg)
+                            ++ " and page of "
+                            ++ (toString thePage)
+                            ++ " in Medical.update."
+                in
+                    model => (logConsole message)
 
 
 {-| Handle all Msg.Message variations.
@@ -216,7 +259,47 @@ updateMessage incoming model =
             -- Note: we are discarding siteMsg.payload.updatedAt until we need it.
             { model | siteMessages = siteMsg.payload.data } => Cmd.none
 
-        DataMessage dataMsg ->
+        DataAddMessage dataAddMsg ->
+            -- Results of attempting to add a record on the server.
+            -- Add the new record obtained from the processStore to the
+            -- top-level model after attaching the id received from the server.
+            -- Then pass the new record to the page per the Msg retrieved
+            -- from the processStore.
+            let
+                -- Use the messageId returned from the server to acquire the
+                -- Msg reserved in our store by the originating "event".
+                ( processType, processStore ) =
+                    Processing.remove (ProcessId dataAddMsg.messageId) model.processStore
+
+                ( newModel, newCmd ) =
+                    case dataAddMsg.response.success of
+                        True ->
+                            case processType of
+                                Just (AddLaborType (LaborDelIppMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
+                                    let
+                                        laborRecs =
+                                            laborRecordNewToLaborRecord
+                                                (LaborId dataAddMsg.response.id)
+                                                laborRecNew
+                                                    |> flip U.addToMaybeList model.laborRecord
+
+                                        subMsg =
+                                            AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
+                                    in
+                                        ( { model | laborRecord = laborRecs }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                _ ->
+                                    ( model, Cmd.none )
+
+                        False ->
+                            ( model, Cmd.none )
+            in
+                { newModel | processStore = processStore } => newCmd
+
+        DataSelectMessage dataMsg ->
+            -- Results of requests for data from the server.
             let
                 -- Use the messageId returned from the server to acquire the
                 -- Msg reserved in our store by the originating "event".
@@ -230,6 +313,9 @@ updateMessage incoming model =
                             List.foldl
                                 (\tr mdl ->
                                     case tr of
+                                        TableRecordLabor recs ->
+                                            { mdl | laborRecord = Just recs }
+
                                         TableRecordPatient recs ->
                                             -- We only ever want one patient in our store at a time.
                                             { mdl | patientRecord = List.head recs }
@@ -246,7 +332,12 @@ updateMessage incoming model =
                             model
             in
                 case processType of
-                    Just (SelectQueryType msg sq) ->
+                    -- Send the message retrieved from the processing store.
+                    Just (AddLaborType msg _) ->
+                        { newModel | processStore = processStore }
+                            => Task.perform (always msg) (Task.succeed True)
+
+                    Just (SelectQueryType msg _) ->
                         { newModel | processStore = processStore }
                             => Task.perform (always msg) (Task.succeed True)
 
@@ -299,6 +390,8 @@ subscriptions model =
     Sub.batch
         [ Window.resizes (\s -> WindowResize (Just s))
         , Time.every Time.second Tick
+        , Time.every Time.second TickSubMsg
+            |> Sub.map LaborDelIppMsg
         , Ports.incoming Data.Message.decodeIncoming
             |> Sub.map Message
         , Ports.selectedDate DDP.decodeSelectedDate

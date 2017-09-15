@@ -140,7 +140,11 @@ var rx = require('rx')
   , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
+  , TABLE_labor = 'labor'
   , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
+  , addLabor = require('./routes/comm/labor').addLabor
+  , delLabor = require('./routes/comm/labor').delLabor
+  , updateLabor = require('./routes/comm/labor').updateLabor
   , addLabSuite = require('./routes/comm/lookupTables').addLabSuite
   , delLabSuite = require('./routes/comm/lookupTables').delLabSuite
   , updateLabSuite = require('./routes/comm/lookupTables').updateLabSuite
@@ -168,6 +172,7 @@ var rx = require('rx')
   , returnUserProfile = require('./util').returnUserProfile
   , returnUserProfileUpdate = require('./util').returnUserProfileUpdate
   , returnStatusADD = require('./util').returnStatusADD
+  , returnStatusADD2 = require('./util').returnStatusADD2
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
   , returnStatusSELECT = require('./util').returnStatusSELECT
@@ -776,6 +781,17 @@ var sendUserProfile = function(socket, user, errCode) {
 // ========================================================
 // ========================================================
 
+/* --------------------------------------------------------
+ * getFuncForTableOp()
+ *
+ * Returns a function for a combination of table and operation
+ * that will be used for processing. This works for legacy
+ * messages and version 2 messages.
+ *
+ * param       table
+ * param       op
+ * return      func
+ * -------------------------------------------------------- */
 var getFuncForTableOp = function(table, op) {
   var func = void 0;
   switch (table) {
@@ -783,6 +799,13 @@ var getFuncForTableOp = function(table, op) {
       switch (op) {
         // keyValue table can only be updated.
         case CHG: func = updateKeyValue; break;
+      }
+      break;
+    case TABLE_labor:
+      switch (op) {
+        case ADD: func = addLabor; break;
+        case CHG: func = updateLabor; break;
+        case DEL: func = delLabor; break;
       }
       break;
     case TABLE_labSuite:
@@ -836,6 +859,90 @@ var getFuncForTableOp = function(table, op) {
       break;
   }
   return func;
+};
+
+/* --------------------------------------------------------
+ * handleData2
+ *
+ * Handle a Socket.io event in the DATA namespace for version
+ * 2 messages. Note that for version 2 messages we do not use
+ * wrapData() and the evtName we are called with is what we
+ * return as the msgType.
+ *
+ * param       evtName, i.e. msgType
+ * param       json - the whole message from the client.
+ * param       socket
+ * return      undefined
+ * -------------------------------------------------------- */
+var handleData2 = function(evtName, json, socket) {
+  if (DO_ASSERT) assertModule.handleData2(evtName, json, socket);
+
+  var table = json.payload.table
+    , data = json.payload.data
+    , messageId = json.messageId
+    , userInfo = socketToUserInfo(socket)
+    , retAction
+    , dataFunc
+    , returnStatusFunc
+    ;
+
+  console.log('handleData2() for ' + evtName + ' with json of: ' + json);
+  switch (evtName) {
+    case ADD:
+      if (! table || ! data ) {
+        // NOTE: version 2 messages do not send an id for ADD.
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data ADD request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusADD2;
+      break;
+
+    default:
+      console.log('UNKNOWN event of ' + evtName + ' in handeData2().');
+      retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+          UnknownErrorCode, "This event cannot be handled by the server: " + evtName + '.');
+      return socket.send(JSON.stringify(retAction));
+  }
+
+  dataFunc = getFuncForTableOp(table, evtName);
+  if (! dataFunc) {
+    retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+        UnknownErrorCode, "This table cannot be handled by the server.");
+    console.log(retAction);
+    return socket.send(JSON.stringify(retAction));
+  }
+
+  if (! isValidSocketSession(socket)) {
+    retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+        SessionExpiredErrorCode, "Your session has expired.");
+    console.log(retAction);
+    return socket.send(JSON.stringify(retAction));
+  } else touchSocketSession(socket);
+
+  if (! userInfo) {
+    // NOTE: this is an error that occurs and I have not been able to track down yet.
+    console.log('ERROR: userInfo object not populated in comm.js handleData2(). ABORTING!');
+    return;
+  }
+
+  dataFunc(data, userInfo, function(err, success, additionalData) {
+    var errMsg;
+    if (err) {
+      logCommError(err);
+      errMsg = err.message? err.message: err;
+      retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+        SqlErrorCode, errMsg);
+      return socket.send(JSON.stringify(retAction));
+    }
+    retAction = returnStatusFunc(evtName, messageId, table, additionalData.id, true);
+    socket.send(JSON.stringify(retAction));
+
+    // --------------------------------------------------------
+    // Write out to the log and SYSTEM_LOG for administrators.
+    // --------------------------------------------------------
+    return logCommInfo(userInfo.user.username + ": " + table + ": " + evtName, true);
+  });
 };
 
 /* --------------------------------------------------------
@@ -1181,6 +1288,9 @@ var init = function(io, sessionMiddle) {
   ioSocket = io.of('/');
   sessionMiddleware = sessionMiddle;
   ioSocket.use(function(socket, next) {
+    // Note: for this to work, Socket.io must be allowed to
+    // use polling, i.e. a websocket only transport causes
+    // this to fail because the response instance is unavailable.
     sessionMiddleware(socket.request, socket.request.res, next);
   });
 
@@ -1229,6 +1339,11 @@ var init = function(io, sessionMiddle) {
         switch (json.msgType) {
           case DATA_SELECT:
             getTable(socket, json);
+            break;
+
+          case ADD:
+            if (DO_ASSERT) assertModule.ioData_socket_on_ADD(json.payload);
+            handleData2(ADD, json, socket);
             break;
 
           default:

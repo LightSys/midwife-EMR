@@ -20,7 +20,10 @@ import Data.TableRecord as DTR exposing (TableRecord(..), tableRecord)
 
 
 type MsgType
-    = SelectMsgType
+    = AddMsgType
+    | DelMsgType
+    | SelectMsgType
+    | ChgMsgType
 
 
 type Namespace
@@ -40,8 +43,17 @@ version =
 msgTypeToString : MsgType -> String
 msgTypeToString mt =
     case mt of
+        AddMsgType ->
+            "ADD"
+
+        DelMsgType ->
+            "DEL"
+
         SelectMsgType ->
             "SELECT"
+
+        ChgMsgType ->
+            "CHG"
 
 
 {-| Wrap a JSON Value in an outer message wrapper
@@ -60,19 +72,19 @@ wrapPayload (ProcessId id) msgType payload =
 
 
 
--- Incoming Data Messages --
+-- Incoming Select Data Messages --
 
 
-type alias DataMsg =
+type alias DataSelectMsg =
     { messageId : Int
     , namespace : String
     , msgType : String
     , version : Int
-    , response : DataMsgResponse
+    , response : DataSelectMsgResponse
     }
 
 
-type alias DataMsgResponse =
+type alias DataSelectMsgResponse =
     { success : Bool
     , errorCode : String
     , msg : String
@@ -80,9 +92,9 @@ type alias DataMsgResponse =
     }
 
 
-dataMsg : JD.Decoder DataMsg
+dataMsg : JD.Decoder DataSelectMsg
 dataMsg =
-    JDP.decode DataMsg
+    JDP.decode DataSelectMsg
         |> JDP.required "messageId" JD.int
         |> JDP.required "namespace" JD.string
         |> JDP.required "msgType" JD.string
@@ -90,9 +102,9 @@ dataMsg =
         |> JDP.required "response" dataMsgResponse
 
 
-dataMsgResponse : JD.Decoder DataMsgResponse
+dataMsgResponse : JD.Decoder DataSelectMsgResponse
 dataMsgResponse =
-    JDP.decode DataMsgResponse
+    JDP.decode DataSelectMsgResponse
         |> JDP.required "success" JD.bool
         |> JDP.required "errorCode" JD.string
         |> JDP.required "msg" JD.string
@@ -106,13 +118,56 @@ tableRecord =
 
 
 
+-- Incoming Add Data Messages --
+
+
+type alias DataAddMsg =
+    { messageId : Int
+    , namespace : String
+    , msgType : String
+    , version : Int
+    , response : DataAddMsgResponse
+    }
+
+
+type alias DataAddMsgResponse =
+    { table : Table
+    , id : Int
+    , success : Bool
+    , errorCode : String
+    , msg : String
+    }
+
+
+dataAddMsg : JD.Decoder DataAddMsg
+dataAddMsg =
+    JDP.decode DataAddMsg
+        |> JDP.required "messageId" JD.int
+        |> JDP.required "namespace" JD.string
+        |> JDP.required "msgType" JD.string
+        |> JDP.required "version" JD.int
+        |> JDP.required "response" dataAddMsgResponse
+
+
+dataAddMsgResponse : JD.Decoder DataAddMsgResponse
+dataAddMsgResponse =
+    JDP.decode DataAddMsgResponse
+        |> JDP.required "table" decodeTable
+        |> JDP.required "id" JD.int
+        |> JDP.required "success" JD.bool
+        |> JDP.required "errorCode" JD.string
+        |> JDP.required "msg" JD.string
+
+
+
 -- All Incoming Messages --
 
 
 type IncomingMessage
     = UnknownMessage String
     | SiteMessage SiteMsg
-    | DataMessage DataMsg
+    | DataSelectMessage DataSelectMsg
+    | DataAddMessage DataAddMsg
 
 
 decodeIncoming : JE.Value -> IncomingMessage
@@ -129,20 +184,40 @@ decodeIncoming payload =
                 UnknownMessage message
 
 
+{-| Parse incoming messages.
+-}
 incomingMessage : JD.Decoder IncomingMessage
 incomingMessage =
-    let
-        decoderIncoming : String -> JD.Decoder IncomingMessage
-        decoderIncoming namespace =
-            case namespace of
-                "SITE" ->
-                    JD.map SiteMessage siteMsg
+    JD.field "namespace" JD.string
+        |> JD.andThen namespaceHelper
 
-                "DATA" ->
-                    JD.map DataMessage dataMsg
 
-                _ ->
-                    JD.map (\_ -> UnknownMessage <| "Unknown namespace: " ++ namespace) JD.value
-    in
-        JD.field "namespace" JD.string
-            |> JD.andThen decoderIncoming
+{-| First level, discern the namespace.
+-}
+namespaceHelper : String -> JD.Decoder IncomingMessage
+namespaceHelper namespace =
+    case namespace of
+        "SITE" ->
+            JD.map SiteMessage siteMsg
+
+        "DATA" ->
+            JD.field "msgType" JD.string
+                |> JD.andThen msgTypeHelper
+
+        _ ->
+            JD.map (\_ -> UnknownMessage <| "Unknown namespace: " ++ namespace) JD.value
+
+
+{-| Second level, discern the msgType.
+-}
+msgTypeHelper : String -> JD.Decoder IncomingMessage
+msgTypeHelper msgType =
+    case msgType of
+        "SELECT" ->
+            JD.map DataSelectMessage dataMsg
+
+        "ADD" ->
+            JD.map DataAddMessage dataAddMsg
+
+        _ ->
+            JD.map DataSelectMessage dataMsg

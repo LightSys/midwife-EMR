@@ -82,6 +82,21 @@ function getTable(socket, json) {
   }
 }
 
+function handleData2(evtName, json, socket) {
+  var m = msg('comm_assert/handleData2()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isString(evtName), m('evtName'));
+  assert.ok(evtName === 'ADD' || evtName === 'CHG' || evtName === 'DEL', m('evtName values'));
+
+  assert.ok(_.has(json, 'version') && _.isNumber(json.version) && json.version === 2, m('json.version'));
+  assert.ok(_.has(json, 'messageId') && _.isNumber(json.messageId), m('json.messageId'));
+
+  assert.ok(_.has(json, 'payload') && _.isObject(json.payload), m('json.payload'));
+  assert.ok(_.has(json.payload, 'table') && _.isString(json.payload.table), m('json.payload.table'));
+  assert.ok(_.has(json.payload, 'data') && _.isObject(json.payload.data), m('json.payload.data'));
+}
+
 function handleData(evtName, payload, socket) {
   var m = msg('comm_assert/handleData()');
   if (verbose) console.log(m());
@@ -160,6 +175,7 @@ function touchSocketSession(socket) {
 module.exports = {
   getTable,
   handleData,
+  handleData2,
   handleLogin,
   handleUserProfile,
   ioData_socket_on_ADD,

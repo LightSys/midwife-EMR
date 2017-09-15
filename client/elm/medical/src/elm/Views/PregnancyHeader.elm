@@ -1,98 +1,243 @@
 module Views.PregnancyHeader
     exposing
-        ( viewPrenatal
+        ( view
+        , PregHeaderContent(..)
         )
 
-import Date
+import Date exposing (Date)
+import Date.Extra.Duration as DED
 import Html as H exposing (Html)
 import Html.Attributes as HA
+import Html.Events as HE
 import Json.Encode as JE
 import Time exposing (Time)
-import Time.DateTime as TDT
 import Window
 
 
 -- LOCAL IMPORTS --
 
 import Const
+import Data.Labor exposing (LaborRecord)
+import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
 import Util as U
 
 
-{-| Note that the currTime passed is currently static, though it
-will have been accurate as of when this page was first called.
+type PregHeaderContent
+    = PrenatalContent
+    | LaborContent
+    | IPPContent
+
+
+{-| Delegate to the appropriate view.
 -}
-viewPrenatal : PatientRecord -> PregnancyRecord -> Time -> Maybe Window.Size -> Html msg
-viewPrenatal patRec pregRec currTime winSize =
+view :
+    PatientRecord
+    -> PregnancyRecord
+    -> Maybe (List LaborRecord)
+    -> PregHeaderContent
+    -> Time
+    -> Maybe Window.Size
+    -> Html SubMsg
+view patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+    case pregHeaderCnt of
+        PrenatalContent ->
+            viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize
+
+        LaborContent ->
+            viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize
+
+        IPPContent ->
+            viewIPP patRec pregRec laborRecs pregHeaderCnt currTime winSize
+
+
+viewLabor :
+    PatientRecord
+    -> PregnancyRecord
+    -> Maybe (List LaborRecord)
+    -> PregHeaderContent
+    -> Time
+    -> Maybe Window.Size
+    -> Html SubMsg
+viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
     let
-        nickname =
-            case pregRec.nickname of
-                Just nn ->
-                    if String.length nn > 0 then
-                        " (" ++ nn ++ ")"
-                    else
-                        ""
+        ( nickname, edd ) =
+            ( getNickname pregRec, getEdd pregRec )
+
+        laborRec =
+            case laborRecs of
+                Just recs ->
+                    List.reverse recs
+                        |> List.head
 
                 Nothing ->
-                    ""
-
-        edd =
-            case ( pregRec.lmp, pregRec.useAlternateEdd, pregRec.alternateEdd ) of
-                ( Just lmp, Just useAlt, Just altEdd ) ->
-                    if useAlt then
-                        Just altEdd
-                    else
-                        U.calcEdd (Just lmp)
-
-                ( Just lmp, _, _ ) ->
-                    U.calcEdd (Just lmp)
-
-                ( _, _, _ ) ->
                     Nothing
 
-        -- Display the GA with a non-breaking space serving as the whitespace.
-        gaSpan =
-            case edd of
-                Just ed ->
-                    let
-                        ( wks, days ) =
-                            U.getGA ed (Date.fromTime currTime)
-                    in
-                        U.nbsp wks days
+        partnerName =
+            case ( pregRec.partnerFirstname, pregRec.partnerLastname ) of
+                ( Just first, Just last ) ->
+                    Just <| last ++ ", " ++ first
 
-                Nothing ->
-                    H.span [] []
+                ( _, _ ) ->
+                    Nothing
     in
         H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
-            [ H.input [ HA.type_ "checkbox", HA.id "pregnancy_header_accordion" ] []
+            [ H.input
+                [ HA.type_ "checkbox"
+                , HA.checked True
+                  -- Default accordion to open at start.
+                , HA.id "pregnancy_header_accordion"
+                ]
+                []
             , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
                 [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
-                , gaSpan
+                , (getGaSpan edd currTime)
+                , prenatalLaborIppButton pregHeaderCnt
                 ]
             , H.div [ HA.class "c-card__item pregnancy-header" ]
-                [ prenatalColumnOne patRec pregRec currTime
+                [ headerColumnOne patRec pregRec currTime partnerName
+                , laborColumnTwo laborRec
+                , laborColumnThree laborRec
+                ]
+            ]
+
+
+viewIPP :
+    PatientRecord
+    -> PregnancyRecord
+    -> Maybe (List LaborRecord)
+    -> PregHeaderContent
+    -> Time
+    -> Maybe Window.Size
+    -> Html SubMsg
+viewIPP patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+    prenatalLaborIppButton pregHeaderCnt
+
+
+viewPrenatal :
+    PatientRecord
+    -> PregnancyRecord
+    -> Maybe (List LaborRecord)
+    -> PregHeaderContent
+    -> Time
+    -> Maybe Window.Size
+    -> Html SubMsg
+viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+    let
+        ( nickname, edd ) =
+            ( getNickname pregRec, getEdd pregRec )
+    in
+        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
+            [ H.input
+                [ HA.type_ "checkbox"
+                , HA.checked True
+                  -- Default accordion to open at start.
+                , HA.id "pregnancy_header_accordion"
+                ]
+                []
+            , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
+                [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
+                , (getGaSpan edd currTime)
+                , prenatalLaborIppButton pregHeaderCnt
+                ]
+            , H.div [ HA.class "c-card__item pregnancy-header" ]
+                [ headerColumnOne patRec pregRec currTime Nothing
                 , prenatalColumnTwo patRec pregRec currTime
                 , prenatalColumnThree patRec pregRec currTime
                 ]
             ]
 
 
-prenatalColumnOne : PatientRecord -> PregnancyRecord -> Time -> Html msg
-prenatalColumnOne patRec pregRec currTime =
+getNickname : PregnancyRecord -> String
+getNickname pregRec =
+    case pregRec.nickname of
+        Just nn ->
+            if String.length nn > 0 then
+                " (" ++ nn ++ ")"
+            else
+                ""
+
+        Nothing ->
+            ""
+
+
+getEdd : PregnancyRecord -> Maybe Date
+getEdd pregRec =
+    case ( pregRec.lmp, pregRec.useAlternateEdd, pregRec.alternateEdd ) of
+        ( Just lmp, Just useAlt, Just altEdd ) ->
+            if useAlt then
+                Just altEdd
+            else
+                U.calcEdd (Just lmp)
+
+        ( Just lmp, _, _ ) ->
+            U.calcEdd (Just lmp)
+
+        ( _, _, _ ) ->
+            Nothing
+
+
+{-| Display the GA with a non-breaking space serving as
+the whitespace.
+-}
+getGaSpan : Maybe Date -> Time -> Html msg
+getGaSpan edd currTime =
+    case edd of
+        Just ed ->
+            let
+                ( wks, days ) =
+                    U.getGA ed (Date.fromTime currTime)
+            in
+                U.nbsp wks days
+
+        Nothing ->
+            H.span [] []
+
+
+pregHeaderContentToString : PregHeaderContent -> String
+pregHeaderContentToString phc =
+    case phc of
+        PrenatalContent ->
+            "Prenatal"
+
+        IPPContent ->
+            "IPP"
+
+        LaborContent ->
+            "Labor"
+
+
+prenatalLaborIppButton : PregHeaderContent -> Html SubMsg
+prenatalLaborIppButton phc =
+    H.span [ HA.style [ ( "margin-left", "2em" ) ], HA.class "u-xsmall" ]
+        [ H.button
+            [ HA.style [ ( "margin-left", "2em" ) ]
+            , HA.class "u-pillar-box--large u-high c-button c-button--ghost-brand"
+            , HE.onClick NextPregHeaderContent
+            ]
+            [ H.text <| pregHeaderContentToString phc ]
+        ]
+
+
+headerColumnOne : PatientRecord -> PregnancyRecord -> Time -> Maybe String -> Html msg
+headerColumnOne patRec pregRec currTime partnerName =
     let
         age =
             case patRec.dob of
                 Just dob ->
-                    -- Note: the elm-time delta algorithm for years merely subtracts year value
-                    -- from each DateTime instance, which can be quite inaccurate if one's bday
-                    -- has not yet occurred this year. We do a bit better by using months.
-                    TDT.delta (TDT.fromTimestamp currTime) (TDT.fromTimestamp (Date.toTime dob))
-                        |> .months
-                        |> flip (//) 12
+                    -- Date.Extra.Duration.diff can return a positive year and
+                    -- negative month when the birthday is the current month.
+                    DED.diff (Date.fromTime currTime) dob
+                        |> (\d ->
+                                if d.month < 0 then
+                                    d.year - 1
+                                else
+                                    d.year
+                           )
                         |> toString
                         |> flip (++) " ("
-                        |> flip (++) (U.dateToDateString dob "-")
+                        |> flip (++) (U.dateToDateMonString dob "-")
                         |> flip (++) ")"
                         |> Just
 
@@ -120,6 +265,81 @@ prenatalColumnOne patRec pregRec currTime =
                 [ fieldLabel "Age" "3em"
                 , fieldValue age
                 ]
+            , if partnerName /= Nothing then
+                H.div [ HA.class "pregnancy-header-fldval" ]
+                    [ fieldLabel "Ptnr" "3em"
+                    , fieldValue partnerName
+                    ]
+              else
+                H.span [] []
+            ]
+
+
+laborColumnTwo : Maybe LaborRecord -> Html msg
+laborColumnTwo laborRec =
+    let
+        ( admitVal, laborVal, pos, fh, fht ) =
+            case laborRec of
+                Just lr ->
+                    ( U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep lr.admittanceDate
+                    , U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep lr.startLaborDate
+                    , lr.pos
+                    , toString lr.fh
+                    , toString lr.fht
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "" )
+    in
+        H.div [ HA.class "pregnancy-header-col" ]
+            [ H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Lbr" "3em"
+                , fieldValue <| Just laborVal
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Admt" "3em"
+                , fieldValue <| Just admitVal
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "POS" "3em"
+                , fieldValue <| Just pos
+                , H.span [] [ H.text " " ]
+                , fieldLabel "FH" "2.0em"
+                , fieldValue <| Just fh
+                , H.span [] [ H.text " " ]
+                , fieldLabel "FHT" "2.5em"
+                , fieldValue <| Just fht
+                ]
+            ]
+
+
+laborColumnThree : Maybe LaborRecord -> Html msg
+laborColumnThree laborRec =
+    let
+        ( bp, cr, temp ) =
+            case laborRec of
+                Just lr ->
+                    ( (toString lr.systolic) ++ "/" ++ (toString lr.diastolic)
+                    , toString lr.cr
+                    , toString lr.temp
+                    )
+
+                Nothing ->
+                    ( "", "", "" )
+    in
+        H.div [ HA.class "pregnancy-header-col" ]
+            [ H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "BP" "3em"
+                , fieldValue <| Just bp
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "CR" "3em"
+                , fieldValue <| Just cr
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Temp" "3em"
+                , fieldValue <| Just temp
+                ]
             ]
 
 
@@ -129,29 +349,18 @@ prenatalColumnTwo patRec pregRec currTime =
         lmp =
             case pregRec.lmp of
                 Just lmp ->
-                    U.dateToDateString lmp "-"
+                    U.dateToDateMonString lmp "-"
 
                 Nothing ->
                     ""
 
         edd =
-            case ( pregRec.lmp, pregRec.useAlternateEdd, pregRec.alternateEdd ) of
-                ( Just lmp, Just useAlt, Just altEdd ) ->
-                    if useAlt then
-                        Just altEdd
-                    else
-                        U.calcEdd (Just lmp)
-
-                ( Just lmp, _, _ ) ->
-                    U.calcEdd (Just lmp)
-
-                ( _, _, _ ) ->
-                    Nothing
+            getEdd pregRec
 
         eddString =
             case edd of
                 Just ed ->
-                    U.dateToDateString ed "-"
+                    U.dateToDateMonString ed "-"
 
                 Nothing ->
                     ""

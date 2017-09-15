@@ -25,6 +25,9 @@ type DateField
     = UnknownDateField String
     | LaborDelIppAdmittanceDateField
     | LaborDelIppLaborDateField
+    | LaborDelIppStage1DateField
+    | LaborDelIppStage2DateField
+    | LaborDelIppStage3DateField
 
 
 stringToDateField : String -> DateField
@@ -35,6 +38,15 @@ stringToDateField str =
 
         "laborDateId" ->
             LaborDelIppLaborDateField
+
+        "laborStage1Id" ->
+            LaborDelIppStage1DateField
+
+        "laborStage2Id" ->
+            LaborDelIppStage2DateField
+
+        "laborStage3Id" ->
+            LaborDelIppStage3DateField
 
         _ ->
             UnknownDateField str
@@ -48,6 +60,15 @@ dateFieldToString df =
 
         LaborDelIppLaborDateField ->
             "laborDateId"
+
+        LaborDelIppStage1DateField ->
+            "laborStage1Id"
+
+        LaborDelIppStage2DateField ->
+            "laborStage2Id"
+
+        LaborDelIppStage3DateField ->
+            "laborStage3Id"
 
         UnknownDateField str ->
             "Warning: Unknown DateField: " ++ str

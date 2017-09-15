@@ -44,7 +44,7 @@
 
 /* Content area. */
 .content-wrapper {
-  margin: 1em 1em;
+  margin: 0.5em 1em;
   padding: 0;
 }
 
@@ -173,9 +173,13 @@
   flex: 0 0 auto;
 }
 
+
 /* Headers, etc. */
 .mw-header-3 {
   line-height: 0.5;
+}
+.inline-block {
+  display: inline-block;
 }
 
 /* Forms and fields */
@@ -204,4 +208,41 @@
   width: 100%;
   margin: 0 0;
 }
+.error-msg-right {
+  text-align: right;
+  padding: 10px 0;
+}
+.c-field-minPadding {
+  padding: 0.125em 0;
+}
 
+/* Page content */
+.content-flex-wrapper {
+  display: inline-flex;
+}
+
+/* Modals */
+.isHidden {
+  display: none;
+}
+.dateTimeModal {
+  width: 20em;
+}
+.dateTimeModalButtons {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+}
+
+/* Stage section on labor page */
+.stage-wrapper {
+  display: flex;
+  flex-flow: row wrap;
+  background-color: #EEEEEE;
+  padding: 0 0.5em;
+}
+.stage-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 10em;
+}
