@@ -5,6 +5,7 @@ import Date.Extra.Compare as DEComp
 import Date.Extra.Create as DEC
 import Date.Extra.Period as DEP
 import Date.Extra.Utils as DEU
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Decode.Extra as JDE
 import Test exposing (..)
@@ -15,7 +16,10 @@ import String
 
 -- LOCAL IMPORTS
 
+import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.Labor as Labor
+import Data.LaborStage1 exposing (LaborStage1Record)
+import Data.Table exposing (Table(..))
 import Util as U
 
 
@@ -56,8 +60,79 @@ all : Test
 all =
     describe "All Medical Tests"
         [ dateHandling
+        , dataCache
         ]
 
+
+dataCache : Test
+dataCache =
+    describe "DataCache mechanism"
+        [ test "put adds values" <|
+            \() ->
+                let
+                    v1 =
+                        LaborStage1Record 1
+                           (Date.fromTime 0.0)
+                           Nothing
+                           Nothing
+                           Nothing
+                           Nothing
+                           100
+                            |> LaborStage1DataCache
+
+                    dict : Dict String DataCache
+                    dict =
+                        DataCache.put v1 Dict.empty
+                in
+                    Expect.true "Expected dict size to be 1." (Dict.size dict == 1)
+        , test "get retrieves values" <|
+            \() ->
+                let
+                    v1 =
+                        LaborStage1Record 1
+                           (Date.fromTime 0.0)
+                           Nothing
+                           Nothing
+                           Nothing
+                           Nothing
+                           100
+                            |> LaborStage1DataCache
+
+                    dict : Dict String DataCache
+                    dict =
+                        DataCache.put v1 Dict.empty
+
+                    found =
+                        case DataCache.get LaborStage1 dict of
+                            Just _ ->
+                                True
+
+                            Nothing ->
+                                False
+                in
+                    Expect.true "Expected dict to contain value." found
+        , test "del deletes values" <|
+            \() ->
+                let
+                    v1 =
+                        LaborStage1Record 1
+                           (Date.fromTime 0.0)
+                           Nothing
+                           Nothing
+                           Nothing
+                           Nothing
+                           100
+                            |> LaborStage1DataCache
+
+                    dict : Dict String DataCache
+                    dict =
+                        DataCache.put v1 Dict.empty
+
+                    newDict =
+                        DataCache.del LaborStage1 dict
+                in
+                    Expect.true "Expected dict to be empty." (Dict.size newDict == 0)
+        ]
 
 dateHandling : Test
 dateHandling =

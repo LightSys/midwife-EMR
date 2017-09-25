@@ -1,0 +1,89 @@
+module Data.LaborStage1
+    exposing
+        ( getLaborStage1Id
+        , LaborStage1Id(..)
+        , LaborStage1Record
+        , LaborStage1RecordNew
+        , laborStage1Record
+        , laborStage1RecordNewToLaborStage1Record
+        , laborStage1RecordNewToValue
+        )
+
+import Date exposing (Date)
+import Json.Decode as JD
+import Json.Decode.Extra as JDE
+import Json.Decode.Pipeline as JDP
+import Json.Encode as JE
+import Json.Encode.Extra as JEE
+
+
+-- LOCAL IMPORTS --
+
+import Util as U
+
+
+type LaborStage1Id
+    = LaborStage1Id Int
+
+
+type alias LaborStage1Record =
+    { id : Int
+    , fullDialation : Date
+    , mobility : Maybe String
+    , durationLatent : Maybe Int
+    , durationActive : Maybe Int
+    , comments : Maybe String
+    , labor_id : Int
+    }
+
+
+{-| A new record consists of first setting the date/time
+that stage 1 has been complete, i.e. full dialation. Until
+that takes place, the other fields cannot be filled, at
+least not completely.
+-}
+type alias LaborStage1RecordNew =
+    { fullDialation : Date
+    , labor_id : Int
+    }
+
+
+laborStage1Record : JD.Decoder LaborStage1Record
+laborStage1Record =
+    JDP.decode LaborStage1Record
+        |> JDP.required "id" JD.int
+        |> JDP.required "fullDialation" JDE.date
+        |> JDP.required "mobility" (JD.maybe JD.string)
+        |> JDP.required "durationLatent" (JD.maybe JD.int)
+        |> JDP.required "durationActive" (JD.maybe JD.int)
+        |> JDP.required "comments" (JD.maybe JD.string)
+        |> JDP.required "labor_id" JD.int
+
+
+laborStage1RecordNewToValue : LaborStage1RecordNew -> JE.Value
+laborStage1RecordNewToValue rec =
+    JE.object
+        [ ( "table", (JE.string "laborStage1") )
+        , ( "data"
+          , JE.object
+                [ ( "fullDialation", (U.dateToStringValue rec.fullDialation) )
+                , ( "labor_id", (JE.int rec.labor_id) )
+                ]
+          )
+        ]
+
+
+laborStage1RecordNewToLaborStage1Record : LaborStage1Id -> LaborStage1RecordNew -> LaborStage1Record
+laborStage1RecordNewToLaborStage1Record (LaborStage1Id id) ls1new =
+    LaborStage1Record id
+        ls1new.fullDialation
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        ls1new.labor_id
+
+
+getLaborStage1Id : LaborStage1Id -> Int
+getLaborStage1Id (LaborStage1Id id) =
+    id

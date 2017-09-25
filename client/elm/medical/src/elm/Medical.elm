@@ -11,13 +11,16 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.DataCache as DCache exposing (DataCache(..))
 import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
 import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
 import Data.LaborDelIpp exposing (SubMsg(..))
+import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLaborStage1Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session)
+import Data.Table exposing (Table(..))
 import Data.TableRecord exposing (TableRecord(..))
 import Model exposing (Model, Page(..), PageState(..))
 import Msg exposing (logConsole, Msg(..), ProcessType(..))
@@ -172,9 +175,20 @@ update msg model =
             ( ProcessTypeMsg processType msgType jeVal, _ ) ->
                 -- Send a message to the server and store the required information
                 -- in the model for processing the server response.
+
+                -- NOTE: currently data queries do not come through here.
+
+                -- TODO: For data queries, check if the data requirement can be
+                -- satisfied by what the top-level model already has and supply it
+                -- to the caller if available.
+                -- TODO: if a request is made to the server for a data query, set up
+                -- a notify subscription with the server to keep up to date on that
+                -- information. Might want to do this when the data is returned
+                -- from the server instead of here.
                 let
                     ( processId, processStore ) =
                         Processing.add processType Nothing model.processStore
+
                     _ =
                         Debug.log "ProcessTypeMsg" <| toString jeVal
                 in
@@ -183,29 +197,42 @@ update msg model =
                     )
 
             ( LaborDelIppLoaded pregId, _ ) ->
-                -- This page has all it needs from the server and is ready to go.
-                { model
-                    | pageState =
+                -- This page has enough of what it needs from the server in order
+                -- to display the page. The newCmd returned from
+                -- PageLaborDelIpp.buildModel may request more data from the server.
+                let
+                    ( subModel, newStore, newCmd ) =
                         PageLaborDelIpp.buildModel model.browserSupportsDate
                             model.currTime
+                            model.processStore
                             pregId
                             model.patientRecord
                             model.pregnancyRecord
                             model.laborRecord
-                            |> LaborDelIpp
-                            |> Loaded
-                }
-                    => Cmd.none
+
+                    _ =
+                        Debug.log "newCmd" <| toString newCmd
+                in
+                    { model
+                        | pageState = Loaded (LaborDelIpp subModel)
+                        , processStore = newStore
+                    }
+                        => newCmd
 
             ( LaborDelIppMsg subMsg, LaborDelIpp subModel ) ->
-                let
-                    _ =
-                        Debug.log "LaborDelIppMsg top-level" <| toString model.laborRecord
-                    _ =
-                        Debug.log "LaborDelIppMsg subModel" <| toString subModel
-                in
                 -- All LaborDelIpp page sub messages are routed here.
-                updateForPage LaborDelIpp LaborDelIppMsg (PageLaborDelIpp.update model.session) subMsg subModel
+                let
+                    -- If the subMsg is DataCache, revise the subMsg by adding
+                    -- the current dataCache to it.
+                    newSubMsg =
+                        case subMsg of
+                            (DataCache _ tbl) ->
+                                DataCache (Just model.dataCache) tbl
+
+                            _ ->
+                                subMsg
+                in
+                    updateForPage LaborDelIpp LaborDelIppMsg (PageLaborDelIpp.update model.session) newSubMsg subModel
 
             ( SetRoute route, _ ) ->
                 -- Handle route changes.
@@ -261,10 +288,10 @@ updateMessage incoming model =
 
         DataAddMessage dataAddMsg ->
             -- Results of attempting to add a record on the server.
-            -- Add the new record obtained from the processStore to the
-            -- top-level model after attaching the id received from the server.
-            -- Then pass the new record to the page per the Msg retrieved
-            -- from the processStore.
+            -- If server responded positively, add the new record obtained
+            -- from the processStore to the top-level model after attaching
+            -- the id received from the server. Then pass the new record to
+            -- the page per the Msg retrieved from the processStore.
             let
                 -- Use the messageId returned from the server to acquire the
                 -- Msg reserved in our store by the originating "event".
@@ -281,7 +308,7 @@ updateMessage incoming model =
                                             laborRecordNewToLaborRecord
                                                 (LaborId dataAddMsg.response.id)
                                                 laborRecNew
-                                                    |> flip U.addToMaybeList model.laborRecord
+                                                |> flip U.addToMaybeList model.laborRecord
 
                                         subMsg =
                                             AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
@@ -290,8 +317,26 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddLaborStage1Type (LaborDelIppMsg (DataCache _ _)) laborStage1RecordNew) ->
+                                    let
+                                        laborStage1Rec =
+                                            laborStage1RecordNewToLaborStage1Record
+                                                (LaborStage1Id dataAddMsg.response.id)
+                                                laborStage1RecordNew
+
+                                        subMsg =
+                                            DataCache (Just model.dataCache) (Just [ LaborStage1 ])
+                                    in
+                                        ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Rec) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
                                 _ ->
-                                    ( model, Cmd.none )
+                                    let
+                                        msgText =
+                                            "OOPS, unhandled processType in Medical.updateMessage in the DataAddMessage branch."
+                                    in
+                                        ( model, logConsole msgText )
 
                         False ->
                             ( model, Cmd.none )
@@ -306,7 +351,11 @@ updateMessage incoming model =
                 ( processType, processStore ) =
                     Processing.remove (ProcessId dataMsg.messageId) model.processStore
 
-                -- Store any data sent from the server into the model.
+                -- Store any data sent from the server into the top-level model
+                -- so that pages that need the same data may get it from the top-level
+                -- rather than issuing another data request.
+                -- TODO: work out mechanism for detail pages to request data that the
+                -- top-level model may already have.
                 newModel =
                     case dataMsg.response.success of
                         True ->
@@ -316,13 +365,56 @@ updateMessage incoming model =
                                         TableRecordLabor recs ->
                                             { mdl | laborRecord = Just recs }
 
+                                        TableRecordLaborStage1 recs ->
+                                            -- There should ever be only one stage 1 record
+                                            -- sent because there is only one allowed per
+                                            -- labor, but the data arrives in an array anyway.
+                                            let
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (LaborStage1DataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+                                            in
+                                                { mdl | dataCache = dc }
+
                                         TableRecordPatient recs ->
                                             -- We only ever want one patient in our store at a time.
-                                            { mdl | patientRecord = List.head recs }
+                                            let
+                                                -- TODO: eventually revise model to depend only on dataCache
+                                                -- instead of separate patientRecord field in top-level model.
+                                                rec =
+                                                    List.head recs
+
+                                                dc =
+                                                    case rec of
+                                                        Just r ->
+                                                            DCache.put (PatientDataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+                                            in
+                                                { mdl | patientRecord = rec , dataCache = dc }
 
                                         TableRecordPregnancy recs ->
                                             -- We only ever want one pregnancy in our store at a time.
-                                            { mdl | pregnancyRecord = List.head recs }
+                                            let
+                                                -- TODO: eventually revise model to depend only on dataCache
+                                                -- instead of separate pregnancyRecord field in top-level model.
+                                                rec =
+                                                    List.head recs
+
+                                                dc =
+                                                    case rec of
+                                                        Just r ->
+                                                            DCache.put (PregnancyDataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+                                            in
+                                                { mdl | pregnancyRecord = rec, dataCache = dc }
                                 )
                                 model
                                 dataMsg.response.data
@@ -334,6 +426,10 @@ updateMessage incoming model =
                 case processType of
                     -- Send the message retrieved from the processing store.
                     Just (AddLaborType msg _) ->
+                        { newModel | processStore = processStore }
+                            => Task.perform (always msg) (Task.succeed True)
+
+                    Just (AddLaborStage1Type msg _) ->
                         { newModel | processStore = processStore }
                             => Task.perform (always msg) (Task.succeed True)
 

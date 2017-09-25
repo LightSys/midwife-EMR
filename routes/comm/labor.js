@@ -13,6 +13,7 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , cfg = require('../../config')
   , Labor = require('../../models').Labor
+  , LaborStage1 = require('../../models').LaborStage1
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
@@ -35,6 +36,7 @@ var _ = require('underscore')
 // are no date fields present in the table.
 // --------------------------------------------------------
 moduleTables.labor = ['admittanceDate', 'startLaborDate'];
+moduleTables.laborStage1 = ['fullDialation'];
 
 
 /* --------------------------------------------------------
@@ -143,9 +145,25 @@ var addLabor = function(data, userInfo, cb) {
   addTable(data, userInfo, cb, Labor, 'labor');
 };
 
+var addLaborStage1 = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addLaborStage1(data, cb);
+  addTable(data, userInfo, cb, LaborStage1, 'laborStage1');
+};
+
+var notDefinedYet = function(data, userInfo, cb) {
+  var msg = 'WARNING: notDefinedYet() called in "routes/comm/labor.js"';
+  console.log(msg);
+  throw new Error(msg);
+};
+
 // --------------------------------------------------------
 // Remember to setup moduleTables for each add or update.
 // --------------------------------------------------------
 module.exports = {
-  addLabor
+  addLabor,
+  delLabor: notDefinedYet,
+  updateLabor: notDefinedYet,
+  addLaborStage1,
+  delLaborStage1: notDefinedYet,
+  updateLaborStage1: notDefinedYet
 };

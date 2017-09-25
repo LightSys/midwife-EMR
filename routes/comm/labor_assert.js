@@ -21,6 +21,20 @@ var addLabor = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
+var addLaborStage1 = function(data, cb) {
+  var m = msg('labor_assert/addLaborStage1()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+  assert.ok(_.has(data, 'fullDialation'), m('data.fullDialation'));
+  assert.ok(_.isString(data.fullDialation), m('data.fullDialation is a string'));
+  assert.ok(_.has(data, 'labor_id'), m('data.labor_id'));
+  assert.ok(_.isNumber(data.labor_id), m('data.labor_id is a number'));
+};
+
 module.exports = {
-  addLabor
+  addLabor,
+  addLaborStage1
 };

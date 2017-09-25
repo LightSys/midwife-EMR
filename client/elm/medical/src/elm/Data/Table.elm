@@ -16,6 +16,7 @@ type Table
     | Patient
     | Pregnancy
     | Labor
+    | LaborStage1
 
 
 
@@ -36,6 +37,9 @@ tableToString tbl =
         Labor ->
             "labor"
 
+        LaborStage1 ->
+            "laborStage1"
+
         Patient ->
             "patient"
 
@@ -48,6 +52,9 @@ stringToTable tbl =
     case tbl of
         "labor" ->
             Labor
+
+        "laborStage1" ->
+            LaborStage1
 
         "patient" ->
             Patient

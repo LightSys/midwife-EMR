@@ -148,10 +148,11 @@ dateTimeModal :
     -> (String -> msg)
     -> msg
     -> msg
+    -> msg
     -> Maybe Date
     -> Maybe String
     -> Html msg
-dateTimeModal isShown title dateMsg timeMsg closeMsg clearMsg dateVal timeVal =
+dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal timeVal =
     H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", isShown ) ] ]
         [ H.div
             [ HA.class "o-modal dateTimeModal"
@@ -187,7 +188,7 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg clearMsg dateVal timeVal =
                     , H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--brand"
-                        , HE.onClick closeMsg
+                        , HE.onClick saveMsg
                         ]
                         [ H.text "Ok" ]
                     ]
@@ -206,10 +207,11 @@ dateTimePickerModal :
     -> (String -> msg)
     -> msg
     -> msg
+    -> msg
     -> Maybe Date
     -> Maybe String
     -> Html msg
-dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg clearMsg dateVal timeVal =
+dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clearMsg dateVal timeVal =
     H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", isShown ) ] ]
         [ H.div
             [ HA.class "o-modal dateTimeModal"
@@ -246,7 +248,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg clearMsg date
                     , H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--brand"
-                        , HE.onClick closeMsg
+                        , HE.onClick saveMsg
                         ]
                         [ H.text "Ok" ]
                     ]

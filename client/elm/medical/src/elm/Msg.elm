@@ -16,6 +16,7 @@ import Window
 import Data.DatePicker exposing (DateField, DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
+import Data.LaborStage1 exposing (LaborStage1RecordNew)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
 import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
@@ -47,10 +48,14 @@ logConsole msg =
     Task.perform LogConsole (Task.succeed msg)
 
 
-{-| The data that is stored in the process store. This is used as
-the bridge over the asyncronous divide between making a websocket
-request and receiving the response from the server.
+{-| The data that is stored in the process store. This temporary
+data store is used as the bridge over the asyncronous divide
+between making a websocket request and receiving the response
+from the server. It is used for all CRUD with the server because
+we are not assuming optimistic changes, therefore we need a means
+to "remember" what we should do when the server responds positively.
 -}
 type ProcessType
     = AddLaborType Msg LaborRecordNew
+    | AddLaborStage1Type Msg LaborStage1RecordNew
     | SelectQueryType Msg SelectQuery

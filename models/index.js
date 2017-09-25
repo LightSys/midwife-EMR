@@ -67,5 +67,7 @@ module.exports = {
   , PregnoteTypes: require('./PregnoteType').PregnoteTypes
   , Labor: require('./Labor').Labor
   , Labors: require('./Labor').Labors
+  , LaborStage1: require('./LaborStage1').LaborStage1
+  , LaborStage1s: require('./LaborStage1').LaborStage1s
 };
 

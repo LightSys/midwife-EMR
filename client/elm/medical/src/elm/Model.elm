@@ -13,7 +13,9 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.DataCache exposing (DataCache)
 import Data.Labor exposing (LaborRecord)
+import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyRecord, PregnancyId(..))
 import Data.Session as Session exposing (Session)
@@ -42,6 +44,7 @@ type alias Model =
     , pageState : PageState
     , session : Session
     , processStore : ProcessStore
+    , dataCache : Dict String DataCache
     , window : Maybe Window.Size
     , siteMessages : Dict String SiteKeyValue
     , laborRecord : Maybe (List LaborRecord)
@@ -52,31 +55,40 @@ type alias Model =
 
 initialModel : Bool -> Maybe PregnancyId -> Time -> Model
 initialModel browserSupportsDate pregId time =
-    { browserSupportsDate = browserSupportsDate
-    , currTime = time
-    , currPregId = pregId
-    , pageState = Loaded <| initialPage browserSupportsDate pregId
-    , session = { user = Nothing }
-    , processStore = Processing.processStoreInit
-    , window = Nothing
-    , siteMessages = Dict.empty
-    , laborRecord = Nothing
-    , patientRecord = Nothing
-    , pregnancyRecord = Nothing
-    }
+    let
+        ( page, newStore ) =
+            initialPage browserSupportsDate Processing.processStoreInit pregId
+    in
+        { browserSupportsDate = browserSupportsDate
+        , currTime = time
+        , currPregId = pregId
+        , pageState = Loaded page
+        , session = { user = Nothing }
+        , processStore = newStore
+        , window = Nothing
+        , dataCache = Dict.empty
+        , siteMessages = Dict.empty
+        , laborRecord = Nothing
+        , patientRecord = Nothing
+        , pregnancyRecord = Nothing
+        }
 
 
-initialPage : Bool -> Maybe PregnancyId -> Page
-initialPage browserSupportsDate pregId =
+initialPage : Bool -> ProcessStore -> Maybe PregnancyId -> ( Page, ProcessStore )
+initialPage browserSupportsDate store pregId =
     case pregId of
         Just pid ->
-            LaborDelIpp
-                <| PageLaborDelIpp.buildModel browserSupportsDate
-                      0
-                      pid
-                      Nothing
-                      Nothing
-                      Nothing
+            let
+                ( subModel, newStore, newCmd ) =
+                    PageLaborDelIpp.buildModel browserSupportsDate
+                        0
+                        store
+                        pid
+                        Nothing
+                        Nothing
+                        Nothing
+            in
+                ( LaborDelIpp subModel, newStore )
 
         Nothing ->
-            Blank
+            ( Blank, store )

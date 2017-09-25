@@ -141,10 +141,14 @@ var rx = require('rx')
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
   , TABLE_labor = 'labor'
+  , TABLE_laborStage1 = 'laborStage1'
   , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
   , addLabor = require('./routes/comm/labor').addLabor
   , delLabor = require('./routes/comm/labor').delLabor
   , updateLabor = require('./routes/comm/labor').updateLabor
+  , addLaborStage1 = require('./routes/comm/labor').addLaborStage1
+  , delLaborStage1 = require('./routes/comm/labor').delLaborStage1
+  , updateLaborStage1 = require('./routes/comm/labor').updateLaborStage1
   , addLabSuite = require('./routes/comm/lookupTables').addLabSuite
   , delLabSuite = require('./routes/comm/lookupTables').delLabSuite
   , updateLabSuite = require('./routes/comm/lookupTables').updateLabSuite
@@ -808,6 +812,13 @@ var getFuncForTableOp = function(table, op) {
         case DEL: func = delLabor; break;
       }
       break;
+    case TABLE_laborStage1:
+      switch (op) {
+        case ADD: func = addLaborStage1; break;
+        case CHG: func = updateLaborStage1; break;
+        case DEL: func = delLaborStage1; break;
+      }
+      break;
     case TABLE_labSuite:
       switch (op) {
         case ADD: func = addLabSuite; break;
@@ -885,6 +896,9 @@ var handleData2 = function(evtName, json, socket) {
     , dataFunc
     , returnStatusFunc
     ;
+
+  // Temp
+  console.log(json);
 
   console.log('handleData2() for ' + evtName + ' with json of: ' + json);
   switch (evtName) {

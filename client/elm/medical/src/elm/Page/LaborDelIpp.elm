@@ -9,6 +9,7 @@ module Page.LaborDelIpp
 
 import Date exposing (Date, Month(..), day, month, year)
 import Date.Extra.Compare as DEComp
+import Dict exposing (Dict)
 import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
@@ -21,6 +22,7 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
 import Data.Labor
     exposing
@@ -31,7 +33,15 @@ import Data.Labor
         , laborRecordNewToValue
         , laborRecordNewToLaborRecord
         )
-import Data.LaborDelIpp exposing (Field(..), SubMsg(..))
+import Data.LaborStage1
+    exposing
+        ( laborStage1RecordNewToLaborStage1Record
+        , laborStage1RecordNewToValue
+        , LaborStage1Id(..)
+        , LaborStage1Record
+        , LaborStage1RecordNew
+        )
+import Data.LaborDelIpp exposing (Dialog(..), Field(..), SubMsg(..))
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyId(..), PregnancyRecord)
@@ -71,9 +81,11 @@ type alias Model =
     , currTime : Time
     , pregnancy_id : PregnancyId
     , currPregHeaderContent : PregHeaderContent
+    , dataCache : Dict String DataCache
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
     , laborRecord : Maybe (List LaborRecord)
+    , laborStage1Record : Maybe LaborStage1Record
     , laborState : LaborState
     , admittanceDate : Maybe Date
     , admittanceTime : Maybe String
@@ -100,15 +112,16 @@ type alias Model =
     }
 
 
-buildModel : Bool -> Time -> PregnancyId -> Maybe PatientRecord -> Maybe PregnancyRecord -> Maybe (List LaborRecord) -> Model
-buildModel browserSupportsDate currTime pregId patrec pregRec laborRecs =
+buildModel : Bool -> Time -> ProcessStore -> PregnancyId -> Maybe PatientRecord -> Maybe PregnancyRecord -> Maybe (List LaborRecord) -> ( Model, ProcessStore, Cmd Msg )
+buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
     let
         -- Sort by the admittanceDate, descending.
         admitSort a b =
             U.sortDate U.DescendingSort a.admittanceDate b.admittanceDate
 
-        -- Determine state of the labor by labor records, if any.
-        laborState =
+        -- Determine state of the labor by labor records, if any, and
+        -- request additional records from the server if needed.
+        ( laborState, ( newStore, newOuterMsg ) ) =
             case laborRecs of
                 Just recs ->
                     case
@@ -117,17 +130,21 @@ buildModel browserSupportsDate currTime pregId patrec pregRec laborRecs =
                     of
                         Just rec ->
                             if rec.endLaborDate == Nothing then
-                                AdmittedLaborState (LaborId rec.id)
+                                ( AdmittedLaborState (LaborId rec.id)
+                                , getLaborDetails (LaborId rec.id) store
+                                )
                             else if rec.falseLabor then
-                                NotStartedLaborState
+                                ( NotStartedLaborState, ( store, Cmd.none ) )
                             else
-                                EndedLaborState (LaborId rec.id)
+                                ( EndedLaborState (LaborId rec.id)
+                                , getLaborDetails (LaborId rec.id) store
+                                )
 
                         Nothing ->
-                            NotStartedLaborState
+                            ( NotStartedLaborState, ( store, Cmd.none ) )
 
                 Nothing ->
-                    NotStartedLaborState
+                    ( NotStartedLaborState, ( store, Cmd.none ) )
 
         pregHeaderContent =
             case laborState of
@@ -142,17 +159,16 @@ buildModel browserSupportsDate currTime pregId patrec pregRec laborRecs =
 
                 EndedLaborState id ->
                     IPPContent
-
-        _ =
-            Debug.log "laborState" <| toString laborState
     in
-        Model browserSupportsDate
+        ( Model browserSupportsDate
             currTime
             pregId
             pregHeaderContent
+            Dict.empty
             patrec
             pregRec
             laborRecs
+            Nothing
             laborState
             Nothing
             Nothing
@@ -176,8 +192,45 @@ buildModel browserSupportsDate currTime pregId patrec pregRec laborRecs =
             NoDateTimeModal
             Nothing
             Nothing
+        , newStore
+        , newOuterMsg
+        )
 
 
+{-| Request all of the labor details records from the server. This module
+will receive data via the DataCache SubMsg where we specify which tables
+we are interested in obtaining.
+-}
+getLaborDetails : LaborId -> ProcessStore -> ( ProcessStore, Cmd Msg )
+getLaborDetails lid store =
+    let
+        selectQuery =
+            SelectQuery Labor (Just (getLaborId lid)) [ LaborStage1 ]
+
+        ( processId, processStore ) =
+            Processing.add
+                (SelectQueryType
+                    (LaborDelIppMsg
+                        (DataCache Nothing
+                            (Just [ LaborStage1 ])
+                        )
+                    )
+                    selectQuery
+                )
+                Nothing
+                store
+
+        msg =
+            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+    in
+        processStore
+            => Ports.outgoing msg
+
+
+{-| On initialization, the Model will be updated by a call to buildModel once
+the initial data has arrived from the server. Hence, the SubMsg does not need
+to be DataCache, which is used subsequent to first page load.
+-}
 init : PregnancyId -> Session -> ProcessStore -> ( ProcessStore, Cmd Msg )
 init pregId session store =
     let
@@ -217,7 +270,7 @@ view size session model =
                     [ viewAdmitForm model ]
 
                 AdmittedLaborState id ->
-                    -- TODO: Show labor details.
+                    -- TODO: Show labor details as well as means to end labor.
                     [ viewLaborDetails model ]
 
                 EndedLaborState id ->
@@ -313,19 +366,8 @@ viewLaborDetails model =
 viewStages : Model -> Html SubMsg
 viewStages model =
     let
-        displayDateTime dateFld timeFld =
-            case ( dateFld, timeFld ) of
-                ( Just d, Just t ) ->
-                    case U.stringToTimeTuple t of
-                        Just ( h, m ) ->
-                            U.datePlusTimeTuple d ( h, m )
-                                |> U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep
-
-                        Nothing ->
-                            "Click to set"
-
-                ( _, _ ) ->
-                    "Click to set"
+        _ =
+            Debug.log "laborStage1Record" <| toString model.laborStage1Record
     in
         H.div [ HA.class "stage-wrapper" ]
             [ H.div [ HA.class "stage-content" ]
@@ -335,15 +377,23 @@ viewStages model =
                     [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                         [ H.button
                             [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick HandleStage1DateTimeModal
+                            , HE.onClick <| HandleStage1DateTimeModal OpenDialog
                             ]
-                            [ H.text <| displayDateTime model.stage1Date model.stage1Time ]
+                            [ H.text <|
+                                case model.laborStage1Record of
+                                    Just ls1rec ->
+                                        U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep ls1rec.fullDialation
+
+                                    Nothing ->
+                                        "Click to set"
+                            ]
                         , if model.browserSupportsDate then
                             Form.dateTimeModal (model.stage1Modal == Stage1DateTimeModal)
                                 "Stage 1 Date/Time"
                                 (FldChgSubMsg Stage1DateFld)
                                 (FldChgSubMsg Stage1TimeFld)
-                                HandleStage1DateTimeModal
+                                (HandleStage1DateTimeModal CloseNoSaveDialog)
+                                (HandleStage1DateTimeModal CloseSaveDialog)
                                 ClearStage1DateTime
                                 model.stage1Date
                                 model.stage1Time
@@ -353,7 +403,8 @@ viewStages model =
                                 OpenDatePickerSubMsg
                                 (FldChgSubMsg Stage1DateFld)
                                 (FldChgSubMsg Stage1TimeFld)
-                                HandleStage1DateTimeModal
+                                (HandleStage1DateTimeModal CloseNoSaveDialog)
+                                (HandleStage1DateTimeModal CloseSaveDialog)
                                 ClearStage1DateTime
                                 model.stage1Date
                                 model.stage1Time
@@ -373,15 +424,16 @@ viewStages model =
                     [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                         [ H.button
                             [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick HandleStage2DateTimeModal
+                            , HE.onClick <| HandleStage2DateTimeModal OpenDialog
                             ]
-                            [ H.text <| displayDateTime model.stage2Date model.stage2Time ]
+                            [ H.text <| "Not implemented" ]
                         , if model.browserSupportsDate then
                             Form.dateTimeModal (model.stage2Modal == Stage2DateTimeModal)
                                 "Stage 2 Date/Time"
                                 (FldChgSubMsg Stage2DateFld)
                                 (FldChgSubMsg Stage2TimeFld)
-                                HandleStage2DateTimeModal
+                                (HandleStage2DateTimeModal CloseNoSaveDialog)
+                                (HandleStage2DateTimeModal CloseSaveDialog)
                                 ClearStage2DateTime
                                 model.stage2Date
                                 model.stage2Time
@@ -391,7 +443,8 @@ viewStages model =
                                 OpenDatePickerSubMsg
                                 (FldChgSubMsg Stage2DateFld)
                                 (FldChgSubMsg Stage2TimeFld)
-                                HandleStage2DateTimeModal
+                                (HandleStage2DateTimeModal CloseNoSaveDialog)
+                                (HandleStage2DateTimeModal CloseSaveDialog)
                                 ClearStage2DateTime
                                 model.stage2Date
                                 model.stage2Time
@@ -411,15 +464,16 @@ viewStages model =
                     [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                         [ H.button
                             [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick HandleStage3DateTimeModal
+                            , HE.onClick <| HandleStage3DateTimeModal OpenDialog
                             ]
-                            [ H.text <| displayDateTime model.stage3Date model.stage3Time ]
+                            [ H.text <| "Not Implemented" ]
                         , if model.browserSupportsDate then
                             Form.dateTimeModal (model.stage3Modal == Stage3DateTimeModal)
                                 "Stage 3 Date/Time"
                                 (FldChgSubMsg Stage3DateFld)
                                 (FldChgSubMsg Stage3TimeFld)
-                                HandleStage3DateTimeModal
+                                (HandleStage3DateTimeModal CloseNoSaveDialog)
+                                (HandleStage3DateTimeModal CloseSaveDialog)
                                 ClearStage3DateTime
                                 model.stage3Date
                                 model.stage3Time
@@ -429,7 +483,8 @@ viewStages model =
                                 OpenDatePickerSubMsg
                                 (FldChgSubMsg Stage3DateFld)
                                 (FldChgSubMsg Stage3TimeFld)
-                                HandleStage3DateTimeModal
+                                (HandleStage3DateTimeModal CloseNoSaveDialog)
+                                (HandleStage3DateTimeModal CloseSaveDialog)
                                 ClearStage3DateTime
                                 model.stage3Date
                                 model.stage3Time
@@ -532,6 +587,36 @@ viewLaborRecords model =
 -- UPDATE --
 
 
+{-| Extract data by key from the data cache passed and populate the
+model with it. We do not update the model's fields except per the
+list of keys (List Table) passed, which has to be initiated elsewhere
+in this module. This is so that fields are not willy nilly overwritten
+unexpectedly.
+-}
+refreshModelFromCache : Dict String DataCache -> List Table -> Model -> Model
+refreshModelFromCache dc tables model =
+    let
+        newModel =
+            List.foldl
+                (\t m ->
+                    case t of
+                        LaborStage1 ->
+                            case DataCache.get t dc of
+                                Just (LaborStage1DataCache rec) ->
+                                    { m | laborStage1Record = Just rec }
+
+                                _ ->
+                                    m
+
+                        _ ->
+                            m
+                )
+                model
+                tables
+    in
+        newModel
+
+
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
 update session msg model =
     case msg of
@@ -541,6 +626,25 @@ update session msg model =
                     Debug.log "PageNoop" "was called."
             in
                 ( model, Cmd.none, Cmd.none )
+
+        DataCache dc tbls ->
+            -- If the dataCache and tables are something, this is the top-level
+            -- intentionally sending it's dataCache to us as a read-only update
+            -- on the latest data that it has. The specific records that need
+            -- to be updated are in the tables list.
+            ( case ( dc, tbls ) of
+                ( Just dataCache, Just tables ) ->
+                    let
+                        newModel =
+                            refreshModelFromCache dataCache tables model
+                    in
+                        { newModel | dataCache = dataCache }
+
+                ( _, _ ) ->
+                    model
+            , Cmd.none
+            , Cmd.none
+            )
 
         TickSubMsg time ->
             -- Keep the current time in the Model.
@@ -617,7 +721,7 @@ update session msg model =
             )
 
         SaveAdmitForLabor ->
-            -- The user submitted a new labor record to the server.
+            -- The user submitted a new labor record to be sent to the server.
             case validate model of
                 [] ->
                     let
@@ -754,41 +858,70 @@ update session msg model =
             in
                 ( { model | currPregHeaderContent = next }, Cmd.none, Cmd.none )
 
-        HandleStage1DateTimeModal ->
-            -- The user has just opened the modal to set the date/time for stage 1
-            -- completion. We default to the current date/time for convenience if
-            -- this is an open event, but only if the date/time has not already
-            -- been previously selected.
-            let
-                ( s1d, s1t ) =
-                    case model.stage1Modal == NoDateTimeModal of
-                        True ->
-                            case ( model.stage1Date, model.stage1Time ) of
-                                ( Nothing, Nothing ) ->
-                                    ( Just <| Date.fromTime model.currTime
-                                    , Just <| U.timeToTimeString model.currTime
-                                    )
+        HandleStage1DateTimeModal dialogState ->
+            case dialogState of
+                OpenDialog ->
+                    ( case ( model.stage1Date, model.stage1Time ) of
+                        ( Nothing, Nothing ) ->
+                            -- If not yet set, the set the date/time to
+                            -- current as a convenience to user.
+                            { model
+                                | stage1Modal = Stage1DateTimeModal
+                                , stage1Date = Just <| Date.fromTime model.currTime
+                                , stage1Time = Just <| U.timeToTimeString model.currTime
+                            }
 
-                                ( _, _ ) ->
-                                    ( model.stage1Date, model.stage1Time )
+                        ( _, _ ) ->
+                            { model | stage1Modal = Stage1DateTimeModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
 
-                        False ->
-                            ( model.stage1Date, model.stage1Time )
-            in
-                ( { model
-                    | stage1Modal =
-                        if model.stage1Modal == NoDateTimeModal then
-                            Stage1DateTimeModal
-                        else
-                            NoDateTimeModal
-                    , stage1Date = s1d
-                    , stage1Time = s1t
-                  }
-                , Cmd.none
-                , Cmd.none
-                )
+                CloseNoSaveDialog ->
+                    ( { model | stage1Modal = NoDateTimeModal }, Cmd.none, Cmd.none )
 
-        HandleStage2DateTimeModal ->
+                CloseSaveDialog ->
+                    -- TODO: Close and potentially send initial LaborStage1Record
+                    -- to server as an add or update if it validates. An add will
+                    -- send a LaborStage1RecordNew and an update uses the full
+                    -- LaborStage1Record. The initial add is only sent if
+                    -- both date and time are valid.
+                    case validateStage1New model of
+                        [] ->
+                            let
+                                outerMsg =
+                                    case deriveLaborStage1RecordNew model of
+                                        Just laborStage1RecNew ->
+                                            ProcessTypeMsg
+                                                (AddLaborStage1Type
+                                                    (LaborDelIppMsg
+                                                        -- Request top-level to provide data in
+                                                        -- the dataCache once received from server.
+                                                        (DataCache Nothing (Just [ LaborStage1 ]))
+                                                    )
+                                                    laborStage1RecNew
+                                                )
+                                                AddMsgType
+                                                (laborStage1RecordNewToValue laborStage1RecNew)
+
+                                        Nothing ->
+                                            Noop
+                            in
+                                ( { model
+                                    | stage1Modal = NoDateTimeModal
+                                  }
+                                , Cmd.none
+                                , Task.perform (always outerMsg) (Task.succeed True)
+                                )
+
+                        errors ->
+                            -- TODO: show errors to user somehow???
+                            ( { model | stage1Modal = NoDateTimeModal }
+                            , Cmd.none
+                            , logConsole <| toString errors
+                            )
+
+        HandleStage2DateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for stage 2
             -- completion. We default to the current date/time for convenience if
             -- this is an open event, but only if the date/time has not already
@@ -822,7 +955,7 @@ update session msg model =
                 , Cmd.none
                 )
 
-        HandleStage3DateTimeModal ->
+        HandleStage3DateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for stage 3
             -- completion. We default to the current date/time for convenience if
             -- this is an open event, but only if the date/time has not already
@@ -882,6 +1015,38 @@ update session msg model =
             , Cmd.none
             , Cmd.none
             )
+
+        LaborDetailsLoaded ->
+            ( model, Cmd.none, Cmd.none )
+
+
+{-| Derive a LaborStage1RecordNew from the form fields, if possible.
+-}
+deriveLaborStage1RecordNew : Model -> Maybe LaborStage1RecordNew
+deriveLaborStage1RecordNew model =
+    case ( model.stage1Date, model.stage1Time ) of
+        ( Just d, Just t ) ->
+            let
+                timeTuple =
+                    U.stringToTimeTuple t
+
+                id =
+                    case model.laborState of
+                        AdmittedLaborState (LaborId id) ->
+                            Just id
+
+                        _ ->
+                            Nothing
+            in
+                case ( timeTuple, id ) of
+                    ( Just tt, Just i ) ->
+                        Just <| LaborStage1RecordNew (U.datePlusTimeTuple d tt) i
+
+                    ( _, _ ) ->
+                        Nothing
+
+        ( _, _ ) ->
+            Nothing
 
 
 {-| Derive a LaborRecordNew from the form fields, if possible.
@@ -948,6 +1113,8 @@ type Field
     | CrField
     | TempField
     | CommentsField
+    | Stage1DateField
+    | Stage1TimeField
 
 
 type alias FieldError =
@@ -968,4 +1135,12 @@ validate =
         , .diastolic >> ifInvalid U.validateInt (DiastolicField => "Diastolic must be provided.")
         , .cr >> ifInvalid U.validateInt (CrField => "CR must be provided.")
         , .temp >> ifInvalid U.validateFloat (TempField => "Temp must be provided.")
+        ]
+
+
+validateStage1New : Model -> List FieldError
+validateStage1New =
+    Validate.all
+        [ .stage1Date >> ifInvalid U.validateDate (Stage1DateField => "Stage 1 date must be provided.")
+        , .stage1Time >> ifInvalid U.validateTime (Stage1TimeField => "Stage 1 time must be provided.")
         ]

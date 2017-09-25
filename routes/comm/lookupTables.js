@@ -12,6 +12,8 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , cfg = require('../../config')
   , KeyValue = require('../../models').KeyValue
+  , Labor = require('../../models').Labor
+  , LaborStage1 = require('../../models').LaborStage1
   , LabSuite = require('../../models').LabSuite
   , LabTest = require('../../models').LabTest
   , LabTestValue = require('../../models').LabTestValue
@@ -39,6 +41,7 @@ var _ = require('underscore')
 var LOOKUP_TABLES = [
   'eventType',
   'labor',
+  'laborStage1',
   'labSuite',
   'labTest',
   'labTestValue',
