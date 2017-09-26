@@ -343,6 +343,48 @@ updateMessage incoming model =
             in
                 { newModel | processStore = processStore } => newCmd
 
+        DataChgMessage dataChgMsg ->
+            -- Results of attempting to update a record on the server.
+            -- If server responded positively, update the record obtained
+            -- from the processStore to the top-level model then pass the
+            -- record to the page per the Msg retrieved from the processStore.
+            --
+            -- TODO: refactor to process DataAddMessage and DataChgMessage with
+            -- the same function.
+            let
+                -- Use the messageId returned from the server to acquire the
+                -- Msg reserved in our store by the originating "event".
+                ( processType, processStore ) =
+                    Processing.remove (ProcessId dataChgMsg.messageId) model.processStore
+
+
+                ( newModel, newCmd ) =
+                    case dataChgMsg.response.success of
+                        True ->
+                            case processType of
+                                Just (UpdateLaborStage1Type (LaborDelIppMsg (DataCache _ _)) laborStage1Record) ->
+                                    let
+                                        subMsg =
+                                            DataCache (Just model.dataCache) (Just [ LaborStage1 ])
+                                    in
+                                        ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Record) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                _ ->
+                                    let
+                                        msgText =
+                                            "OOPS, unhandled processType in Medical.updateMessage in the DataChgMessage branch."
+                                    in
+                                        ( model, logConsole msgText )
+
+
+                        False ->
+                            ( model, Cmd.none )
+
+            in
+                { newModel | processStore = processStore } => newCmd
+
         DataSelectMessage dataMsg ->
             -- Results of requests for data from the server.
             let
@@ -423,22 +465,26 @@ updateMessage incoming model =
                             -- TODO: handle failure better here.
                             model
             in
-                case processType of
-                    -- Send the message retrieved from the processing store.
-                    Just (AddLaborType msg _) ->
+                let
+                    newModel2 =
                         { newModel | processStore = processStore }
-                            => Task.perform (always msg) (Task.succeed True)
+                in
+                    case processType of
+                        -- Send the message retrieved from the processing store.
+                        Just (AddLaborType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                    Just (AddLaborStage1Type msg _) ->
-                        { newModel | processStore = processStore }
-                            => Task.perform (always msg) (Task.succeed True)
+                        Just (AddLaborStage1Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                    Just (SelectQueryType msg _) ->
-                        { newModel | processStore = processStore }
-                            => Task.perform (always msg) (Task.succeed True)
+                        Just (UpdateLaborStage1Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                    Nothing ->
-                        newModel => Cmd.none
+                        Just (SelectQueryType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Nothing ->
+                            newModel2 => Cmd.none
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )

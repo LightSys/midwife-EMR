@@ -32,6 +32,7 @@ module Util
         , timeToTimeString
         , validateDate
         , validateFloat
+        , validateJustTime
         , validateInt
         , validatePopulatedString
         , validateTime
@@ -64,6 +65,7 @@ infixl 0 =>
 type SortOrder
     = AscendingSort
     | DescendingSort
+
 
 sortDate : SortOrder -> Date -> Date -> Order
 sortDate sortOrder a b =
@@ -267,7 +269,6 @@ timeToTimeString t =
         |> DEF.format DECC.config "%H:%M"
 
 
-
 {-| Returns True if the String is Nothing or does
 not fit the hh:mm pattern.
 -}
@@ -279,6 +280,25 @@ validateTime time =
 
         Nothing ->
             True
+
+
+{-| Returns True if the String is Something
+and it does not evaluate to a valid time. A non-existent
+String is fine.
+-}
+validateJustTime : Maybe String -> Bool
+validateJustTime time =
+    case time of
+        Just t ->
+            case stringToTimeTuple t of
+                Just (_, _) ->
+                    False
+
+                Nothing ->
+                    True
+
+        Nothing ->
+            False
 
 
 {-| Returns True if the Date is Nothing.

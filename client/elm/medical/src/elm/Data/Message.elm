@@ -160,6 +160,48 @@ dataAddMsgResponse =
 
 
 
+-- Incoming Change Data Messages --
+
+
+type alias DataChgMsg =
+    { messageId : Int
+    , namespace : String
+    , msgType : String
+    , version : Int
+    , response : DataChgMsgResponse
+    }
+
+
+type alias DataChgMsgResponse =
+    { table : Table
+    , id : Int
+    , success : Bool
+    , errorCode : String
+    , msg : String
+    }
+
+
+dataChgMsg : JD.Decoder DataChgMsg
+dataChgMsg =
+    JDP.decode DataChgMsg
+        |> JDP.required "messageId" JD.int
+        |> JDP.required "namespace" JD.string
+        |> JDP.required "msgType" JD.string
+        |> JDP.required "version" JD.int
+        |> JDP.required "response" dataAddMsgResponse
+
+
+dataChgMsgResponse : JD.Decoder DataChgMsgResponse
+dataChgMsgResponse =
+    JDP.decode DataChgMsgResponse
+        |> JDP.required "table" decodeTable
+        |> JDP.required "id" JD.int
+        |> JDP.required "success" JD.bool
+        |> JDP.required "errorCode" JD.string
+        |> JDP.required "msg" JD.string
+
+
+
 -- All Incoming Messages --
 
 
@@ -168,6 +210,7 @@ type IncomingMessage
     | SiteMessage SiteMsg
     | DataSelectMessage DataSelectMsg
     | DataAddMessage DataAddMsg
+    | DataChgMessage DataChgMsg
 
 
 decodeIncoming : JE.Value -> IncomingMessage
@@ -218,6 +261,9 @@ msgTypeHelper msgType =
 
         "ADD" ->
             JD.map DataAddMessage dataAddMsg
+
+        "CHG" ->
+            JD.map DataChgMessage dataChgMsg
 
         _ ->
             JD.map DataSelectMessage dataMsg

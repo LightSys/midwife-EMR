@@ -36,6 +36,7 @@ import Data.Labor
 import Data.LaborStage1
     exposing
         ( laborStage1RecordNewToLaborStage1Record
+        , laborStage1RecordToValue
         , laborStage1RecordNewToValue
         , LaborStage1Id(..)
         , LaborStage1Record
@@ -365,164 +366,168 @@ viewLaborDetails model =
 
 viewStages : Model -> Html SubMsg
 viewStages model =
-    let
-        _ =
-            Debug.log "laborStage1Record" <| toString model.laborStage1Record
-    in
-        H.div [ HA.class "stage-wrapper" ]
-            [ H.div [ HA.class "stage-content" ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 1" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage1DateTimeModal OpenDialog
-                            ]
-                            [ H.text <|
-                                case model.laborStage1Record of
-                                    Just ls1rec ->
-                                        U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep ls1rec.fullDialation
+    H.div [ HA.class "stage-wrapper" ]
+        [ H.div [ HA.class "stage-content" ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 1" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage1DateTimeModal OpenDialog
+                        ]
+                        [ H.text <|
+                            case model.laborStage1Record of
+                                Just ls1rec ->
+                                    case ls1rec.fullDialation of
+                                        Just d ->
+                                            U.dateTimeHMFormatter
+                                                U.MDYDateFmt
+                                                U.DashDateSep
+                                                d
 
-                                    Nothing ->
-                                        "Click to set"
-                            ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage1Modal == Stage1DateTimeModal)
-                                "Stage 1 Date/Time"
-                                (FldChgSubMsg Stage1DateFld)
-                                (FldChgSubMsg Stage1TimeFld)
-                                (HandleStage1DateTimeModal CloseNoSaveDialog)
-                                (HandleStage1DateTimeModal CloseSaveDialog)
-                                ClearStage1DateTime
-                                model.stage1Date
-                                model.stage1Time
-                          else
-                            Form.dateTimePickerModal (model.stage1Modal == Stage1DateTimeModal)
-                                "Stage 1 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgSubMsg Stage1DateFld)
-                                (FldChgSubMsg Stage1TimeFld)
-                                (HandleStage1DateTimeModal CloseNoSaveDialog)
-                                (HandleStage1DateTimeModal CloseSaveDialog)
-                                ClearStage1DateTime
-                                model.stage1Date
-                                model.stage1Time
+                                        Nothing ->
+                                            "Click to set"
+
+                                Nothing ->
+                                    "Click to set"
                         ]
-                    ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        ]
-                        [ H.text "Summary" ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage1Modal == Stage1DateTimeModal)
+                            "Stage 1 Date/Time"
+                            (FldChgSubMsg Stage1DateFld)
+                            (FldChgSubMsg Stage1TimeFld)
+                            (HandleStage1DateTimeModal CloseNoSaveDialog)
+                            (HandleStage1DateTimeModal CloseSaveDialog)
+                            ClearStage1DateTime
+                            model.stage1Date
+                            model.stage1Time
+                        else
+                        Form.dateTimePickerModal (model.stage1Modal == Stage1DateTimeModal)
+                            "Stage 1 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgSubMsg Stage1DateFld)
+                            (FldChgSubMsg Stage1TimeFld)
+                            (HandleStage1DateTimeModal CloseNoSaveDialog)
+                            (HandleStage1DateTimeModal CloseSaveDialog)
+                            ClearStage1DateTime
+                            model.stage1Date
+                            model.stage1Time
                     ]
                 ]
-            , H.div [ HA.class "stage-content" ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 2" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage2DateTimeModal OpenDialog
-                            ]
-                            [ H.text <| "Not implemented" ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage2Modal == Stage2DateTimeModal)
-                                "Stage 2 Date/Time"
-                                (FldChgSubMsg Stage2DateFld)
-                                (FldChgSubMsg Stage2TimeFld)
-                                (HandleStage2DateTimeModal CloseNoSaveDialog)
-                                (HandleStage2DateTimeModal CloseSaveDialog)
-                                ClearStage2DateTime
-                                model.stage2Date
-                                model.stage2Time
-                          else
-                            Form.dateTimePickerModal (model.stage2Modal == Stage2DateTimeModal)
-                                "Stage 2 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgSubMsg Stage2DateFld)
-                                (FldChgSubMsg Stage2TimeFld)
-                                (HandleStage2DateTimeModal CloseNoSaveDialog)
-                                (HandleStage2DateTimeModal CloseSaveDialog)
-                                ClearStage2DateTime
-                                model.stage2Date
-                                model.stage2Time
-                        ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
                     ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        ]
-                        [ H.text "Summary" ]
-                    ]
+                    [ H.text "Summary" ]
                 ]
-            , H.div [ HA.class "stage-content" ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 3" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage3DateTimeModal OpenDialog
-                            ]
-                            [ H.text <| "Not Implemented" ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage3Modal == Stage3DateTimeModal)
-                                "Stage 3 Date/Time"
-                                (FldChgSubMsg Stage3DateFld)
-                                (FldChgSubMsg Stage3TimeFld)
-                                (HandleStage3DateTimeModal CloseNoSaveDialog)
-                                (HandleStage3DateTimeModal CloseSaveDialog)
-                                ClearStage3DateTime
-                                model.stage3Date
-                                model.stage3Time
-                          else
-                            Form.dateTimePickerModal (model.stage3Modal == Stage3DateTimeModal)
-                                "Stage 3 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgSubMsg Stage3DateFld)
-                                (FldChgSubMsg Stage3TimeFld)
-                                (HandleStage3DateTimeModal CloseNoSaveDialog)
-                                (HandleStage3DateTimeModal CloseSaveDialog)
-                                ClearStage3DateTime
-                                model.stage3Date
-                                model.stage3Time
-                        ]
-                    ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        ]
-                        [ H.text "Summary" ]
-                    ]
-                ]
-              -- TODO: pull the following into the second stage summary??
-              --, H.div [ HA.class "stage-content" ]
-              --[ H.div [ HA.class "c-text--brand c-text--loud" ]
-              --[ H.text "Stuff" ]
-              --, H.div
-              --[ HA.class "o-form-element"
-              --, HA.style [ ("padding-top", "0") ]
-              --]
-              --[ H.div
-              --[ HA.class "o-field"
-              --]
-              --[ H.label
-              --[ HA.class "c-field c-field--choice c-field-minPadding"
-              --, HA.for "eblbirth"
-              --]
-              --[ H.text "EBL @ birth" ]
-              --, H.input
-              --[ HA.class "c-field u-small c-field-minPadding"
-              --, HA.id "eblbirth"
-              --, HA.style [ ("width", "50%") ]
-              --]
-              --[]
-              --]
-              --]
-              --]
             ]
+        , H.div [ HA.class "stage-content" ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 2" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage2DateTimeModal OpenDialog
+                        ]
+                        [ H.text <| "Not implemented" ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage2Modal == Stage2DateTimeModal)
+                            "Stage 2 Date/Time"
+                            (FldChgSubMsg Stage2DateFld)
+                            (FldChgSubMsg Stage2TimeFld)
+                            (HandleStage2DateTimeModal CloseNoSaveDialog)
+                            (HandleStage2DateTimeModal CloseSaveDialog)
+                            ClearStage2DateTime
+                            model.stage2Date
+                            model.stage2Time
+                        else
+                        Form.dateTimePickerModal (model.stage2Modal == Stage2DateTimeModal)
+                            "Stage 2 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgSubMsg Stage2DateFld)
+                            (FldChgSubMsg Stage2TimeFld)
+                            (HandleStage2DateTimeModal CloseNoSaveDialog)
+                            (HandleStage2DateTimeModal CloseSaveDialog)
+                            ClearStage2DateTime
+                            model.stage2Date
+                            model.stage2Time
+                    ]
+                ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    ]
+                    [ H.text "Summary" ]
+                ]
+            ]
+        , H.div [ HA.class "stage-content" ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 3" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage3DateTimeModal OpenDialog
+                        ]
+                        [ H.text <| "Not Implemented" ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage3Modal == Stage3DateTimeModal)
+                            "Stage 3 Date/Time"
+                            (FldChgSubMsg Stage3DateFld)
+                            (FldChgSubMsg Stage3TimeFld)
+                            (HandleStage3DateTimeModal CloseNoSaveDialog)
+                            (HandleStage3DateTimeModal CloseSaveDialog)
+                            ClearStage3DateTime
+                            model.stage3Date
+                            model.stage3Time
+                        else
+                        Form.dateTimePickerModal (model.stage3Modal == Stage3DateTimeModal)
+                            "Stage 3 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgSubMsg Stage3DateFld)
+                            (FldChgSubMsg Stage3TimeFld)
+                            (HandleStage3DateTimeModal CloseNoSaveDialog)
+                            (HandleStage3DateTimeModal CloseSaveDialog)
+                            ClearStage3DateTime
+                            model.stage3Date
+                            model.stage3Time
+                    ]
+                ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    ]
+                    [ H.text "Summary" ]
+                ]
+            ]
+            -- TODO: pull the following into the second stage summary??
+            --, H.div [ HA.class "stage-content" ]
+            --[ H.div [ HA.class "c-text--brand c-text--loud" ]
+            --[ H.text "Stuff" ]
+            --, H.div
+            --[ HA.class "o-form-element"
+            --, HA.style [ ("padding-top", "0") ]
+            --]
+            --[ H.div
+            --[ HA.class "o-field"
+            --]
+            --[ H.label
+            --[ HA.class "c-field c-field--choice c-field-minPadding"
+            --, HA.for "eblbirth"
+            --]
+            --[ H.text "EBL @ birth" ]
+            --, H.input
+            --[ HA.class "c-field u-small c-field-minPadding"
+            --, HA.id "eblbirth"
+            --, HA.style [ ("width", "50%") ]
+            --]
+            --[]
+            --]
+            --]
+            --]
+        ]
 
 
 {-| Show current admitting labor record and any historical
@@ -889,22 +894,69 @@ update session msg model =
                     case validateStage1New model of
                         [] ->
                             let
+                                _ =
+                                    Debug.log "stage1Date" <| toString model.stage1Date
+                                _ =
+                                    Debug.log "stage1Time" <| toString model.stage1Time
                                 outerMsg =
-                                    case deriveLaborStage1RecordNew model of
-                                        Just laborStage1RecNew ->
-                                            ProcessTypeMsg
-                                                (AddLaborStage1Type
-                                                    (LaborDelIppMsg
-                                                        -- Request top-level to provide data in
-                                                        -- the dataCache once received from server.
-                                                        (DataCache Nothing (Just [ LaborStage1 ]))
-                                                    )
-                                                    laborStage1RecNew
-                                                )
-                                                AddMsgType
-                                                (laborStage1RecordNewToValue laborStage1RecNew)
+                                    case ( model.laborStage1Record, model.stage1Date, model.stage1Time ) of
+                                        -- A laborStage1 record already exists, so update it.
+                                        ( Just rec, Just d, Just t ) ->
+                                            case U.stringToTimeTuple t of
+                                                Just (h, m) ->
+                                                    let
+                                                        newRec =
+                                                            { rec | fullDialation = Just (U.datePlusTimeTuple d ( h, m )) }
+                                                    in
+                                                        ProcessTypeMsg
+                                                            (UpdateLaborStage1Type
+                                                                (LaborDelIppMsg
+                                                                    (DataCache Nothing ( Just [ LaborStage1 ] ))
+                                                                )
+                                                                newRec
+                                                            )
+                                                            ChgMsgType
+                                                            (laborStage1RecordToValue newRec)
 
-                                        Nothing ->
+                                                Nothing ->
+                                                    Noop
+
+                                        ( Just rec, Nothing, Nothing ) ->
+                                            -- User unset the fullDialation date/time, so update the server.
+                                            let
+                                                newRec =
+                                                    { rec | fullDialation = Nothing }
+                                            in
+                                                ProcessTypeMsg
+                                                    (UpdateLaborStage1Type
+                                                        (LaborDelIppMsg
+                                                            (DataCache Nothing ( Just [ LaborStage1 ] ))
+                                                        )
+                                                        newRec
+                                                    )
+                                                    ChgMsgType
+                                                    (laborStage1RecordToValue newRec)
+
+                                        ( Nothing, Just _, Just _ ) ->
+                                            -- Create a new laborStage1 record.
+                                            case deriveLaborStage1RecordNew model of
+                                                Just laborStage1RecNew ->
+                                                    ProcessTypeMsg
+                                                        (AddLaborStage1Type
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ LaborStage1 ]))
+                                                            )
+                                                            laborStage1RecNew
+                                                        )
+                                                        AddMsgType
+                                                        (laborStage1RecordNewToValue laborStage1RecNew)
+
+                                                Nothing ->
+                                                    Noop
+
+                                        ( _, _, _ ) ->
                                             Noop
                             in
                                 ( { model
@@ -990,6 +1042,8 @@ update session msg model =
                 )
 
         ClearStage1DateTime ->
+            -- TODO: do something with the server and eventually the laborStage1Record.
+            -- TODO: consider renaming Clear in UI to something else representative?
             ( { model
                 | stage1Date = Nothing
                 , stage1Time = Nothing
@@ -1040,7 +1094,7 @@ deriveLaborStage1RecordNew model =
             in
                 case ( timeTuple, id ) of
                     ( Just tt, Just i ) ->
-                        Just <| LaborStage1RecordNew (U.datePlusTimeTuple d tt) i
+                        Just <| LaborStage1RecordNew (Just (U.datePlusTimeTuple d tt)) i
 
                     ( _, _ ) ->
                         Nothing
@@ -1141,6 +1195,5 @@ validate =
 validateStage1New : Model -> List FieldError
 validateStage1New =
     Validate.all
-        [ .stage1Date >> ifInvalid U.validateDate (Stage1DateField => "Stage 1 date must be provided.")
-        , .stage1Time >> ifInvalid U.validateTime (Stage1TimeField => "Stage 1 time must be provided.")
+        [ .stage1Time >> ifInvalid U.validateJustTime (Stage1TimeField => "Time must be provided in hh:mm format.")
         ]

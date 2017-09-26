@@ -133,6 +133,38 @@ var addTable = function(data, userInfo, cb, modelObj, tableStr) {
     });
 };
 
+var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
+  var rec = data;
+
+  if (! adjustDatesToLocal(tableStr, data)) {
+    logError('ERROR: adjustDatesToLocal() returned false for table ' + tableStr);
+    logError('ERROR: It looks like the moduleTables data structure has not been setup properly.');
+  }
+
+  modelObj.forge(rec)
+    .setUpdatedBy(userInfo.user.id)
+    .setSupervisor(userInfo.user.supervisor)
+    .save({}, {method: 'update'})
+    .then(function(rec2) {
+      cb(null, true, rec2);
+
+      // --------------------------------------------------------
+      // Notify all clients of the change.
+      // --------------------------------------------------------
+      var notify = {
+        table: tableStr,
+        id: rec2.id,
+        updatedBy: userInfo.user.id,
+        sessionID: userInfo.sessionID
+      };
+      return sendData(DATA_CHANGE, JSON.stringify(notify));
+    })
+    .caught(function(err) {
+      return cb(err);
+    });
+};
+
+
 /* --------------------------------------------------------
  * addLabor()
  *
@@ -150,6 +182,11 @@ var addLaborStage1 = function(data, userInfo, cb) {
   addTable(data, userInfo, cb, LaborStage1, 'laborStage1');
 };
 
+var updateLaborStage1 = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateLaborStage1(data, cb);
+  updateTable(data, userInfo, cb, LaborStage1, 'laborStage1');
+};
+
 var notDefinedYet = function(data, userInfo, cb) {
   var msg = 'WARNING: notDefinedYet() called in "routes/comm/labor.js"';
   console.log(msg);
@@ -165,5 +202,5 @@ module.exports = {
   updateLabor: notDefinedYet,
   addLaborStage1,
   delLaborStage1: notDefinedYet,
-  updateLaborStage1: notDefinedYet
+  updateLaborStage1: updateLaborStage1
 };

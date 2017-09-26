@@ -18,7 +18,7 @@ var moment = require('moment')
 /*
 CREATE TABLE `laborStage1` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `fullDialation` datetime NOT NULL,
+  `fullDialation` datetime NULL,
   `mobility` varchar(200) DEFAULT NULL,
   `durationLatent` int(11) DEFAULT NULL,
   `durationActive` int(11) DEFAULT NULL,

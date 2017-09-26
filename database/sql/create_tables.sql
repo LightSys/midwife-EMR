@@ -604,7 +604,7 @@ SHOW WARNINGS;
 
 CREATE TABLE IF NOT EXISTS `laborStage1` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  fullDialation DATETIME NOT NULL,
+  fullDialation DATETIME NULL,
   mobility VARCHAR(200) NULL,
   durationLatent INT NULL,
   durationActive INT NULL,

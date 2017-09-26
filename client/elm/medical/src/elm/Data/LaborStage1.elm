@@ -6,6 +6,7 @@ module Data.LaborStage1
         , LaborStage1RecordNew
         , laborStage1Record
         , laborStage1RecordNewToLaborStage1Record
+        , laborStage1RecordToValue
         , laborStage1RecordNewToValue
         )
 
@@ -28,7 +29,7 @@ type LaborStage1Id
 
 type alias LaborStage1Record =
     { id : Int
-    , fullDialation : Date
+    , fullDialation : Maybe Date
     , mobility : Maybe String
     , durationLatent : Maybe Int
     , durationActive : Maybe Int
@@ -43,7 +44,7 @@ that takes place, the other fields cannot be filled, at
 least not completely.
 -}
 type alias LaborStage1RecordNew =
-    { fullDialation : Date
+    { fullDialation : Maybe Date
     , labor_id : Int
     }
 
@@ -52,12 +53,30 @@ laborStage1Record : JD.Decoder LaborStage1Record
 laborStage1Record =
     JDP.decode LaborStage1Record
         |> JDP.required "id" JD.int
-        |> JDP.required "fullDialation" JDE.date
+        |> JDP.required "fullDialation" (JD.maybe JDE.date)
         |> JDP.required "mobility" (JD.maybe JD.string)
         |> JDP.required "durationLatent" (JD.maybe JD.int)
         |> JDP.required "durationActive" (JD.maybe JD.int)
         |> JDP.required "comments" (JD.maybe JD.string)
         |> JDP.required "labor_id" JD.int
+
+
+laborStage1RecordToValue : LaborStage1Record -> JE.Value
+laborStage1RecordToValue rec =
+    JE.object
+        [ ( "table", (JE.string "laborStage1") )
+        , ( "data"
+          , JE.object
+                [ ( "id", (JE.int rec.id) )
+                , ( "fullDialation", (JEE.maybe U.dateToStringValue rec.fullDialation) )
+                , ( "mobility", (JEE.maybe JE.string rec.mobility) )
+                , ( "durationLatent", (JEE.maybe JE.int rec.durationLatent) )
+                , ( "durationActive", (JEE.maybe JE.int rec.durationActive) )
+                , ( "comments", (JEE.maybe JE.string rec.comments) )
+                , ( "labor_id", (JE.int rec.labor_id) )
+                ]
+          )
+        ]
 
 
 laborStage1RecordNewToValue : LaborStage1RecordNew -> JE.Value
@@ -66,7 +85,7 @@ laborStage1RecordNewToValue rec =
         [ ( "table", (JE.string "laborStage1") )
         , ( "data"
           , JE.object
-                [ ( "fullDialation", (U.dateToStringValue rec.fullDialation) )
+                [ ( "fullDialation", (JEE.maybe U.dateToStringValue rec.fullDialation) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 ]
           )

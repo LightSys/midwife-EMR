@@ -177,6 +177,7 @@ var rx = require('rx')
   , returnUserProfileUpdate = require('./util').returnUserProfileUpdate
   , returnStatusADD = require('./util').returnStatusADD
   , returnStatusADD2 = require('./util').returnStatusADD2
+  , returnStatusCHG2 = require('./util').returnStatusCHG2
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
   , returnStatusSELECT = require('./util').returnStatusSELECT
@@ -912,6 +913,15 @@ var handleData2 = function(evtName, json, socket) {
       returnStatusFunc = returnStatusADD2;
       break;
 
+    case CHG:
+      if (! table || ! data || ! _.has(data, 'id') || data.id === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data CHG request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusCHG2;
+      break;
+
     default:
       console.log('UNKNOWN event of ' + evtName + ' in handeData2().');
       retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
@@ -950,6 +960,8 @@ var handleData2 = function(evtName, json, socket) {
       return socket.send(JSON.stringify(retAction));
     }
     retAction = returnStatusFunc(evtName, messageId, table, additionalData.id, true);
+    // TEMP
+    console.log(JSON.stringify(retAction));
     socket.send(JSON.stringify(retAction));
 
     // --------------------------------------------------------
@@ -1358,6 +1370,11 @@ var init = function(io, sessionMiddle) {
           case ADD:
             if (DO_ASSERT) assertModule.ioData_socket_on_ADD(json.payload);
             handleData2(ADD, json, socket);
+            break;
+
+          case CHG:
+            if (DO_ASSERT) assertModule.ioData_socket_on_CHG(json.payload);
+            handleData2(CHG, json, socket);
             break;
 
           default:

@@ -72,7 +72,7 @@ dataCache =
                 let
                     v1 =
                         LaborStage1Record 1
-                           (Date.fromTime 0.0)
+                           (Just (Date.fromTime 0.0))
                            Nothing
                            Nothing
                            Nothing
@@ -90,7 +90,7 @@ dataCache =
                 let
                     v1 =
                         LaborStage1Record 1
-                           (Date.fromTime 0.0)
+                           (Just (Date.fromTime 0.0))
                            Nothing
                            Nothing
                            Nothing
@@ -116,7 +116,7 @@ dataCache =
                 let
                     v1 =
                         LaborStage1Record 1
-                           (Date.fromTime 0.0)
+                           (Just (Date.fromTime 0.0))
                            Nothing
                            Nothing
                            Nothing

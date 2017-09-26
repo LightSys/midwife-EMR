@@ -406,6 +406,28 @@ var returnStatusCHG = function(table, id, stateId, success, errCode, msg) {
   return retVal;
 };
 
+var returnStatusCHG2 = function(msgType, messageId, table, id, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+
+  var retVal = {
+    messageId: messageId,
+    namespace: 'DATA',
+    msgType: msgType,
+    version: 2,
+    response: {
+      table: table,
+      id: id,
+      success: success,
+      errorCode: errCode? errCode: NoErrorCode,
+      msg: msgStr
+    }
+  };
+  return retVal;
+};
+
 /* --------------------------------------------------------
  * returnStatusADD2()
  *
@@ -577,6 +599,7 @@ module.exports = {
   , returnStatusADD
   , returnStatusADD2
   , returnStatusCHG
+  , returnStatusCHG2
   , returnStatusDEL
   , returnStatusSELECT
   , returnUserProfile
