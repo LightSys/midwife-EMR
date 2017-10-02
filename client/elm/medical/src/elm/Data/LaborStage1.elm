@@ -45,6 +45,10 @@ least not completely.
 -}
 type alias LaborStage1RecordNew =
     { fullDialation : Maybe Date
+    , mobility : Maybe String
+    , durationLatent : Maybe Int
+    , durationActive : Maybe Int
+    , comments : Maybe String
     , labor_id : Int
     }
 
@@ -86,6 +90,10 @@ laborStage1RecordNewToValue rec =
         , ( "data"
           , JE.object
                 [ ( "fullDialation", (JEE.maybe U.dateToStringValue rec.fullDialation) )
+                , ( "mobility", (JEE.maybe JE.string rec.mobility) )
+                , ( "durationLatent", (JEE.maybe JE.int rec.durationLatent) )
+                , ( "durationActive", (JEE.maybe JE.int rec.durationActive) )
+                , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 ]
           )
@@ -96,10 +104,10 @@ laborStage1RecordNewToLaborStage1Record : LaborStage1Id -> LaborStage1RecordNew 
 laborStage1RecordNewToLaborStage1Record (LaborStage1Id id) ls1new =
     LaborStage1Record id
         ls1new.fullDialation
-        Nothing
-        Nothing
-        Nothing
-        Nothing
+        ls1new.mobility
+        ls1new.durationLatent
+        ls1new.durationActive
+        ls1new.comments
         ls1new.labor_id
 
 

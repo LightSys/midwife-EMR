@@ -288,4 +288,121 @@ dateHandling =
                         )
                 in
                     Expect.equal (U.sortDate U.DescendingSort a b) EQ
+        , test "diff2Date equal dates" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) ""
+        , test "diff2Date dates ascending by hour" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 1 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "1 hour"
+        , test "diff2Date dates descending by hour" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 1 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "1 hour"
+        , test "diff2Date dates ascending multiple hours" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 2 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "2 hours"
+        , test "diff2Date dates descending multiple hours" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 2 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "2 hours"
+        , test "diff2Date dates ascending by minute" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 1 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "1 minute"
+        , test "diff2Date dates descending by minute" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 1 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "1 minute"
+        , test "diff2Date dates ascending by multiple minutes" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 5 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "5 minutes"
+        , test "diff2Date dates descending by multiple minutes" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 5 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "5 minutes"
+        , test "diff2Date dates ascending by day plus hours minutes" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 3 4 2 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "2 days, 4 hours, 2 minutes"
+        , test "diff2Date dates descending by day plus hours minutes" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 3 4 2 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "2 days, 4 hours, 2 minutes"
+        , test "diff2Date dates ascending by day plus minutes" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 3 0 2 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "2 days, 2 minutes"
+        , test "diff2Date dates descending by day plus minutes" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Jan 3 0 2 0 0
+                        , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "2 days, 2 minutes"
         ]

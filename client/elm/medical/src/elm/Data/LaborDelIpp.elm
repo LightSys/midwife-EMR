@@ -35,6 +35,7 @@ type SubMsg
     | FldChgSubMsg Field String
     | NextPregHeaderContent
     | HandleStage1DateTimeModal Dialog
+    | HandleStage1SummaryModal Dialog
     | HandleStage2DateTimeModal Dialog
     | HandleStage3DateTimeModal Dialog
     | ClearStage1DateTime
@@ -48,6 +49,7 @@ type Dialog
     = OpenDialog
     | CloseNoSaveDialog
     | CloseSaveDialog
+    | EditDialog
 
 
 type Field
@@ -65,6 +67,10 @@ type Field
     | CommentsFld
     | Stage1DateFld
     | Stage1TimeFld
+    | Stage1MobilityFld
+    | Stage1DurationLatentFld
+    | Stage1DurationActiveFld
+    | Stage1CommentsFld
     | Stage2DateFld
     | Stage2TimeFld
     | Stage3DateFld

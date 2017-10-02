@@ -14,6 +14,7 @@ import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
+import List.Extra as LE
 import Task exposing (Task)
 import Time exposing (Time)
 import Validate exposing (ifBlank, ifInvalid, ifNotInt)
@@ -77,6 +78,14 @@ type DateTimeModal
     | Stage3DateTimeModal
 
 
+type StageSummaryModal
+    = NoStageSummaryModal
+    | Stage1SummaryViewModal
+    | Stage1SummaryEditModal
+    | Stage2SummaryModal
+    | Stage3SummaryModal
+
+
 type alias Model =
     { browserSupportsDate : Bool
     , currTime : Time
@@ -101,13 +110,18 @@ type alias Model =
     , temp : Maybe String
     , comments : Maybe String
     , formErrors : List FieldError
-    , stage1Modal : DateTimeModal
+    , stage1DateTimeModal : DateTimeModal
     , stage1Date : Maybe Date
     , stage1Time : Maybe String
-    , stage2Modal : DateTimeModal
+    , stage1SummaryModal : StageSummaryModal
+    , s1Mobility : Maybe String
+    , s1DurationLatent : Maybe String
+    , s1DurationActive : Maybe String
+    , s1Comments : Maybe String
+    , stage2DateTimeModal : DateTimeModal
     , stage2Date : Maybe Date
     , stage2Time : Maybe String
-    , stage3Modal : DateTimeModal
+    , stage3DateTimeModal : DateTimeModal
     , stage3Date : Maybe Date
     , stage3Time : Maybe String
     }
@@ -185,6 +199,11 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             Nothing
             []
             NoDateTimeModal
+            Nothing
+            Nothing
+            NoStageSummaryModal
+            Nothing
+            Nothing
             Nothing
             Nothing
             NoDateTimeModal
@@ -324,7 +343,7 @@ viewAdmitForm model =
                 , Form.formField (FldChgSubMsg DiastolicFld) "Diastolic" "diastolic" model.diastolic
                 , Form.formField (FldChgSubMsg CrFld) "CR" "heart rate" model.cr
                 , Form.formField (FldChgSubMsg TempFld) "Temp" "temperature" model.temp
-                , Form.formTextareaField (FldChgSubMsg CommentsFld) "Comments" 3
+                , Form.formTextareaField (FldChgSubMsg CommentsFld) "Comments" model.comments 3
                 ]
             , if List.length model.formErrors > 0 then
                 H.div
@@ -364,170 +383,452 @@ viewLaborDetails model =
         ]
 
 
+{-| Determine if the summary fields of stage one
+are sufficiently populated. Note that this does not
+include the fullDialation field.
+-}
+isStage1SummaryDone : Model -> Bool
+isStage1SummaryDone model =
+    case model.laborStage1Record of
+        Just rec ->
+            case
+                ( rec.mobility
+                , rec.durationLatent
+                , rec.durationActive
+                )
+            of
+                ( Just _, Just _, Just _ ) ->
+                    True
+
+                ( _, _, _ ) ->
+                    False
+
+        Nothing ->
+            False
+
+
 viewStages : Model -> Html SubMsg
 viewStages model =
-    H.div [ HA.class "stage-wrapper" ]
-        [ H.div [ HA.class "stage-content" ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 1" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+    let
+        isEditing =
+            if model.stage1SummaryModal == Stage1SummaryEditModal then
+                True
+            else
+                not (isStage1SummaryDone model)
+
+        dialogStage1Config =
+            DialogStage1Summary
+                (model.stage1SummaryModal
+                    == Stage1SummaryViewModal
+                    || model.stage1SummaryModal
+                    == Stage1SummaryEditModal
+                )
+                isEditing
+                "Stage 1 Summary"
+                model
+                (HandleStage1SummaryModal CloseNoSaveDialog)
+                (HandleStage1SummaryModal CloseSaveDialog)
+                (HandleStage1SummaryModal EditDialog)
+                (FldChgSubMsg Stage1MobilityFld)
+    in
+        H.div [ HA.class "stage-wrapper" ]
+            [ H.div [ HA.class "stage-content" ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "Stage 1" ]
+                , H.div []
+                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                        [ H.button
+                            [ HA.class "c-button c-button--ghost-brand u-small"
+                            , HE.onClick <| HandleStage1DateTimeModal OpenDialog
+                            ]
+                            [ H.text <|
+                                case model.laborStage1Record of
+                                    Just ls1rec ->
+                                        case ls1rec.fullDialation of
+                                            Just d ->
+                                                U.dateTimeHMFormatter
+                                                    U.MDYDateFmt
+                                                    U.DashDateSep
+                                                    d
+
+                                            Nothing ->
+                                                "Click to set"
+
+                                    Nothing ->
+                                        "Click to set"
+                            ]
+                        , if model.browserSupportsDate then
+                            Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                                "Stage 1 Date/Time"
+                                (FldChgSubMsg Stage1DateFld)
+                                (FldChgSubMsg Stage1TimeFld)
+                                (HandleStage1DateTimeModal CloseNoSaveDialog)
+                                (HandleStage1DateTimeModal CloseSaveDialog)
+                                ClearStage1DateTime
+                                model.stage1Date
+                                model.stage1Time
+                          else
+                            Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                                "Stage 1 Date/Time"
+                                OpenDatePickerSubMsg
+                                (FldChgSubMsg Stage1DateFld)
+                                (FldChgSubMsg Stage1TimeFld)
+                                (HandleStage1DateTimeModal CloseNoSaveDialog)
+                                (HandleStage1DateTimeModal CloseSaveDialog)
+                                ClearStage1DateTime
+                                model.stage1Date
+                                model.stage1Time
+                        ]
+                    ]
+                , H.div []
                     [ H.button
                         [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage1DateTimeModal OpenDialog
+                        , HE.onClick <| HandleStage1SummaryModal OpenDialog
                         ]
-                        [ H.text <|
-                            case model.laborStage1Record of
-                                Just ls1rec ->
-                                    case ls1rec.fullDialation of
-                                        Just d ->
-                                            U.dateTimeHMFormatter
-                                                U.MDYDateFmt
-                                                U.DashDateSep
-                                                d
+                        [ if isStage1SummaryDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
+                    , dialogStage1Summary dialogStage1Config
+                    ]
+                ]
+            , H.div [ HA.class "stage-content" ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "Stage 2" ]
+                , H.div []
+                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                        [ H.button
+                            [ HA.class "c-button c-button--ghost-brand u-small"
+                            , HE.onClick <| HandleStage2DateTimeModal OpenDialog
+                            ]
+                            [ H.text <| "Not implemented" ]
+                        , if model.browserSupportsDate then
+                            Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                                "Stage 2 Date/Time"
+                                (FldChgSubMsg Stage2DateFld)
+                                (FldChgSubMsg Stage2TimeFld)
+                                (HandleStage2DateTimeModal CloseNoSaveDialog)
+                                (HandleStage2DateTimeModal CloseSaveDialog)
+                                ClearStage2DateTime
+                                model.stage2Date
+                                model.stage2Time
+                          else
+                            Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                                "Stage 2 Date/Time"
+                                OpenDatePickerSubMsg
+                                (FldChgSubMsg Stage2DateFld)
+                                (FldChgSubMsg Stage2TimeFld)
+                                (HandleStage2DateTimeModal CloseNoSaveDialog)
+                                (HandleStage2DateTimeModal CloseSaveDialog)
+                                ClearStage2DateTime
+                                model.stage2Date
+                                model.stage2Time
+                        ]
+                    ]
+                , H.div []
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        ]
+                        [ H.text "Summary" ]
+                    ]
+                ]
+            , H.div [ HA.class "stage-content" ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "Stage 3" ]
+                , H.div []
+                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                        [ H.button
+                            [ HA.class "c-button c-button--ghost-brand u-small"
+                            , HE.onClick <| HandleStage3DateTimeModal OpenDialog
+                            ]
+                            [ H.text <| "Not Implemented" ]
+                        , if model.browserSupportsDate then
+                            Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                                "Stage 3 Date/Time"
+                                (FldChgSubMsg Stage3DateFld)
+                                (FldChgSubMsg Stage3TimeFld)
+                                (HandleStage3DateTimeModal CloseNoSaveDialog)
+                                (HandleStage3DateTimeModal CloseSaveDialog)
+                                ClearStage3DateTime
+                                model.stage3Date
+                                model.stage3Time
+                          else
+                            Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                                "Stage 3 Date/Time"
+                                OpenDatePickerSubMsg
+                                (FldChgSubMsg Stage3DateFld)
+                                (FldChgSubMsg Stage3TimeFld)
+                                (HandleStage3DateTimeModal CloseNoSaveDialog)
+                                (HandleStage3DateTimeModal CloseSaveDialog)
+                                ClearStage3DateTime
+                                model.stage3Date
+                                model.stage3Time
+                        ]
+                    ]
+                , H.div []
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        ]
+                        [ H.text "Summary" ]
+                    ]
+                ]
+            ]
+
+
+
+-- TODO: pull the following into the second stage summary??
+--, H.div [ HA.class "stage-content" ]
+--[ H.div [ HA.class "c-text--brand c-text--loud" ]
+--[ H.text "Stuff" ]
+--, H.div
+--[ HA.class "o-form-element"
+--, HA.style [ ("padding-top", "0") ]
+--]
+--[ H.div
+--[ HA.class "o-field"
+--]
+--[ H.label
+--[ HA.class "c-field c-field--choice c-field-minPadding"
+--, HA.for "eblbirth"
+--]
+--[ H.text "EBL @ birth" ]
+--, H.input
+--[ HA.class "c-field u-small c-field-minPadding"
+--, HA.id "eblbirth"
+--, HA.style [ ("width", "50%") ]
+--]
+--[]
+--]
+--]
+--]
+
+
+type alias DialogStage1Summary =
+    { isShown : Bool
+    , isEditing : Bool
+    , title : String
+    , model : Model
+    , closeMsg : SubMsg
+    , saveMsg : SubMsg
+    , editMsg : SubMsg
+    , mobilityMsg : String -> SubMsg
+    }
+
+
+dialogStage1Summary : DialogStage1Summary -> Html SubMsg
+dialogStage1Summary cfg =
+    case cfg.isEditing of
+        True ->
+            -- We display the form for editing by default.
+            dialogStage1SummaryEdit cfg
+
+        False ->
+            -- We display the summary results in a more concise form if not editing.
+            dialogStage1SummaryView cfg
+
+
+{-| Allow user to edit stage one summary fields.
+-}
+dialogStage1SummaryEdit : DialogStage1Summary -> Html SubMsg
+dialogStage1SummaryEdit cfg =
+    H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
+        [ H.div
+            [ HA.class "o-modal"
+            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+            ]
+            [ H.div [ HA.class "c-card" ]
+                [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--close"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "x" ]
+                    , H.h4 [ HA.class "c-heading" ]
+                        [ H.text cfg.title ]
+                    ]
+                , H.div
+                    [ HA.class "c-card__body o-panel"
+                    , HA.style
+                        -- Need to restrict the body in order for the panel to work.
+                        [ ( "height", "230px" )
+                        , ( "max-height", "230px" )
+                        ]
+                    ]
+                    [ H.div
+                        [ HA.class "o-fieldset form-wrapper"
+                          -- BlazeCSS fieldset has too much margin at top for modal.
+                        , HA.style [ ( "margin-top", "0" ) ]
+                        ]
+                        [ H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                            [ H.legend [ HA.class "o-fieldset__legend" ]
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Mobility" ]
+                                ]
+                            , Form.radio
+                                ( "Moved around", "mobility", (FldChgSubMsg Stage1MobilityFld), cfg.model.s1Mobility )
+                            , Form.radio
+                                ( "Didn't move much", "mobility", (FldChgSubMsg Stage1MobilityFld), cfg.model.s1Mobility )
+                            , Form.radio
+                                ( "Movement restricted", "mobility", (FldChgSubMsg Stage1MobilityFld), cfg.model.s1Mobility )
+                            ]
+                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                            [ Form.formField (FldChgSubMsg Stage1DurationLatentFld)
+                                "Duration latent"
+                                "Number of minutes"
+                                cfg.model.s1DurationLatent
+                            , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
+                                "Duration active"
+                                "Number of minutes"
+                                cfg.model.s1DurationActive
+                            ]
+                        , Form.formTextareaField (FldChgSubMsg Stage1CommentsFld)
+                            "Comments"
+                            cfg.model.s1Comments
+                            3
+                        ]
+                    ]
+                , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button u-small"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "Cancel" ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--brand"
+                        , HE.onClick cfg.saveMsg
+                        ]
+                        [ H.text "Save" ]
+                    ]
+                ]
+            ]
+        ]
+
+
+{-| Display the stage one summary, including the first stage total,
+if available.
+-}
+dialogStage1SummaryView : DialogStage1Summary -> Html SubMsg
+dialogStage1SummaryView cfg =
+    let
+        ( mobility, latent, active, comments, s1Total ) =
+            case cfg.model.laborStage1Record of
+                Just rec ->
+                    ( Maybe.withDefault "" rec.mobility
+                    , Maybe.map toString rec.durationLatent
+                        |> Maybe.withDefault ""
+                    , Maybe.map toString rec.durationActive
+                        |> Maybe.withDefault ""
+                    , Maybe.withDefault "" rec.comments
+                    , case rec.fullDialation of
+                        Just fd ->
+                            case cfg.model.laborRecord of
+                                Just lrecs ->
+                                    case LE.find (\r -> r.id == rec.labor_id) lrecs of
+                                        Just laborRec ->
+                                            U.diff2DatesString laborRec.startLaborDate fd
 
                                         Nothing ->
-                                            "Click to set"
+                                            ""
 
                                 Nothing ->
-                                    "Click to set"
-                        ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.stage1Modal == Stage1DateTimeModal)
-                            "Stage 1 Date/Time"
-                            (FldChgSubMsg Stage1DateFld)
-                            (FldChgSubMsg Stage1TimeFld)
-                            (HandleStage1DateTimeModal CloseNoSaveDialog)
-                            (HandleStage1DateTimeModal CloseSaveDialog)
-                            ClearStage1DateTime
-                            model.stage1Date
-                            model.stage1Time
-                        else
-                        Form.dateTimePickerModal (model.stage1Modal == Stage1DateTimeModal)
-                            "Stage 1 Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgSubMsg Stage1DateFld)
-                            (FldChgSubMsg Stage1TimeFld)
-                            (HandleStage1DateTimeModal CloseNoSaveDialog)
-                            (HandleStage1DateTimeModal CloseSaveDialog)
-                            ClearStage1DateTime
-                            model.stage1Date
-                            model.stage1Time
-                    ]
+                                    ""
+
+                        Nothing ->
+                            ""
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "" )
+    in
+        H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
+            [ H.div
+                [ HA.class "o-modal"
+                , HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
                 ]
-            , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
+                [ H.div [ HA.class "c-card" ]
+                    [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
+                        [ H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button--close"
+                            , HE.onClick cfg.closeMsg
+                            ]
+                            [ H.text "x" ]
+                        , H.h4 [ HA.class "c-heading" ]
+                            [ H.text cfg.title ]
+                        ]
+                    , H.div
+                        [ HA.class "c-card__body o-panel"
+                        , HA.style
+                            -- Need to restrict the body in order for the panel to work.
+                            [ ( "height", "230px" )
+                            , ( "max-height", "230px" )
+                            ]
+                        ]
+                        [ H.div
+                            [ HA.class ""
+                              -- BlazeCSS fieldset has too much margin at top for modal.
+                            , HA.style [ ( "margin-top", "0" ) ]
+                            ]
+                            [ H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Stage 1 Total: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text s1Total ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Mobility: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text mobility ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Duration Latent: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text latent ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text " minutes" ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Duration Active: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text active ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text " minutes" ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Comments: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text comments ]
+                                ]
+                            ]
+                        ]
+                    , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
+                        [ H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button u-small"
+                            , HE.onClick cfg.closeMsg
+                            ]
+                            [ H.text "Close" ]
+                        , H.button
+                            -- TODO: make this an Edit button and need a new message
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button--brand"
+                            , HE.onClick cfg.editMsg
+                            ]
+                            [ H.text "Edit" ]
+                        ]
                     ]
-                    [ H.text "Summary" ]
                 ]
             ]
-        , H.div [ HA.class "stage-content" ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 2" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage2DateTimeModal OpenDialog
-                        ]
-                        [ H.text <| "Not implemented" ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.stage2Modal == Stage2DateTimeModal)
-                            "Stage 2 Date/Time"
-                            (FldChgSubMsg Stage2DateFld)
-                            (FldChgSubMsg Stage2TimeFld)
-                            (HandleStage2DateTimeModal CloseNoSaveDialog)
-                            (HandleStage2DateTimeModal CloseSaveDialog)
-                            ClearStage2DateTime
-                            model.stage2Date
-                            model.stage2Time
-                        else
-                        Form.dateTimePickerModal (model.stage2Modal == Stage2DateTimeModal)
-                            "Stage 2 Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgSubMsg Stage2DateFld)
-                            (FldChgSubMsg Stage2TimeFld)
-                            (HandleStage2DateTimeModal CloseNoSaveDialog)
-                            (HandleStage2DateTimeModal CloseSaveDialog)
-                            ClearStage2DateTime
-                            model.stage2Date
-                            model.stage2Time
-                    ]
-                ]
-            , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    ]
-                    [ H.text "Summary" ]
-                ]
-            ]
-        , H.div [ HA.class "stage-content" ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 3" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage3DateTimeModal OpenDialog
-                        ]
-                        [ H.text <| "Not Implemented" ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.stage3Modal == Stage3DateTimeModal)
-                            "Stage 3 Date/Time"
-                            (FldChgSubMsg Stage3DateFld)
-                            (FldChgSubMsg Stage3TimeFld)
-                            (HandleStage3DateTimeModal CloseNoSaveDialog)
-                            (HandleStage3DateTimeModal CloseSaveDialog)
-                            ClearStage3DateTime
-                            model.stage3Date
-                            model.stage3Time
-                        else
-                        Form.dateTimePickerModal (model.stage3Modal == Stage3DateTimeModal)
-                            "Stage 3 Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgSubMsg Stage3DateFld)
-                            (FldChgSubMsg Stage3TimeFld)
-                            (HandleStage3DateTimeModal CloseNoSaveDialog)
-                            (HandleStage3DateTimeModal CloseSaveDialog)
-                            ClearStage3DateTime
-                            model.stage3Date
-                            model.stage3Time
-                    ]
-                ]
-            , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    ]
-                    [ H.text "Summary" ]
-                ]
-            ]
-            -- TODO: pull the following into the second stage summary??
-            --, H.div [ HA.class "stage-content" ]
-            --[ H.div [ HA.class "c-text--brand c-text--loud" ]
-            --[ H.text "Stuff" ]
-            --, H.div
-            --[ HA.class "o-form-element"
-            --, HA.style [ ("padding-top", "0") ]
-            --]
-            --[ H.div
-            --[ HA.class "o-field"
-            --]
-            --[ H.label
-            --[ HA.class "c-field c-field--choice c-field-minPadding"
-            --, HA.for "eblbirth"
-            --]
-            --[ H.text "EBL @ birth" ]
-            --, H.input
-            --[ HA.class "c-field u-small c-field-minPadding"
-            --, HA.id "eblbirth"
-            --, HA.style [ ("width", "50%") ]
-            --]
-            --[]
-            --]
-            --]
-            --]
-        ]
 
 
 {-| Show current admitting labor record and any historical
@@ -727,7 +1028,7 @@ update session msg model =
 
         SaveAdmitForLabor ->
             -- The user submitted a new labor record to be sent to the server.
-            case validate model of
+            case validateAdmittance model of
                 [] ->
                     let
                         newOuterMsg =
@@ -844,6 +1145,18 @@ update session msg model =
 
                 Stage3TimeFld ->
                     { model | stage3Time = Just <| U.filterStringLikeTime value }
+
+                Stage1MobilityFld ->
+                    { model | s1Mobility = Just value }
+
+                Stage1DurationLatentFld ->
+                    { model | s1DurationLatent = Just <| U.filterStringLikeInt value }
+
+                Stage1DurationActiveFld ->
+                    { model | s1DurationActive = Just <| U.filterStringLikeInt value }
+
+                Stage1CommentsFld ->
+                    { model | s1Comments = Just value }
             , Cmd.none
             , Cmd.none
             )
@@ -871,22 +1184,26 @@ update session msg model =
                             -- If not yet set, the set the date/time to
                             -- current as a convenience to user.
                             { model
-                                | stage1Modal = Stage1DateTimeModal
+                                | stage1DateTimeModal = Stage1DateTimeModal
                                 , stage1Date = Just <| Date.fromTime model.currTime
                                 , stage1Time = Just <| U.timeToTimeString model.currTime
                             }
 
                         ( _, _ ) ->
-                            { model | stage1Modal = Stage1DateTimeModal }
+                            { model | stage1DateTimeModal = Stage1DateTimeModal }
                     , Cmd.none
                     , Cmd.none
                     )
 
                 CloseNoSaveDialog ->
-                    ( { model | stage1Modal = NoDateTimeModal }, Cmd.none, Cmd.none )
+                    ( { model | stage1DateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+
+                EditDialog ->
+                    -- This dialog option is not used for stage 1 date time.
+                    ( model, Cmd.none, Cmd.none )
 
                 CloseSaveDialog ->
-                    -- TODO: Close and potentially send initial LaborStage1Record
+                    -- Close and potentially send initial LaborStage1Record
                     -- to server as an add or update if it validates. An add will
                     -- send a LaborStage1RecordNew and an update uses the full
                     -- LaborStage1Record. The initial add is only sent if
@@ -894,16 +1211,12 @@ update session msg model =
                     case validateStage1New model of
                         [] ->
                             let
-                                _ =
-                                    Debug.log "stage1Date" <| toString model.stage1Date
-                                _ =
-                                    Debug.log "stage1Time" <| toString model.stage1Time
                                 outerMsg =
                                     case ( model.laborStage1Record, model.stage1Date, model.stage1Time ) of
                                         -- A laborStage1 record already exists, so update it.
                                         ( Just rec, Just d, Just t ) ->
                                             case U.stringToTimeTuple t of
-                                                Just (h, m) ->
+                                                Just ( h, m ) ->
                                                     let
                                                         newRec =
                                                             { rec | fullDialation = Just (U.datePlusTimeTuple d ( h, m )) }
@@ -911,7 +1224,7 @@ update session msg model =
                                                         ProcessTypeMsg
                                                             (UpdateLaborStage1Type
                                                                 (LaborDelIppMsg
-                                                                    (DataCache Nothing ( Just [ LaborStage1 ] ))
+                                                                    (DataCache Nothing (Just [ LaborStage1 ]))
                                                                 )
                                                                 newRec
                                                             )
@@ -930,7 +1243,7 @@ update session msg model =
                                                 ProcessTypeMsg
                                                     (UpdateLaborStage1Type
                                                         (LaborDelIppMsg
-                                                            (DataCache Nothing ( Just [ LaborStage1 ] ))
+                                                            (DataCache Nothing (Just [ LaborStage1 ]))
                                                         )
                                                         newRec
                                                     )
@@ -960,7 +1273,7 @@ update session msg model =
                                             Noop
                             in
                                 ( { model
-                                    | stage1Modal = NoDateTimeModal
+                                    | stage1DateTimeModal = NoDateTimeModal
                                   }
                                 , Cmd.none
                                 , Task.perform (always outerMsg) (Task.succeed True)
@@ -968,7 +1281,118 @@ update session msg model =
 
                         errors ->
                             -- TODO: show errors to user somehow???
-                            ( { model | stage1Modal = NoDateTimeModal }
+                            ( { model | stage1DateTimeModal = NoDateTimeModal }
+                            , Cmd.none
+                            , logConsole <| toString errors
+                            )
+
+        HandleStage1SummaryModal dialogState ->
+            case dialogState of
+                -- If there already is a laborStage1Record, then populate the form
+                -- fields with the contents of that record.
+                OpenDialog ->
+                    let
+                        ( mobility, latent, active, comments ) =
+                            case model.laborStage1Record of
+                                Just rec ->
+                                    ( rec.mobility
+                                    , Maybe.map toString rec.durationLatent
+                                    , Maybe.map toString rec.durationActive
+                                    , rec.comments
+                                    )
+
+                                Nothing ->
+                                    ( Nothing
+                                    , Nothing
+                                    , Nothing
+                                    , Nothing
+                                    )
+                    in
+                        -- We set the modal to View but it will show the edit screen
+                        -- if there are fields not complete.
+                        ( { model
+                            | stage1SummaryModal = Stage1SummaryViewModal
+                            , s1Mobility = mobility
+                            , s1DurationLatent = latent
+                            , s1DurationActive = active
+                            , s1Comments = comments
+                          }
+                        , Cmd.none
+                        , Cmd.none
+                        )
+
+                CloseNoSaveDialog ->
+                    -- We keep whatever, if anything, the user entered into the
+                    -- form fields.
+                    ( { model | stage1SummaryModal = NoStageSummaryModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                EditDialog ->
+                    -- Transitioning from a viewing summary state to editing again by
+                    -- explicitly setting the mode to edit. This is different that
+                    -- Stage1SummaryViewModal in that we are forcing edit here.
+                    ( { model | stage1SummaryModal = Stage1SummaryEditModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    -- We save to the database if the form fields validate.
+                    case validateStage1 model of
+                        [] ->
+                            let
+                                outerMsg =
+                                    case model.laborStage1Record of
+                                        Just s1Rec ->
+                                            -- A Stage 1 record already exists, so update it.
+                                            let
+                                                newRec =
+                                                    { s1Rec
+                                                        | mobility = model.s1Mobility
+                                                        , durationLatent = U.maybeStringToMaybeInt model.s1DurationLatent
+                                                        , durationActive = U.maybeStringToMaybeInt model.s1DurationActive
+                                                        , comments = model.s1Comments
+                                                    }
+                                            in
+                                                ProcessTypeMsg
+                                                    (UpdateLaborStage1Type
+                                                        (LaborDelIppMsg
+                                                            (DataCache Nothing (Just [ LaborStage1 ]))
+                                                        )
+                                                        newRec
+                                                    )
+                                                    ChgMsgType
+                                                    (laborStage1RecordToValue newRec)
+
+                                        Nothing ->
+                                            -- Need to create a new stage 1 record for the server.
+                                            case deriveLaborStage1RecordNew model of
+                                                Just laborStage1RecNew ->
+                                                    ProcessTypeMsg
+                                                        (AddLaborStage1Type
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ LaborStage1 ]))
+                                                            )
+                                                            laborStage1RecNew
+                                                        )
+                                                        AddMsgType
+                                                        (laborStage1RecordNewToValue laborStage1RecNew)
+
+                                                Nothing ->
+                                                    LogConsole "deriveLaborStage1RecordNew returned a Nothing"
+                            in
+                                ( { model | stage1SummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , Task.perform (always outerMsg) (Task.succeed True)
+                                )
+
+                        errors ->
+                            -- TODO: Show errors to user?
+                            ( { model | stage1SummaryModal = NoStageSummaryModal }
                             , Cmd.none
                             , logConsole <| toString errors
                             )
@@ -980,7 +1404,7 @@ update session msg model =
             -- been previously selected.
             let
                 ( s2d, s2t ) =
-                    case model.stage2Modal == NoDateTimeModal of
+                    case model.stage2DateTimeModal == NoDateTimeModal of
                         True ->
                             case ( model.stage2Date, model.stage2Time ) of
                                 ( Nothing, Nothing ) ->
@@ -995,8 +1419,8 @@ update session msg model =
                             ( model.stage2Date, model.stage2Time )
             in
                 ( { model
-                    | stage2Modal =
-                        if model.stage2Modal == NoDateTimeModal then
+                    | stage2DateTimeModal =
+                        if model.stage2DateTimeModal == NoDateTimeModal then
                             Stage2DateTimeModal
                         else
                             NoDateTimeModal
@@ -1014,7 +1438,7 @@ update session msg model =
             -- been previously selected.
             let
                 ( s3d, s3t ) =
-                    case model.stage3Modal == NoDateTimeModal of
+                    case model.stage3DateTimeModal == NoDateTimeModal of
                         True ->
                             case ( model.stage3Date, model.stage3Time ) of
                                 ( Nothing, Nothing ) ->
@@ -1029,8 +1453,8 @@ update session msg model =
                             ( model.stage3Date, model.stage3Time )
             in
                 ( { model
-                    | stage3Modal =
-                        if model.stage3Modal == NoDateTimeModal then
+                    | stage3DateTimeModal =
+                        if model.stage3DateTimeModal == NoDateTimeModal then
                             Stage3DateTimeModal
                         else
                             NoDateTimeModal
@@ -1042,8 +1466,6 @@ update session msg model =
                 )
 
         ClearStage1DateTime ->
-            -- TODO: do something with the server and eventually the laborStage1Record.
-            -- TODO: consider renaming Clear in UI to something else representative?
             ( { model
                 | stage1Date = Nothing
                 , stage1Time = Nothing
@@ -1078,28 +1500,33 @@ update session msg model =
 -}
 deriveLaborStage1RecordNew : Model -> Maybe LaborStage1RecordNew
 deriveLaborStage1RecordNew model =
-    case ( model.stage1Date, model.stage1Time ) of
-        ( Just d, Just t ) ->
+    case model.laborState of
+        AdmittedLaborState (LaborId id) ->
+            -- We have an admittance record, so we are allowed to have
+            -- a stage one record too.
             let
-                timeTuple =
-                    U.stringToTimeTuple t
+                fullDialation =
+                    case ( model.stage1Date, model.stage1Time ) of
+                        ( Just d, Just t ) ->
+                            case U.stringToTimeTuple t of
+                                Just tt ->
+                                    Just <| U.datePlusTimeTuple d tt
 
-                id =
-                    case model.laborState of
-                        AdmittedLaborState (LaborId id) ->
-                            Just id
+                                Nothing ->
+                                    Nothing
 
-                        _ ->
+                        ( _, _ ) ->
                             Nothing
             in
-                case ( timeTuple, id ) of
-                    ( Just tt, Just i ) ->
-                        Just <| LaborStage1RecordNew (Just (U.datePlusTimeTuple d tt)) i
+                LaborStage1RecordNew fullDialation
+                    model.s1Mobility
+                    (U.maybeStringToMaybeInt model.s1DurationLatent)
+                    (U.maybeStringToMaybeInt model.s1DurationActive)
+                    model.s1Comments
+                    id
+                    |> Just
 
-                    ( _, _ ) ->
-                        Nothing
-
-        ( _, _ ) ->
+        _ ->
             Nothing
 
 
@@ -1154,46 +1581,38 @@ deriveLaborRecordNew model =
 -- VALIDATION --
 
 
-type Field
-    = AdmittanceDateField
-    | AdmittanceTimeField
-    | LaborDateField
-    | LaborTimeField
-    | PosField
-    | FhField
-    | FhtField
-    | SystolicField
-    | DiastolicField
-    | CrField
-    | TempField
-    | CommentsField
-    | Stage1DateField
-    | Stage1TimeField
-
-
 type alias FieldError =
     ( Field, String )
 
 
-validate : Model -> List FieldError
-validate =
+validateAdmittance : Model -> List FieldError
+validateAdmittance =
     Validate.all
-        [ .admittanceDate >> ifInvalid U.validateDate (AdmittanceDateField => "Date of admittance must be provided.")
-        , .admittanceTime >> ifInvalid U.validateTime (AdmittanceTimeField => "Admitting time must be provided, ex: hh:mm.")
-        , .laborDate >> ifInvalid U.validateDate (LaborDateField => "Date of the start of labor must be provided.")
-        , .laborTime >> ifInvalid U.validateTime (LaborTimeField => "Start of labor time must be provided, ex: hh:mm.")
-        , .pos >> ifInvalid U.validatePopulatedString (PosField => "POS must be provided.")
-        , .fh >> ifInvalid U.validateInt (FhField => "FH must be provided.")
-        , .fht >> ifInvalid U.validateInt (FhtField => "FHT must be provided.")
-        , .systolic >> ifInvalid U.validateInt (SystolicField => "Systolic must be provided.")
-        , .diastolic >> ifInvalid U.validateInt (DiastolicField => "Diastolic must be provided.")
-        , .cr >> ifInvalid U.validateInt (CrField => "CR must be provided.")
-        , .temp >> ifInvalid U.validateFloat (TempField => "Temp must be provided.")
+        [ .admittanceDate >> ifInvalid U.validateDate (AdmittanceDateFld => "Date of admittance must be provided.")
+        , .admittanceTime >> ifInvalid U.validateTime (AdmittanceTimeFld => "Admitting time must be provided, ex: hh:mm.")
+        , .laborDate >> ifInvalid U.validateDate (LaborDateFld => "Date of the start of labor must be provided.")
+        , .laborTime >> ifInvalid U.validateTime (LaborTimeFld => "Start of labor time must be provided, ex: hh:mm.")
+        , .pos >> ifInvalid U.validatePopulatedString (PosFld => "POS must be provided.")
+        , .fh >> ifInvalid U.validateInt (FhFld => "FH must be provided.")
+        , .fht >> ifInvalid U.validateInt (FhtFld => "FHT must be provided.")
+        , .systolic >> ifInvalid U.validateInt (SystolicFld => "Systolic must be provided.")
+        , .diastolic >> ifInvalid U.validateInt (DiastolicFld => "Diastolic must be provided.")
+        , .cr >> ifInvalid U.validateInt (CrFld => "CR must be provided.")
+        , .temp >> ifInvalid U.validateFloat (TempFld => "Temp must be provided.")
         ]
 
 
 validateStage1New : Model -> List FieldError
 validateStage1New =
     Validate.all
-        [ .stage1Time >> ifInvalid U.validateJustTime (Stage1TimeField => "Time must be provided in hh:mm format.")
+        [ .stage1Time >> ifInvalid U.validateJustTime (Stage1TimeFld => "Time must be provided in hh:mm format.")
+        ]
+
+
+validateStage1 : Model -> List FieldError
+validateStage1 =
+    Validate.all
+        [ .s1Mobility >> ifInvalid U.validatePopulatedString (Stage1MobilityFld => "Mobility must be provided.")
+        , .s1DurationLatent >> ifInvalid U.validatePopulatedString (Stage1DurationLatentFld => "Duration latent must be provided.")
+        , .s1DurationActive >> ifInvalid U.validatePopulatedString (Stage1DurationActiveFld => "Duration active must be provided.")
         ]

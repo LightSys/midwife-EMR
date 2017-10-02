@@ -8,6 +8,7 @@ module Views.Form
         , formFieldDate
         , formFieldDatePicker
         , formTextareaField
+        , radio
         )
 
 import Date exposing (Date, Month(..), day, month, year)
@@ -58,14 +59,15 @@ formField msg lbl placeholder val =
         ]
 
 
-formTextareaField : (String -> msg) -> String -> Int -> Html msg
-formTextareaField onInputMsg lbl numLines =
+formTextareaField : (String -> msg) -> String -> Maybe String -> Int -> Html msg
+formTextareaField onInputMsg lbl val numLines =
     H.label [ HA.class "c-label o-form-element mw-form-field-wide" ]
         [ H.text lbl
         , H.textarea
             [ HA.class "c-field c-field--label"
             , HA.rows numLines
             , HA.placeholder lbl
+            , HA.value <| Maybe.withDefault "" val
             , HE.onInput onInputMsg
             ]
             []
@@ -178,7 +180,7 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
                         , formField timeMsg "Time" "24 hr format, 14:44" timeVal
                         ]
                     ]
-                , H.div [ HA.class "c-card__footer dateTimeModalButtons" ]
+                , H.div [ HA.class "c-card__footer modalButtons" ]
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--ghost u-small"
@@ -238,7 +240,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                         , formField timeMsg "Time" "24 hr format, 14:44" timeVal
                         ]
                     ]
-                , H.div [ HA.class "c-card__footer dateTimeModalButtons" ]
+                , H.div [ HA.class "c-card__footer modalButtons" ]
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--ghost u-small"
@@ -254,4 +256,18 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                     ]
                 ]
             ]
+        ]
+
+
+radio : ( String, String, String -> msg, Maybe String ) -> Html msg
+radio ( text, name, msg, val ) =
+    H.label [ HA.class "c-field c-field--choice" ]
+        [ H.input
+            [ HA.type_ "radio"
+            , HA.name name
+            , HA.checked (Maybe.withDefault "" val == text)
+            , HE.onClick (msg text)
+            ]
+            []
+        , H.text text
         ]

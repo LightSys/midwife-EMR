@@ -7,7 +7,7 @@
 .primary-fg {
   color: #009688;
 }
-.primary-dark-fg{
+.primary-dark-fg {
   color: #00796B;
 }
 .primary-contrast-fg {
@@ -22,7 +22,7 @@
 .primary-bg {
   background-color: #009688;
 }
-.primary-dark-bg{
+.primary-dark-bg {
   background-color: #00796B;
 }
 .primary-contrast-bg {
@@ -204,6 +204,10 @@
   width: 10em;
   margin: 0 0;
 }
+.mw-form-field-2x {
+  width: 20em;
+  margin: 0 0;
+}
 .mw-form-field-wide {
   width: 100%;
   margin: 0 0;
@@ -228,7 +232,7 @@
 .dateTimeModal {
   width: 20em;
 }
-.dateTimeModalButtons {
+.modalButtons {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;

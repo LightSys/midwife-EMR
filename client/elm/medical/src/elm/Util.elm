@@ -10,6 +10,7 @@ module Util
         , datePlusTimeTuple
         , dateTimeHMFormatter
         , dateToStringValue
+        , diff2DatesString
         , filterStringLikeInt
         , filterStringLikeFloat
         , filterStringLikeTime
@@ -291,7 +292,7 @@ validateJustTime time =
     case time of
         Just t ->
             case stringToTimeTuple t of
-                Just (_, _) ->
+                Just ( _, _ ) ->
                     False
 
                 Nothing ->
@@ -427,6 +428,62 @@ removeTimeFromDate d =
         0
         0
         0
+
+
+{-| Return the difference between two dates in a
+human readable format as a String with the difference
+expressed as a positive. Only displays days, hours, and
+minutes.
+
+Note: the order of the dates passed does not matter since
+the difference is expressed as a positive no matter what.
+-}
+diff2DatesString : Date -> Date -> String
+diff2DatesString d1 d2 =
+    let
+        doCommas first second =
+            if String.length first > 0 then
+                if String.length second > 0 then
+                    first ++ ", " ++ second
+                else
+                    first
+            else
+                second
+
+        doSingular num unit =
+            case abs num of
+                0 ->
+                    ""
+
+                1 ->
+                    "1 " ++ unit
+
+                n ->
+                    (toString n) ++ " " ++ unit ++ "s"
+
+
+        dateDelta =
+            case DEComp.is DEComp.Before d1 d2 of
+                True ->
+                    -- d1 is before d2
+                    DEP.diff d2 d1
+
+                False ->
+                    -- d1 is after (or same as) d2
+                    DEP.diff d1 d2
+
+        days =
+            doSingular dateDelta.day "day"
+
+        hours =
+            doSingular dateDelta.hour "hour"
+
+        minutes =
+            doSingular dateDelta.minute "minute"
+    in
+        doCommas days hours
+            |> flip doCommas minutes
+            |> String.trim
 
 
 {-| Calculate the estimated due date based upon the
