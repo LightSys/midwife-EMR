@@ -12,6 +12,7 @@ var Knex = require('knex')
   , fs = require('fs')
   , path = require('path')
   , sqlite3 = require('sqlite3').verbose()
+  , mysql = require('mysql')
   , util = require('../util')
     // Note: file references from the perspective of the top-level directory.
   , sqliteCreateSchemaFile = './database/sql/create_sqlite_schema.sql'
@@ -119,10 +120,50 @@ const init = (cfg, cb) => {
     // Handle a MySQL database.
     // --------------------------------------------------------
     // TODO: build out schema if necessary.
-    return cb(null, true)
+
+    // --------------------------------------------------------
+    // Make sure that the database is online before proceeding.
+    // This is necessary in a Docker environment where we cannot
+    // assume that the database container has yet become fully
+    // available. We need to wait for it patiently.
+    //
+    // Adapted from:
+    // https://stackoverflow.com/questions/3583724/how-do-i-add-a-delay-in-a-javascript-loop
+    // --------------------------------------------------------
+    console.log('Checking for database readiness ...');
+    var maxAttempts = 4 * 10;
+    var sleepMs = 1000 * 2;
+    var isDbReady = false;
+
+    (function waitForDatabase(count) {
+      console.log('Attempt number: ' + count);
+      var conn = mysql.createConnection({
+        host: settings.host,
+        port: settings.port,
+        database: settings.db,
+        user: settings.dbUser,
+        password: settings.dbPass
+      });
+
+      if (! isDbReady) {
+        setTimeout(function() {
+          conn.connect(function(err) {
+            conn.destroy();
+            if (err) {
+              console.log('Attempt failed. Waiting for ' + sleepMs + ' milliseconds.');
+              if (! isDbReady && --count) waitForDatabase(count);
+              if (! isDbReady && count === 0) cb('Unable to reach database.', false);
+            } else {
+              isDbReady = true;
+              cb(void 0, true);
+            }
+          });
+        }, sleepMs);
+      }
+    })(maxAttempts, sleepMs);
   }
 
-}
+} // end init()
 
 
 /* --------------------------------------------------------
