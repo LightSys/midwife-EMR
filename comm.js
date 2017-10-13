@@ -142,6 +142,7 @@ var rx = require('rx')
   , TABLE_user = 'user'
   , TABLE_labor = 'labor'
   , TABLE_laborStage1 = 'laborStage1'
+  , TABLE_laborStage2 = 'laborStage2'
   , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
   , addLabor = require('./routes/comm/labor').addLabor
   , delLabor = require('./routes/comm/labor').delLabor
@@ -149,6 +150,9 @@ var rx = require('rx')
   , addLaborStage1 = require('./routes/comm/labor').addLaborStage1
   , delLaborStage1 = require('./routes/comm/labor').delLaborStage1
   , updateLaborStage1 = require('./routes/comm/labor').updateLaborStage1
+  , addLaborStage2 = require('./routes/comm/labor').addLaborStage2
+  , delLaborStage2 = require('./routes/comm/labor').delLaborStage2
+  , updateLaborStage2 = require('./routes/comm/labor').updateLaborStage2
   , addLabSuite = require('./routes/comm/lookupTables').addLabSuite
   , delLabSuite = require('./routes/comm/lookupTables').delLabSuite
   , updateLabSuite = require('./routes/comm/lookupTables').updateLabSuite
@@ -818,6 +822,13 @@ var getFuncForTableOp = function(table, op) {
         case ADD: func = addLaborStage1; break;
         case CHG: func = updateLaborStage1; break;
         case DEL: func = delLaborStage1; break;
+      }
+      break;
+    case TABLE_laborStage2:
+      switch (op) {
+        case ADD: func = addLaborStage2; break;
+        case CHG: func = updateLaborStage2; break;
+        case DEL: func = delLaborStage2; break;
       }
       break;
     case TABLE_labSuite:

@@ -17,6 +17,7 @@ import Data.DatePicker exposing (DateField, DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
 import Data.LaborStage1 exposing (LaborStage1Record, LaborStage1RecordNew)
+import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
 import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
@@ -58,5 +59,7 @@ to "remember" what we should do when the server responds positively.
 type ProcessType
     = AddLaborType Msg LaborRecordNew
     | AddLaborStage1Type Msg LaborStage1RecordNew
+    | AddLaborStage2Type Msg LaborStage2RecordNew
     | UpdateLaborStage1Type Msg LaborStage1Record
+    | UpdateLaborStage2Type Msg LaborStage2Record
     | SelectQueryType Msg SelectQuery

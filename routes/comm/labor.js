@@ -14,6 +14,7 @@ var _ = require('underscore')
   , cfg = require('../../config')
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
+  , LaborStage2 = require('../../models').LaborStage2
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
@@ -37,6 +38,7 @@ var _ = require('underscore')
 // --------------------------------------------------------
 moduleTables.labor = ['admittanceDate', 'startLaborDate'];
 moduleTables.laborStage1 = ['fullDialation'];
+moduleTables.laborStage2 = ['birthDatetime'];
 
 
 /* --------------------------------------------------------
@@ -187,6 +189,16 @@ var updateLaborStage1 = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, LaborStage1, 'laborStage1');
 };
 
+var addLaborStage2 = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addLaborStage2(data, cb);
+  addTable(data, userInfo, cb, LaborStage2, 'laborStage2');
+};
+
+var updateLaborStage2 = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateLaborStage2(data, cb);
+  updateTable(data, userInfo, cb, LaborStage2, 'laborStage2');
+};
+
 var notDefinedYet = function(data, userInfo, cb) {
   var msg = 'WARNING: notDefinedYet() called in "routes/comm/labor.js"';
   console.log(msg);
@@ -202,5 +214,8 @@ module.exports = {
   updateLabor: notDefinedYet,
   addLaborStage1,
   delLaborStage1: notDefinedYet,
-  updateLaborStage1: updateLaborStage1
+  updateLaborStage1: updateLaborStage1,
+  addLaborStage2,
+  delLaborStage2: notDefinedYet,
+  updateLaborStage2
 };

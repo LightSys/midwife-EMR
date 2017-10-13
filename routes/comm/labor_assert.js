@@ -45,8 +45,32 @@ var updateLaborStage1 = function(data, cb) {
   assert.ok(_.isNumber(data.labor_id), m('data.labor_id is a number'));
 };
 
+var addLaborStage2 = function(data, cb) {
+  var m = msg('labor_assert/addLaborStage2()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+  assert.ok(_.has(data, 'labor_id'), m('data.labor_id'));
+  assert.ok(_.isNumber(data.labor_id), m('data.labor_id is a number'));
+};
+
+var updateLaborStage2 = function(data, cb) {
+  var m = msg('labor_assert/updateLaborStage2()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+  assert.ok(_.has(data, 'labor_id'), m('data.labor_id'));
+  assert.ok(_.isNumber(data.labor_id), m('data.labor_id is a number'));
+};
+
 module.exports = {
   addLabor,
   addLaborStage1,
-  updateLaborStage1
+  updateLaborStage1,
+  addLaborStage2,
+  updateLaborStage2
 };

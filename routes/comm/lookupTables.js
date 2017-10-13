@@ -14,6 +14,7 @@ var _ = require('underscore')
   , KeyValue = require('../../models').KeyValue
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
+  , LaborStage2 = require('../../models').LaborStage2
   , LabSuite = require('../../models').LabSuite
   , LabTest = require('../../models').LabTest
   , LabTestValue = require('../../models').LabTestValue
@@ -42,6 +43,7 @@ var LOOKUP_TABLES = [
   'eventType',
   'labor',
   'laborStage1',
+  'laborStage2',
   'labSuite',
   'labTest',
   'labTestValue',

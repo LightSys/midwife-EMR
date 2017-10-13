@@ -17,6 +17,7 @@ type Table
     | Pregnancy
     | Labor
     | LaborStage1
+    | LaborStage2
 
 
 
@@ -40,6 +41,9 @@ tableToString tbl =
         LaborStage1 ->
             "laborStage1"
 
+        LaborStage2 ->
+            "laborStage2"
+
         Patient ->
             "patient"
 
@@ -55,6 +59,9 @@ stringToTable tbl =
 
         "laborStage1" ->
             LaborStage1
+
+        "laborStage2" ->
+            LaborStage2
 
         "patient" ->
             Patient

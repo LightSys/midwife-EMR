@@ -1,4 +1,4 @@
-module Data.LaborDelIpp exposing (Dialog(..), Field(..), SubMsg(..))
+module Data.LaborDelIpp exposing (Dialog(..), Field(..), FieldBool(..), SubMsg(..))
 
 import Dict exposing (Dict)
 import Time exposing (Time)
@@ -33,10 +33,12 @@ type SubMsg
       -- This is for all fields other than those requiring the
       -- datepicker above.
     | FldChgSubMsg Field String
+    | FldChgBoolSubMsg FieldBool Bool
     | NextPregHeaderContent
     | HandleStage1DateTimeModal Dialog
     | HandleStage1SummaryModal Dialog
     | HandleStage2DateTimeModal Dialog
+    | HandleStage2SummaryModal Dialog
     | HandleStage3DateTimeModal Dialog
     | ClearStage1DateTime
     | ClearStage2DateTime
@@ -51,6 +53,13 @@ type Dialog
     | CloseSaveDialog
     | EditDialog
 
+
+type FieldBool
+    = Stage2CordWrapFld
+    | Stage2ShoulderDystociaFld
+    | Stage2LacerationFld
+    | Stage2EpisiotomyFld
+    | Stage2RepairFld
 
 type Field
     = AdmittanceDateFld
@@ -73,5 +82,18 @@ type Field
     | Stage1CommentsFld
     | Stage2DateFld
     | Stage2TimeFld
+    | Stage2BirthDatetimeFld
+    | Stage2BirthTypeFld
+    | Stage2BirthPositionFld
+    | Stage2DurationPushingFld
+    | Stage2BirthPresentationFld
+    | Stage2CordWrapTypeFld
+    | Stage2DeliveryTypeFld
+    | Stage2ShoulderDystociaMinutesFld
+    | Stage2DegreeFld
+    | Stage2LacerationRepairedByFld
+    | Stage2BirthEBLFld
+    | Stage2MeconiumFld
+    | Stage2CommentsFld
     | Stage3DateFld
     | Stage3TimeFld

@@ -1,6 +1,7 @@
 module Views.Form
     exposing
         ( cancelSaveButtons
+        , checkbox
         , dateTimeModal
         , dateTimePickerModal
         , formErrors
@@ -9,12 +10,15 @@ module Views.Form
         , formFieldDatePicker
         , formTextareaField
         , radio
+        , radioFieldset
+        , radioFieldsetOther
         )
 
 import Date exposing (Date, Month(..), day, month, year)
 import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
+import List.Extra as LE
 
 
 -- LOCAL IMPORTS --
@@ -45,10 +49,13 @@ formErrors errors =
         |> H.ul [ HA.class "c-list u-small primary-fg" ]
 
 
-formField : (String -> msg) -> String -> String -> Maybe String -> Html msg
-formField msg lbl placeholder val =
+formField : (String -> msg) -> String -> String -> Bool -> Maybe String -> Html msg
+formField msg lbl placeholder isBold val =
     H.label [ HA.class "c-label o-form-element u-small mw-form-field" ]
-        [ H.text lbl
+        [ H.span
+            [ HA.classList [ ( "c-text--loud", isBold ) ]
+            ]
+            [ H.text lbl ]
         , H.input
             [ HA.class "c-field c-field--label"
             , HA.placeholder placeholder
@@ -59,14 +66,14 @@ formField msg lbl placeholder val =
         ]
 
 
-formTextareaField : (String -> msg) -> String -> Maybe String -> Int -> Html msg
-formTextareaField onInputMsg lbl val numLines =
+formTextareaField : (String -> msg) -> String -> String -> Maybe String -> Int -> Html msg
+formTextareaField onInputMsg lbl placeholder val numLines =
     H.label [ HA.class "c-label o-form-element mw-form-field-wide" ]
         [ H.text lbl
         , H.textarea
             [ HA.class "c-field c-field--label"
             , HA.rows numLines
-            , HA.placeholder lbl
+            , HA.placeholder placeholder
             , HA.value <| Maybe.withDefault "" val
             , HE.onInput onInputMsg
             ]
@@ -177,7 +184,7 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
                             "Date"
                             "e.g. 08/14/2017"
                             dateVal
-                        , formField timeMsg "Time" "24 hr format, 14:44" timeVal
+                        , formField timeMsg "Time" "24 hr format, 14:44" False timeVal
                         ]
                     ]
                 , H.div [ HA.class "c-card__footer modalButtons" ]
@@ -197,6 +204,7 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
                 ]
             ]
         ]
+
 
 {-| Show a modal to the user to collect date and time for browsers
 that do NOT natively support the date input type.
@@ -237,7 +245,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                             "Date"
                             "e.g. 08/14/2017"
                             dateVal
-                        , formField timeMsg "Time" "24 hr format, 14:44" timeVal
+                        , formField timeMsg "Time" "24 hr format, 14:44" False timeVal
                         ]
                     ]
                 , H.div [ HA.class "c-card__footer modalButtons" ]
@@ -259,14 +267,142 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
         ]
 
 
-radio : ( String, String, String -> msg, Maybe String ) -> Html msg
-radio ( text, name, msg, val ) =
+checkbox : String -> (Bool -> msg) -> Maybe Bool -> Html msg
+checkbox lbl msg val =
+    H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+        [ H.input
+            [ HA.type_ "checkbox"
+            , HE.onClick (msg <| not <| Maybe.withDefault False val)
+            , HA.checked <| Maybe.withDefault False val
+            ]
+            []
+        , H.span [ HA.class "c-text--loud" ]
+            [ H.text lbl ]
+        ]
+
+
+{-| Radio field set.
+-}
+radioFieldset : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> Html msg
+radioFieldset title groupName value msg disabled radioTexts =
+    H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+        ([ H.legend [ HA.class "o-fieldset__legend" ]
+            [ H.span [ HA.class "c-text--loud" ]
+                [ H.text title ]
+            ]
+         ]
+            ++ (List.map (\text -> radio ( text, groupName, disabled, msg, value )) radioTexts)
+        )
+
+
+{-| Group of radio buttons with an Other radio button at the end with an input
+text box. If the user types in that, what is typed is returned as the message and
+that radio button is selected.
+-}
+radioFieldsetOther : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> Html msg
+radioFieldsetOther title groupName value msg disabled radioTexts =
+    let
+        matched =
+            case LE.find (\v -> v == Maybe.withDefault "" value) radioTexts of
+                Just _ ->
+                    True
+
+                Nothing ->
+                    False
+
+        radioWithOther =
+            radioTexts
+                ++ if matched then
+                    [ "" ]
+                   else
+                    [ Maybe.withDefault "" value ]
+    in
+        H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+            ([ H.legend [ HA.class "o-fieldset__legend" ]
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text title ]
+                ]
+             ]
+                ++ (List.indexedMap
+                        (\i text ->
+                            if i < List.length radioTexts then
+                                radio ( text, groupName, disabled, msg, value )
+                            else
+                                radioOther ( text, groupName, disabled, msg, not matched, value )
+                        )
+                        radioWithOther
+                   )
+            )
+
+
+{-| Same as radio but includes a text input as well. checkable passed specifies
+whether or not one of the other radios is checked; if not, then this radio is
+"checkable".
+-}
+radioOther : ( String, String, Bool, String -> msg, Bool, Maybe String ) -> Html msg
+radioOther ( text, name, disabled, msg, checkable, val ) =
+    H.label
+        [ HA.class "c-field c-field--choice c-input-group"
+        , HA.style [ ( "position", "relative" ) ]
+        ]
+        [ H.input
+            [ HA.type_ "radio"
+            , HA.style [ ( "float", "left" ) ]
+            , HA.name name
+            , HA.checked
+                (Maybe.withDefault "" val
+                    == text
+                    && text
+                    /= ""
+                    && checkable
+                )
+            , HE.onClick (msg text)
+            , HA.disabled disabled
+            ]
+            []
+        , H.input
+            [ HA.class "c-field"
+            , HA.style
+                [ ( "position", "absolute" )
+                , ( "top", "50%" )
+                , ( "transform", "translateY(-50%)" )
+                , ( "left", "1.5em" )
+                ]
+            , HA.placeholder "or enter another"
+            , HA.value <|
+                if checkable then
+                    Maybe.withDefault "" val
+                else
+                    ""
+            , HE.onInput msg
+            ]
+            []
+        ]
+
+
+radio : ( String, String, Bool, String -> msg, Maybe String ) -> Html msg
+radio ( text, name, disabled, msg, val ) =
     H.label [ HA.class "c-field c-field--choice" ]
         [ H.input
             [ HA.type_ "radio"
             , HA.name name
             , HA.checked (Maybe.withDefault "" val == text)
             , HE.onClick (msg text)
+            , HA.disabled disabled
+            ]
+            []
+        , H.text text
+        ]
+
+
+radioBool : ( String, String, Bool -> msg, Maybe Bool ) -> Html msg
+radioBool ( text, name, msg, val ) =
+    H.label [ HA.class "c-field c-field--choice" ]
+        [ H.input
+            [ HA.type_ "radio"
+            , HA.name name
+            , HA.checked <| Maybe.withDefault False val
+            , HE.onClick (msg (not (Maybe.withDefault False val)))
             ]
             []
         , H.text text

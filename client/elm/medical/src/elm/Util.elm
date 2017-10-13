@@ -16,6 +16,7 @@ module Util
         , filterStringLikeTime
         , formatDohId
         , getGA
+        , maybeBoolToMaybeInt
         , maybeIntToMaybeBool
         , maybeIntToNegOne
         , maybeDateToValue
@@ -461,7 +462,6 @@ diff2DatesString d1 d2 =
                 n ->
                     (toString n) ++ " " ++ unit ++ "s"
 
-
         dateDelta =
             case DEComp.is DEComp.Before d1 d2 of
                 True ->
@@ -548,6 +548,19 @@ formatDohId doh =
 
         Nothing ->
             ""
+
+
+maybeBoolToMaybeInt : Maybe Bool -> JE.Value
+maybeBoolToMaybeInt bool =
+    case bool of
+        Just True ->
+            JE.int 1
+
+        Just False ->
+            JE.int 0
+
+        Nothing ->
+            JE.null
 
 
 maybeIntToMaybeBool : JD.Decoder (Maybe Bool)

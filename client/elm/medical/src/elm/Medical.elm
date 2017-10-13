@@ -16,6 +16,7 @@ import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
 import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
 import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLaborStage1Record)
+import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
@@ -331,6 +332,20 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddLaborStage2Type (LaborDelIppMsg (DataCache _ _)) laborStage2RecordNew) ->
+                                    let
+                                        laborStage2Rec =
+                                            laborStage2RecordNewToLaborStage2Record
+                                                (LaborStage2Id dataAddMsg.response.id)
+                                                laborStage2RecordNew
+
+                                        subMsg =
+                                            DataCache (Just model.dataCache) (Just [ LaborStage2 ])
+                                    in
+                                        ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Rec) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
                                 _ ->
                                     let
                                         msgText =
@@ -368,6 +383,15 @@ updateMessage incoming model =
                                             DataCache (Just model.dataCache) (Just [ LaborStage1 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Record) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                Just (UpdateLaborStage2Type (LaborDelIppMsg (DataCache _ _)) laborStage2Record) ->
+                                    let
+                                        subMsg =
+                                            DataCache (Just model.dataCache) (Just [ LaborStage2 ])
+                                    in
+                                        ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Record) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
@@ -416,6 +440,21 @@ updateMessage incoming model =
                                                     case List.head recs of
                                                         Just r ->
                                                             DCache.put (LaborStage1DataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+                                            in
+                                                { mdl | dataCache = dc }
+
+                                        TableRecordLaborStage2 recs ->
+                                            -- There should ever be only one stage 2 record
+                                            -- sent because there is only one allowed per
+                                            -- labor, but the data arrives in an array anyway.
+                                            let
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (LaborStage2DataCache r) mdl.dataCache
 
                                                         Nothing ->
                                                             mdl.dataCache
@@ -478,6 +517,12 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateLaborStage1Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (AddLaborStage2Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateLaborStage2Type msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (SelectQueryType msg _) ->

@@ -58,7 +58,7 @@ LaborStage1 = Bookshelf.Model.extend({
   // https://github.com/tgriesser/bookshelf/issues/105
   // --------------------------------------------------------
 
-  , pregnancy: function() {
+  , labor: function() {
       return this.belongsTo(require('./Labor').Labor, 'labor_id');
     }
 

@@ -38,10 +38,8 @@ type alias LaborStage1Record =
     }
 
 
-{-| A new record consists of first setting the date/time
-that stage 1 has been complete, i.e. full dialation. Until
-that takes place, the other fields cannot be filled, at
-least not completely.
+{-| A new record is the same as the normal
+record without the id field.
 -}
 type alias LaborStage1RecordNew =
     { fullDialation : Maybe Date

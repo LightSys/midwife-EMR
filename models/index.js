@@ -69,5 +69,7 @@ module.exports = {
   , Labors: require('./Labor').Labors
   , LaborStage1: require('./LaborStage1').LaborStage1
   , LaborStage1s: require('./LaborStage1').LaborStage1s
+  , LaborStage2: require('./LaborStage2').LaborStage2
+  , LaborStage2s: require('./LaborStage2').LaborStage2s
 };
 

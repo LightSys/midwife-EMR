@@ -43,7 +43,15 @@ import Data.LaborStage1
         , LaborStage1Record
         , LaborStage1RecordNew
         )
-import Data.LaborDelIpp exposing (Dialog(..), Field(..), SubMsg(..))
+import Data.LaborStage2
+    exposing
+        ( isLaborStage2RecordComplete
+        , LaborStage2Record
+        , LaborStage2RecordNew
+        , laborStage2RecordNewToValue
+        , laborStage2RecordToValue
+        )
+import Data.LaborDelIpp exposing (Dialog(..), Field(..), FieldBool(..), SubMsg(..))
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyId(..), PregnancyRecord)
@@ -82,7 +90,8 @@ type StageSummaryModal
     = NoStageSummaryModal
     | Stage1SummaryViewModal
     | Stage1SummaryEditModal
-    | Stage2SummaryModal
+    | Stage2SummaryViewModal
+    | Stage2SummaryEditModal
     | Stage3SummaryModal
 
 
@@ -96,6 +105,7 @@ type alias Model =
     , pregnancyRecord : Maybe PregnancyRecord
     , laborRecord : Maybe (List LaborRecord)
     , laborStage1Record : Maybe LaborStage1Record
+    , laborStage2Record : Maybe LaborStage2Record
     , laborState : LaborState
     , admittanceDate : Maybe Date
     , admittanceTime : Maybe String
@@ -121,6 +131,24 @@ type alias Model =
     , stage2DateTimeModal : DateTimeModal
     , stage2Date : Maybe Date
     , stage2Time : Maybe String
+    , stage2SummaryModal : StageSummaryModal
+    , s2BirthType : Maybe String
+    , s2BirthPosition : Maybe String
+    , s2DurationPushing : Maybe String
+    , s2BirthPresentation : Maybe String
+    , s2CordWrap : Maybe Bool
+    , s2CordWrapType : Maybe String
+    , s2DeliveryType : Maybe String
+    , s2ShoulderDystocia : Maybe Bool
+    , s2ShoulderDystociaMinutes : Maybe String
+    , s2Laceration : Maybe Bool
+    , s2Episiotomy : Maybe Bool
+    , s2Repair : Maybe Bool
+    , s2Degree : Maybe String
+    , s2LacerationRepairedBy : Maybe String
+    , s2BirthEBL : Maybe String
+    , s2Meconium : Maybe String
+    , s2Comments : Maybe String
     , stage3DateTimeModal : DateTimeModal
     , stage3Date : Maybe Date
     , stage3Time : Maybe String
@@ -184,6 +212,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             pregRec
             laborRecs
             Nothing
+            Nothing
             laborState
             Nothing
             Nothing
@@ -209,6 +238,24 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             NoDateTimeModal
             Nothing
             Nothing
+            NoStageSummaryModal
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
             NoDateTimeModal
             Nothing
             Nothing
@@ -225,14 +272,14 @@ getLaborDetails : LaborId -> ProcessStore -> ( ProcessStore, Cmd Msg )
 getLaborDetails lid store =
     let
         selectQuery =
-            SelectQuery Labor (Just (getLaborId lid)) [ LaborStage1 ]
+            SelectQuery Labor (Just (getLaborId lid)) [ LaborStage1, LaborStage2 ]
 
         ( processId, processStore ) =
             Processing.add
                 (SelectQueryType
                     (LaborDelIppMsg
                         (DataCache Nothing
-                            (Just [ LaborStage1 ])
+                            (Just [ LaborStage1, LaborStage2 ])
                         )
                     )
                     selectQuery
@@ -323,7 +370,7 @@ viewAdmitForm model =
                         "Date admitted"
                         "e.g. 08/14/2017"
                         model.admittanceDate
-                , Form.formField (FldChgSubMsg AdmittanceTimeFld) "Time admitted" "24 hr format, 14:44" model.admittanceTime
+                , Form.formField (FldChgSubMsg AdmittanceTimeFld) "Time admitted" "24 hr format, 14:44" False model.admittanceTime
                 , if model.browserSupportsDate then
                     Form.formFieldDate (FldChgSubMsg LaborDateFld)
                         "Date start of labor"
@@ -335,15 +382,15 @@ viewAdmitForm model =
                         "Date start of labor"
                         "e.g. 08/14/2017"
                         model.laborDate
-                , Form.formField (FldChgSubMsg LaborTimeFld) "Time start of labor" "24 hr format, 09:00" model.laborTime
-                , Form.formField (FldChgSubMsg PosFld) "POS" "pos" model.pos
-                , Form.formField (FldChgSubMsg FhFld) "FH" "fh" model.fh
-                , Form.formField (FldChgSubMsg FhtFld) "FHT" "fht" model.fht
-                , Form.formField (FldChgSubMsg SystolicFld) "Systolic" "systolic" model.systolic
-                , Form.formField (FldChgSubMsg DiastolicFld) "Diastolic" "diastolic" model.diastolic
-                , Form.formField (FldChgSubMsg CrFld) "CR" "heart rate" model.cr
-                , Form.formField (FldChgSubMsg TempFld) "Temp" "temperature" model.temp
-                , Form.formTextareaField (FldChgSubMsg CommentsFld) "Comments" model.comments 3
+                , Form.formField (FldChgSubMsg LaborTimeFld) "Time start of labor" "24 hr format, 09:00" False model.laborTime
+                , Form.formField (FldChgSubMsg PosFld) "POS" "pos" False model.pos
+                , Form.formField (FldChgSubMsg FhFld) "FH" "fh" False model.fh
+                , Form.formField (FldChgSubMsg FhtFld) "FHT" "fht" False model.fht
+                , Form.formField (FldChgSubMsg SystolicFld) "Systolic" "systolic" False model.systolic
+                , Form.formField (FldChgSubMsg DiastolicFld) "Diastolic" "diastolic" False model.diastolic
+                , Form.formField (FldChgSubMsg CrFld) "CR" "heart rate" False model.cr
+                , Form.formField (FldChgSubMsg TempFld) "Temp" "temperature" False model.temp
+                , Form.formTextareaField (FldChgSubMsg CommentsFld) "Comments" "" model.comments 3
                 ]
             , if List.length model.formErrors > 0 then
                 H.div
@@ -407,14 +454,30 @@ isStage1SummaryDone model =
             False
 
 
+isStage2SummaryDone : Model -> Bool
+isStage2SummaryDone model =
+    case model.laborStage2Record of
+        Just rec ->
+            isLaborStage2RecordComplete rec
+
+        _ ->
+            False
+
+
 viewStages : Model -> Html SubMsg
 viewStages model =
     let
-        isEditing =
+        isEditingS1 =
             if model.stage1SummaryModal == Stage1SummaryEditModal then
                 True
             else
                 not (isStage1SummaryDone model)
+
+        isEditingS2 =
+            if model.stage2SummaryModal == Stage2SummaryEditModal then
+                True
+            else
+                not (isStage2SummaryDone model)
 
         dialogStage1Config =
             DialogStage1Summary
@@ -423,13 +486,28 @@ viewStages model =
                     || model.stage1SummaryModal
                     == Stage1SummaryEditModal
                 )
-                isEditing
+                isEditingS1
                 "Stage 1 Summary"
                 model
                 (HandleStage1SummaryModal CloseNoSaveDialog)
                 (HandleStage1SummaryModal CloseSaveDialog)
                 (HandleStage1SummaryModal EditDialog)
                 (FldChgSubMsg Stage1MobilityFld)
+
+        dialogStage2Config =
+            DialogStage2Summary
+                (model.stage2SummaryModal
+                    == Stage2SummaryViewModal
+                    || model.stage2SummaryModal
+                    == Stage2SummaryEditModal
+                )
+                isEditingS2
+                "Stage 2 Summary"
+                model
+                (HandleStage2SummaryModal CloseNoSaveDialog)
+                (HandleStage2SummaryModal CloseSaveDialog)
+                (HandleStage2SummaryModal EditDialog)
+                (FldChgSubMsg Stage2BirthTypeFld)
     in
         H.div [ HA.class "stage-wrapper" ]
             [ H.div [ HA.class "stage-content" ]
@@ -504,7 +582,22 @@ viewStages model =
                             [ HA.class "c-button c-button--ghost-brand u-small"
                             , HE.onClick <| HandleStage2DateTimeModal OpenDialog
                             ]
-                            [ H.text <| "Not implemented" ]
+                            [ H.text <|
+                                case model.laborStage2Record of
+                                    Just ls2rec ->
+                                        case ls2rec.birthDatetime of
+                                            Just d ->
+                                                U.dateTimeHMFormatter
+                                                    U.MDYDateFmt
+                                                    U.DashDateSep
+                                                    d
+
+                                            Nothing ->
+                                                "Click to set"
+
+                                    Nothing ->
+                                        "Click to set"
+                            ]
                         , if model.browserSupportsDate then
                             Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
                                 "Stage 2 Date/Time"
@@ -531,8 +624,16 @@ viewStages model =
                 , H.div []
                     [ H.button
                         [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage2SummaryModal OpenDialog
                         ]
-                        [ H.text "Summary" ]
+                        [ if isStage2SummaryDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
+                    , dialogStage2Summary dialogStage2Config
                     ]
                 ]
             , H.div [ HA.class "stage-content" ]
@@ -579,31 +680,7 @@ viewStages model =
 
 
 
--- TODO: pull the following into the second stage summary??
---, H.div [ HA.class "stage-content" ]
---[ H.div [ HA.class "c-text--brand c-text--loud" ]
---[ H.text "Stuff" ]
---, H.div
---[ HA.class "o-form-element"
---, HA.style [ ("padding-top", "0") ]
---]
---[ H.div
---[ HA.class "o-field"
---]
---[ H.label
---[ HA.class "c-field c-field--choice c-field-minPadding"
---, HA.for "eblbirth"
---]
---[ H.text "EBL @ birth" ]
---, H.input
---[ HA.class "c-field u-small c-field-minPadding"
---, HA.id "eblbirth"
---, HA.style [ ("width", "50%") ]
---]
---[]
---]
---]
---]
+-- Modal for Stage 1 Summary --
 
 
 type alias DialogStage1Summary =
@@ -663,30 +740,30 @@ dialogStage1SummaryEdit cfg =
                           -- BlazeCSS fieldset has too much margin at top for modal.
                         , HA.style [ ( "margin-top", "0" ) ]
                         ]
-                        [ H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
-                            [ H.legend [ HA.class "o-fieldset__legend" ]
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Mobility" ]
-                                ]
-                            , Form.radio
-                                ( "Moved around", "mobility", (FldChgSubMsg Stage1MobilityFld), cfg.model.s1Mobility )
-                            , Form.radio
-                                ( "Didn't move much", "mobility", (FldChgSubMsg Stage1MobilityFld), cfg.model.s1Mobility )
-                            , Form.radio
-                                ( "Movement restricted", "mobility", (FldChgSubMsg Stage1MobilityFld), cfg.model.s1Mobility )
+                        [ Form.radioFieldset "Mobility"
+                            "mobility"
+                            cfg.model.s1Mobility
+                            (FldChgSubMsg Stage1MobilityFld)
+                            False
+                            [ "Moved around"
+                            , "Didn't move much"
+                            , "Movement restricted"
                             ]
                         , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                             [ Form.formField (FldChgSubMsg Stage1DurationLatentFld)
                                 "Duration latent"
                                 "Number of minutes"
+                                True
                                 cfg.model.s1DurationLatent
                             , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
                                 "Duration active"
                                 "Number of minutes"
+                                True
                                 cfg.model.s1DurationActive
                             ]
                         , Form.formTextareaField (FldChgSubMsg Stage1CommentsFld)
                             "Comments"
+                            "Meds, IV, Complications, Notes, etc."
                             cfg.model.s1Comments
                             3
                         ]
@@ -715,6 +792,283 @@ if available.
 -}
 dialogStage1SummaryView : DialogStage1Summary -> Html SubMsg
 dialogStage1SummaryView cfg =
+    let
+        ( mobility, latent, active, comments, s1Total ) =
+            case cfg.model.laborStage1Record of
+                Just rec ->
+                    ( Maybe.withDefault "" rec.mobility
+                    , Maybe.map toString rec.durationLatent
+                        |> Maybe.withDefault ""
+                    , Maybe.map toString rec.durationActive
+                        |> Maybe.withDefault ""
+                    , Maybe.withDefault "" rec.comments
+                    , case rec.fullDialation of
+                        Just fd ->
+                            case cfg.model.laborRecord of
+                                Just lrecs ->
+                                    case LE.find (\r -> r.id == rec.labor_id) lrecs of
+                                        Just laborRec ->
+                                            U.diff2DatesString laborRec.startLaborDate fd
+
+                                        Nothing ->
+                                            ""
+
+                                Nothing ->
+                                    ""
+
+                        Nothing ->
+                            ""
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "" )
+    in
+        H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
+            [ H.div
+                [ HA.class "o-modal"
+                , HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+                ]
+                [ H.div [ HA.class "c-card" ]
+                    [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
+                        [ H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button--close"
+                            , HE.onClick cfg.closeMsg
+                            ]
+                            [ H.text "x" ]
+                        , H.h4 [ HA.class "c-heading" ]
+                            [ H.text cfg.title ]
+                        ]
+                    , H.div
+                        [ HA.class "c-card__body o-panel"
+                        , HA.style
+                            -- Need to restrict the body in order for the panel to work.
+                            [ ( "height", "230px" )
+                            , ( "max-height", "230px" )
+                            ]
+                        ]
+                        [ H.div
+                            [ HA.class ""
+                              -- BlazeCSS fieldset has too much margin at top for modal.
+                            , HA.style [ ( "margin-top", "0" ) ]
+                            ]
+                            [ H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Stage 1 Total: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text s1Total ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Mobility: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text mobility ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Duration Latent: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text latent ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text " minutes" ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Duration Active: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text active ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text " minutes" ]
+                                ]
+                            , H.div []
+                                [ H.span [ HA.class "c-text--loud" ]
+                                    [ H.text "Comments: " ]
+                                , H.span [ HA.class "" ]
+                                    [ H.text comments ]
+                                ]
+                            ]
+                        ]
+                    , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
+                        [ H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button u-small"
+                            , HE.onClick cfg.closeMsg
+                            ]
+                            [ H.text "Close" ]
+                        , H.button
+                            -- TODO: make this an Edit button and need a new message
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button--brand"
+                            , HE.onClick cfg.editMsg
+                            ]
+                            [ H.text "Edit" ]
+                        ]
+                    ]
+                ]
+            ]
+
+
+
+-- Modal for Stage 2 Summary --
+
+
+type alias DialogStage2Summary =
+    { isShown : Bool
+    , isEditing : Bool
+    , title : String
+    , model : Model
+    , closeMsg : SubMsg
+    , saveMsg : SubMsg
+    , editMsg : SubMsg
+    , birthTypeMsg : String -> SubMsg
+    }
+
+
+dialogStage2Summary : DialogStage2Summary -> Html SubMsg
+dialogStage2Summary cfg =
+    case cfg.isEditing of
+        True ->
+            dialogStage2SummaryEdit cfg
+
+        False ->
+            dialogStage2SummaryView cfg
+
+
+dialogStage2SummaryEdit : DialogStage2Summary -> Html SubMsg
+dialogStage2SummaryEdit cfg =
+    H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
+        [ H.div
+            [ HA.class "o-modal"
+            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+            ]
+            [ H.div [ HA.class "c-card" ]
+                [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--close"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "x" ]
+                    , H.h4 [ HA.class "c-heading" ]
+                        [ H.text cfg.title ]
+                    ]
+                , H.div
+                    [ HA.class "c-card__body o-panel"
+                    , HA.style
+                        -- Need to restrict the body in order for the panel to work.
+                        [ ( "height", "230px" )
+                        , ( "max-height", "230px" )
+                        ]
+                    ]
+                    [ H.div
+                        [ HA.class "o-fieldset form-wrapper"
+                          -- BlazeCSS fieldset has too much margin at top for modal.
+                        , HA.style [ ( "margin-top", "0" ) ]
+                        ]
+                        [ Form.radioFieldsetOther "Position for birth"
+                            "position"
+                            cfg.model.s2BirthPosition
+                            (FldChgSubMsg Stage2BirthPositionFld)
+                            False
+                            [ "Semi-sitting"
+                            , "Lying on back"
+                            , "Side-Lying"
+                            , "Stool or Antipolo"
+                            , "Hands/Knees"
+                            , "Squat"
+                            ]
+                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                            [ Form.formField (FldChgSubMsg Stage2DurationPushingFld)
+                                "Duration of pushing"
+                                "Number of minutes"
+                                True
+                                cfg.model.s2DurationPushing
+                            ]
+                        , Form.radioFieldsetOther "Baby's presentation at birth"
+                            "presentation"
+                            cfg.model.s2BirthPresentation
+                            (FldChgSubMsg Stage2BirthPresentationFld)
+                            False
+                            [ "ROA"
+                            , "ROP"
+                            , "LOA"
+                            , "LOP"
+                            ]
+                        , Form.checkbox "Cord was wrapped" (FldChgBoolSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
+                        , Form.radioFieldsetOther "Cord wrap type"
+                            "cordwraptype"
+                            cfg.model.s2CordWrapType
+                            (FldChgSubMsg Stage2CordWrapTypeFld)
+                            False
+                            [ "Nuchal"
+                            , "Body"
+                            , "Cut on perineum"
+                            ]
+                        , Form.radioFieldsetOther "Delivery type"
+                            "deliverytype"
+                            cfg.model.s2DeliveryType
+                            (FldChgSubMsg Stage2DeliveryTypeFld)
+                            False
+                            [ "Spontaneous"
+                            , "Interventive"
+                            , "Vacuum"
+                            ]
+                        , Form.checkbox "Shoulder Dystocia" (FldChgBoolSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
+                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                            [ Form.formField (FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
+                                "Shoulder dystocia minutes"
+                                "Number of minutes"
+                                True
+                                cfg.model.s2ShoulderDystociaMinutes
+                            ]
+                        , Form.checkbox "Laceration" (FldChgBoolSubMsg Stage2LacerationFld) cfg.model.s2Laceration
+                        , Form.checkbox "Episiotomy" (FldChgBoolSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
+                        , Form.checkbox "Repair" (FldChgBoolSubMsg Stage2RepairFld) cfg.model.s2Repair
+                        , Form.radioFieldset "Degree"
+                            "degree"
+                            cfg.model.s2DeliveryType
+                            (FldChgSubMsg Stage2DeliveryTypeFld)
+                            False
+                            [ "1st"
+                            , "2nd"
+                            , "3rd"
+                            , "4th"
+                            ]
+                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                            [ Form.formField (FldChgSubMsg Stage2LacerationRepairedByFld)
+                                "Laceration repaired by"
+                                "Initials or lastname"
+                                True
+                                cfg.model.s2LacerationRepairedBy
+                            ]
+                        , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
+                            "Comments"
+                            "Meds, IV, Complications, Notes, etc."
+                            cfg.model.s2Comments
+                            3
+                        ]
+                    ]
+                , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button u-small"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "Cancel" ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--brand"
+                        , HE.onClick cfg.saveMsg
+                        ]
+                        [ H.text "Save" ]
+                    ]
+                ]
+            ]
+        ]
+
+
+dialogStage2SummaryView : DialogStage2Summary -> Html SubMsg
+dialogStage2SummaryView cfg =
     let
         ( mobility, latent, active, comments, s1Total ) =
             case cfg.model.laborStage1Record of
@@ -914,6 +1268,14 @@ refreshModelFromCache dc tables model =
                                 _ ->
                                     m
 
+                        LaborStage2 ->
+                            case DataCache.get t dc of
+                                Just (LaborStage2DataCache rec) ->
+                                    { m | laborStage2Record = Just rec }
+
+                                _ ->
+                                    m
+
                         _ ->
                             m
                 )
@@ -1088,9 +1450,31 @@ update session msg model =
                 UnknownDateFieldMessage str ->
                     ( model, Cmd.none, Cmd.none )
 
+        FldChgBoolSubMsg fld value ->
+            -- Boolean fields.
+            ( case fld of
+                Stage2CordWrapFld ->
+                    { model | s2CordWrap = Just value }
+
+                Stage2ShoulderDystociaFld ->
+                    { model | s2ShoulderDystocia = Just value }
+
+                Stage2LacerationFld ->
+                    { model | s2Laceration = Just value }
+
+                Stage2EpisiotomyFld ->
+                    { model | s2Episiotomy = Just value }
+
+                Stage2RepairFld ->
+                    { model | s2Repair = Just value }
+            , Cmd.none
+            , Cmd.none
+            )
+
         FldChgSubMsg fld value ->
             -- All fields are handled here except for the date fields for browsers that
-            -- do not support the input date type (see DateFieldSubMsg for those).
+            -- do not support the input date type (see DateFieldSubMsg for those) and
+            -- the boolean fields handled by FldChgBoolSubMsg above.
             ( case fld of
                 AdmittanceDateFld ->
                     { model | admittanceDate = Date.fromString value |> Result.toMaybe }
@@ -1134,18 +1518,6 @@ update session msg model =
                 Stage1TimeFld ->
                     { model | stage1Time = Just <| U.filterStringLikeTime value }
 
-                Stage2DateFld ->
-                    { model | stage2Date = Date.fromString value |> Result.toMaybe }
-
-                Stage2TimeFld ->
-                    { model | stage2Time = Just <| U.filterStringLikeTime value }
-
-                Stage3DateFld ->
-                    { model | stage3Date = Date.fromString value |> Result.toMaybe }
-
-                Stage3TimeFld ->
-                    { model | stage3Time = Just <| U.filterStringLikeTime value }
-
                 Stage1MobilityFld ->
                     { model | s1Mobility = Just value }
 
@@ -1157,6 +1529,58 @@ update session msg model =
 
                 Stage1CommentsFld ->
                     { model | s1Comments = Just value }
+
+                Stage2DateFld ->
+                    { model | stage2Date = Date.fromString value |> Result.toMaybe }
+
+                Stage2TimeFld ->
+                    { model | stage2Time = Just <| U.filterStringLikeTime value }
+
+                Stage2BirthDatetimeFld ->
+                    -- TODO: What is this field for if we have Stage2DateFld and Stage2TimeFld?
+                    model
+
+                Stage2BirthTypeFld ->
+                    model
+
+                Stage2BirthPositionFld ->
+                    { model | s2BirthPosition = Just value }
+
+                Stage2DurationPushingFld ->
+                    { model | s2DurationPushing = Just <| U.filterStringLikeInt value }
+
+                Stage2BirthPresentationFld ->
+                    { model | s2BirthPresentation = Just value }
+
+                Stage2CordWrapTypeFld ->
+                    { model | s2CordWrapType = Just value }
+
+                Stage2DeliveryTypeFld ->
+                    { model | s2DeliveryType = Just value }
+
+                Stage2ShoulderDystociaMinutesFld ->
+                    { model | s2ShoulderDystociaMinutes = Just <| U.filterStringLikeInt value }
+
+                Stage2DegreeFld ->
+                    { model | s2Degree = Just value }
+
+                Stage2LacerationRepairedByFld ->
+                    { model | s2LacerationRepairedBy = Just value }
+
+                Stage2BirthEBLFld ->
+                    model
+
+                Stage2MeconiumFld ->
+                    model
+
+                Stage2CommentsFld ->
+                    { model | s2Comments = Just value }
+
+                Stage3DateFld ->
+                    { model | stage3Date = Date.fromString value |> Result.toMaybe }
+
+                Stage3TimeFld ->
+                    { model | stage3Time = Just <| U.filterStringLikeTime value }
             , Cmd.none
             , Cmd.none
             )
@@ -1402,34 +1826,242 @@ update session msg model =
             -- completion. We default to the current date/time for convenience if
             -- this is an open event, but only if the date/time has not already
             -- been previously selected.
-            let
-                ( s2d, s2t ) =
-                    case model.stage2DateTimeModal == NoDateTimeModal of
-                        True ->
-                            case ( model.stage2Date, model.stage2Time ) of
-                                ( Nothing, Nothing ) ->
-                                    ( Just <| Date.fromTime model.currTime
-                                    , Just <| U.timeToTimeString model.currTime
-                                    )
+            case dialogState of
+                OpenDialog ->
+                    ( case ( model.stage2Date, model.stage2Time ) of
+                        ( Nothing, Nothing ) ->
+                            -- If not yet set, the set the date/time to
+                            -- current as a convenience to user.
+                            { model
+                                | stage2DateTimeModal = Stage2DateTimeModal
+                                , stage2Date = Just <| Date.fromTime model.currTime
+                                , stage2Time = Just <| U.timeToTimeString model.currTime
+                            }
 
-                                ( _, _ ) ->
-                                    ( model.stage2Date, model.stage2Time )
+                        ( _, _ ) ->
+                            { model | stage2DateTimeModal = Stage2DateTimeModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
 
-                        False ->
-                            ( model.stage2Date, model.stage2Time )
-            in
-                ( { model
-                    | stage2DateTimeModal =
-                        if model.stage2DateTimeModal == NoDateTimeModal then
-                            Stage2DateTimeModal
-                        else
-                            NoDateTimeModal
-                    , stage2Date = s2d
-                    , stage2Time = s2t
-                  }
-                , Cmd.none
-                , Cmd.none
-                )
+                CloseNoSaveDialog ->
+                    ( { model | stage2DateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+
+                EditDialog ->
+                    -- This dialog option is not used for stage 2 date time.
+                    ( model, Cmd.none, Cmd.none )
+
+                CloseSaveDialog ->
+                    -- Close and potentially send initial LaborStage2Record
+                    -- to server as an add or update if it validates. An add will
+                    -- send a LaborStage2RecordNew and an update uses the full
+                    -- LaborStage2Record. The initial add is only sent if
+                    -- both date and time are valid.
+                    case validateStage2New model of
+                        [] ->
+                            let
+                                outerMsg =
+                                    case ( model.laborStage2Record, model.stage2Date, model.stage2Time ) of
+                                        -- A laborStage2 record already exists, so update it.
+                                        ( Just rec, Just d, Just t ) ->
+                                            case U.stringToTimeTuple t of
+                                                Just ( h, m ) ->
+                                                    let
+                                                        newRec =
+                                                            { rec | birthDatetime = Just (U.datePlusTimeTuple d ( h, m )) }
+                                                    in
+                                                        ProcessTypeMsg
+                                                            (UpdateLaborStage2Type
+                                                                (LaborDelIppMsg
+                                                                    (DataCache Nothing (Just [ LaborStage2 ]))
+                                                                )
+                                                                newRec
+                                                            )
+                                                            ChgMsgType
+                                                            (laborStage2RecordToValue newRec)
+
+                                                Nothing ->
+                                                    Noop
+
+                                        ( Just rec, Nothing, Nothing ) ->
+                                            -- User unset the birthDatetime, so update the server.
+                                            let
+                                                newRec =
+                                                    { rec | birthDatetime = Nothing }
+                                            in
+                                                ProcessTypeMsg
+                                                    (UpdateLaborStage2Type
+                                                        (LaborDelIppMsg
+                                                            (DataCache Nothing (Just [ LaborStage2 ]))
+                                                        )
+                                                        newRec
+                                                    )
+                                                    ChgMsgType
+                                                    (laborStage2RecordToValue newRec)
+
+                                        ( Nothing, Just _, Just _ ) ->
+                                            -- Create a new laborStage2 record.
+                                            case deriveLaborStage2RecordNew model of
+                                                Just laborStage2RecNew ->
+                                                    ProcessTypeMsg
+                                                        (AddLaborStage2Type
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ LaborStage2 ]))
+                                                            )
+                                                            laborStage2RecNew
+                                                        )
+                                                        AddMsgType
+                                                        (laborStage2RecordNewToValue laborStage2RecNew)
+
+                                                Nothing ->
+                                                    Noop
+
+                                        ( _, _, _ ) ->
+                                            Noop
+                            in
+                                ( { model
+                                    | stage2DateTimeModal = NoDateTimeModal
+                                  }
+                                , Cmd.none
+                                , Task.perform (always outerMsg) (Task.succeed True)
+                                )
+
+                        errors ->
+                            -- TODO: show errors to user somehow???
+                            ( { model | stage2DateTimeModal = NoDateTimeModal }
+                            , Cmd.none
+                            , logConsole <| toString errors
+                            )
+
+        HandleStage2SummaryModal dialogState ->
+            case dialogState of
+                -- If there already is a laborStage2Record, then populate the form
+                -- fields with the contents of that record.
+                OpenDialog ->
+                    let
+                        newModel =
+                            case model.laborStage2Record of
+                                Just rec ->
+                                    { model
+                                        | s2BirthType = rec.birthType
+                                        , s2BirthPosition = rec.birthPosition
+                                        , s2DurationPushing = Maybe.map toString rec.durationPushing
+                                        , s2BirthPresentation = rec.birthPresentation
+                                        , s2CordWrap = rec.cordWrap
+                                        , s2CordWrapType = rec.cordWrapType
+                                        , s2DeliveryType = rec.deliveryType
+                                        , s2ShoulderDystocia = rec.shoulderDystocia
+                                        , s2ShoulderDystociaMinutes = Maybe.map toString rec.shoulderDystociaMinutes
+                                        , s2Laceration = rec.laceration
+                                        , s2Episiotomy = rec.episiotomy
+                                        , s2Repair = rec.repair
+                                        , s2Degree = rec.degree
+                                        , s2LacerationRepairedBy = rec.lacerationRepairedBy
+                                        , s2BirthEBL = Maybe.map toString rec.birthEBL
+                                        , s2Meconium = rec.meconium
+                                        , s2Comments = rec.comments
+                                    }
+
+                                Nothing ->
+                                    model
+                    in
+                        -- We set the modal to View but it will show the edit screen
+                        -- if there are fields not complete.
+                        ( { newModel | stage2SummaryModal = Stage2SummaryViewModal }
+                        , Cmd.none
+                        , Cmd.none
+                        )
+
+                CloseNoSaveDialog ->
+                    -- We keep whatever, if anything, the user entered into the
+                    -- form fields.
+                    ( { model | stage2SummaryModal = NoStageSummaryModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                EditDialog ->
+                    -- Transitioning from a viewing summary state to editing again by
+                    -- explicitly setting the mode to edit. This is different that
+                    -- Stage2SummaryViewModal in that we are forcing edit here.
+                    ( { model | stage2SummaryModal = Stage2SummaryEditModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    -- We save to the database if the form fields validate.
+                    case validateStage2 model of
+                        [] ->
+                            let
+                                outerMsg =
+                                    case model.laborStage2Record of
+                                        Just s2Rec ->
+                                            -- A Stage 2 record already exists, so update it.
+                                            let
+                                                newRec =
+                                                    { s2Rec
+                                                        | birthType = model.s2BirthType
+                                                        , birthPosition = model.s2BirthPosition
+                                                        , durationPushing = U.maybeStringToMaybeInt model.s2DurationPushing
+                                                        , birthPresentation = model.s2BirthPresentation
+                                                        , cordWrap = model.s2CordWrap
+                                                        , cordWrapType = model.s2CordWrapType
+                                                        , deliveryType = model.s2DeliveryType
+                                                        , shoulderDystocia = model.s2ShoulderDystocia
+                                                        , shoulderDystociaMinutes = U.maybeStringToMaybeInt model.s2ShoulderDystociaMinutes
+                                                        , laceration = model.s2Laceration
+                                                        , episiotomy = model.s2Episiotomy
+                                                        , repair = model.s2Repair
+                                                        , degree = model.s2Degree
+                                                        , lacerationRepairedBy = model.s2LacerationRepairedBy
+                                                        , birthEBL = U.maybeStringToMaybeInt model.s2BirthEBL
+                                                        , meconium = model.s2Meconium
+                                                        , comments = model.s2Comments
+                                                    }
+                                            in
+                                                ProcessTypeMsg
+                                                    (UpdateLaborStage2Type
+                                                        (LaborDelIppMsg
+                                                            (DataCache Nothing (Just [ LaborStage2 ]))
+                                                        )
+                                                        newRec
+                                                    )
+                                                    ChgMsgType
+                                                    (laborStage2RecordToValue newRec)
+
+                                        Nothing ->
+                                            -- Need to create a new stage 1 record for the server.
+                                            case deriveLaborStage2RecordNew model of
+                                                Just laborStage2RecNew ->
+                                                    ProcessTypeMsg
+                                                        (AddLaborStage2Type
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ LaborStage2 ]))
+                                                            )
+                                                            laborStage2RecNew
+                                                        )
+                                                        AddMsgType
+                                                        (laborStage2RecordNewToValue laborStage2RecNew)
+
+                                                Nothing ->
+                                                    LogConsole "deriveLaborStage2RecordNew returned a Nothing"
+                            in
+                                ( { model | stage2SummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , Task.perform (always outerMsg) (Task.succeed True)
+                                )
+
+                        errors ->
+                            -- TODO: Show errors to user?
+                            ( { model | stage2SummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , logConsole <| toString errors
+                            )
 
         HandleStage3DateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for stage 3
@@ -1530,6 +2162,49 @@ deriveLaborStage1RecordNew model =
             Nothing
 
 
+deriveLaborStage2RecordNew : Model -> Maybe LaborStage2RecordNew
+deriveLaborStage2RecordNew model =
+    case model.laborState of
+        AdmittedLaborState (LaborId id) ->
+            let
+                birthDatetime =
+                    case ( model.stage2Date, model.stage2Time ) of
+                        ( Just d, Just t ) ->
+                            case U.stringToTimeTuple t of
+                                Just tt ->
+                                    Just <| U.datePlusTimeTuple d tt
+
+                                Nothing ->
+                                    Nothing
+
+                        ( _, _ ) ->
+                            Nothing
+            in
+                LaborStage2RecordNew birthDatetime
+                    model.s2BirthType
+                    model.s2BirthPosition
+                    (U.maybeStringToMaybeInt model.s2DurationPushing)
+                    model.s2BirthPresentation
+                    model.s2CordWrap
+                    model.s2CordWrapType
+                    model.s2DeliveryType
+                    model.s2ShoulderDystocia
+                    (U.maybeStringToMaybeInt model.s2ShoulderDystociaMinutes)
+                    model.s2Laceration
+                    model.s2Episiotomy
+                    model.s2Repair
+                    model.s2Degree
+                    model.s2LacerationRepairedBy
+                    (U.maybeStringToMaybeInt model.s2BirthEBL)
+                    model.s2Meconium
+                    model.s2Comments
+                    id
+                    |> Just
+
+        _ ->
+            Nothing
+
+
 {-| Derive a LaborRecordNew from the form fields, if possible.
 -}
 deriveLaborRecordNew : Model -> Maybe LaborRecordNew
@@ -1615,4 +2290,50 @@ validateStage1 =
         [ .s1Mobility >> ifInvalid U.validatePopulatedString (Stage1MobilityFld => "Mobility must be provided.")
         , .s1DurationLatent >> ifInvalid U.validatePopulatedString (Stage1DurationLatentFld => "Duration latent must be provided.")
         , .s1DurationActive >> ifInvalid U.validatePopulatedString (Stage1DurationActiveFld => "Duration active must be provided.")
+        ]
+
+
+{-| TODO: is this right?
+-}
+validateStage2New : Model -> List FieldError
+validateStage2New =
+    Validate.all
+        [ .stage2Time >> ifInvalid U.validateJustTime (Stage2TimeFld => "Time must be provided in hh:mm format.")
+        ]
+
+
+validateStage2 : Model -> List FieldError
+validateStage2 =
+    Validate.all
+        [ .s2BirthType >> ifInvalid U.validatePopulatedString (Stage2BirthTypeFld => "Birth type must be provided.")
+        , .s2BirthPosition >> ifInvalid U.validatePopulatedString (Stage2BirthPositionFld => "Birth position must be provided.")
+        , .s2DurationPushing >> ifInvalid U.validateInt (Stage2DurationPushingFld => "Duration pushing must be provided.")
+        , .s2BirthPresentation >> ifInvalid U.validatePopulatedString (Stage2BirthPresentationFld => "Birth presentation must be provided.")
+        , (\mdl ->
+            if mdl.s2CordWrapType /= Nothing && (mdl.s2CordWrap == Nothing || mdl.s2CordWrap == Just False) then
+                [ (Stage2CordWrapTypeFld => "Cord wrap type cannot be specified if cord wrap is not checked.") ]
+            else
+                if mdl.s2CordWrap == Just True && String.length (Maybe.withDefault "" mdl.s2CordWrapType) == 0 then
+                    [ (Stage2CordWrapTypeFld => "Cord wrap cannot be checked without also specifying cord wrap type.") ]
+                else
+                    []
+          )
+        , .s2DeliveryType >> ifInvalid U.validatePopulatedString (Stage2DeliveryTypeFld => "Delivery type must be provided.")
+        , (\mdl ->
+            case U.maybeStringToMaybeInt mdl.s2ShoulderDystociaMinutes of
+                Just m ->
+                    if m > 0 && (mdl.s2ShoulderDystocia == Nothing || mdl.s2ShoulderDystocia == Just False) then
+                        [ (Stage2ShoulderDystociaMinutesFld => "Shoulder dystocia minutes cannot be specified if shoulder dystocia is not checked.") ]
+                    else
+                        []
+
+                Nothing ->
+                    []
+          )
+        , (\mdl ->
+            if mdl.s2Repair == Just True && String.length (Maybe.withDefault "" mdl.s2LacerationRepairedBy) == 0 then
+                [ (Stage2LacerationRepairedByFld => "Laceration repaired by field must be provided if repair field is checked.") ]
+            else
+                []
+          )
         ]
