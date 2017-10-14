@@ -3,6 +3,9 @@ module Msg
         ( logConsole
         , Msg(..)
         , ProcessType(..)
+        , toastError
+        , toastInfo
+        , toastWarn
         )
 
 import Json.Encode as JE
@@ -23,6 +26,7 @@ import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
 import Data.SelectQuery exposing (SelectQuery)
 import Data.TableRecord exposing (..)
+import Data.Toast exposing (ToastType(..))
 import Route exposing (Route)
 
 
@@ -30,6 +34,7 @@ type Msg
     = Noop
     | Tick Time
     | LogConsole String
+    | Toast (List String) Int ToastType
     | WindowResize (Maybe Window.Size)
     | SetRoute (Maybe Route)
     | LaborDelIppLoaded PregnancyId
@@ -47,6 +52,33 @@ is located here to address circular dependencies.
 logConsole : String -> Cmd Msg
 logConsole msg =
     Task.perform LogConsole (Task.succeed msg)
+
+
+{-| Initiate a Cmd to send an informational message to the user
+via a toast. This function is located here to address circular
+dependencies.
+-}
+toastInfo : List String -> Int -> Cmd Msg
+toastInfo msgs seconds =
+    Task.perform (Toast msgs seconds) (Task.succeed InfoToast)
+
+
+{-| Initiate a Cmd to send an warning message to the user
+via a toast. This function is located here to address circular
+dependencies.
+-}
+toastWarn : List String -> Int -> Cmd Msg
+toastWarn msgs seconds =
+    Task.perform (Toast msgs seconds) (Task.succeed WarningToast)
+
+
+{-| Initiate a Cmd to send an error message to the user
+via a toast. This function is located here to address circular
+dependencies.
+-}
+toastError : List String -> Int -> Cmd Msg
+toastError msgs seconds =
+    Task.perform (Toast msgs seconds) (Task.succeed ErrorToast)
 
 
 {-| The data that is stored in the process store. This temporary

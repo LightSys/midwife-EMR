@@ -10,6 +10,7 @@ import Window
 import Const
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId)
 import Data.User as User exposing (User, Username)
+import Data.Toast exposing (ToastRecord, ToastType(..))
 import Route exposing (Route)
 
 
@@ -22,8 +23,8 @@ type ActivePage
 isLoading parameter signals whether there are still outstanding data
 requests that this particular page needs in order to display properly.
 -}
-frame : Maybe Window.Size -> Bool -> Maybe PregnancyId -> Maybe User -> ActivePage -> Html msg -> Html msg
-frame winSize isLoading pregId user page content =
+frame : Maybe Window.Size -> Bool -> Maybe PregnancyId -> Maybe User -> Maybe ToastRecord -> ActivePage -> Html msg -> Html msg
+frame winSize isLoading pregId user toastRec page content =
     let
         frameContents =
             H.div
@@ -32,7 +33,8 @@ frame winSize isLoading pregId user page content =
                   -- a position of relative.
                 , HA.style [ ( "position", "relative" ) ]
                 ]
-                [ viewHeader winSize pregId user isLoading page
+                [ toast toastRec
+                , viewHeader winSize pregId user isLoading page
                 , H.div
                     []
                     [ (if isLoading then
@@ -194,3 +196,52 @@ buildNavItem navType pullRight isActive linkType text smallText =
                         ]
                 )
             ]
+
+
+toast : Maybe ToastRecord -> Html msg
+toast toastRec =
+    case toastRec of
+        Just trec ->
+            case trec.toastType of
+                InfoToast ->
+                    toastInfo trec.msgs
+
+                WarningToast ->
+                    toastWarn trec.msgs
+
+                ErrorToast ->
+                    toastError trec.msgs
+
+        Nothing ->
+            H.text ""
+
+toastInfo : List String -> Html msg
+toastInfo msgs =
+    let
+        doMsg msg =
+            H.div [ HA.class "c-alert c-alert--success u-small" ]
+                [ H.text msg ]
+    in
+        H.div [ HA.class "c-alerts c-alerts--bottomleft" ]
+            (List.map doMsg msgs)
+
+toastWarn : List String -> Html msg
+toastWarn msgs =
+    let
+        doMsg msg =
+            H.div [ HA.class "c-alert c-alert--warning u-small" ]
+                [ H.text msg ]
+    in
+        H.div [ HA.class "c-alerts c-alerts--bottomleft" ]
+            (List.map doMsg msgs)
+
+
+toastError : List String -> Html msg
+toastError msgs =
+    let
+        doMsg msg =
+            H.div [ HA.class "c-alert c-alert--error u-small" ]
+                [ H.text msg ]
+    in
+        H.div [ HA.class "c-alerts c-alerts--bottomleft" ]
+            (List.map doMsg msgs)

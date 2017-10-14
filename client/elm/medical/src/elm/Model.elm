@@ -20,6 +20,7 @@ import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyRecord, PregnancyId(..))
 import Data.Session as Session exposing (Session)
 import Data.SiteMessage exposing (SiteKeyValue(..))
+import Data.Toast exposing (ToastRecord, ToastType)
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
 import Processing exposing (ProcessStore)
@@ -36,13 +37,13 @@ type PageState
     = Loaded Page
     | TransitioningFrom Page
 
-
 type alias Model =
     { browserSupportsDate : Bool
     , currTime : Time
     , currPregId : Maybe PregnancyId
     , pageState : PageState
     , session : Session
+    , toast : Maybe ToastRecord
     , processStore : ProcessStore
     , dataCache : Dict String DataCache
     , window : Maybe Window.Size
@@ -64,6 +65,7 @@ initialModel browserSupportsDate pregId time =
         , currPregId = pregId
         , pageState = Loaded page
         , session = { user = Nothing }
+        , toast = Nothing
         , processStore = newStore
         , window = Nothing
         , dataCache = Dict.empty

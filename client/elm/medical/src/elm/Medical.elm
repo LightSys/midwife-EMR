@@ -23,6 +23,7 @@ import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session)
 import Data.Table exposing (Table(..))
 import Data.TableRecord exposing (TableRecord(..))
+import Data.Toast exposing (ToastRecord, ToastType(..))
 import Model exposing (Model, Page(..), PageState(..))
 import Msg exposing (logConsole, Msg(..), ProcessType(..))
 import Page.Errored as Errored exposing (PageLoadError, view)
@@ -102,7 +103,7 @@ viewPage : Model -> Bool -> Page -> Html Msg
 viewPage model isLoading page =
     let
         frame =
-            Page.frame model.window isLoading model.currPregId model.session.user
+            Page.frame model.window isLoading model.currPregId model.session.user model.toast
     in
         case page of
             Blank ->
@@ -154,8 +155,25 @@ update msg model =
                 model => Cmd.none
 
             ( Tick time, _ ) ->
-                -- Keep the current time in the Model.
-                { model | currTime = time } => Cmd.none
+                -- Keep the current time in the Model and reduce the secondsLeft
+                -- of the active toast if there is one.
+                let
+                    newToast =
+                        case model.toast of
+                            Just t ->
+                                if t.secondsLeft - 1 <= 0 then
+                                    Nothing
+                                else
+                                    Just { t | secondsLeft = t.secondsLeft - 1 }
+
+                            Nothing ->
+                                Nothing
+                in
+                    { model
+                        | currTime = time
+                        , toast = newToast
+                    }
+                        => Cmd.none
 
             ( LogConsole msg, _ ) ->
                 -- Write a message out to the console.
@@ -164,6 +182,10 @@ update msg model =
                         Debug.log "LogConsole" msg
                 in
                     model => Cmd.none
+
+            ( Toast msgs seconds toastType, _ ) ->
+                -- Publish a toast for the user to see.
+                { model | toast = Just <| ToastRecord msgs seconds toastType } => Cmd.none
 
             ( WindowResize size, _ ) ->
                 -- Keep the current window size in the Model.
@@ -176,9 +198,7 @@ update msg model =
             ( ProcessTypeMsg processType msgType jeVal, _ ) ->
                 -- Send a message to the server and store the required information
                 -- in the model for processing the server response.
-
                 -- NOTE: currently data queries do not come through here.
-
                 -- TODO: For data queries, check if the data requirement can be
                 -- satisfied by what the top-level model already has and supply it
                 -- to the caller if available.
@@ -227,7 +247,7 @@ update msg model =
                     -- the current dataCache to it.
                     newSubMsg =
                         case subMsg of
-                            (DataCache _ tbl) ->
+                            DataCache _ tbl ->
                                 DataCache (Just model.dataCache) tbl
 
                             _ ->
@@ -372,7 +392,6 @@ updateMessage incoming model =
                 ( processType, processStore ) =
                     Processing.remove (ProcessId dataChgMsg.messageId) model.processStore
 
-
                 ( newModel, newCmd ) =
                     case dataChgMsg.response.success of
                         True ->
@@ -402,10 +421,8 @@ updateMessage incoming model =
                                     in
                                         ( model, logConsole msgText )
 
-
                         False ->
                             ( model, Cmd.none )
-
             in
                 { newModel | processStore = processStore } => newCmd
 
@@ -477,7 +494,7 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl | patientRecord = rec , dataCache = dc }
+                                                { mdl | patientRecord = rec, dataCache = dc }
 
                                         TableRecordPregnancy recs ->
                                             -- We only ever want one pregnancy in our store at a time.

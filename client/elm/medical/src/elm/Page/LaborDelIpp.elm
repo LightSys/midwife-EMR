@@ -59,7 +59,7 @@ import Data.Processing exposing (ProcessId(..))
 import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session)
 import Data.Table exposing (Table(..))
-import Msg exposing (logConsole, Msg(..), ProcessType(..))
+import Msg exposing (logConsole, Msg(..), ProcessType(..), toastInfo, toastWarn, toastError)
 import Page.Errored as Errored exposing (PageLoadError)
 import Ports
 import Processing exposing (ProcessStore)
@@ -2057,10 +2057,13 @@ update session msg model =
                                 )
 
                         errors ->
-                            -- TODO: Show errors to user?
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                            in
                             ( { model | stage2SummaryModal = NoStageSummaryModal }
                             , Cmd.none
-                            , logConsole <| toString errors
+                            , toastError msgs 10
                             )
 
         HandleStage3DateTimeModal dialogState ->
