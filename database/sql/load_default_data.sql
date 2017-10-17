@@ -17,9 +17,9 @@ VALUES
 -- Note: password hash is for password 'admin'
 SELECT 'user' AS 'Loading' FROM DUAL;
 INSERT INTO `user`
-  (username, firstname, lastname, shortName, password, note, role_id, updatedBy, updatedAt)
+  (username, firstname, lastname, password, note, role_id, updatedBy, updatedAt)
 VALUES
-  ('admin', 'admin', 'admin', 'admin', '$2a$10$r93uzyhs73Bh88Hco63wTuOyq8rLg2jy2mWnP8g03pu8fkc9mQDb6',
+  ('admin', 'admin', 'admin', '$2a$10$r93uzyhs73Bh88Hco63wTuOyq8rLg2jy2mWnP8g03pu8fkc9mQDb6',
   'This is the default admin account with password of "admin". In production systems, this account should be disabled once another administrator is created.',
   1, 1, NOW())
 ;
