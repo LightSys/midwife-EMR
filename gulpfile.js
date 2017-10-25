@@ -326,8 +326,7 @@ gulp.task('default', [
   'favicon',
   'font-awesome',
   'cleanupTemplateCache',
-  'webpack:build-dev',
-  'webpack:build-elm'
+  'webpack:build-dev'
 ]);
 
 
