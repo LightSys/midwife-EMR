@@ -108,71 +108,23 @@ var doSpa = function(req, res, next) {
   });
 
   if (req.session.user && req.session.user.role) {
+    // --------------------------------------------------------
+    // Note: we have completely retired the React code.
+    // TODO: remove all React code from the code base.
+    // --------------------------------------------------------
     if ((req.session.user.role.name === 'administrator' &&
-         req.session.user.note.startsWith('PHASE2REACT')) ||
-        (req.session.user.role.name === 'guard' &&
-         req.session.user.note.startsWith('PHASE2REACT')) ||
-        (req.session.user.role.name === 'supervisor' &&
-         req.session.user.note.startsWith('PHASE2REACT'))) {
-      newMenu = buildMenu(req);
-      data = {
-        cfg: {
-          siteTitle: cfg.site.title
-          , siteTitleLong: cfg.site.titleLong
-        },
-        menuLeft: newMenu.menuLeft,
-        menuRight: newMenu.menuRight,
-        cookies: {
-          '_csrf': req.csrfToken(),
-          'connect.sid': connSid
-        },
-        isAuthenticated: req.isAuthenticated(),
-        userId: req.session.user.id,
-        roleName: req.session.user.role.name,
-        serverInfo: {
-          appRevision: appRev
-        }
-      };
-
-      // --------------------------------------------------------
-      // Store the fact that this user's routes are all SPA or
-      // phase two routes in the session. This allows page
-      // refreshes to be properly handled.
-      // --------------------------------------------------------
-      req.session.isSpaOnly = true;
-
-      // --------------------------------------------------------
-      // When the user reloads a page, in many, if not most, cases
-      // the SPA will not load correctly because the Redux state is
-      // currently not being saved in localStorage and most pages
-      // are dependent upon something being in state already. Rather
-      // than addressing that issue on a page by page basis, we handle
-      // it poorly but in a way that will always work the same --
-      // we redirect the user to the home page to start again.
-      //
-      // There are known pros and cons of this approach.
-      // - Pros:
-      //    - Simplicity: 80/20 rule
-      //    - Consistency
-      //    - Users will learn not to reload page needlessly
-      //    - Performance is better because the client is not saving
-      //      the whole of the Redux state to localStorage for every
-      //      change or every x seconds.
-      // - Cons
-      //    - Users will lose place if they have to reload page
-      //    - Users cannot share deep application links with each other
-      // --------------------------------------------------------
-      if (req.url !== '/') {
-        return res.redirect('/');
-      }
-
-      return res.render('main', {cfg: data});
-    } else if ((req.session.user.role.name === 'administrator' &&
-                req.session.user.note.startsWith('PHASE2ELM')) ||
+                ! req.session.user.note.startsWith('LEGACY')) ||
                 (req.session.user.role.name === 'guard' &&
                 req.session.user.note.startsWith('PHASE2ELM')) ||
                 (req.session.user.role.name === 'supervisor' &&
                 req.session.user.note.startsWith('PHASE2ELM'))) {
+
+      // --------------------------------------------------------
+      // Note: we default now to the Elm client for the
+      // administrator role. But if the administrator's note
+      // field starts with LEGACY, then the full page load code
+      // will be used instead.
+      // --------------------------------------------------------
 
       // --------------------------------------------------------
       // Store the fact that this user's routes are all SPA or
