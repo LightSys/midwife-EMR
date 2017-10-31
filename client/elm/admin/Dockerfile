@@ -4,11 +4,11 @@
 # the compiled JS in the dist folder.
 #
 # Build the image:
-#   cd client/elm
-#   docker build -f Dockerfile -t midwife-emr-watch-admin-client .
+#   cd client/elm/admin
+#   docker build -f Dockerfile -t midwife-emr-watch-admin-client --no-cache .
 #
 # Run the container (run from the top of the Midwife-EMR project):
-#   docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest
+#   docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm/admin:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest
 #
 # To stop the container:
 #   Ctrl-C
