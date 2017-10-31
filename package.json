@@ -108,8 +108,10 @@
     "simple": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V -- cluster.js --config /home/kurt/work/config.simple.js",
     "build": "gulp",
     "clean": "rm -f static/js/*"
-    "build_admin_client_watch": "(cd client/elm/admin;docker build -f Dockerfile -t midwife-emr-watch-admin-client .)",
-    "admin_client_watch": "docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm/admin:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest"
+    "build_admin_client_watch": "(cd client/elm/admin;docker build -f Dockerfile -t midwife-emr-watch-admin-client --no-cache .)",
+    "admin_client_watch": "docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm/admin:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest",
+    "build_medical_client_watch": "(cd client/elm/medical;docker build -f Dockerfile -t midwife-emr-watch-medical-client --no-cache .)",
+    "medical_client_watch": "docker run --init --name=midwife-emr-watch-medical-client --rm -v $(pwd)/client/elm/medical:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-medical-client:latest"
   },
   "jshintConfig": {
     "laxcomma": true
