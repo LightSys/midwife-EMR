@@ -28,6 +28,7 @@ var _ = require('underscore')
   , DATA_DELETE = require('../../commUtils').getConstants('DATA_DELETE')
   , sendData = require('../../commUtils').sendData
   , assertModule = require('./lookupTables_assert')
+  , KEY_VALUE_UPDATE = require('../../constants').KEY_VALUE_UPDATE
   , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
 
@@ -263,7 +264,23 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
 // that, we only allow the kvValue field to be modified.
 // --------------------------------------------------------
 var updateKeyValue = function(data, userInfo, cb) {
-  updateTable(_.pick(data, ['id', 'kvValue']), userInfo, cb, KeyValue, 'keyValue');
+  updateTable(_.pick(data, ['id', 'kvValue']), userInfo, function(err, success, data) {
+    // Inform all processes of the change.
+    if (process.send) {
+      // Get all of the latest keyValue data, not just what was updated.
+      KeyValue.getKeyValues().then(function(data) {
+        var msg = {};
+        msg[KEY_VALUE_UPDATE] = data;
+        process.send(msg);
+      })
+      .caught(function(err) {
+        logError(err);
+      })
+      .finally(function() {
+        return cb(err, success, data);
+      });
+    }
+  } , KeyValue, 'keyValue');
 };
 
 var addLabSuite = function(data, userInfo, cb) {

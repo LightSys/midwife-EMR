@@ -6,7 +6,7 @@
  * file passed on the command line, the configuration file found in the default
  * location, or the default application settings.
  *
- * Appends all routes on the configuration object as well as the applications 
+ * Appends all routes on the configuration object as well as the applications
  * default directory and configuration file locations.
  *
  * Creates, if neccesary, the application directory.
@@ -17,10 +17,16 @@
 
 const fs = require('fs')
   , path = require('path')
+  , _ = require('underscore')
+  , KEY_VALUE_UPDATE = require('../constants').KEY_VALUE_UPDATE
   , defaultConfigFilename = path.join(__dirname, 'config.default.json')
+  , NodeCache = require('node-cache')
+  , KEY_VALUE = 'keyValue'
+  ;
 
 let cfg = {}
   , usingDefaultSettings = false
+  , longCache = new NodeCache({stdTTL: 0, checkperiod: 0})
 
 const getAppName = () => {
   return 'Midwife-EMR'
@@ -164,6 +170,38 @@ if (usingDefaultSettings && cfg.application.configurationFile) {
 // Add the routes onto the config object for convenience.
 // --------------------------------------------------------
 cfg.path = require('./config.global').path
+
+// --------------------------------------------------------
+// Set the data in the keyValue table into a cache for this
+// process that is accessible via getKeyValue() by key.
+// --------------------------------------------------------
+cfg.setKeyValue = function(data) {
+  longCache.set(KEY_VALUE, data);
+}
+
+// --------------------------------------------------------
+// Return the specified key within the keyValue data object.
+// --------------------------------------------------------
+cfg.getKeyValue = function(key) {
+  var data = longCache.get(KEY_VALUE);
+  if (_.isObject(data)) {
+    return data[key];
+  } else {
+    return void 0;
+  }
+}
+
+// --------------------------------------------------------
+// The keyValues were changed by this or another process so
+// update accordingly. See routes/comm/lookupTables.js as
+// the initiator based upon changes from the user.
+// --------------------------------------------------------
+process.on('message', function(msg) {
+  if (_.isObject(msg) && _.has(msg, KEY_VALUE_UPDATE)) {
+    var data = msg[KEY_VALUE_UPDATE];
+    cfg.setKeyValue(data);
+  }
+});
 
 module.exports = cfg
 
