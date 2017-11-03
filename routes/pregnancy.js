@@ -879,7 +879,8 @@ var getEditFormData = function(req, addData) {
   cf = preData? preData.customField: void(0)
   prenatalDay = _.map(dayOfWeek, function(obj) {return _.clone(obj);})
   prenatalLoc = _.map(location, function(obj) {return _.clone(obj);})
-  defaultCity = cfg.client.defaultCity.length > 0? cfg.client.defaultCity: ''
+  defaultCity = cfg.getKeyValue('defaultCity');
+  if (! defaultCity) defaultCity = '';
   mb = adjustSelectData(yesNoUnanswered, '')
     ;
 
