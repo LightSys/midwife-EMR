@@ -12,7 +12,7 @@ var UserProfileFailErrorCode = require('./util').UserProfileFailErrorCode
 var assert = require('assert')
     _ = require('underscore')
     msg = require('./util').msg
-    verbose = true
+    verbose = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
 
 function ioData_socket_on_ADD(payload) {

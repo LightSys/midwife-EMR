@@ -102,8 +102,6 @@ var getLookupTable = function(table, id, pregnancy_id, patient_id, cb) {
     if (patient_id !== -1) whereObj.patient_id = patient_id;
   }
 
-  console.log('getLookupTable() for ' + table);
-
   knex(table)
     .select()
     .where(whereObj)

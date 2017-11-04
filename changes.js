@@ -86,8 +86,6 @@ var buildChangeObject = function(data, chgType) {
           });
       })
       .then(function(result) {
-        // TODO: remove this console.log().
-        console.log(result);
         return result;
       });
   } else {

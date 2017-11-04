@@ -107,7 +107,6 @@ var rx = require('rx')
   , rxData            // Stream for data messages
   , cntSystem = 0
   , cntSite = 0
-  , cntData = 0
   , siteSubject
   , siteSubjectData
   , systemSubject
@@ -605,7 +604,6 @@ var handleData = function(evtName, payload, socket) {
     , returnStatusFunc
     , responseEvt
   ;
-  console.log('handleData() for ' + evtName + ' with payload of: ' + payload);
   switch (evtName) {
     case ADD:
       if (! table || ! data || (! recId < 0) ) {
@@ -1136,13 +1134,6 @@ var init = function(io, sessionMiddle) {
   //  - receive update on field value another client changed
   // --------------------------------------------------------
   ioData.on('connection', function(socket) {
-    // TODO: report number of connections to data messages.
-    socket.on('disconnect', function() {
-      cntData--;
-      console.log('Number data websocket connections: ' + cntData);
-    });
-    cntData++;
-    console.log('Number data websocket connections: ' + cntData);
 
     // --------------------------------------------------------
     // ADHOC processing for the Elm client on the data channel.
