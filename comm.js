@@ -649,7 +649,7 @@ var handleData = function(evtName, payload, socket) {
   }
 
   if (! isValidSocketSession(socket)) {
-    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired.");
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired. Please login again.");
     console.log(retAction);
     return socket.emit(responseEvt, JSON.stringify(retAction));
   } else touchSocketSession(socket);
@@ -1172,7 +1172,7 @@ var init = function(io, sessionMiddle) {
       var retAction;
 
       if (! isValidSocketSession(socket)) {
-        retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired.");
+        retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired. Please login again.");
         console.log(retAction);
         return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
       } else touchSocketSession(socket);

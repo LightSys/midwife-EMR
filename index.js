@@ -192,7 +192,7 @@ KeyValue.getKeyValues().then(function(data) {
     secret: cfg.session.secret
     , cookie: {maxAge: cfg.cookie.maxAge, secure: useSecureCookie}
     , rolling: true   // Allows session to remain active as long as it is being used.
-    , resave: true
+    , resave: false   // false since express-mysql-session implements touch().
     , saveUninitialized: false
     , store: sessionStore
   });
