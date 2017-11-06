@@ -200,6 +200,7 @@ var rx = require('rx')
   , getProcessId = require('./util').getProcessId
   , assertModule = require('./comm_assert')
   , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
+  , KEY_VALUE_UPDATE = require('./constants').KEY_VALUE_UPDATE
   ;
 
 /* --------------------------------------------------------
@@ -1237,7 +1238,11 @@ var init = function(io, sessionMiddle) {
         // other things use. Only report on what we don't recognize.
         // --------------------------------------------------------
         if (! _.has(wrapper, 'cmd')) {
-          logCommInfo('Client: Received UNHANDLED msg: ' + JSON.stringify(wrapper));
+          if (_.isObject(wrapper) && _.has(wrapper, KEY_VALUE_UPDATE)) {
+            // config/index.js handles this, so ignore.
+          } else {
+            logCommInfo('Client: Received UNHANDLED msg: ' + JSON.stringify(wrapper));
+          }
         }
     }
   });
