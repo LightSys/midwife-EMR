@@ -61,7 +61,7 @@ var load = function load(req, res, next) {
   // --------------------------------------------------------
   // Sanity check.
   // --------------------------------------------------------
-  if (! req.body.hasOwnProperty('isChecked')) {
+  if (! _.has(req.body, 'isChecked')) {
     return next(new Error('Invalid parameters.'));
   }
 
