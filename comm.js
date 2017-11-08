@@ -107,7 +107,6 @@ var rx = require('rx')
   , rxData            // Stream for data messages
   , cntSystem = 0
   , cntSite = 0
-  , cntData = 0
   , siteSubject
   , siteSubjectData
   , systemSubject
@@ -605,7 +604,6 @@ var handleData = function(evtName, payload, socket) {
     , returnStatusFunc
     , responseEvt
   ;
-  console.log('handleData() for ' + evtName + ' with payload of: ' + payload);
   switch (evtName) {
     case ADD:
       if (! table || ! data || (! recId < 0) ) {
@@ -651,7 +649,7 @@ var handleData = function(evtName, payload, socket) {
   }
 
   if (! isValidSocketSession(socket)) {
-    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired.");
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired. Please login again.");
     console.log(retAction);
     return socket.emit(responseEvt, JSON.stringify(retAction));
   } else touchSocketSession(socket);
@@ -1136,13 +1134,6 @@ var init = function(io, sessionMiddle) {
   //  - receive update on field value another client changed
   // --------------------------------------------------------
   ioData.on('connection', function(socket) {
-    // TODO: report number of connections to data messages.
-    socket.on('disconnect', function() {
-      cntData--;
-      console.log('Number data websocket connections: ' + cntData);
-    });
-    cntData++;
-    console.log('Number data websocket connections: ' + cntData);
 
     // --------------------------------------------------------
     // ADHOC processing for the Elm client on the data channel.
@@ -1181,7 +1172,7 @@ var init = function(io, sessionMiddle) {
       var retAction;
 
       if (! isValidSocketSession(socket)) {
-        retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired.");
+        retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired. Please login again.");
         console.log(retAction);
         return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
       } else touchSocketSession(socket);

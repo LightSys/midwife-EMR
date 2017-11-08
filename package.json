@@ -7,7 +7,7 @@
     "node": ">=4.4"
   },
   "dependencies": {
-    "angular": "^1.4.6",
+    "angular": "1.5.8",
     "angular-moment": "^0.10.3",
     "angular-ui-router": "^0.2.15",
     "babel-core": "^6.9.0",
@@ -29,8 +29,6 @@
     "css-loader": "^0.23.1",
     "csurf": "^1.8.3",
     "del": "^2.0.2",
-    "elm": "^0.18.0",
-    "elm-webpack-loader": "^3.0.6",
     "errorhandler": "^1.4.2",
     "es6-promise": "^3.2.1",
     "es6-shim": "^0.35.1",
@@ -108,9 +106,10 @@
     "start": "NODE_ENV=development node cluster.js --config config/config.development.json",
     "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V -- cluster.js --config config/config.development.json",
     "simple": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V -- cluster.js --config /home/kurt/work/config.simple.js",
-    "build": "gulp webpack:build-dev",
-    "buildelm": "gulp webpack:build-elm",
-    "watchelm": "WEBPACK_WATCH=1 gulp webpack:build-elm"
+    "build": "gulp",
+    "build_admin_client_watch": "(cd client/elm;docker build -f Dockerfile -t midwife-emr-watch-admin-client .)",
+    "admin_client_watch": "docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest",
+    "clean": "rm -f static/js/*"
   },
   "jshintConfig": {
     "laxcomma": true

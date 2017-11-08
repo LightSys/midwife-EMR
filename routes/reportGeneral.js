@@ -67,7 +67,8 @@ var centerText = function(doc, text, font, fontSize, y) {
  * return      undefined
  * -------------------------------------------------------- */
 var doSiteTitle = function(doc, y) {
-  centerText(doc, cfg.site.title, FONTS.Helvetica, 18, y);
+  var siteTitle = cfg.getKeyValue('siteShortName');
+  centerText(doc, siteTitle, FONTS.Helvetica, 18, y);
 };
 
 /* --------------------------------------------------------

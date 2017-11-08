@@ -12,7 +12,7 @@ var UserProfileFailErrorCode = require('./util').UserProfileFailErrorCode
 var assert = require('assert')
     _ = require('underscore')
     msg = require('./util').msg
-    verbose = true
+    verbose = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
 
 function ioData_socket_on_ADD(payload) {
@@ -102,10 +102,6 @@ function sendUserProfile(socket, user, errCode) {
     assert.ok(user.username, m('username'));
     assert.ok(user.firstname, m('firstname'));
     assert.ok(user.lastname, m('lastname'));
-    assert.ok(_.isString(user.email), m('email'));
-    assert.ok(_.isString(user.lang), m('lang'));
-    assert.ok(_.isString(user.shortName), m('shortName'));
-    assert.ok(_.isString(user.displayName), m('displayName'));
     assert.ok(_.isNumber(user.role_id), m('role_id'));
   }
 }

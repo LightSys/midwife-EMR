@@ -458,19 +458,18 @@ update msg model =
 
         SessionExpired ->
             -- Set the isLoggedIn field in the user profile to False.
+            -- The server message already contains a human-readable
+            -- message about session timeout and need to login again.
             let
-                ( newModel, newCmd ) =
-                    U.addWarning "Your session has expired. Please login again." model
-
                 userProfile =
-                    case newModel.userProfile of
+                    case model.userProfile of
                         Just up ->
                             Just { up | isLoggedIn = False }
 
                         Nothing ->
                             Nothing
             in
-                { newModel | userProfile = userProfile } ! [ newCmd ]
+                { model | userProfile = userProfile } ! []
 
         Snackbar msg ->
             let

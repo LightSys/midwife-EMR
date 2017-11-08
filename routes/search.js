@@ -89,7 +89,7 @@ var view = function(req, res) {
 var execute = function(req, res) {
   var flds = _.omit(req.body, ['_csrf', 'searchType', 'next', 'previous'])
     , pageNum = 1
-    , rowsPerPage = parseInt(cfg.search.rowsPerPage, 10)
+    , rowsPerPage = parseInt(cfg.getKeyValue('searchRowsPerPage'), 10)
     , priorityQry = flds.priority && flds.priority.length > 0 && ! isNaN(parseInt(flds.priority, 10))
     , qb
     , results = []
@@ -110,6 +110,13 @@ var execute = function(req, res) {
     , transferAfter
     , transferBefore
     ;
+
+  // --------------------------------------------------------
+  // rowsPerPage sanity check since it is a user derived value.
+  // --------------------------------------------------------
+  if (Number.isNaN(rowsPerPage) || rowsPerPage < 0) {
+    rowsPerPage = 20;
+  }
 
   // --------------------------------------------------------
   // Store the search criteria in the session so that it is

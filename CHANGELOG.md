@@ -1,5 +1,19 @@
 # Change Log
 
+## 0.8.2
+
+- Refactored build of Elm admin client to use Docker.
+- Retired the React admin client and enabled Elm admin client by default.
+- Uses shmig for database migrations.
+- Allows configuration settings via Elm admin client to affect the server.
+- Cleaned up NPM settings and scripts.
+- Pinned Angular to 1.5.8 for history viewing.
+- Numerous bug fixes.
+
+## 0.8.1
+
+- No user visible changes.
+
 ## 0.8.0
 
 - Uses Elm on the client for the administrator role, but not as default.

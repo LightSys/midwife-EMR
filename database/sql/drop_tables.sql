@@ -1,4 +1,5 @@
 SET foreign_key_checks = 0;
+DROP TABLE IF EXISTS `keyValueLog`;
 DROP TABLE IF EXISTS `vaccinationLog`;
 DROP TABLE IF EXISTS `vaccinationTypeLog`;
 DROP TABLE IF EXISTS `healthTeachingLog`;
@@ -23,6 +24,7 @@ DROP TABLE IF EXISTS `selectDataLog`;
 DROP TABLE IF EXISTS `roleLog`;
 DROP TABLE IF EXISTS `userLog`;
 
+DROP TABLE IF EXISTS `keyValue`;
 DROP TABLE IF EXISTS `vaccination`;
 DROP TABLE IF EXISTS `vaccinationType`;
 DROP TABLE IF EXISTS `healthTeaching`;

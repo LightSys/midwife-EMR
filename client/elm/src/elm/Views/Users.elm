@@ -263,8 +263,8 @@ viewUserEdit ({ userModel } as model) =
                                 [ VU.checkBox "Status"
                                     [ mdlContext, 229 ]
                                     (taggerBool recStatus (not (VU.isChecked recStatus)))
-                                    (VU.isChecked recStatus)
                                     True
+                                    (VU.isChecked recStatus)
                                     model.mdl
                                 , VU.textFld "Note"
                                     recNote
@@ -276,8 +276,8 @@ viewUserEdit ({ userModel } as model) =
                                 , VU.checkBox "Currently Teacher"
                                     [ mdlContext, 231 ]
                                     (taggerBool recIsCurrentTeacher (not (VU.isChecked recIsCurrentTeacher)))
-                                    (VU.isChecked recIsCurrentTeacher)
                                     True
+                                    (VU.isChecked recIsCurrentTeacher)
                                     model.mdl
                                 ]
                             , Grid.cell

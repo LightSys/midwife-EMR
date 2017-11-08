@@ -374,7 +374,6 @@ var login = function(req, res) {
     title: req.gettext('Please log in')
     , message: req.session.messages
     , messages: req.flash()
-    , siteTitle: cfg.site.title
   };
   res.render('login', data);
 };
