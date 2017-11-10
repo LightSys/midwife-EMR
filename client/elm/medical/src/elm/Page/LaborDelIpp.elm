@@ -317,6 +317,48 @@ init pregId session store =
 view : Maybe Window.Size -> Session -> Model -> Html SubMsg
 view size session model =
     let
+        isEditingS1 =
+            if model.stage1SummaryModal == Stage1SummaryEditModal then
+                True
+            else
+                not (isStage1SummaryDone model)
+
+        isEditingS2 =
+            if model.stage2SummaryModal == Stage2SummaryEditModal then
+                True
+            else
+                not (isStage2SummaryDone model)
+
+        dialogStage1Config =
+            DialogStage1Summary
+                (model.stage1SummaryModal
+                    == Stage1SummaryViewModal
+                    || model.stage1SummaryModal
+                    == Stage1SummaryEditModal
+                )
+                isEditingS1
+                "Stage 1 Summary"
+                model
+                (HandleStage1SummaryModal CloseNoSaveDialog)
+                (HandleStage1SummaryModal CloseSaveDialog)
+                (HandleStage1SummaryModal EditDialog)
+                (FldChgSubMsg Stage1MobilityFld)
+
+        dialogStage2Config =
+            DialogStage2Summary
+                (model.stage2SummaryModal
+                    == Stage2SummaryViewModal
+                    || model.stage2SummaryModal
+                    == Stage2SummaryEditModal
+                )
+                isEditingS2
+                "Stage 2 Summary"
+                model
+                (HandleStage2SummaryModal CloseNoSaveDialog)
+                (HandleStage2SummaryModal CloseSaveDialog)
+                (HandleStage2SummaryModal EditDialog)
+                (FldChgSubMsg Stage2BirthTypeFld)
+
         -- Ascertain whether we have a labor in process already.
         pregHeader =
             case ( model.patientRecord, model.pregnancyRecord ) of
@@ -338,7 +380,11 @@ view size session model =
 
                 AdmittedLaborState id ->
                     -- TODO: Show labor details as well as means to end labor.
-                    [ viewLaborDetails model ]
+                    [ viewLaborDetails model
+                    , dialogStage1Summary dialogStage1Config
+                    , dialogStage2Summary dialogStage2Config
+                    , viewDetailsTableTEMP model
+                    ]
 
                 EndedLaborState id ->
                     -- We allow a new labor and any past labors.
@@ -430,6 +476,94 @@ viewLaborDetails model =
         ]
 
 
+{-| This is a placeholder for now in order to get a better idea of what the
+page will look like eventually.
+-}
+viewDetailsTableTEMP : Model -> Html SubMsg
+viewDetailsTableTEMP model =
+    H.table
+        [ HA.class "c-table c-table--striped u-small"
+        , HA.style [ ( "margin-top", "1em" ) ]
+        ]
+        [ H.thead [ HA.class "c-table__head" ]
+            [ H.tr [ HA.class "c-table__row c-table__row--heading" ]
+                [ H.th
+                    [ HA.class "c-table__cell"
+                    , HA.style [ ( "flex", "0 0 8em" ) ]
+                    ]
+                    [ H.text "Date" ]
+                , H.th
+                    [ HA.class "c-table__cell"
+                    , HA.style [ ( "flex", "0 0 6em" ) ]
+                    ]
+                    [ H.text "Time" ]
+                , H.th [ HA.class "c-table__cell" ]
+                    [ H.text "Dln" ]
+                , H.th [ HA.class "c-table__cell" ]
+                    [ H.text "Sys" ]
+                , H.th [ HA.class "c-table__cell" ]
+                    [ H.text "Dia" ]
+                , H.th [ HA.class "c-table__cell" ]
+                    [ H.text "FHT" ]
+                , H.th
+                    [ HA.style [ ( "flex", "0 0 50%" ) ]
+                    ]
+                    [ H.text "Comments" ]
+                ]
+            ]
+        , H.tbody [ HA.class "c-table__body" ]
+            [ H.tr [ HA.class "c-table__row" ]
+                [ H.td
+                    [ HA.class "c-table__cell"
+                    , HA.style [ ( "flex", "0 0 8em" ) ]
+                    ]
+                    [ H.text "11-18-2017" ]
+                , H.td
+                    [ HA.class "c-table__cell"
+                    , HA.style [ ( "flex", "0 0 6em" ) ]
+                    ]
+                    [ H.text "04:17 AM" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "122" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "85" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "148" ]
+                , H.td
+                    [ HA.style [ ( "flex", "0 0 50%" ) ]
+                    ]
+                    [ H.text "Pt reports spotting just now. Pt report ctx starting at 8pm yesterday 15-30 min apart. Pt report BOW intact." ]
+                ]
+            , H.tr [ HA.class "c-table__row" ]
+                [ H.td
+                    [ HA.class "c-table__cell"
+                    , HA.style [ ( "flex", "0 0 8em" ) ]
+                    ]
+                    [ H.text "11-18-2017" ]
+                , H.td
+                    [ HA.class "c-table__cell"
+                    , HA.style [ ( "flex", "0 0 6em" ) ]
+                    ]
+                    [ H.text "04:37 AM" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "" ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text "140" ]
+                , H.td
+                    [ HA.style [ ( "flex", "0 0 50%" ) ]
+                    ]
+                    [ H.text "POS: ROA" ]
+                ]
+            ]
+        ]
+
+
 {-| Determine if the summary fields of stage one
 are sufficiently populated. Note that this does not
 include the fullDialation field.
@@ -466,217 +600,172 @@ isStage2SummaryDone model =
 
 viewStages : Model -> Html SubMsg
 viewStages model =
-    let
-        isEditingS1 =
-            if model.stage1SummaryModal == Stage1SummaryEditModal then
-                True
-            else
-                not (isStage1SummaryDone model)
-
-        isEditingS2 =
-            if model.stage2SummaryModal == Stage2SummaryEditModal then
-                True
-            else
-                not (isStage2SummaryDone model)
-
-        dialogStage1Config =
-            DialogStage1Summary
-                (model.stage1SummaryModal
-                    == Stage1SummaryViewModal
-                    || model.stage1SummaryModal
-                    == Stage1SummaryEditModal
-                )
-                isEditingS1
-                "Stage 1 Summary"
-                model
-                (HandleStage1SummaryModal CloseNoSaveDialog)
-                (HandleStage1SummaryModal CloseSaveDialog)
-                (HandleStage1SummaryModal EditDialog)
-                (FldChgSubMsg Stage1MobilityFld)
-
-        dialogStage2Config =
-            DialogStage2Summary
-                (model.stage2SummaryModal
-                    == Stage2SummaryViewModal
-                    || model.stage2SummaryModal
-                    == Stage2SummaryEditModal
-                )
-                isEditingS2
-                "Stage 2 Summary"
-                model
-                (HandleStage2SummaryModal CloseNoSaveDialog)
-                (HandleStage2SummaryModal CloseSaveDialog)
-                (HandleStage2SummaryModal EditDialog)
-                (FldChgSubMsg Stage2BirthTypeFld)
-    in
-        H.div [ HA.class "stage-wrapper" ]
-            [ H.div [ HA.class "stage-content" ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 1" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage1DateTimeModal OpenDialog
-                            ]
-                            [ H.text <|
-                                case model.laborStage1Record of
-                                    Just ls1rec ->
-                                        case ls1rec.fullDialation of
-                                            Just d ->
-                                                U.dateTimeHMFormatter
-                                                    U.MDYDateFmt
-                                                    U.DashDateSep
-                                                    d
-
-                                            Nothing ->
-                                                "Click to set"
-
-                                    Nothing ->
-                                        "Click to set"
-                            ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                                "Stage 1 Date/Time"
-                                (FldChgSubMsg Stage1DateFld)
-                                (FldChgSubMsg Stage1TimeFld)
-                                (HandleStage1DateTimeModal CloseNoSaveDialog)
-                                (HandleStage1DateTimeModal CloseSaveDialog)
-                                ClearStage1DateTime
-                                model.stage1Date
-                                model.stage1Time
-                          else
-                            Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                                "Stage 1 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgSubMsg Stage1DateFld)
-                                (FldChgSubMsg Stage1TimeFld)
-                                (HandleStage1DateTimeModal CloseNoSaveDialog)
-                                (HandleStage1DateTimeModal CloseSaveDialog)
-                                ClearStage1DateTime
-                                model.stage1Date
-                                model.stage1Time
-                        ]
-                    ]
-                , H.div []
+    H.div [ HA.class "stage-wrapper" ]
+        [ H.div [ HA.class "stage-content" ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 1" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                     [ H.button
                         [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage1SummaryModal OpenDialog
+                        , HE.onClick <| HandleStage1DateTimeModal OpenDialog
                         ]
-                        [ if isStage1SummaryDone model then
-                            H.i [ HA.class "fa fa-check" ]
-                                [ H.text "" ]
-                          else
-                            H.span [] [ H.text "" ]
-                        , H.text " Summary"
+                        [ H.text <|
+                            case model.laborStage1Record of
+                                Just ls1rec ->
+                                    case ls1rec.fullDialation of
+                                        Just d ->
+                                            U.dateTimeHMFormatter
+                                                U.MDYDateFmt
+                                                U.DashDateSep
+                                                d
+
+                                        Nothing ->
+                                            "Click to set"
+
+                                Nothing ->
+                                    "Click to set"
                         ]
-                    , dialogStage1Summary dialogStage1Config
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                            "Stage 1 Date/Time"
+                            (FldChgSubMsg Stage1DateFld)
+                            (FldChgSubMsg Stage1TimeFld)
+                            (HandleStage1DateTimeModal CloseNoSaveDialog)
+                            (HandleStage1DateTimeModal CloseSaveDialog)
+                            ClearStage1DateTime
+                            model.stage1Date
+                            model.stage1Time
+                        else
+                        Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                            "Stage 1 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgSubMsg Stage1DateFld)
+                            (FldChgSubMsg Stage1TimeFld)
+                            (HandleStage1DateTimeModal CloseNoSaveDialog)
+                            (HandleStage1DateTimeModal CloseSaveDialog)
+                            ClearStage1DateTime
+                            model.stage1Date
+                            model.stage1Time
                     ]
                 ]
-            , H.div [ HA.class "stage-content" ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 2" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage2DateTimeModal OpenDialog
-                            ]
-                            [ H.text <|
-                                case model.laborStage2Record of
-                                    Just ls2rec ->
-                                        case ls2rec.birthDatetime of
-                                            Just d ->
-                                                U.dateTimeHMFormatter
-                                                    U.MDYDateFmt
-                                                    U.DashDateSep
-                                                    d
-
-                                            Nothing ->
-                                                "Click to set"
-
-                                    Nothing ->
-                                        "Click to set"
-                            ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                                "Stage 2 Date/Time"
-                                (FldChgSubMsg Stage2DateFld)
-                                (FldChgSubMsg Stage2TimeFld)
-                                (HandleStage2DateTimeModal CloseNoSaveDialog)
-                                (HandleStage2DateTimeModal CloseSaveDialog)
-                                ClearStage2DateTime
-                                model.stage2Date
-                                model.stage2Time
-                          else
-                            Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                                "Stage 2 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgSubMsg Stage2DateFld)
-                                (FldChgSubMsg Stage2TimeFld)
-                                (HandleStage2DateTimeModal CloseNoSaveDialog)
-                                (HandleStage2DateTimeModal CloseSaveDialog)
-                                ClearStage2DateTime
-                                model.stage2Date
-                                model.stage2Time
-                        ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleStage1SummaryModal OpenDialog
                     ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage2SummaryModal OpenDialog
-                        ]
-                        [ if isStage2SummaryDone model then
-                            H.i [ HA.class "fa fa-check" ]
-                                [ H.text "" ]
-                          else
-                            H.span [] [ H.text "" ]
-                        , H.text " Summary"
-                        ]
-                    , dialogStage2Summary dialogStage2Config
-                    ]
-                ]
-            , H.div [ HA.class "stage-content" ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 3" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage3DateTimeModal OpenDialog
-                            ]
-                            [ H.text <| "Not Implemented" ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                                "Stage 3 Date/Time"
-                                (FldChgSubMsg Stage3DateFld)
-                                (FldChgSubMsg Stage3TimeFld)
-                                (HandleStage3DateTimeModal CloseNoSaveDialog)
-                                (HandleStage3DateTimeModal CloseSaveDialog)
-                                ClearStage3DateTime
-                                model.stage3Date
-                                model.stage3Time
-                          else
-                            Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                                "Stage 3 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgSubMsg Stage3DateFld)
-                                (FldChgSubMsg Stage3TimeFld)
-                                (HandleStage3DateTimeModal CloseNoSaveDialog)
-                                (HandleStage3DateTimeModal CloseSaveDialog)
-                                ClearStage3DateTime
-                                model.stage3Date
-                                model.stage3Time
-                        ]
-                    ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        ]
-                        [ H.text "Summary" ]
+                    [ if isStage1SummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                        else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
                     ]
                 ]
             ]
+        , H.div [ HA.class "stage-content" ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 2" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage2DateTimeModal OpenDialog
+                        ]
+                        [ H.text <|
+                            case model.laborStage2Record of
+                                Just ls2rec ->
+                                    case ls2rec.birthDatetime of
+                                        Just d ->
+                                            U.dateTimeHMFormatter
+                                                U.MDYDateFmt
+                                                U.DashDateSep
+                                                d
+
+                                        Nothing ->
+                                            "Click to set"
+
+                                Nothing ->
+                                    "Click to set"
+                        ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                            "Stage 2 Date/Time"
+                            (FldChgSubMsg Stage2DateFld)
+                            (FldChgSubMsg Stage2TimeFld)
+                            (HandleStage2DateTimeModal CloseNoSaveDialog)
+                            (HandleStage2DateTimeModal CloseSaveDialog)
+                            ClearStage2DateTime
+                            model.stage2Date
+                            model.stage2Time
+                        else
+                        Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                            "Stage 2 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgSubMsg Stage2DateFld)
+                            (FldChgSubMsg Stage2TimeFld)
+                            (HandleStage2DateTimeModal CloseNoSaveDialog)
+                            (HandleStage2DateTimeModal CloseSaveDialog)
+                            ClearStage2DateTime
+                            model.stage2Date
+                            model.stage2Time
+                    ]
+                ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleStage2SummaryModal OpenDialog
+                    ]
+                    [ if isStage2SummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                        else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
+        , H.div [ HA.class "stage-content" ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 3" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage3DateTimeModal OpenDialog
+                        ]
+                        [ H.text <| "Not Implemented" ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                            "Stage 3 Date/Time"
+                            (FldChgSubMsg Stage3DateFld)
+                            (FldChgSubMsg Stage3TimeFld)
+                            (HandleStage3DateTimeModal CloseNoSaveDialog)
+                            (HandleStage3DateTimeModal CloseSaveDialog)
+                            ClearStage3DateTime
+                            model.stage3Date
+                            model.stage3Time
+                        else
+                        Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                            "Stage 3 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgSubMsg Stage3DateFld)
+                            (FldChgSubMsg Stage3TimeFld)
+                            (HandleStage3DateTimeModal CloseNoSaveDialog)
+                            (HandleStage3DateTimeModal CloseSaveDialog)
+                            ClearStage3DateTime
+                            model.stage3Date
+                            model.stage3Time
+                    ]
+                ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    ]
+                    [ H.text "Summary" ]
+                ]
+            ]
+        ]
 
 
 
@@ -711,77 +800,61 @@ dialogStage1Summary cfg =
 -}
 dialogStage1SummaryEdit : DialogStage1Summary -> Html SubMsg
 dialogStage1SummaryEdit cfg =
-    H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
-        [ H.div
-            [ HA.class "o-modal"
-            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.div [ HA.class "c-card" ]
-                [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--close"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "x" ]
-                    , H.h4 [ HA.class "c-heading" ]
-                        [ H.text cfg.title ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 1 Summary - Edit" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div []
+                [ Form.radioFieldsetWide "Mobility"
+                    "mobility"
+                    cfg.model.s1Mobility
+                    (FldChgSubMsg Stage1MobilityFld)
+                    False
+                    [ "Moved around"
+                    , "Didn't move much"
+                    , "Movement restricted"
                     ]
-                , H.div
-                    [ HA.class "c-card__body o-panel"
-                    , HA.style
-                        -- Need to restrict the body in order for the panel to work.
-                        [ ( "height", "230px" )
-                        , ( "max-height", "230px" )
-                        ]
+                ]
+            , H.div []
+                [ Form.formField (FldChgSubMsg Stage1DurationLatentFld)
+                    "Duration latent"
+                    "Number of minutes"
+                    True
+                    cfg.model.s1DurationLatent
+                , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
+                    "Duration active"
+                    "Number of minutes"
+                    True
+                    cfg.model.s1DurationActive
+                ]
+            , Form.formTextareaFieldMin30em (FldChgSubMsg Stage1CommentsFld)
+                "Comments"
+                "Meds, IV, Complications, Notes, etc."
+                cfg.model.s1Comments
+                3
+            , H.div
+                [ HA.class "spacedButtons"
+                , HA.style [ ( "width", "100%" ) ]
+                ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button u-small"
+                    , HE.onClick cfg.closeMsg
                     ]
-                    [ H.div
-                        [ HA.class "o-fieldset form-wrapper"
-                          -- BlazeCSS fieldset has too much margin at top for modal.
-                        , HA.style [ ( "margin-top", "0" ) ]
-                        ]
-                        [ Form.radioFieldset "Mobility"
-                            "mobility"
-                            cfg.model.s1Mobility
-                            (FldChgSubMsg Stage1MobilityFld)
-                            False
-                            [ "Moved around"
-                            , "Didn't move much"
-                            , "Movement restricted"
-                            ]
-                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                            [ Form.formField (FldChgSubMsg Stage1DurationLatentFld)
-                                "Duration latent"
-                                "Number of minutes"
-                                True
-                                cfg.model.s1DurationLatent
-                            , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
-                                "Duration active"
-                                "Number of minutes"
-                                True
-                                cfg.model.s1DurationActive
-                            ]
-                        , Form.formTextareaField (FldChgSubMsg Stage1CommentsFld)
-                            "Comments"
-                            "Meds, IV, Complications, Notes, etc."
-                            cfg.model.s1Comments
-                            3
-                        ]
+                    [ H.text "Cancel" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--brand u-small"
+                    , HE.onClick cfg.saveMsg
                     ]
-                , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button u-small"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "Cancel" ]
-                    , H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--brand"
-                        , HE.onClick cfg.saveMsg
-                        ]
-                        [ H.text "Save" ]
-                    ]
+                    [ H.text "Save" ]
                 ]
             ]
         ]
@@ -823,86 +896,64 @@ dialogStage1SummaryView cfg =
                 Nothing ->
                     ( "", "", "", "", "" )
     in
-        H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
-            [ H.div
-                [ HA.class "o-modal"
-                , HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+        H.div
+            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+            , HA.class "u-high"
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
                 ]
-                [ H.div [ HA.class "c-card" ]
-                    [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
-                        [ H.button
-                            [ HA.type_ "button"
-                            , HA.class "c-button c-button--close"
-                            , HE.onClick cfg.closeMsg
-                            ]
-                            [ H.text "x" ]
-                        , H.h4 [ HA.class "c-heading" ]
-                            [ H.text cfg.title ]
+            ]
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Stage 1 Summary" ]
+            , H.div [ HA.class "o-fieldset" ]
+                [ H.div []
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Stage 1 Total: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text s1Total ]
+                    ]
+                , H.div []
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Mobility: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text mobility ]
+                    ]
+                , H.div []
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Duration Latent: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text latent ]
+                    , H.span [ HA.class "" ]
+                        [ H.text " minutes" ]
+                    ]
+                , H.div []
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Duration Active: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text active ]
+                    , H.span [ HA.class "" ]
+                        [ H.text " minutes" ]
+                    ]
+                , H.div []
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Comments: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text comments ]
+                    ]
+                , H.div [ HA.class "spacedButtons" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button u-small"
+                        , HE.onClick cfg.closeMsg
                         ]
-                    , H.div
-                        [ HA.class "c-card__body o-panel"
-                        , HA.style
-                            -- Need to restrict the body in order for the panel to work.
-                            [ ( "height", "230px" )
-                            , ( "max-height", "230px" )
-                            ]
+                        [ H.text "Close" ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--ghost u-small"
+                        , HE.onClick cfg.editMsg
                         ]
-                        [ H.div
-                            [ HA.class ""
-                              -- BlazeCSS fieldset has too much margin at top for modal.
-                            , HA.style [ ( "margin-top", "0" ) ]
-                            ]
-                            [ H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Stage 1 Total: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text s1Total ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Mobility: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text mobility ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Duration Latent: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text latent ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text " minutes" ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Duration Active: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text active ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text " minutes" ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Comments: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text comments ]
-                                ]
-                            ]
-                        ]
-                    , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
-                        [ H.button
-                            [ HA.type_ "button"
-                            , HA.class "c-button c-button u-small"
-                            , HE.onClick cfg.closeMsg
-                            ]
-                            [ H.text "Close" ]
-                        , H.button
-                            -- TODO: make this an Edit button and need a new message
-                            [ HA.type_ "button"
-                            , HA.class "c-button c-button--brand"
-                            , HE.onClick cfg.editMsg
-                            ]
-                            [ H.text "Edit" ]
-                        ]
+                        [ H.text "Edit" ]
                     ]
                 ]
             ]
@@ -936,133 +987,126 @@ dialogStage2Summary cfg =
 
 dialogStage2SummaryEdit : DialogStage2Summary -> Html SubMsg
 dialogStage2SummaryEdit cfg =
-    H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
-        [ H.div
-            [ HA.class "o-modal"
-            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+    H.div
+        [ HA.class "u-high"
+        , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.div [ HA.class "c-card" ]
-                [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--close"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "x" ]
-                    , H.h4 [ HA.class "c-heading" ]
-                        [ H.text cfg.title ]
-                    ]
-                , H.div
-                    [ HA.class "c-card__body o-panel"
-                    , HA.style
-                        -- Need to restrict the body in order for the panel to work.
-                        [ ( "height", "230px" )
-                        , ( "max-height", "230px" )
-                        ]
-                    ]
-                    [ H.div
-                        [ HA.class "o-fieldset form-wrapper"
-                          -- BlazeCSS fieldset has too much margin at top for modal.
-                        , HA.style [ ( "margin-top", "0" ) ]
-                        ]
-                        [ Form.radioFieldsetOther "Position for birth"
-                            "position"
-                            cfg.model.s2BirthPosition
-                            (FldChgSubMsg Stage2BirthPositionFld)
-                            False
-                            [ "Semi-sitting"
-                            , "Lying on back"
-                            , "Side-Lying"
-                            , "Stool or Antipolo"
-                            , "Hands/Knees"
-                            , "Squat"
-                            ]
-                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                            [ Form.formField (FldChgSubMsg Stage2DurationPushingFld)
-                                "Duration of pushing"
-                                "Number of minutes"
-                                True
-                                cfg.model.s2DurationPushing
-                            ]
-                        , Form.radioFieldsetOther "Baby's presentation at birth"
-                            "presentation"
-                            cfg.model.s2BirthPresentation
-                            (FldChgSubMsg Stage2BirthPresentationFld)
-                            False
-                            [ "ROA"
-                            , "ROP"
-                            , "LOA"
-                            , "LOP"
-                            ]
-                        , Form.checkbox "Cord was wrapped" (FldChgBoolSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
-                        , Form.radioFieldsetOther "Cord wrap type"
-                            "cordwraptype"
-                            cfg.model.s2CordWrapType
-                            (FldChgSubMsg Stage2CordWrapTypeFld)
-                            False
-                            [ "Nuchal"
-                            , "Body"
-                            , "Cut on perineum"
-                            ]
-                        , Form.radioFieldsetOther "Delivery type"
-                            "deliverytype"
-                            cfg.model.s2DeliveryType
-                            (FldChgSubMsg Stage2DeliveryTypeFld)
-                            False
-                            [ "Spontaneous"
-                            , "Interventive"
-                            , "Vacuum"
-                            ]
-                        , Form.checkbox "Shoulder Dystocia" (FldChgBoolSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
-                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                            [ Form.formField (FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
-                                "Shoulder dystocia minutes"
-                                "Number of minutes"
-                                True
-                                cfg.model.s2ShoulderDystociaMinutes
-                            ]
-                        , Form.checkbox "Laceration" (FldChgBoolSubMsg Stage2LacerationFld) cfg.model.s2Laceration
-                        , Form.checkbox "Episiotomy" (FldChgBoolSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
-                        , Form.checkbox "Repair" (FldChgBoolSubMsg Stage2RepairFld) cfg.model.s2Repair
-                        , Form.radioFieldset "Degree"
-                            "degree"
-                            cfg.model.s2DeliveryType
-                            (FldChgSubMsg Stage2DeliveryTypeFld)
-                            False
-                            [ "1st"
-                            , "2nd"
-                            , "3rd"
-                            , "4th"
-                            ]
-                        , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                            [ Form.formField (FldChgSubMsg Stage2LacerationRepairedByFld)
-                                "Laceration repaired by"
-                                "Initials or lastname"
-                                True
-                                cfg.model.s2LacerationRepairedBy
-                            ]
-                        , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
-                            "Comments"
-                            "Meds, IV, Complications, Notes, etc."
-                            cfg.model.s2Comments
-                            3
-                        ]
-                    ]
-                , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button u-small"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "Cancel" ]
-                    , H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--brand"
-                        , HE.onClick cfg.saveMsg
-                        ]
-                        [ H.text "Save" ]
-                    ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 2 Summary - Edit" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div
+                [ HA.class "o-fieldset form-wrapper"
                 ]
+                [ Form.radioFieldsetOther "Birth type"
+                    "birthType"
+                    cfg.model.s2BirthType
+                    (FldChgSubMsg Stage2BirthTypeFld)
+                    False
+                    [ "Vaginal"
+                    ]
+                , Form.radioFieldsetOther "Position for birth"
+                    "position"
+                    cfg.model.s2BirthPosition
+                    (FldChgSubMsg Stage2BirthPositionFld)
+                    False
+                    [ "Semi-sitting"
+                    , "Lying on back"
+                    , "Side-Lying"
+                    , "Stool or Antipolo"
+                    , "Hands/Knees"
+                    , "Squat"
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgSubMsg Stage2DurationPushingFld)
+                        "Duration of pushing"
+                        "Number of minutes"
+                        True
+                        cfg.model.s2DurationPushing
+                    ]
+                , Form.radioFieldsetOther "Baby's presentation at birth"
+                    "presentation"
+                    cfg.model.s2BirthPresentation
+                    (FldChgSubMsg Stage2BirthPresentationFld)
+                    False
+                    [ "ROA"
+                    , "ROP"
+                    , "LOA"
+                    , "LOP"
+                    ]
+                , Form.checkbox "Cord was wrapped" (FldChgBoolSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
+                , Form.radioFieldsetOther "Cord wrap type"
+                    "cordwraptype"
+                    cfg.model.s2CordWrapType
+                    (FldChgSubMsg Stage2CordWrapTypeFld)
+                    False
+                    [ "Nuchal"
+                    , "Body"
+                    , "Cut on perineum"
+                    ]
+                , Form.radioFieldsetOther "Delivery type"
+                    "deliverytype"
+                    cfg.model.s2DeliveryType
+                    (FldChgSubMsg Stage2DeliveryTypeFld)
+                    False
+                    [ "Spontaneous"
+                    , "Interventive"
+                    , "Vacuum"
+                    ]
+                , Form.checkbox "Shoulder Dystocia" (FldChgBoolSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
+                        "Shoulder dystocia minutes"
+                        "Number of minutes"
+                        True
+                        cfg.model.s2ShoulderDystociaMinutes
+                    ]
+                , Form.checkbox "Laceration" (FldChgBoolSubMsg Stage2LacerationFld) cfg.model.s2Laceration
+                , Form.checkbox "Episiotomy" (FldChgBoolSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
+                , Form.checkbox "Repair" (FldChgBoolSubMsg Stage2RepairFld) cfg.model.s2Repair
+                , Form.radioFieldset "Degree"
+                    "degree"
+                    cfg.model.s2DeliveryType
+                    (FldChgSubMsg Stage2DegreeFld)
+                    False
+                    [ "1st"
+                    , "2nd"
+                    , "3rd"
+                    , "4th"
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgSubMsg Stage2LacerationRepairedByFld)
+                        "Laceration repaired by"
+                        "Initials or lastname"
+                        True
+                        cfg.model.s2LacerationRepairedBy
+                    ]
+                , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
+                    "Comments"
+                    "Meds, IV, Complications, Notes, etc."
+                    cfg.model.s2Comments
+                    3
+                ]
+            ]
+        , H.div
+            [ HA.class "spacedButtons"
+            , HA.style [ ( "width", "100%" ) ]
+            ]
+            [ H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button u-small"
+                , HE.onClick cfg.closeMsg
+                ]
+                [ H.text "Cancel" ]
+            , H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button--brand u-small"
+                , HE.onClick cfg.saveMsg
+                ]
+                [ H.text "Save" ]
             ]
         ]
 
@@ -1165,7 +1209,7 @@ dialogStage2SummaryView cfg =
                                 ]
                             ]
                         ]
-                    , H.div [ HA.class "c-card__footer modalButtons accent-bg accent-contrast-fg" ]
+                    , H.div [ HA.class "c-card__footer spacedButtons accent-bg accent-contrast-fg" ]
                         [ H.button
                             [ HA.type_ "button"
                             , HA.class "c-button c-button u-small"
@@ -1541,7 +1585,7 @@ update session msg model =
                     model
 
                 Stage2BirthTypeFld ->
-                    model
+                    { model | s2BirthType = Just value }
 
                 Stage2BirthPositionFld ->
                     { model | s2BirthPosition = Just value }
@@ -1734,8 +1778,15 @@ update session msg model =
                     in
                         -- We set the modal to View but it will show the edit screen
                         -- if there are fields not complete.
+                        -- Also, if we are not on the NoStageSummaryModal, we set the
+                        -- modal to that which has the effect of allowing the Summary
+                        -- button in the view to serve as a toggle.
                         ( { model
-                            | stage1SummaryModal = Stage1SummaryViewModal
+                            | stage1SummaryModal =
+                                if model.stage1SummaryModal == NoStageSummaryModal then
+                                    Stage1SummaryViewModal
+                                else
+                                    NoStageSummaryModal
                             , s1Mobility = mobility
                             , s1DurationLatent = latent
                             , s1DurationActive = active
@@ -1969,7 +2020,13 @@ update session msg model =
                     in
                         -- We set the modal to View but it will show the edit screen
                         -- if there are fields not complete.
-                        ( { newModel | stage2SummaryModal = Stage2SummaryViewModal }
+                        ( { newModel
+                            | stage2SummaryModal =
+                                if newModel.stage2SummaryModal == NoStageSummaryModal then
+                                    Stage2SummaryViewModal
+                                else
+                                    NoStageSummaryModal
+                          }
                         , Cmd.none
                         , Cmd.none
                         )
@@ -2033,7 +2090,7 @@ update session msg model =
                                                     (laborStage2RecordToValue newRec)
 
                                         Nothing ->
-                                            -- Need to create a new stage 1 record for the server.
+                                            -- Need to create a new stage 2 record for the server.
                                             case deriveLaborStage2RecordNew model of
                                                 Just laborStage2RecNew ->
                                                     ProcessTypeMsg
@@ -2061,10 +2118,10 @@ update session msg model =
                                 msgs =
                                     List.map Tuple.second errors
                             in
-                            ( { model | stage2SummaryModal = NoStageSummaryModal }
-                            , Cmd.none
-                            , toastError msgs 10
-                            )
+                                ( { model | stage2SummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , toastError msgs 10
+                                )
 
         HandleStage3DateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for stage 3
@@ -2315,11 +2372,10 @@ validateStage2 =
         , (\mdl ->
             if mdl.s2CordWrapType /= Nothing && (mdl.s2CordWrap == Nothing || mdl.s2CordWrap == Just False) then
                 [ (Stage2CordWrapTypeFld => "Cord wrap type cannot be specified if cord wrap is not checked.") ]
+            else if mdl.s2CordWrap == Just True && String.length (Maybe.withDefault "" mdl.s2CordWrapType) == 0 then
+                [ (Stage2CordWrapTypeFld => "Cord wrap cannot be checked without also specifying cord wrap type.") ]
             else
-                if mdl.s2CordWrap == Just True && String.length (Maybe.withDefault "" mdl.s2CordWrapType) == 0 then
-                    [ (Stage2CordWrapTypeFld => "Cord wrap cannot be checked without also specifying cord wrap type.") ]
-                else
-                    []
+                []
           )
         , .s2DeliveryType >> ifInvalid U.validatePopulatedString (Stage2DeliveryTypeFld => "Delivery type must be provided.")
         , (\mdl ->

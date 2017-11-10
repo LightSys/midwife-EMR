@@ -9,8 +9,10 @@ module Views.Form
         , formFieldDate
         , formFieldDatePicker
         , formTextareaField
+        , formTextareaFieldMin30em
         , radio
         , radioFieldset
+        , radioFieldsetWide
         , radioFieldsetOther
         )
 
@@ -80,6 +82,20 @@ formTextareaField onInputMsg lbl placeholder val numLines =
             []
         ]
 
+
+formTextareaFieldMin30em : (String -> msg) -> String -> String -> Maybe String -> Int -> Html msg
+formTextareaFieldMin30em onInputMsg lbl placeholder val numLines =
+    H.label [ HA.class "c-label o-form-element mw-form-field-30em" ]
+        [ H.text lbl
+        , H.textarea
+            [ HA.class "c-field c-field--label"
+            , HA.rows numLines
+            , HA.placeholder placeholder
+            , HA.value <| Maybe.withDefault "" val
+            , HE.onInput onInputMsg
+            ]
+            []
+        ]
 
 {-| A date form field for browsers that support a date input type and
 presumably will display their own date picker interface as required.
@@ -187,7 +203,7 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
                         , formField timeMsg "Time" "24 hr format, 14:44" False timeVal
                         ]
                     ]
-                , H.div [ HA.class "c-card__footer modalButtons" ]
+                , H.div [ HA.class "c-card__footer spacedButtons" ]
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--ghost u-small"
@@ -248,7 +264,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                         , formField timeMsg "Time" "24 hr format, 14:44" False timeVal
                         ]
                     ]
-                , H.div [ HA.class "c-card__footer modalButtons" ]
+                , H.div [ HA.class "c-card__footer spacedButtons" ]
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--ghost u-small"
@@ -286,6 +302,20 @@ checkbox lbl msg val =
 radioFieldset : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> Html msg
 radioFieldset title groupName value msg disabled radioTexts =
     H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+        ([ H.legend [ HA.class "o-fieldset__legend" ]
+            [ H.span [ HA.class "c-text--loud" ]
+                [ H.text title ]
+            ]
+         ]
+            ++ (List.map (\text -> radio ( text, groupName, disabled, msg, value )) radioTexts)
+        )
+
+
+{-| Radio field set without width restrictions.
+-}
+radioFieldsetWide : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> Html msg
+radioFieldsetWide title groupName value msg disabled radioTexts =
+    H.fieldset [ HA.class "o-fieldset" ]
         ([ H.legend [ HA.class "o-fieldset__legend" ]
             [ H.span [ HA.class "c-text--loud" ]
                 [ H.text title ]

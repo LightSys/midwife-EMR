@@ -208,6 +208,10 @@
   width: 20em;
   margin: 0 0;
 }
+.mw-form-field-30em {
+  width: 30em;
+  margin: 0 0;
+}
 .mw-form-field-wide {
   width: 100%;
   margin: 0 0;
@@ -232,7 +236,7 @@
 .dateTimeModal {
   width: 20em;
 }
-.modalButtons {
+.spacedButtons {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
