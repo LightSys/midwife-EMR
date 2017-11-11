@@ -149,11 +149,15 @@ dataAddMsg =
         |> JDP.required "response" dataAddMsgResponse
 
 
+{-| The optional id allows an errorCode returned
+from the server to propogate to be properly handled
+downstream in the update.
+-}
 dataAddMsgResponse : JD.Decoder DataAddMsgResponse
 dataAddMsgResponse =
     JDP.decode DataAddMsgResponse
         |> JDP.required "table" decodeTable
-        |> JDP.required "id" JD.int
+        |> JDP.optional "id" JD.int -2
         |> JDP.required "success" JD.bool
         |> JDP.required "errorCode" JD.string
         |> JDP.required "msg" JD.string
@@ -188,14 +192,18 @@ dataChgMsg =
         |> JDP.required "namespace" JD.string
         |> JDP.required "msgType" JD.string
         |> JDP.required "version" JD.int
-        |> JDP.required "response" dataAddMsgResponse
+        |> JDP.required "response" dataChgMsgResponse
 
 
+{-| The optional id allows an errorCode returned
+from the server to propogate to be properly handled
+downstream in the update.
+-}
 dataChgMsgResponse : JD.Decoder DataChgMsgResponse
 dataChgMsgResponse =
     JDP.decode DataChgMsgResponse
         |> JDP.required "table" decodeTable
-        |> JDP.required "id" JD.int
+        |> JDP.optional "id" JD.int -1
         |> JDP.required "success" JD.bool
         |> JDP.required "errorCode" JD.string
         |> JDP.required "msg" JD.string

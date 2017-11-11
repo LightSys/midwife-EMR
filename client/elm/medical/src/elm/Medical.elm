@@ -374,7 +374,17 @@ updateMessage incoming model =
                                         ( model, logConsole msgText )
 
                         False ->
-                            ( model, Cmd.none )
+                            -- This could be due to a session timeout, among other issues.
+                            case dataAddMsg.response.errorCode of
+                                "SessionExpiredErrorCode" ->
+                                    ( model
+                                    , Msg.toastWarn
+                                        [ "Sorry: " ++ dataAddMsg.response.msg ++ " Please go back to Prenatal, login, and then try again." ]
+                                        10
+                                    )
+
+                                _ ->
+                                    ( model, logConsole <| toString dataAddMsg.response )
             in
                 { newModel | processStore = processStore } => newCmd
 
@@ -422,7 +432,17 @@ updateMessage incoming model =
                                         ( model, logConsole msgText )
 
                         False ->
-                            ( model, Cmd.none )
+                            -- This could be due to a session timeout, among other issues.
+                            case dataChgMsg.response.errorCode of
+                                "SessionExpiredErrorCode" ->
+                                    ( model
+                                    , Msg.toastWarn
+                                        [ "Sorry: " ++ dataChgMsg.response.msg ++ " Please go back to Prenatal, login, and then try again." ]
+                                        10
+                                    )
+
+                                _ ->
+                                    ( model, logConsole <| toString dataChgMsg.response )
             in
                 { newModel | processStore = processStore } => newCmd
 
