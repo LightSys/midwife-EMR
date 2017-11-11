@@ -561,7 +561,9 @@ var isValidSocketSession = function(socket) {
  * touchSocketSession()
  *
  * Touch the session within the socket passed in order to
- * extend the expiry timeout accordingly.
+ * extend the expiry timeout accordingly. We call save()
+ * with a do nothing function in order to have the expires
+ * field in the sessions table in the database updated as well.
  *
  * param       socket
  * return      undefined
@@ -569,6 +571,7 @@ var isValidSocketSession = function(socket) {
 var touchSocketSession = function(socket) {
   if (DO_ASSERT) assertModule.touchSocketSession(socket);
   socket.request.session.touch();
+  socket.request.session.save(function() {});
 };
 
 /* --------------------------------------------------------
