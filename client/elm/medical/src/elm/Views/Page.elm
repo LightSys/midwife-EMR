@@ -222,7 +222,7 @@ toastInfo msgs =
             H.div [ HA.class "c-alert c-alert--success u-small" ]
                 [ H.text msg ]
     in
-        H.div [ HA.class "c-alerts c-alerts--bottomleft" ]
+        H.div [ HA.class "c-alerts c-alerts--topleft" ]
             (List.map doMsg msgs)
 
 toastWarn : List String -> Html msg
@@ -232,7 +232,7 @@ toastWarn msgs =
             H.div [ HA.class "c-alert c-alert--warning u-small" ]
                 [ H.text msg ]
     in
-        H.div [ HA.class "c-alerts c-alerts--bottomleft" ]
+        H.div [ HA.class "c-alerts c-alerts--topleft" ]
             (List.map doMsg msgs)
 
 
@@ -243,5 +243,5 @@ toastError msgs =
             H.div [ HA.class "c-alert c-alert--error u-small" ]
                 [ H.text msg ]
     in
-        H.div [ HA.class "c-alerts c-alerts--bottomleft" ]
+        H.div [ HA.class "c-alerts c-alerts--topleft" ]
             (List.map doMsg msgs)

@@ -2,6 +2,7 @@
 
 require('./css/fonts.css');
 require('../vendor/blaze.min.css');
+require('../vendor/blaze.colors.min.css');
 require('./css/main.css');
 
 var comm = require('./js/comm');

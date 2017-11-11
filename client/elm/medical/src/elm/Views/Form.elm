@@ -178,29 +178,34 @@ dateTimeModal :
     -> Maybe String
     -> Html msg
 dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal timeVal =
-    H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", isShown ) ] ]
-        [ H.div
+    H.div []
+        [ H.div [ HA.classList [ ( "c-overlay c-overlay--visible", isShown ) ] ]
+            []
+        , H.div
             [ HA.class "o-modal dateTimeModal"
             , HA.classList [ ( "isHidden", not isShown ) ]
             ]
             [ H.div [ HA.class "c-card" ]
-                [ H.div [ HA.class "c-card__header" ]
+                [ H.div [ HA.class "c-card__item u-bg-brand u-color-beige" ]
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--close"
                         , HE.onClick closeMsg
                         ]
                         [ H.text "x" ]
-                    , H.h4 [ HA.class "c-heading" ]
+                    , H.div [ HA.class "c-loud" ]
                         [ H.text title ]
                     ]
-                , H.div [ HA.class "c-card__body" ]
+                , H.div [ HA.class "c-card__body dateTimeModalBody" ]
                     [ H.div [ HA.class "o-fieldset form-wrapper" ]
                         [ formFieldDate dateMsg
                             "Date"
                             "e.g. 08/14/2017"
                             dateVal
-                        , formField timeMsg "Time" "24 hr format, 14:44" False timeVal
+                        , formField timeMsg
+                            "Time" "24 hr format, 14:44"
+                            False
+                            timeVal
                         ]
                     ]
                 , H.div [ HA.class "c-card__footer spacedButtons" ]

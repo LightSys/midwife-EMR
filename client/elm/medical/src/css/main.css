@@ -236,10 +236,15 @@
 .dateTimeModal {
   width: 20em;
 }
+.dateTimeModalBody {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 .spacedButtons {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
+  padding-top: 0;
 }
 
 /* Stage section on labor page */
