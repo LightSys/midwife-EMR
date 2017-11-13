@@ -24,6 +24,7 @@ type MsgType
     | DelMsgType
     | SelectMsgType
     | ChgMsgType
+    | AdhocTouchType
 
 
 type Namespace
@@ -55,6 +56,8 @@ msgTypeToString mt =
         ChgMsgType ->
             "CHG"
 
+        AdhocTouchType ->
+            "ADHOC_TOUCH_SESSION"
 
 {-| Wrap a JSON Value in an outer message wrapper
 along with the process id and message type associated

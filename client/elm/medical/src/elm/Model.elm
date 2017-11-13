@@ -64,7 +64,7 @@ initialModel browserSupportsDate pregId time =
         , currTime = time
         , currPregId = pregId
         , pageState = Loaded page
-        , session = { user = Nothing }
+        , session = { user = Nothing, serverTouch = 0.0, clientTouch = 0.0 }
         , toast = Nothing
         , processStore = newStore
         , window = Nothing

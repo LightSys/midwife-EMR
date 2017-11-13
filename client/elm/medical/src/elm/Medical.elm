@@ -20,7 +20,7 @@ import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLabor
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
-import Data.Session as Session exposing (Session)
+import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
 import Data.Table exposing (Table(..))
 import Data.TableRecord exposing (TableRecord(..))
 import Data.Toast exposing (ToastRecord, ToastType(..))
@@ -138,17 +138,25 @@ getPage pageState =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg noAutoTouchModel =
     let
+        -- We assume that the msg is some form of user interaction with the
+        -- client application, so we "touch" the session accordingly and store
+        -- the result in model. Those conditions below that do not represent
+        -- some sort of client interaction should use the noAutoTouchModel
+        -- instead of model.
+        model =
+            { noAutoTouchModel | session = clientTouch noAutoTouchModel.session noAutoTouchModel.currTime }
+
         page =
             getPage model.pageState
 
-        updateForPage page routingMsg subUpdate subMsg subModel =
+        updateForPage page routingMsg theModel subUpdate subMsg subModel =
             let
                 ( newModel, innerCmd, outerCmd ) =
                     subUpdate subMsg subModel
             in
-                ( { model | pageState = Loaded (page newModel) }, Cmd.batch [ outerCmd, Cmd.map routingMsg innerCmd ] )
+                ( { theModel | pageState = Loaded (page newModel) }, Cmd.batch [ outerCmd, Cmd.map routingMsg innerCmd ] )
     in
         case ( msg, page ) of
             ( Noop, _ ) ->
@@ -157,9 +165,12 @@ update msg model =
             ( Tick time, _ ) ->
                 -- Keep the current time in the Model and reduce the secondsLeft
                 -- of the active toast if there is one.
+                --
+                -- Also, "touch" the server in order to keep the user's session
+                -- active if necessary.
                 let
                     newToast =
-                        case model.toast of
+                        case noAutoTouchModel.toast of
                             Just t ->
                                 if t.secondsLeft - 1 <= 0 then
                                     Nothing
@@ -168,12 +179,16 @@ update msg model =
 
                             Nothing ->
                                 Nothing
+
+                    ( newSession, newCmd ) =
+                        doTouch noAutoTouchModel.session noAutoTouchModel.currTime
                 in
-                    { model
+                    { noAutoTouchModel
                         | currTime = time
                         , toast = newToast
+                        , session = newSession
                     }
-                        => Cmd.none
+                        => newCmd
 
             ( LogConsole msg, _ ) ->
                 -- Write a message out to the console.
@@ -193,7 +208,14 @@ update msg model =
 
             ( Message incoming, _ ) ->
                 -- All messages from the server come through here first.
-                updateMessage incoming model
+                -- We record the time of the last contact with the server in order
+                -- to better maintain a session with the server. See
+                -- Data/Session.elm for details. We use noAutoTouchModel
+                -- because this is not a client touch, but a server touch.
+                updateMessage incoming
+                    { noAutoTouchModel
+                        | session = serverTouch noAutoTouchModel.session noAutoTouchModel.currTime
+                    }
 
             ( ProcessTypeMsg processType msgType jeVal, _ ) ->
                 -- Send a message to the server and store the required information
@@ -245,15 +267,31 @@ update msg model =
                 let
                     -- If the subMsg is DataCache, revise the subMsg by adding
                     -- the current dataCache to it.
-                    newSubMsg =
+                    --
+                    -- If the subMsg is a Tick, we don't want to update the
+                    -- session with a touch so use the noAutoTouchModel instead.
+                    ( newSubMsg, useNoAutoTouchModel ) =
                         case subMsg of
                             DataCache _ tbl ->
-                                DataCache (Just model.dataCache) tbl
+                                ( DataCache (Just model.dataCache) tbl, False )
+
+                            TickSubMsg _ ->
+                                ( subMsg, True )
 
                             _ ->
-                                subMsg
+                                ( subMsg, False )
+                    theModel =
+                        if useNoAutoTouchModel then
+                            noAutoTouchModel
+                        else
+                            model
                 in
-                    updateForPage LaborDelIpp LaborDelIppMsg (PageLaborDelIpp.update model.session) newSubMsg subModel
+                    updateForPage LaborDelIpp
+                    LaborDelIppMsg
+                    theModel
+                    (PageLaborDelIpp.update theModel.session)
+                    newSubMsg
+                    subModel
 
             ( SetRoute route, _ ) ->
                 -- Handle route changes.
@@ -273,6 +311,7 @@ update msg model =
                 -- receive the user's date selection from the jQueryUI datepicker.
                 updateForPage LaborDelIpp
                     LaborDelIppMsg
+                    model
                     (PageLaborDelIpp.update model.session)
                     (Data.LaborDelIpp.DateFieldSubMsg dateFieldMsg)
                     subModel

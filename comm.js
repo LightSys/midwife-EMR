@@ -132,6 +132,7 @@ var rx = require('rx')
   , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
+  , ADHOC_TOUCH_SESSION = 'ADHOC_TOUCH_SESSION'   // Used by the Elm medical client
   , TABLE_keyValue = 'keyValue'
   , TABLE_labSuite = 'labSuite'
   , TABLE_labTest = 'labTest'
@@ -1394,6 +1395,10 @@ var init = function(io, sessionMiddle) {
           case CHG:
             if (DO_ASSERT) assertModule.ioData_socket_on_CHG(json.payload);
             handleData2(CHG, json, socket);
+            break;
+
+          case ADHOC_TOUCH_SESSION:
+            touchSocketSession(socket);
             break;
 
           default:
