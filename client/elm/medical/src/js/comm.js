@@ -70,6 +70,21 @@ ioSocket.on(MESSAGE, function(data) {
 });
 
 /* --------------------------------------------------------
+ * touchHttpSession()
+ *
+ * We send an HTTP PUT to the server and we don't care/expect
+ * anything in return. This allows the server to refresh and
+ * keep alive the session on the non-websockets side of the
+ * application even though the client itself is using websockets
+ * exclusively for a long time.
+ * -------------------------------------------------------- */
+var touchHttpSession = function() {
+  var req = new XMLHttpRequest();
+  req.open('PUT', window.location.origin + '/touch', true);
+  req.send();
+}
+
+/* --------------------------------------------------------
  * setApp()
  *
  * Save the reference to the Elm client then subscribe to
@@ -80,6 +95,15 @@ var setApp = function(theApp) {
   app = theApp;
 
   app.ports.outgoing.subscribe(function(data) {
+    // --------------------------------------------------------
+    // Discern if the outgoing data is a "touch" to the server
+    // on the websocket side so that the same can be done on the
+    // HTTP side. These "touches" are for the sake of maintaining
+    // the user's session on the server.
+    // --------------------------------------------------------
+    if (data.msgType && data.msgType === 'ADHOC_TOUCH_SESSION') {
+      touchHttpSession();
+    }
     ioSocket.send(JSON.stringify(data));
   });
 };

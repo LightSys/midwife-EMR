@@ -914,10 +914,6 @@ var handleData2 = function(evtName, json, socket) {
     , returnStatusFunc
     ;
 
-  // Temp
-  console.log(json);
-
-  console.log('handleData2() for ' + evtName + ' with json of: ' + json);
   switch (evtName) {
     case ADD:
       if (! table || ! data ) {
@@ -976,8 +972,6 @@ var handleData2 = function(evtName, json, socket) {
       return socket.send(JSON.stringify(retAction));
     }
     retAction = returnStatusFunc(evtName, messageId, table, additionalData.id, true);
-    // TEMP
-    console.log(JSON.stringify(retAction));
     socket.send(JSON.stringify(retAction));
 
     // --------------------------------------------------------
@@ -1120,8 +1114,6 @@ var getTable = function(socket, json) {
           return socket.send(JSON.stringify(retVal));
         }
         retVal.response = returnStatusSELECT({}, data, true);
-        // TEMP
-        console.log(JSON.stringify(retVal));
         return socket.send(JSON.stringify(retVal));
       });
     } else {
