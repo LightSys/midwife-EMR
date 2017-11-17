@@ -10,6 +10,10 @@
 # Run the container (run from the top of the Midwife-EMR project):
 #   docker run --init --name=midwife-emr-watch-medical-client --rm -v $(pwd)/client/elm/medical:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-medical-client:latest
 #
+# Run tests
+#   - First make sure that this container is running per above.
+#   - docker container exec -it midwife-emr-watch-medical-client elm-test
+#
 # To stop the container:
 #   Ctrl-C
 FROM node:6.11.3 as build
