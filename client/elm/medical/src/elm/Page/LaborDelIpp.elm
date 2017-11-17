@@ -636,7 +636,7 @@ viewStages model =
                             ClearStage1DateTime
                             model.stage1Date
                             model.stage1Time
-                        else
+                      else
                         Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
                             "Stage 1 Date/Time"
                             OpenDatePickerSubMsg
@@ -657,7 +657,7 @@ viewStages model =
                     [ if isStage1SummaryDone model then
                         H.i [ HA.class "fa fa-check" ]
                             [ H.text "" ]
-                        else
+                      else
                         H.span [] [ H.text "" ]
                     , H.text " Summary"
                     ]
@@ -698,7 +698,7 @@ viewStages model =
                             ClearStage2DateTime
                             model.stage2Date
                             model.stage2Time
-                        else
+                      else
                         Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
                             "Stage 2 Date/Time"
                             OpenDatePickerSubMsg
@@ -719,7 +719,7 @@ viewStages model =
                     [ if isStage2SummaryDone model then
                         H.i [ HA.class "fa fa-check" ]
                             [ H.text "" ]
-                        else
+                      else
                         H.span [] [ H.text "" ]
                     , H.text " Summary"
                     ]
@@ -745,7 +745,7 @@ viewStages model =
                             ClearStage3DateTime
                             model.stage3Date
                             model.stage3Time
-                        else
+                      else
                         Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
                             "Stage 3 Date/Time"
                             OpenDatePickerSubMsg
@@ -1069,7 +1069,7 @@ dialogStage2SummaryEdit cfg =
                 , Form.checkbox "Repair" (FldChgBoolSubMsg Stage2RepairFld) cfg.model.s2Repair
                 , Form.radioFieldset "Degree"
                     "degree"
-                    cfg.model.s2DeliveryType
+                    cfg.model.s2Degree
                     (FldChgSubMsg Stage2DegreeFld)
                     False
                     [ "1st"
@@ -1498,7 +1498,14 @@ update session msg model =
             -- Boolean fields.
             ( case fld of
                 Stage2CordWrapFld ->
-                    { model | s2CordWrap = Just value }
+                    -- Clear the cord wrap type if this is unchecked.
+                    if value == False then
+                        { model
+                            | s2CordWrap = Just value
+                            , s2CordWrapType = Nothing
+                        }
+                    else
+                        { model | s2CordWrap = Just value }
 
                 Stage2ShoulderDystociaFld ->
                     { model | s2ShoulderDystocia = Just value }
@@ -1510,7 +1517,15 @@ update session msg model =
                     { model | s2Episiotomy = Just value }
 
                 Stage2RepairFld ->
-                    { model | s2Repair = Just value }
+                    -- Clear the degree and repaired by fields if this is unchecked.
+                    if value == False then
+                        { model
+                            | s2Repair = Just value
+                            , s2Degree = Nothing
+                            , s2LacerationRepairedBy = Nothing
+                        }
+                    else
+                        { model | s2Repair = Just value }
             , Cmd.none
             , Cmd.none
             )
