@@ -405,4 +405,13 @@ dateHandling =
                         )
                 in
                     Expect.equal (U.diff2DatesString a b) "2 days, 2 minutes"
+        , test "diff2Date dates miscellaneous" <|
+            \() ->
+                let
+                    ( a, b ) =
+                        ( DEC.dateFromFields 2017 Date.Nov 9 10 41 0 0
+                        , DEC.dateFromFields 2017 Date.Nov 9 15 32 0 0
+                        )
+                in
+                    Expect.equal (U.diff2DatesString a b) "4 hours, 51 minutes"
         ]

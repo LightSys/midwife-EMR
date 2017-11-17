@@ -46,6 +46,7 @@ import Date.Extra.Compare as DEComp
 import Date.Extra.Config.Config_en_us as DECC
 import Date.Extra.Core as DECore
 import Date.Extra.Create as DEC
+import Date.Extra.Duration as DED
 import Date.Extra.Format as DEF
 import Date.Extra.Period as DEP
 import Html as H exposing (Html)
@@ -466,11 +467,11 @@ diff2DatesString d1 d2 =
             case DEComp.is DEComp.Before d1 d2 of
                 True ->
                     -- d1 is before d2
-                    DEP.diff d2 d1
+                    DED.diff d2 d1
 
                 False ->
                     -- d1 is after (or same as) d2
-                    DEP.diff d1 d2
+                    DED.diff d1 d2
 
         days =
             doSingular dateDelta.day "day"
