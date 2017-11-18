@@ -63,12 +63,10 @@ isLaborStage2RecordComplete rec =
             || (rec.cordWrap == Just True && rec.cordWrapType == Nothing)
             || (rec.deliveryType == Nothing)
             || (rec.shoulderDystocia == Just True && rec.shoulderDystociaMinutes == Nothing)
-            || (rec.laceration == Just True && rec.episiotomy == Nothing)
-            || (rec.laceration == Just True && rec.repair == Nothing)
             || (rec.laceration == Just True && rec.degree == Nothing)
-            || (rec.laceration == Just True && rec.lacerationRepairedBy == Nothing)
+            || (rec.episiotomy == Just True && rec.degree == Nothing)
+            || (rec.repair == Just True && rec.lacerationRepairedBy == Nothing)
             || (rec.birthEBL == Nothing)
-            || (rec.meconium == Nothing)
         )
 
 

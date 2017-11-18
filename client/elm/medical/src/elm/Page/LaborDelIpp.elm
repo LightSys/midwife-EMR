@@ -1084,6 +1084,23 @@ dialogStage2SummaryEdit cfg =
                         True
                         cfg.model.s2LacerationRepairedBy
                     ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgSubMsg Stage2BirthEBLFld)
+                        "EBL at birth"
+                        "in cc"
+                        True
+                        cfg.model.s2BirthEBL
+                    ]
+                , Form.radioFieldset "Meconium"
+                    "meconium"
+                    cfg.model.s2Meconium
+                    (FldChgSubMsg Stage2MeconiumFld)
+                    False
+                    [ "None"
+                    , "Lt"
+                    , "Mod"
+                    , "Thick"
+                    ]
                 , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
                     "Comments"
                     "Meds, IV, Complications, Notes, etc."
@@ -1114,116 +1131,196 @@ dialogStage2SummaryEdit cfg =
 dialogStage2SummaryView : DialogStage2Summary -> Html SubMsg
 dialogStage2SummaryView cfg =
     let
-        ( mobility, latent, active, comments, s1Total ) =
-            case cfg.model.laborStage1Record of
+        ( birthType, birthPosition, durationPushing, birthPresentation, cordWrapAndType, deliveryType ) =
+            case cfg.model.laborStage2Record of
                 Just rec ->
-                    ( Maybe.withDefault "" rec.mobility
-                    , Maybe.map toString rec.durationLatent
+                    ( Maybe.withDefault "" rec.birthType
+                    , Maybe.withDefault "" rec.birthPosition
+                    , Maybe.map toString rec.durationPushing
                         |> Maybe.withDefault ""
-                    , Maybe.map toString rec.durationActive
-                        |> Maybe.withDefault ""
-                    , Maybe.withDefault "" rec.comments
-                    , case rec.fullDialation of
-                        Just fd ->
-                            case cfg.model.laborRecord of
-                                Just lrecs ->
-                                    case LE.find (\r -> r.id == rec.labor_id) lrecs of
-                                        Just laborRec ->
-                                            U.diff2DatesString laborRec.startLaborDate fd
+                    , Maybe.withDefault "" rec.birthPresentation
+                    , Maybe.map2
+                        (\c t ->
+                            if c then
+                                "Yes, " ++ t
+                            else
+                                "No"
+                        )
+                        rec.cordWrap
+                        rec.cordWrapType
+                        |> Maybe.withDefault "No"
+                    , Maybe.withDefault "" rec.deliveryType
+                    )
 
-                                        Nothing ->
-                                            ""
+                Nothing ->
+                    ( "", "", "", "", "", "" )
 
-                                Nothing ->
+        ( shoulderDystocia, laceration, episiotomy, repair, degree, repairedBy, ebl, meconium ) =
+            case cfg.model.laborStage2Record of
+                Just rec ->
+                    ( Maybe.map2
+                        (\s m ->
+                            if s then
+                                "Yes, " ++ (toString m) ++ " minutes"
+                            else
+                                "No"
+                        )
+                        rec.shoulderDystocia
+                        rec.shoulderDystociaMinutes
+                        |> Maybe.withDefault "No"
+                    , Maybe.map (\l -> if l then "Yes" else "No") rec.laceration
+                        |> Maybe.withDefault "No"
+                    , Maybe.map (\e -> if e then "Yes" else "No") rec.episiotomy
+                        |> Maybe.withDefault "No"
+                    , Maybe.map (\r -> if r then "Yes" else "No") rec.repair
+                        |> Maybe.withDefault "No"
+                    , Maybe.withDefault "None" rec.degree
+                    , Maybe.withDefault "" rec.lacerationRepairedBy
+                    , Maybe.map toString rec.birthEBL
+                        |> Maybe.map (\e -> e ++ " cc")
+                        |> Maybe.withDefault "0"
+                    , Maybe.withDefault "None" rec.meconium
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "", "", "", "" )
+
+        s2Total =
+            case cfg.model.laborStage2Record of
+                Just s2Rec ->
+                    case cfg.model.laborStage1Record of
+                        Just s1Rec ->
+                            case ( s1Rec.fullDialation, s2Rec.birthDatetime ) of
+                                ( Just fd, Just bdt ) ->
+                                    U.diff2DatesString fd bdt
+
+                                ( _, _ ) ->
                                     ""
 
                         Nothing ->
                             ""
-                    )
 
                 Nothing ->
-                    ( "", "", "", "", "" )
+                    ""
     in
-        H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", cfg.isShown ) ] ]
-            [ H.div
-                [ HA.class "o-modal"
-                , HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+        H.div
+            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+            , HA.class "u-high"
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
                 ]
-                [ H.div [ HA.class "c-card" ]
-                    [ H.div [ HA.class "c-card__header accent-bg accent-contrast-fg" ]
-                        [ H.button
-                            [ HA.type_ "button"
-                            , HA.class "c-button c-button--close"
-                            , HE.onClick cfg.closeMsg
-                            ]
-                            [ H.text "x" ]
-                        , H.h4 [ HA.class "c-heading" ]
-                            [ H.text cfg.title ]
+            ]
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Stage 2 Summary" ]
+            , H.div [ ]
+                [ H.div
+                    [ HA.class "o-fieldset form-wrapper"
+                    ]
+                    [ H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Stage 2 Total: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text s2Total ]
                         ]
-                    , H.div
-                        [ HA.class "c-card__body o-panel"
-                        , HA.style
-                            -- Need to restrict the body in order for the panel to work.
-                            [ ( "height", "230px" )
-                            , ( "max-height", "230px" )
-                            ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Birth type: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text birthType ]
                         ]
-                        [ H.div
-                            [ HA.class ""
-                              -- BlazeCSS fieldset has too much margin at top for modal.
-                            , HA.style [ ( "margin-top", "0" ) ]
-                            ]
-                            [ H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Stage 1 Total: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text s1Total ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Mobility: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text mobility ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Duration Latent: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text latent ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text " minutes" ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Duration Active: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text active ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text " minutes" ]
-                                ]
-                            , H.div []
-                                [ H.span [ HA.class "c-text--loud" ]
-                                    [ H.text "Comments: " ]
-                                , H.span [ HA.class "" ]
-                                    [ H.text comments ]
-                                ]
-                            ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Delivery type: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text deliveryType ]
                         ]
-                    , H.div [ HA.class "c-card__footer spacedButtons accent-bg accent-contrast-fg" ]
-                        [ H.button
-                            [ HA.type_ "button"
-                            , HA.class "c-button c-button u-small"
-                            , HE.onClick cfg.closeMsg
-                            ]
-                            [ H.text "Close" ]
-                        , H.button
-                            -- TODO: make this an Edit button and need a new message
-                            [ HA.type_ "button"
-                            , HA.class "c-button c-button--brand"
-                            , HE.onClick cfg.editMsg
-                            ]
-                            [ H.text "Edit" ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Position for birth: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text birthPosition ]
                         ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Duration of pushing: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text <| durationPushing ++ " minutes" ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Presentation at birth: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text birthPresentation ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Cord wrap: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text cordWrapAndType ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Shoulder dystocia: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text shoulderDystocia ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Laceration: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text laceration ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Episiotomy: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text episiotomy ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Repair: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text repair ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Degree: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text degree ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Laceration repaired by: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text repairedBy ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Est blood loss at birth: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text ebl ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Meconium: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text meconium ]
+                        ]
+                    ]
+                , H.div [ HA.class "spacedButtons" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button u-small"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "Close" ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--ghost u-small"
+                        , HE.onClick cfg.editMsg
+                        ]
+                        [ H.text "Edit" ]
                     ]
                 ]
             ]
@@ -1627,10 +1724,16 @@ update session msg model =
                     { model | s2LacerationRepairedBy = Just value }
 
                 Stage2BirthEBLFld ->
-                    model
+                    { model | s2BirthEBL = Just value }
 
                 Stage2MeconiumFld ->
-                    model
+                    { model
+                        | s2Meconium =
+                            if value == "None" then
+                                Nothing
+                            else
+                                Just value
+                    }
 
                 Stage2CommentsFld ->
                     { model | s2Comments = Just value }
