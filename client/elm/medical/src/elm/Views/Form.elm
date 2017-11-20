@@ -81,10 +81,13 @@ formField msg lbl placeholder isBold val err =
         ]
 
 
-formTextareaField : (String -> msg) -> String -> String -> Maybe String -> Int -> Html msg
-formTextareaField onInputMsg lbl placeholder val numLines =
+formTextareaField : (String -> msg) -> String -> String -> Bool -> Maybe String -> Int -> Html msg
+formTextareaField onInputMsg lbl placeholder isBold val numLines =
     H.label [ HA.class "c-label o-form-element mw-form-field-wide" ]
-        [ H.text lbl
+        [ H.span
+            [ HA.classList [ ( "c-text--loud", isBold ) ]
+            ]
+            [ H.text lbl ]
         , H.textarea
             [ HA.class "c-field c-field--label"
             , HA.rows numLines
@@ -96,10 +99,13 @@ formTextareaField onInputMsg lbl placeholder val numLines =
         ]
 
 
-formTextareaFieldMin30em : (String -> msg) -> String -> String -> Maybe String -> Int -> Html msg
-formTextareaFieldMin30em onInputMsg lbl placeholder val numLines =
+formTextareaFieldMin30em : (String -> msg) -> String -> String -> Bool -> Maybe String -> Int -> Html msg
+formTextareaFieldMin30em onInputMsg lbl placeholder isBold val numLines =
     H.label [ HA.class "c-label o-form-element mw-form-field-30em" ]
-        [ H.text lbl
+        [ H.span
+            [ HA.classList [ ( "c-text--loud", isBold ) ]
+            ]
+            [ H.text lbl ]
         , H.textarea
             [ HA.class "c-field c-field--label"
             , HA.rows numLines

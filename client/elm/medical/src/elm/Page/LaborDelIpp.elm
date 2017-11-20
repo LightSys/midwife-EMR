@@ -486,7 +486,9 @@ viewAdmitForm model =
                         model.temp
                         (getErr TempFld errors)
                     , Form.formTextareaField (FldChgSubMsg CommentsFld)
-                        "Comments" ""
+                        "Comments"
+                        ""
+                        True
                         model.comments
                         3
                     ]
@@ -931,6 +933,7 @@ dialogStage1SummaryEdit cfg =
                 , Form.formTextareaFieldMin30em (FldChgSubMsg Stage1CommentsFld)
                     "Comments"
                     "Meds, IV, Complications, Notes, etc."
+                    True
                     cfg.model.s1Comments
                     3
                 , H.div
@@ -1212,6 +1215,7 @@ dialogStage2SummaryEdit cfg =
                     , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
                         "Comments"
                         "Meds, IV, Complications, Notes, etc."
+                        True
                         cfg.model.s2Comments
                         3
                     ]
