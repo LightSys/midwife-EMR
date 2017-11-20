@@ -20,6 +20,7 @@ module Util
         , maybeIntToMaybeBool
         , maybeIntToNegOne
         , maybeDateToValue
+        , maybeOr
         , maybeStringToMaybeFloat
         , maybeStringToMaybeInt
         , maybeStringToIntValue
@@ -154,6 +155,18 @@ maybeStringToIntValue str =
         Nothing ->
             JE.null
 
+
+{-| Returns the first non-Maybe value.
+Copied from Maybe.Extra.or.
+-}
+maybeOr : Maybe a -> Maybe a -> Maybe a
+maybeOr ma mb =
+    case ma of
+        Nothing ->
+            mb
+
+        Just _ ->
+            ma
 
 {-| Returns True if the String is Nothing or
 does not have length.

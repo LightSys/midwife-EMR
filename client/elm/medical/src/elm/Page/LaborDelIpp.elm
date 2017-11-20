@@ -2254,30 +2254,32 @@ update session msg model =
         HandleStage2SummaryModal dialogState ->
             case dialogState of
                 -- If there already is a laborStage2Record, then populate the form
-                -- fields with the contents of that record.
+                -- fields with the contents of that record. But since it is possible
+                -- that the laborStage2Record may only have minimal content, allow
+                -- form fields in model to be used as alternatives.
                 OpenDialog ->
                     let
                         newModel =
                             case model.laborStage2Record of
                                 Just rec ->
                                     { model
-                                        | s2BirthType = rec.birthType
-                                        , s2BirthPosition = rec.birthPosition
-                                        , s2DurationPushing = Maybe.map toString rec.durationPushing
-                                        , s2BirthPresentation = rec.birthPresentation
-                                        , s2CordWrap = rec.cordWrap
-                                        , s2CordWrapType = rec.cordWrapType
-                                        , s2DeliveryType = rec.deliveryType
-                                        , s2ShoulderDystocia = rec.shoulderDystocia
-                                        , s2ShoulderDystociaMinutes = Maybe.map toString rec.shoulderDystociaMinutes
-                                        , s2Laceration = rec.laceration
-                                        , s2Episiotomy = rec.episiotomy
-                                        , s2Repair = rec.repair
-                                        , s2Degree = rec.degree
-                                        , s2LacerationRepairedBy = rec.lacerationRepairedBy
-                                        , s2BirthEBL = Maybe.map toString rec.birthEBL
-                                        , s2Meconium = rec.meconium
-                                        , s2Comments = rec.comments
+                                        | s2BirthType = U.maybeOr rec.birthType model.s2BirthType
+                                        , s2BirthPosition = U.maybeOr rec.birthPosition model.s2BirthPosition
+                                        , s2DurationPushing =  U.maybeOr (Maybe.map toString rec.durationPushing) model.s2DurationPushing
+                                        , s2BirthPresentation = U.maybeOr rec.birthPresentation model.s2BirthPresentation
+                                        , s2CordWrap = U.maybeOr rec.cordWrap model.s2CordWrap
+                                        , s2CordWrapType = U.maybeOr rec.cordWrapType model.s2CordWrapType
+                                        , s2DeliveryType = U.maybeOr rec.deliveryType model.s2DeliveryType
+                                        , s2ShoulderDystocia = U.maybeOr rec.shoulderDystocia model.s2ShoulderDystocia
+                                        , s2ShoulderDystociaMinutes =  U.maybeOr (Maybe.map toString rec.shoulderDystociaMinutes) model.s2ShoulderDystociaMinutes
+                                        , s2Laceration = U.maybeOr rec.laceration model.s2Laceration
+                                        , s2Episiotomy = U.maybeOr rec.episiotomy model.s2Episiotomy
+                                        , s2Repair = U.maybeOr rec.repair model.s2Repair
+                                        , s2Degree = U.maybeOr rec.degree model.s2Degree
+                                        , s2LacerationRepairedBy = U.maybeOr rec.lacerationRepairedBy model.s2LacerationRepairedBy
+                                        , s2BirthEBL =  U.maybeOr (Maybe.map toString rec.birthEBL) model.s2BirthEBL
+                                        , s2Meconium = U.maybeOr rec.meconium model.s2Meconium
+                                        , s2Comments = U.maybeOr rec.comments model.s2Comments
                                     }
 
                                 Nothing ->
@@ -2285,6 +2287,8 @@ update session msg model =
                     in
                         -- We set the modal to View but it will show the edit screen
                         -- if there are fields not complete.
+                        --
+                        -- The if below allows the summary button to toggle on/off the form.
                         ( { newModel
                             | stage2SummaryModal =
                                 if newModel.stage2SummaryModal == NoStageSummaryModal then
