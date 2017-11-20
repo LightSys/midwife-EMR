@@ -413,6 +413,7 @@ viewAdmitForm model =
                         Form.formFieldDate (FldChgSubMsg AdmittanceDateFld)
                             "Date admitted"
                             "e.g. 08/14/2017"
+                            True
                             model.admittanceDate
                             (getErr AdmittanceDateFld errors)
                     else
@@ -420,17 +421,19 @@ viewAdmitForm model =
                             LaborDelIppAdmittanceDateField
                             "Date admitted"
                             "e.g. 08/14/2017"
+                            True
                             model.admittanceDate
                             (getErr AdmittanceDateFld errors)
                     , Form.formField (FldChgSubMsg AdmittanceTimeFld)
                         "Time admitted"
                         "24 hr format, 14:44"
-                        False model.admittanceTime
+                        True model.admittanceTime
                         (getErr AdmittanceTimeFld errors)
                     , if model.browserSupportsDate then
                         Form.formFieldDate (FldChgSubMsg LaborDateFld)
                             "Date start of labor"
                             "e.g. 08/14/2017"
+                            True
                             model.laborDate
                             (getErr LaborDateFld errors)
                     else
@@ -438,47 +441,48 @@ viewAdmitForm model =
                             LaborDelIppLaborDateField
                             "Date start of labor"
                             "e.g. 08/14/2017"
+                            True
                             model.laborDate
                             (getErr LaborDateFld errors)
                     , Form.formField (FldChgSubMsg LaborTimeFld)
                         "Time start of labor"
                         "24 hr format, 09:00"
-                        False
+                        True
                         model.laborTime
                         (getErr LaborTimeFld errors)
                     , Form.formField (FldChgSubMsg PosFld)
                         "POS" "pos"
-                        False
+                        True
                         model.pos
                         (getErr PosFld errors)
                     , Form.formField (FldChgSubMsg FhFld)
                         "FH" "fh"
-                        False
+                        True
                         model.fh
                         (getErr FhFld errors)
                     , Form.formField (FldChgSubMsg FhtFld)
                         "FHT" "fht"
-                        False
+                        True
                         model.fht
                         (getErr FhtFld errors)
                     , Form.formField (FldChgSubMsg SystolicFld)
                         "Systolic" "systolic"
-                        False
+                        True
                         model.systolic
                         (getErr SystolicFld errors)
                     , Form.formField (FldChgSubMsg DiastolicFld)
                         "Diastolic" "diastolic"
-                        False
+                        True
                         model.diastolic
                         (getErr DiastolicFld errors)
                     , Form.formField (FldChgSubMsg CrFld)
                         "CR" "heart rate"
-                        False
+                        True
                         model.cr
                         (getErr CrFld errors)
                     , Form.formField (FldChgSubMsg TempFld)
                         "Temp" "temperature"
-                        False
+                        True
                         model.temp
                         (getErr TempFld errors)
                     , Form.formTextareaField (FldChgSubMsg CommentsFld)

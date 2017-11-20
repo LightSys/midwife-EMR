@@ -114,8 +114,8 @@ formTextareaFieldMin30em onInputMsg lbl placeholder val numLines =
 {-| A date form field for browsers that support a date input type and
 presumably will display their own date picker interface as required.
 -}
-formFieldDate : (String -> msg) -> String -> String -> Maybe Date -> String -> Html msg
-formFieldDate onInputMsg lbl placeholder value err =
+formFieldDate : (String -> msg) -> String -> String -> Bool -> Maybe Date -> String -> Html msg
+formFieldDate onInputMsg lbl placeholder isBold value err =
     let
         theDate =
             case value of
@@ -125,8 +125,10 @@ formFieldDate onInputMsg lbl placeholder value err =
                 Nothing ->
                     ""
     in
-        H.label [ HA.class "c-label o-form-element u-small mw-form-field" ]
-            [ H.text lbl
+        H.label [ HA.class "c-label o-form-element mw-form-field" ]
+            [ H.span
+                [ HA.classList [ ( "c-text--loud", isBold ) ] ]
+                [ H.text lbl ]
             , H.input
                 [ HA.class "c-field c-field--label"
                 , HA.type_ "date"
@@ -160,8 +162,8 @@ To add a new date field:
   - add a handler in the DateFieldSubMsg branch in the page update for the date field.
   - if necessary, add a new case in the main update for the page and IncomingDatePicker msg.
 -}
-formFieldDatePicker : (String -> msg) -> DateField -> String -> String -> Maybe Date -> String -> Html msg
-formFieldDatePicker openMsg dateFld lbl placeholder value err =
+formFieldDatePicker : (String -> msg) -> DateField -> String -> String -> Bool -> Maybe Date -> String -> Html msg
+formFieldDatePicker openMsg dateFld lbl placeholder isBold value err =
     let
         id =
             dateFieldToString dateFld
@@ -174,8 +176,10 @@ formFieldDatePicker openMsg dateFld lbl placeholder value err =
                 Nothing ->
                     ""
     in
-        H.label [ HA.class "c-label o-form-element u-small mw-form-field" ]
-            [ H.text lbl
+        H.label [ HA.class "c-label o-form-element mw-form-field" ]
+            [ H.span
+                [ HA.classList [ ( "c-text--loud", isBold ) ] ]
+                [ H.text lbl ]
             , H.input
                 [ HA.class "c-field c-field--label datepicker"
                 , HA.type_ "text"
@@ -237,6 +241,7 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
                         [ formFieldDate dateMsg
                             "Date"
                             "e.g. 08/14/2017"
+                            False
                             dateVal
                             ""
                         , formField timeMsg
@@ -304,6 +309,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                             LaborDelIppStage1DateField
                             "Date"
                             "e.g. 08/14/2017"
+                            False
                             dateVal
                             ""
                         , formField timeMsg "Time" "24 hr format, 14:44" False timeVal ""
