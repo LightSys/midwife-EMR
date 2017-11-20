@@ -154,7 +154,8 @@ function handleUserProfile(socket, data, userInfo) {
 
 function isValidSocketSession(socket) {
   var m = msg('comm_assert/isValidSocketSession()');
-  if (verbose) console.log(m());
+  // This is called so often, it is not helpful.
+  //if (verbose) console.log(m());
 
   assert.ok(socket, m('socket'));
   assert.ok(socket.request, m('socket.request'));

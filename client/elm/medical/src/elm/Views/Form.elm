@@ -26,6 +26,8 @@ import List.Extra as LE
 -- LOCAL IMPORTS --
 
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
+import Data.Toast exposing (ToastType(..))
+import Msg exposing (Msg(..))
 import Util as U
 
 
@@ -51,9 +53,9 @@ formErrors errors =
         |> H.ul [ HA.class "c-list u-small primary-fg" ]
 
 
-formField : (String -> msg) -> String -> String -> Bool -> Maybe String -> Html msg
-formField msg lbl placeholder isBold val =
-    H.label [ HA.class "c-label o-form-element u-small mw-form-field" ]
+formField : (String -> msg) -> String -> String -> Bool -> Maybe String -> String -> Html msg
+formField msg lbl placeholder isBold val err =
+    H.label [ HA.class "c-label o-form-element mw-form-field" ]
         [ H.span
             [ HA.classList [ ( "c-text--loud", isBold ) ]
             ]
@@ -65,6 +67,17 @@ formField msg lbl placeholder isBold val =
             , HE.onInput msg
             ]
             []
+        , if String.length err > 0 then
+            H.div
+                [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                , HA.style
+                    [ ( "padding", "0.25em 0.25em" )
+                    , ( "margin", "0.75em 0 1.25em 0" )
+                    ]
+                ]
+                [ H.text err ]
+          else
+              H.text ""
         ]
 
 
@@ -96,6 +109,7 @@ formTextareaFieldMin30em onInputMsg lbl placeholder val numLines =
             ]
             []
         ]
+
 
 {-| A date form field for browsers that support a date input type and
 presumably will display their own date picker interface as required.
@@ -203,9 +217,11 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
                             "e.g. 08/14/2017"
                             dateVal
                         , formField timeMsg
-                            "Time" "24 hr format, 14:44"
+                            "Time"
+                            "24 hr format, 14:44"
                             False
                             timeVal
+                            ""
                         ]
                     ]
                 , H.div [ HA.class "c-card__footer spacedButtons" ]
@@ -266,7 +282,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                             "Date"
                             "e.g. 08/14/2017"
                             dateVal
-                        , formField timeMsg "Time" "24 hr format, 14:44" False timeVal
+                        , formField timeMsg "Time" "24 hr format, 14:44" False timeVal ""
                         ]
                     ]
                 , H.div [ HA.class "c-card__footer spacedButtons" ]
@@ -304,8 +320,8 @@ checkbox lbl msg val =
 
 {-| Radio field set.
 -}
-radioFieldset : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> Html msg
-radioFieldset title groupName value msg disabled radioTexts =
+radioFieldset : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> String -> Html msg
+radioFieldset title groupName value msg disabled radioTexts err =
     H.fieldset [ HA.class "o-fieldset mw-form-field" ]
         ([ H.legend [ HA.class "o-fieldset__legend" ]
             [ H.span [ HA.class "c-text--loud" ]
@@ -313,6 +329,19 @@ radioFieldset title groupName value msg disabled radioTexts =
             ]
          ]
             ++ (List.map (\text -> radio ( text, groupName, disabled, msg, value )) radioTexts)
+            ++ (if String.length err > 0 then
+                    [ H.div
+                        [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                        , HA.style
+                            [ ( "padding", "0.25em 0.25em" )
+                            , ( "margin", "0.75em 0 1.25em 0" )
+                            ]
+                        ]
+                        [ H.text err ]
+                    ]
+                else
+                    []
+                )
         )
 
 
@@ -334,8 +363,8 @@ radioFieldsetWide title groupName value msg disabled radioTexts =
 text box. If the user types in that, what is typed is returned as the message and
 that radio button is selected.
 -}
-radioFieldsetOther : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> Html msg
-radioFieldsetOther title groupName value msg disabled radioTexts =
+radioFieldsetOther : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> String -> Html msg
+radioFieldsetOther title groupName value msg disabled radioTexts err =
     let
         matched =
             case LE.find (\v -> v == Maybe.withDefault "" value) radioTexts of
@@ -366,6 +395,19 @@ radioFieldsetOther title groupName value msg disabled radioTexts =
                                 radioOther ( text, groupName, disabled, msg, not matched, value )
                         )
                         radioWithOther
+                   )
+                ++ (if String.length err > 0 then
+                        [ H.div
+                            [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                            , HA.style
+                                [ ( "padding", "0.25em 0.25em" )
+                                , ( "margin", "0.75em 0 1.25em 0" )
+                                ]
+                            ]
+                            [ H.text err ]
+                        ]
+                    else
+                        []
                    )
             )
 

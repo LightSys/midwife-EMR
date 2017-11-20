@@ -416,7 +416,7 @@ viewAdmitForm model =
                         "Date admitted"
                         "e.g. 08/14/2017"
                         model.admittanceDate
-                , Form.formField (FldChgSubMsg AdmittanceTimeFld) "Time admitted" "24 hr format, 14:44" False model.admittanceTime
+                , Form.formField (FldChgSubMsg AdmittanceTimeFld) "Time admitted" "24 hr format, 14:44" False model.admittanceTime ""
                 , if model.browserSupportsDate then
                     Form.formFieldDate (FldChgSubMsg LaborDateFld)
                         "Date start of labor"
@@ -428,14 +428,14 @@ viewAdmitForm model =
                         "Date start of labor"
                         "e.g. 08/14/2017"
                         model.laborDate
-                , Form.formField (FldChgSubMsg LaborTimeFld) "Time start of labor" "24 hr format, 09:00" False model.laborTime
-                , Form.formField (FldChgSubMsg PosFld) "POS" "pos" False model.pos
-                , Form.formField (FldChgSubMsg FhFld) "FH" "fh" False model.fh
-                , Form.formField (FldChgSubMsg FhtFld) "FHT" "fht" False model.fht
-                , Form.formField (FldChgSubMsg SystolicFld) "Systolic" "systolic" False model.systolic
-                , Form.formField (FldChgSubMsg DiastolicFld) "Diastolic" "diastolic" False model.diastolic
-                , Form.formField (FldChgSubMsg CrFld) "CR" "heart rate" False model.cr
-                , Form.formField (FldChgSubMsg TempFld) "Temp" "temperature" False model.temp
+                , Form.formField (FldChgSubMsg LaborTimeFld) "Time start of labor" "24 hr format, 09:00" False model.laborTime ""
+                , Form.formField (FldChgSubMsg PosFld) "POS" "pos" False model.pos ""
+                , Form.formField (FldChgSubMsg FhFld) "FH" "fh" False model.fh ""
+                , Form.formField (FldChgSubMsg FhtFld) "FHT" "fht" False model.fht ""
+                , Form.formField (FldChgSubMsg SystolicFld) "Systolic" "systolic" False model.systolic ""
+                , Form.formField (FldChgSubMsg DiastolicFld) "Diastolic" "diastolic" False model.diastolic ""
+                , Form.formField (FldChgSubMsg CrFld) "CR" "heart rate" False model.cr ""
+                , Form.formField (FldChgSubMsg TempFld) "Temp" "temperature" False model.temp ""
                 , Form.formTextareaField (FldChgSubMsg CommentsFld) "Comments" "" model.comments 3
                 ]
             , if List.length model.formErrors > 0 then
@@ -828,11 +828,13 @@ dialogStage1SummaryEdit cfg =
                     "Number of minutes"
                     True
                     cfg.model.s1DurationLatent
+                    ""
                 , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
                     "Duration active"
                     "Number of minutes"
                     True
                     cfg.model.s1DurationActive
+                    ""
                 ]
             , Form.formTextareaFieldMin30em (FldChgSubMsg Stage1CommentsFld)
                 "Comments"
@@ -987,145 +989,167 @@ dialogStage2Summary cfg =
 
 dialogStage2SummaryEdit : DialogStage2Summary -> Html SubMsg
 dialogStage2SummaryEdit cfg =
-    H.div
-        [ HA.class "u-high"
-        , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
-        , HA.style
-            [ ( "padding", "0.8em" )
-            , ( "margin-top", "0.8em" )
-            ]
-        ]
-        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-            [ H.text "Stage 2 Summary - Edit" ]
-        , H.div [ HA.class "form-wrapper u-small" ]
-            [ H.div
-                [ HA.class "o-fieldset form-wrapper"
-                ]
-                [ Form.radioFieldsetOther "Birth type"
-                    "birthType"
-                    cfg.model.s2BirthType
-                    (FldChgSubMsg Stage2BirthTypeFld)
-                    False
-                    [ "Vaginal"
-                    ]
-                , Form.radioFieldsetOther "Position for birth"
-                    "position"
-                    cfg.model.s2BirthPosition
-                    (FldChgSubMsg Stage2BirthPositionFld)
-                    False
-                    [ "Semi-sitting"
-                    , "Lying on back"
-                    , "Side-Lying"
-                    , "Stool or Antipolo"
-                    , "Hands/Knees"
-                    , "Squat"
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgSubMsg Stage2DurationPushingFld)
-                        "Duration of pushing"
-                        "Number of minutes"
-                        True
-                        cfg.model.s2DurationPushing
-                    ]
-                , Form.radioFieldsetOther "Baby's presentation at birth"
-                    "presentation"
-                    cfg.model.s2BirthPresentation
-                    (FldChgSubMsg Stage2BirthPresentationFld)
-                    False
-                    [ "ROA"
-                    , "ROP"
-                    , "LOA"
-                    , "LOP"
-                    ]
-                , Form.checkbox "Cord was wrapped" (FldChgBoolSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
-                , Form.radioFieldsetOther "Cord wrap type"
-                    "cordwraptype"
-                    cfg.model.s2CordWrapType
-                    (FldChgSubMsg Stage2CordWrapTypeFld)
-                    False
-                    [ "Nuchal"
-                    , "Body"
-                    , "Cut on perineum"
-                    ]
-                , Form.radioFieldsetOther "Delivery type"
-                    "deliverytype"
-                    cfg.model.s2DeliveryType
-                    (FldChgSubMsg Stage2DeliveryTypeFld)
-                    False
-                    [ "Spontaneous"
-                    , "Interventive"
-                    , "Vacuum"
-                    ]
-                , Form.checkbox "Shoulder Dystocia" (FldChgBoolSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
-                        "Shoulder dystocia minutes"
-                        "Number of minutes"
-                        True
-                        cfg.model.s2ShoulderDystociaMinutes
-                    ]
-                , Form.checkbox "Laceration" (FldChgBoolSubMsg Stage2LacerationFld) cfg.model.s2Laceration
-                , Form.checkbox "Episiotomy" (FldChgBoolSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
-                , Form.checkbox "Repair" (FldChgBoolSubMsg Stage2RepairFld) cfg.model.s2Repair
-                , Form.radioFieldset "Degree"
-                    "degree"
-                    cfg.model.s2Degree
-                    (FldChgSubMsg Stage2DegreeFld)
-                    False
-                    [ "1st"
-                    , "2nd"
-                    , "3rd"
-                    , "4th"
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgSubMsg Stage2LacerationRepairedByFld)
-                        "Laceration repaired by"
-                        "Initials or lastname"
-                        True
-                        cfg.model.s2LacerationRepairedBy
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgSubMsg Stage2BirthEBLFld)
-                        "EBL at birth"
-                        "in cc"
-                        True
-                        cfg.model.s2BirthEBL
-                    ]
-                , Form.radioFieldset "Meconium"
-                    "meconium"
-                    cfg.model.s2Meconium
-                    (FldChgSubMsg Stage2MeconiumFld)
-                    False
-                    [ "None"
-                    , "Lt"
-                    , "Mod"
-                    , "Thick"
-                    ]
-                , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
-                    "Comments"
-                    "Meds, IV, Complications, Notes, etc."
-                    cfg.model.s2Comments
-                    3
+    let
+        errors =
+            validateStage2 cfg.model
+
+        getErr fld =
+            case LE.find (\fe -> Tuple.first fe == fld) errors of
+                Just fe ->
+                    Tuple.second fe
+
+                Nothing ->
+                    ""
+    in
+        H.div
+            [ HA.class "u-high"
+            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
                 ]
             ]
-        , H.div
-            [ HA.class "spacedButtons"
-            , HA.style [ ( "width", "100%" ) ]
-            ]
-            [ H.button
-                [ HA.type_ "button"
-                , HA.class "c-button c-button u-small"
-                , HE.onClick cfg.closeMsg
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Stage 2 Summary - Edit" ]
+            , H.div [ HA.class "form-wrapper u-small" ]
+                [ H.div
+                    [ HA.class "o-fieldset form-wrapper"
+                    ]
+                    [ Form.radioFieldsetOther "Birth type"
+                        "birthType"
+                        cfg.model.s2BirthType
+                        (FldChgSubMsg Stage2BirthTypeFld)
+                        False
+                        [ "Vaginal" ]
+                        (getErr Stage2BirthTypeFld)
+                    , Form.radioFieldsetOther "Position for birth"
+                        "position"
+                        cfg.model.s2BirthPosition
+                        (FldChgSubMsg Stage2BirthPositionFld)
+                        False
+                        [ "Semi-sitting"
+                        , "Lying on back"
+                        , "Side-Lying"
+                        , "Stool or Antipolo"
+                        , "Hands/Knees"
+                        , "Squat"
+                        ]
+                        (getErr Stage2BirthPositionFld)
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgSubMsg Stage2DurationPushingFld)
+                            "Duration of pushing"
+                            "Number of minutes"
+                            True
+                            cfg.model.s2DurationPushing
+                            (getErr Stage2DurationPushingFld)
+                        ]
+                    , Form.radioFieldsetOther "Baby's presentation at birth"
+                        "presentation"
+                        cfg.model.s2BirthPresentation
+                        (FldChgSubMsg Stage2BirthPresentationFld)
+                        False
+                        [ "ROA"
+                        , "ROP"
+                        , "LOA"
+                        , "LOP"
+                        ]
+                        (getErr Stage2BirthPresentationFld)
+                    , Form.checkbox "Cord was wrapped" (FldChgBoolSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
+                    , Form.radioFieldsetOther "Cord wrap type"
+                        "cordwraptype"
+                        cfg.model.s2CordWrapType
+                        (FldChgSubMsg Stage2CordWrapTypeFld)
+                        False
+                        [ "Nuchal"
+                        , "Body"
+                        , "Cut on perineum"
+                        ]
+                        (getErr Stage2CordWrapTypeFld)
+                    , Form.radioFieldsetOther "Delivery type"
+                        "deliverytype"
+                        cfg.model.s2DeliveryType
+                        (FldChgSubMsg Stage2DeliveryTypeFld)
+                        False
+                        [ "Spontaneous"
+                        , "Interventive"
+                        , "Vacuum"
+                        ]
+                        (getErr Stage2DeliveryTypeFld)
+                    , Form.checkbox "Shoulder Dystocia" (FldChgBoolSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
+                            "Shoulder dystocia minutes"
+                            "Number of minutes"
+                            True
+                            cfg.model.s2ShoulderDystociaMinutes
+                            (getErr Stage2ShoulderDystociaMinutesFld)
+                        ]
+                    , Form.checkbox "Laceration" (FldChgBoolSubMsg Stage2LacerationFld) cfg.model.s2Laceration
+                    , Form.checkbox "Episiotomy" (FldChgBoolSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
+                    , Form.checkbox "Repair" (FldChgBoolSubMsg Stage2RepairFld) cfg.model.s2Repair
+                    , Form.radioFieldset "Degree"
+                        "degree"
+                        cfg.model.s2Degree
+                        (FldChgSubMsg Stage2DegreeFld)
+                        False
+                        [ "1st"
+                        , "2nd"
+                        , "3rd"
+                        , "4th"
+                        ]
+                        (getErr Stage2DegreeFld)
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgSubMsg Stage2LacerationRepairedByFld)
+                            "Laceration repaired by"
+                            "Initials or lastname"
+                            True
+                            cfg.model.s2LacerationRepairedBy
+                            (getErr Stage2LacerationRepairedByFld)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgSubMsg Stage2BirthEBLFld)
+                            "EBL at birth"
+                            "in cc"
+                            True
+                            cfg.model.s2BirthEBL
+                            (getErr Stage2BirthEBLFld)
+                        ]
+                    , Form.radioFieldset "Meconium"
+                        "meconium"
+                        cfg.model.s2Meconium
+                        (FldChgSubMsg Stage2MeconiumFld)
+                        False
+                        [ "None"
+                        , "Lt"
+                        , "Mod"
+                        , "Thick"
+                        ]
+                        (getErr Stage2MeconiumFld)
+                    , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
+                        "Comments"
+                        "Meds, IV, Complications, Notes, etc."
+                        cfg.model.s2Comments
+                        3
+                    ]
                 ]
-                [ H.text "Cancel" ]
-            , H.button
-                [ HA.type_ "button"
-                , HA.class "c-button c-button--brand u-small"
-                , HE.onClick cfg.saveMsg
+            , H.div
+                [ HA.class "spacedButtons"
+                , HA.style [ ( "width", "100%" ) ]
                 ]
-                [ H.text "Save" ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Cancel" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--brand u-small"
+                    , HE.onClick cfg.saveMsg
+                    ]
+                    [ H.text "Save" ]
+                ]
             ]
-        ]
 
 
 dialogStage2SummaryView : DialogStage2Summary -> Html SubMsg
@@ -1608,10 +1632,30 @@ update session msg model =
                     { model | s2ShoulderDystocia = Just value }
 
                 Stage2LacerationFld ->
-                    { model | s2Laceration = Just value }
+                    -- Clear the degree field if this and laceration are unchecked.
+                    if value == False then
+                        if model.s2Episiotomy == Nothing || model.s2Episiotomy == Just False then
+                            { model
+                                | s2Laceration = Just value
+                                , s2Degree = Nothing
+                            }
+                        else
+                            { model | s2Laceration = Just value }
+                    else
+                        { model | s2Laceration = Just value }
 
                 Stage2EpisiotomyFld ->
-                    { model | s2Episiotomy = Just value }
+                    -- Clear the degree field if this and laceration are unchecked.
+                    if value == False then
+                        if model.s2Laceration == Nothing || model.s2Laceration == Just False then
+                            { model
+                                | s2Episiotomy = Just value
+                                , s2Degree = Nothing
+                            }
+                        else
+                            { model | s2Episiotomy = Just value }
+                    else
+                        { model | s2Episiotomy = Just value }
 
                 Stage2RepairFld ->
                     -- Clear the degree and repaired by fields if this is unchecked.
@@ -1727,13 +1771,7 @@ update session msg model =
                     { model | s2BirthEBL = Just value }
 
                 Stage2MeconiumFld ->
-                    { model
-                        | s2Meconium =
-                            if value == "None" then
-                                Nothing
-                            else
-                                Just value
-                    }
+                    { model | s2Meconium = Just value }
 
                 Stage2CommentsFld ->
                     { model | s2Comments = Just value }
@@ -2505,6 +2543,21 @@ validateStage2 =
                         []
 
                 Nothing ->
+                    if mdl.s2ShoulderDystocia == Just True then
+                        [ (Stage2ShoulderDystociaMinutesFld => "Shoulder dystocia cannot be checked without specifying shoulder dystocia minutes.") ]
+                    else
+                        []
+          )
+        , (\mdl ->
+            if mdl.s2Laceration == Just True || mdl.s2Episiotomy == Just True then
+                if mdl.s2Degree == Nothing then
+                    [ (Stage2DegreeFld => "Degree must be specified if laceration or episiotomy is checked.") ]
+                else
+                    []
+            else
+                if mdl.s2Degree /= Nothing then
+                    [ (Stage2DegreeFld => "Either laceration and/or episiotomy must be checked if degree is specified.") ]
+                else
                     []
           )
         , (\mdl ->
@@ -2513,4 +2566,6 @@ validateStage2 =
             else
                 []
           )
+        , .s2BirthEBL >> ifInvalid U.validateInt (Stage2BirthEBLFld => "Estimated blood loss at birth must be provided.")
+        , .s2Meconium >> ifInvalid U.validatePopulatedString (Stage2MeconiumFld => "Meconium must be provided.")
         ]

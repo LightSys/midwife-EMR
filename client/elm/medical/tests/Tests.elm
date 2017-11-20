@@ -72,12 +72,12 @@ dataCache =
                 let
                     v1 =
                         LaborStage1Record 1
-                           (Just (Date.fromTime 0.0))
-                           Nothing
-                           Nothing
-                           Nothing
-                           Nothing
-                           100
+                            (Just (Date.fromTime 0.0))
+                            Nothing
+                            Nothing
+                            Nothing
+                            Nothing
+                            100
                             |> LaborStage1DataCache
 
                     dict : Dict String DataCache
@@ -90,12 +90,12 @@ dataCache =
                 let
                     v1 =
                         LaborStage1Record 1
-                           (Just (Date.fromTime 0.0))
-                           Nothing
-                           Nothing
-                           Nothing
-                           Nothing
-                           100
+                            (Just (Date.fromTime 0.0))
+                            Nothing
+                            Nothing
+                            Nothing
+                            Nothing
+                            100
                             |> LaborStage1DataCache
 
                     dict : Dict String DataCache
@@ -116,12 +116,12 @@ dataCache =
                 let
                     v1 =
                         LaborStage1Record 1
-                           (Just (Date.fromTime 0.0))
-                           Nothing
-                           Nothing
-                           Nothing
-                           Nothing
-                           100
+                            (Just (Date.fromTime 0.0))
+                            Nothing
+                            Nothing
+                            Nothing
+                            Nothing
+                            100
                             |> LaborStage1DataCache
 
                     dict : Dict String DataCache
@@ -133,6 +133,7 @@ dataCache =
                 in
                     Expect.true "Expected dict to be empty." (Dict.size newDict == 0)
         ]
+
 
 dateHandling : Test
 dateHandling =
@@ -220,7 +221,6 @@ dateHandling =
                             |> toFloat
                             |> Date.fromTime
                         )
-
         , test "Calculate the estimated due date" <|
             \() ->
                 Expect.equal
@@ -251,7 +251,7 @@ dateHandling =
                 in
                     Expect.equal
                         (U.getGA edd rdate)
-                        ("31", "6/7")
+                        ( "31", "6/7" )
         , test "sortDate unequal, ascending" <|
             \() ->
                 let
