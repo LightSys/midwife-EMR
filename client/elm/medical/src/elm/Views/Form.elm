@@ -77,7 +77,7 @@ formField msg lbl placeholder isBold val err =
                 ]
                 [ H.text err ]
           else
-              H.text ""
+            H.text ""
         ]
 
 
@@ -114,8 +114,8 @@ formTextareaFieldMin30em onInputMsg lbl placeholder val numLines =
 {-| A date form field for browsers that support a date input type and
 presumably will display their own date picker interface as required.
 -}
-formFieldDate : (String -> msg) -> String -> String -> Maybe Date -> Html msg
-formFieldDate onInputMsg lbl placeholder value =
+formFieldDate : (String -> msg) -> String -> String -> Maybe Date -> String -> Html msg
+formFieldDate onInputMsg lbl placeholder value err =
     let
         theDate =
             case value of
@@ -135,6 +135,17 @@ formFieldDate onInputMsg lbl placeholder value =
                 , HE.onInput onInputMsg
                 ]
                 []
+            , if String.length err > 0 then
+                H.div
+                    [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                    , HA.style
+                        [ ( "padding", "0.25em 0.25em" )
+                        , ( "margin", "0.75em 0 1.25em 0" )
+                        ]
+                    ]
+                    [ H.text err ]
+              else
+                H.text ""
             ]
 
 
@@ -149,8 +160,8 @@ To add a new date field:
   - add a handler in the DateFieldSubMsg branch in the page update for the date field.
   - if necessary, add a new case in the main update for the page and IncomingDatePicker msg.
 -}
-formFieldDatePicker : (String -> msg) -> DateField -> String -> String -> Maybe Date -> Html msg
-formFieldDatePicker openMsg dateFld lbl placeholder value =
+formFieldDatePicker : (String -> msg) -> DateField -> String -> String -> Maybe Date -> String -> Html msg
+formFieldDatePicker openMsg dateFld lbl placeholder value err =
     let
         id =
             dateFieldToString dateFld
@@ -174,6 +185,17 @@ formFieldDatePicker openMsg dateFld lbl placeholder value =
                 , HE.onFocus <| openMsg id
                 ]
                 []
+            , if String.length err > 0 then
+                H.div
+                    [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                    , HA.style
+                        [ ( "padding", "0.25em 0.25em" )
+                        , ( "margin", "0.75em 0 1.25em 0" )
+                        ]
+                    ]
+                    [ H.text err ]
+              else
+                H.text ""
             ]
 
 
@@ -216,6 +238,7 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
                             "Date"
                             "e.g. 08/14/2017"
                             dateVal
+                            ""
                         , formField timeMsg
                             "Time"
                             "24 hr format, 14:44"
@@ -282,6 +305,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                             "Date"
                             "e.g. 08/14/2017"
                             dateVal
+                            ""
                         , formField timeMsg "Time" "24 hr format, 14:44" False timeVal ""
                         ]
                     ]
@@ -341,7 +365,7 @@ radioFieldset title groupName value msg disabled radioTexts err =
                     ]
                 else
                     []
-                )
+               )
         )
 
 
@@ -368,8 +392,8 @@ radioFieldsetWide title groupName value msg disabled radioTexts err =
                     ]
                 else
                     []
-                )
-         )
+               )
+        )
 
 
 {-| Group of radio buttons with an Other radio button at the end with an input

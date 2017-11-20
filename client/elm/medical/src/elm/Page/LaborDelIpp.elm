@@ -400,56 +400,104 @@ view size session model =
 
 viewAdmitForm : Model -> Html SubMsg
 viewAdmitForm model =
-    H.div []
-        [ H.h3 [ HA.class "c-text--brand mw-header-3" ] [ H.text "Admittance Details" ]
-        , H.div []
-            [ H.div [ HA.class "" ] [ Form.formErrors model.formErrors ]
-            , H.div [ HA.class "o-fieldset form-wrapper" ]
-                [ if model.browserSupportsDate then
-                    Form.formFieldDate (FldChgSubMsg AdmittanceDateFld)
-                        "Date admitted"
-                        "e.g. 08/14/2017"
-                        model.admittanceDate
-                  else
-                    Form.formFieldDatePicker OpenDatePickerSubMsg
-                        LaborDelIppAdmittanceDateField
-                        "Date admitted"
-                        "e.g. 08/14/2017"
-                        model.admittanceDate
-                , Form.formField (FldChgSubMsg AdmittanceTimeFld) "Time admitted" "24 hr format, 14:44" False model.admittanceTime ""
-                , if model.browserSupportsDate then
-                    Form.formFieldDate (FldChgSubMsg LaborDateFld)
-                        "Date start of labor"
-                        "e.g. 08/14/2017"
-                        model.laborDate
-                  else
-                    Form.formFieldDatePicker OpenDatePickerSubMsg
-                        LaborDelIppLaborDateField
-                        "Date start of labor"
-                        "e.g. 08/14/2017"
-                        model.laborDate
-                , Form.formField (FldChgSubMsg LaborTimeFld) "Time start of labor" "24 hr format, 09:00" False model.laborTime ""
-                , Form.formField (FldChgSubMsg PosFld) "POS" "pos" False model.pos ""
-                , Form.formField (FldChgSubMsg FhFld) "FH" "fh" False model.fh ""
-                , Form.formField (FldChgSubMsg FhtFld) "FHT" "fht" False model.fht ""
-                , Form.formField (FldChgSubMsg SystolicFld) "Systolic" "systolic" False model.systolic ""
-                , Form.formField (FldChgSubMsg DiastolicFld) "Diastolic" "diastolic" False model.diastolic ""
-                , Form.formField (FldChgSubMsg CrFld) "CR" "heart rate" False model.cr ""
-                , Form.formField (FldChgSubMsg TempFld) "Temp" "temperature" False model.temp ""
-                , Form.formTextareaField (FldChgSubMsg CommentsFld) "Comments" "" model.comments 3
-                ]
-            , if List.length model.formErrors > 0 then
-                H.div
-                    [ HA.class "u-small error-msg-right primary-fg"
+    let
+        errors =
+            validateAdmittance model
+    in
+        H.div []
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ] [ H.text "Admittance Details" ]
+            , H.div []
+                [ H.div [ HA.class "" ] [ Form.formErrors model.formErrors ]
+                , H.div [ HA.class "o-fieldset form-wrapper" ]
+                    [ if model.browserSupportsDate then
+                        Form.formFieldDate (FldChgSubMsg AdmittanceDateFld)
+                            "Date admitted"
+                            "e.g. 08/14/2017"
+                            model.admittanceDate
+                            (getErr AdmittanceDateFld errors)
+                    else
+                        Form.formFieldDatePicker OpenDatePickerSubMsg
+                            LaborDelIppAdmittanceDateField
+                            "Date admitted"
+                            "e.g. 08/14/2017"
+                            model.admittanceDate
+                            (getErr AdmittanceDateFld errors)
+                    , Form.formField (FldChgSubMsg AdmittanceTimeFld)
+                        "Time admitted"
+                        "24 hr format, 14:44"
+                        False model.admittanceTime
+                        (getErr AdmittanceTimeFld errors)
+                    , if model.browserSupportsDate then
+                        Form.formFieldDate (FldChgSubMsg LaborDateFld)
+                            "Date start of labor"
+                            "e.g. 08/14/2017"
+                            model.laborDate
+                            (getErr LaborDateFld errors)
+                    else
+                        Form.formFieldDatePicker OpenDatePickerSubMsg
+                            LaborDelIppLaborDateField
+                            "Date start of labor"
+                            "e.g. 08/14/2017"
+                            model.laborDate
+                            (getErr LaborDateFld errors)
+                    , Form.formField (FldChgSubMsg LaborTimeFld)
+                        "Time start of labor"
+                        "24 hr format, 09:00"
+                        False
+                        model.laborTime
+                        (getErr LaborTimeFld errors)
+                    , Form.formField (FldChgSubMsg PosFld)
+                        "POS" "pos"
+                        False
+                        model.pos
+                        (getErr PosFld errors)
+                    , Form.formField (FldChgSubMsg FhFld)
+                        "FH" "fh"
+                        False
+                        model.fh
+                        (getErr FhFld errors)
+                    , Form.formField (FldChgSubMsg FhtFld)
+                        "FHT" "fht"
+                        False
+                        model.fht
+                        (getErr FhtFld errors)
+                    , Form.formField (FldChgSubMsg SystolicFld)
+                        "Systolic" "systolic"
+                        False
+                        model.systolic
+                        (getErr SystolicFld errors)
+                    , Form.formField (FldChgSubMsg DiastolicFld)
+                        "Diastolic" "diastolic"
+                        False
+                        model.diastolic
+                        (getErr DiastolicFld errors)
+                    , Form.formField (FldChgSubMsg CrFld)
+                        "CR" "heart rate"
+                        False
+                        model.cr
+                        (getErr CrFld errors)
+                    , Form.formField (FldChgSubMsg TempFld)
+                        "Temp" "temperature"
+                        False
+                        model.temp
+                        (getErr TempFld errors)
+                    , Form.formTextareaField (FldChgSubMsg CommentsFld)
+                        "Comments" ""
+                        model.comments
+                        3
                     ]
-                    [ H.text "Errors detected, see details above." ]
-              else
-                H.span [] []
-            , H.div [ HA.class "form-wrapper-end" ]
-                [ Form.cancelSaveButtons CancelAdmitForLabor SaveAdmitForLabor
+                , if List.length model.formErrors > 0 then
+                    H.div
+                        [ HA.class "u-small error-msg-right primary-fg"
+                        ]
+                        [ H.text "Errors detected, see details above." ]
+                else
+                    H.span [] []
+                , H.div [ HA.class "form-wrapper-end" ]
+                    [ Form.cancelSaveButtons CancelAdmitForLabor SaveAdmitForLabor
+                    ]
                 ]
             ]
-        ]
 
 
 viewAdmitButton : Html SubMsg
