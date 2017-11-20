@@ -1267,7 +1267,7 @@ dialogStage2SummaryView cfg =
                 Nothing ->
                     ( "", "", "", "", "", "" )
 
-        ( shoulderDystocia, laceration, episiotomy, repair, degree, repairedBy, ebl, meconium ) =
+        ( shoulderDystocia, laceration, episiotomy, repair, degree, repairedBy, ebl, meconium, comments ) =
             case cfg.model.laborStage2Record of
                 Just rec ->
                     ( Maybe.map2
@@ -1313,10 +1313,11 @@ dialogStage2SummaryView cfg =
                         |> Maybe.map (\e -> e ++ " cc")
                         |> Maybe.withDefault "0"
                     , Maybe.withDefault "None" rec.meconium
+                    , Maybe.withDefault "" rec.comments
                     )
 
                 Nothing ->
-                    ( "", "", "", "", "", "", "", "" )
+                    ( "", "", "", "", "", "", "", "", "" )
 
         s2Total =
             case cfg.model.laborStage2Record of
@@ -1439,6 +1440,12 @@ dialogStage2SummaryView cfg =
                             [ H.text "Meconium: " ]
                         , H.span [ HA.class "" ]
                             [ H.text meconium ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Comments: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text comments ]
                         ]
                     ]
                 , H.div [ HA.class "spacedButtons" ]
