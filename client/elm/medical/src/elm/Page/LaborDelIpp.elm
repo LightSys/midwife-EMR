@@ -588,6 +588,16 @@ isStage1SummaryDone model =
             False
 
 
+getErr : Field -> List FieldError -> String
+getErr fld errors =
+    case LE.find (\fe -> Tuple.first fe == fld) errors of
+        Just fe ->
+            Tuple.second fe
+
+        Nothing ->
+            ""
+
+
 isStage2SummaryDone : Model -> Bool
 isStage2SummaryDone model =
     case model.laborStage2Record of
@@ -800,66 +810,96 @@ dialogStage1Summary cfg =
 -}
 dialogStage1SummaryEdit : DialogStage1Summary -> Html SubMsg
 dialogStage1SummaryEdit cfg =
-    H.div
-        [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
-        , HA.class "u-high"
-        , HA.style
-            [ ( "padding", "0.8em" )
-            , ( "margin-top", "0.8em" )
-            ]
-        ]
-        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-            [ H.text "Stage 1 Summary - Edit" ]
-        , H.div [ HA.class "form-wrapper u-small" ]
-            [ H.div []
-                [ Form.radioFieldsetWide "Mobility"
-                    "mobility"
-                    cfg.model.s1Mobility
-                    (FldChgSubMsg Stage1MobilityFld)
-                    False
-                    [ "Moved around"
-                    , "Didn't move much"
-                    , "Movement restricted"
-                    ]
-                ]
-            , H.div []
-                [ Form.formField (FldChgSubMsg Stage1DurationLatentFld)
-                    "Duration latent"
-                    "Number of minutes"
-                    True
-                    cfg.model.s1DurationLatent
+    let
+        errors =
+            validateStage1 cfg.model
+
+        s1Total =
+            case cfg.model.laborStage1Record of
+                Just rec ->
+                    case rec.fullDialation of
+                        Just fd ->
+                            case cfg.model.laborRecord of
+                                Just lrecs ->
+                                    case LE.find (\r -> r.id == rec.labor_id) lrecs of
+                                        Just laborRec ->
+                                            U.diff2DatesString laborRec.startLaborDate fd
+
+                                        Nothing ->
+                                            ""
+
+                                Nothing ->
+                                    ""
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
                     ""
-                , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
-                    "Duration active"
-                    "Number of minutes"
-                    True
-                    cfg.model.s1DurationActive
-                    ""
-                ]
-            , Form.formTextareaFieldMin30em (FldChgSubMsg Stage1CommentsFld)
-                "Comments"
-                "Meds, IV, Complications, Notes, etc."
-                cfg.model.s1Comments
-                3
-            , H.div
-                [ HA.class "spacedButtons"
-                , HA.style [ ( "width", "100%" ) ]
-                ]
-                [ H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button c-button u-small"
-                    , HE.onClick cfg.closeMsg
-                    ]
-                    [ H.text "Cancel" ]
-                , H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button c-button--brand u-small"
-                    , HE.onClick cfg.saveMsg
-                    ]
-                    [ H.text "Save" ]
+    in
+        H.div
+            [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+            , HA.class "u-high"
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
                 ]
             ]
-        ]
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Stage 1 Summary - Edit" ]
+            , H.div [ HA.class "c-text--quiet" ]
+                [ H.text <| "Stage 1 total: " ++ s1Total ]
+            , H.div [ HA.class "form-wrapper u-small" ]
+                [ H.div []
+                    [ Form.radioFieldsetWide "Mobility"
+                        "mobility"
+                        cfg.model.s1Mobility
+                        (FldChgSubMsg Stage1MobilityFld)
+                        False
+                        [ "Moved around"
+                        , "Didn't move much"
+                        , "Movement restricted"
+                        ]
+                        (getErr Stage1MobilityFld errors)
+                    ]
+                , H.div []
+                    [ Form.formField (FldChgSubMsg Stage1DurationLatentFld)
+                        "Duration latent (minutes)"
+                        "Number of minutes"
+                        True
+                        cfg.model.s1DurationLatent
+                        (getErr Stage1DurationLatentFld errors)
+                    , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
+                        "Duration active (minutes)"
+                        "Number of minutes"
+                        True
+                        cfg.model.s1DurationActive
+                        (getErr Stage1DurationActiveFld errors)
+                    ]
+                , Form.formTextareaFieldMin30em (FldChgSubMsg Stage1CommentsFld)
+                    "Comments"
+                    "Meds, IV, Complications, Notes, etc."
+                    cfg.model.s1Comments
+                    3
+                , H.div
+                    [ HA.class "spacedButtons"
+                    , HA.style [ ( "width", "100%" ) ]
+                    ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button u-small"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "Cancel" ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--brand u-small"
+                        , HE.onClick cfg.saveMsg
+                        ]
+                        [ H.text "Save" ]
+                    ]
+                ]
+            ]
 
 
 {-| Display the stage one summary, including the first stage total,
@@ -992,14 +1032,6 @@ dialogStage2SummaryEdit cfg =
     let
         errors =
             validateStage2 cfg.model
-
-        getErr fld =
-            case LE.find (\fe -> Tuple.first fe == fld) errors of
-                Just fe ->
-                    Tuple.second fe
-
-                Nothing ->
-                    ""
     in
         H.div
             [ HA.class "u-high"
@@ -1021,7 +1053,7 @@ dialogStage2SummaryEdit cfg =
                         (FldChgSubMsg Stage2BirthTypeFld)
                         False
                         [ "Vaginal" ]
-                        (getErr Stage2BirthTypeFld)
+                        (getErr Stage2BirthTypeFld errors)
                     , Form.radioFieldsetOther "Position for birth"
                         "position"
                         cfg.model.s2BirthPosition
@@ -1034,14 +1066,14 @@ dialogStage2SummaryEdit cfg =
                         , "Hands/Knees"
                         , "Squat"
                         ]
-                        (getErr Stage2BirthPositionFld)
+                        (getErr Stage2BirthPositionFld errors)
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgSubMsg Stage2DurationPushingFld)
                             "Duration of pushing"
                             "Number of minutes"
                             True
                             cfg.model.s2DurationPushing
-                            (getErr Stage2DurationPushingFld)
+                            (getErr Stage2DurationPushingFld errors)
                         ]
                     , Form.radioFieldsetOther "Baby's presentation at birth"
                         "presentation"
@@ -1053,7 +1085,7 @@ dialogStage2SummaryEdit cfg =
                         , "LOA"
                         , "LOP"
                         ]
-                        (getErr Stage2BirthPresentationFld)
+                        (getErr Stage2BirthPresentationFld errors)
                     , Form.checkbox "Cord was wrapped" (FldChgBoolSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
                     , Form.radioFieldsetOther "Cord wrap type"
                         "cordwraptype"
@@ -1064,7 +1096,7 @@ dialogStage2SummaryEdit cfg =
                         , "Body"
                         , "Cut on perineum"
                         ]
-                        (getErr Stage2CordWrapTypeFld)
+                        (getErr Stage2CordWrapTypeFld errors)
                     , Form.radioFieldsetOther "Delivery type"
                         "deliverytype"
                         cfg.model.s2DeliveryType
@@ -1074,7 +1106,7 @@ dialogStage2SummaryEdit cfg =
                         , "Interventive"
                         , "Vacuum"
                         ]
-                        (getErr Stage2DeliveryTypeFld)
+                        (getErr Stage2DeliveryTypeFld errors)
                     , Form.checkbox "Shoulder Dystocia" (FldChgBoolSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
@@ -1082,7 +1114,7 @@ dialogStage2SummaryEdit cfg =
                             "Number of minutes"
                             True
                             cfg.model.s2ShoulderDystociaMinutes
-                            (getErr Stage2ShoulderDystociaMinutesFld)
+                            (getErr Stage2ShoulderDystociaMinutesFld errors)
                         ]
                     , Form.checkbox "Laceration" (FldChgBoolSubMsg Stage2LacerationFld) cfg.model.s2Laceration
                     , Form.checkbox "Episiotomy" (FldChgBoolSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
@@ -1097,14 +1129,14 @@ dialogStage2SummaryEdit cfg =
                         , "3rd"
                         , "4th"
                         ]
-                        (getErr Stage2DegreeFld)
+                        (getErr Stage2DegreeFld errors)
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgSubMsg Stage2LacerationRepairedByFld)
                             "Laceration repaired by"
                             "Initials or lastname"
                             True
                             cfg.model.s2LacerationRepairedBy
-                            (getErr Stage2LacerationRepairedByFld)
+                            (getErr Stage2LacerationRepairedByFld errors)
                         ]
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgSubMsg Stage2BirthEBLFld)
@@ -1112,7 +1144,7 @@ dialogStage2SummaryEdit cfg =
                             "in cc"
                             True
                             cfg.model.s2BirthEBL
-                            (getErr Stage2BirthEBLFld)
+                            (getErr Stage2BirthEBLFld errors)
                         ]
                     , Form.radioFieldset "Meconium"
                         "meconium"
@@ -1124,7 +1156,7 @@ dialogStage2SummaryEdit cfg =
                         , "Mod"
                         , "Thick"
                         ]
-                        (getErr Stage2MeconiumFld)
+                        (getErr Stage2MeconiumFld errors)
                     , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
                         "Comments"
                         "Meds, IV, Complications, Notes, etc."
@@ -1192,11 +1224,32 @@ dialogStage2SummaryView cfg =
                         rec.shoulderDystocia
                         rec.shoulderDystociaMinutes
                         |> Maybe.withDefault "No"
-                    , Maybe.map (\l -> if l then "Yes" else "No") rec.laceration
+                    , Maybe.map
+                        (\l ->
+                            if l then
+                                "Yes"
+                            else
+                                "No"
+                        )
+                        rec.laceration
                         |> Maybe.withDefault "No"
-                    , Maybe.map (\e -> if e then "Yes" else "No") rec.episiotomy
+                    , Maybe.map
+                        (\e ->
+                            if e then
+                                "Yes"
+                            else
+                                "No"
+                        )
+                        rec.episiotomy
                         |> Maybe.withDefault "No"
-                    , Maybe.map (\r -> if r then "Yes" else "No") rec.repair
+                    , Maybe.map
+                        (\r ->
+                            if r then
+                                "Yes"
+                            else
+                                "No"
+                        )
+                        rec.repair
                         |> Maybe.withDefault "No"
                     , Maybe.withDefault "None" rec.degree
                     , Maybe.withDefault "" rec.lacerationRepairedBy
@@ -1237,7 +1290,7 @@ dialogStage2SummaryView cfg =
             ]
             [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
                 [ H.text "Stage 2 Summary" ]
-            , H.div [ ]
+            , H.div []
                 [ H.div
                     [ HA.class "o-fieldset form-wrapper"
                     ]
@@ -2554,11 +2607,10 @@ validateStage2 =
                     [ (Stage2DegreeFld => "Degree must be specified if laceration or episiotomy is checked.") ]
                 else
                     []
+            else if mdl.s2Degree /= Nothing then
+                [ (Stage2DegreeFld => "Either laceration and/or episiotomy must be checked if degree is specified.") ]
             else
-                if mdl.s2Degree /= Nothing then
-                    [ (Stage2DegreeFld => "Either laceration and/or episiotomy must be checked if degree is specified.") ]
-                else
-                    []
+                []
           )
         , (\mdl ->
             if mdl.s2Repair == Just True && String.length (Maybe.withDefault "" mdl.s2LacerationRepairedBy) == 0 then

@@ -347,8 +347,8 @@ radioFieldset title groupName value msg disabled radioTexts err =
 
 {-| Radio field set without width restrictions.
 -}
-radioFieldsetWide : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> Html msg
-radioFieldsetWide title groupName value msg disabled radioTexts =
+radioFieldsetWide : String -> String -> Maybe String -> (String -> msg) -> Bool -> List String -> String -> Html msg
+radioFieldsetWide title groupName value msg disabled radioTexts err =
     H.fieldset [ HA.class "o-fieldset" ]
         ([ H.legend [ HA.class "o-fieldset__legend" ]
             [ H.span [ HA.class "c-text--loud" ]
@@ -356,7 +356,20 @@ radioFieldsetWide title groupName value msg disabled radioTexts =
             ]
          ]
             ++ (List.map (\text -> radio ( text, groupName, disabled, msg, value )) radioTexts)
-        )
+            ++ (if String.length err > 0 then
+                    [ H.div
+                        [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                        , HA.style
+                            [ ( "padding", "0.25em 0.25em" )
+                            , ( "margin", "0.75em 0 1.25em 0" )
+                            ]
+                        ]
+                        [ H.text err ]
+                    ]
+                else
+                    []
+                )
+         )
 
 
 {-| Group of radio buttons with an Other radio button at the end with an input
