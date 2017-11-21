@@ -492,7 +492,7 @@ radioOther ( text, name, disabled, msg, checkable, val ) =
                 [ ( "position", "absolute" )
                 , ( "top", "50%" )
                 , ( "transform", "translateY(-50%)" )
-                , ( "left", "1.5em" )
+                , ( "left", "2em" )
                 ]
             , HA.placeholder "or enter another"
             , HA.value <|
