@@ -139,7 +139,7 @@ formFieldDate onInputMsg lbl placeholder isBold value err =
                 [ HA.class "c-field c-field--label"
                 , HA.type_ "date"
                 , HA.placeholder placeholder
-                , HA.defaultValue theDate
+                , HA.value theDate
                 , HE.onInput onInputMsg
                 ]
                 []
