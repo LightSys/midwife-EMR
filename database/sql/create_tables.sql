@@ -649,6 +649,36 @@ CREATE TABLE IF NOT EXISTS `laborStage2` (
 );
 SHOW WARNINGS;
 
+CREATE TABLE IF NOT EXISTS `laborStage3` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  placentaDatetime DATETIME NULL,
+  placentaDeliverySpontaneous BOOLEAN NULL,
+  placentaDeliveryAMTSL BOOLEAN NULL,
+  placentaDeliveryCCT BOOLEAN NULL,
+  placentaDeliveryManual BOOLEAN NULL,
+  maternalPosition VARCHAR(50) NULL,
+  txBloodLoss1 VARCHAR(50) NULL,
+  txBloodLoss2 VARCHAR(50) NULL,
+  txBloodLoss3 VARCHAR(50) NULL,
+  txBloodLoss4 VARCHAR(50) NULL,
+  txBloodLoss5 VARCHAR(50) NULL,
+  placentaShape VARCHAR(50) NULL,
+  placentaInsertion VARCHAR(50) NULL,
+  placentaNumVessels INT NULL,
+  schultzDuncan ENUM('Schultz', 'Duncan') NULL,
+  placentaMembranesComplete BOOLEAN NULL,
+  placentaOther VARCHAR(100) NULL,
+  comments VARCHAR(500) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE(labor_id),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
 SET foreign_key_checks = 1;
 
 
