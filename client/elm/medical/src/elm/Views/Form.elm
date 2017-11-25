@@ -2,6 +2,7 @@ module Views.Form
     exposing
         ( cancelSaveButtons
         , checkbox
+        , checkboxString
         , dateTimeModal
         , dateTimePickerModal
         , formErrors
@@ -352,6 +353,33 @@ checkbox lbl msg val =
         , H.span [ HA.class "c-text--loud" ]
             [ H.text lbl ]
         ]
+
+
+{-| Allows a checkbox user interface to result in a String rather
+than a Bool. Good for populating a Maybe String field using a checkbox.
+-}
+checkboxString : String -> (String -> msg) -> Maybe String -> Html msg
+checkboxString lbl msg val =
+    let
+        isChecked =
+            String.length (Maybe.withDefault "" val) > 0
+    in
+        H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+            [ H.label [ HA.class "o-label" ]
+                [ H.input
+                    [ HA.type_ "checkbox"
+                    , HE.onClick <|
+                        if isChecked then
+                            (msg "")
+                        else
+                            (msg lbl)
+                    , HA.checked isChecked
+                    ]
+                    []
+                , H.span [ HA.class "c-text--loud" ]
+                    [ H.text lbl ]
+                ]
+            ]
 
 
 {-| Radio field set.

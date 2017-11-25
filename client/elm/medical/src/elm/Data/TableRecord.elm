@@ -13,6 +13,7 @@ import Json.Decode.Pipeline as JDP
 import Data.Labor exposing (LaborRecord, laborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record, laborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record, laborStage2Record)
+import Data.LaborStage3 exposing (LaborStage3Record, laborStage3Record)
 import Data.Patient exposing (PatientRecord, patientRecord)
 import Data.Pregnancy exposing (PregnancyRecord, pregnancyRecord)
 import Data.Table as DT exposing (Table(..))
@@ -24,6 +25,7 @@ type TableRecord
     | TableRecordLabor (List LaborRecord)
     | TableRecordLaborStage1 (List LaborStage1Record)
     | TableRecordLaborStage2 (List LaborStage2Record)
+    | TableRecordLaborStage3 (List LaborStage3Record)
 
 
 tableRecord : Table -> JD.Decoder TableRecord
@@ -37,6 +39,9 @@ tableRecord table =
 
         LaborStage2 ->
             JD.map TableRecordLaborStage2 (JD.list laborStage2Record)
+
+        LaborStage3 ->
+            JD.map TableRecordLaborStage3 (JD.list laborStage3Record)
 
         Patient ->
             JD.map TableRecordPatient (JD.list patientRecord)

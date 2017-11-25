@@ -44,6 +44,7 @@ var LOOKUP_TABLES = [
   'labor',
   'laborStage1',
   'laborStage2',
+  'laborStage3',
   'labSuite',
   'labTest',
   'labTestValue',

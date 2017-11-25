@@ -17,6 +17,7 @@ import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), L
 import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
+import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
@@ -405,6 +406,20 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddLaborStage3Type (LaborDelIppMsg (DataCache _ _)) laborStage3RecordNew) ->
+                                    let
+                                        laborStage3Rec =
+                                            laborStage3RecordNewToLaborStage3Record
+                                                (LaborStage3Id dataAddMsg.response.id)
+                                                laborStage3RecordNew
+
+                                        subMsg =
+                                            DataCache (Just model.dataCache) (Just [ LaborStage3 ])
+                                    in
+                                        ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Rec) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
                                 _ ->
                                     let
                                         msgText =
@@ -460,6 +475,15 @@ updateMessage incoming model =
                                             DataCache (Just model.dataCache) (Just [ LaborStage2 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Record) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                Just (UpdateLaborStage3Type (LaborDelIppMsg (DataCache _ _)) laborStage3Record) ->
+                                    let
+                                        subMsg =
+                                            DataCache (Just model.dataCache) (Just [ LaborStage3 ])
+                                    in
+                                        ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Record) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
@@ -537,6 +561,21 @@ updateMessage incoming model =
                                             in
                                                 { mdl | dataCache = dc }
 
+                                        TableRecordLaborStage3 recs ->
+                                            -- There should ever be only one stage 3 record
+                                            -- sent because there is only one allowed per
+                                            -- labor, but the data arrives in an array anyway.
+                                            let
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (LaborStage3DataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+                                            in
+                                                { mdl | dataCache = dc }
+
                                         TableRecordPatient recs ->
                                             -- We only ever want one patient in our store at a time.
                                             let
@@ -599,6 +638,12 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateLaborStage2Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (AddLaborStage3Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateLaborStage3Type msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (SelectQueryType msg _) ->

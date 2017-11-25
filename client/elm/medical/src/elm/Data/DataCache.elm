@@ -14,6 +14,7 @@ import Dict exposing (Dict)
 import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
+import Data.LaborStage3 exposing (LaborStage3Record)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
 import Data.Table exposing (stringToTable, tableToString, Table(..))
@@ -25,6 +26,7 @@ type DataCache
     = LaborDataCache (Dict Int LaborRecord)
     | LaborStage1DataCache LaborStage1Record
     | LaborStage2DataCache LaborStage2Record
+    | LaborStage3DataCache LaborStage3Record
     | PatientDataCache PatientRecord
     | PregnancyDataCache PregnancyRecord
 
@@ -44,6 +46,9 @@ getTableString dc =
 
         LaborStage2DataCache _ ->
             tableToString LaborStage2
+
+        LaborStage3DataCache _ ->
+            tableToString LaborStage3
 
         PatientDataCache _ ->
             tableToString Patient

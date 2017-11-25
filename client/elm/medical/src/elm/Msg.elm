@@ -21,6 +21,7 @@ import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
 import Data.LaborStage1 exposing (LaborStage1Record, LaborStage1RecordNew)
 import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
+import Data.LaborStage3 exposing (LaborStage3Record, LaborStage3RecordNew)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
 import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
@@ -92,6 +93,8 @@ type ProcessType
     = AddLaborType Msg LaborRecordNew
     | AddLaborStage1Type Msg LaborStage1RecordNew
     | AddLaborStage2Type Msg LaborStage2RecordNew
+    | AddLaborStage3Type Msg LaborStage3RecordNew
     | UpdateLaborStage1Type Msg LaborStage1Record
     | UpdateLaborStage2Type Msg LaborStage2Record
+    | UpdateLaborStage3Type Msg LaborStage3Record
     | SelectQueryType Msg SelectQuery

@@ -51,7 +51,23 @@ import Data.LaborStage2
         , laborStage2RecordNewToValue
         , laborStage2RecordToValue
         )
-import Data.LaborDelIpp exposing (Dialog(..), Field(..), FieldBool(..), SubMsg(..))
+import Data.LaborStage3
+    exposing
+        ( isLaborStage3RecordComplete
+        , LaborStage3Record
+        , LaborStage3RecordNew
+        , laborStage3RecordNewToValue
+        , laborStage3RecordToValue
+        , schultzDuncan2String
+        , string2SchultzDuncan
+        )
+import Data.LaborDelIpp
+    exposing
+        ( Dialog(..)
+        , Field(..)
+        , FldChgValue(..)
+        , SubMsg(..)
+        )
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyId(..), PregnancyRecord)
@@ -93,6 +109,8 @@ type StageSummaryModal
     | Stage2SummaryViewModal
     | Stage2SummaryEditModal
     | Stage3SummaryModal
+    | Stage3SummaryViewModal
+    | Stage3SummaryEditModal
 
 
 type alias Model =
@@ -106,6 +124,7 @@ type alias Model =
     , laborRecord : Maybe (List LaborRecord)
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
+    , laborStage3Record : Maybe LaborStage3Record
     , laborState : LaborState
     , admittanceDate : Maybe Date
     , admittanceTime : Maybe String
@@ -152,6 +171,24 @@ type alias Model =
     , stage3DateTimeModal : DateTimeModal
     , stage3Date : Maybe Date
     , stage3Time : Maybe String
+    , stage3SummaryModal : StageSummaryModal
+    , s3PlacentaDeliverySpontaneous : Maybe Bool
+    , s3PlacentaDeliveryAMTSL : Maybe Bool
+    , s3PlacentaDeliveryCCT : Maybe Bool
+    , s3PlacentaDeliveryManual : Maybe Bool
+    , s3MaternalPosition : Maybe String
+    , s3TxBloodLoss1 : Maybe String
+    , s3TxBloodLoss2 : Maybe String
+    , s3TxBloodLoss3 : Maybe String
+    , s3TxBloodLoss4 : Maybe String
+    , s3TxBloodLoss5 : Maybe String
+    , s3PlacentaShape : Maybe String
+    , s3PlacentaInsertion : Maybe String
+    , s3PlacentaNumVessels : Maybe String
+    , s3SchultzDuncan : Maybe String
+    , s3PlacentaMembranesComplete : Maybe Bool
+    , s3PlacentaOther : Maybe String
+    , s3Comments : Maybe String
     }
 
 
@@ -213,6 +250,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             laborRecs
             Nothing
             Nothing
+            Nothing
             laborState
             Nothing
             Nothing
@@ -259,6 +297,24 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             NoDateTimeModal
             Nothing
             Nothing
+            NoStageSummaryModal
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
         , newStore
         , newOuterMsg
         )
@@ -272,14 +328,14 @@ getLaborDetails : LaborId -> ProcessStore -> ( ProcessStore, Cmd Msg )
 getLaborDetails lid store =
     let
         selectQuery =
-            SelectQuery Labor (Just (getLaborId lid)) [ LaborStage1, LaborStage2 ]
+            SelectQuery Labor (Just (getLaborId lid)) [ LaborStage1, LaborStage2, LaborStage3 ]
 
         ( processId, processStore ) =
             Processing.add
                 (SelectQueryType
                     (LaborDelIppMsg
                         (DataCache Nothing
-                            (Just [ LaborStage1, LaborStage2 ])
+                            (Just [ LaborStage1, LaborStage2, LaborStage3 ])
                         )
                     )
                     selectQuery
@@ -329,6 +385,12 @@ view size session model =
             else
                 not (isStage2SummaryDone model)
 
+        isEditingS3 =
+            if model.stage3SummaryModal == Stage3SummaryEditModal then
+                True
+            else
+                not (isStage3SummaryDone model)
+
         dialogStage1Config =
             DialogStage1Summary
                 (model.stage1SummaryModal
@@ -342,7 +404,7 @@ view size session model =
                 (HandleStage1SummaryModal CloseNoSaveDialog)
                 (HandleStage1SummaryModal CloseSaveDialog)
                 (HandleStage1SummaryModal EditDialog)
-                (FldChgSubMsg Stage1MobilityFld)
+                (FldChgString >> FldChgSubMsg Stage1MobilityFld)
 
         dialogStage2Config =
             DialogStage2Summary
@@ -357,7 +419,20 @@ view size session model =
                 (HandleStage2SummaryModal CloseNoSaveDialog)
                 (HandleStage2SummaryModal CloseSaveDialog)
                 (HandleStage2SummaryModal EditDialog)
-                (FldChgSubMsg Stage2BirthTypeFld)
+
+        dialogStage3Config =
+            DialogStage3Summary
+                (model.stage3SummaryModal
+                    == Stage3SummaryViewModal
+                    || model.stage3SummaryModal
+                    == Stage3SummaryEditModal
+                )
+                isEditingS3
+                "Stage 3 Summary"
+                model
+                (HandleStage3SummaryModal CloseNoSaveDialog)
+                (HandleStage3SummaryModal CloseSaveDialog)
+                (HandleStage3SummaryModal EditDialog)
 
         -- Ascertain whether we have a labor in process already.
         pregHeader =
@@ -383,6 +458,7 @@ view size session model =
                     [ viewLaborDetails model
                     , dialogStage1Summary dialogStage1Config
                     , dialogStage2Summary dialogStage2Config
+                    , dialogStage3Summary dialogStage3Config
                     , viewDetailsTableTEMP model
                     ]
 
@@ -410,13 +486,13 @@ viewAdmitForm model =
                 [ H.div [ HA.class "" ] [ Form.formErrors model.formErrors ]
                 , H.div [ HA.class "o-fieldset form-wrapper" ]
                     [ if model.browserSupportsDate then
-                        Form.formFieldDate (FldChgSubMsg AdmittanceDateFld)
+                        Form.formFieldDate (FldChgString >> FldChgSubMsg AdmittanceDateFld)
                             "Date admitted"
                             "e.g. 08/14/2017"
                             True
                             model.admittanceDate
                             (getErr AdmittanceDateFld errors)
-                    else
+                      else
                         Form.formFieldDatePicker OpenDatePickerSubMsg
                             LaborDelIppAdmittanceDateField
                             "Date admitted"
@@ -424,19 +500,20 @@ viewAdmitForm model =
                             True
                             model.admittanceDate
                             (getErr AdmittanceDateFld errors)
-                    , Form.formField (FldChgSubMsg AdmittanceTimeFld)
+                    , Form.formField (FldChgString >> FldChgSubMsg AdmittanceTimeFld)
                         "Time admitted"
                         "24 hr format, 14:44"
-                        True model.admittanceTime
+                        True
+                        model.admittanceTime
                         (getErr AdmittanceTimeFld errors)
                     , if model.browserSupportsDate then
-                        Form.formFieldDate (FldChgSubMsg LaborDateFld)
+                        Form.formFieldDate (FldChgString >> FldChgSubMsg LaborDateFld)
                             "Date start of labor"
                             "e.g. 08/14/2017"
                             True
                             model.laborDate
                             (getErr LaborDateFld errors)
-                    else
+                      else
                         Form.formFieldDatePicker OpenDatePickerSubMsg
                             LaborDelIppLaborDateField
                             "Date start of labor"
@@ -444,48 +521,55 @@ viewAdmitForm model =
                             True
                             model.laborDate
                             (getErr LaborDateFld errors)
-                    , Form.formField (FldChgSubMsg LaborTimeFld)
+                    , Form.formField (FldChgString >> FldChgSubMsg LaborTimeFld)
                         "Time start of labor"
                         "24 hr format, 09:00"
                         True
                         model.laborTime
                         (getErr LaborTimeFld errors)
-                    , Form.formField (FldChgSubMsg PosFld)
-                        "POS" "pos"
+                    , Form.formField (FldChgString >> FldChgSubMsg PosFld)
+                        "POS"
+                        "pos"
                         True
                         model.pos
                         (getErr PosFld errors)
-                    , Form.formField (FldChgSubMsg FhFld)
-                        "FH" "fh"
+                    , Form.formField (FldChgString >> FldChgSubMsg FhFld)
+                        "FH"
+                        "fh"
                         True
                         model.fh
                         (getErr FhFld errors)
-                    , Form.formField (FldChgSubMsg FhtFld)
-                        "FHT" "fht"
+                    , Form.formField (FldChgString >> FldChgSubMsg FhtFld)
+                        "FHT"
+                        "fht"
                         True
                         model.fht
                         (getErr FhtFld errors)
-                    , Form.formField (FldChgSubMsg SystolicFld)
-                        "Systolic" "systolic"
+                    , Form.formField (FldChgString >> FldChgSubMsg SystolicFld)
+                        "Systolic"
+                        "systolic"
                         True
                         model.systolic
                         (getErr SystolicFld errors)
-                    , Form.formField (FldChgSubMsg DiastolicFld)
-                        "Diastolic" "diastolic"
+                    , Form.formField (FldChgString >> FldChgSubMsg DiastolicFld)
+                        "Diastolic"
+                        "diastolic"
                         True
                         model.diastolic
                         (getErr DiastolicFld errors)
-                    , Form.formField (FldChgSubMsg CrFld)
-                        "CR" "heart rate"
+                    , Form.formField (FldChgString >> FldChgSubMsg CrFld)
+                        "CR"
+                        "heart rate"
                         True
                         model.cr
                         (getErr CrFld errors)
-                    , Form.formField (FldChgSubMsg TempFld)
-                        "Temp" "temperature"
+                    , Form.formField (FldChgString >> FldChgSubMsg TempFld)
+                        "Temp"
+                        "temperature"
                         True
                         model.temp
                         (getErr TempFld errors)
-                    , Form.formTextareaField (FldChgSubMsg CommentsFld)
+                    , Form.formTextareaField (FldChgString >> FldChgSubMsg CommentsFld)
                         "Comments"
                         ""
                         True
@@ -497,7 +581,7 @@ viewAdmitForm model =
                         [ HA.class "u-small error-msg-right primary-fg"
                         ]
                         [ H.text "Errors detected, see details above." ]
-                else
+                  else
                     H.span [] []
                 , H.div [ HA.class "form-wrapper-end" ]
                     [ Form.cancelSaveButtons CancelAdmitForLabor SaveAdmitForLabor
@@ -662,6 +746,16 @@ isStage2SummaryDone model =
             False
 
 
+isStage3SummaryDone : Model -> Bool
+isStage3SummaryDone model =
+    case model.laborStage3Record of
+        Just rec ->
+            isLaborStage3RecordComplete rec
+
+        _ ->
+            False
+
+
 viewStages : Model -> Html SubMsg
 viewStages model =
     H.div [ HA.class "stage-wrapper" ]
@@ -693,8 +787,8 @@ viewStages model =
                     , if model.browserSupportsDate then
                         Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
                             "Stage 1 Date/Time"
-                            (FldChgSubMsg Stage1DateFld)
-                            (FldChgSubMsg Stage1TimeFld)
+                            (FldChgString >> FldChgSubMsg Stage1DateFld)
+                            (FldChgString >> FldChgSubMsg Stage1TimeFld)
                             (HandleStage1DateTimeModal CloseNoSaveDialog)
                             (HandleStage1DateTimeModal CloseSaveDialog)
                             ClearStage1DateTime
@@ -704,8 +798,8 @@ viewStages model =
                         Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
                             "Stage 1 Date/Time"
                             OpenDatePickerSubMsg
-                            (FldChgSubMsg Stage1DateFld)
-                            (FldChgSubMsg Stage1TimeFld)
+                            (FldChgString >> FldChgSubMsg Stage1DateFld)
+                            (FldChgString >> FldChgSubMsg Stage1TimeFld)
                             (HandleStage1DateTimeModal CloseNoSaveDialog)
                             (HandleStage1DateTimeModal CloseSaveDialog)
                             ClearStage1DateTime
@@ -755,8 +849,8 @@ viewStages model =
                     , if model.browserSupportsDate then
                         Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
                             "Stage 2 Date/Time"
-                            (FldChgSubMsg Stage2DateFld)
-                            (FldChgSubMsg Stage2TimeFld)
+                            (FldChgString >> FldChgSubMsg Stage2DateFld)
+                            (FldChgString >> FldChgSubMsg Stage2TimeFld)
                             (HandleStage2DateTimeModal CloseNoSaveDialog)
                             (HandleStage2DateTimeModal CloseSaveDialog)
                             ClearStage2DateTime
@@ -766,8 +860,8 @@ viewStages model =
                         Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
                             "Stage 2 Date/Time"
                             OpenDatePickerSubMsg
-                            (FldChgSubMsg Stage2DateFld)
-                            (FldChgSubMsg Stage2TimeFld)
+                            (FldChgString >> FldChgSubMsg Stage2DateFld)
+                            (FldChgString >> FldChgSubMsg Stage2TimeFld)
                             (HandleStage2DateTimeModal CloseNoSaveDialog)
                             (HandleStage2DateTimeModal CloseSaveDialog)
                             ClearStage2DateTime
@@ -798,12 +892,27 @@ viewStages model =
                         [ HA.class "c-button c-button--ghost-brand u-small"
                         , HE.onClick <| HandleStage3DateTimeModal OpenDialog
                         ]
-                        [ H.text <| "Not Implemented" ]
+                        [ H.text <|
+                            case model.laborStage3Record of
+                                Just ls3rec ->
+                                    case ls3rec.placentaDatetime of
+                                        Just d ->
+                                            U.dateTimeHMFormatter
+                                                U.MDYDateFmt
+                                                U.DashDateSep
+                                                d
+
+                                        Nothing ->
+                                            "Click to set"
+
+                                Nothing ->
+                                    "Click to set"
+                        ]
                     , if model.browserSupportsDate then
                         Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
                             "Stage 3 Date/Time"
-                            (FldChgSubMsg Stage3DateFld)
-                            (FldChgSubMsg Stage3TimeFld)
+                            (FldChgString >> FldChgSubMsg Stage3DateFld)
+                            (FldChgString >> FldChgSubMsg Stage3TimeFld)
                             (HandleStage3DateTimeModal CloseNoSaveDialog)
                             (HandleStage3DateTimeModal CloseSaveDialog)
                             ClearStage3DateTime
@@ -813,8 +922,8 @@ viewStages model =
                         Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
                             "Stage 3 Date/Time"
                             OpenDatePickerSubMsg
-                            (FldChgSubMsg Stage3DateFld)
-                            (FldChgSubMsg Stage3TimeFld)
+                            (FldChgString >> FldChgSubMsg Stage3DateFld)
+                            (FldChgString >> FldChgSubMsg Stage3TimeFld)
                             (HandleStage3DateTimeModal CloseNoSaveDialog)
                             (HandleStage3DateTimeModal CloseSaveDialog)
                             ClearStage3DateTime
@@ -825,8 +934,15 @@ viewStages model =
             , H.div []
                 [ H.button
                     [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleStage3SummaryModal OpenDialog
                     ]
-                    [ H.text "Summary" ]
+                    [ if isStage3SummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
                 ]
             ]
         ]
@@ -908,7 +1024,7 @@ dialogStage1SummaryEdit cfg =
                     [ Form.radioFieldsetWide "Mobility"
                         "mobility"
                         cfg.model.s1Mobility
-                        (FldChgSubMsg Stage1MobilityFld)
+                        (FldChgString >> FldChgSubMsg Stage1MobilityFld)
                         False
                         [ "Moved around"
                         , "Didn't move much"
@@ -917,20 +1033,20 @@ dialogStage1SummaryEdit cfg =
                         (getErr Stage1MobilityFld errors)
                     ]
                 , H.div []
-                    [ Form.formField (FldChgSubMsg Stage1DurationLatentFld)
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage1DurationLatentFld)
                         "Duration latent (minutes)"
                         "Number of minutes"
                         True
                         cfg.model.s1DurationLatent
                         (getErr Stage1DurationLatentFld errors)
-                    , Form.formField (FldChgSubMsg Stage1DurationActiveFld)
+                    , Form.formField (FldChgString >> FldChgSubMsg Stage1DurationActiveFld)
                         "Duration active (minutes)"
                         "Number of minutes"
                         True
                         cfg.model.s1DurationActive
                         (getErr Stage1DurationActiveFld errors)
                     ]
-                , Form.formTextareaFieldMin30em (FldChgSubMsg Stage1CommentsFld)
+                , Form.formTextareaFieldMin30em (FldChgString >> FldChgSubMsg Stage1CommentsFld)
                     "Comments"
                     "Meds, IV, Complications, Notes, etc."
                     True
@@ -1068,7 +1184,6 @@ type alias DialogStage2Summary =
     , closeMsg : SubMsg
     , saveMsg : SubMsg
     , editMsg : SubMsg
-    , birthTypeMsg : String -> SubMsg
     }
 
 
@@ -1105,14 +1220,14 @@ dialogStage2SummaryEdit cfg =
                     [ Form.radioFieldsetOther "Birth type"
                         "birthType"
                         cfg.model.s2BirthType
-                        (FldChgSubMsg Stage2BirthTypeFld)
+                        (FldChgString >> FldChgSubMsg Stage2BirthTypeFld)
                         False
                         [ "Vaginal" ]
                         (getErr Stage2BirthTypeFld errors)
                     , Form.radioFieldsetOther "Position for birth"
                         "position"
                         cfg.model.s2BirthPosition
-                        (FldChgSubMsg Stage2BirthPositionFld)
+                        (FldChgString >> FldChgSubMsg Stage2BirthPositionFld)
                         False
                         [ "Semi-sitting"
                         , "Lying on back"
@@ -1123,7 +1238,7 @@ dialogStage2SummaryEdit cfg =
                         ]
                         (getErr Stage2BirthPositionFld errors)
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgSubMsg Stage2DurationPushingFld)
+                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2DurationPushingFld)
                             "Duration of pushing"
                             "Number of minutes"
                             True
@@ -1133,7 +1248,7 @@ dialogStage2SummaryEdit cfg =
                     , Form.radioFieldsetOther "Baby's presentation at birth"
                         "presentation"
                         cfg.model.s2BirthPresentation
-                        (FldChgSubMsg Stage2BirthPresentationFld)
+                        (FldChgString >> FldChgSubMsg Stage2BirthPresentationFld)
                         False
                         [ "ROA"
                         , "ROP"
@@ -1141,11 +1256,11 @@ dialogStage2SummaryEdit cfg =
                         , "LOP"
                         ]
                         (getErr Stage2BirthPresentationFld errors)
-                    , Form.checkbox "Cord was wrapped" (FldChgBoolSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
+                    , Form.checkbox "Cord was wrapped" (FldChgBool >> FldChgSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
                     , Form.radioFieldsetOther "Cord wrap type"
                         "cordwraptype"
                         cfg.model.s2CordWrapType
-                        (FldChgSubMsg Stage2CordWrapTypeFld)
+                        (FldChgString >> FldChgSubMsg Stage2CordWrapTypeFld)
                         False
                         [ "Nuchal"
                         , "Body"
@@ -1155,29 +1270,29 @@ dialogStage2SummaryEdit cfg =
                     , Form.radioFieldsetOther "Delivery type"
                         "deliverytype"
                         cfg.model.s2DeliveryType
-                        (FldChgSubMsg Stage2DeliveryTypeFld)
+                        (FldChgString >> FldChgSubMsg Stage2DeliveryTypeFld)
                         False
                         [ "Spontaneous"
                         , "Interventive"
                         , "Vacuum"
                         ]
                         (getErr Stage2DeliveryTypeFld errors)
-                    , Form.checkbox "Shoulder Dystocia" (FldChgBoolSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
+                    , Form.checkbox "Shoulder Dystocia" (FldChgBool >> FldChgSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
+                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
                             "Shoulder dystocia minutes"
                             "Number of minutes"
                             True
                             cfg.model.s2ShoulderDystociaMinutes
                             (getErr Stage2ShoulderDystociaMinutesFld errors)
                         ]
-                    , Form.checkbox "Laceration" (FldChgBoolSubMsg Stage2LacerationFld) cfg.model.s2Laceration
-                    , Form.checkbox "Episiotomy" (FldChgBoolSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
-                    , Form.checkbox "Repair" (FldChgBoolSubMsg Stage2RepairFld) cfg.model.s2Repair
+                    , Form.checkbox "Laceration" (FldChgBool >> FldChgSubMsg Stage2LacerationFld) cfg.model.s2Laceration
+                    , Form.checkbox "Episiotomy" (FldChgBool >> FldChgSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
+                    , Form.checkbox "Repair" (FldChgBool >> FldChgSubMsg Stage2RepairFld) cfg.model.s2Repair
                     , Form.radioFieldset "Degree"
                         "degree"
                         cfg.model.s2Degree
-                        (FldChgSubMsg Stage2DegreeFld)
+                        (FldChgString >> FldChgSubMsg Stage2DegreeFld)
                         False
                         [ "1st"
                         , "2nd"
@@ -1186,7 +1301,7 @@ dialogStage2SummaryEdit cfg =
                         ]
                         (getErr Stage2DegreeFld errors)
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgSubMsg Stage2LacerationRepairedByFld)
+                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2LacerationRepairedByFld)
                             "Laceration repaired by"
                             "Initials or lastname"
                             True
@@ -1194,7 +1309,7 @@ dialogStage2SummaryEdit cfg =
                             (getErr Stage2LacerationRepairedByFld errors)
                         ]
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgSubMsg Stage2BirthEBLFld)
+                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2BirthEBLFld)
                             "EBL at birth"
                             "in cc"
                             True
@@ -1204,7 +1319,7 @@ dialogStage2SummaryEdit cfg =
                     , Form.radioFieldset "Meconium"
                         "meconium"
                         cfg.model.s2Meconium
-                        (FldChgSubMsg Stage2MeconiumFld)
+                        (FldChgString >> FldChgSubMsg Stage2MeconiumFld)
                         False
                         [ "None"
                         , "Lt"
@@ -1212,7 +1327,7 @@ dialogStage2SummaryEdit cfg =
                         , "Thick"
                         ]
                         (getErr Stage2MeconiumFld errors)
-                    , Form.formTextareaField (FldChgSubMsg Stage2CommentsFld)
+                    , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage2CommentsFld)
                         "Comments"
                         "Meds, IV, Complications, Notes, etc."
                         True
@@ -1466,6 +1581,377 @@ dialogStage2SummaryView cfg =
             ]
 
 
+
+-- Modal for Stage 3 Summary --
+
+
+type alias DialogStage3Summary =
+    { isShown : Bool
+    , isEditing : Bool
+    , title : String
+    , model : Model
+    , closeMsg : SubMsg
+    , saveMsg : SubMsg
+    , editMsg : SubMsg
+    }
+
+
+dialogStage3Summary : DialogStage3Summary -> Html SubMsg
+dialogStage3Summary cfg =
+    case cfg.isEditing of
+        True ->
+            dialogStage3SummaryEdit cfg
+
+        False ->
+            dialogStage3SummaryView cfg
+
+
+dialogStage3SummaryView : DialogStage3Summary -> Html SubMsg
+dialogStage3SummaryView cfg =
+    let
+        yesNoBool bool =
+            case bool of
+                Just True ->
+                    "Yes"
+
+                _ ->
+                    "No"
+
+        ( delSpon, delAMTSL, delCCT, delMan, matPos, txBL1, txBL2, txBL3 ) =
+            case cfg.model.laborStage3Record of
+                Just rec ->
+                    ( yesNoBool rec.placentaDeliverySpontaneous
+                    , yesNoBool rec.placentaDeliveryAMTSL
+                    , yesNoBool rec.placentaDeliveryCCT
+                    , yesNoBool rec.placentaDeliveryManual
+                    , Maybe.withDefault "" rec.maternalPosition
+                    , Maybe.withDefault "" rec.txBloodLoss1
+                    , Maybe.withDefault "" rec.txBloodLoss2
+                    , Maybe.withDefault "" rec.txBloodLoss3
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "", "", "", "" )
+
+        ( shape, insertion, numVessels, schDun, complete, other, comments ) =
+            case cfg.model.laborStage3Record of
+                Just rec ->
+                    ( Maybe.withDefault "" rec.placentaShape
+                    , Maybe.withDefault "" rec.placentaInsertion
+                    , Maybe.map toString rec.placentaNumVessels
+                        |> Maybe.withDefault ""
+                    , Maybe.map schultzDuncan2String rec.schultzDuncan
+                        |> Maybe.withDefault ""
+                    , yesNoBool rec.placentaMembranesComplete
+                    , Maybe.withDefault "" rec.placentaOther
+                    , Maybe.withDefault "" rec.comments
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "", "", "" )
+
+        treatment =
+            [ txBL1, txBL2, txBL3 ]
+                |> List.filter (\t -> String.length t > 0)
+                |> String.join ", "
+
+        s3Total =
+            case cfg.model.laborStage3Record of
+                Just s3Rec ->
+                    case cfg.model.laborStage2Record of
+                        Just s2Rec ->
+                            case ( s2Rec.birthDatetime, s3Rec.placentaDatetime ) of
+                                ( Just bdt, Just pdt ) ->
+                                    U.diff2DatesString bdt pdt
+
+                                ( _, _ ) ->
+                                    ""
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    ""
+    in
+        H.div
+            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+            , HA.class "u-high"
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
+                ]
+            ]
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Stage 3 Summary" ]
+            , H.div []
+                [ H.div
+                    [ HA.class "o-fieldset form-wrapper"
+                    ]
+                    [ H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Stage 3 Total: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text s3Total ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Delivery spontaneous: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text delSpon ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Delivery AMTSL: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text delAMTSL ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Delivery CCT: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text delCCT ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Delivery manual: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text delMan ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Maternal position: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text matPos ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Treatments: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text treatment ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                            [ H.span [ HA.class "c-text--loud" ]
+                                [ H.text "Placenta shape: " ]
+                            , H.span [ HA.class "" ]
+                                [ H.text shape ]
+                            ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Plancenta insertion: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text insertion ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Placenta num vessels: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text numVessels ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Schultz/Duncan: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text schDun ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Membranes complete: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text complete ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Placenta other: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text other ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Comments: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text comments ]
+                        ]
+                    ]
+                , H.div [ HA.class "spacedButtons" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button u-small"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "Close" ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--ghost u-small"
+                        , HE.onClick cfg.editMsg
+                        ]
+                        [ H.text "Edit" ]
+                    ]
+                ]
+            ]
+
+
+dialogStage3SummaryEdit : DialogStage3Summary -> Html SubMsg
+dialogStage3SummaryEdit cfg =
+    let
+        errors =
+            validateStage3 cfg.model
+
+        deliveryFlds =
+            [ Stage3PlacentaDeliverySpontaneousFld
+            , Stage3PlacentaDeliveryAMTSLFld
+            , Stage3PlacentaDeliveryCCTFld
+            , Stage3PlacentaDeliveryManualFld
+            ]
+
+        deliveryErrorStr =
+            List.filter (\(f, s) -> List.member f deliveryFlds) errors
+                |> List.map Tuple.second
+                |> String.join ", "
+    in
+        H.div
+            [ HA.class "u-high"
+            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
+                ]
+            ]
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Stage 3 Summary - Edit" ]
+            , H.div [ HA.class "form-wrapper u-small" ]
+                [ H.div
+                    [ HA.class "o-fieldset form-wrapper"
+                    ]
+                    [ H.label [ HA.class "c-label o-form-element mw-form-field" ]
+                        [ H.span
+                            [ HA.class "c-text--loud" ]
+                            [ H.text "Placenta Delivery" ]
+                        , Form.checkbox "Spontaneous"
+                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliverySpontaneousFld)
+                            cfg.model.s3PlacentaDeliverySpontaneous
+                        , Form.checkbox "AMTSL"
+                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryAMTSLFld)
+                            cfg.model.s3PlacentaDeliveryAMTSL
+                        , Form.checkbox "CCT"
+                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryCCTFld)
+                            cfg.model.s3PlacentaDeliveryCCT
+                        , Form.checkbox "Manual"
+                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryManualFld)
+                            cfg.model.s3PlacentaDeliveryManual
+                        , if String.length deliveryErrorStr > 0 then
+                            H.div [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                                , HA.style
+                                    [ ( "padding", "0.25em 0.25em" )
+                                    , ( "margin", "0.75em 0 1.25em 0" )
+                                    ]
+                                ]
+                                [ H.text deliveryErrorStr ]
+                          else
+                            H.span [] []
+                        ]
+                    , Form.radioFieldsetOther "Maternal Position"
+                        "maternalPosition"
+                        cfg.model.s3MaternalPosition
+                        (FldChgString >> FldChgSubMsg Stage3MaternalPositionFld)
+                        False
+                        [ "Semi-sitting"
+                        , "Lying on back"
+                        , "Squat"
+                        ]
+                        (getErr Stage3MaternalPositionFld errors)
+                    , H.div [ HA.class "mw-form-field" ]
+                        [ H.span
+                            [ HA.class "c-text--loud" ]
+                            [ H.text "Tx for Blood Loss" ]
+                        , Form.checkboxString "Oxytocin"
+                            (FldChgString >> FldChgSubMsg Stage3TxBloodLoss1Fld)
+                            cfg.model.s3TxBloodLoss1
+                        , Form.checkboxString "IV"
+                            (FldChgString >> FldChgSubMsg Stage3TxBloodLoss2Fld)
+                            cfg.model.s3TxBloodLoss2
+                        , Form.checkboxString "Bi-Manual Compression External/Internal"
+                            (FldChgString >> FldChgSubMsg Stage3TxBloodLoss3Fld)
+                            cfg.model.s3TxBloodLoss3
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaShapeFld)
+                            "Placenta Shape"
+                            "shape"
+                            True
+                            cfg.model.s3PlacentaShape
+                            (getErr Stage3PlacentaShapeFld errors)
+                        ]
+                    , Form.radioFieldsetOther "Placenta Insertion"
+                        "placentaInsertion"
+                        cfg.model.s3PlacentaInsertion
+                        (FldChgString >> FldChgSubMsg Stage3PlacentaInsertionFld)
+                        False
+                        [ "Central"
+                        , "Semi-central"
+                        , "Marginal"
+                        ]
+                        (getErr Stage3PlacentaInsertionFld errors)
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaNumVesselsFld)
+                            "Number vessels"
+                            "a number"
+                            True
+                            cfg.model.s3PlacentaNumVessels
+                            (getErr Stage3PlacentaNumVesselsFld errors)
+                        ]
+                    , Form.radioFieldset "Schultz/Duncan"
+                        "schultzDuncan"
+                        cfg.model.s3SchultzDuncan
+                        (FldChgString >> FldChgSubMsg Stage3SchultzDuncanFld)
+                        False
+                        [ "Schultz"
+                        , "Duncan"
+                        ]
+                        (getErr Stage3SchultzDuncanFld errors)
+                    , H.div [ HA.class "" ]
+                        [ H.span
+                            [ HA.class "c-text--loud" ]
+                            [ H.text "Placenta Membrane" ]
+                        , Form.checkbox "Is Complete"
+                            (FldChgBool >> FldChgSubMsg Stage3PlacentaMembranesCompleteFld)
+                            cfg.model.s3PlacentaMembranesComplete
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaOtherFld)
+                            "Inspection notes"
+                            "notes"
+                            True
+                            cfg.model.s3PlacentaOther
+                            (getErr Stage3PlacentaOtherFld errors)
+                        ]
+                    , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage3CommentsFld)
+                        "Comments"
+                        ""
+                        True
+                        cfg.model.s3Comments
+                        3
+                    ]
+                ]
+            , H.div
+                [ HA.class "spacedButtons"
+                , HA.style [ ( "width", "100%" ) ]
+                ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Cancel" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--brand u-small"
+                    , HE.onClick cfg.saveMsg
+                    ]
+                    [ H.text "Save" ]
+                ]
+            ]
+
+
 {-| Show current admitting labor record and any historical
 "false" labor records.
 -}
@@ -1553,6 +2039,14 @@ refreshModelFromCache dc tables model =
                             case DataCache.get t dc of
                                 Just (LaborStage2DataCache rec) ->
                                     { m | laborStage2Record = Just rec }
+
+                                _ ->
+                                    m
+
+                        LaborStage3 ->
+                            case DataCache.get t dc of
+                                Just (LaborStage3DataCache rec) ->
+                                    { m | laborStage3Record = Just rec }
 
                                 _ ->
                                     m
@@ -1731,175 +2225,248 @@ update session msg model =
                 UnknownDateFieldMessage str ->
                     ( model, Cmd.none, Cmd.none )
 
-        FldChgBoolSubMsg fld value ->
-            -- Boolean fields.
-            ( case fld of
-                Stage2CordWrapFld ->
-                    -- Clear the cord wrap type if this is unchecked.
-                    if value == False then
-                        { model
-                            | s2CordWrap = Just value
-                            , s2CordWrapType = Nothing
-                        }
-                    else
-                        { model | s2CordWrap = Just value }
-
-                Stage2ShoulderDystociaFld ->
-                    { model | s2ShoulderDystocia = Just value }
-
-                Stage2LacerationFld ->
-                    -- Clear the degree field if this and laceration are unchecked.
-                    if value == False then
-                        if model.s2Episiotomy == Nothing || model.s2Episiotomy == Just False then
-                            { model
-                                | s2Laceration = Just value
-                                , s2Degree = Nothing
-                            }
-                        else
-                            { model | s2Laceration = Just value }
-                    else
-                        { model | s2Laceration = Just value }
-
-                Stage2EpisiotomyFld ->
-                    -- Clear the degree field if this and laceration are unchecked.
-                    if value == False then
-                        if model.s2Laceration == Nothing || model.s2Laceration == Just False then
-                            { model
-                                | s2Episiotomy = Just value
-                                , s2Degree = Nothing
-                            }
-                        else
-                            { model | s2Episiotomy = Just value }
-                    else
-                        { model | s2Episiotomy = Just value }
-
-                Stage2RepairFld ->
-                    -- Clear the degree and repaired by fields if this is unchecked.
-                    if value == False then
-                        { model
-                            | s2Repair = Just value
-                            , s2Degree = Nothing
-                            , s2LacerationRepairedBy = Nothing
-                        }
-                    else
-                        { model | s2Repair = Just value }
-            , Cmd.none
-            , Cmd.none
-            )
-
-        FldChgSubMsg fld value ->
+        FldChgSubMsg fld val ->
             -- All fields are handled here except for the date fields for browsers that
             -- do not support the input date type (see DateFieldSubMsg for those) and
             -- the boolean fields handled by FldChgBoolSubMsg above.
-            ( case fld of
-                AdmittanceDateFld ->
-                    { model | admittanceDate = Date.fromString value |> Result.toMaybe }
+            case val of
+                FldChgString value ->
+                    ( case fld of
+                        AdmittanceDateFld ->
+                            { model | admittanceDate = Date.fromString value |> Result.toMaybe }
 
-                AdmittanceTimeFld ->
-                    { model | admittanceTime = Just <| U.filterStringLikeTime value }
+                        AdmittanceTimeFld ->
+                            { model | admittanceTime = Just <| U.filterStringLikeTime value }
 
-                LaborDateFld ->
-                    { model | laborDate = Date.fromString value |> Result.toMaybe }
+                        LaborDateFld ->
+                            { model | laborDate = Date.fromString value |> Result.toMaybe }
 
-                LaborTimeFld ->
-                    { model | laborTime = Just <| U.filterStringLikeTime value }
+                        LaborTimeFld ->
+                            { model | laborTime = Just <| U.filterStringLikeTime value }
 
-                PosFld ->
-                    { model | pos = Just value }
+                        PosFld ->
+                            { model | pos = Just value }
 
-                FhFld ->
-                    { model | fh = Just <| U.filterStringLikeInt value }
+                        FhFld ->
+                            { model | fh = Just <| U.filterStringLikeInt value }
 
-                FhtFld ->
-                    { model | fht = Just value }
+                        FhtFld ->
+                            { model | fht = Just value }
 
-                SystolicFld ->
-                    { model | systolic = Just <| U.filterStringLikeInt value }
+                        SystolicFld ->
+                            { model | systolic = Just <| U.filterStringLikeInt value }
 
-                DiastolicFld ->
-                    { model | diastolic = Just <| U.filterStringLikeInt value }
+                        DiastolicFld ->
+                            { model | diastolic = Just <| U.filterStringLikeInt value }
 
-                CrFld ->
-                    { model | cr = Just <| U.filterStringLikeInt value }
+                        CrFld ->
+                            { model | cr = Just <| U.filterStringLikeInt value }
 
-                TempFld ->
-                    { model | temp = Just <| U.filterStringLikeFloat value }
+                        TempFld ->
+                            { model | temp = Just <| U.filterStringLikeFloat value }
 
-                CommentsFld ->
-                    { model | comments = Just value }
+                        CommentsFld ->
+                            { model | comments = Just value }
 
-                Stage1DateFld ->
-                    { model | stage1Date = Date.fromString value |> Result.toMaybe }
+                        Stage1DateFld ->
+                            { model | stage1Date = Date.fromString value |> Result.toMaybe }
 
-                Stage1TimeFld ->
-                    { model | stage1Time = Just <| U.filterStringLikeTime value }
+                        Stage1TimeFld ->
+                            { model | stage1Time = Just <| U.filterStringLikeTime value }
 
-                Stage1MobilityFld ->
-                    { model | s1Mobility = Just value }
+                        Stage1MobilityFld ->
+                            { model | s1Mobility = Just value }
 
-                Stage1DurationLatentFld ->
-                    { model | s1DurationLatent = Just <| U.filterStringLikeInt value }
+                        Stage1DurationLatentFld ->
+                            { model | s1DurationLatent = Just <| U.filterStringLikeInt value }
 
-                Stage1DurationActiveFld ->
-                    { model | s1DurationActive = Just <| U.filterStringLikeInt value }
+                        Stage1DurationActiveFld ->
+                            { model | s1DurationActive = Just <| U.filterStringLikeInt value }
 
-                Stage1CommentsFld ->
-                    { model | s1Comments = Just value }
+                        Stage1CommentsFld ->
+                            { model | s1Comments = Just value }
 
-                Stage2DateFld ->
-                    { model | stage2Date = Date.fromString value |> Result.toMaybe }
+                        Stage2DateFld ->
+                            { model | stage2Date = Date.fromString value |> Result.toMaybe }
 
-                Stage2TimeFld ->
-                    { model | stage2Time = Just <| U.filterStringLikeTime value }
+                        Stage2TimeFld ->
+                            { model | stage2Time = Just <| U.filterStringLikeTime value }
 
-                Stage2BirthDatetimeFld ->
-                    -- TODO: What is this field for if we have Stage2DateFld and Stage2TimeFld?
-                    model
+                        Stage2BirthDatetimeFld ->
+                            -- TODO: What is this field for if we have Stage2DateFld and Stage2TimeFld?
+                            model
 
-                Stage2BirthTypeFld ->
-                    { model | s2BirthType = Just value }
+                        Stage2BirthTypeFld ->
+                            { model | s2BirthType = Just value }
 
-                Stage2BirthPositionFld ->
-                    { model | s2BirthPosition = Just value }
+                        Stage2BirthPositionFld ->
+                            { model | s2BirthPosition = Just value }
 
-                Stage2DurationPushingFld ->
-                    { model | s2DurationPushing = Just <| U.filterStringLikeInt value }
+                        Stage2DurationPushingFld ->
+                            { model | s2DurationPushing = Just <| U.filterStringLikeInt value }
 
-                Stage2BirthPresentationFld ->
-                    { model | s2BirthPresentation = Just value }
+                        Stage2BirthPresentationFld ->
+                            { model | s2BirthPresentation = Just value }
 
-                Stage2CordWrapTypeFld ->
-                    { model | s2CordWrapType = Just value }
+                        Stage2CordWrapTypeFld ->
+                            { model | s2CordWrapType = Just value }
 
-                Stage2DeliveryTypeFld ->
-                    { model | s2DeliveryType = Just value }
+                        Stage2DeliveryTypeFld ->
+                            { model | s2DeliveryType = Just value }
 
-                Stage2ShoulderDystociaMinutesFld ->
-                    { model | s2ShoulderDystociaMinutes = Just <| U.filterStringLikeInt value }
+                        Stage2ShoulderDystociaMinutesFld ->
+                            { model | s2ShoulderDystociaMinutes = Just <| U.filterStringLikeInt value }
 
-                Stage2DegreeFld ->
-                    { model | s2Degree = Just value }
+                        Stage2DegreeFld ->
+                            { model | s2Degree = Just value }
 
-                Stage2LacerationRepairedByFld ->
-                    { model | s2LacerationRepairedBy = Just value }
+                        Stage2LacerationRepairedByFld ->
+                            { model | s2LacerationRepairedBy = Just value }
 
-                Stage2BirthEBLFld ->
-                    { model | s2BirthEBL = Just value }
+                        Stage2BirthEBLFld ->
+                            { model | s2BirthEBL = Just value }
 
-                Stage2MeconiumFld ->
-                    { model | s2Meconium = Just value }
+                        Stage2MeconiumFld ->
+                            { model | s2Meconium = Just value }
 
-                Stage2CommentsFld ->
-                    { model | s2Comments = Just value }
+                        Stage2CommentsFld ->
+                            { model | s2Comments = Just value }
 
-                Stage3DateFld ->
-                    { model | stage3Date = Date.fromString value |> Result.toMaybe }
+                        Stage3DateFld ->
+                            { model | stage3Date = Date.fromString value |> Result.toMaybe }
 
-                Stage3TimeFld ->
-                    { model | stage3Time = Just <| U.filterStringLikeTime value }
-            , Cmd.none
-            , Cmd.none
-            )
+                        Stage3TimeFld ->
+                            { model | stage3Time = Just <| U.filterStringLikeTime value }
+
+                        Stage3MaternalPositionFld ->
+                            { model | s3MaternalPosition = Just value }
+
+                        Stage3TxBloodLoss1Fld ->
+                            let
+                                _ =
+                                    Debug.log "s3TxBloodLoss1" <| toString value
+                            in
+                                { model | s3TxBloodLoss1 = Just value }
+
+                        Stage3TxBloodLoss2Fld ->
+                            { model | s3TxBloodLoss2 = Just value }
+
+                        Stage3TxBloodLoss3Fld ->
+                            { model | s3TxBloodLoss3 = Just value }
+
+                        Stage3TxBloodLoss4Fld ->
+                            { model | s3TxBloodLoss4 = Just value }
+
+                        Stage3TxBloodLoss5Fld ->
+                            { model | s3TxBloodLoss5 = Just value }
+
+                        Stage3PlacentaShapeFld ->
+                            { model | s3PlacentaShape = Just value }
+
+                        Stage3PlacentaInsertionFld ->
+                            { model | s3PlacentaInsertion = Just value }
+
+                        Stage3PlacentaNumVesselsFld ->
+                            { model | s3PlacentaNumVessels = Just <| U.filterStringLikeInt value }
+
+                        Stage3SchultzDuncanFld ->
+                            -- TODO: need validity check here?
+                            { model | s3SchultzDuncan = Just value }
+
+                        Stage3PlacentaOtherFld ->
+                            { model | s3PlacentaOther = Just value }
+
+                        Stage3CommentsFld ->
+                            { model | s3Comments = Just value }
+
+                        _ ->
+                            let
+                                _ =
+                                    Debug.log "LaborDelIpp.update FldChgSubMsg"
+                                        "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
+                            in
+                                model
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                FldChgBool value ->
+                    ( case fld of
+                        Stage2CordWrapFld ->
+                            -- Clear the cord wrap type if this is unchecked.
+                            if value == False then
+                                { model
+                                    | s2CordWrap = Just value
+                                    , s2CordWrapType = Nothing
+                                }
+                            else
+                                { model | s2CordWrap = Just value }
+
+                        Stage2ShoulderDystociaFld ->
+                            { model | s2ShoulderDystocia = Just value }
+
+                        Stage2LacerationFld ->
+                            -- Clear the degree field if this and laceration are unchecked.
+                            if value == False then
+                                if model.s2Episiotomy == Nothing || model.s2Episiotomy == Just False then
+                                    { model
+                                        | s2Laceration = Just value
+                                        , s2Degree = Nothing
+                                    }
+                                else
+                                    { model | s2Laceration = Just value }
+                            else
+                                { model | s2Laceration = Just value }
+
+                        Stage2EpisiotomyFld ->
+                            -- Clear the degree field if this and laceration are unchecked.
+                            if value == False then
+                                if model.s2Laceration == Nothing || model.s2Laceration == Just False then
+                                    { model
+                                        | s2Episiotomy = Just value
+                                        , s2Degree = Nothing
+                                    }
+                                else
+                                    { model | s2Episiotomy = Just value }
+                            else
+                                { model | s2Episiotomy = Just value }
+
+                        Stage2RepairFld ->
+                            -- Clear the degree and repaired by fields if this is unchecked.
+                            if value == False then
+                                { model
+                                    | s2Repair = Just value
+                                    , s2Degree = Nothing
+                                    , s2LacerationRepairedBy = Nothing
+                                }
+                            else
+                                { model | s2Repair = Just value }
+
+                        Stage3PlacentaDeliverySpontaneousFld ->
+                            { model | s3PlacentaDeliverySpontaneous = Just value }
+
+                        Stage3PlacentaDeliveryAMTSLFld ->
+                            { model | s3PlacentaDeliveryAMTSL = Just value }
+
+                        Stage3PlacentaDeliveryCCTFld ->
+                            { model | s3PlacentaDeliveryCCT = Just value }
+
+                        Stage3PlacentaDeliveryManualFld ->
+                            { model | s3PlacentaDeliveryManual = Just value }
+
+                        Stage3PlacentaMembranesCompleteFld ->
+                            { model | s3PlacentaMembranesComplete = Just value }
+
+                        _ ->
+                            let
+                                _ =
+                                    Debug.log "LaborDelIpp.update FldChgSubMsg"
+                                        "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
+                            in
+                                model
+                    , Cmd.none
+                    , Cmd.none
+                    )
 
         NextPregHeaderContent ->
             let
@@ -2272,19 +2839,19 @@ update session msg model =
                                     { model
                                         | s2BirthType = U.maybeOr rec.birthType model.s2BirthType
                                         , s2BirthPosition = U.maybeOr rec.birthPosition model.s2BirthPosition
-                                        , s2DurationPushing =  U.maybeOr (Maybe.map toString rec.durationPushing) model.s2DurationPushing
+                                        , s2DurationPushing = U.maybeOr (Maybe.map toString rec.durationPushing) model.s2DurationPushing
                                         , s2BirthPresentation = U.maybeOr rec.birthPresentation model.s2BirthPresentation
                                         , s2CordWrap = U.maybeOr rec.cordWrap model.s2CordWrap
                                         , s2CordWrapType = U.maybeOr rec.cordWrapType model.s2CordWrapType
                                         , s2DeliveryType = U.maybeOr rec.deliveryType model.s2DeliveryType
                                         , s2ShoulderDystocia = U.maybeOr rec.shoulderDystocia model.s2ShoulderDystocia
-                                        , s2ShoulderDystociaMinutes =  U.maybeOr (Maybe.map toString rec.shoulderDystociaMinutes) model.s2ShoulderDystociaMinutes
+                                        , s2ShoulderDystociaMinutes = U.maybeOr (Maybe.map toString rec.shoulderDystociaMinutes) model.s2ShoulderDystociaMinutes
                                         , s2Laceration = U.maybeOr rec.laceration model.s2Laceration
                                         , s2Episiotomy = U.maybeOr rec.episiotomy model.s2Episiotomy
                                         , s2Repair = U.maybeOr rec.repair model.s2Repair
                                         , s2Degree = U.maybeOr rec.degree model.s2Degree
                                         , s2LacerationRepairedBy = U.maybeOr rec.lacerationRepairedBy model.s2LacerationRepairedBy
-                                        , s2BirthEBL =  U.maybeOr (Maybe.map toString rec.birthEBL) model.s2BirthEBL
+                                        , s2BirthEBL = U.maybeOr (Maybe.map toString rec.birthEBL) model.s2BirthEBL
                                         , s2Meconium = U.maybeOr rec.meconium model.s2Meconium
                                         , s2Comments = U.maybeOr rec.comments model.s2Comments
                                     }
@@ -2404,34 +2971,255 @@ update session msg model =
             -- completion. We default to the current date/time for convenience if
             -- this is an open event, but only if the date/time has not already
             -- been previously selected.
-            let
-                ( s3d, s3t ) =
-                    case model.stage3DateTimeModal == NoDateTimeModal of
-                        True ->
-                            case ( model.stage3Date, model.stage3Time ) of
-                                ( Nothing, Nothing ) ->
-                                    ( Just <| Date.fromTime model.currTime
-                                    , Just <| U.timeToTimeString model.currTime
-                                    )
+            case dialogState of
+                OpenDialog ->
+                    ( case ( model.stage3Date, model.stage3Time ) of
+                        ( Nothing, Nothing ) ->
+                            -- If not yet set, the set the date/time to
+                            -- current as a convenience to user.
+                            { model
+                                | stage3DateTimeModal = Stage3DateTimeModal
+                                , stage3Date = Just <| Date.fromTime model.currTime
+                                , stage3Time = Just <| U.timeToTimeString model.currTime
+                            }
 
-                                ( _, _ ) ->
-                                    ( model.stage3Date, model.stage3Time )
+                        ( _, _ ) ->
+                            { model | stage3DateTimeModal = Stage3DateTimeModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
 
-                        False ->
-                            ( model.stage3Date, model.stage3Time )
-            in
-                ( { model
-                    | stage3DateTimeModal =
-                        if model.stage3DateTimeModal == NoDateTimeModal then
-                            Stage3DateTimeModal
-                        else
-                            NoDateTimeModal
-                    , stage3Date = s3d
-                    , stage3Time = s3t
-                  }
-                , Cmd.none
-                , Cmd.none
-                )
+                CloseNoSaveDialog ->
+                    ( { model | stage3DateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+
+                EditDialog ->
+                    -- This dialog option is not used for stage 3 date time.
+                    ( model, Cmd.none, Cmd.none )
+
+                CloseSaveDialog ->
+                    -- Close and potentially send initial LaborStage3Record
+                    -- to server as an add or update if it validates. An add will
+                    -- send a LaborStage3RecordNew and an update uses the full
+                    -- LaborStage3Record. The initial add is only sent if
+                    -- both date and time are valid.
+                    case validateStage3New model of
+                        [] ->
+                            let
+                                outerMsg =
+                                    case ( model.laborStage3Record, model.stage3Date, model.stage3Time ) of
+                                        -- A laborStage3 record already exists, so update it.
+                                        ( Just rec, Just d, Just t ) ->
+                                            case U.stringToTimeTuple t of
+                                                Just ( h, m ) ->
+                                                    let
+                                                        newRec =
+                                                            { rec | placentaDatetime = Just (U.datePlusTimeTuple d ( h, m )) }
+                                                    in
+                                                        ProcessTypeMsg
+                                                            (UpdateLaborStage3Type
+                                                                (LaborDelIppMsg
+                                                                    (DataCache Nothing (Just [ LaborStage3 ]))
+                                                                )
+                                                                newRec
+                                                            )
+                                                            ChgMsgType
+                                                            (laborStage3RecordToValue newRec)
+
+                                                Nothing ->
+                                                    Noop
+
+                                        ( Just rec, Nothing, Nothing ) ->
+                                            -- User unset the placentaDatetime, so update the server.
+                                            let
+                                                newRec =
+                                                    { rec | placentaDatetime = Nothing }
+                                            in
+                                                ProcessTypeMsg
+                                                    (UpdateLaborStage3Type
+                                                        (LaborDelIppMsg
+                                                            (DataCache Nothing (Just [ LaborStage3 ]))
+                                                        )
+                                                        newRec
+                                                    )
+                                                    ChgMsgType
+                                                    (laborStage3RecordToValue newRec)
+
+                                        ( Nothing, Just _, Just _ ) ->
+                                            -- Create a new laborStage3 record.
+                                            case deriveLaborStage3RecordNew model of
+                                                Just laborStage3RecNew ->
+                                                    ProcessTypeMsg
+                                                        (AddLaborStage3Type
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ LaborStage3 ]))
+                                                            )
+                                                            laborStage3RecNew
+                                                        )
+                                                        AddMsgType
+                                                        (laborStage3RecordNewToValue laborStage3RecNew)
+
+                                                Nothing ->
+                                                    Noop
+
+                                        ( _, _, _ ) ->
+                                            Noop
+                            in
+                                ( { model
+                                    | stage3DateTimeModal = NoDateTimeModal
+                                  }
+                                , Cmd.none
+                                , Task.perform (always outerMsg) (Task.succeed True)
+                                )
+
+                        errors ->
+                            -- TODO: show errors to user somehow???
+                            ( { model | stage3DateTimeModal = NoDateTimeModal }
+                            , Cmd.none
+                            , logConsole <| toString errors
+                            )
+
+        HandleStage3SummaryModal dialogState ->
+            case dialogState of
+                -- If there already is a laborStage3Record, then populate the form
+                -- fields with the contents of that record. But since it is possible
+                -- that the laborStage3Record may only have minimal content, allow
+                -- form fields in model to be used as alternatives.
+                OpenDialog ->
+                    let
+                        newModel =
+                            case model.laborStage3Record of
+                                Just rec ->
+                                    { model
+                                        | s3PlacentaDeliverySpontaneous = U.maybeOr rec.placentaDeliverySpontaneous model.s3PlacentaDeliverySpontaneous
+                                        , s3PlacentaDeliveryAMTSL = U.maybeOr rec.placentaDeliveryAMTSL model.s3PlacentaDeliveryAMTSL
+                                        , s3PlacentaDeliveryCCT = U.maybeOr rec.placentaDeliveryCCT model.s3PlacentaDeliveryCCT
+                                        , s3PlacentaDeliveryManual = U.maybeOr rec.placentaDeliveryManual model.s3PlacentaDeliveryManual
+                                        , s3MaternalPosition = U.maybeOr rec.maternalPosition model.s3MaternalPosition
+                                        , s3TxBloodLoss1 = U.maybeOr rec.txBloodLoss1 model.s3TxBloodLoss1
+                                        , s3TxBloodLoss2 = U.maybeOr rec.txBloodLoss2 model.s3TxBloodLoss2
+                                        , s3TxBloodLoss3 = U.maybeOr rec.txBloodLoss3 model.s3TxBloodLoss3
+                                        , s3TxBloodLoss4 = U.maybeOr rec.txBloodLoss4 model.s3TxBloodLoss4
+                                        , s3TxBloodLoss5 = U.maybeOr rec.txBloodLoss5 model.s3TxBloodLoss5
+                                        , s3PlacentaShape = U.maybeOr rec.placentaShape model.s3PlacentaShape
+                                        , s3PlacentaInsertion = U.maybeOr rec.placentaInsertion model.s3PlacentaInsertion
+                                        , s3PlacentaNumVessels = U.maybeOr (Maybe.map toString rec.placentaNumVessels) model.s3PlacentaNumVessels
+                                        , s3SchultzDuncan = U.maybeOr (Maybe.map schultzDuncan2String rec.schultzDuncan) model.s3SchultzDuncan
+                                        , s3PlacentaMembranesComplete = U.maybeOr rec.placentaMembranesComplete model.s3PlacentaMembranesComplete
+                                        , s3PlacentaOther = U.maybeOr rec.placentaOther model.s3PlacentaOther
+                                        , s3Comments = U.maybeOr rec.comments model.s3Comments
+                                    }
+
+                                Nothing ->
+                                    model
+                    in
+                        -- We set the modal to View but it will show the edit screen
+                        -- if there are fields not complete.
+                        --
+                        -- The if below allows the summary button to toggle on/off the form.
+                        ( { newModel
+                            | stage3SummaryModal =
+                                if newModel.stage3SummaryModal == NoStageSummaryModal then
+                                    Stage3SummaryViewModal
+                                else
+                                    NoStageSummaryModal
+                          }
+                        , Cmd.none
+                        , Cmd.none
+                        )
+
+                CloseNoSaveDialog ->
+                    -- We keep whatever, if anything, the user entered into the
+                    -- form fields.
+                    ( { model | stage3SummaryModal = NoStageSummaryModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                EditDialog ->
+                    -- Transitioning from a viewing summary state to editing again by
+                    -- explicitly setting the mode to edit. This is different that
+                    -- Stage3SummaryViewModal in that we are forcing edit here.
+                    ( { model | stage3SummaryModal = Stage3SummaryEditModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    -- We save to the database if the form fields validate.
+                    case validateStage3 model of
+                        [] ->
+                            let
+                                outerMsg =
+                                    case model.laborStage3Record of
+                                        Just s3Rec ->
+                                            -- A Stage 2 record already exists, so update it.
+                                            let
+                                                newRec =
+                                                    { s3Rec
+                                                        | placentaDeliverySpontaneous = model.s3PlacentaDeliverySpontaneous
+                                                        , placentaDeliveryAMTSL = model.s3PlacentaDeliveryAMTSL
+                                                        , placentaDeliveryCCT = model.s3PlacentaDeliveryCCT
+                                                        , placentaDeliveryManual = model.s3PlacentaDeliveryManual
+                                                        , maternalPosition = model.s3MaternalPosition
+                                                        , txBloodLoss1 = model.s3TxBloodLoss1
+                                                        , txBloodLoss2 = model.s3TxBloodLoss2
+                                                        , txBloodLoss3 = model.s3TxBloodLoss3
+                                                        , txBloodLoss4 = model.s3TxBloodLoss4
+                                                        , txBloodLoss5 = model.s3TxBloodLoss5
+                                                        , placentaShape = model.s3PlacentaShape
+                                                        , placentaInsertion = model.s3PlacentaInsertion
+                                                        , placentaNumVessels = U.maybeStringToMaybeInt model.s3PlacentaNumVessels
+                                                        , schultzDuncan = string2SchultzDuncan (Maybe.withDefault "" model.s3SchultzDuncan)
+                                                        , placentaMembranesComplete = model.s3PlacentaMembranesComplete
+                                                        , placentaOther = model.s3PlacentaOther
+                                                        , comments = model.s3Comments
+                                                    }
+                                            in
+                                                ProcessTypeMsg
+                                                    (UpdateLaborStage3Type
+                                                        (LaborDelIppMsg
+                                                            (DataCache Nothing (Just [ LaborStage3 ]))
+                                                        )
+                                                        newRec
+                                                    )
+                                                    ChgMsgType
+                                                    (laborStage3RecordToValue newRec)
+
+                                        Nothing ->
+                                            -- Need to create a new stage 3 record for the server.
+                                            case deriveLaborStage3RecordNew model of
+                                                Just laborStage3RecNew ->
+                                                    ProcessTypeMsg
+                                                        (AddLaborStage3Type
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ LaborStage3 ]))
+                                                            )
+                                                            laborStage3RecNew
+                                                        )
+                                                        AddMsgType
+                                                        (laborStage3RecordNewToValue laborStage3RecNew)
+
+                                                Nothing ->
+                                                    LogConsole "deriveLaborStage3RecordNew returned a Nothing"
+                            in
+                                ( { model | stage3SummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , Task.perform (always outerMsg) (Task.succeed True)
+                                )
+
+                        errors ->
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                            in
+                                ( { model | stage3SummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , toastError msgs 10
+                                )
 
         ClearStage1DateTime ->
             ( { model
@@ -2541,6 +3329,49 @@ deriveLaborStage2RecordNew model =
             Nothing
 
 
+deriveLaborStage3RecordNew : Model -> Maybe LaborStage3RecordNew
+deriveLaborStage3RecordNew model =
+    case model.laborState of
+        AdmittedLaborState (LaborId id) ->
+            let
+                placentaDatetime =
+                    case ( model.stage3Date, model.stage3Time ) of
+                        ( Just d, Just t ) ->
+                            case U.stringToTimeTuple t of
+                                Just tt ->
+                                    Just <| U.datePlusTimeTuple d tt
+
+                                Nothing ->
+                                    Nothing
+
+                        ( _, _ ) ->
+                            Nothing
+            in
+                LaborStage3RecordNew placentaDatetime
+                    model.s3PlacentaDeliverySpontaneous
+                    model.s3PlacentaDeliveryAMTSL
+                    model.s3PlacentaDeliveryCCT
+                    model.s3PlacentaDeliveryManual
+                    model.s3MaternalPosition
+                    model.s3TxBloodLoss1
+                    model.s3TxBloodLoss2
+                    model.s3TxBloodLoss3
+                    model.s3TxBloodLoss4
+                    model.s3TxBloodLoss5
+                    model.s3PlacentaShape
+                    model.s3PlacentaInsertion
+                    (U.maybeStringToMaybeInt model.s3PlacentaNumVessels)
+                    (string2SchultzDuncan (Maybe.withDefault "" model.s3SchultzDuncan))
+                    model.s3PlacentaMembranesComplete
+                    model.s3PlacentaOther
+                    model.s3Comments
+                    id
+                    |> Just
+
+        _ ->
+            Nothing
+
+
 {-| Derive a LaborRecordNew from the form fields, if possible.
 -}
 deriveLaborRecordNew : Model -> Maybe LaborRecordNew
@@ -2589,7 +3420,7 @@ deriveLaborRecordNew model =
 
 
 
--- VALIDATION --
+-- VALIDATION of the LaborDelIpp Model form fields, not the records sent to the server. --
 
 
 type alias FieldError =
@@ -2635,6 +3466,13 @@ validateStage2New : Model -> List FieldError
 validateStage2New =
     Validate.all
         [ .stage2Time >> ifInvalid U.validateJustTime (Stage2TimeFld => "Time must be provided in hh:mm format.")
+        ]
+
+
+validateStage3New : Model -> List FieldError
+validateStage3New =
+    Validate.all
+        [ .stage3Time >> ifInvalid U.validateJustTime (Stage3TimeFld => "Time must be provided in hh:mm format.")
         ]
 
 
@@ -2687,4 +3525,33 @@ validateStage2 =
           )
         , .s2BirthEBL >> ifInvalid U.validateInt (Stage2BirthEBLFld => "Estimated blood loss at birth must be provided.")
         , .s2Meconium >> ifInvalid U.validatePopulatedString (Stage2MeconiumFld => "Meconium must be provided.")
+        ]
+
+
+validateStage3 : Model -> List FieldError
+validateStage3 =
+    Validate.all
+        [ (\mdl ->
+            -- All four bools are not Nothing and not all False.
+            if
+                ( U.validateBool mdl.s3PlacentaDeliverySpontaneous
+                    && U.validateBool mdl.s3PlacentaDeliveryAMTSL
+                    && U.validateBool mdl.s3PlacentaDeliveryCCT
+                    && U.validateBool mdl.s3PlacentaDeliveryManual
+                ) ||
+                    ( (not <| Maybe.withDefault False mdl.s3PlacentaDeliverySpontaneous)
+                        && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryAMTSL)
+                        && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryCCT)
+                        && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryManual)
+                    )
+            then
+                [ (Stage3PlacentaDeliverySpontaneousFld => "You must check one of the placenta delivery types.") ]
+            else
+                []
+          )
+        , .s3MaternalPosition >> ifInvalid U.validatePopulatedString (Stage3MaternalPositionFld => "Maternal position must be provided.")
+        , .s3PlacentaShape >> ifInvalid U.validatePopulatedString (Stage3PlacentaShapeFld => "Placenta shape must be provided.")
+        , .s3PlacentaInsertion >> ifInvalid U.validatePopulatedString (Stage3PlacentaInsertionFld => "Placenta insertion must be provided.")
+        , .s3PlacentaNumVessels >> ifInvalid U.validateInt (Stage3PlacentaNumVesselsFld => "Number of vessels must be provided.")
+        , .s3SchultzDuncan >> ifInvalid U.validatePopulatedString (Stage3SchultzDuncanFld => "Schultz or Duncan presentation must be provided.")
         ]

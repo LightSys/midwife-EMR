@@ -33,6 +33,7 @@ module Util
         , stringToTimeString
         , stringToTimeTuple
         , timeToTimeString
+        , validateBool
         , validateDate
         , validateFloat
         , validateJustTime
@@ -167,6 +168,18 @@ maybeOr ma mb =
 
         Just _ ->
             ma
+
+
+{-| Returns True if the Bool is Nothing.
+-}
+validateBool : Maybe Bool -> Bool
+validateBool bool =
+    case bool of
+        Just b ->
+            False
+
+        Nothing ->
+            True
 
 {-| Returns True if the String is Nothing or
 does not have length.

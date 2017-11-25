@@ -1,4 +1,10 @@
-module Data.LaborDelIpp exposing (Dialog(..), Field(..), FieldBool(..), SubMsg(..))
+module Data.LaborDelIpp
+    exposing
+        ( Dialog(..)
+        , Field(..)
+        , FldChgValue(..)
+        , SubMsg(..)
+        )
 
 import Dict exposing (Dict)
 import Time exposing (Time)
@@ -32,14 +38,14 @@ type SubMsg
     | DateFieldSubMsg DateFieldMessage
       -- This is for all fields other than those requiring the
       -- datepicker above.
-    | FldChgSubMsg Field String
-    | FldChgBoolSubMsg FieldBool Bool
+    | FldChgSubMsg Field FldChgValue
     | NextPregHeaderContent
     | HandleStage1DateTimeModal Dialog
     | HandleStage1SummaryModal Dialog
     | HandleStage2DateTimeModal Dialog
     | HandleStage2SummaryModal Dialog
     | HandleStage3DateTimeModal Dialog
+    | HandleStage3SummaryModal Dialog
     | ClearStage1DateTime
     | ClearStage2DateTime
     | ClearStage3DateTime
@@ -47,19 +53,16 @@ type SubMsg
     | LaborDetailsLoaded
 
 
+type FldChgValue
+    = FldChgString String
+    | FldChgBool Bool
+
 type Dialog
     = OpenDialog
     | CloseNoSaveDialog
     | CloseSaveDialog
     | EditDialog
 
-
-type FieldBool
-    = Stage2CordWrapFld
-    | Stage2ShoulderDystociaFld
-    | Stage2LacerationFld
-    | Stage2EpisiotomyFld
-    | Stage2RepairFld
 
 type Field
     = AdmittanceDateFld
@@ -87,13 +90,35 @@ type Field
     | Stage2BirthPositionFld
     | Stage2DurationPushingFld
     | Stage2BirthPresentationFld
+    | Stage2CordWrapFld
     | Stage2CordWrapTypeFld
     | Stage2DeliveryTypeFld
+    | Stage2ShoulderDystociaFld
     | Stage2ShoulderDystociaMinutesFld
     | Stage2DegreeFld
+    | Stage2LacerationFld
+    | Stage2EpisiotomyFld
+    | Stage2RepairFld
     | Stage2LacerationRepairedByFld
     | Stage2BirthEBLFld
     | Stage2MeconiumFld
     | Stage2CommentsFld
     | Stage3DateFld
     | Stage3TimeFld
+    | Stage3PlacentaDeliverySpontaneousFld
+    | Stage3PlacentaDeliveryAMTSLFld
+    | Stage3PlacentaDeliveryCCTFld
+    | Stage3PlacentaDeliveryManualFld
+    | Stage3MaternalPositionFld
+    | Stage3TxBloodLoss1Fld
+    | Stage3TxBloodLoss2Fld
+    | Stage3TxBloodLoss3Fld
+    | Stage3TxBloodLoss4Fld
+    | Stage3TxBloodLoss5Fld
+    | Stage3PlacentaShapeFld
+    | Stage3PlacentaInsertionFld
+    | Stage3PlacentaNumVesselsFld
+    | Stage3SchultzDuncanFld
+    | Stage3PlacentaMembranesCompleteFld
+    | Stage3PlacentaOtherFld
+    | Stage3CommentsFld
