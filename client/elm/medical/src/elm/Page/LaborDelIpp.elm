@@ -82,7 +82,11 @@ import Processing exposing (ProcessStore)
 import Time exposing (Time)
 import Util as U exposing ((=>))
 import Views.Form as Form
-import Views.PregnancyHeader as PregHeaderView exposing (PregHeaderContent(..))
+import Views.PregnancyHeader as PregHeaderView
+    exposing
+        ( LaborInfo
+        , PregHeaderContent(..)
+        )
 
 
 -- MODEL --
@@ -438,7 +442,18 @@ view size session model =
         pregHeader =
             case ( model.patientRecord, model.pregnancyRecord ) of
                 ( Just patRec, Just pregRec ) ->
-                    PregHeaderView.view patRec pregRec model.laborRecord model.currPregHeaderContent model.currTime size
+                    let
+                        laborInfo =
+                            LaborInfo model.laborRecord
+                                model.laborStage1Record
+                                model.laborStage2Record
+                                model.laborStage3Record
+                    in
+                        PregHeaderView.view patRec
+                            pregRec
+                            laborInfo
+                            model.currPregHeaderContent
+                            model.currTime size
 
                 ( _, _ ) ->
                     H.text ""

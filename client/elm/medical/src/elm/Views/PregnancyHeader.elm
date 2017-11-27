@@ -1,6 +1,7 @@
 module Views.PregnancyHeader
     exposing
         ( view
+        , LaborInfo
         , PregHeaderContent(..)
         )
 
@@ -10,6 +11,7 @@ import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Encode as JE
+import List.Extra as LE
 import Time exposing (Time)
 import Window
 
@@ -18,6 +20,9 @@ import Window
 
 import Const
 import Data.Labor exposing (LaborRecord)
+import Data.LaborStage1 exposing (LaborStage1Record)
+import Data.LaborStage2 exposing (LaborStage2Record)
+import Data.LaborStage3 exposing (LaborStage3Record)
 import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
@@ -30,26 +35,34 @@ type PregHeaderContent
     | IPPContent
 
 
+type alias LaborInfo =
+    { laborRecord : Maybe (List LaborRecord)
+    , laborStage1Record : Maybe LaborStage1Record
+    , laborStage2Record : Maybe LaborStage2Record
+    , laborStage3Record : Maybe LaborStage3Record
+    }
+
+
 {-| Delegate to the appropriate view.
 -}
 view :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (List LaborRecord)
+    -> LaborInfo
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
     -> Html SubMsg
-view patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+view patRec pregRec ({ laborRecord, laborStage1Record, laborStage2Record, laborStage3Record } as laborInfo) pregHeaderCnt currTime winSize =
     case pregHeaderCnt of
         PrenatalContent ->
-            viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize
+            viewPrenatal patRec pregRec laborRecord pregHeaderCnt currTime winSize
 
         LaborContent ->
-            viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize
+            viewLabor patRec pregRec laborRecord pregHeaderCnt currTime winSize
 
         IPPContent ->
-            viewIPP patRec pregRec laborRecs pregHeaderCnt currTime winSize
+            viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize
 
 
 viewLabor :
@@ -106,13 +119,44 @@ viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
 viewIPP :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (List LaborRecord)
+    -> LaborInfo
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
     -> Html SubMsg
-viewIPP patRec pregRec laborRecs pregHeaderCnt currTime winSize =
-    prenatalLaborIppButton pregHeaderCnt
+viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
+    let
+        ( nickname, edd ) =
+            ( getNickname pregRec, getEdd pregRec )
+
+        partnerName =
+            case ( pregRec.partnerFirstname, pregRec.partnerLastname ) of
+                ( Just first, Just last ) ->
+                    Just <| last ++ ", " ++ first
+
+                ( _, _ ) ->
+                    Nothing
+    in
+        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
+            [ H.input
+                [ HA.type_ "checkbox"
+                , HA.checked True
+                  -- Default accordion to open at start.
+                , HA.id "pregnancy_header_accordion"
+                ]
+                []
+            , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
+                [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
+                , (getGaSpan edd currTime)
+                , prenatalLaborIppButton pregHeaderCnt
+                ]
+            , H.div [ HA.class "c-card__item pregnancy-header" ]
+                [ headerColumnOne patRec pregRec currTime partnerName
+                , ippColumnTwo laborInfo
+                , ippColumnThree laborInfo
+                , ippColumnFour laborInfo
+                ]
+            ]
 
 
 viewPrenatal :
@@ -272,6 +316,154 @@ headerColumnOne patRec pregRec currTime partnerName =
                     ]
               else
                 H.span [] []
+            ]
+
+
+ippColumnTwo : LaborInfo -> Html msg
+ippColumnTwo laborInfo =
+    let
+        stg1 =
+            case laborInfo.laborStage1Record of
+                Just rec ->
+                    case rec.fullDialation of
+                        Just d ->
+                            U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep d
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    ""
+
+        stg2 =
+            case laborInfo.laborStage2Record of
+                Just rec ->
+                    case rec.birthDatetime of
+                        Just d ->
+                            U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep d
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    ""
+
+        stg3 =
+            case laborInfo.laborStage3Record of
+                Just rec ->
+                    case rec.placentaDatetime of
+                        Just d ->
+                            U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep d
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    ""
+    in
+        H.div [ HA.class "pregnancy-header-col" ]
+            [ H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Dltn" "3em"
+                , fieldValue <| Just stg1
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Birth" "3em"
+                , fieldValue <| Just stg2
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Plcnt" "3em"
+                , fieldValue <| Just stg3
+                ]
+            ]
+
+
+ippColumnFour : LaborInfo -> Html msg
+ippColumnFour laborInfo =
+    let
+        ( ebl, mec ) =
+            case laborInfo.laborStage2Record of
+                Just s2Rec ->
+                    ( Maybe.map toString s2Rec.birthEBL
+                        |> Maybe.withDefault ""
+                    , Maybe.withDefault "" s2Rec.meconium
+                    )
+
+                Nothing ->
+                    ( "", "" )
+    in
+        H.div [ HA.class "pregnancy-header-col" ]
+            [ H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "EBL" "3em"
+                , fieldValue <| Just ebl
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "" "3em"
+                , fieldValue <| Just ""
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Mec" "3em"
+                , fieldValue <| Just mec
+                ]
+            ]
+
+
+ippColumnThree : LaborInfo -> Html msg
+ippColumnThree laborInfo =
+    let
+        laborStart =
+            case ( laborInfo.laborRecord, laborInfo.laborStage1Record ) of
+                ( Just recs, Just s1Rec ) ->
+                    case LE.find (\r -> r.id == s1Rec.labor_id) recs of
+                        Just laborRec ->
+                            Just laborRec.startLaborDate
+
+                        Nothing ->
+                            Nothing
+
+                ( _, _ ) ->
+                    Nothing
+
+        ( stg1, stg2, stg3 ) =
+            case
+                ( laborInfo.laborStage1Record
+                , laborInfo.laborStage2Record
+                , laborInfo.laborStage3Record
+                )
+            of
+                ( Just s1Rec, Just s2Rec, Just s3Rec ) ->
+                    ( U.diff2MaybeDatesString laborStart s1Rec.fullDialation
+                    , U.diff2MaybeDatesString s1Rec.fullDialation s2Rec.birthDatetime
+                    , U.diff2MaybeDatesString s2Rec.birthDatetime s3Rec.placentaDatetime
+                    )
+
+                ( Just s1Rec, Just s2Rec, Nothing ) ->
+                    ( U.diff2MaybeDatesString laborStart s1Rec.fullDialation
+                    , U.diff2MaybeDatesString s1Rec.fullDialation s2Rec.birthDatetime
+                    , ""
+                    )
+
+                ( Just s1Rec, Nothing, Nothing ) ->
+                    ( U.diff2MaybeDatesString laborStart s1Rec.fullDialation
+                    , ""
+                    , ""
+                    )
+
+                ( _, _, _ ) ->
+                    ( "", "", "" )
+    in
+        H.div [ HA.class "pregnancy-header-col" ]
+            [ H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Stg 1" "3em"
+                , fieldValue <| Just stg1
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Stg 2" "3em"
+                , fieldValue <| Just stg2
+                ]
+            , H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Stg 3" "3em"
+                , fieldValue <| Just stg3
+                ]
             ]
 
 

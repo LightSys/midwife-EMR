@@ -11,6 +11,7 @@ module Util
         , dateTimeHMFormatter
         , dateToStringValue
         , diff2DatesString
+        , diff2MaybeDatesString
         , filterStringLikeInt
         , filterStringLikeFloat
         , filterStringLikeTime
@@ -457,6 +458,18 @@ removeTimeFromDate d =
         0
         0
 
+{-| Returns the different between two Maybe Dates in
+a human readable format or an empty String if either
+of them are Nothing.
+-}
+diff2MaybeDatesString : Maybe Date -> Maybe Date -> String
+diff2MaybeDatesString date1 date2 =
+    case (date1, date2) of
+        (Just d1, Just d2) ->
+            diff2DatesString d1 d2
+
+        (_, _) ->
+            ""
 
 {-| Return the difference between two dates in a
 human readable format as a String with the difference
