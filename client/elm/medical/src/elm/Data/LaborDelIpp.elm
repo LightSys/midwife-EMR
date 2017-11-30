@@ -46,11 +46,14 @@ type SubMsg
     | HandleStage2SummaryModal Dialog
     | HandleStage3DateTimeModal Dialog
     | HandleStage3SummaryModal Dialog
+    | HandleFalseLaborDateTimeModal Dialog
     | ClearStage1DateTime
     | ClearStage2DateTime
     | ClearStage3DateTime
+    | ClearFalseLaborDateTime
     | TickSubMsg Time
     | LaborDetailsLoaded
+    | ViewLaborRecord LaborId
 
 
 type FldChgValue
@@ -122,3 +125,5 @@ type Field
     | Stage3PlacentaMembranesCompleteFld
     | Stage3PlacentaOtherFld
     | Stage3CommentsFld
+    | FalseLaborDateFld
+    | FalseLaborTimeFld

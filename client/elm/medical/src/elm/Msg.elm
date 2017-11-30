@@ -94,6 +94,7 @@ type ProcessType
     | AddLaborStage1Type Msg LaborStage1RecordNew
     | AddLaborStage2Type Msg LaborStage2RecordNew
     | AddLaborStage3Type Msg LaborStage3RecordNew
+    | UpdateLaborType Msg LaborRecord
     | UpdateLaborStage1Type Msg LaborStage1Record
     | UpdateLaborStage2Type Msg LaborStage2Record
     | UpdateLaborStage3Type Msg LaborStage3Record

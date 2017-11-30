@@ -37,7 +37,7 @@ var _ = require('underscore')
 // Note that every table needs to be listed even if there 
 // are no date fields present in the table.
 // --------------------------------------------------------
-moduleTables.labor = ['admittanceDate', 'startLaborDate'];
+moduleTables.labor = ['admittanceDate', 'startLaborDate', 'endLaborDate'];
 moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
 moduleTables.laborStage3 = ['placentaDatetime'];
@@ -181,6 +181,11 @@ var addLabor = function(data, userInfo, cb) {
   addTable(data, userInfo, cb, Labor, 'labor');
 };
 
+var updateLabor = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateLabor(data, cb);
+  updateTable(data, userInfo, cb, Labor, 'labor');
+};
+
 var addLaborStage1 = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addLaborStage1(data, cb);
   addTable(data, userInfo, cb, LaborStage1, 'laborStage1');
@@ -223,7 +228,7 @@ var notDefinedYet = function(data, userInfo, cb) {
 module.exports = {
   addLabor,
   delLabor: notDefinedYet,
-  updateLabor: notDefinedYet,
+  updateLabor,
   addLaborStage1,
   delLaborStage1: notDefinedYet,
   updateLaborStage1: updateLaborStage1,

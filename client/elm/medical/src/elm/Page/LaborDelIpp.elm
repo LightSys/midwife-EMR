@@ -33,6 +33,7 @@ import Data.Labor
         , LaborRecordNew
         , laborRecordNewToValue
         , laborRecordNewToLaborRecord
+        , laborRecordToValue
         )
 import Data.LaborStage1
     exposing
@@ -93,10 +94,13 @@ import Views.PregnancyHeader as PregHeaderView
 
 
 type LaborState
-    = NotStartedLaborState
+    = NotSelectedLaborState
     | AdmittingLaborState
-    | AdmittedLaborState LaborId
-    | EndedLaborState LaborId
+    | LaboringLaborState LaborId
+    | ViewingFalseLaborState LaborId
+    | IPPLaborState LaborId
+    | ContPostpartumLaborState LaborId
+    | PostpartumLaborState LaborId
 
 
 type DateTimeModal
@@ -104,6 +108,7 @@ type DateTimeModal
     | Stage1DateTimeModal
     | Stage2DateTimeModal
     | Stage3DateTimeModal
+    | FalseLaborDateTimeModal
 
 
 type StageSummaryModal
@@ -121,11 +126,12 @@ type alias Model =
     { browserSupportsDate : Bool
     , currTime : Time
     , pregnancy_id : PregnancyId
+    , currLaborId : Maybe LaborId
     , currPregHeaderContent : PregHeaderContent
     , dataCache : Dict String DataCache
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
-    , laborRecord : Maybe (List LaborRecord)
+    , laborRecord : Maybe (Dict Int LaborRecord)
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
@@ -193,10 +199,21 @@ type alias Model =
     , s3PlacentaMembranesComplete : Maybe Bool
     , s3PlacentaOther : Maybe String
     , s3Comments : Maybe String
+    , falseLaborDateTimeModal : DateTimeModal
+    , falseLaborDate : Maybe Date
+    , falseLaborTime : Maybe String
     }
 
 
-buildModel : Bool -> Time -> ProcessStore -> PregnancyId -> Maybe PatientRecord -> Maybe PregnancyRecord -> Maybe (List LaborRecord) -> ( Model, ProcessStore, Cmd Msg )
+buildModel :
+    Bool
+    -> Time
+    -> ProcessStore
+    -> PregnancyId
+    -> Maybe PatientRecord
+    -> Maybe PregnancyRecord
+    -> Maybe (Dict Int LaborRecord)
+    -> ( Model, ProcessStore, Cmd Msg )
 buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
     let
         -- Sort by the admittanceDate, descending.
@@ -209,44 +226,56 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             case laborRecs of
                 Just recs ->
                     case
-                        List.sortWith admitSort recs
+                        List.sortWith admitSort (Dict.values recs)
                             |> List.head
                     of
                         Just rec ->
+                            -- TODO: refactor this to work when there are multiple labors
+                            -- and to correctly ascertain the LaborId.
                             if rec.endLaborDate == Nothing then
-                                ( AdmittedLaborState (LaborId rec.id)
+                                ( LaboringLaborState (LaborId rec.id)
                                 , getLaborDetails (LaborId rec.id) store
                                 )
                             else if rec.falseLabor then
-                                ( NotStartedLaborState, ( store, Cmd.none ) )
+                                ( NotSelectedLaborState, ( store, Cmd.none ) )
                             else
-                                ( EndedLaborState (LaborId rec.id)
+                                ( ViewingFalseLaborState (LaborId rec.id)
                                 , getLaborDetails (LaborId rec.id) store
                                 )
 
                         Nothing ->
-                            ( NotStartedLaborState, ( store, Cmd.none ) )
+                            ( NotSelectedLaborState, ( store, Cmd.none ) )
 
                 Nothing ->
-                    ( NotStartedLaborState, ( store, Cmd.none ) )
+                    ( NotSelectedLaborState, ( store, Cmd.none ) )
 
-        pregHeaderContent =
+        ( pregHeaderContent, laborId ) =
             case laborState of
-                NotStartedLaborState ->
-                    PrenatalContent
+                NotSelectedLaborState ->
+                    ( PrenatalContent, Nothing )
 
                 AdmittingLaborState ->
-                    PrenatalContent
+                    ( PrenatalContent, Nothing )
 
-                AdmittedLaborState id ->
-                    LaborContent
+                LaboringLaborState id ->
+                    ( LaborContent, Just id )
 
-                EndedLaborState id ->
-                    IPPContent
+                ViewingFalseLaborState id ->
+                    ( IPPContent, Just id )
+
+                IPPLaborState id ->
+                    ( IPPContent, Just id )
+
+                ContPostpartumLaborState id ->
+                    ( IPPContent, Just id )
+
+                PostpartumLaborState id ->
+                    ( IPPContent, Just id )
     in
         ( Model browserSupportsDate
             currTime
             pregId
+            laborId
             pregHeaderContent
             Dict.empty
             patrec
@@ -317,6 +346,9 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             Nothing
             Nothing
             Nothing
+            Nothing
+            Nothing
+            NoDateTimeModal
             Nothing
             Nothing
         , newStore
@@ -453,14 +485,15 @@ view size session model =
                             pregRec
                             laborInfo
                             model.currPregHeaderContent
-                            model.currTime size
+                            model.currTime
+                            size
 
                 ( _, _ ) ->
                     H.text ""
 
         views =
             case model.laborState of
-                NotStartedLaborState ->
+                NotSelectedLaborState ->
                     [ viewAdmitButton
                     , viewLaborRecords model
                     ]
@@ -468,20 +501,36 @@ view size session model =
                 AdmittingLaborState ->
                     [ viewAdmitForm model ]
 
-                AdmittedLaborState id ->
-                    -- TODO: Show labor details as well as means to end labor.
+                LaboringLaborState id ->
                     [ viewLaborDetails model
                     , dialogStage1Summary dialogStage1Config
                     , dialogStage2Summary dialogStage2Config
                     , dialogStage3Summary dialogStage3Config
-                    , viewDetailsTableTEMP model
+                      --, viewDetailsTableTEMP model
+                    , viewDetailsNotImplemented model
                     ]
 
-                EndedLaborState id ->
-                    -- We allow a new labor and any past labors.
-                    [ viewAdmitButton
-                    , viewLaborRecords model
+                ViewingFalseLaborState id ->
+                    -- Viewing a closed labor.
+                    [ viewLaborDetails model
+                    , dialogStage1Summary dialogStage1Config
+                    , dialogStage2Summary dialogStage2Config
+                    , dialogStage3Summary dialogStage3Config
+                      --, viewDetailsTableTEMP model
+                    , viewDetailsNotImplemented model
                     ]
+
+                IPPLaborState id ->
+                    [ H.div [] [ H.text "IPPLaborState" ] ]
+
+                ContPostpartumLaborState id ->
+                    [ H.div [] [ H.text "ContPostpartumLaborState" ] ]
+
+                PostpartumLaborState id ->
+                    [ H.div [] [ H.text "PostpartumLaborState" ] ]
+
+        _ =
+            Debug.log "LaborDelIpp.view model.laborState" <| toString model.laborState
     in
         H.div []
             [ pregHeader
@@ -627,6 +676,13 @@ viewLaborDetails model =
             ]
         , viewStages model
         ]
+
+
+viewDetailsNotImplemented : Model -> Html SubMsg
+viewDetailsNotImplemented model =
+    H.h3
+        []
+        [ H.text "Use paper for labor details" ]
 
 
 {-| This is a placeholder for now in order to get a better idea of what the
@@ -960,6 +1016,61 @@ viewStages model =
                     ]
                 ]
             ]
+        , H.div [ HA.class "stage-content" ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "False Labor" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleFalseLaborDateTimeModal OpenDialog
+                        ]
+                        [ H.text <|
+                            case ( model.laborRecord, model.currLaborId ) of
+                                ( Just recs, Just lid ) ->
+                                    case Dict.get (getLaborId lid) recs of
+                                        Just rec ->
+                                            case ( rec.falseLabor, rec.endLaborDate ) of
+                                                ( True, Just d ) ->
+                                                    U.dateTimeHMFormatter
+                                                        U.MDYDateFmt
+                                                        U.DashDateSep
+                                                        d
+
+                                                ( _, _ ) ->
+                                                    "Click to set"
+
+                                        Nothing ->
+                                            "Click to set"
+
+                                ( _, _ ) ->
+                                    -- TODO: handle this path better.
+                                    "Click to set"
+                        ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
+                            "Stage 3 Date/Time"
+                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
+                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
+                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
+                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                            ClearFalseLaborDateTime
+                            model.falseLaborDate
+                            model.falseLaborTime
+                      else
+                        Form.dateTimePickerModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
+                            "Stage 3 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
+                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
+                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
+                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                            ClearFalseLaborDateTime
+                            model.falseLaborDate
+                            model.falseLaborTime
+                    ]
+                ]
+            ]
         ]
 
 
@@ -1006,7 +1117,7 @@ dialogStage1SummaryEdit cfg =
                         Just fd ->
                             case cfg.model.laborRecord of
                                 Just lrecs ->
-                                    case LE.find (\r -> r.id == rec.labor_id) lrecs of
+                                    case Dict.get rec.labor_id lrecs of
                                         Just laborRec ->
                                             U.diff2DatesString laborRec.startLaborDate fd
 
@@ -1107,7 +1218,7 @@ dialogStage1SummaryView cfg =
                         Just fd ->
                             case cfg.model.laborRecord of
                                 Just lrecs ->
-                                    case LE.find (\r -> r.id == rec.labor_id) lrecs of
+                                    case Dict.get rec.labor_id lrecs of
                                         Just laborRec ->
                                             U.diff2DatesString laborRec.startLaborDate fd
 
@@ -1745,11 +1856,11 @@ dialogStage3SummaryView cfg =
                             [ H.text treatment ]
                         ]
                     , H.div [ HA.class "mw-form-field-2x" ]
-                            [ H.span [ HA.class "c-text--loud" ]
-                                [ H.text "Placenta shape: " ]
-                            , H.span [ HA.class "" ]
-                                [ H.text shape ]
-                            ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Placenta shape: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text shape ]
+                        ]
                     , H.div [ HA.class "mw-form-field-2x" ]
                         [ H.span [ HA.class "c-text--loud" ]
                             [ H.text "Plancenta insertion: " ]
@@ -1819,7 +1930,7 @@ dialogStage3SummaryEdit cfg =
             ]
 
         deliveryErrorStr =
-            List.filter (\(f, s) -> List.member f deliveryFlds) errors
+            List.filter (\( f, s ) -> List.member f deliveryFlds) errors
                 |> List.map Tuple.second
                 |> String.join ", "
     in
@@ -1854,7 +1965,8 @@ dialogStage3SummaryEdit cfg =
                             (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryManualFld)
                             cfg.model.s3PlacentaDeliveryManual
                         , if String.length deliveryErrorStr > 0 then
-                            H.div [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                            H.div
+                                [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
                                 , HA.style
                                     [ ( "padding", "0.25em 0.25em" )
                                     , ( "margin", "0.75em 0 1.25em 0" )
@@ -1968,7 +2080,8 @@ dialogStage3SummaryEdit cfg =
 
 
 {-| Show current admitting labor record and any historical
-"false" labor records.
+"false" labor records. Allow user to click on a historical
+record to view it, etc.
 -}
 viewLaborRecords : Model -> Html SubMsg
 viewLaborRecords model =
@@ -1977,7 +2090,10 @@ viewLaborRecords model =
             U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep date
 
         makeRow rec =
-            H.tr [ HA.class "c-table__row c-table__row--clickable" ]
+            H.tr
+                [ HA.class "c-table__row c-table__row--clickable"
+                , HE.onClick <| ViewLaborRecord (LaborId rec.id)
+                ]
                 [ H.td [ HA.class "c-table__cell" ]
                     [ H.text <| showDate rec.startLaborDate ]
                 , H.td [ HA.class "c-table__cell" ]
@@ -1995,7 +2111,7 @@ viewLaborRecords model =
     in
         case model.laborRecord of
             Just laborRecs ->
-                if List.length laborRecs > 0 then
+                if not (Dict.isEmpty laborRecs) then
                     H.div []
                         [ H.h2 [ HA.class "c-heading" ]
                             [ H.text "Admitting Details" ]
@@ -2014,7 +2130,7 @@ viewLaborRecords model =
                                 List.map makeRow
                                     (List.sortBy
                                         (\rec -> negate <| Date.toTime rec.admittanceDate)
-                                        laborRecs
+                                        (Dict.values laborRecs)
                                     )
                             ]
                         ]
@@ -2042,6 +2158,14 @@ refreshModelFromCache dc tables model =
             List.foldl
                 (\t m ->
                     case t of
+                        Labor ->
+                            case DataCache.get t dc of
+                                Just (LaborDataCache recs) ->
+                                    { m | laborRecord = Just recs }
+
+                                _ ->
+                                    m
+
                         LaborStage1 ->
                             case DataCache.get t dc of
                                 Just (LaborStage1DataCache rec) ->
@@ -2067,7 +2191,11 @@ refreshModelFromCache dc tables model =
                                     m
 
                         _ ->
-                            m
+                            let
+                                _ =
+                                    Debug.log "LaborDelIpp.refreshModelFromCache: Unhandled Table" <| toString t
+                            in
+                                m
                 )
                 model
                 tables
@@ -2145,8 +2273,11 @@ update session msg model =
                 ( case newLaborRec of
                     Just nlr ->
                         { model
-                            | laborState = AdmittedLaborState (LaborId nlr.id)
-                            , laborRecord = U.addToMaybeList nlr model.laborRecord
+                            | laborState = LaboringLaborState (LaborId nlr.id)
+                            , laborRecord =
+                                Maybe.withDefault Dict.empty model.laborRecord
+                                    |> Dict.insert nlr.id nlr
+                                    |> Just
                             , currPregHeaderContent = LaborContent
                         }
 
@@ -2159,7 +2290,7 @@ update session msg model =
         CancelAdmitForLabor ->
             -- The user canceled the add labor form.
             ( { model
-                | laborState = NotStartedLaborState
+                | laborState = NotSelectedLaborState
                 , admittanceDate = Nothing
                 , admittanceTime = Nothing
                 , laborDate = Nothing
@@ -2393,6 +2524,12 @@ update session msg model =
 
                         Stage3CommentsFld ->
                             { model | s3Comments = Just value }
+
+                        FalseLaborDateFld ->
+                            { model | falseLaborDate = Date.fromString value |> Result.toMaybe }
+
+                        FalseLaborTimeFld ->
+                            { model | falseLaborTime = Just <| U.filterStringLikeTime value }
 
                         _ ->
                             let
@@ -3236,6 +3373,123 @@ update session msg model =
                                 , toastError msgs 10
                                 )
 
+        HandleFalseLaborDateTimeModal dialogState ->
+            -- The user has just opened the modal to set the date/time for a
+            -- false labor. We default to the current date/time for convenience if
+            -- this is an open event, but only if the date/time has not already
+            -- been previously selected.
+            case dialogState of
+                OpenDialog ->
+                    ( case ( model.falseLaborDate, model.falseLaborTime ) of
+                        ( Nothing, Nothing ) ->
+                            -- If not yet set, the set the date/time to
+                            -- current as a convenience to user.
+                            { model
+                                | falseLaborDateTimeModal = FalseLaborDateTimeModal
+                                , falseLaborDate = Just <| Date.fromTime model.currTime
+                                , falseLaborTime = Just <| U.timeToTimeString model.currTime
+                            }
+
+                        ( _, _ ) ->
+                            { model | falseLaborDateTimeModal = FalseLaborDateTimeModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                CloseNoSaveDialog ->
+                    ( { model | falseLaborDateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+
+                EditDialog ->
+                    -- This dialog option is not used for false labor date time.
+                    ( model, Cmd.none, Cmd.none )
+
+                CloseSaveDialog ->
+                    -- Close and send LaborRecord to server as an update.
+                    case ( model.falseLaborDate, model.falseLaborTime, model.currLaborId, model.laborRecord ) of
+                        ( Just d, Just t, Just laborId, Just recs ) ->
+                            -- Setting date/time and setting the labor as a false labor.
+                            case Dict.get (getLaborId laborId) recs of
+                                Just laborRecord ->
+                                    case U.stringToTimeTuple t of
+                                        Just ( h, m ) ->
+                                            let
+                                                newLaborRec =
+                                                    { laborRecord
+                                                        | endLaborDate = Just (U.datePlusTimeTuple d ( h, m ))
+                                                        , falseLabor = True
+                                                    }
+
+                                                outerMsg =
+                                                    ProcessTypeMsg
+                                                        (UpdateLaborType
+                                                            (LaborDelIppMsg
+                                                                (DataCache Nothing (Just [ Labor ]))
+                                                            )
+                                                            newLaborRec
+                                                        )
+                                                        ChgMsgType
+                                                        (laborRecordToValue newLaborRec)
+                                            in
+                                                ( { model
+                                                    | falseLaborDateTimeModal = NoDateTimeModal
+                                                  }
+                                                , Cmd.none
+                                                , Task.perform (always outerMsg) (Task.succeed True)
+                                                )
+
+                                        Nothing ->
+                                            -- Time in the form is not right, so do nothing.
+                                            ( model, Cmd.none, Cmd.none )
+
+                                Nothing ->
+                                    -- Shouldn't get here because there has to be a labor record.
+                                    ( { model
+                                        | falseLaborDateTimeModal = NoDateTimeModal
+                                        , falseLaborDate = Nothing
+                                        , falseLaborTime = Nothing
+                                      }
+                                    , Cmd.none
+                                    , Cmd.none
+                                    )
+
+                        ( _, _, Just laborId, Just recs ) ->
+                            -- Clearing the date/time therefore undoing the false labor
+                            -- and updating the server accordingly.
+                            case Dict.get (getLaborId laborId) recs of
+                                Just laborRecord ->
+                                    let
+                                        newLaborRec =
+                                            { laborRecord
+                                                | endLaborDate = Nothing
+                                                , falseLabor = False
+                                            }
+
+                                        outerMsg =
+                                            ProcessTypeMsg
+                                                (UpdateLaborType
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ Labor ]))
+                                                    )
+                                                    newLaborRec
+                                                )
+                                                ChgMsgType
+                                                (laborRecordToValue newLaborRec)
+                                    in
+                                        ( { model
+                                            | falseLaborDateTimeModal = NoDateTimeModal
+                                          }
+                                        , Cmd.none
+                                        , Task.perform (always outerMsg) (Task.succeed True)
+                                        )
+
+                                Nothing ->
+                                    -- Shouldn't get here because labor record not found.
+                                    ( model, Cmd.none, Cmd.none )
+
+                        ( _, _, _, _ ) ->
+                            -- Shouldn't get here because there has to be a labor record.
+                            ( model, Cmd.none, Cmd.none )
+
         ClearStage1DateTime ->
             ( { model
                 | stage1Date = Nothing
@@ -3263,8 +3517,26 @@ update session msg model =
             , Cmd.none
             )
 
+        ClearFalseLaborDateTime ->
+            ( { model
+                | falseLaborDate = Nothing
+                , falseLaborTime = Nothing
+              }
+            , Cmd.none
+            , Cmd.none
+            )
+
         LaborDetailsLoaded ->
-            ( model, Cmd.none, Cmd.none )
+            ( model, Cmd.none, logConsole "LaborDelIpp.update LaborDetailsLoaded" )
+
+        ViewLaborRecord laborId ->
+            ( { model
+                | currLaborId = Just laborId
+                , laborState = ViewingFalseLaborState laborId
+            }
+            , Cmd.none
+            , Cmd.none
+            )
 
 
 {-| Derive a LaborStage1RecordNew from the form fields, if possible.
@@ -3272,7 +3544,7 @@ update session msg model =
 deriveLaborStage1RecordNew : Model -> Maybe LaborStage1RecordNew
 deriveLaborStage1RecordNew model =
     case model.laborState of
-        AdmittedLaborState (LaborId id) ->
+        LaboringLaborState (LaborId id) ->
             -- We have an admittance record, so we are allowed to have
             -- a stage one record too.
             let
@@ -3304,7 +3576,7 @@ deriveLaborStage1RecordNew model =
 deriveLaborStage2RecordNew : Model -> Maybe LaborStage2RecordNew
 deriveLaborStage2RecordNew model =
     case model.laborState of
-        AdmittedLaborState (LaborId id) ->
+        LaboringLaborState (LaborId id) ->
             let
                 birthDatetime =
                     case ( model.stage2Date, model.stage2Time ) of
@@ -3347,7 +3619,7 @@ deriveLaborStage2RecordNew model =
 deriveLaborStage3RecordNew : Model -> Maybe LaborStage3RecordNew
 deriveLaborStage3RecordNew model =
     case model.laborState of
-        AdmittedLaborState (LaborId id) ->
+        LaboringLaborState (LaborId id) ->
             let
                 placentaDatetime =
                     case ( model.stage3Date, model.stage3Time ) of
@@ -3549,16 +3821,16 @@ validateStage3 =
         [ (\mdl ->
             -- All four bools are not Nothing and not all False.
             if
-                ( U.validateBool mdl.s3PlacentaDeliverySpontaneous
+                (U.validateBool mdl.s3PlacentaDeliverySpontaneous
                     && U.validateBool mdl.s3PlacentaDeliveryAMTSL
                     && U.validateBool mdl.s3PlacentaDeliveryCCT
                     && U.validateBool mdl.s3PlacentaDeliveryManual
-                ) ||
-                    ( (not <| Maybe.withDefault False mdl.s3PlacentaDeliverySpontaneous)
-                        && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryAMTSL)
-                        && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryCCT)
-                        && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryManual)
-                    )
+                )
+                    || ((not <| Maybe.withDefault False mdl.s3PlacentaDeliverySpontaneous)
+                            && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryAMTSL)
+                            && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryCCT)
+                            && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryManual)
+                       )
             then
                 [ (Stage3PlacentaDeliverySpontaneousFld => "You must check one of the placenta delivery types.") ]
             else

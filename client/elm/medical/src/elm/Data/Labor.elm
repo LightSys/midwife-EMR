@@ -7,6 +7,7 @@ module Data.Labor
         , LaborRecordNew
         , laborRecordNewToLaborRecord
         , laborRecordNewToValue
+        , laborRecordToValue
         )
 
 import Date exposing (Date)
@@ -104,6 +105,33 @@ laborRecordNewToValue rec =
           , JE.object
                 [ ( "admittanceDate", (U.dateToStringValue rec.admittanceDate) )
                 , ( "startLaborDate", (U.dateToStringValue rec.startLaborDate) )
+                , ( "pos", (JE.string rec.pos) )
+                , ( "fh", (JE.int rec.fh) )
+                , ( "fht", (JE.int rec.fht) )
+                , ( "systolic", (JE.int rec.systolic) )
+                , ( "diastolic", (JE.int rec.diastolic) )
+                , ( "cr", (JE.int rec.cr) )
+                , ( "temp", (JE.float rec.temp) )
+                , ( "comments", (JEE.maybe JE.string rec.comments) )
+                , ( "pregnancy_id", (JE.int rec.pregnancy_id) )
+                ]
+          )
+        ]
+
+{-| Encode LaborRecord for sending to the server as
+a payload object that is ready to be wrapped with wrapPayload.
+-}
+laborRecordToValue : LaborRecord -> JE.Value
+laborRecordToValue rec =
+    JE.object
+        [ ( "table", (JE.string "labor") )
+        , ( "data"
+          , JE.object
+                [ ( "id", (JE.int rec.id) )
+                , ( "admittanceDate", (U.dateToStringValue rec.admittanceDate) )
+                , ( "startLaborDate", (U.dateToStringValue rec.startLaborDate) )
+                , ( "endLaborDate", (U.maybeDateToValue rec.endLaborDate) )
+                , ( "falseLabor", (U.boolToInt rec.falseLabor |> JE.int) )
                 , ( "pos", (JE.string rec.pos) )
                 , ( "fh", (JE.int rec.fh) )
                 , ( "fht", (JE.int rec.fht) )

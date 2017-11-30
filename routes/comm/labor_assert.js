@@ -21,6 +21,15 @@ var addLabor = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
+var updateLabor = function(data, cb) {
+  var m = msg('labor_assert/updateLabor()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addLaborStage1 = function(data, cb) {
   var m = msg('labor_assert/addLaborStage1()');
   if (verbose) console.log(m());
@@ -91,6 +100,7 @@ var updateLaborStage3 = function(data, cb) {
 
 module.exports = {
   addLabor,
+  updateLabor,
   addLaborStage1,
   updateLaborStage1,
   addLaborStage2,

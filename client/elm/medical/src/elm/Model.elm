@@ -48,7 +48,7 @@ type alias Model =
     , dataCache : Dict String DataCache
     , window : Maybe Window.Size
     , siteMessages : Dict String SiteKeyValue
-    , laborRecord : Maybe (List LaborRecord)
+    , laborRecord : Maybe (Dict Int LaborRecord)
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
     }

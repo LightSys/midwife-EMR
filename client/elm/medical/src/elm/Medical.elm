@@ -1,5 +1,6 @@
 module Medical exposing (..)
 
+import Dict exposing (Dict)
 import Html as H exposing (Html)
 import Json.Decode as JD
 import Json.Decode.Pipeline as Pipeline exposing (decode, optional, required)
@@ -319,7 +320,11 @@ update msg noAutoTouchModel =
 
             ( AddLabor, LaborDelIpp subModel ) ->
                 -- TODO: Is this being used?
-                model => Cmd.none
+                let
+                    _ =
+                        Debug.log "Medical.update ( AddLabor, LaborDelIpp subModel )" "Yes, this is being called but it does nothing yet."
+                in
+                    model => Cmd.none
 
             ( theMsg, thePage ) ->
                 -- We should never get here.
@@ -369,7 +374,8 @@ updateMessage incoming model =
                                             laborRecordNewToLaborRecord
                                                 (LaborId dataAddMsg.response.id)
                                                 laborRecNew
-                                                |> flip U.addToMaybeList model.laborRecord
+                                                |> (\lr -> Dict.insert dataAddMsg.response.id lr (Maybe.withDefault Dict.empty model.laborRecord))
+                                                |> Just
 
                                         subMsg =
                                             AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
@@ -460,6 +466,18 @@ updateMessage incoming model =
                     case dataChgMsg.response.success of
                         True ->
                             case processType of
+                                Just (UpdateLaborType (LaborDelIppMsg (DataCache _ _)) laborRecord) ->
+                                    let
+                                        laborRecs =
+                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecord)
+
+                                        subMsg =
+                                            DataCache (Just model.dataCache) (Just [ Labor ])
+                                    in
+                                        ( { model | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (UpdateLaborStage1Type (LaborDelIppMsg (DataCache _ _)) laborStage1Record) ->
                                     let
                                         subMsg =
@@ -529,7 +547,11 @@ updateMessage incoming model =
                                 (\tr mdl ->
                                     case tr of
                                         TableRecordLabor recs ->
-                                            { mdl | laborRecord = Just recs }
+                                            let
+                                                dictList =
+                                                    List.map (\rec -> (rec.id, rec)) recs
+                                            in
+                                                { mdl | laborRecord = Just <| Dict.fromList dictList }
 
                                         TableRecordLaborStage1 recs ->
                                             -- There should ever be only one stage 1 record
@@ -629,6 +651,9 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (AddLaborStage1Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateLaborType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateLaborStage1Type msg _) ->

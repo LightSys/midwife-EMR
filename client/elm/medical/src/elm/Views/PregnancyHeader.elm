@@ -7,6 +7,7 @@ module Views.PregnancyHeader
 
 import Date exposing (Date)
 import Date.Extra.Duration as DED
+import Dict exposing (Dict)
 import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
@@ -36,7 +37,7 @@ type PregHeaderContent
 
 
 type alias LaborInfo =
-    { laborRecord : Maybe (List LaborRecord)
+    { laborRecord : Maybe (Dict Int LaborRecord)
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
@@ -68,7 +69,7 @@ view patRec pregRec ({ laborRecord, laborStage1Record, laborStage2Record, laborS
 viewLabor :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (List LaborRecord)
+    -> Maybe (Dict Int LaborRecord)
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
@@ -78,10 +79,11 @@ viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
 
+        -- TODO: figure out better way to determine record in use.
         laborRec =
             case laborRecs of
                 Just recs ->
-                    List.reverse recs
+                    List.reverse (Dict.values recs)
                         |> List.head
 
                 Nothing ->
@@ -162,7 +164,7 @@ viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
 viewPrenatal :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (List LaborRecord)
+    -> Maybe (Dict Int LaborRecord)
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
@@ -413,7 +415,7 @@ ippColumnThree laborInfo =
         laborStart =
             case ( laborInfo.laborRecord, laborInfo.laborStage1Record ) of
                 ( Just recs, Just s1Rec ) ->
-                    case LE.find (\r -> r.id == s1Rec.labor_id) recs of
+                    case Dict.get s1Rec.labor_id recs of
                         Just laborRec ->
                             Just laborRec.startLaborDate
 

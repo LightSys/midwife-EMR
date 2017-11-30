@@ -2,6 +2,7 @@ module Util
     exposing
         ( (=>)
         , addToMaybeList
+        , boolToInt
         , calcEdd
         , DateFmt(..)
         , DateSep(..)
@@ -96,6 +97,18 @@ sortDate sortOrder a b =
             False ->
                 LT
 
+
+{-| Simple conversion of a Bool to an Int like the
+database is expecting.
+-}
+boolToInt : Bool -> Int
+boolToInt bool =
+    case bool of
+        True ->
+            1
+
+        False ->
+            0
 
 {-| Convert a String to a Maybe Int if the String can be
 converted to an Int and the Int falls between (exclusive of)
