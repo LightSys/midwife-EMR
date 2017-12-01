@@ -31,7 +31,7 @@ type alias LaborRecord =
     { id : Int
     , admittanceDate : Date
     , startLaborDate : Date
-    , endLaborDate : Maybe Date
+    , dischargeDate : Maybe Date
     , falseLabor : Bool
     , pos : String
     , fh : Int
@@ -46,7 +46,7 @@ type alias LaborRecord =
 
 
 {-| For creating new records hence the lack of certain fields
-such as id, endLaborDate, and falseLabor.
+such as id, dischargeDate, and falseLabor.
 -}
 type alias LaborRecordNew =
     { admittanceDate : Date
@@ -81,7 +81,7 @@ laborRecord =
             |> JDP.required "id" JD.int
             |> JDP.required "admittanceDate" JDE.date
             |> JDP.required "startLaborDate" JDE.date
-            |> JDP.optional "endLaborDate" (JD.maybe JDE.date) Nothing
+            |> JDP.optional "dischargeDate" (JD.maybe JDE.date) Nothing
             |> JDP.required "falseLabor" JD.int
             |> JDP.required "pos" JD.string
             |> JDP.required "fh" JD.int
@@ -130,7 +130,7 @@ laborRecordToValue rec =
                 [ ( "id", (JE.int rec.id) )
                 , ( "admittanceDate", (U.dateToStringValue rec.admittanceDate) )
                 , ( "startLaborDate", (U.dateToStringValue rec.startLaborDate) )
-                , ( "endLaborDate", (U.maybeDateToValue rec.endLaborDate) )
+                , ( "dischargeDate", (U.maybeDateToValue rec.dischargeDate) )
                 , ( "falseLabor", (U.boolToInt rec.falseLabor |> JE.int) )
                 , ( "pos", (JE.string rec.pos) )
                 , ( "fh", (JE.int rec.fh) )

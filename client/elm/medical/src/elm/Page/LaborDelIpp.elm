@@ -232,7 +232,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                         Just rec ->
                             -- TODO: refactor this to work when there are multiple labors
                             -- and to correctly ascertain the LaborId.
-                            if rec.endLaborDate == Nothing then
+                            if rec.dischargeDate == Nothing then
                                 ( LaboringLaborState (LaborId rec.id)
                                 , getLaborDetails (LaborId rec.id) store
                                 )
@@ -1030,7 +1030,7 @@ viewStages model =
                                 ( Just recs, Just lid ) ->
                                     case Dict.get (getLaborId lid) recs of
                                         Just rec ->
-                                            case ( rec.falseLabor, rec.endLaborDate ) of
+                                            case ( rec.falseLabor, rec.dischargeDate ) of
                                                 ( True, Just d ) ->
                                                     U.dateTimeHMFormatter
                                                         U.MDYDateFmt
@@ -2100,7 +2100,7 @@ viewLaborRecords model =
                     [ H.text <| showDate rec.admittanceDate ]
                 , H.td [ HA.class "c-table__cell" ]
                     [ H.text <|
-                        case rec.endLaborDate of
+                        case rec.dischargeDate of
                             Just d ->
                                 showDate d
 
@@ -3415,7 +3415,7 @@ update session msg model =
                                             let
                                                 newLaborRec =
                                                     { laborRecord
-                                                        | endLaborDate = Just (U.datePlusTimeTuple d ( h, m ))
+                                                        | dischargeDate = Just (U.datePlusTimeTuple d ( h, m ))
                                                         , falseLabor = True
                                                     }
 
@@ -3460,7 +3460,7 @@ update session msg model =
                                     let
                                         newLaborRec =
                                             { laborRecord
-                                                | endLaborDate = Nothing
+                                                | dischargeDate = Nothing
                                                 , falseLabor = False
                                             }
 

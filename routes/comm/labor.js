@@ -37,7 +37,7 @@ var _ = require('underscore')
 // Note that every table needs to be listed even if there 
 // are no date fields present in the table.
 // --------------------------------------------------------
-moduleTables.labor = ['admittanceDate', 'startLaborDate', 'endLaborDate'];
+moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
 moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
 moduleTables.laborStage3 = ['placentaDatetime'];

@@ -20,7 +20,7 @@ CREATE TABLE `labor` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `admittanceDate` datetime NOT NULL,
   `startLaborDate` datetime NOT NULL,
-  `endLaborDate` datetime DEFAULT NULL,
+  `dischargeDate` datetime DEFAULT NULL,
   `falseLabor` tinyint(4) NOT NULL DEFAULT '0',
   `pos` varchar(10) DEFAULT NULL,
   `fh` int(11) DEFAULT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE `labor` (
 Labor = Bookshelf.Model.extend({
   tableName: 'labor'
 
-  , permittedAttributes: ['id', 'admittanceDate', 'startLaborDate', 'endLaborDate',
+  , permittedAttributes: ['id', 'admittanceDate', 'startLaborDate', 'dischargeDate',
       'falseLabor', 'pos', 'fh', 'fht', 'systolic', 'diastolic', 'cr', 'temp',
       'comments', 'updatedBy', 'updatedAt', 'supervisor', 'pregnancy_id']
 
