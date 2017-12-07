@@ -1,8 +1,6 @@
 module Views.PregnancyHeader
     exposing
         ( view
-        , LaborInfo
-        , PregHeaderContent(..)
         )
 
 import Date exposing (Date)
@@ -27,21 +25,13 @@ import Data.LaborStage3 exposing (LaborStage3Record)
 import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
+import Data.PregnancyHeader
+    exposing
+        ( LaborInfo
+        , PregHeaderContent(..)
+        , PregHeaderContentMsg(..)
+        )
 import Util as U
-
-
-type PregHeaderContent
-    = PrenatalContent
-    | LaborContent
-    | IPPContent
-
-
-type alias LaborInfo =
-    { laborRecord : Maybe (Dict Int LaborRecord)
-    , laborStage1Record : Maybe LaborStage1Record
-    , laborStage2Record : Maybe LaborStage2Record
-    , laborStage3Record : Maybe LaborStage3Record
-    }
 
 
 {-| Delegate to the appropriate view.
@@ -53,7 +43,7 @@ view :
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
-    -> Html SubMsg
+    -> Html PregHeaderContentMsg
 view patRec pregRec ({ laborRecord, laborStage1Record, laborStage2Record, laborStage3Record } as laborInfo) pregHeaderCnt currTime winSize =
     case pregHeaderCnt of
         PrenatalContent ->
@@ -73,7 +63,7 @@ viewLabor :
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
-    -> Html SubMsg
+    -> Html PregHeaderContentMsg
 viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
     let
         ( nickname, edd ) =
@@ -125,7 +115,7 @@ viewIPP :
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
-    -> Html SubMsg
+    -> Html PregHeaderContentMsg
 viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
     let
         ( nickname, edd ) =
@@ -168,7 +158,7 @@ viewPrenatal :
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
-    -> Html SubMsg
+    -> Html PregHeaderContentMsg
 viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize =
     let
         ( nickname, edd ) =
@@ -254,13 +244,13 @@ pregHeaderContentToString phc =
             "Labor"
 
 
-prenatalLaborIppButton : PregHeaderContent -> Html SubMsg
+prenatalLaborIppButton : PregHeaderContent -> Html PregHeaderContentMsg
 prenatalLaborIppButton phc =
     H.span [ HA.style [ ( "margin-left", "2em" ) ], HA.class "u-xsmall" ]
         [ H.button
             [ HA.style [ ( "margin-left", "2em" ) ]
             , HA.class "u-pillar-box--large u-high c-button c-button--ghost-brand"
-            , HE.onClick NextPregHeaderContent
+            , HE.onClick RotatePregHeaderContentMsg
             ]
             [ H.text <| pregHeaderContentToString phc ]
         ]

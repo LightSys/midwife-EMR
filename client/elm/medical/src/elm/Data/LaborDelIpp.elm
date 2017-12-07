@@ -17,6 +17,7 @@ import Data.DatePicker exposing (DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecordNew)
 import Data.LaborStage1 exposing (LaborStage1Id, LaborStage1Record, LaborStage1RecordNew)
 import Data.Table exposing (Table)
+import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 
 
 type SubMsg
@@ -39,7 +40,7 @@ type SubMsg
       -- This is for all fields other than those requiring the
       -- datepicker above.
     | FldChgSubMsg Field FldChgValue
-    | NextPregHeaderContent
+    | RotatePregHeaderContent PregHeaderContentMsg
     | HandleStage1DateTimeModal Dialog
     | HandleStage1SummaryModal Dialog
     | HandleStage2DateTimeModal Dialog

@@ -72,6 +72,7 @@ import Data.LaborDelIpp
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyId(..), PregnancyRecord)
+import Data.PregnancyHeader as PregHeaderData
 import Data.Processing exposing (ProcessId(..))
 import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session)
@@ -80,14 +81,9 @@ import Msg exposing (logConsole, Msg(..), ProcessType(..), toastInfo, toastWarn,
 import Page.Errored as Errored exposing (PageLoadError)
 import Ports
 import Processing exposing (ProcessStore)
-import Time exposing (Time)
 import Util as U exposing ((=>))
 import Views.Form as Form
 import Views.PregnancyHeader as PregHeaderView
-    exposing
-        ( LaborInfo
-        , PregHeaderContent(..)
-        )
 
 
 -- MODEL --
@@ -127,7 +123,7 @@ type alias Model =
     , currTime : Time
     , pregnancy_id : PregnancyId
     , currLaborId : Maybe LaborId
-    , currPregHeaderContent : PregHeaderContent
+    , currPregHeaderContent : PregHeaderData.PregHeaderContent
     , dataCache : Dict String DataCache
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
@@ -252,25 +248,25 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         ( pregHeaderContent, laborId ) =
             case laborState of
                 NotSelectedLaborState ->
-                    ( PrenatalContent, Nothing )
+                    ( PregHeaderData.PrenatalContent, Nothing )
 
                 AdmittingLaborState ->
-                    ( PrenatalContent, Nothing )
+                    ( PregHeaderData.PrenatalContent, Nothing )
 
                 LaboringLaborState id ->
-                    ( LaborContent, Just id )
+                    ( PregHeaderData.LaborContent, Just id )
 
                 ViewingFalseLaborState id ->
-                    ( IPPContent, Just id )
+                    ( PregHeaderData.IPPContent, Just id )
 
                 IPPLaborState id ->
-                    ( IPPContent, Just id )
+                    ( PregHeaderData.IPPContent, Just id )
 
                 ContPostpartumLaborState id ->
-                    ( IPPContent, Just id )
+                    ( PregHeaderData.IPPContent, Just id )
 
                 PostpartumLaborState id ->
-                    ( IPPContent, Just id )
+                    ( PregHeaderData.IPPContent, Just id )
     in
         ( Model browserSupportsDate
             currTime
@@ -476,7 +472,7 @@ view size session model =
                 ( Just patRec, Just pregRec ) ->
                     let
                         laborInfo =
-                            LaborInfo model.laborRecord
+                            PregHeaderData.LaborInfo model.laborRecord
                                 model.laborStage1Record
                                 model.laborStage2Record
                                 model.laborStage3Record
@@ -533,7 +529,7 @@ view size session model =
             Debug.log "LaborDelIpp.view model.laborState" <| toString model.laborState
     in
         H.div []
-            [ pregHeader
+            [ pregHeader |> H.map (\a -> RotatePregHeaderContent a)
             , H.div [ HA.class "content-wrapper" ] views
             ]
 
@@ -2278,7 +2274,7 @@ update session msg model =
                                 Maybe.withDefault Dict.empty model.laborRecord
                                     |> Dict.insert nlr.id nlr
                                     |> Just
-                            , currPregHeaderContent = LaborContent
+                            , currPregHeaderContent = PregHeaderData.LaborContent
                         }
 
                     Nothing ->
@@ -2620,20 +2616,22 @@ update session msg model =
                     , Cmd.none
                     )
 
-        NextPregHeaderContent ->
-            let
-                next =
-                    case model.currPregHeaderContent of
-                        PrenatalContent ->
-                            LaborContent
+        RotatePregHeaderContent pregHeaderMsg ->
+            case pregHeaderMsg of
+                PregHeaderData.RotatePregHeaderContentMsg ->
+                    let
+                        next =
+                            case model.currPregHeaderContent of
+                                PregHeaderData.PrenatalContent ->
+                                    PregHeaderData.LaborContent
 
-                        LaborContent ->
-                            IPPContent
+                                PregHeaderData.LaborContent ->
+                                    PregHeaderData.IPPContent
 
-                        IPPContent ->
-                            PrenatalContent
-            in
-                ( { model | currPregHeaderContent = next }, Cmd.none, Cmd.none )
+                                PregHeaderData.IPPContent ->
+                                    PregHeaderData.PrenatalContent
+                    in
+                        ( { model | currPregHeaderContent = next }, Cmd.none, Cmd.none )
 
         HandleStage1DateTimeModal dialogState ->
             case dialogState of
