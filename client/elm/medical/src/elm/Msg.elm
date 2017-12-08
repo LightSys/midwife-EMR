@@ -16,6 +16,7 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.Admitting as Admitting
 import Data.DatePicker exposing (DateField, DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
@@ -38,6 +39,8 @@ type Msg
     | Toast (List String) Int ToastType
     | WindowResize (Maybe Window.Size)
     | SetRoute (Maybe Route)
+    | AdmittingLoaded PregnancyId
+    | AdmittingMsg Admitting.AdmittingSubMsg
     | LaborDelIppLoaded PregnancyId
     | LaborDelIppMsg LaborDelIpp.SubMsg
     | Message IncomingMessage

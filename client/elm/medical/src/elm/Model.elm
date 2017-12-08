@@ -21,6 +21,7 @@ import Data.Pregnancy exposing (getPregId, PregnancyRecord, PregnancyId(..))
 import Data.Session as Session exposing (Session)
 import Data.SiteMessage exposing (SiteKeyValue(..))
 import Data.Toast exposing (ToastRecord, ToastType)
+import Page.Admitting as PageAdmitting
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
 import Processing exposing (ProcessStore)
@@ -30,6 +31,7 @@ type Page
     = Blank
     | NotFound
     | Errored PageLoadError
+    | Admitting PageAdmitting.Model
     | LaborDelIpp PageLaborDelIpp.Model
 
 

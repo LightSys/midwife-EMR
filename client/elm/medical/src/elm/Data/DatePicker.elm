@@ -23,7 +23,7 @@ proper page's update function as a SubMsg.
 -}
 type DateField
     = UnknownDateField String
-    | LaborDelIppAdmittanceDateField
+    | AdmittingAdmittanceDateField
     | LaborDelIppLaborDateField
     | LaborDelIppStage1DateField
     | LaborDelIppStage2DateField
@@ -34,7 +34,7 @@ stringToDateField : String -> DateField
 stringToDateField str =
     case str of
         "admitDateId" ->
-            LaborDelIppAdmittanceDateField
+            AdmittingAdmittanceDateField
 
         "laborDateId" ->
             LaborDelIppLaborDateField
@@ -55,7 +55,7 @@ stringToDateField str =
 dateFieldToString : DateField -> String
 dateFieldToString df =
     case df of
-        LaborDelIppAdmittanceDateField ->
+        AdmittingAdmittanceDateField ->
             "admitDateId"
 
         LaborDelIppLaborDateField ->

@@ -23,6 +23,7 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Const exposing (FldChgValue(..))
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
 import Data.Labor
@@ -66,7 +67,6 @@ import Data.LaborDelIpp
     exposing
         ( Dialog(..)
         , Field(..)
-        , FldChgValue(..)
         , SubMsg(..)
         )
 import Data.Message exposing (MsgType(..), wrapPayload)
@@ -490,12 +490,11 @@ view size session model =
         views =
             case model.laborState of
                 NotSelectedLaborState ->
-                    [ viewAdmitButton
-                    , viewLaborRecords model
+                    [ viewLaborRecords model
                     ]
 
                 AdmittingLaborState ->
-                    [ viewAdmitForm model ]
+                    [ ]
 
                 LaboringLaborState id ->
                     [ viewLaborDetails model
@@ -532,131 +531,6 @@ view size session model =
             [ pregHeader |> H.map (\a -> RotatePregHeaderContent a)
             , H.div [ HA.class "content-wrapper" ] views
             ]
-
-
-viewAdmitForm : Model -> Html SubMsg
-viewAdmitForm model =
-    let
-        errors =
-            validateAdmittance model
-    in
-        H.div []
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ] [ H.text "Admittance Details" ]
-            , H.div []
-                [ H.div [ HA.class "" ] [ Form.formErrors model.formErrors ]
-                , H.div [ HA.class "o-fieldset form-wrapper" ]
-                    [ if model.browserSupportsDate then
-                        Form.formFieldDate (FldChgString >> FldChgSubMsg AdmittanceDateFld)
-                            "Date admitted"
-                            "e.g. 08/14/2017"
-                            True
-                            model.admittanceDate
-                            (getErr AdmittanceDateFld errors)
-                      else
-                        Form.formFieldDatePicker OpenDatePickerSubMsg
-                            LaborDelIppAdmittanceDateField
-                            "Date admitted"
-                            "e.g. 08/14/2017"
-                            True
-                            model.admittanceDate
-                            (getErr AdmittanceDateFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg AdmittanceTimeFld)
-                        "Time admitted"
-                        "24 hr format, 14:44"
-                        True
-                        model.admittanceTime
-                        (getErr AdmittanceTimeFld errors)
-                    , if model.browserSupportsDate then
-                        Form.formFieldDate (FldChgString >> FldChgSubMsg LaborDateFld)
-                            "Date start of labor"
-                            "e.g. 08/14/2017"
-                            True
-                            model.laborDate
-                            (getErr LaborDateFld errors)
-                      else
-                        Form.formFieldDatePicker OpenDatePickerSubMsg
-                            LaborDelIppLaborDateField
-                            "Date start of labor"
-                            "e.g. 08/14/2017"
-                            True
-                            model.laborDate
-                            (getErr LaborDateFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg LaborTimeFld)
-                        "Time start of labor"
-                        "24 hr format, 09:00"
-                        True
-                        model.laborTime
-                        (getErr LaborTimeFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg PosFld)
-                        "POS"
-                        "pos"
-                        True
-                        model.pos
-                        (getErr PosFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg FhFld)
-                        "FH"
-                        "fh"
-                        True
-                        model.fh
-                        (getErr FhFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg FhtFld)
-                        "FHT"
-                        "fht"
-                        True
-                        model.fht
-                        (getErr FhtFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg SystolicFld)
-                        "Systolic"
-                        "systolic"
-                        True
-                        model.systolic
-                        (getErr SystolicFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg DiastolicFld)
-                        "Diastolic"
-                        "diastolic"
-                        True
-                        model.diastolic
-                        (getErr DiastolicFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg CrFld)
-                        "CR"
-                        "heart rate"
-                        True
-                        model.cr
-                        (getErr CrFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg TempFld)
-                        "Temp"
-                        "temperature"
-                        True
-                        model.temp
-                        (getErr TempFld errors)
-                    , Form.formTextareaField (FldChgString >> FldChgSubMsg CommentsFld)
-                        "Comments"
-                        ""
-                        True
-                        model.comments
-                        3
-                    ]
-                , if List.length model.formErrors > 0 then
-                    H.div
-                        [ HA.class "u-small error-msg-right primary-fg"
-                        ]
-                        [ H.text "Errors detected, see details above." ]
-                  else
-                    H.span [] []
-                , H.div [ HA.class "form-wrapper-end" ]
-                    [ Form.cancelSaveButtons CancelAdmitForLabor SaveAdmitForLabor
-                    ]
-                ]
-            ]
-
-
-viewAdmitButton : Html SubMsg
-viewAdmitButton =
-    H.button
-        [ HA.class "c-button c-button--brand u-xlarge"
-        , HE.onClick AdmitForLabor
-        ]
-        [ H.text "Admit for Labor" ]
 
 
 viewLaborDetails : Model -> Html SubMsg
@@ -2230,113 +2104,8 @@ update session msg model =
 
         TickSubMsg time ->
             -- Keep the current time in the Model.
-            ( { model | currTime = time }, Cmd.none, Cmd.none )
-
-        AdmitForLabor ->
-            -- The user just pressed the Admit for Labor button in order to add a new labor record.
-            let
-                -- We default to the current date if it is not already filled.
-                admittanceDate =
-                    case model.admittanceDate of
-                        Just d ->
-                            Just d
-
-                        Nothing ->
-                            Just <| Date.fromTime model.currTime
-            in
-                ( { model
-                    | laborState = AdmittingLaborState
-                    , admittanceDate = admittanceDate
-                  }
-                , Cmd.none
-                , Cmd.none
-                )
-
-        AdmitForLaborSaved laborRecNew lid ->
-            -- The server returned the result of our request to add a new labor record.
-            let
-                _ =
-                    Debug.log "AdmitForLaborSaved" <| toString laborRecNew
-
-                newLaborRec =
-                    case lid of
-                        Just id ->
-                            Just <| laborRecordNewToLaborRecord id laborRecNew
-
-                        Nothing ->
-                            Nothing
-            in
-                ( case newLaborRec of
-                    Just nlr ->
-                        { model
-                            | laborState = LaboringLaborState (LaborId nlr.id)
-                            , laborRecord =
-                                Maybe.withDefault Dict.empty model.laborRecord
-                                    |> Dict.insert nlr.id nlr
-                                    |> Just
-                            , currPregHeaderContent = PregHeaderData.LaborContent
-                        }
-
-                    Nothing ->
-                        model
-                , Cmd.none
-                , Cmd.none
-                )
-
-        CancelAdmitForLabor ->
-            -- The user canceled the add labor form.
-            ( { model
-                | laborState = NotSelectedLaborState
-                , admittanceDate = Nothing
-                , admittanceTime = Nothing
-                , laborDate = Nothing
-                , laborTime = Nothing
-                , pos = Nothing
-                , fh = Nothing
-                , fht = Nothing
-                , systolic = Nothing
-                , diastolic = Nothing
-                , cr = Nothing
-                , temp = Nothing
-                , comments = Nothing
-                , formErrors = []
-              }
-            , Cmd.none
-            , Cmd.none
-            )
-
-        SaveAdmitForLabor ->
-            -- The user submitted a new labor record to be sent to the server.
-            case validateAdmittance model of
-                [] ->
-                    let
-                        newOuterMsg =
-                            case deriveLaborRecordNew model of
-                                Just laborRecNew ->
-                                    ProcessTypeMsg
-                                        (AddLaborType
-                                            (LaborDelIppMsg
-                                                (AdmitForLaborSaved laborRecNew Nothing)
-                                            )
-                                            laborRecNew
-                                        )
-                                        AddMsgType
-                                        (laborRecordNewToValue laborRecNew)
-
-                                Nothing ->
-                                    Noop
-                    in
-                        ( { model | formErrors = [] }
-                        , Cmd.none
-                        , Task.perform (always newOuterMsg) (Task.succeed True)
-                        )
-
-                errors ->
-                    -- Add errors to model for user to address before submission.
-                    ( { model | formErrors = errors }
-                    , Cmd.none
-                    , logConsole (toString errors)
-                    )
+            --( { model | currTime = time }, Cmd.none, Cmd.none )
+            ( { model | currTime = time }, Cmd.none, logConsole <| "LaborDelIpp TickSubMsg: " ++ (toString time) )
 
         OpenDatePickerSubMsg id ->
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
@@ -2346,9 +2115,6 @@ update session msg model =
             case dateFldMsg of
                 DateFieldMessage { dateField, date } ->
                     case dateField of
-                        LaborDelIppAdmittanceDateField ->
-                            ( { model | admittanceDate = Just date }, Cmd.none, Cmd.none )
-
                         LaborDelIppLaborDateField ->
                             ( { model | laborDate = Just date }, Cmd.none, Cmd.none )
 
@@ -2363,6 +2129,11 @@ update session msg model =
 
                         UnknownDateField str ->
                             ( model, Cmd.none, logConsole str )
+
+                        _ ->
+                            -- This page is not the only one with date fields, we only
+                            -- handle what we know about.
+                            ( model, Cmd.none, Cmd.none )
 
                 UnknownDateFieldMessage str ->
                     ( model, Cmd.none, Cmd.none )
@@ -3654,53 +3425,6 @@ deriveLaborStage3RecordNew model =
                     |> Just
 
         _ ->
-            Nothing
-
-
-{-| Derive a LaborRecordNew from the form fields, if possible.
--}
-deriveLaborRecordNew : Model -> Maybe LaborRecordNew
-deriveLaborRecordNew model =
-    case
-        ( ( model.admittanceDate
-          , model.admittanceTime
-          , model.laborDate
-          , model.laborTime
-          , model.pos
-          , (U.maybeStringToMaybeInt model.fh)
-          )
-        , ( (U.maybeStringToMaybeInt model.fht)
-          , (U.maybeStringToMaybeInt model.systolic)
-          , (U.maybeStringToMaybeInt model.diastolic)
-          , (U.maybeStringToMaybeInt model.cr)
-          , (U.maybeStringToMaybeFloat model.temp)
-          )
-        )
-    of
-        ( ( Just aDate, Just aTime, Just lDate, Just lTime, Just pos, Just fh ), ( Just fht, Just systolic, Just diastolic, Just cr, Just temp ) ) ->
-            let
-                ( aTimeTuple, lTimeTuple ) =
-                    ( U.stringToTimeTuple aTime, U.stringToTimeTuple lTime )
-            in
-                case ( aTimeTuple, lTimeTuple ) of
-                    ( Just att, Just ltt ) ->
-                        Just <|
-                            LaborRecordNew (U.datePlusTimeTuple aDate att)
-                                (U.datePlusTimeTuple lDate ltt)
-                                pos
-                                fh
-                                fht
-                                systolic
-                                diastolic
-                                cr
-                                temp
-                                model.comments
-                                (getPregId model.pregnancy_id)
-
-                    ( _, _ ) ->
-                        Nothing
-
-        ( ( _, _, _, _, _, _ ), ( _, _, _, _, _ ) ) ->
             Nothing
 
 

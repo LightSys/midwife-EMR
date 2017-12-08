@@ -8,13 +8,15 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 -- ROUTING --
 
 type Route
-    = LaborDelIppRoute
+    = AdmittingRoute
+    | LaborDelIppRoute
 
 
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ Url.map LaborDelIppRoute (s "")
+        [ Url.map AdmittingRoute (s "")
+        , Url.map LaborDelIppRoute (s "labordelipp")
         ]
 
 -- INTERNAL --
@@ -24,8 +26,11 @@ routeToString page =
     let
         pieces =
             case page of
-                LaborDelIppRoute ->
+                AdmittingRoute ->
                     [ ]
+
+                LaborDelIppRoute ->
+                    [ "labordelipp" ]
     in
     case List.length pieces of
         0 ->
@@ -49,6 +54,6 @@ modifyUrl =
 fromLocation : Location -> Maybe Route
 fromLocation location =
     if String.isEmpty location.hash then
-        Just LaborDelIppRoute
+        Just AdmittingRoute
     else
         parseHash route location

@@ -2,7 +2,6 @@ module Data.LaborDelIpp
     exposing
         ( Dialog(..)
         , Field(..)
-        , FldChgValue(..)
         , SubMsg(..)
         )
 
@@ -12,6 +11,7 @@ import Time exposing (Time)
 
 -- LOCAL IMPORTS --
 
+import Const exposing (FldChgValue)
 import Data.DataCache exposing (DataCache)
 import Data.DatePicker exposing (DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecordNew)
@@ -29,10 +29,6 @@ type SubMsg
       -- us again. We, in turn, populate our page Model based on the
       -- list of tables passed through.
     | DataCache (Maybe (Dict String DataCache)) (Maybe (List Table))
-    | AdmitForLabor
-    | CancelAdmitForLabor
-    | SaveAdmitForLabor
-    | AdmitForLaborSaved LaborRecordNew (Maybe LaborId)
       -- These two are used for browsers that do not support the
       -- input date type and require the use of jQueryUI datepicker.
     | OpenDatePickerSubMsg String
@@ -40,7 +36,9 @@ type SubMsg
       -- This is for all fields other than those requiring the
       -- datepicker above.
     | FldChgSubMsg Field FldChgValue
+      -- The view that the pregnancy header is currently showing.
     | RotatePregHeaderContent PregHeaderContentMsg
+      -- Modals for date/time and summary for the three stages.
     | HandleStage1DateTimeModal Dialog
     | HandleStage1SummaryModal Dialog
     | HandleStage2DateTimeModal Dialog
@@ -48,18 +46,18 @@ type SubMsg
     | HandleStage3DateTimeModal Dialog
     | HandleStage3SummaryModal Dialog
     | HandleFalseLaborDateTimeModal Dialog
+      -- Clearing date/time fields.
     | ClearStage1DateTime
     | ClearStage2DateTime
     | ClearStage3DateTime
     | ClearFalseLaborDateTime
+      -- We are supplied date/time so we can prefill date/time fields.
     | TickSubMsg Time
+      -- Our labor records have been loaded from the server.
     | LaborDetailsLoaded
+      -- Our current labor record.
     | ViewLaborRecord LaborId
 
-
-type FldChgValue
-    = FldChgString String
-    | FldChgBool Bool
 
 type Dialog
     = OpenDialog

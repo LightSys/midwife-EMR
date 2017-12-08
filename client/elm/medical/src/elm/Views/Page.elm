@@ -16,6 +16,7 @@ import Route exposing (Route)
 
 type ActivePage
     = Other
+    | Admitting
     | LaborDelIpp
 
 
@@ -94,7 +95,8 @@ viewHeader winSize pregId user isLoading page =
                 , H.ul
                     -- Bottom navigation bar.
                     [ HA.class "c-nav c-nav--inline nav-override-small accent-bg accent-contrast-fg" ]
-                    [ (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIppRoute) "Labor-Delivery-IPP" "LD")
+                    [ (buildNavItem Small False (page == Admitting) (AsRoute Route.AdmittingRoute) "Admitting" "AD")
+                    , (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIppRoute) "Labor-Delivery-IPP" "LD")
                     , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Cont-Postpartum" "CPP")
                     , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Postpartum" "PP")
                     , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Birth-Cert" "Cert")

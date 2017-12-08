@@ -18,3 +18,10 @@ breakpointMedium =
 breakpointLarge : Int
 breakpointLarge =
     992
+
+{-| Form field type.
+-}
+type FldChgValue
+    = FldChgString String
+    | FldChgBool Bool
+

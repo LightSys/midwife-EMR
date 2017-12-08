@@ -7,10 +7,12 @@ module Util
         , DateFmt(..)
         , DateSep(..)
         , dateToDateMonString
+        , dateToTimeString
         , dateFormatter
         , datePlusTimeTuple
         , dateTimeHMFormatter
         , dateToStringValue
+        , deriveDateFromMaybeDateMaybeString
         , diff2DatesString
         , diff2MaybeDatesString
         , filterStringLikeInt
@@ -110,6 +112,7 @@ boolToInt bool =
         False ->
             0
 
+
 {-| Convert a String to a Maybe Int if the String can be
 converted to an Int and the Int falls between (exclusive of)
 the min and max values passed.
@@ -194,6 +197,7 @@ validateBool bool =
 
         Nothing ->
             True
+
 
 {-| Returns True if the String is Nothing or
 does not have length.
@@ -281,6 +285,24 @@ datePlusTimeTuple date ( hour, min ) =
     removeTimeFromDate date
         |> DEP.add DEP.Hour hour
         |> DEP.add DEP.Minute min
+
+
+{-| Take a Maybe Date and a Maybe String that could be in the form
+of a time tuple and return a Date, or return the default supplied
+instead.
+-}
+deriveDateFromMaybeDateMaybeString : Maybe Date -> Maybe String -> Date -> Date
+deriveDateFromMaybeDateMaybeString date timeTuple defaultDate =
+    case
+        ( date
+        , stringToTimeTuple (Maybe.withDefault "" timeTuple)
+        )
+    of
+        ( Just d, Just ( h, m ) ) ->
+            datePlusTimeTuple d ( h, m )
+
+        ( _, _ ) ->
+            defaultDate
 
 
 {-| Convert a Maybe Date into a JE.Value representing a
@@ -452,6 +474,11 @@ dateTimeHMFormatter f s d =
     (dateFormatter f s d) ++ " " ++ (DEF.format DECC.config "%H:%M" d)
 
 
+dateToTimeString : Date -> String
+dateToTimeString d =
+    DEF.format DECC.config "%H:%M" d
+
+
 dateToDateMonString : Date -> String -> String
 dateToDateMonString date sep =
     DEF.format DECC.config ("%b" ++ sep ++ "%d" ++ sep ++ "%Y") date
@@ -471,18 +498,20 @@ removeTimeFromDate d =
         0
         0
 
+
 {-| Returns the different between two Maybe Dates in
 a human readable format or an empty String if either
 of them are Nothing.
 -}
 diff2MaybeDatesString : Maybe Date -> Maybe Date -> String
 diff2MaybeDatesString date1 date2 =
-    case (date1, date2) of
-        (Just d1, Just d2) ->
+    case ( date1, date2 ) of
+        ( Just d1, Just d2 ) ->
             diff2DatesString d1 d2
 
-        (_, _) ->
+        ( _, _ ) ->
             ""
+
 
 {-| Return the difference between two dates in a
 human readable format as a String with the difference

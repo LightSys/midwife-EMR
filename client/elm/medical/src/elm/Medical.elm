@@ -12,6 +12,7 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.Admitting exposing (AdmittingSubMsg(..))
 import Data.DataCache as DCache exposing (DataCache(..))
 import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
 import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
@@ -29,12 +30,13 @@ import Data.Toast exposing (ToastRecord, ToastType(..))
 import Model exposing (Model, Page(..), PageState(..))
 import Msg exposing (logConsole, Msg(..), ProcessType(..))
 import Page.Errored as Errored exposing (PageLoadError, view)
+import Page.Admitting as PageAdmitting
 import Page.LaborDelIpp as PageLaborDelIpp
 import Page.NotFound as NotFound exposing (view)
 import Ports
 import Route exposing (fromLocation, Route(..))
 import Processing
-import Views.Page as Page exposing (ActivePage)
+import Views.Page as ViewsPage exposing (ActivePage)
 import Time exposing (Time)
 import Util as U exposing ((=>))
 
@@ -105,7 +107,7 @@ viewPage : Model -> Bool -> Page -> Html Msg
 viewPage model isLoading page =
     let
         frame =
-            Page.frame model.window isLoading model.currPregId model.session.user model.toast
+            ViewsPage.frame model.window isLoading model.currPregId model.session.user model.toast
     in
         case page of
             Blank ->
@@ -113,16 +115,21 @@ viewPage model isLoading page =
 
             NotFound ->
                 NotFound.view model.session
-                    |> frame Page.Other
+                    |> frame ViewsPage.Other
+
+            Admitting subModel ->
+                PageAdmitting.view model.window model.session subModel
+                    |> frame ViewsPage.Admitting
+                    |> H.map AdmittingMsg
 
             LaborDelIpp subModel ->
                 PageLaborDelIpp.view model.window model.session subModel
-                    |> frame Page.LaborDelIpp
+                    |> frame ViewsPage.LaborDelIpp
                     |> H.map LaborDelIppMsg
 
             Errored subModel ->
                 Errored.view model.session subModel
-                    |> frame Page.Other
+                    |> frame ViewsPage.Other
 
 
 getPage : PageState -> Page
@@ -164,12 +171,12 @@ update msg noAutoTouchModel =
             ( Noop, _ ) ->
                 model => Cmd.none
 
-            ( Tick time, _ ) ->
-                -- Keep the current time in the Model and reduce the secondsLeft
-                -- of the active toast if there is one.
-                --
-                -- Also, "touch" the server in order to keep the user's session
-                -- active if necessary.
+            ( Tick time, page ) ->
+                -- 1. Keep the current time in the Model.
+                -- 2. Reduce the secondsLeft of the active toast if there is one.
+                -- 3. "Touch" the server in order to keep the user's session
+                --    active if necessary.
+                -- 4. Finally, send the time down to the pages that are interested.
                 let
                     newToast =
                         case noAutoTouchModel.toast of
@@ -184,13 +191,37 @@ update msg noAutoTouchModel =
 
                     ( newSession, newCmd ) =
                         doTouch noAutoTouchModel.session noAutoTouchModel.currTime
+
+                    newModel =
+                        { noAutoTouchModel
+                            | currTime = time
+                            , toast = newToast
+                            , session = newSession
+                        }
+
+                    -- We send the time to all of the pages that are interested here.
+                    ( newModel2, newCmd2 ) =
+                        case page of
+                            LaborDelIpp subModel ->
+                                updateForPage LaborDelIpp
+                                    LaborDelIppMsg
+                                    newModel
+                                    (PageLaborDelIpp.update newModel.session)
+                                    (TickSubMsg time)
+                                    subModel
+
+                            Admitting subModel ->
+                                updateForPage Admitting
+                                    AdmittingMsg
+                                    newModel
+                                    (PageAdmitting.update newModel.session)
+                                    (AdmittingTickSubMsg time)
+                                    subModel
+
+                            _ ->
+                                newModel => Cmd.none
                 in
-                    { noAutoTouchModel
-                        | currTime = time
-                        , toast = newToast
-                        , session = newSession
-                    }
-                        => newCmd
+                    newModel2 => Cmd.batch [ newCmd, newCmd2 ]
 
             ( LogConsole msg, _ ) ->
                 -- Write a message out to the console.
@@ -241,6 +272,23 @@ update msg noAutoTouchModel =
                     , Ports.outgoing <| wrapPayload processId msgType jeVal
                     )
 
+            ( AdmittingLoaded pregId, _ ) ->
+                let
+                    ( subModel, newStore, newCmd ) =
+                        PageAdmitting.buildModel model.browserSupportsDate
+                            model.currTime
+                            model.processStore
+                            pregId
+                            model.patientRecord
+                            model.pregnancyRecord
+                            model.laborRecord
+                in
+                    { model
+                        | pageState = Loaded (Admitting subModel)
+                        , processStore = newStore
+                    }
+                        => newCmd
+
             ( LaborDelIppLoaded pregId, _ ) ->
                 -- This page has enough of what it needs from the server in order
                 -- to display the page. The newCmd returned from
@@ -269,31 +317,40 @@ update msg noAutoTouchModel =
                 let
                     -- If the subMsg is DataCache, revise the subMsg by adding
                     -- the current dataCache to it.
-                    --
-                    -- If the subMsg is a Tick, we don't want to update the
-                    -- session with a touch so use the noAutoTouchModel instead.
-                    ( newSubMsg, useNoAutoTouchModel ) =
+                    newSubMsg =
                         case subMsg of
-                            DataCache _ tbl ->
-                                ( DataCache (Just model.dataCache) tbl, False )
-
-                            TickSubMsg _ ->
-                                ( subMsg, True )
+                            Data.LaborDelIpp.DataCache _ tbl ->
+                                Data.LaborDelIpp.DataCache (Just model.dataCache) tbl
 
                             _ ->
-                                ( subMsg, False )
-                    theModel =
-                        if useNoAutoTouchModel then
-                            noAutoTouchModel
-                        else
-                            model
+                                subMsg
                 in
                     updateForPage LaborDelIpp
-                    LaborDelIppMsg
-                    theModel
-                    (PageLaborDelIpp.update theModel.session)
-                    newSubMsg
-                    subModel
+                        LaborDelIppMsg
+                        model
+                        (PageLaborDelIpp.update model.session)
+                        newSubMsg
+                        subModel
+
+            ( AdmittingMsg subMsg, Admitting subModel ) ->
+                -- All Admitting page sub messages are routed here.
+                let
+                    -- If the subMsg is DataCache, revise the subMsg by adding
+                    -- the current dataCache to it.
+                    newSubMsg =
+                        case subMsg of
+                            Data.Admitting.DataCache _ tbl ->
+                                Data.Admitting.DataCache (Just model.dataCache) tbl
+
+                            _ ->
+                                subMsg
+                in
+                    updateForPage Admitting
+                        AdmittingMsg
+                        model
+                        (PageAdmitting.update model.session)
+                        newSubMsg
+                        subModel
 
             ( SetRoute route, _ ) ->
                 -- Handle route changes.
@@ -368,7 +425,7 @@ updateMessage incoming model =
                     case dataAddMsg.response.success of
                         True ->
                             case processType of
-                                Just (AddLaborType (LaborDelIppMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
+                                Just (AddLaborType (AdmittingMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
                                     let
                                         laborRecs =
                                             laborRecordNewToLaborRecord
@@ -381,10 +438,10 @@ updateMessage incoming model =
                                             AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
                                     in
                                         ( { model | laborRecord = laborRecs }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        , Task.perform AdmittingMsg (Task.succeed subMsg)
                                         )
 
-                                Just (AddLaborStage1Type (LaborDelIppMsg (DataCache _ _)) laborStage1RecordNew) ->
+                                Just (AddLaborStage1Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage1RecordNew) ->
                                     let
                                         laborStage1Rec =
                                             laborStage1RecordNewToLaborStage1Record
@@ -392,13 +449,13 @@ updateMessage incoming model =
                                                 laborStage1RecordNew
 
                                         subMsg =
-                                            DataCache (Just model.dataCache) (Just [ LaborStage1 ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage1 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Rec) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
-                                Just (AddLaborStage2Type (LaborDelIppMsg (DataCache _ _)) laborStage2RecordNew) ->
+                                Just (AddLaborStage2Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage2RecordNew) ->
                                     let
                                         laborStage2Rec =
                                             laborStage2RecordNewToLaborStage2Record
@@ -406,13 +463,13 @@ updateMessage incoming model =
                                                 laborStage2RecordNew
 
                                         subMsg =
-                                            DataCache (Just model.dataCache) (Just [ LaborStage2 ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage2 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Rec) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
-                                Just (AddLaborStage3Type (LaborDelIppMsg (DataCache _ _)) laborStage3RecordNew) ->
+                                Just (AddLaborStage3Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage3RecordNew) ->
                                     let
                                         laborStage3Rec =
                                             laborStage3RecordNewToLaborStage3Record
@@ -420,7 +477,7 @@ updateMessage incoming model =
                                                 laborStage3RecordNew
 
                                         subMsg =
-                                            DataCache (Just model.dataCache) (Just [ LaborStage3 ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage3 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Rec) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
@@ -466,40 +523,60 @@ updateMessage incoming model =
                     case dataChgMsg.response.success of
                         True ->
                             case processType of
-                                Just (UpdateLaborType (LaborDelIppMsg (DataCache _ _)) laborRecord) ->
+                                Just (UpdateLaborType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborRecord) ->
+                                    -- TODO: why only updating the data cache here and not the top-level laborRecord?
+                                    -- Don't we want to do both? But if we do, which is the master record?
                                     let
                                         laborRecs =
                                             Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecord)
 
                                         subMsg =
-                                            DataCache (Just model.dataCache) (Just [ Labor ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
-                                        ( { model | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache }
+                                        ( { model
+                                            | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
+                                            , laborRecord = Just laborRecs
+                                          }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
-                                Just (UpdateLaborStage1Type (LaborDelIppMsg (DataCache _ _)) laborStage1Record) ->
+                                Just (UpdateLaborType (AdmittingMsg (Data.Admitting.DataCache _ _)) laborRecord) ->
+                                    let
+                                        laborRecs =
+                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecord)
+
+                                        subMsg =
+                                            Data.Admitting.DataCache (Just model.dataCache) (Just [ Labor ])
+                                    in
+                                        ( { model
+                                            | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
+                                            , laborRecord = Just laborRecs
+                                          }
+                                        , Task.perform AdmittingMsg (Task.succeed subMsg)
+                                        )
+
+                                Just (UpdateLaborStage1Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage1Record) ->
                                     let
                                         subMsg =
-                                            DataCache (Just model.dataCache) (Just [ LaborStage1 ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage1 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Record) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
-                                Just (UpdateLaborStage2Type (LaborDelIppMsg (DataCache _ _)) laborStage2Record) ->
+                                Just (UpdateLaborStage2Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage2Record) ->
                                     let
                                         subMsg =
-                                            DataCache (Just model.dataCache) (Just [ LaborStage2 ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage2 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Record) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
-                                Just (UpdateLaborStage3Type (LaborDelIppMsg (DataCache _ _)) laborStage3Record) ->
+                                Just (UpdateLaborStage3Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage3Record) ->
                                     let
                                         subMsg =
-                                            DataCache (Just model.dataCache) (Just [ LaborStage3 ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage3 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Record) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
@@ -508,7 +585,8 @@ updateMessage incoming model =
                                 _ ->
                                     let
                                         msgText =
-                                            "OOPS, unhandled processType in Medical.updateMessage in the DataChgMessage branch."
+                                            "OOPS, unhandled processType in Medical.updateMessage in the DataChgMessage branch: "
+                                                ++ (toString processType)
                                     in
                                         ( model, logConsole msgText )
 
@@ -549,7 +627,7 @@ updateMessage incoming model =
                                         TableRecordLabor recs ->
                                             let
                                                 dictList =
-                                                    List.map (\rec -> (rec.id, rec)) recs
+                                                    List.map (\rec -> ( rec.id, rec )) recs
                                             in
                                                 { mdl | laborRecord = Just <| Dict.fromList dictList }
 
@@ -695,6 +773,15 @@ setRoute maybeRoute model =
             Nothing ->
                 { model | pageState = Loaded NotFound } => Cmd.none
 
+            Just (Route.AdmittingRoute) ->
+                case model.currPregId of
+                    Just pid ->
+                        PageAdmitting.init pid model.session model.processStore
+                            |> (\( store, cmd ) -> transition store cmd)
+
+                    Nothing ->
+                        { model | pageState = Loaded NotFound } => Cmd.none
+
             Just (Route.LaborDelIppRoute) ->
                 case model.currPregId of
                     Just pid ->
@@ -723,8 +810,6 @@ subscriptions model =
     Sub.batch
         [ Window.resizes (\s -> WindowResize (Just s))
         , Time.every Time.second Tick
-        , Time.every Time.second TickSubMsg
-            |> Sub.map LaborDelIppMsg
         , Ports.incoming Data.Message.decodeIncoming
             |> Sub.map Message
         , Ports.selectedDate DDP.decodeSelectedDate
