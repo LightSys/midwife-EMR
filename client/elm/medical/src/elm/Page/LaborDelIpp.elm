@@ -91,7 +91,6 @@ import Views.PregnancyHeader as PregHeaderView
 
 type LaborState
     = NotSelectedLaborState
-    | AdmittingLaborState
     | LaboringLaborState LaborId
     | ViewingFalseLaborState LaborId
     | IPPLaborState LaborId
@@ -248,9 +247,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         ( pregHeaderContent, laborId ) =
             case laborState of
                 NotSelectedLaborState ->
-                    ( PregHeaderData.PrenatalContent, Nothing )
-
-                AdmittingLaborState ->
                     ( PregHeaderData.PrenatalContent, Nothing )
 
                 LaboringLaborState id ->
@@ -490,11 +486,11 @@ view size session model =
         views =
             case model.laborState of
                 NotSelectedLaborState ->
+                    -- TODO: this will be removed once viewing historical labor
+                    -- records have been moved to the Admitting page. It will no
+                    -- longer be possible to be on this page without a selected rec.
                     [ viewLaborRecords model
                     ]
-
-                AdmittingLaborState ->
-                    [ ]
 
                 LaboringLaborState id ->
                     [ viewLaborDetails model
@@ -507,6 +503,8 @@ view size session model =
 
                 ViewingFalseLaborState id ->
                     -- Viewing a closed labor.
+                    -- TODO: consider that it should not be possible to have a false
+                    -- labor after stage 1 has arrived.
                     [ viewLaborDetails model
                     , dialogStage1Summary dialogStage1Config
                     , dialogStage2Summary dialogStage2Config
@@ -519,9 +517,11 @@ view size session model =
                     [ H.div [] [ H.text "IPPLaborState" ] ]
 
                 ContPostpartumLaborState id ->
+                    -- TODO: this will not be on this page.
                     [ H.div [] [ H.text "ContPostpartumLaborState" ] ]
 
                 PostpartumLaborState id ->
+                    -- TODO: this will not be on this page.
                     [ H.div [] [ H.text "PostpartumLaborState" ] ]
 
         _ =
@@ -536,16 +536,7 @@ view size session model =
 viewLaborDetails : Model -> Html SubMsg
 viewLaborDetails model =
     H.div [ HA.class "content-flex-wrapper" ]
-        [ H.div [ HA.class "c-tabs" ]
-            [ H.div [ HA.class "c-tabs__headings" ]
-                [ H.div [ HA.class "c-tab-heading c-tab-heading--active" ]
-                    [ H.text "Labor" ]
-                , H.div [ HA.class "c-tab-heading" ]
-                    [ H.text "IPP" ]
-                ]
-            ]
-        , viewStages model
-        ]
+        [ viewStages model ]
 
 
 viewDetailsNotImplemented : Model -> Html SubMsg
@@ -697,251 +688,316 @@ isStage3SummaryDone model =
             False
 
 
+{-| View the buttons used to set false labor and stage 1, 2, and 3 date/time
+and related fields. Do not show all options, but only what makes sense for
+this progression of the labor.
+
+Logic:
+  - hide false labor if labor stage 1 exists and has fullDialation set.
+  - hide stage 1 if labor record has falseLabor set to True.
+  - hide stage 2 if stage 1 is hidden or labor stage 1 does not exist
+    or does not have fullDilation set.
+  - hide stage 3 if stage 2 is hidden or labor stage 2 does not exist
+    or does not have birthDatetime set.
+-}
 viewStages : Model -> Html SubMsg
 viewStages model =
-    H.div [ HA.class "stage-wrapper" ]
-        [ H.div [ HA.class "stage-content" ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 1" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage1DateTimeModal OpenDialog
-                        ]
-                        [ H.text <|
-                            case model.laborStage1Record of
-                                Just ls1rec ->
-                                    case ls1rec.fullDialation of
-                                        Just d ->
-                                            U.dateTimeHMFormatter
-                                                U.MDYDateFmt
-                                                U.DashDateSep
-                                                d
+    let
+        hideFalse =
+            case model.laborStage1Record of
+                Just s1Rec ->
+                    s1Rec.fullDialation /= Nothing
 
-                                        Nothing ->
-                                            "Click to set"
+                Nothing ->
+                    False
 
-                                Nothing ->
-                                    "Click to set"
+        hideS1 =
+            case ( model.laborRecord, model.currLaborId ) of
+                ( Just recs, Just lid ) ->
+                    case Dict.get (getLaborId lid) recs of
+                        Just rec ->
+                            rec.falseLabor
+
+                        Nothing ->
+                            False
+
+                ( _, _ ) ->
+                    -- Should not get here.
+                    False
+
+        hideS2 =
+            hideS1
+                || case model.laborStage1Record of
+                    Just rec ->
+                        rec.fullDialation == Nothing
+
+                    Nothing ->
+                        True
+
+        hideS3 =
+            hideS2
+                || case model.laborStage2Record of
+                    Just rec ->
+                        rec.birthDatetime == Nothing
+
+                    Nothing ->
+                        True
+    in
+        H.div [ HA.class "stage-wrapper" ]
+            [ H.div
+                [ HA.class "stage-content"
+                , HA.classList [ ( "isHidden", hideFalse ) ]
+                ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "False Labor" ]
+                , H.div []
+                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                        [ H.button
+                            [ HA.class "c-button c-button--ghost-brand u-small"
+                            , HE.onClick <| HandleFalseLaborDateTimeModal OpenDialog
+                            ]
+                            [ H.text <|
+                                case ( model.laborRecord, model.currLaborId ) of
+                                    ( Just recs, Just lid ) ->
+                                        case Dict.get (getLaborId lid) recs of
+                                            Just rec ->
+                                                case ( rec.falseLabor, rec.dischargeDate ) of
+                                                    ( True, Just d ) ->
+                                                        U.dateTimeHMFormatter
+                                                            U.MDYDateFmt
+                                                            U.DashDateSep
+                                                            d
+
+                                                    ( _, _ ) ->
+                                                        "Click to set"
+
+                                            Nothing ->
+                                                "Click to set"
+
+                                    ( _, _ ) ->
+                                        -- TODO: handle this path better.
+                                        "Click to set"
+                            ]
+                        , if model.browserSupportsDate then
+                            Form.dateTimeModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
+                                "False Labor Date/Time"
+                                (FldChgString >> FldChgSubMsg FalseLaborDateFld)
+                                (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
+                                (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
+                                (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                                ClearFalseLaborDateTime
+                                model.falseLaborDate
+                                model.falseLaborTime
+                          else
+                            Form.dateTimePickerModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
+                                "False Labor Date/Time"
+                                OpenDatePickerSubMsg
+                                (FldChgString >> FldChgSubMsg FalseLaborDateFld)
+                                (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
+                                (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
+                                (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                                ClearFalseLaborDateTime
+                                model.falseLaborDate
+                                model.falseLaborTime
                         ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                            "Stage 1 Date/Time"
-                            (FldChgString >> FldChgSubMsg Stage1DateFld)
-                            (FldChgString >> FldChgSubMsg Stage1TimeFld)
-                            (HandleStage1DateTimeModal CloseNoSaveDialog)
-                            (HandleStage1DateTimeModal CloseSaveDialog)
-                            ClearStage1DateTime
-                            model.stage1Date
-                            model.stage1Time
-                      else
-                        Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                            "Stage 1 Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgString >> FldChgSubMsg Stage1DateFld)
-                            (FldChgString >> FldChgSubMsg Stage1TimeFld)
-                            (HandleStage1DateTimeModal CloseNoSaveDialog)
-                            (HandleStage1DateTimeModal CloseSaveDialog)
-                            ClearStage1DateTime
-                            model.stage1Date
-                            model.stage1Time
                     ]
                 ]
-            , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    , HE.onClick <| HandleStage1SummaryModal OpenDialog
+            , H.div
+                [ HA.class "stage-content"
+                , HA.classList [ ( "isHidden", hideS1 ) ]
+                ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "Stage 1" ]
+                , H.div []
+                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                        [ H.button
+                            [ HA.class "c-button c-button--ghost-brand u-small"
+                            , HE.onClick <| HandleStage1DateTimeModal OpenDialog
+                            ]
+                            [ H.text <|
+                                case model.laborStage1Record of
+                                    Just ls1rec ->
+                                        case ls1rec.fullDialation of
+                                            Just d ->
+                                                U.dateTimeHMFormatter
+                                                    U.MDYDateFmt
+                                                    U.DashDateSep
+                                                    d
+
+                                            Nothing ->
+                                                "Click to set"
+
+                                    Nothing ->
+                                        "Click to set"
+                            ]
+                        , if model.browserSupportsDate then
+                            Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                                "Stage 1 Date/Time"
+                                (FldChgString >> FldChgSubMsg Stage1DateFld)
+                                (FldChgString >> FldChgSubMsg Stage1TimeFld)
+                                (HandleStage1DateTimeModal CloseNoSaveDialog)
+                                (HandleStage1DateTimeModal CloseSaveDialog)
+                                ClearStage1DateTime
+                                model.stage1Date
+                                model.stage1Time
+                          else
+                            Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                                "Stage 1 Date/Time"
+                                OpenDatePickerSubMsg
+                                (FldChgString >> FldChgSubMsg Stage1DateFld)
+                                (FldChgString >> FldChgSubMsg Stage1TimeFld)
+                                (HandleStage1DateTimeModal CloseNoSaveDialog)
+                                (HandleStage1DateTimeModal CloseSaveDialog)
+                                ClearStage1DateTime
+                                model.stage1Date
+                                model.stage1Time
+                        ]
                     ]
-                    [ if isStage1SummaryDone model then
-                        H.i [ HA.class "fa fa-check" ]
-                            [ H.text "" ]
-                      else
-                        H.span [] [ H.text "" ]
-                    , H.text " Summary"
+                , H.div []
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage1SummaryModal OpenDialog
+                        ]
+                        [ if isStage1SummaryDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
+                    ]
+                ]
+            , H.div
+                [ HA.class "stage-content"
+                , HA.classList [ ( "isHidden", hideS2 ) ]
+                ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "Stage 2" ]
+                , H.div []
+                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                        [ H.button
+                            [ HA.class "c-button c-button--ghost-brand u-small"
+                            , HE.onClick <| HandleStage2DateTimeModal OpenDialog
+                            ]
+                            [ H.text <|
+                                case model.laborStage2Record of
+                                    Just ls2rec ->
+                                        case ls2rec.birthDatetime of
+                                            Just d ->
+                                                U.dateTimeHMFormatter
+                                                    U.MDYDateFmt
+                                                    U.DashDateSep
+                                                    d
+
+                                            Nothing ->
+                                                "Click to set"
+
+                                    Nothing ->
+                                        "Click to set"
+                            ]
+                        , if model.browserSupportsDate then
+                            Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                                "Stage 2 Date/Time"
+                                (FldChgString >> FldChgSubMsg Stage2DateFld)
+                                (FldChgString >> FldChgSubMsg Stage2TimeFld)
+                                (HandleStage2DateTimeModal CloseNoSaveDialog)
+                                (HandleStage2DateTimeModal CloseSaveDialog)
+                                ClearStage2DateTime
+                                model.stage2Date
+                                model.stage2Time
+                          else
+                            Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                                "Stage 2 Date/Time"
+                                OpenDatePickerSubMsg
+                                (FldChgString >> FldChgSubMsg Stage2DateFld)
+                                (FldChgString >> FldChgSubMsg Stage2TimeFld)
+                                (HandleStage2DateTimeModal CloseNoSaveDialog)
+                                (HandleStage2DateTimeModal CloseSaveDialog)
+                                ClearStage2DateTime
+                                model.stage2Date
+                                model.stage2Time
+                        ]
+                    ]
+                , H.div []
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage2SummaryModal OpenDialog
+                        ]
+                        [ if isStage2SummaryDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
+                    ]
+                ]
+            , H.div
+                [ HA.class "stage-content"
+                , HA.classList [ ( "isHidden", hideS3 ) ]
+                ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "Stage 3" ]
+                , H.div []
+                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                        [ H.button
+                            [ HA.class "c-button c-button--ghost-brand u-small"
+                            , HE.onClick <| HandleStage3DateTimeModal OpenDialog
+                            ]
+                            [ H.text <|
+                                case model.laborStage3Record of
+                                    Just ls3rec ->
+                                        case ls3rec.placentaDatetime of
+                                            Just d ->
+                                                U.dateTimeHMFormatter
+                                                    U.MDYDateFmt
+                                                    U.DashDateSep
+                                                    d
+
+                                            Nothing ->
+                                                "Click to set"
+
+                                    Nothing ->
+                                        "Click to set"
+                            ]
+                        , if model.browserSupportsDate then
+                            Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                                "Stage 3 Date/Time"
+                                (FldChgString >> FldChgSubMsg Stage3DateFld)
+                                (FldChgString >> FldChgSubMsg Stage3TimeFld)
+                                (HandleStage3DateTimeModal CloseNoSaveDialog)
+                                (HandleStage3DateTimeModal CloseSaveDialog)
+                                ClearStage3DateTime
+                                model.stage3Date
+                                model.stage3Time
+                          else
+                            Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                                "Stage 3 Date/Time"
+                                OpenDatePickerSubMsg
+                                (FldChgString >> FldChgSubMsg Stage3DateFld)
+                                (FldChgString >> FldChgSubMsg Stage3TimeFld)
+                                (HandleStage3DateTimeModal CloseNoSaveDialog)
+                                (HandleStage3DateTimeModal CloseSaveDialog)
+                                ClearStage3DateTime
+                                model.stage3Date
+                                model.stage3Time
+                        ]
+                    ]
+                , H.div []
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage3SummaryModal OpenDialog
+                        ]
+                        [ if isStage3SummaryDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
                     ]
                 ]
             ]
-        , H.div [ HA.class "stage-content" ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 2" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage2DateTimeModal OpenDialog
-                        ]
-                        [ H.text <|
-                            case model.laborStage2Record of
-                                Just ls2rec ->
-                                    case ls2rec.birthDatetime of
-                                        Just d ->
-                                            U.dateTimeHMFormatter
-                                                U.MDYDateFmt
-                                                U.DashDateSep
-                                                d
-
-                                        Nothing ->
-                                            "Click to set"
-
-                                Nothing ->
-                                    "Click to set"
-                        ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                            "Stage 2 Date/Time"
-                            (FldChgString >> FldChgSubMsg Stage2DateFld)
-                            (FldChgString >> FldChgSubMsg Stage2TimeFld)
-                            (HandleStage2DateTimeModal CloseNoSaveDialog)
-                            (HandleStage2DateTimeModal CloseSaveDialog)
-                            ClearStage2DateTime
-                            model.stage2Date
-                            model.stage2Time
-                      else
-                        Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                            "Stage 2 Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgString >> FldChgSubMsg Stage2DateFld)
-                            (FldChgString >> FldChgSubMsg Stage2TimeFld)
-                            (HandleStage2DateTimeModal CloseNoSaveDialog)
-                            (HandleStage2DateTimeModal CloseSaveDialog)
-                            ClearStage2DateTime
-                            model.stage2Date
-                            model.stage2Time
-                    ]
-                ]
-            , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    , HE.onClick <| HandleStage2SummaryModal OpenDialog
-                    ]
-                    [ if isStage2SummaryDone model then
-                        H.i [ HA.class "fa fa-check" ]
-                            [ H.text "" ]
-                      else
-                        H.span [] [ H.text "" ]
-                    , H.text " Summary"
-                    ]
-                ]
-            ]
-        , H.div [ HA.class "stage-content" ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 3" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage3DateTimeModal OpenDialog
-                        ]
-                        [ H.text <|
-                            case model.laborStage3Record of
-                                Just ls3rec ->
-                                    case ls3rec.placentaDatetime of
-                                        Just d ->
-                                            U.dateTimeHMFormatter
-                                                U.MDYDateFmt
-                                                U.DashDateSep
-                                                d
-
-                                        Nothing ->
-                                            "Click to set"
-
-                                Nothing ->
-                                    "Click to set"
-                        ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                            "Stage 3 Date/Time"
-                            (FldChgString >> FldChgSubMsg Stage3DateFld)
-                            (FldChgString >> FldChgSubMsg Stage3TimeFld)
-                            (HandleStage3DateTimeModal CloseNoSaveDialog)
-                            (HandleStage3DateTimeModal CloseSaveDialog)
-                            ClearStage3DateTime
-                            model.stage3Date
-                            model.stage3Time
-                      else
-                        Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                            "Stage 3 Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgString >> FldChgSubMsg Stage3DateFld)
-                            (FldChgString >> FldChgSubMsg Stage3TimeFld)
-                            (HandleStage3DateTimeModal CloseNoSaveDialog)
-                            (HandleStage3DateTimeModal CloseSaveDialog)
-                            ClearStage3DateTime
-                            model.stage3Date
-                            model.stage3Time
-                    ]
-                ]
-            , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    , HE.onClick <| HandleStage3SummaryModal OpenDialog
-                    ]
-                    [ if isStage3SummaryDone model then
-                        H.i [ HA.class "fa fa-check" ]
-                            [ H.text "" ]
-                      else
-                        H.span [] [ H.text "" ]
-                    , H.text " Summary"
-                    ]
-                ]
-            ]
-        , H.div [ HA.class "stage-content" ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "False Labor" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleFalseLaborDateTimeModal OpenDialog
-                        ]
-                        [ H.text <|
-                            case ( model.laborRecord, model.currLaborId ) of
-                                ( Just recs, Just lid ) ->
-                                    case Dict.get (getLaborId lid) recs of
-                                        Just rec ->
-                                            case ( rec.falseLabor, rec.dischargeDate ) of
-                                                ( True, Just d ) ->
-                                                    U.dateTimeHMFormatter
-                                                        U.MDYDateFmt
-                                                        U.DashDateSep
-                                                        d
-
-                                                ( _, _ ) ->
-                                                    "Click to set"
-
-                                        Nothing ->
-                                            "Click to set"
-
-                                ( _, _ ) ->
-                                    -- TODO: handle this path better.
-                                    "Click to set"
-                        ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
-                            "Stage 3 Date/Time"
-                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
-                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
-                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
-                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
-                            ClearFalseLaborDateTime
-                            model.falseLaborDate
-                            model.falseLaborTime
-                      else
-                        Form.dateTimePickerModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
-                            "Stage 3 Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
-                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
-                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
-                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
-                            ClearFalseLaborDateTime
-                            model.falseLaborDate
-                            model.falseLaborTime
-                    ]
-                ]
-            ]
-        ]
 
 
 
@@ -1952,6 +2008,8 @@ dialogStage3SummaryEdit cfg =
 {-| Show current admitting labor record and any historical
 "false" labor records. Allow user to click on a historical
 record to view it, etc.
+
+TODO: this needs to be moved to the Admitting page.
 -}
 viewLaborRecords : Model -> Html SubMsg
 viewLaborRecords model =
@@ -2104,8 +2162,7 @@ update session msg model =
 
         TickSubMsg time ->
             -- Keep the current time in the Model.
-            --( { model | currTime = time }, Cmd.none, Cmd.none )
-            ( { model | currTime = time }, Cmd.none, logConsole <| "LaborDelIpp TickSubMsg: " ++ (toString time) )
+            ( { model | currTime = time }, Cmd.none, Cmd.none )
 
         OpenDatePickerSubMsg id ->
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
@@ -3302,7 +3359,7 @@ update session msg model =
             ( { model
                 | currLaborId = Just laborId
                 , laborState = ViewingFalseLaborState laborId
-            }
+              }
             , Cmd.none
             , Cmd.none
             )

@@ -231,7 +231,7 @@
 
 /* Modals */
 .isHidden {
-  display: none;
+  display: none !important;
 }
 .dateTimeModal {
   width: 20em;
