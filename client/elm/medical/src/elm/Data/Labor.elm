@@ -1,6 +1,7 @@
 module Data.Labor
     exposing
         ( getLaborId
+        , getMostRecentLaborRecord
         , LaborId(..)
         , LaborRecord
         , laborRecord
@@ -11,11 +12,13 @@ module Data.Labor
         )
 
 import Date exposing (Date)
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Decode.Extra as JDE
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Json.Encode.Extra as JEE
+import List
 
 
 -- LOCAL IMPORTS --
@@ -167,3 +170,15 @@ laborRecordNewToLaborRecord (LaborId id) lrn =
         lrn.temp
         lrn.comments
         lrn.pregnancy_id
+
+
+getMostRecentLaborRecord : Dict Int LaborRecord -> Maybe LaborRecord
+getMostRecentLaborRecord recs =
+    let
+        -- Sort by the admittanceDate, descending.
+        admitSort a b =
+            U.sortDate U.DescendingSort a.admittanceDate b.admittanceDate
+    in
+        List.sortWith admitSort (Dict.values recs)
+            |> List.head
+

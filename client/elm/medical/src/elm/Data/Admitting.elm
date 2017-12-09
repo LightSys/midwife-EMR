@@ -39,6 +39,8 @@ type AdmittingSubMsg
     | FldChgSubMsg Field FldChgValue
       -- Date picker for add/edit labor form.
     | OpenDatePickerSubMsg String
+      -- View an existing labor record.
+    | ViewLaborRecord LaborId
 
 
 type Field

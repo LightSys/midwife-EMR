@@ -81,21 +81,13 @@ import Msg exposing (logConsole, Msg(..), ProcessType(..), toastInfo, toastWarn,
 import Page.Errored as Errored exposing (PageLoadError)
 import Ports
 import Processing exposing (ProcessStore)
+import Route
 import Util as U exposing ((=>))
 import Views.Form as Form
 import Views.PregnancyHeader as PregHeaderView
 
 
 -- MODEL --
-
-
-type LaborState
-    = NotSelectedLaborState
-    | LaboringLaborState LaborId
-    | ViewingFalseLaborState LaborId
-    | IPPLaborState LaborId
-    | ContPostpartumLaborState LaborId
-    | PostpartumLaborState LaborId
 
 
 type DateTimeModal
@@ -130,7 +122,6 @@ type alias Model =
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
-    , laborState : LaborState
     , admittanceDate : Maybe Date
     , admittanceTime : Maybe String
     , laborDate : Maybe Date
@@ -200,6 +191,9 @@ type alias Model =
     }
 
 
+{-| Builds the initial model for the page. If the pregnancy has more than
+one labor record, the most recent is always chosen.
+-}
 buildModel :
     Bool
     -> Time
@@ -217,58 +211,44 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
 
         -- Determine state of the labor by labor records, if any, and
         -- request additional records from the server if needed.
-        ( laborState, ( newStore, newOuterMsg ) ) =
+        ( laborId, ( newStore, newOuterMsg ) ) =
             case laborRecs of
                 Just recs ->
+                    -- Get the most recent labor record.
                     case
                         List.sortWith admitSort (Dict.values recs)
                             |> List.head
                     of
                         Just rec ->
-                            -- TODO: refactor this to work when there are multiple labors
-                            -- and to correctly ascertain the LaborId.
-                            if rec.dischargeDate == Nothing then
-                                ( LaboringLaborState (LaborId rec.id)
-                                , getLaborDetails (LaborId rec.id) store
-                                )
-                            else if rec.falseLabor then
-                                ( NotSelectedLaborState, ( store, Cmd.none ) )
-                            else
-                                ( ViewingFalseLaborState (LaborId rec.id)
-                                , getLaborDetails (LaborId rec.id) store
-                                )
+                            ( Just <| LaborId rec.id
+                            , getLaborDetails (LaborId rec.id) store
+                            )
 
                         Nothing ->
-                            ( NotSelectedLaborState, ( store, Cmd.none ) )
+                            -- Since no labor is selected, we cannot be on this page.
+                            ( Nothing
+                            , ( store
+                              , Just Route.AdmittingRoute
+                                  |> Task.succeed
+                                  |> Task.perform SetRoute
+                              )
+                            )
 
                 Nothing ->
-                    ( NotSelectedLaborState, ( store, Cmd.none ) )
-
-        ( pregHeaderContent, laborId ) =
-            case laborState of
-                NotSelectedLaborState ->
-                    ( PregHeaderData.PrenatalContent, Nothing )
-
-                LaboringLaborState id ->
-                    ( PregHeaderData.LaborContent, Just id )
-
-                ViewingFalseLaborState id ->
-                    ( PregHeaderData.IPPContent, Just id )
-
-                IPPLaborState id ->
-                    ( PregHeaderData.IPPContent, Just id )
-
-                ContPostpartumLaborState id ->
-                    ( PregHeaderData.IPPContent, Just id )
-
-                PostpartumLaborState id ->
-                    ( PregHeaderData.IPPContent, Just id )
+                    -- Since no labor is selected, we cannot be on this page.
+                    ( Nothing
+                    , ( store
+                        , Just Route.AdmittingRoute
+                            |> Task.succeed
+                            |> Task.perform SetRoute
+                        )
+                    )
     in
         ( Model browserSupportsDate
             currTime
             pregId
             laborId
-            pregHeaderContent
+            PregHeaderData.LaborContent
             Dict.empty
             patrec
             pregRec
@@ -276,7 +256,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             Nothing
             Nothing
             Nothing
-            laborState
             Nothing
             Nothing
             Nothing
@@ -482,54 +461,17 @@ view size session model =
 
                 ( _, _ ) ->
                     H.text ""
-
-        views =
-            case model.laborState of
-                NotSelectedLaborState ->
-                    -- TODO: this will be removed once viewing historical labor
-                    -- records have been moved to the Admitting page. It will no
-                    -- longer be possible to be on this page without a selected rec.
-                    [ viewLaborRecords model
-                    ]
-
-                LaboringLaborState id ->
-                    [ viewLaborDetails model
-                    , dialogStage1Summary dialogStage1Config
-                    , dialogStage2Summary dialogStage2Config
-                    , dialogStage3Summary dialogStage3Config
-                      --, viewDetailsTableTEMP model
-                    , viewDetailsNotImplemented model
-                    ]
-
-                ViewingFalseLaborState id ->
-                    -- Viewing a closed labor.
-                    -- TODO: consider that it should not be possible to have a false
-                    -- labor after stage 1 has arrived.
-                    [ viewLaborDetails model
-                    , dialogStage1Summary dialogStage1Config
-                    , dialogStage2Summary dialogStage2Config
-                    , dialogStage3Summary dialogStage3Config
-                      --, viewDetailsTableTEMP model
-                    , viewDetailsNotImplemented model
-                    ]
-
-                IPPLaborState id ->
-                    [ H.div [] [ H.text "IPPLaborState" ] ]
-
-                ContPostpartumLaborState id ->
-                    -- TODO: this will not be on this page.
-                    [ H.div [] [ H.text "ContPostpartumLaborState" ] ]
-
-                PostpartumLaborState id ->
-                    -- TODO: this will not be on this page.
-                    [ H.div [] [ H.text "PostpartumLaborState" ] ]
-
-        _ =
-            Debug.log "LaborDelIpp.view model.laborState" <| toString model.laborState
     in
         H.div []
             [ pregHeader |> H.map (\a -> RotatePregHeaderContent a)
-            , H.div [ HA.class "content-wrapper" ] views
+            , H.div [ HA.class "content-wrapper" ]
+                [ viewLaborDetails model
+                , dialogStage1Summary dialogStage1Config
+                , dialogStage2Summary dialogStage2Config
+                , dialogStage3Summary dialogStage3Config
+                  --, viewDetailsTableTEMP model
+                , viewDetailsNotImplemented model
+                ]
             ]
 
 
@@ -2005,70 +1947,6 @@ dialogStage3SummaryEdit cfg =
             ]
 
 
-{-| Show current admitting labor record and any historical
-"false" labor records. Allow user to click on a historical
-record to view it, etc.
-
-TODO: this needs to be moved to the Admitting page.
--}
-viewLaborRecords : Model -> Html SubMsg
-viewLaborRecords model =
-    let
-        showDate date =
-            U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep date
-
-        makeRow rec =
-            H.tr
-                [ HA.class "c-table__row c-table__row--clickable"
-                , HE.onClick <| ViewLaborRecord (LaborId rec.id)
-                ]
-                [ H.td [ HA.class "c-table__cell" ]
-                    [ H.text <| showDate rec.startLaborDate ]
-                , H.td [ HA.class "c-table__cell" ]
-                    [ H.text <| showDate rec.admittanceDate ]
-                , H.td [ HA.class "c-table__cell" ]
-                    [ H.text <|
-                        case rec.dischargeDate of
-                            Just d ->
-                                showDate d
-
-                            Nothing ->
-                                ""
-                    ]
-                ]
-    in
-        case model.laborRecord of
-            Just laborRecs ->
-                if not (Dict.isEmpty laborRecs) then
-                    H.div []
-                        [ H.h2 [ HA.class "c-heading" ]
-                            [ H.text "Admitting Details" ]
-                        , H.table [ HA.class "c-table c-table--condensed" ]
-                            [ H.thead [ HA.class "c-table__head" ]
-                                [ H.tr [ HA.class "c-table__row c-table__row--heading" ]
-                                    [ H.th [ HA.class "c-table__cell" ]
-                                        [ H.text "Labor" ]
-                                    , H.th [ HA.class "c-table__cell" ]
-                                        [ H.text "Admitted" ]
-                                    , H.th [ HA.class "c-table__cell" ]
-                                        [ H.text "False Labor" ]
-                                    ]
-                                ]
-                            , H.tbody [ HA.class "c-table__body" ] <|
-                                List.map makeRow
-                                    (List.sortBy
-                                        (\rec -> negate <| Date.toTime rec.admittanceDate)
-                                        (Dict.values laborRecs)
-                                    )
-                            ]
-                        ]
-                else
-                    H.div [] [ H.text "" ]
-
-            Nothing ->
-                H.div [] [ H.text "" ]
-
-
 
 -- UPDATE --
 
@@ -3358,7 +3236,6 @@ update session msg model =
         ViewLaborRecord laborId ->
             ( { model
                 | currLaborId = Just laborId
-                , laborState = ViewingFalseLaborState laborId
               }
             , Cmd.none
             , Cmd.none
@@ -3369,8 +3246,8 @@ update session msg model =
 -}
 deriveLaborStage1RecordNew : Model -> Maybe LaborStage1RecordNew
 deriveLaborStage1RecordNew model =
-    case model.laborState of
-        LaboringLaborState (LaborId id) ->
+    case model.currLaborId of
+        Just (LaborId id) ->
             -- We have an admittance record, so we are allowed to have
             -- a stage one record too.
             let
@@ -3401,8 +3278,8 @@ deriveLaborStage1RecordNew model =
 
 deriveLaborStage2RecordNew : Model -> Maybe LaborStage2RecordNew
 deriveLaborStage2RecordNew model =
-    case model.laborState of
-        LaboringLaborState (LaborId id) ->
+    case model.currLaborId of
+        Just (LaborId id) ->
             let
                 birthDatetime =
                     case ( model.stage2Date, model.stage2Time ) of
@@ -3444,8 +3321,8 @@ deriveLaborStage2RecordNew model =
 
 deriveLaborStage3RecordNew : Model -> Maybe LaborStage3RecordNew
 deriveLaborStage3RecordNew model =
-    case model.laborState of
-        LaboringLaborState (LaborId id) ->
+    case model.currLaborId of
+        Just (LaborId id) ->
             let
                 placentaDatetime =
                     case ( model.stage3Date, model.stage3Time ) of

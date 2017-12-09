@@ -28,6 +28,7 @@ import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldT
 import Data.Labor
     exposing
         ( getLaborId
+        , getMostRecentLaborRecord
         , LaborId(..)
         , LaborRecord
         , LaborRecordNew
@@ -98,34 +99,28 @@ buildModel :
     -> ( Model, ProcessStore, Cmd Msg )
 buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
     let
-        -- Sort by the admittanceDate, descending.
-        admitSort a b =
-            U.sortDate U.DescendingSort a.admittanceDate b.admittanceDate
-
         -- Determine state of the labor by labor records, if any, and
         -- request additional records from the server if needed.
         ( admissionState, ( newStore, newOuterMsg ) ) =
             case laborRecs of
                 Just recs ->
-                    -- Find the latest labor record by date of admittance for this pregnancy.
-                    case
-                        List.sortWith admitSort (Dict.values recs)
-                            |> List.head
-                    of
+                    case getMostRecentLaborRecord recs of
                         Just rec ->
                             if rec.dischargeDate == Nothing then
                                 -- The labor is still open, so it is active.
                                 ( AdmissionStateView (LaborId rec.id)
                                 , ( store, Cmd.none )
                                 )
-                            else if rec.falseLabor then
-                                -- The labor is closed and has been labeled a false labor.
-                                ( AdmissionStateNone, ( store, Cmd.none ) )
                             else
-                                -- Patient discharged, not a false labor.
-                                ( AdmissionStateNone
-                                , ( store, Cmd.none )
-                                )
+                                -- There was a discharge date.
+                                if rec.falseLabor then
+                                    -- The labor is closed and has been labeled a false labor.
+                                    ( AdmissionStateNone, ( store, Cmd.none ) )
+                                else
+                                    -- Patient discharged, not a false labor.
+                                    ( AdmissionStateView (LaborId rec.id)
+                                    , ( store, Cmd.none )
+                                    )
 
                         Nothing ->
                             -- Shouldn't really get here.
@@ -223,16 +218,51 @@ view size session model =
                 ( _, _ ) ->
                     H.text ""
 
+        laborRec =
+            getCurrentLaborRec model
+
+        isCurrentNewest =
+            case (laborRec, model.laborRecord) of
+                (Just currRec, Just recs) ->
+                    case getMostRecentLaborRecord recs of
+                        Just rec ->
+                            rec.id == currRec.id
+
+                        Nothing ->
+                            True
+
+                (_, _) ->
+                    True
+
         views =
             case model.admissionState of
                 AdmissionStateNone ->
-                    [ viewAdmitButton ]
+                    [ viewAdmitButton
+                    , viewLaborRecords model
+                    ]
 
                 AdmissionStateNew ->
                     [ viewAdmitForm Nothing model ]
 
                 AdmissionStateView laborId ->
-                    [ viewAdmittingData model ]
+                    [ case laborRec of
+                        Just rec ->
+                            if rec.falseLabor && isCurrentNewest then
+                                -- The most recent labor record has already been
+                                -- flagged as false and it is the one being selected.
+                                -- We offer the option to start a new labor record.
+                                viewAdmitButton
+                            else
+                                -- The current labor record is not already flagged
+                                -- as a false labor, though there may be an earlier
+                                -- labor record that is, but that is beside the point.
+                                H.text ""
+
+                        Nothing ->
+                            H.text ""
+                    , viewAdmittingData model
+                    , viewLaborRecords model
+                    ]
 
                 AdmissionStateEdit laborId ->
                     [ viewAdmitForm (Just laborId) model ]
@@ -253,44 +283,104 @@ getErr fld errors =
             ""
 
 
+{-| Show current admitting labor record and any historical
+"false" labor records. Allow user to click on a historical
+record to view it, etc.
+-}
+viewLaborRecords : Model -> Html AdmittingSubMsg
+viewLaborRecords model =
+    let
+        showDate date =
+            U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep date
+
+        makeRow rec =
+            H.tr
+                [ HA.class "c-table__row c-table__row--clickable"
+                , HE.onClick <| ViewLaborRecord (LaborId rec.id)
+                ]
+                [ H.td [ HA.class "c-table__cell" ]
+                    [ H.text <| showDate rec.startLaborDate ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text <| showDate rec.admittanceDate ]
+                , H.td [ HA.class "c-table__cell" ]
+                    [ H.text <|
+                        case rec.dischargeDate of
+                            Just d ->
+                                showDate d
+
+                            Nothing ->
+                                ""
+                    ]
+                ]
+    in
+        case model.laborRecord of
+            Just laborRecs ->
+                if not (Dict.isEmpty laborRecs) then
+                    H.div []
+                        [ H.h2 [ HA.class "c-heading" ]
+                            [ H.text "Admitting Details (Newest top)" ]
+                        , H.table [ HA.class "c-table c-table--condensed" ]
+                            [ H.thead [ HA.class "c-table__head" ]
+                                [ H.tr [ HA.class "c-table__row c-table__row--heading" ]
+                                    [ H.th [ HA.class "c-table__cell" ]
+                                        [ H.text "Labor" ]
+                                    , H.th [ HA.class "c-table__cell" ]
+                                        [ H.text "Admitted" ]
+                                    , H.th [ HA.class "c-table__cell" ]
+                                        [ H.text "False Labor" ]
+                                    ]
+                                ]
+                            , H.tbody [ HA.class "c-table__body" ] <|
+                                List.map makeRow
+                                    (List.sortBy
+                                        (\rec -> negate <| Date.toTime rec.admittanceDate)
+                                        (Dict.values laborRecs)
+                                    )
+                            ]
+                        ]
+                else
+                    H.div [] [ H.text "" ]
+
+            Nothing ->
+                H.div [] [ H.text "" ]
+
+
 viewAdmittingData : Model -> Html AdmittingSubMsg
 viewAdmittingData model =
     let
+        laborRec =
+            getCurrentLaborRec model
+
         ( admitDate, startDate, pos, fh, fht, sys, dia, cr ) =
-            case ( model.laborRecord, model.currLaborId ) of
-                ( Just recs, Just lid ) ->
-                    case Dict.get (getLaborId lid) recs of
-                        Just rec ->
-                            ( rec.admittanceDate |> U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep
-                            , rec.startLaborDate |> U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep
-                            , rec.pos
-                            , toString rec.fh
-                            , toString rec.fht
-                            , toString rec.systolic
-                            , toString rec.diastolic
-                            , toString rec.cr
-                            )
+            case laborRec of
+                Just rec ->
+                    ( rec.admittanceDate |> U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep
+                    , rec.startLaborDate |> U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep
+                    , rec.pos
+                    , toString rec.fh
+                    , toString rec.fht
+                    , toString rec.systolic
+                    , toString rec.diastolic
+                    , toString rec.cr
+                    )
 
-                        Nothing ->
-                            ( "", "", "", "", "", "", "", "" )
-
-                ( _, _ ) ->
+                Nothing ->
                     ( "", "", "", "", "", "", "", "" )
 
-        ( temp, comments ) =
-            case ( model.laborRecord, model.currLaborId ) of
-                ( Just recs, Just lid ) ->
-                    case Dict.get (getLaborId lid) recs of
-                        Just rec ->
-                            ( toString rec.temp
-                            , Maybe.withDefault "" rec.comments
-                            )
+        ( temp, comments, falseLabor ) =
+            case laborRec of
+                Just rec ->
+                    ( toString rec.temp
+                    , Maybe.withDefault "" rec.comments
+                    , rec.falseLabor
+                    )
 
-                        Nothing ->
-                            ( "", "" )
+                Nothing ->
+                    ( "", "", False )
 
-                ( _, _ ) ->
-                    ( "", "" )
+        title =
+            "Admitting Information"
+                |> (\s -> if falseLabor then s ++ " (false labor)" else s)
     in
         H.div
             [ HA.class "u-high"
@@ -300,7 +390,7 @@ viewAdmittingData model =
                 ]
             ]
             [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Admitting information" ]
+                [ H.text title ]
             , H.div []
                 [ H.div [ HA.class "o-fieldset form-wrapper" ]
                     [ H.div [ HA.class "mw-form-field-2x" ]
@@ -362,6 +452,7 @@ viewAdmittingData model =
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--ghost u-small"
+                        , HA.classList [ ( "isHidden", falseLabor ) ]
                         , case model.currLaborId of
                             Just lid ->
                                 HE.onClick (EditAdmittance lid)
@@ -502,6 +593,22 @@ viewAdmitButton =
 
 
 
+getCurrentLaborRec : Model -> Maybe LaborRecord
+getCurrentLaborRec model =
+    case ( model.laborRecord, model.currLaborId ) of
+        ( Just recs, Just lid ) ->
+            case Dict.get (getLaborId lid) recs of
+                Just rec ->
+                    Just rec
+
+                Nothing ->
+                    Nothing
+
+        ( _, _ ) ->
+            Nothing
+
+
+
 -- UPDATE --
 
 
@@ -631,7 +738,7 @@ update session msg model =
                     , temp = Nothing
                     , comments = Nothing
                     , formErrors = []
-                }
+                  }
                 , Cmd.none
                 , Cmd.none
                 )
@@ -642,63 +749,75 @@ update session msg model =
                 [] ->
                     let
                         newOuterMsg =
-                            case ( model.laborRecord, laborId ) of
-                                ( Just recs, Just lid ) ->
-                                    case Dict.get (getLaborId lid) recs of
-                                        Just rec ->
-                                            -- Saving an existing record; note that we do not handle
-                                            -- the fields that do not make sense on this page such as
-                                            -- falseLabor and dischargeDate.
-                                            let
-                                                laborRec =
-                                                    { rec
-                                                        | admittanceDate =
-                                                            U.deriveDateFromMaybeDateMaybeString
-                                                                model.admittanceDate
-                                                                model.admittanceTime
-                                                                rec.admittanceDate
-                                                        , startLaborDate =
-                                                            U.deriveDateFromMaybeDateMaybeString
-                                                                model.laborDate
-                                                                model.laborTime
-                                                                rec.startLaborDate
-                                                        , pos = Maybe.withDefault "" model.pos
-                                                        , fh =
-                                                            U.maybeStringToMaybeInt model.fh
-                                                                |> Maybe.withDefault 0
-                                                        , fht =
-                                                            U.maybeStringToMaybeInt model.fht
-                                                                |> Maybe.withDefault 0
-                                                        , systolic =
-                                                            U.maybeStringToMaybeInt model.systolic
-                                                                |> Maybe.withDefault 0
-                                                        , diastolic =
-                                                            U.maybeStringToMaybeInt model.diastolic
-                                                                |> Maybe.withDefault 0
-                                                        , cr =
-                                                            U.maybeStringToMaybeInt model.cr
-                                                                |> Maybe.withDefault 0
-                                                        , temp =
-                                                            U.maybeStringToMaybeFloat model.temp
-                                                                |> Maybe.withDefault 0.0
-                                                        , comments = model.comments
-                                                    }
-                                            in
+                            case getCurrentLaborRec model of
+                                Just rec ->
+                                    if rec.falseLabor then
+                                        -- Create another record since the existing record is a
+                                        -- false labor and we are not changing it anymore.
+                                        case deriveLaborRecordNew model of
+                                            Just laborRecNew ->
                                                 ProcessTypeMsg
-                                                    (UpdateLaborType
+                                                    (AddLaborType
                                                         (AdmittingMsg
-                                                            (DataCache Nothing (Just [ Labor ]))
+                                                            (AdmitForLaborSaved laborRecNew Nothing)
                                                         )
-                                                        laborRec
+                                                        laborRecNew
                                                     )
-                                                    ChgMsgType
-                                                    (laborRecordToValue laborRec)
+                                                    AddMsgType
+                                                    (laborRecordNewToValue laborRecNew)
 
-                                        Nothing ->
-                                            -- Should not get here.
-                                            Noop
+                                            Nothing ->
+                                                Noop
+                                    else
+                                        -- Saving an existing record; note that we do not handle
+                                        -- the fields that do not make sense on this page such as
+                                        -- falseLabor and dischargeDate.
+                                        let
+                                            laborRec =
+                                                { rec
+                                                    | admittanceDate =
+                                                        U.deriveDateFromMaybeDateMaybeString
+                                                            model.admittanceDate
+                                                            model.admittanceTime
+                                                            rec.admittanceDate
+                                                    , startLaborDate =
+                                                        U.deriveDateFromMaybeDateMaybeString
+                                                            model.laborDate
+                                                            model.laborTime
+                                                            rec.startLaborDate
+                                                    , pos = Maybe.withDefault "" model.pos
+                                                    , fh =
+                                                        U.maybeStringToMaybeInt model.fh
+                                                            |> Maybe.withDefault 0
+                                                    , fht =
+                                                        U.maybeStringToMaybeInt model.fht
+                                                            |> Maybe.withDefault 0
+                                                    , systolic =
+                                                        U.maybeStringToMaybeInt model.systolic
+                                                            |> Maybe.withDefault 0
+                                                    , diastolic =
+                                                        U.maybeStringToMaybeInt model.diastolic
+                                                            |> Maybe.withDefault 0
+                                                    , cr =
+                                                        U.maybeStringToMaybeInt model.cr
+                                                            |> Maybe.withDefault 0
+                                                    , temp =
+                                                        U.maybeStringToMaybeFloat model.temp
+                                                            |> Maybe.withDefault 0.0
+                                                    , comments = model.comments
+                                                }
+                                        in
+                                            ProcessTypeMsg
+                                                (UpdateLaborType
+                                                    (AdmittingMsg
+                                                        (DataCache Nothing (Just [ Labor ]))
+                                                    )
+                                                    laborRec
+                                                )
+                                                ChgMsgType
+                                                (laborRecordToValue laborRec)
 
-                                ( _, Nothing ) ->
+                                Nothing ->
                                     -- Creating a new record.
                                     case deriveLaborRecordNew model of
                                         Just laborRecNew ->
@@ -715,8 +834,6 @@ update session msg model =
                                         Nothing ->
                                             Noop
 
-                                ( _, _ ) ->
-                                    Noop
                     in
                         ( { model
                             | formErrors = []
@@ -772,35 +889,30 @@ update session msg model =
                 )
 
         EditAdmittance laborId ->
-            case ( model.currLaborId, model.laborRecord ) of
-                ( Just lid, Just recs ) ->
-                    case Dict.get (getLaborId lid) recs of
-                        Just rec ->
-                            -- Populate the fields of the form.
-                            ( { model
-                                | admissionState = AdmissionStateEdit laborId
-                                , admittanceDate = Just rec.admittanceDate
-                                , admittanceTime = Just <| U.dateToTimeString rec.admittanceDate
-                                , laborDate = Just rec.startLaborDate
-                                , laborTime = Just <| U.dateToTimeString rec.startLaborDate
-                                , pos = Just rec.pos
-                                , fh = Just (toString rec.fh)
-                                , fht = Just (toString rec.fht)
-                                , systolic = Just (toString rec.systolic)
-                                , diastolic = Just (toString rec.diastolic)
-                                , cr = Just (toString rec.cr)
-                                , temp = Just (toString rec.temp)
-                                , comments = rec.comments
-                                , formErrors = []
-                              }
-                            , Cmd.none
-                            , Cmd.none
-                            )
+            case getCurrentLaborRec model of
+                Just rec ->
+                    -- Populate the fields of the form.
+                    ( { model
+                        | admissionState = AdmissionStateEdit laborId
+                        , admittanceDate = Just rec.admittanceDate
+                        , admittanceTime = Just <| U.dateToTimeString rec.admittanceDate
+                        , laborDate = Just rec.startLaborDate
+                        , laborTime = Just <| U.dateToTimeString rec.startLaborDate
+                        , pos = Just rec.pos
+                        , fh = Just (toString rec.fh)
+                        , fht = Just (toString rec.fht)
+                        , systolic = Just (toString rec.systolic)
+                        , diastolic = Just (toString rec.diastolic)
+                        , cr = Just (toString rec.cr)
+                        , temp = Just (toString rec.temp)
+                        , comments = rec.comments
+                        , formErrors = []
+                        }
+                    , Cmd.none
+                    , Cmd.none
+                    )
 
-                        Nothing ->
-                            ( model, Cmd.none, Cmd.none )
-
-                ( _, _ ) ->
+                Nothing ->
                     ( model, Cmd.none, Cmd.none )
 
         OpenDatePickerSubMsg id ->
@@ -864,6 +976,15 @@ update session msg model =
                     , Cmd.none
                     , Cmd.none
                     )
+
+        ViewLaborRecord laborId ->
+            ( { model
+                | currLaborId = Just laborId
+                , admissionState = AdmissionStateView laborId
+              }
+            , Cmd.none
+            , Cmd.none
+            )
 
 
 {-| Derive a LaborRecordNew from the form fields, if possible.
