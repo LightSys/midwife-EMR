@@ -89,7 +89,8 @@ viewHeader winSize pregId user isLoading page =
                     [ HA.class "c-nav c-nav--inline primary-bg primary-contrast-fg" ]
                     [ (buildNavItem Large False False (AsRoute Route.LaborDelIppRoute) "Midwife-EMR" "Midwife-EMR")
                     , (buildNavItem (FA "fa fa-sign-out") True False (AsLink "/logout") " Logout" " Logout")
-                    , (buildNavItem (FA "fa fa-file-text") True False (AsRoute Route.LaborDelIppRoute) " Reports" " Rpts")
+                    -- Don't show what we have not built yet.
+                    --, (buildNavItem (FA "fa fa-file-text") True False (AsRoute Route.LaborDelIppRoute) " Reports" " Rpts")
                     , (buildNavItem (FA "fa fa-stethoscope") True False (AsLink toPrenatalUrl) " Prenatal" " Prenatal")
                     ]
                 , H.ul
@@ -99,7 +100,8 @@ viewHeader winSize pregId user isLoading page =
                     , (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIppRoute) "Labor-Delivery-IPP" "LD")
                     , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Cont-Postpartum" "CPP")
                     , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Postpartum" "PP")
-                    , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Birth-Cert" "Cert")
+                    -- Don't show what we have not build yet.
+                    --, (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Birth-Cert" "Cert")
                     ]
                 ]
             ]
