@@ -50,7 +50,7 @@ type alias Model =
     , dataCache : Dict String DataCache
     , window : Maybe Window.Size
     , siteMessages : Dict String SiteKeyValue
-    , laborRecord : Maybe (Dict Int LaborRecord)
+    , laborRecords : Maybe (Dict Int LaborRecord)
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
     }
@@ -72,7 +72,7 @@ initialModel browserSupportsDate pregId time =
         , window = Nothing
         , dataCache = Dict.empty
         , siteMessages = Dict.empty
-        , laborRecord = Nothing
+        , laborRecords = Nothing
         , patientRecord = Nothing
         , pregnancyRecord = Nothing
         }

@@ -118,7 +118,7 @@ type alias Model =
     , dataCache : Dict String DataCache
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
-    , laborRecord : Maybe (Dict Int LaborRecord)
+    , laborRecords : Maybe (Dict Int LaborRecord)
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
@@ -447,7 +447,7 @@ view size session model =
                 ( Just patRec, Just pregRec ) ->
                     let
                         laborInfo =
-                            PregHeaderData.LaborInfo model.laborRecord
+                            PregHeaderData.LaborInfo model.laborRecords
                                 model.laborStage1Record
                                 model.laborStage2Record
                                 model.laborStage3Record
@@ -654,7 +654,7 @@ viewStages model =
                     False
 
         hideS1 =
-            case ( model.laborRecord, model.currLaborId ) of
+            case ( model.laborRecords, model.currLaborId ) of
                 ( Just recs, Just lid ) ->
                     case Dict.get (getLaborId lid) recs of
                         Just rec ->
@@ -699,7 +699,7 @@ viewStages model =
                             , HE.onClick <| HandleFalseLaborDateTimeModal OpenDialog
                             ]
                             [ H.text <|
-                                case ( model.laborRecord, model.currLaborId ) of
+                                case ( model.laborRecords, model.currLaborId ) of
                                     ( Just recs, Just lid ) ->
                                         case Dict.get (getLaborId lid) recs of
                                             Just rec ->
@@ -983,7 +983,7 @@ dialogStage1SummaryEdit cfg =
                 Just rec ->
                     case rec.fullDialation of
                         Just fd ->
-                            case cfg.model.laborRecord of
+                            case cfg.model.laborRecords of
                                 Just lrecs ->
                                     case Dict.get rec.labor_id lrecs of
                                         Just laborRec ->
@@ -1084,7 +1084,7 @@ dialogStage1SummaryView cfg =
                     , Maybe.withDefault "" rec.comments
                     , case rec.fullDialation of
                         Just fd ->
-                            case cfg.model.laborRecord of
+                            case cfg.model.laborRecords of
                                 Just lrecs ->
                                     case Dict.get rec.labor_id lrecs of
                                         Just laborRec ->
@@ -1967,7 +1967,7 @@ refreshModelFromCache dc tables model =
                         Labor ->
                             case DataCache.get t dc of
                                 Just (LaborDataCache recs) ->
-                                    { m | laborRecord = Just recs }
+                                    { m | laborRecords = Just recs }
 
                                 _ ->
                                     m
@@ -3109,7 +3109,7 @@ update session msg model =
 
                 CloseSaveDialog ->
                     -- Close and send LaborRecord to server as an update.
-                    case ( model.falseLaborDate, model.falseLaborTime, model.currLaborId, model.laborRecord ) of
+                    case ( model.falseLaborDate, model.falseLaborTime, model.currLaborId, model.laborRecords ) of
                         ( Just d, Just t, Just laborId, Just recs ) ->
                             -- Setting date/time and setting the labor as a false labor.
                             case Dict.get (getLaborId laborId) recs of

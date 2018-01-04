@@ -281,7 +281,7 @@ update msg noAutoTouchModel =
                             pregId
                             model.patientRecord
                             model.pregnancyRecord
-                            model.laborRecord
+                            model.laborRecords
                 in
                     { model
                         | pageState = Loaded (Admitting subModel)
@@ -301,7 +301,7 @@ update msg noAutoTouchModel =
                             pregId
                             model.patientRecord
                             model.pregnancyRecord
-                            model.laborRecord
+                            model.laborRecords
 
                     _ =
                         Debug.log "newCmd" <| toString newCmd
@@ -431,13 +431,13 @@ updateMessage incoming model =
                                             laborRecordNewToLaborRecord
                                                 (LaborId dataAddMsg.response.id)
                                                 laborRecNew
-                                                |> (\lr -> Dict.insert dataAddMsg.response.id lr (Maybe.withDefault Dict.empty model.laborRecord))
+                                                |> (\lr -> Dict.insert dataAddMsg.response.id lr (Maybe.withDefault Dict.empty model.laborRecords))
                                                 |> Just
 
                                         subMsg =
                                             AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
                                     in
-                                        ( { model | laborRecord = laborRecs }
+                                        ( { model | laborRecords = laborRecs }
                                         , Task.perform AdmittingMsg (Task.succeed subMsg)
                                         )
 
@@ -528,14 +528,14 @@ updateMessage incoming model =
                                     -- Don't we want to do both? But if we do, which is the master record?
                                     let
                                         laborRecs =
-                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecord)
+                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecords)
 
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
                                         ( { model
                                             | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
-                                            , laborRecord = Just laborRecs
+                                            , laborRecords = Just laborRecs
                                           }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
@@ -543,14 +543,14 @@ updateMessage incoming model =
                                 Just (UpdateLaborType (AdmittingMsg (Data.Admitting.DataCache _ _)) laborRecord) ->
                                     let
                                         laborRecs =
-                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecord)
+                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecords)
 
                                         subMsg =
                                             Data.Admitting.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
                                         ( { model
                                             | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
-                                            , laborRecord = Just laborRecs
+                                            , laborRecords = Just laborRecs
                                           }
                                         , Task.perform AdmittingMsg (Task.succeed subMsg)
                                         )
@@ -629,7 +629,7 @@ updateMessage incoming model =
                                                 dictList =
                                                     List.map (\rec -> ( rec.id, rec )) recs
                                             in
-                                                { mdl | laborRecord = Just <| Dict.fromList dictList }
+                                                { mdl | laborRecords = Just <| Dict.fromList dictList }
 
                                         TableRecordLaborStage1 recs ->
                                             -- There should ever be only one stage 1 record
