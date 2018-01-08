@@ -1,10 +1,12 @@
 module Medical exposing (..)
 
+import Date exposing (Date)
 import Dict exposing (Dict)
 import Html as H exposing (Html)
 import Json.Decode as JD
 import Json.Decode.Pipeline as Pipeline exposing (decode, optional, required)
 import Json.Encode as JE
+import List.Extra as LE
 import Navigation exposing (Location)
 import Task exposing (Task)
 import Window
@@ -21,6 +23,7 @@ import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLabor
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
+import Data.Postpartum exposing (SubMsg(..))
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
@@ -32,6 +35,7 @@ import Msg exposing (logConsole, Msg(..), ProcessType(..))
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.Admitting as PageAdmitting
 import Page.LaborDelIpp as PageLaborDelIpp
+import Page.Postpartum as PagePostpartum
 import Page.NotFound as NotFound exposing (view)
 import Ports
 import Route exposing (fromLocation, Route(..))
@@ -126,6 +130,11 @@ viewPage model isLoading page =
                 PageLaborDelIpp.view model.window model.session subModel
                     |> frame ViewsPage.LaborDelIpp
                     |> H.map LaborDelIppMsg
+
+            Postpartum subModel ->
+                PagePostpartum.view model.window model.session subModel
+                    |> frame ViewsPage.Postpartum
+                    |> H.map PostpartumMsg
 
             Errored subModel ->
                 Errored.view model.session subModel
@@ -329,6 +338,73 @@ update msg noAutoTouchModel =
                         LaborDelIppMsg
                         model
                         (PageLaborDelIpp.update model.session)
+                        newSubMsg
+                        subModel
+
+            ( PostpartumLoaded pregId laborRec, _ ) ->
+                -- This page has enough of what it needs from the server in order
+                -- to display the page. The newCmd returned from
+                -- PagePostpartum.buildModel may request more data from the server.
+                let
+                    -- Get the labor stage records from the data cache which the
+                    -- init function just requested records from the server for.
+                    (stage1, stage2, stage3) =
+                        ( case DCache.get LaborStage1 model.dataCache of
+                            Just (LaborStage1DataCache s1) ->
+                                Just s1
+
+                            _ ->
+                                Nothing
+                        , case DCache.get LaborStage2 model.dataCache of
+                            Just (LaborStage2DataCache s2) ->
+                                Just s2
+
+                            _ ->
+                                Nothing
+                        , case DCache.get LaborStage3 model.dataCache of
+                            Just (LaborStage3DataCache s3) ->
+                                Just s3
+
+                            _ ->
+                                Nothing
+                        )
+
+                    ( subModel, newStore, newCmd ) =
+                        PagePostpartum.buildModel laborRec
+                            stage1
+                            stage2
+                            stage3
+                            model.babyRecords
+                            model.browserSupportsDate
+                            model.currTime
+                            model.processStore
+                            pregId
+                            model.patientRecord
+                            model.pregnancyRecord
+                in
+                    { model
+                        | pageState = Loaded (Postpartum subModel)
+                        , processStore = newStore
+                    }
+                        => newCmd
+
+            ( PostpartumMsg subMsg, Postpartum subModel ) ->
+                -- All Postpartum page sub messages are routed here.
+                let
+                    -- If the subMsg is DataCache, revise the subMsg by adding
+                    -- the current dataCache to it.
+                    newSubMsg =
+                        case subMsg of
+                            Data.Postpartum.DataCache _ tbl ->
+                                Data.Postpartum.DataCache (Just model.dataCache) tbl
+
+                            _ ->
+                                subMsg
+                in
+                    updateForPage Postpartum
+                        PostpartumMsg
+                        model
+                        (PagePostpartum.update model.session)
                         newSubMsg
                         subModel
 
@@ -624,6 +700,13 @@ updateMessage incoming model =
                             List.foldl
                                 (\tr mdl ->
                                     case tr of
+                                        TableRecordBaby recs ->
+                                            let
+                                                dictList =
+                                                    List.map (\rec -> ( rec.id, rec )) recs
+                                            in
+                                                { mdl | babyRecords = Just <| Dict.fromList dictList }
+
                                         TableRecordLabor recs ->
                                             let
                                                 dictList =
@@ -790,6 +873,33 @@ setRoute maybeRoute model =
 
                     Nothing ->
                         { model | pageState = Loaded NotFound } => Cmd.none
+
+            Just (Route.PostpartumRoute) ->
+                case (model.currPregId, model.laborRecords) of
+                    (Just pregId, Just recs) ->
+                        let
+                            -- Get the most recent labor record which we assume is
+                            -- the current one to use.
+                            laborRec =
+                                Dict.values recs
+                                    |> LE.maximumBy (\lr -> if lr.falseLabor then -1 else Date.toTime lr.admittanceDate)
+                        in
+                            case laborRec of
+                                Just rec ->
+                                    if not rec.falseLabor then
+                                        PagePostpartum.init pregId rec model.session model.processStore
+                                            |> (\( store, cmd ) -> transition store cmd)
+                                    else
+                                        -- We don't go there if we are not ready.
+                                        model => Cmd.none
+
+                                Nothing ->
+                                    -- We don't go there if we are not ready.
+                                    model => Cmd.none
+
+                    (_, _) ->
+                        -- We don't go there if we are not ready.
+                        model => Cmd.none
 
 
 pageErrored : Model -> ActivePage -> String -> ( Model, Cmd msg )

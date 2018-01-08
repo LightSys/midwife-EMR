@@ -19,6 +19,7 @@ type Table
     | LaborStage1
     | LaborStage2
     | LaborStage3
+    | Baby
 
 
 
@@ -35,6 +36,9 @@ tableToString tbl =
     case tbl of
         Unknown ->
             "unknown"
+
+        Baby ->
+            "baby"
 
         Labor ->
             "labor"
@@ -58,6 +62,9 @@ tableToString tbl =
 stringToTable : String -> Table
 stringToTable tbl =
     case tbl of
+        "baby" ->
+            Baby
+
         "labor" ->
             Labor
 

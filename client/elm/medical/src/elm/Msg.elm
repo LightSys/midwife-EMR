@@ -24,6 +24,7 @@ import Data.LaborStage1 exposing (LaborStage1Record, LaborStage1RecordNew)
 import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
 import Data.LaborStage3 exposing (LaborStage3Record, LaborStage3RecordNew)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
+import Data.Postpartum as Postpartum
 import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
 import Data.SelectQuery exposing (SelectQuery)
@@ -43,6 +44,8 @@ type Msg
     | AdmittingMsg Admitting.AdmittingSubMsg
     | LaborDelIppLoaded PregnancyId
     | LaborDelIppMsg LaborDelIpp.SubMsg
+    | PostpartumLoaded PregnancyId LaborRecord
+    | PostpartumMsg Postpartum.SubMsg
     | Message IncomingMessage
     | ProcessTypeMsg ProcessType MsgType JE.Value
     | OpenDatePicker String

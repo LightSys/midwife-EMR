@@ -18,6 +18,7 @@ type ActivePage
     = Other
     | Admitting
     | LaborDelIpp
+    | Postpartum
 
 
 {-| Display the frame including the navigation menus at the top. The
@@ -99,7 +100,7 @@ viewHeader winSize pregId user isLoading page =
                     [ (buildNavItem Small False (page == Admitting) (AsRoute Route.AdmittingRoute) "Admitting" "AD")
                     , (buildNavItem Small False (page == LaborDelIpp) (AsRoute Route.LaborDelIppRoute) "Labor-Delivery-IPP" "LD")
                     , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Cont-Postpartum" "CPP")
-                    , (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Postpartum" "PP")
+                    , (buildNavItem Small False (page == Postpartum) (AsRoute Route.PostpartumRoute) "Postpartum" "PP")
                     -- Don't show what we have not build yet.
                     --, (buildNavItem Small False False (AsRoute Route.LaborDelIppRoute) "Birth-Cert" "Cert")
                     ]

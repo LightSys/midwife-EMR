@@ -73,5 +73,9 @@ module.exports = {
   , LaborStage2s: require('./LaborStage2').LaborStage2s
   , LaborStage3: require('./LaborStage3').LaborStage3
   , LaborStage3s: require('./LaborStage3').LaborStage3s
+  , Baby: require('./Baby').Baby
+  , Babys: require('./Baby').Babys
+  , Apgar: require('./Apgar').Apgar
+  , Apgars: require('./Apgar').Apgars
 };
 

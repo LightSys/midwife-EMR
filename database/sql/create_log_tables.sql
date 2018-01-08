@@ -259,3 +259,23 @@ ALTER TABLE laborStage3Log DROP PRIMARY KEY;
 ALTER TABLE laborStage3Log ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE laborStage3Log DROP KEY labor_id;
 --
+-- Creating babyLog
+SELECT 'babyLog' AS Creating FROM DUAL;
+CREATE TABLE babyLog LIKE baby;
+ALTER TABLE babyLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyLog DROP PRIMARY KEY;
+ALTER TABLE babyLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE babyLog DROP KEY labor_id;
+--
+-- Creating apgarLog
+SELECT 'apgarLog' AS Creating FROM DUAL;
+CREATE TABLE apgarLog LIKE apgar;
+ALTER TABLE apgarLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE apgarLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE apgarLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE apgarLog DROP PRIMARY KEY;
+ALTER TABLE apgarLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE apgarLog DROP KEY baby_id;
+--

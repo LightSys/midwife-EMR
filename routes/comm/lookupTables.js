@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Promise = require('bluebird')
   , cfg = require('../../config')
   , KeyValue = require('../../models').KeyValue
+  , Apgar = require('../../models').Apgar
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
   , LaborStage2 = require('../../models').LaborStage2
@@ -40,6 +41,8 @@ var _ = require('underscore')
 // These are the lookup tables that we service.
 // --------------------------------------------------------
 var LOOKUP_TABLES = [
+  'apgar',
+  'baby',
   'eventType',
   'labor',
   'laborStage1',

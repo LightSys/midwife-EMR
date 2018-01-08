@@ -70,6 +70,10 @@ Labor = Bookshelf.Model.extend({
       return this.belongsTo(require('./Pregnancy').Pregnancy, 'pregnancy_id');
     }
 
+  , baby: function() {
+      return this.hasMany(require('./Baby').Baby, 'labor_id');
+    }
+
 }, {
   // --------------------------------------------------------
   // Class Properties.

@@ -679,6 +679,41 @@ CREATE TABLE IF NOT EXISTS `laborStage3` (
 );
 SHOW WARNINGS;
 
+CREATE TABLE IF NOT EXISTS `baby` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  birthNbr INT NOT NULL,
+  lastname VARCHAR(50) NULL,
+  firstname VARCHAR(50) NULL,
+  middlename VARCHAR(50) NULL,
+  sex ENUM('M', 'F') NOT NULL,
+  birthWeight INT NULL,
+  bFedEstablished DATETIME NULL,
+  nbsDate DATETIME NULL,
+  nbsResult VARCHAR(50) NULL,
+  bcgDate DATETIME NULL,
+  comments VARCHAR(500) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE(labor_id, birthNbr),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `apgar` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  minute INT NOT NULL,
+  score INT NOT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  baby_id INT NOT NULL,
+  UNIQUE(baby_id, minute),
+  FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;
 
 

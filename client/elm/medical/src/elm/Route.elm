@@ -10,13 +10,30 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 type Route
     = AdmittingRoute
     | LaborDelIppRoute
+    | PostpartumRoute
+
+
+admittingRouteString : String
+admittingRouteString =
+    ""
+
+
+laborDelIppRouteString : String
+laborDelIppRouteString =
+    "labordelipp"
+
+
+postpartumRouteString : String
+postpartumRouteString =
+    "postpartum"
 
 
 route : Parser (Route -> a) a
 route =
     oneOf
-        [ Url.map AdmittingRoute (s "")
-        , Url.map LaborDelIppRoute (s "labordelipp")
+        [ Url.map AdmittingRoute (s admittingRouteString)
+        , Url.map LaborDelIppRoute (s laborDelIppRouteString)
+        , Url.map PostpartumRoute (s postpartumRouteString)
         ]
 
 -- INTERNAL --
@@ -27,10 +44,13 @@ routeToString page =
         pieces =
             case page of
                 AdmittingRoute ->
-                    [ ]
+                    [ admittingRouteString ]
 
                 LaborDelIppRoute ->
-                    [ "labordelipp" ]
+                    [ laborDelIppRouteString ]
+
+                PostpartumRoute ->
+                    [ postpartumRouteString ]
     in
     case List.length pieces of
         0 ->

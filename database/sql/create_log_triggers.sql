@@ -1,5 +1,89 @@
  
 -- ---------------------------------------------------------------
+-- Trigger: apgar_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS apgar_after_insert;
+CREATE TRIGGER apgar_after_insert AFTER INSERT ON apgar
+FOR EACH ROW
+BEGIN
+  INSERT INTO apgarLog
+  (id, minute, score, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.minute, NEW.score, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: apgar_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS apgar_after_update;
+CREATE TRIGGER apgar_after_update AFTER UPDATE ON apgar
+FOR EACH ROW
+BEGIN
+  INSERT INTO apgarLog
+  (id, minute, score, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.minute, NEW.score, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: apgar_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS apgar_after_delete;
+CREATE TRIGGER apgar_after_delete AFTER DELETE ON apgar
+FOR EACH ROW
+BEGIN
+  INSERT INTO apgarLog
+  (id, minute, score, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.minute, OLD.score, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: baby_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS baby_after_insert;
+CREATE TRIGGER baby_after_insert AFTER INSERT ON baby
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLog
+  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, nbsDate, nbsResult, bcgDate, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthNbr, NEW.lastname, NEW.firstname, NEW.middlename, NEW.sex, NEW.birthWeight, NEW.bFedEstablished, NEW.nbsDate, NEW.nbsResult, NEW.bcgDate, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: baby_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS baby_after_update;
+CREATE TRIGGER baby_after_update AFTER UPDATE ON baby
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLog
+  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, nbsDate, nbsResult, bcgDate, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthNbr, NEW.lastname, NEW.firstname, NEW.middlename, NEW.sex, NEW.birthWeight, NEW.bFedEstablished, NEW.nbsDate, NEW.nbsResult, NEW.bcgDate, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: baby_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS baby_after_delete;
+CREATE TRIGGER baby_after_delete AFTER DELETE ON baby
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLog
+  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, nbsDate, nbsResult, bcgDate, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.birthNbr, OLD.lastname, OLD.firstname, OLD.middlename, OLD.sex, OLD.birthWeight, OLD.bFedEstablished, OLD.nbsDate, OLD.nbsResult, OLD.bcgDate, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: customField_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

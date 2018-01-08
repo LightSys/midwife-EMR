@@ -13,6 +13,7 @@ import Window
 
 -- LOCAL IMPORTS --
 
+import Data.Baby exposing (BabyRecord)
 import Data.DataCache exposing (DataCache)
 import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
@@ -24,6 +25,7 @@ import Data.Toast exposing (ToastRecord, ToastType)
 import Page.Admitting as PageAdmitting
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
+import Page.Postpartum as PagePostpartum
 import Processing exposing (ProcessStore)
 
 
@@ -33,6 +35,7 @@ type Page
     | Errored PageLoadError
     | Admitting PageAdmitting.Model
     | LaborDelIpp PageLaborDelIpp.Model
+    | Postpartum PagePostpartum.Model
 
 
 type PageState
@@ -53,6 +56,7 @@ type alias Model =
     , laborRecords : Maybe (Dict Int LaborRecord)
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
+    , babyRecords : Maybe (Dict Int BabyRecord)
     }
 
 
@@ -75,6 +79,7 @@ initialModel browserSupportsDate pregId time =
         , laborRecords = Nothing
         , patientRecord = Nothing
         , pregnancyRecord = Nothing
+        , babyRecords = Nothing
         }
 
 

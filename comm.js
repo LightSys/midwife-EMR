@@ -145,6 +145,8 @@ var rx = require('rx')
   , TABLE_laborStage1 = 'laborStage1'
   , TABLE_laborStage2 = 'laborStage2'
   , TABLE_laborStage3 = 'laborStage3'
+  , TABLE_apgar = 'apgar'
+  , TABLE_baby = 'baby'
   , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
   , addLabor = require('./routes/comm/labor').addLabor
   , delLabor = require('./routes/comm/labor').delLabor
@@ -1112,7 +1114,7 @@ var getTable = function(socket, json) {
   if (DO_ASSERT) assertModule.getTable(socket, json);
 
   if (json.payload && json.payload.table) {
-    console.log('=== Socket id: ' + socket.id + ', table: ' + json.payload.table + ', id: ' + json.payload.id);
+    console.log('Table: ' + json.payload.table + ', id: ' + json.payload.id + ', related: ' + json.payload.related);
 
     if (json.version && json.version === 2) {
       // Version 2
