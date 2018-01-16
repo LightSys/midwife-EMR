@@ -24,6 +24,19 @@ import Window
 -- LOCAL IMPORTS --
 
 import Const exposing (FldChgValue(..))
+import Data.Baby
+    exposing
+        ( BabyRecord
+        , BabyRecordNew
+        , babyRecordNewToValue
+        , babyRecordToValue
+        , isBabyRecordFullyComplete
+        , MaleFemale(..)
+        , maleFemaleToFullString
+        , maleFemaleToString
+        , maybeMaleFemaleToString
+        , stringToMaleFemale
+        )
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
 import Data.Labor
@@ -107,6 +120,8 @@ type StageSummaryModal
     | Stage3SummaryModal
     | Stage3SummaryViewModal
     | Stage3SummaryEditModal
+    | BabySummaryViewModal
+    | BabySummaryEditModal
 
 
 type alias Model =
@@ -122,6 +137,7 @@ type alias Model =
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
+    , babyRecord : Maybe BabyRecord
     , admittanceDate : Maybe Date
     , admittanceTime : Maybe String
     , laborDate : Maybe Date
@@ -188,6 +204,21 @@ type alias Model =
     , falseLaborDateTimeModal : DateTimeModal
     , falseLaborDate : Maybe Date
     , falseLaborTime : Maybe String
+    , babySummaryModal : StageSummaryModal
+    , bbBirthNbr : Maybe String
+    , bbLastname : Maybe String
+    , bbFirstname : Maybe String
+    , bbMiddlename : Maybe String
+    , bbSex : Maybe String
+    , bbBirthWeight : Maybe String
+    , bbBFedEstablishedDate : Maybe Date
+    , bbBFedEstablishedTime : Maybe String
+    , bbNbsDate : Maybe Date
+    , bbNbsTime : Maybe String
+    , bbNbsResult : Maybe String
+    , bbBcgDate : Maybe Date
+    , bbBcgTime : Maybe String
+    , bbComments : Maybe String
     }
 
 
@@ -229,8 +260,8 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                             ( Nothing
                             , ( store
                               , Just Route.AdmittingRoute
-                                  |> Task.succeed
-                                  |> Task.perform SetRoute
+                                    |> Task.succeed
+                                    |> Task.perform SetRoute
                               )
                             )
 
@@ -238,10 +269,10 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                     -- Since no labor is selected, we cannot be on this page.
                     ( Nothing
                     , ( store
-                        , Just Route.AdmittingRoute
+                      , Just Route.AdmittingRoute
                             |> Task.succeed
                             |> Task.perform SetRoute
-                        )
+                      )
                     )
     in
         ( Model browserSupportsDate
@@ -253,6 +284,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             patrec
             pregRec
             laborRecs
+            Nothing
             Nothing
             Nothing
             Nothing
@@ -322,6 +354,21 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             NoDateTimeModal
             Nothing
             Nothing
+            NoStageSummaryModal
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
+            Nothing
         , newStore
         , newOuterMsg
         )
@@ -335,14 +382,16 @@ getLaborDetails : LaborId -> ProcessStore -> ( ProcessStore, Cmd Msg )
 getLaborDetails lid store =
     let
         selectQuery =
-            SelectQuery Labor (Just (getLaborId lid)) [ LaborStage1, LaborStage2, LaborStage3 ]
+            SelectQuery Labor
+                (Just (getLaborId lid))
+                [ LaborStage1, LaborStage2, LaborStage3, Baby ]
 
         ( processId, processStore ) =
             Processing.add
                 (SelectQueryType
                     (LaborDelIppMsg
                         (DataCache Nothing
-                            (Just [ LaborStage1, LaborStage2, LaborStage3 ])
+                            (Just [ LaborStage1, LaborStage2, LaborStage3, Baby ])
                         )
                     )
                     selectQuery
@@ -398,6 +447,12 @@ view size session model =
             else
                 not (isStage3SummaryDone model)
 
+        isEditingBaby =
+            if model.babySummaryModal == BabySummaryEditModal then
+                True
+            else
+                not (isBabySummaryDone model)
+
         dialogStage1Config =
             DialogStage1Summary
                 (model.stage1SummaryModal
@@ -441,6 +496,20 @@ view size session model =
                 (HandleStage3SummaryModal CloseSaveDialog)
                 (HandleStage3SummaryModal EditDialog)
 
+        dialogBabyConfig =
+            DialogBabySummary
+                (model.babySummaryModal
+                    == BabySummaryViewModal
+                    || model.babySummaryModal
+                    == BabySummaryEditModal
+                )
+                isEditingBaby
+                "Baby"
+                model
+                (HandleBabySummaryModal CloseNoSaveDialog)
+                (HandleBabySummaryModal CloseSaveDialog)
+                (HandleBabySummaryModal EditDialog)
+
         -- Ascertain whether we have a labor in process already.
         pregHeader =
             case ( model.patientRecord, model.pregnancyRecord ) of
@@ -469,6 +538,7 @@ view size session model =
                 , dialogStage1Summary dialogStage1Config
                 , dialogStage2Summary dialogStage2Config
                 , dialogStage3Summary dialogStage3Config
+                , dialogBabySummary dialogBabyConfig
                   --, viewDetailsTableTEMP model
                 , viewDetailsNotImplemented model
                 ]
@@ -478,7 +548,7 @@ view size session model =
 viewLaborDetails : Model -> Html SubMsg
 viewLaborDetails model =
     H.div [ HA.class "content-flex-wrapper" ]
-        [ viewStages model ]
+        [ viewStagesBaby model ]
 
 
 viewDetailsNotImplemented : Model -> Html SubMsg
@@ -630,20 +700,32 @@ isStage3SummaryDone model =
             False
 
 
-{-| View the buttons used to set false labor and stage 1, 2, and 3 date/time
-and related fields. Do not show all options, but only what makes sense for
-this progression of the labor.
+isBabySummaryDone : Model -> Bool
+isBabySummaryDone model =
+    case model.babyRecord of
+        Just rec ->
+            isBabyRecordFullyComplete rec
+
+        _ ->
+            False
+
+
+{-| View the buttons used to set false labor, stage 1, 2, and 3 date/time
+and related fields, and the initial baby record. Do not show all options,
+but only what makes sense for this progression of the labor.
 
 Logic:
   - hide false labor if labor stage 1 exists and has fullDialation set.
   - hide stage 1 if labor record has falseLabor set to True.
   - hide stage 2 if stage 1 is hidden or labor stage 1 does not exist
-    or does not have fullDilation set.
+    or does not have fullDialation set.
   - hide stage 3 if stage 2 is hidden or labor stage 2 does not exist
     or does not have birthDatetime set.
+  - hide baby is stage 2 is hidden or if labor stage 2 does not exist
+    or does not have the birthDatetime set.
 -}
-viewStages : Model -> Html SubMsg
-viewStages model =
+viewStagesBaby : Model -> Html SubMsg
+viewStagesBaby model =
     let
         hideFalse =
             case model.laborStage1Record of
@@ -684,6 +766,9 @@ viewStages model =
 
                     Nothing ->
                         True
+
+        hideBaby =
+            hideS3
     in
         H.div [ HA.class "stage-wrapper" ]
             [ H.div
@@ -739,6 +824,7 @@ viewStages model =
                                 (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
                                 (HandleFalseLaborDateTimeModal CloseSaveDialog)
                                 ClearFalseLaborDateTime
+                                FalseLaborDateField
                                 model.falseLaborDate
                                 model.falseLaborTime
                         ]
@@ -791,6 +877,7 @@ viewStages model =
                                 (HandleStage1DateTimeModal CloseNoSaveDialog)
                                 (HandleStage1DateTimeModal CloseSaveDialog)
                                 ClearStage1DateTime
+                                LaborDelIppStage1DateField
                                 model.stage1Date
                                 model.stage1Time
                         ]
@@ -856,6 +943,7 @@ viewStages model =
                                 (HandleStage2DateTimeModal CloseNoSaveDialog)
                                 (HandleStage2DateTimeModal CloseSaveDialog)
                                 ClearStage2DateTime
+                                LaborDelIppStage2DateField
                                 model.stage2Date
                                 model.stage2Time
                         ]
@@ -921,6 +1009,7 @@ viewStages model =
                                 (HandleStage3DateTimeModal CloseNoSaveDialog)
                                 (HandleStage3DateTimeModal CloseSaveDialog)
                                 ClearStage3DateTime
+                                LaborDelIppStage3DateField
                                 model.stage3Date
                                 model.stage3Time
                         ]
@@ -931,6 +1020,26 @@ viewStages model =
                         , HE.onClick <| HandleStage3SummaryModal OpenDialog
                         ]
                         [ if isStage3SummaryDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
+                    ]
+                ]
+            , H.div
+                [ HA.class "stage-content"
+                , HA.classList [ ( "isHidden", hideBaby ) ]
+                ]
+                [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                    [ H.text "Baby" ]
+                , H.div []
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleBabySummaryModal OpenDialog
+                        ]
+                        [ if isBabySummaryDone model then
                             H.i [ HA.class "fa fa-check" ]
                                 [ H.text "" ]
                           else
@@ -1948,6 +2057,398 @@ dialogStage3SummaryEdit cfg =
 
 
 
+-- Modal for Baby Summary --
+
+
+type alias DialogBabySummary =
+    { isShown : Bool
+    , isEditing : Bool
+    , title : String
+    , model : Model
+    , closeMsg : SubMsg
+    , saveMsg : SubMsg
+    , editMsg : SubMsg
+    }
+
+
+dialogBabySummary : DialogStage3Summary -> Html SubMsg
+dialogBabySummary cfg =
+    case cfg.isEditing of
+        True ->
+            dialogBabySummaryEdit cfg
+
+        False ->
+            dialogBabySummaryView cfg
+
+
+dialogBabySummaryView : DialogBabySummary -> Html SubMsg
+dialogBabySummaryView cfg =
+    let
+        dateString date =
+            case date of
+                Just d ->
+                    U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep d
+
+                Nothing ->
+                    ""
+
+        ( lastname, firstname, middlename, sex, birthWeight, bFed ) =
+            case cfg.model.babyRecord of
+                Just rec ->
+                    ( Maybe.withDefault "" rec.lastname
+                    , Maybe.withDefault "" rec.firstname
+                    , Maybe.withDefault "" rec.middlename
+                    , maleFemaleToFullString rec.sex
+                    , Maybe.withDefault 0 rec.birthWeight
+                        |> toString
+                        |> flip String.append " g"
+                    , dateString rec.bFedEstablished
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "", "" )
+
+        ( nbsDate, nbsResult, bcgDate, comments ) =
+            case cfg.model.babyRecord of
+                Just rec ->
+                    ( dateString rec.nbsDate
+                    , Maybe.withDefault "" rec.nbsResult
+                    , dateString rec.bcgDate
+                    , Maybe.withDefault "" rec.comments
+                    )
+
+                Nothing ->
+                    ( "", "", "", "" )
+    in
+        H.div
+            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+            , HA.class "u-high"
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
+                ]
+            ]
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Baby Details" ]
+            , H.div []
+                [ H.div
+                    [ HA.class "o-fieldset form-wrapper" ]
+                    [ H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Lastname: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text lastname ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Firstname: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text firstname ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Middlename: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text middlename ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Sex: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text sex ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Birth weight: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text birthWeight ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "BFed established: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text bFed ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "NBS date: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text nbsDate ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "NBS result: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text nbsResult ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "BCG date: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text bcgDate ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Comments: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text comments ]
+                        ]
+                    ]
+                , H.div [ HA.class "spacedButtons" ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button u-small"
+                        , HE.onClick cfg.closeMsg
+                        ]
+                        [ H.text "Close" ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--ghost u-small"
+                        , HE.onClick cfg.editMsg
+                        ]
+                        [ H.text "Edit" ]
+                    ]
+                ]
+            ]
+
+
+dialogBabySummaryEdit : DialogBabySummary -> Html SubMsg
+dialogBabySummaryEdit cfg =
+    let
+        errors =
+            validateBaby cfg.model
+    in
+        H.div
+            [ HA.class "u-high"
+            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+            , HA.style
+                [ ( "padding", "0.8em" )
+                , ( "margin-top", "0.8em" )
+                ]
+            ]
+            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                [ H.text "Baby at Birth - Edit" ]
+            , H.div [ HA.class "form-wrapper u-small" ]
+                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                    -- NOTE: we are ignoring the birthNbr field right now and assuming
+                    -- that we do not have twins or more. At the moment, the Philippines
+                    -- does not allow maternity clinics to deliver twins or more. But
+                    -- this will need to be changed for other countries. The database
+                    -- already has the birthNbr field so no schema change will be
+                    -- required to add this feature.
+                    [ H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg BabyLastnameFld)
+                            "Baby Lastname"
+                            "Lastname"
+                            True
+                            cfg.model.bbLastname
+                            (getErr BabyLastnameFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg BabyFirstnameFld)
+                            "Baby Firstname"
+                            "Firstname"
+                            True
+                            cfg.model.bbFirstname
+                            (getErr BabyFirstnameFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg BabyMiddlenameFld)
+                            "Baby Middlename"
+                            "Middlename"
+                            True
+                            cfg.model.bbMiddlename
+                            (getErr BabyMiddlenameFld errors)
+                        ]
+                    , Form.radioFieldset "Sex"
+                        "babySex"
+                        cfg.model.bbSex
+                        (FldChgString >> FldChgSubMsg BabySexFld)
+                        False
+                        [ "Male"
+                        , "Female"
+                        ]
+                        (getErr BabySexFld errors)
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg BabyBirthWeightFld)
+                            "Birth weight (grams)"
+                            "a number"
+                            True
+                            cfg.model.bbBirthWeight
+                            (getErr BabyBirthWeightFld errors)
+                        ]
+                    , if cfg.model.browserSupportsDate then
+                        H.div [ HA.class "c-card mw-form-field-2x" ]
+                            [ H.div [ HA.class "c-card__item" ]
+                                [ H.div [ HA.class "c-text--loud" ]
+                                    [ H.text "BFed Established date and time" ]
+                                ]
+                            , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyBFedEstablishedDateFld)
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.bbBFedEstablishedDate
+                                        ""
+                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.bbBFedEstablishedTime
+                                        ""
+                                    ]
+                                ]
+                            ]
+                      else
+                        -- Browser does not support date.
+                        -- TODO: test this.
+                        H.div [ HA.class "c-card" ]
+                            [ H.div [ HA.class "c-card__body" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                        BabyBFedEstablishedDateField
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.bbBFedEstablishedDate
+                                        ""
+                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.bbBFedEstablishedTime
+                                        ""
+                                    ]
+                                ]
+                            ]
+                    , if cfg.model.browserSupportsDate then
+                        H.div [ HA.class "c-card mw-form-field-2x" ]
+                            [ H.div [ HA.class "c-card__item" ]
+                                [ H.div [ HA.class "c-text--loud" ]
+                                    [ H.text "NBS date and time" ]
+                                ]
+                            , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyNbsDateFld)
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.bbNbsDate
+                                        ""
+                                    , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.bbNbsTime
+                                        ""
+                                    ]
+                                ]
+                            ]
+                      else
+                        -- Browser does not support date.
+                        -- TODO: test this.
+                        H.div [ HA.class "c-card" ]
+                            [ H.div [ HA.class "c-card__body" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                        BabyNbsDateField
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.bbNbsDate
+                                        ""
+                                    , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.bbNbsTime
+                                        ""
+                                    ]
+                                ]
+                            ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg BabyNbsResultFld)
+                            "NBS Result"
+                            "NBS Result"
+                            True
+                            cfg.model.bbNbsResult
+                            (getErr BabyNbsResultFld errors)
+                        ]
+                    , if cfg.model.browserSupportsDate then
+                        H.div [ HA.class "c-card mw-form-field-2x" ]
+                            [ H.div [ HA.class "c-card__item" ]
+                                [ H.div [ HA.class "c-text--loud" ]
+                                    [ H.text "BCG date and time" ]
+                                ]
+                            , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyBcgDateFld)
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.bbBcgDate
+                                        ""
+                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBcgTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.bbBcgTime
+                                        ""
+                                    ]
+                                ]
+                            ]
+                      else
+                        -- Browser does not support date.
+                        -- TODO: test this.
+                        H.div [ HA.class "c-card" ]
+                            [ H.div [ HA.class "c-card__body" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                        BabyBFedEstablishedDateField
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.bbBFedEstablishedDate
+                                        ""
+                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.bbBFedEstablishedTime
+                                        ""
+                                    ]
+                                ]
+                            ]
+                    , Form.formTextareaField (FldChgString >> FldChgSubMsg BabyCommentsFld)
+                        "Comments"
+                        ""
+                        True
+                        cfg.model.bbComments
+                        3
+                    ]
+                ]
+            , H.div
+                [ HA.class "spacedButtons"
+                , HA.style [ ( "width", "100%" ) ]
+                ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Cancel" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--brand u-small"
+                    , HE.onClick cfg.saveMsg
+                    ]
+                    [ H.text "Save" ]
+                ]
+            ]
+
+
+
 -- UPDATE --
 
 
@@ -1964,6 +2465,14 @@ refreshModelFromCache dc tables model =
             List.foldl
                 (\t m ->
                     case t of
+                        Baby ->
+                            case DataCache.get t dc of
+                                Just (BabyDataCache rec) ->
+                                    { m | babyRecord = Just rec }
+
+                                _ ->
+                                    m
+
                         Labor ->
                             case DataCache.get t dc of
                                 Just (LaborDataCache recs) ->
@@ -2050,6 +2559,18 @@ update session msg model =
             case dateFldMsg of
                 DateFieldMessage { dateField, date } ->
                     case dateField of
+                        BabyBFedEstablishedDateField ->
+                            ( { model | bbBFedEstablishedDate = Just date }, Cmd.none, Cmd.none )
+
+                        BabyNbsDateField ->
+                            ( { model | bbNbsDate = Just date }, Cmd.none, Cmd.none )
+
+                        BabyBcgDateField ->
+                            ( { model | bbBcgDate = Just date }, Cmd.none, Cmd.none )
+
+                        FalseLaborDateField ->
+                            ( { model | falseLaborDate = Just date }, Cmd.none, Cmd.none )
+
                         LaborDelIppLaborDateField ->
                             ( { model | laborDate = Just date }, Cmd.none, Cmd.none )
 
@@ -2232,6 +2753,45 @@ update session msg model =
 
                         FalseLaborTimeFld ->
                             { model | falseLaborTime = Just <| U.filterStringLikeTime value }
+
+                        BabyLastnameFld ->
+                            { model | bbLastname = Just value }
+
+                        BabyFirstnameFld ->
+                            { model | bbFirstname = Just value }
+
+                        BabyMiddlenameFld ->
+                            { model | bbMiddlename = Just value }
+
+                        BabySexFld ->
+                            { model | bbSex = Just <| U.filterStringInList [ "Male", "Female" ] value }
+
+                        BabyBirthWeightFld ->
+                            { model | bbBirthWeight = Just <| U.filterStringLikeInt value }
+
+                        BabyBFedEstablishedDateFld ->
+                            { model | bbBFedEstablishedDate = Date.fromString value |> Result.toMaybe }
+
+                        BabyBFedEstablishedTimeFld ->
+                            { model | bbBFedEstablishedTime = Just <| U.filterStringLikeTime value }
+
+                        BabyNbsDateFld ->
+                            { model | bbNbsDate = Date.fromString value |> Result.toMaybe }
+
+                        BabyNbsTimeFld ->
+                            { model | bbNbsTime = Just <| U.filterStringLikeTime value }
+
+                        BabyNbsResultFld ->
+                            { model | bbNbsResult = Just value }
+
+                        BabyBcgDateFld ->
+                            { model | bbBcgDate = Date.fromString value |> Result.toMaybe }
+
+                        BabyBcgTimeFld ->
+                            { model | bbBcgTime = Just <| U.filterStringLikeTime value }
+
+                        BabyCommentsFld ->
+                            { model | bbComments = Just value }
 
                         _ ->
                             let
@@ -3194,6 +3754,146 @@ update session msg model =
                             -- Shouldn't get here because there has to be a labor record.
                             ( model, Cmd.none, Cmd.none )
 
+        HandleBabySummaryModal dialogState ->
+            case dialogState of
+                OpenDialog ->
+                    let
+                        newModel =
+                            case model.babyRecord of
+                                Just rec ->
+                                    { model
+                                        | bbLastname = U.maybeOr rec.lastname model.bbLastname
+                                        , bbFirstname = U.maybeOr rec.firstname model.bbFirstname
+                                        , bbMiddlename = U.maybeOr rec.middlename model.bbMiddlename
+                                        , bbSex = U.maybeOr (Just (maleFemaleToFullString rec.sex)) model.bbSex
+                                        , bbBirthWeight = U.maybeOr (Maybe.map toString rec.birthWeight) model.bbBirthWeight
+                                        , bbBFedEstablishedDate = rec.bFedEstablished
+                                        , bbBFedEstablishedTime =
+                                            U.maybeOr
+                                                (Maybe.map U.dateToTimeString rec.bFedEstablished)
+                                                model.bbBFedEstablishedTime
+                                        , bbNbsDate = U.maybeOr rec.nbsDate model.bbNbsDate
+                                        , bbNbsTime =
+                                            U.maybeOr
+                                                (Maybe.map U.dateToTimeString rec.nbsDate)
+                                                model.bbNbsTime
+                                        , bbNbsResult = U.maybeOr rec.nbsResult model.bbNbsResult
+                                        , bbBcgDate = U.maybeOr rec.bcgDate model.bbBcgDate
+                                        , bbBcgTime =
+                                            U.maybeOr
+                                                (Maybe.map U.dateToTimeString rec.bcgDate)
+                                                model.bbBcgTime
+                                        , bbComments = U.maybeOr rec.comments model.bbComments
+                                    }
+
+                                Nothing ->
+                                    model
+                    in
+                        ( { newModel
+                            | babySummaryModal =
+                                if model.babySummaryModal == NoStageSummaryModal then
+                                    BabySummaryViewModal
+                                else
+                                    NoStageSummaryModal
+                          }
+                        , Cmd.none
+                        , Cmd.none
+                        )
+
+                CloseNoSaveDialog ->
+                    ( { model | babySummaryModal = NoStageSummaryModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                EditDialog ->
+                    ( { model | babySummaryModal = BabySummaryEditModal }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    case validateBaby model of
+                        [] ->
+                            let
+                                bfedDatetime =
+                                    U.maybeDatePlusTime model.bbBFedEstablishedDate model.bbBFedEstablishedTime
+
+                                nbsDatetime =
+                                    U.maybeDatePlusTime model.bbNbsDate model.bbNbsTime
+
+                                bcgDatetime =
+                                    U.maybeDatePlusTime model.bbBcgDate model.bbBcgTime
+
+                                outerMsg =
+                                    case ( model.babyRecord, model.bbSex ) of
+                                        ( Just rec, Nothing ) ->
+                                            -- We should never get here.
+                                            LogConsole <|
+                                                "LaborDelIpp.update in HandleBabySummaryModal,CloseSaveDialog "
+                                                    ++ " branch with model.bbSex set to Nothing."
+
+                                        ( Just rec, Just sex ) ->
+                                            -- A baby record already exists so update it.
+                                            let
+                                                newRec =
+                                                    { rec
+                                                        | lastname = model.bbLastname
+                                                        , firstname = model.bbFirstname
+                                                        , middlename = model.bbMiddlename
+                                                        , sex = stringToMaleFemale sex
+                                                        , birthWeight = U.maybeStringToMaybeInt model.bbBirthWeight
+                                                        , bFedEstablished = bfedDatetime
+                                                        , nbsDate = nbsDatetime
+                                                        , nbsResult = model.bbNbsResult
+                                                        , bcgDate = bcgDatetime
+                                                        , comments = model.bbComments
+                                                    }
+                                            in
+                                                ProcessTypeMsg
+                                                    (UpdateBabyType
+                                                        (LaborDelIppMsg
+                                                            (DataCache Nothing (Just [ Baby ]))
+                                                        )
+                                                        newRec
+                                                    )
+                                                    ChgMsgType
+                                                    (babyRecordToValue newRec)
+
+                                        ( Nothing, _ ) ->
+                                            -- A new baby record is being created.
+                                            case deriveBabyRecordNew model of
+                                                Just babyRecordNew ->
+                                                    ProcessTypeMsg
+                                                        (AddBabyType
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ Baby ]))
+                                                            )
+                                                            babyRecordNew
+                                                        )
+                                                        AddMsgType
+                                                        (babyRecordNewToValue babyRecordNew)
+
+                                                Nothing ->
+                                                    LogConsole "deriveBabyRecordNew returned a Nothing"
+                            in
+                                ( { model | babySummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , Task.perform (always outerMsg) (Task.succeed True)
+                                )
+
+                        errors ->
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                            in
+                                ( { model | babySummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , toastError msgs 10
+                                )
+
         ClearStage1DateTime ->
             ( { model
                 | stage1Date = Nothing
@@ -3316,6 +4016,68 @@ deriveLaborStage2RecordNew model =
                     |> Just
 
         _ ->
+            Nothing
+
+
+deriveBabyRecordNew : Model -> Maybe BabyRecordNew
+deriveBabyRecordNew model =
+    case ( model.currLaborId, model.bbSex ) of
+        ( Just (LaborId id), Just sexStr ) ->
+            let
+                bFedDatetime =
+                    case ( model.bbBFedEstablishedDate, model.bbBFedEstablishedTime ) of
+                        ( Just d, Just t ) ->
+                            case U.stringToTimeTuple t of
+                                Just tt ->
+                                    Just <| U.datePlusTimeTuple d tt
+
+                                Nothing ->
+                                    Nothing
+
+                        ( _, _ ) ->
+                            Nothing
+
+                nbsDatetime =
+                    case ( model.bbNbsDate, model.bbNbsTime ) of
+                        ( Just d, Just t ) ->
+                            case U.stringToTimeTuple t of
+                                Just tt ->
+                                    Just <| U.datePlusTimeTuple d tt
+
+                                Nothing ->
+                                    Nothing
+
+                        ( _, _ ) ->
+                            Nothing
+
+                bcgDatetime =
+                    case ( model.bbBcgDate, model.bbBcgTime ) of
+                        ( Just d, Just t ) ->
+                            case U.stringToTimeTuple t of
+                                Just tt ->
+                                    Just <| U.datePlusTimeTuple d tt
+
+                                Nothing ->
+                                    Nothing
+
+                        ( _, _ ) ->
+                            Nothing
+            in
+                BabyRecordNew 1
+                    model.bbLastname
+                    model.bbFirstname
+                    model.bbMiddlename
+                    (stringToMaleFemale sexStr)
+                    (U.maybeStringToMaybeInt model.bbBirthWeight)
+                    bFedDatetime
+                    nbsDatetime
+                    model.bbNbsResult
+                    bcgDatetime
+                    model.bbComments
+                    id
+                    |> Just
+
+        ( _, _ ) ->
             Nothing
 
 
@@ -3497,4 +4259,15 @@ validateStage3 =
         , .s3PlacentaInsertion >> ifInvalid U.validatePopulatedString (Stage3PlacentaInsertionFld => "Placenta insertion must be provided.")
         , .s3PlacentaNumVessels >> ifInvalid U.validateInt (Stage3PlacentaNumVesselsFld => "Number of vessels must be provided.")
         , .s3SchultzDuncan >> ifInvalid U.validatePopulatedString (Stage3SchultzDuncanFld => "Schultz or Duncan presentation must be provided.")
+        ]
+
+
+{-| We need only sex and birth weight for a valid record. All other fields might not be
+able to be provided until later.
+-}
+validateBaby : Model -> List FieldError
+validateBaby =
+    Validate.all
+        [ .bbSex >> ifInvalid (U.validatePopulatedStringInList [ "Male", "Female" ]) (BabySexFld => "Sex must be provided.")
+        , .bbBirthWeight >> ifInvalid U.validateInt (BabyBirthWeightFld => "Birth weight in grams must be provided.")
         ]

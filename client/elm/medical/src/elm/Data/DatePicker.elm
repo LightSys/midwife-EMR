@@ -28,6 +28,10 @@ type DateField
     | LaborDelIppStage1DateField
     | LaborDelIppStage2DateField
     | LaborDelIppStage3DateField
+    | FalseLaborDateField
+    | BabyBFedEstablishedDateField
+    | BabyNbsDateField
+    | BabyBcgDateField
 
 
 stringToDateField : String -> DateField
@@ -35,6 +39,18 @@ stringToDateField str =
     case str of
         "admitDateId" ->
             AdmittingAdmittanceDateField
+
+        "babyBFedEstablisedId" ->
+            BabyBFedEstablishedDateField
+
+        "babyBcgId" ->
+            BabyBcgDateField
+
+        "babyNbsId" ->
+            BabyNbsDateField
+
+        "falseLaborDateId" ->
+            FalseLaborDateField
 
         "laborDateId" ->
             LaborDelIppLaborDateField
@@ -57,6 +73,18 @@ dateFieldToString df =
     case df of
         AdmittingAdmittanceDateField ->
             "admitDateId"
+
+        BabyBFedEstablishedDateField ->
+            "babyBFedEstablisedId"
+
+        BabyBcgDateField ->
+            "babyBcgId"
+
+        BabyNbsDateField ->
+            "babyNbsId"
+
+        FalseLaborDateField ->
+            "falseLaborDateId"
 
         LaborDelIppLaborDateField ->
             "laborDateId"

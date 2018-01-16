@@ -38,7 +38,7 @@ type SubMsg
     | FldChgSubMsg Field FldChgValue
       -- The view that the pregnancy header is currently showing.
     | RotatePregHeaderContent PregHeaderContentMsg
-      -- Modals for date/time and summary for the three stages.
+      -- Modals for date/time and summary for the stages and baby records.
     | HandleStage1DateTimeModal Dialog
     | HandleStage1SummaryModal Dialog
     | HandleStage2DateTimeModal Dialog
@@ -46,6 +46,7 @@ type SubMsg
     | HandleStage3DateTimeModal Dialog
     | HandleStage3SummaryModal Dialog
     | HandleFalseLaborDateTimeModal Dialog
+    | HandleBabySummaryModal Dialog
       -- Clearing date/time fields.
     | ClearStage1DateTime
     | ClearStage2DateTime
@@ -126,3 +127,16 @@ type Field
     | Stage3CommentsFld
     | FalseLaborDateFld
     | FalseLaborTimeFld
+    | BabyLastnameFld
+    | BabyFirstnameFld
+    | BabyMiddlenameFld
+    | BabySexFld
+    | BabyBirthWeightFld
+    | BabyBFedEstablishedDateFld
+    | BabyBFedEstablishedTimeFld
+    | BabyNbsDateFld
+    | BabyNbsTimeFld
+    | BabyNbsResultFld
+    | BabyBcgDateFld
+    | BabyBcgTimeFld
+    | BabyCommentsFld

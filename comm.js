@@ -148,6 +148,9 @@ var rx = require('rx')
   , TABLE_apgar = 'apgar'
   , TABLE_baby = 'baby'
   , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
+  , addBaby = require('./routes/comm/labor').addBaby
+  , updateBaby = require('./routes/comm/labor').updateBaby
+  , delBaby = require('./routes/comm/labor').delBaby
   , addLabor = require('./routes/comm/labor').addLabor
   , delLabor = require('./routes/comm/labor').delLabor
   , updateLabor = require('./routes/comm/labor').updateLabor
@@ -815,6 +818,13 @@ var sendUserProfile = function(socket, user, errCode) {
 var getFuncForTableOp = function(table, op) {
   var func = void 0;
   switch (table) {
+    case TABLE_baby:
+      switch (op) {
+        case ADD: func = addBaby; break;
+        case CHG: func = updateBaby; break;
+        case DEL: func = delBaby; break;
+      }
+      break;
     case TABLE_keyValue:
       switch (op) {
         // keyValue table can only be updated.

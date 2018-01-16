@@ -12,6 +12,30 @@ var assert = require('assert')
     verbose = true
   ;
 
+var addBaby = function(data, cb) {
+  var m = msg('labor_assert/addBaby()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id')); // Adding a baby should not have an id.
+  assert.ok(_.has(data, 'sex'), m('data.sex'));
+  assert.ok(data.sex !== 'F' || data.sex !== 'M', m('data.sex values'));
+  assert.ok(_.has(data, 'birthWeight') && _.isNumber(data.birthWeight), m('data.birthWeight'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
+var updateBaby = function(data, cb) {
+  var m = msg('labor_assert/updateBaby()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.has(data, 'sex'), m('data.sex'));
+  assert.ok(data.sex !== 'F' || data.sex !== 'M', m('data.sex values'));
+  assert.ok(_.has(data, 'birthWeight') && _.isNumber(data.birthWeight), m('data.birthWeight'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addLabor = function(data, cb) {
   var m = msg('labor_assert/addLabor()');
   if (verbose) console.log(m());
@@ -99,6 +123,8 @@ var updateLaborStage3 = function(data, cb) {
 };
 
 module.exports = {
+  addBaby,
+  updateBaby,
   addLabor,
   updateLabor,
   addLaborStage1,

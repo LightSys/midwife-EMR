@@ -15,6 +15,7 @@ module Util
         , deriveDateFromMaybeDateMaybeString
         , diff2DatesString
         , diff2MaybeDatesString
+        , filterStringInList
         , filterStringLikeInt
         , filterStringLikeFloat
         , filterStringLikeTime
@@ -23,6 +24,7 @@ module Util
         , maybeBoolToMaybeInt
         , maybeIntToMaybeBool
         , maybeIntToNegOne
+        , maybeDatePlusTime
         , maybeDateToValue
         , maybeOr
         , maybeStringToMaybeFloat
@@ -43,6 +45,7 @@ module Util
         , validateJustTime
         , validateInt
         , validatePopulatedString
+        , validatePopulatedStringInList
         , validateTime
         )
 
@@ -135,6 +138,19 @@ stringToIntBetween str min max =
             Nothing
 
 
+{-| Return the String if it is in the list of allowable
+strings, otherwise return an empty string.
+-}
+filterStringInList : List String -> String -> String
+filterStringInList strings str =
+    case List.member str strings of
+        True ->
+            str
+
+        False ->
+            ""
+
+
 {-| Return a String that contains only digits.
 -}
 filterStringLikeInt : String -> String
@@ -212,6 +228,18 @@ validatePopulatedString str =
             True
 
 
+{-| Returns True if the String is Nothing or
+not found in the list passed.
+-}
+validatePopulatedStringInList : List String -> Maybe String -> Bool
+validatePopulatedStringInList strings str =
+    case str of
+        Just s ->
+            not <| List.member s strings
+
+        Nothing ->
+            True
+
 {-| Returns True if the String is Nothing or could not
 be contrued as a valid Int. This is used instead of
 Validate.ifNotInt because of the Maybe String input.
@@ -287,6 +315,25 @@ datePlusTimeTuple date ( hour, min ) =
         |> DEP.add DEP.Minute min
 
 
+{-| Add Maybe String representing time to a Maybe Date and return a
+Maybe Date. Returns Nothing if either argument is Nothing or
+if the Maybe String does not evaluate to a time tuple.
+-}
+maybeDatePlusTime : Maybe Date -> Maybe String -> Maybe Date
+maybeDatePlusTime d t =
+    case ( d, t ) of
+        ( Just theDate, Just theTime ) ->
+            case stringToTimeTuple theTime of
+                Just ( h, m ) ->
+                    Just (datePlusTimeTuple theDate ( h, m ))
+
+                Nothing ->
+                    Nothing
+
+        ( _, _ ) ->
+            Nothing
+
+
 {-| Take a Maybe Date and a Maybe String that could be in the form
 of a time tuple and return a Date, or return the default supplied
 instead.
@@ -320,8 +367,6 @@ maybeDateToValue date =
 
 
 {-| Returns a JE.Value of a Date in UTC.
-
-partof: #SPC-dates-client-encode
 -}
 dateToStringValue : Date -> JE.Value
 dateToStringValue date =

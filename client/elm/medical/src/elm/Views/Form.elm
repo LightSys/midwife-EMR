@@ -290,10 +290,11 @@ dateTimePickerModal :
     -> msg
     -> msg
     -> msg
+    -> DateField
     -> Maybe Date
     -> Maybe String
     -> Html msg
-dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clearMsg dateVal timeVal =
+dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clearMsg dateField dateVal timeVal =
     H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", isShown ) ] ]
         [ H.div
             [ HA.class "o-modal dateTimeModal"
@@ -313,7 +314,7 @@ dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clear
                 , H.div [ HA.class "c-card__body" ]
                     [ H.div [ HA.class "o-fieldset form-wrapper" ]
                         [ formFieldDatePicker openMsg
-                            LaborDelIppStage1DateField
+                            dateField
                             "Date"
                             "e.g. 08/14/2017"
                             False

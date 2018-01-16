@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
   , cfg = require('../../config')
+  , Baby = require('../../models').Baby
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
   , LaborStage2 = require('../../models').LaborStage2
@@ -37,6 +38,7 @@ var _ = require('underscore')
 // Note that every table needs to be listed even if there 
 // are no date fields present in the table.
 // --------------------------------------------------------
+moduleTables.baby = ['bFedEstablished', 'nbsDate', 'bcgDate'];
 moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
 moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
@@ -169,13 +171,16 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
 };
 
 
-/* --------------------------------------------------------
- * addLabor()
- *
- * Add a new labor record.
- *
- * partof: #SPC-dates-server
- * -------------------------------------------------------- */
+var addBaby = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBaby(data, cb);
+  addTable(data, userInfo, cb, Baby, 'baby');
+};
+
+var updateBaby = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBaby(data, cb);
+  updateTable(data, userInfo, cb, Baby, 'baby');
+};
+
 var addLabor = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addLabor(data, cb);
   addTable(data, userInfo, cb, Labor, 'labor');
@@ -226,6 +231,9 @@ var notDefinedYet = function(data, userInfo, cb) {
 // Remember to setup moduleTables for each add or update.
 // --------------------------------------------------------
 module.exports = {
+  addBaby,
+  updateBaby,
+  delBaby: notDefinedYet,
   addLabor,
   delLabor: notDefinedYet,
   updateLabor,

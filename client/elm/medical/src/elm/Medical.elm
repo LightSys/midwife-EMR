@@ -15,6 +15,7 @@ import Window
 -- LOCAL IMPORTS --
 
 import Data.Admitting exposing (AdmittingSubMsg(..))
+import Data.Baby exposing (BabyId(..), babyRecordNewToBabyRecord)
 import Data.DataCache as DCache exposing (DataCache(..))
 import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
 import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
@@ -311,9 +312,6 @@ update msg noAutoTouchModel =
                             model.patientRecord
                             model.pregnancyRecord
                             model.laborRecords
-
-                    _ =
-                        Debug.log "newCmd" <| toString newCmd
                 in
                     { model
                         | pageState = Loaded (LaborDelIpp subModel)
@@ -348,7 +346,7 @@ update msg noAutoTouchModel =
                 let
                     -- Get the labor stage records from the data cache which the
                     -- init function just requested records from the server for.
-                    (stage1, stage2, stage3) =
+                    ( stage1, stage2, stage3 ) =
                         ( case DCache.get LaborStage1 model.dataCache of
                             Just (LaborStage1DataCache s1) ->
                                 Just s1
@@ -501,6 +499,20 @@ updateMessage incoming model =
                     case dataAddMsg.response.success of
                         True ->
                             case processType of
+                                Just (AddBabyType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) babyRecordNew) ->
+                                    let
+                                        babyRec =
+                                            babyRecordNewToBabyRecord
+                                                (BabyId dataAddMsg.response.id)
+                                                babyRecordNew
+
+                                        subMsg =
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Baby ])
+                                    in
+                                        ( { model | dataCache = DCache.put (BabyDataCache babyRec) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (AddLaborType (AdmittingMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
                                     let
                                         laborRecs =
@@ -599,6 +611,15 @@ updateMessage incoming model =
                     case dataChgMsg.response.success of
                         True ->
                             case processType of
+                                Just (UpdateBabyType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) babyRecord) ->
+                                    let
+                                        subMsg =
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Baby ])
+                                    in
+                                        ( { model | dataCache = DCache.put (BabyDataCache babyRecord) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (UpdateLaborType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborRecord) ->
                                     -- TODO: why only updating the data cache here and not the top-level laborRecord?
                                     -- Don't we want to do both? But if we do, which is the master record?
@@ -704,8 +725,20 @@ updateMessage incoming model =
                                             let
                                                 dictList =
                                                     List.map (\rec -> ( rec.id, rec )) recs
+
+                                                -- DataCache gets one baby record.
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (BabyDataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
                                             in
-                                                { mdl | babyRecords = Just <| Dict.fromList dictList }
+                                                { mdl
+                                                    | babyRecords = Just <| Dict.fromList dictList
+                                                    , dataCache = dc
+                                                }
 
                                         TableRecordLabor recs ->
                                             let
@@ -808,10 +841,16 @@ updateMessage incoming model =
                 in
                     case processType of
                         -- Send the message retrieved from the processing store.
+                        Just (AddBabyType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
                         Just (AddLaborType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (AddLaborStage1Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateBabyType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateLaborType msg _) ->
@@ -875,14 +914,20 @@ setRoute maybeRoute model =
                         { model | pageState = Loaded NotFound } => Cmd.none
 
             Just (Route.PostpartumRoute) ->
-                case (model.currPregId, model.laborRecords) of
-                    (Just pregId, Just recs) ->
+                case ( model.currPregId, model.laborRecords ) of
+                    ( Just pregId, Just recs ) ->
                         let
                             -- Get the most recent labor record which we assume is
                             -- the current one to use.
                             laborRec =
                                 Dict.values recs
-                                    |> LE.maximumBy (\lr -> if lr.falseLabor then -1 else Date.toTime lr.admittanceDate)
+                                    |> LE.maximumBy
+                                        (\lr ->
+                                            if lr.falseLabor then
+                                                -1
+                                            else
+                                                Date.toTime lr.admittanceDate
+                                        )
                         in
                             case laborRec of
                                 Just rec ->
@@ -897,7 +942,7 @@ setRoute maybeRoute model =
                                     -- We don't go there if we are not ready.
                                     model => Cmd.none
 
-                    (_, _) ->
+                    ( _, _ ) ->
                         -- We don't go there if we are not ready.
                         model => Cmd.none
 

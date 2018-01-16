@@ -11,6 +11,7 @@ import Dict exposing (Dict)
 
 -- LOCAL IMPORTS --
 
+import Data.Baby exposing (BabyRecord)
 import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
@@ -23,7 +24,8 @@ import Data.Table exposing (stringToTable, tableToString, Table(..))
 {-| Cache for heterogeneous data.
 -}
 type DataCache
-    = LaborDataCache (Dict Int LaborRecord)
+    = BabyDataCache BabyRecord
+    | LaborDataCache (Dict Int LaborRecord)
     | LaborStage1DataCache LaborStage1Record
     | LaborStage2DataCache LaborStage2Record
     | LaborStage3DataCache LaborStage3Record
@@ -38,6 +40,9 @@ a consistent key for put.
 getTableString : DataCache -> String
 getTableString dc =
     case dc of
+        BabyDataCache _ ->
+            tableToString Baby
+
         LaborDataCache _ ->
             tableToString Labor
 
