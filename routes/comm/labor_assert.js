@@ -12,6 +12,29 @@ var assert = require('assert')
     verbose = true
   ;
 
+var addApgar = function(data, cb) {
+  var m = msg('labor_assert/addApgar()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id')); // Adding an apgar should not have an id.
+  assert.ok(_.has(data, 'minute'), m('data.minute'));
+  assert.ok(_.has(data, 'score'), m('data.score'));
+  assert.ok(_.has(data, 'baby_id'), m('data.baby_id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
+var updateApgar = function(data, cb) {
+  var m = msg('labor_assert/updateApgar()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.has(data, 'minute'), m('data.minute'));
+  assert.ok(_.has(data, 'score'), m('data.score'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addBaby = function(data, cb) {
   var m = msg('labor_assert/addBaby()');
   if (verbose) console.log(m());
@@ -123,6 +146,8 @@ var updateLaborStage3 = function(data, cb) {
 };
 
 module.exports = {
+  addApgar,
+  updateApgar,
   addBaby,
   updateBaby,
   addLabor,

@@ -24,4 +24,5 @@ breakpointLarge =
 type FldChgValue
     = FldChgString String
     | FldChgBool Bool
+    | FldChgIntString Int String
 

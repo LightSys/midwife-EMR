@@ -977,6 +977,13 @@ update session msg model =
                     , Cmd.none
                     )
 
+                FldChgIntString intVal strVal ->
+                    -- We don't have any of these fields in the page.
+                    ( model
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
         ViewLaborRecord laborId ->
             ( { model
                 | currLaborId = Just laborId

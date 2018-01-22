@@ -26,10 +26,15 @@ import Window
 import Const exposing (FldChgValue(..))
 import Data.Baby
     exposing
-        ( BabyRecord
+        ( apgarScoreDictToApgarRecordList
+        , apgarRecordListToApgarScoreDict
+        , ApgarScore(..)
+        , BabyId(..)
+        , BabyRecord
         , BabyRecordNew
         , babyRecordNewToValue
         , babyRecordToValue
+        , getScoreAsStringByMinute
         , isBabyRecordFullyComplete
         , MaleFemale(..)
         , maleFemaleToFullString
@@ -219,6 +224,8 @@ type alias Model =
     , bbBcgDate : Maybe Date
     , bbBcgTime : Maybe String
     , bbComments : Maybe String
+    , apgarScores : Dict Int ApgarScore
+    , pendingApgarScore : Maybe ApgarScore
     }
 
 
@@ -368,6 +375,8 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             Nothing
             Nothing
             Nothing
+            Nothing
+            Dict.empty
             Nothing
         , newStore
         , newOuterMsg
@@ -2119,6 +2128,17 @@ dialogBabySummaryView cfg =
 
                 Nothing ->
                     ( "", "", "", "" )
+
+        apgar1 =
+            Maybe.withDefault "" <| getScoreAsStringByMinute 1 cfg.model.apgarScores
+
+        apgar5 =
+            Maybe.withDefault "" <| getScoreAsStringByMinute 5 cfg.model.apgarScores
+
+        apgar10 =
+            Maybe.withDefault "" <| getScoreAsStringByMinute 10 cfg.model.apgarScores
+
+        -- TODO: handle other apgar scores.
     in
         H.div
             [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
@@ -2150,6 +2170,24 @@ dialogBabySummaryView cfg =
                             [ H.text "Middlename: " ]
                         , H.span [ HA.class "" ]
                             [ H.text middlename ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Apgar 1: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text apgar1 ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Apgar 5: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text apgar5 ]
+                        ]
+                    , H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text "Apgar 10: " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text apgar10 ]
                         ]
                     , H.div [ HA.class "mw-form-field-2x" ]
                         [ H.span [ HA.class "c-text--loud" ]
@@ -2217,6 +2255,17 @@ dialogBabySummaryEdit cfg =
     let
         errors =
             validateBaby cfg.model
+
+        apgar1 =
+            getScoreAsStringByMinute 1 cfg.model.apgarScores
+
+        apgar5 =
+            getScoreAsStringByMinute 5 cfg.model.apgarScores
+
+        apgar10 =
+            getScoreAsStringByMinute 10 cfg.model.apgarScores
+
+        -- TODO: handle other apgar scores.
     in
         H.div
             [ HA.class "u-high"
@@ -2259,6 +2308,30 @@ dialogBabySummaryEdit cfg =
                             True
                             cfg.model.bbMiddlename
                             (getErr BabyMiddlenameFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgIntString 1 >> FldChgSubMsg ApgarStandardFld)
+                            "Apgar 1"
+                            "0 to 10"
+                            True
+                            apgar1
+                            ""
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgIntString 5 >> FldChgSubMsg ApgarStandardFld)
+                            "Apgar 5"
+                            "0 to 10"
+                            True
+                            apgar5
+                            ""
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgIntString 10 >> FldChgSubMsg ApgarStandardFld)
+                            "Apgar 10"
+                            "0 to 10"
+                            True
+                            apgar10
+                            ""
                         ]
                     , Form.radioFieldset "Sex"
                         "babySex"
@@ -2876,6 +2949,39 @@ update session msg model =
                                 _ =
                                     Debug.log "LaborDelIpp.update FldChgSubMsg"
                                         "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
+                            in
+                                model
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                FldChgIntString intVal strVal ->
+                    ( case fld of
+                        ApgarStandardFld ->
+                            -- Handling one of the standard apgar 1, 5, or 10 fields. Stores data
+                            -- in the apgarScores field, which is a Dict with minute as key.
+                            case String.toInt strVal of
+                                Ok score ->
+                                    -- Allowable scores are 0 - 10 inclusive.
+                                    if score >= 0 && score <= 10 then
+                                        { model
+                                            | apgarScores = Dict.insert intVal (ApgarScore (Just intVal) (Just score)) model.apgarScores
+                                        }
+                                    else
+                                        model
+
+                                Err _ ->
+                                    -- That means that the user removed the score or entered
+                                    -- something out of range, either way, remove it.
+                                    { model
+                                        | apgarScores = Dict.remove intVal model.apgarScores
+                                    }
+
+                        _ ->
+                            let
+                                _ =
+                                    Debug.log "LaborDelIpp.update FldChgSubMsg"
+                                        "Unknown field encountered in FldChgTwoMaybeString. Possible mismatch between Field and FldChgValue."
                             in
                                 model
                     , Cmd.none
@@ -3784,6 +3890,7 @@ update session msg model =
                                                 (Maybe.map U.dateToTimeString rec.bcgDate)
                                                 model.bbBcgTime
                                         , bbComments = U.maybeOr rec.comments model.bbComments
+                                        , apgarScores = apgarRecordListToApgarScoreDict rec.apgarScores
                                     }
 
                                 Nothing ->
@@ -3848,6 +3955,7 @@ update session msg model =
                                                         , nbsResult = model.bbNbsResult
                                                         , bcgDate = bcgDatetime
                                                         , comments = model.bbComments
+                                                        , apgarScores = apgarScoreDictToApgarRecordList model.apgarScores
                                                     }
                                             in
                                                 ProcessTypeMsg
@@ -4075,6 +4183,7 @@ deriveBabyRecordNew model =
                     bcgDatetime
                     model.bbComments
                     id
+                    (apgarScoreDictToApgarRecordList model.apgarScores)
                     |> Just
 
         ( _, _ ) ->

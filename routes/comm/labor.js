@@ -9,9 +9,11 @@
 
 var _ = require('underscore')
   , moment = require('moment')
+  , Promise = require('bluebird')
   , Bookshelf = require('bookshelf')
   , Promise = require('bluebird')
   , cfg = require('../../config')
+  , Apgar = require('../../models').Apgar
   , Baby = require('../../models').Baby
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
@@ -33,11 +35,12 @@ var _ = require('underscore')
 // --------------------------------------------------------
 // These are ALL of the tables that this module modifies
 // and the list of date fields that need a UTC to localtime
-// conversion applied upon insert/update, if any. 
+// conversion applied upon insert/update, if any.
 //
-// Note that every table needs to be listed even if there 
+// Note that every table needs to be listed even if there
 // are no date fields present in the table.
 // --------------------------------------------------------
+moduleTables.apgar = [];
 moduleTables.baby = ['bFedEstablished', 'nbsDate', 'bcgDate'];
 moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
 moduleTables.laborStage1 = ['fullDialation'];
@@ -171,14 +174,232 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
 };
 
 
+// --------------------------------------------------------
+// For baby records, the client will include a field named
+// apgarScores in the baby record. This will be used to
+// populate the apgar table accordingly.
+// --------------------------------------------------------
 var addBaby = function(data, userInfo, cb) {
+  var knex = Bookshelf.DB.knex
+    , babyId
+    ;
+
   if (DO_ASSERT) assertModule.addBaby(data, cb);
-  addTable(data, userInfo, cb, Baby, 'baby');
+
+  knex.transaction(function(t) {
+    return knex('baby')
+      .transacting(t)
+      .insert({
+        birthNbr: data.birthNbr,
+        lastname: data.lastname,
+        firstname: data.firstname,
+        middlename: data.middlename,
+        sex: data.sex,
+        birthWeight: data.birthWeight,
+        bFedEstablished: data.bFedEstablished,
+        nbsDate: data.nbsDate,
+        nbsResult: data.nbsResult,
+        bcgDate: data.bcgDate,
+        comments: data.comments,
+        updatedBy: userInfo.user.id,
+        updatedAt: knex.fn.now(),
+        supervisor: userInfo.user.supervisor,
+        labor_id: data.labor_id
+      })
+      .then(function(bbId) {
+        var recsToInsert = []
+          ;
+
+        // bbId is an array.
+        if (bbId.length > 0) {
+          babyId = bbId[0];
+
+          if (data.apgarScores.length > 0) {
+            _.each(data.apgarScores, function(rec) {
+              rec.baby_id = babyId;
+              rec.updatedBy = userInfo.user.id;
+              rec.updatedAt = new Date();
+              rec.supervisor = userInfo.user.supervisor;
+              recsToInsert.push(rec);
+            });
+
+            return knex('apgar')
+              .transacting(t)
+              .insert(recsToInsert)
+              .then(function(idsInserted) {
+                // In MySQL, only the first inserted id is returned.
+                if (idsInserted.lenth > 0) {
+                  logInfo('Inserted one or more rows into apgar.');
+                }
+              });
+          }
+        } else {
+          return true;
+        }
+      })
+      .then(t.commit)
+      .then(function() {
+        cb(null, true, data);
+
+        // --------------------------------------------------------
+        // Notify all clients of the change.
+        // --------------------------------------------------------
+        var notify = {
+          table: 'baby',
+          id: babyId,
+          updatedBy: userInfo.user.id,
+          sessionID: userInfo.sessionID
+        };
+        return sendData(DATA_ADD, JSON.stringify(notify));
+      })
+      .catch(t.rollback);
+  });
 };
 
 var updateBaby = function(data, userInfo, cb) {
+  var knex = Bookshelf.DB.knex
+    ;
+
   if (DO_ASSERT) assertModule.updateBaby(data, cb);
-  updateTable(data, userInfo, cb, Baby, 'baby');
+
+  knex.transaction(function(t) {
+    return knex('baby')
+      .transacting(t)
+      .where('id', data.id)
+      .update({
+        birthNbr: data.birthNbr,
+        lastname: data.lastname,
+        firstname: data.firstname,
+        middlename: data.middlename,
+        sex: data.sex,
+        birthWeight: data.birthWeight,
+        bFedEstablished: data.bFedEstablished,
+        nbsDate: data.nbsDate,
+        nbsResult: data.nbsResult,
+        bcgDate: data.bcgDate,
+        comments: data.comments,
+        updatedBy: userInfo.user.id,
+        updatedAt: knex.fn.now(),
+        supervisor: userInfo.user.supervisor,
+        labor_id: data.labor_id
+      })
+      .then(function(numRows) {
+        // Apgar records: the data.apgarScores represents the truth and the
+        // apgar table records need to be adjusted accordingly.
+        return knex('apgar')
+          .where('baby_id', data.id)
+          .select(['id', 'minute', 'score'])
+          .transacting(t)
+          .then(function(currApgars) {
+            var insertPromise = [] // Default if never used.
+              , deletePromise = [] // Default if never used.
+              , updatePromises = []
+              , idsToDelete = []
+              , recsToInsert = []
+              , recsToUpdate = []
+              ;
+
+            // --------------------------------------------------------
+            // Identify the records to delete: if a particular minute
+            // in the current set of apgars is not found in the new
+            // set of apgars, we delete that record using the id.
+            // --------------------------------------------------------
+            _.each(currApgars, function(currApgar) {
+              if (! _.find(data.apgarScores, function(a) {return a.minute === currApgar.minute;})) {
+                idsToDelete.push(currApgar.id);
+              }
+            });
+
+            _.each(data.apgarScores, function(newApgar) {
+              // --------------------------------------------------------
+              // Identify the records to add: if a particular minute in
+              // the new set of apgars is not found in the current set
+              // of apgars, we add that record using minute and score.
+              // --------------------------------------------------------
+              if (! _.some(currApgars, function(a) {return a.minute === newApgar.minute;})) {
+                newApgar.baby_id = data.id;
+                newApgar.updatedBy = userInfo.user.id;
+                newApgar.updatedAt = new Date();
+                newApgar.supervisor = userInfo.user.supervisor;
+                recsToInsert.push(newApgar);
+              }
+
+              // --------------------------------------------------------
+              // Identify the records to change: if a particular minute
+              // exists in both the new set of apgars and the current set
+              // of apgars, but the score is different, then update the
+              // score accordingly.
+              // --------------------------------------------------------
+              var match = _.find(currApgars, function(a) {return a.minute === newApgar.minute;});
+              if (match && match.score !== newApgar.score) {
+                match.baby_id = data.id;
+                match.score = newApgar.score;
+                match.updatedBy = userInfo.user.id;
+                match.updatedAt = new Date();
+                match.supervisor = userInfo.user.supervisor;
+                recsToUpdate.push(match);
+              }
+            });
+
+            if (recsToInsert.length > 0) {
+              insertPromise = knex('apgar')
+                .transacting(t)
+                .insert(recsToInsert)
+                .then(function(idsInserted) {
+                  // In MySQL, only the first inserted id is returned.
+                  if (idsInserted.lenth > 0) {
+                    logInfo('Inserted one or more rows into apgar.');
+                  }
+                });
+            }
+
+            if (idsToDelete.length > 0) {
+              deletePromise = knex('apgar')
+                .transacting(t)
+                .whereIn('id', idsToDelete)
+                .del()
+                .then(function(numRows) {
+                  logInfo('Deleted ' + numRows + ' apgar rows.');
+                });
+            }
+
+            if (recsToUpdate.length > 0) {
+              _.each(recsToUpdate, function(rec) {
+                console.log(rec);
+                var updPromise = knex('apgar')
+                  .transacting(t)
+                  .where('id', rec.id)
+                  .update(rec)
+                  .then(function() {
+                    logInfo('Updated apgar, id: ' + rec.id + '.');
+                  });
+                updatePromises.push(updPromise);
+              });
+            }
+
+            return Promise.all(_.flatten([insertPromise, deletePromise, updatePromises]))
+              .then(function() {
+                return true;
+              });
+         });
+      })
+      .then(t.commit)
+      .then(function() {
+        cb(null, true, data);
+
+        // --------------------------------------------------------
+        // Notify all clients of the change.
+        // --------------------------------------------------------
+        var notify = {
+          table: 'baby',
+          id: data.id,
+          updatedBy: userInfo.user.id,
+          sessionID: userInfo.sessionID
+        };
+        return sendData(DATA_CHANGE, JSON.stringify(notify));
+      })
+      .catch(t.rollback);
+  });
 };
 
 var addLabor = function(data, userInfo, cb) {

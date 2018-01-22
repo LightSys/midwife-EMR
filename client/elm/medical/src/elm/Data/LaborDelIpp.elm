@@ -140,3 +140,4 @@ type Field
     | BabyBcgDateFld
     | BabyBcgTimeFld
     | BabyCommentsFld
+    | ApgarStandardFld

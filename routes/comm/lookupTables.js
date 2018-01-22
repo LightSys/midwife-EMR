@@ -173,26 +173,65 @@ function getRecords(table, key, value, cb) {
   // --------------------------------------------------------
   if (value !== -1) whereObj[key] = value;
 
-  knex(table)
-    .select()
-    .where(whereObj)
-    .then(function(rows) {
-      // --------------------------------------------------------
-      // We never return the password field to the client. Return
-      // an empty string instead.
-      // --------------------------------------------------------
-      if (table === 'user') {
-        rows = _.map(rows, function(rec) {
-          rec.password = '';
-          return rec;
+  // --------------------------------------------------------
+  // We handle some tables as special cases.
+  // --------------------------------------------------------
+  switch (table) {
+    case 'baby':
+      // We get the baby records, and then get the corresponding
+      // apgar records for each attaching them to an apgarScores field.
+      knex('baby')
+        .where(whereObj)
+        .then(function(babies) {
+          var babyIds = _.pluck(babies, 'id');
+          knex('apgar')
+            .select(['minute', 'score', 'baby_id'])
+            .whereIn('baby_id', babyIds)
+            .then(function(apgars) {
+              // Now match apgars to baby records.
+              var results = [];
+              _.each(babies, function(baby) {
+                var scores = _.filter(apgars, function(a) {return a.baby_id === baby.id;});
+                scores = _.map(scores, function(s) {
+                  delete s.baby_id;
+                  return s;
+                });
+                baby.apgarScores = scores;
+                results.push(baby);
+              })
+
+              return cb(null, results);
+            })
+        })
+        .catch(function(err) {
+          logError(err);
+          return cb(err);
         });
-      }
-      return cb(null, rows);
-    })
-    .catch(function(err) {
-      logError(err);
-      return cb(err);
-    });
+      break;
+
+    default:
+      // Normal table retrieval.
+      knex(table)
+        .select()
+        .where(whereObj)
+        .then(function(rows) {
+          // --------------------------------------------------------
+          // We never return the password field to the client. Return
+          // an empty string instead.
+          // --------------------------------------------------------
+          if (table === 'user') {
+            rows = _.map(rows, function(rec) {
+              rec.password = '';
+              return rec;
+            });
+          }
+          return cb(null, rows);
+        })
+        .catch(function(err) {
+          logError(err);
+          return cb(err);
+        });
+  }
 }
 
 

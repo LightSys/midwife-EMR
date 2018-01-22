@@ -1,6 +1,11 @@
 module Data.Baby
     exposing
-        ( BabyId(..)
+        ( apgarScoreDictToApgarRecordList
+        , apgarRecordListToApgarScoreDict
+        , apgarRecordToApgarScore
+        , apgarScoreToApgarRecord
+        , ApgarScore(..)
+        , BabyId(..)
         , BabyRecord
         , BabyRecordNew
         , babyRecord
@@ -8,6 +13,7 @@ module Data.Baby
         , babyRecordNewToValue
         , babyRecordToValue
         , getBabyId
+        , getScoreAsStringByMinute
         , isBabyRecordFullyComplete
         , MaleFemale(..)
         , maleFemaleToFullString
@@ -17,6 +23,7 @@ module Data.Baby
         )
 
 import Date exposing (Date)
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Decode.Extra as JDE
 import Json.Decode.Pipeline as JDP
@@ -27,6 +34,16 @@ import Json.Encode.Extra as JEE
 -- LOCAL IMPORTS --
 
 import Util as U
+
+
+type ApgarScore
+    = ApgarScore (Maybe Int) (Maybe Int)
+
+
+type alias ApgarRecord =
+    { minute : Int
+    , score : Int
+    }
 
 
 type BabyId
@@ -83,6 +100,7 @@ maybeMaleFemaleToString fullString maleFemale =
         Nothing ->
             ""
 
+
 maleFemaleToFullString : MaleFemale -> String
 maleFemaleToFullString mf =
     case mf of
@@ -91,6 +109,7 @@ maleFemaleToFullString mf =
 
         Female ->
             "Female"
+
 
 maleFemaleToString : MaleFemale -> String
 maleFemaleToString mf =
@@ -116,6 +135,7 @@ type alias BabyRecord =
     , bcgDate : Maybe Date
     , comments : Maybe String
     , labor_id : Int
+    , apgarScores : List ApgarRecord
     }
 
 
@@ -132,6 +152,7 @@ type alias BabyRecordNew =
     , bcgDate : Maybe Date
     , comments : Maybe String
     , labor_id : Int
+    , apgarScores : List ApgarRecord
     }
 
 
@@ -150,6 +171,15 @@ babyRecordNewToBabyRecord (BabyId id) babyNew =
         babyNew.bcgDate
         babyNew.comments
         babyNew.labor_id
+        babyNew.apgarScores
+
+
+apgarRecordToValue : ApgarRecord -> JE.Value
+apgarRecordToValue rec =
+    JE.object
+        [ ( "minute", (JE.int rec.minute) )
+        , ( "score", (JE.int rec.score) )
+        ]
 
 
 {-| Encode BabyRecordNew for sending to the server as
@@ -176,9 +206,11 @@ babyRecordNewToValue rec =
                 , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
+                , ( "apgarScores", (JE.list <| List.map apgarRecordToValue rec.apgarScores) )
                 ]
           )
         ]
+
 
 babyRecordToValue : BabyRecord -> JE.Value
 babyRecordToValue rec =
@@ -199,9 +231,17 @@ babyRecordToValue rec =
                 , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
+                , ( "apgarScores", (JE.list <| List.map apgarRecordToValue rec.apgarScores) )
                 ]
           )
         ]
+
+
+apgarRecord : JD.Decoder ApgarRecord
+apgarRecord =
+    JDP.decode ApgarRecord
+        |> JDP.required "minute" JD.int
+        |> JDP.required "score" JD.int
 
 
 babyRecord : JD.Decoder BabyRecord
@@ -220,6 +260,7 @@ babyRecord =
         |> JDP.required "bcgDate" (JD.maybe JDE.date)
         |> JDP.required "comments" (JD.maybe JD.string)
         |> JDP.required "labor_id" JD.int
+        |> JDP.required "apgarScores" (JD.list apgarRecord)
 
 
 {-| Answers the question, is this record complete so that all expected
@@ -238,3 +279,50 @@ isBabyRecordFullyComplete rec =
             || (U.validateDate rec.nbsDate)
             || (U.validateDate rec.bcgDate)
         )
+
+
+apgarScoreDictToApgarRecordList : Dict Int ApgarScore -> List ApgarRecord
+apgarScoreDictToApgarRecordList scores =
+    Dict.map (\_ s -> apgarScoreToApgarRecord s) scores
+        |> Dict.values
+        |> List.filterMap (\rec -> rec)
+
+
+apgarRecordListToApgarScoreDict : List ApgarRecord -> Dict Int ApgarScore
+apgarRecordListToApgarScoreDict scores =
+    List.map (\rec -> (rec.minute, apgarRecordToApgarScore rec)) scores
+        |> Dict.fromList
+
+
+apgarRecordToApgarScore : ApgarRecord -> ApgarScore
+apgarRecordToApgarScore rec =
+    ApgarScore (Just rec.minute) (Just rec.score)
+
+
+apgarScoreToApgarRecord : ApgarScore -> Maybe ApgarRecord
+apgarScoreToApgarRecord (ApgarScore min score) =
+    case ( min, score ) of
+        ( Just m, Just s ) ->
+            if s >= 0 && s <= 10 then
+                Just <| ApgarRecord m s
+            else
+                Nothing
+
+        ( _, _ ) ->
+            Nothing
+
+
+getScoreAsStringByMinute : Int -> Dict Int ApgarScore -> Maybe String
+getScoreAsStringByMinute minute scores =
+    case Dict.get minute scores of
+        Just (ApgarScore min score) ->
+            case score of
+                Just s ->
+                    Just <| toString s
+
+                Nothing ->
+                    Just ""
+
+        Nothing ->
+            Just ""
+
