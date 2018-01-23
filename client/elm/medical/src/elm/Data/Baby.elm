@@ -13,6 +13,7 @@ module Data.Baby
         , babyRecordNewToValue
         , babyRecordToValue
         , getBabyId
+        , getCustomScoresAsList
         , getScoreAsStringByMinute
         , isBabyRecordFullyComplete
         , MaleFemale(..)
@@ -326,3 +327,7 @@ getScoreAsStringByMinute minute scores =
         Nothing ->
             Just ""
 
+getCustomScoresAsList : Dict Int ApgarScore -> List ApgarScore
+getCustomScoresAsList scores =
+    Dict.filter (\min _ -> not <| List.member min [1,5,10]) scores
+        |> Dict.values

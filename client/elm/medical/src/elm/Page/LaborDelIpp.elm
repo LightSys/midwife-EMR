@@ -34,6 +34,7 @@ import Data.Baby
         , BabyRecordNew
         , babyRecordNewToValue
         , babyRecordToValue
+        , getCustomScoresAsList
         , getScoreAsStringByMinute
         , isBabyRecordFullyComplete
         , MaleFemale(..)
@@ -83,7 +84,8 @@ import Data.LaborStage3
         )
 import Data.LaborDelIpp
     exposing
-        ( Dialog(..)
+        ( AddOtherApgar(..)
+        , Dialog(..)
         , Field(..)
         , SubMsg(..)
         )
@@ -225,7 +227,9 @@ type alias Model =
     , bbBcgTime : Maybe String
     , bbComments : Maybe String
     , apgarScores : Dict Int ApgarScore
-    , pendingApgarScore : Maybe ApgarScore
+    , pendingApgarWizard : AddOtherApgar
+    , pendingApgarMinute : Maybe String
+    , pendingApgarScore : Maybe String
     }
 
 
@@ -377,6 +381,8 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
             Nothing
             Nothing
             Dict.empty
+            NotStartedAddOtherApgar
+            Nothing
             Nothing
         , newStore
         , newOuterMsg
@@ -1170,7 +1176,7 @@ dialogStage1SummaryEdit cfg =
                     ]
                     [ H.button
                         [ HA.type_ "button"
-                        , HA.class "c-button c-button u-small"
+                        , HA.class "c-button u-small"
                         , HE.onClick cfg.closeMsg
                         ]
                         [ H.text "Cancel" ]
@@ -1269,7 +1275,7 @@ dialogStage1SummaryView cfg =
                 , H.div [ HA.class "spacedButtons" ]
                     [ H.button
                         [ HA.type_ "button"
-                        , HA.class "c-button c-button u-small"
+                        , HA.class "c-button u-small"
                         , HE.onClick cfg.closeMsg
                         ]
                         [ H.text "Close" ]
@@ -1453,7 +1459,7 @@ dialogStage2SummaryEdit cfg =
                 ]
                 [ H.button
                     [ HA.type_ "button"
-                    , HA.class "c-button c-button u-small"
+                    , HA.class "c-button u-small"
                     , HE.onClick cfg.closeMsg
                     ]
                     [ H.text "Cancel" ]
@@ -1678,7 +1684,7 @@ dialogStage2SummaryView cfg =
                 , H.div [ HA.class "spacedButtons" ]
                     [ H.button
                         [ HA.type_ "button"
-                        , HA.class "c-button c-button u-small"
+                        , HA.class "c-button u-small"
                         , HE.onClick cfg.closeMsg
                         ]
                         [ H.text "Close" ]
@@ -1887,7 +1893,7 @@ dialogStage3SummaryView cfg =
                 , H.div [ HA.class "spacedButtons" ]
                     [ H.button
                         [ HA.type_ "button"
-                        , HA.class "c-button c-button u-small"
+                        , HA.class "c-button u-small"
                         , HE.onClick cfg.closeMsg
                         ]
                         [ H.text "Close" ]
@@ -2051,7 +2057,7 @@ dialogStage3SummaryEdit cfg =
                 ]
                 [ H.button
                     [ HA.type_ "button"
-                    , HA.class "c-button c-button u-small"
+                    , HA.class "c-button u-small"
                     , HE.onClick cfg.closeMsg
                     ]
                     [ H.text "Cancel" ]
@@ -2138,7 +2144,8 @@ dialogBabySummaryView cfg =
         apgar10 =
             Maybe.withDefault "" <| getScoreAsStringByMinute 10 cfg.model.apgarScores
 
-        -- TODO: handle other apgar scores.
+        customApgarsList =
+            getCustomScoresAsList cfg.model.apgarScores
     in
         H.div
             [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
@@ -2189,6 +2196,10 @@ dialogBabySummaryView cfg =
                         , H.span [ HA.class "" ]
                             [ H.text apgar10 ]
                         ]
+                    , if List.length customApgarsList > 0 then
+                        customApgarsView customApgarsList False
+                      else
+                        H.text ""
                     , H.div [ HA.class "mw-form-field-2x" ]
                         [ H.span [ HA.class "c-text--loud" ]
                             [ H.text "Sex: " ]
@@ -2235,7 +2246,7 @@ dialogBabySummaryView cfg =
                 , H.div [ HA.class "spacedButtons" ]
                     [ H.button
                         [ HA.type_ "button"
-                        , HA.class "c-button c-button u-small"
+                        , HA.class "c-button u-small"
                         , HE.onClick cfg.closeMsg
                         ]
                         [ H.text "Close" ]
@@ -2248,6 +2259,51 @@ dialogBabySummaryView cfg =
                     ]
                 ]
             ]
+
+
+customApgarsView : List ApgarScore -> Bool -> Html SubMsg
+customApgarsView scores isEditing =
+    H.div [ HA.class "mw-form-field" ]
+        ([ H.span [ HA.class "c-text--loud" ]
+            [ H.text "Custom Apgar Scores" ]
+         ]
+            ++ (List.map (customApgarView isEditing) scores)
+            ++ ([ H.span [ HA.class "c-text--quiet" ]
+                    [ H.text <|
+                        if isEditing then
+                            "After adding or deleting, press Save below."
+                        else
+                            ""
+                    ]
+                ]
+               )
+        )
+
+
+customApgarView : Bool -> ApgarScore -> Html SubMsg
+customApgarView isEditing score =
+    case score of
+        ApgarScore (Just m) (Just s) ->
+            H.div []
+                [ H.span []
+                    [ H.text <| "Minute: " ++ (toString m) ]
+                , H.span []
+                    [ H.text <| ", Score: " ++ (toString s) ]
+                , H.span []
+                    [ H.text " " ]
+                , if isEditing then
+                    H.i
+                        [ HA.class "fa fa-trash-o"
+                        , HA.style [ ( "cursor", "pointer" ) ]
+                        , HE.onClick (DeleteApgar m)
+                        ]
+                        []
+                  else
+                    H.text ""
+                ]
+
+        ApgarScore _ _ ->
+            H.text ""
 
 
 dialogBabySummaryEdit : DialogBabySummary -> Html SubMsg
@@ -2265,7 +2321,58 @@ dialogBabySummaryEdit cfg =
         apgar10 =
             getScoreAsStringByMinute 10 cfg.model.apgarScores
 
-        -- TODO: handle other apgar scores.
+        customApgarsList =
+            getCustomScoresAsList cfg.model.apgarScores
+
+        addApgarWizard =
+            case cfg.model.pendingApgarWizard of
+                MinuteAddOtherApgar ->
+                    H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg ApgarOtherMinuteFld)
+                            "Apgar minute"
+                            "Not 1, 5, or 10"
+                            True
+                            cfg.model.pendingApgarMinute
+                            (getErr ApgarOtherMinuteFld errors)
+                        , H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button"
+                            , HE.onClick (AddApgarWizard ScoreAddOtherApgar)
+                            ]
+                            [ H.text "Next" ]
+                        ]
+
+                ScoreAddOtherApgar ->
+                    H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg ApgarOtherScoreFld)
+                            "Apgar score"
+                            "0 to 10"
+                            True
+                            cfg.model.pendingApgarScore
+                            (getErr ApgarOtherScoreFld errors)
+                        , H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button"
+                            , HE.onClick (AddApgarWizard FinishedAddOtherApgar)
+                            ]
+                            [ H.text "Finish" ]
+                        ]
+
+                _ ->
+                    -- Display an Add Apgar button for the NotStartedAddOtherApgar or
+                    -- the FinishedAddOtherApgar.
+                    H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ H.label [ HA.class "c-label o-form-element mw-form-field" ]
+                            [ H.span [ HA.classList [ ( "c-text--loud", True ) ] ]
+                                [ H.text "Add a custom apgar" ]
+                            , H.button
+                                [ HA.type_ "button"
+                                , HA.class "c-button"
+                                , HE.onClick (AddApgarWizard MinuteAddOtherApgar)
+                                ]
+                                [ H.text "Add Apgar" ]
+                            ]
+                        ]
     in
         H.div
             [ HA.class "u-high"
@@ -2333,6 +2440,11 @@ dialogBabySummaryEdit cfg =
                             apgar10
                             ""
                         ]
+                    , if List.length customApgarsList > 0 then
+                        customApgarsView customApgarsList True
+                      else
+                        H.text ""
+                    , addApgarWizard
                     , Form.radioFieldset "Sex"
                         "babySex"
                         cfg.model.bbSex
@@ -2865,6 +2977,19 @@ update session msg model =
 
                         BabyCommentsFld ->
                             { model | bbComments = Just value }
+
+                        ApgarOtherMinuteFld ->
+                            -- We reject the standard apgar minutes of 1, 5, or 10 because
+                            -- they are handled in the standard apgar fields.
+                            { model
+                                | pendingApgarMinute =
+                                    U.filterStringLikeInt value
+                                        |> U.filterStringNotInList [ "1", "5", "10" ]
+                                        |> Just
+                            }
+
+                        ApgarOtherScoreFld ->
+                            { model | pendingApgarScore = Just <| U.filterStringLikeInt value }
 
                         _ ->
                             let
@@ -4001,6 +4126,81 @@ update session msg model =
                                 , Cmd.none
                                 , toastError msgs 10
                                 )
+
+        AddApgarWizard addOtherApgar ->
+            case addOtherApgar of
+                NotStartedAddOtherApgar ->
+                    -- The user either has not done anything with the wizard or
+                    -- else has pressed cancel part way through.
+                    ( { model
+                        | pendingApgarWizard = NotStartedAddOtherApgar
+                        , pendingApgarMinute = Nothing
+                        , pendingApgarScore = Nothing
+                      }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                MinuteAddOtherApgar ->
+                    -- User has started the wizard to add a custom apgar.
+                    ( { model | pendingApgarWizard = MinuteAddOtherApgar }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                ScoreAddOtherApgar ->
+                    -- User has already entered minute and needs to enter score.
+                    ( { model | pendingApgarWizard = ScoreAddOtherApgar }
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                FinishedAddOtherApgar ->
+                    let
+                        minute =
+                            U.maybeStringToMaybeInt model.pendingApgarMinute
+
+                        score =
+                            U.maybeStringToMaybeInt model.pendingApgarScore
+
+                        newApgarScores =
+                            case ( minute, score ) of
+                                ( Just min, Just scr ) ->
+                                    Dict.insert min (ApgarScore minute score) model.apgarScores
+
+                                ( _, _ ) ->
+                                    model.apgarScores
+                    in
+                        ( { model
+                            | pendingApgarWizard = NotStartedAddOtherApgar
+                            , pendingApgarMinute = Nothing
+                            , pendingApgarScore = Nothing
+                            , apgarScores = newApgarScores
+                          }
+                        , Cmd.none
+                        , Cmd.none
+                        )
+
+        DeleteApgar minute ->
+            -- Used for the custom apgars, ignore any of the standard minutes
+            -- of 1, 5, or 10.
+            case minute of
+                1 ->
+                    ( model, Cmd.none, Cmd.none )
+
+                5 ->
+                    ( model, Cmd.none, Cmd.none )
+
+                10 ->
+                    ( model, Cmd.none, Cmd.none )
+
+                min ->
+                    ( { model
+                        | apgarScores = Dict.remove min model.apgarScores
+                      }
+                    , Cmd.none
+                    , Cmd.none
+                    )
 
         ClearStage1DateTime ->
             ( { model

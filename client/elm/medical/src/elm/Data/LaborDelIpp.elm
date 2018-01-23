@@ -1,6 +1,7 @@
 module Data.LaborDelIpp
     exposing
-        ( Dialog(..)
+        ( AddOtherApgar(..)
+        , Dialog(..)
         , Field(..)
         , SubMsg(..)
         )
@@ -12,6 +13,7 @@ import Time exposing (Time)
 -- LOCAL IMPORTS --
 
 import Const exposing (FldChgValue)
+import Data.Baby exposing (ApgarScore)
 import Data.DataCache exposing (DataCache)
 import Data.DatePicker exposing (DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecordNew)
@@ -47,6 +49,8 @@ type SubMsg
     | HandleStage3SummaryModal Dialog
     | HandleFalseLaborDateTimeModal Dialog
     | HandleBabySummaryModal Dialog
+    | AddApgarWizard AddOtherApgar
+    | DeleteApgar Int
       -- Clearing date/time fields.
     | ClearStage1DateTime
     | ClearStage2DateTime
@@ -59,6 +63,12 @@ type SubMsg
       -- Our current labor record.
     | ViewLaborRecord LaborId
 
+
+type AddOtherApgar
+    = NotStartedAddOtherApgar
+    | MinuteAddOtherApgar
+    | ScoreAddOtherApgar
+    | FinishedAddOtherApgar
 
 type Dialog
     = OpenDialog
@@ -141,3 +151,5 @@ type Field
     | BabyBcgTimeFld
     | BabyCommentsFld
     | ApgarStandardFld
+    | ApgarOtherMinuteFld
+    | ApgarOtherScoreFld

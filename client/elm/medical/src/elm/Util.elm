@@ -16,6 +16,7 @@ module Util
         , diff2DatesString
         , diff2MaybeDatesString
         , filterStringInList
+        , filterStringNotInList
         , filterStringLikeInt
         , filterStringLikeFloat
         , filterStringLikeTime
@@ -149,6 +150,18 @@ filterStringInList strings str =
 
         False ->
             ""
+
+{-| Return the String if it is NOT in the list of disallowed
+strings, otherwise return an empty string.
+-}
+filterStringNotInList : List String -> String -> String
+filterStringNotInList strings str =
+    case List.member str strings of
+        True ->
+            ""
+
+        False ->
+            str
 
 
 {-| Return a String that contains only digits.
