@@ -1102,7 +1102,7 @@ dialogStage1SummaryEdit cfg =
         errors =
             validateStage1 cfg.model
 
-        s1Total =
+        ( s1Total, s1Minutes ) =
             case cfg.model.laborStage1Record of
                 Just rec ->
                     case rec.fullDialation of
@@ -1111,19 +1111,26 @@ dialogStage1SummaryEdit cfg =
                                 Just lrecs ->
                                     case Dict.get rec.labor_id lrecs of
                                         Just laborRec ->
-                                            U.diff2DatesString laborRec.startLaborDate fd
+                                            ( U.diff2DatesString laborRec.startLaborDate fd
+                                            , (Date.toTime laborRec.startLaborDate) - (Date.toTime fd)
+                                                |> Time.inMinutes
+                                                |> round
+                                                |> abs
+                                                |> toString
+                                                |> (\m -> "(" ++ m ++ " minutes)")
+                                            )
 
                                         Nothing ->
-                                            ""
+                                            ( "", "" )
 
                                 Nothing ->
-                                    ""
+                                    ( "", "" )
 
                         Nothing ->
-                            ""
+                            ( "", "" )
 
                 Nothing ->
-                    ""
+                    ( "", "" )
     in
         H.div
             [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
@@ -1136,7 +1143,7 @@ dialogStage1SummaryEdit cfg =
             [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
                 [ H.text "Stage 1 Summary - Edit" ]
             , H.div [ HA.class "c-text--quiet" ]
-                [ H.text <| "Stage 1 total: " ++ s1Total ]
+                [ H.text <| "Stage 1 total: " ++ s1Total ++ " " ++ s1Minutes ]
             , H.div [ HA.class "form-wrapper u-small" ]
                 [ H.div []
                     [ Form.radioFieldsetWide "Mobility"
