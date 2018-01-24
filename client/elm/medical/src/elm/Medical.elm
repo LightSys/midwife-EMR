@@ -913,6 +913,9 @@ setRoute maybeRoute model =
                     Nothing ->
                         { model | pageState = Loaded NotFound } => Cmd.none
 
+            Just (Route.LaborDelIppDialogRoute) ->
+                model => Cmd.none
+
             Just (Route.PostpartumRoute) ->
                 case ( model.currPregId, model.laborRecords ) of
                     ( Just pregId, Just recs ) ->

@@ -3124,7 +3124,11 @@ update session msg model =
                             -- If not yet set, the set the date/time to
                             -- current as a convenience to user.
                             { model
-                                | stage1DateTimeModal = Stage1DateTimeModal
+                                | stage1DateTimeModal =
+                                    if model.stage1DateTimeModal == Stage1DateTimeModal then
+                                        NoDateTimeModal
+                                    else
+                                        Stage1DateTimeModal
                                 , stage1Date = Just <| Date.fromTime model.currTime
                                 , stage1Time = Just <| U.timeToTimeString model.currTime
                             }
@@ -3132,11 +3136,17 @@ update session msg model =
                         ( _, _ ) ->
                             { model | stage1DateTimeModal = Stage1DateTimeModal }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.stage1DateTimeModal == NoDateTimeModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
                     )
 
                 CloseNoSaveDialog ->
-                    ( { model | stage1DateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+                    ( { model | stage1DateTimeModal = NoDateTimeModal }
+                    , Cmd.none
+                    , Route.back
+                    )
 
                 EditDialog ->
                     -- This dialog option is not used for stage 1 date time.
@@ -3216,7 +3226,10 @@ update session msg model =
                                     | stage1DateTimeModal = NoDateTimeModal
                                   }
                                 , Cmd.none
-                                , Task.perform (always outerMsg) (Task.succeed True)
+                                , Cmd.batch
+                                    [ Task.perform (always outerMsg) (Task.succeed True)
+                                    , Route.back
+                                    ]
                                 )
 
                         errors ->
@@ -3265,7 +3278,10 @@ update session msg model =
                             , s1Comments = comments
                           }
                         , Cmd.none
-                        , Cmd.none
+                        , if model.stage1SummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                          else
+                            Route.back
                         )
 
                 CloseNoSaveDialog ->
@@ -3273,7 +3289,7 @@ update session msg model =
                     -- form fields.
                     ( { model | stage1SummaryModal = NoStageSummaryModal }
                     , Cmd.none
-                    , Cmd.none
+                    , Route.back
                     )
 
                 EditDialog ->
@@ -3282,7 +3298,10 @@ update session msg model =
                     -- Stage1SummaryViewModal in that we are forcing edit here.
                     ( { model | stage1SummaryModal = Stage1SummaryEditModal }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.stage1SummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Cmd.none
                     )
 
                 CloseSaveDialog ->
@@ -3334,7 +3353,10 @@ update session msg model =
                             in
                                 ( { model | stage1SummaryModal = NoStageSummaryModal }
                                 , Cmd.none
-                                , Task.perform (always outerMsg) (Task.succeed True)
+                                , Cmd.batch
+                                    [ Task.perform (always outerMsg) (Task.succeed True)
+                                    , Route.back
+                                    ]
                                 )
 
                         errors ->
@@ -3364,11 +3386,17 @@ update session msg model =
                         ( _, _ ) ->
                             { model | stage2DateTimeModal = Stage2DateTimeModal }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.stage2DateTimeModal == NoDateTimeModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
                     )
 
                 CloseNoSaveDialog ->
-                    ( { model | stage2DateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+                    ( { model | stage2DateTimeModal = NoDateTimeModal }
+                    , Cmd.none
+                    , Route.back
+                    )
 
                 EditDialog ->
                     -- This dialog option is not used for stage 2 date time.
@@ -3448,7 +3476,10 @@ update session msg model =
                                     | stage2DateTimeModal = NoDateTimeModal
                                   }
                                 , Cmd.none
-                                , Task.perform (always outerMsg) (Task.succeed True)
+                                , Cmd.batch
+                                    [ Task.perform (always outerMsg) (Task.succeed True)
+                                    , Route.back
+                                    ]
                                 )
 
                         errors ->
@@ -3504,7 +3535,10 @@ update session msg model =
                                     NoStageSummaryModal
                           }
                         , Cmd.none
-                        , Cmd.none
+                        , if newModel.stage2SummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                          else
+                            Route.back
                         )
 
                 CloseNoSaveDialog ->
@@ -3512,7 +3546,7 @@ update session msg model =
                     -- form fields.
                     ( { model | stage2SummaryModal = NoStageSummaryModal }
                     , Cmd.none
-                    , Cmd.none
+                    , Route.back
                     )
 
                 EditDialog ->
@@ -3521,7 +3555,10 @@ update session msg model =
                     -- Stage2SummaryViewModal in that we are forcing edit here.
                     ( { model | stage2SummaryModal = Stage2SummaryEditModal }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.stage2SummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Cmd.none
                     )
 
                 CloseSaveDialog ->
@@ -3586,7 +3623,10 @@ update session msg model =
                             in
                                 ( { model | stage2SummaryModal = NoStageSummaryModal }
                                 , Cmd.none
-                                , Task.perform (always outerMsg) (Task.succeed True)
+                                , Cmd.batch
+                                    [ Task.perform (always outerMsg) (Task.succeed True)
+                                    , Route.back
+                                    ]
                                 )
 
                         errors ->
@@ -3619,11 +3659,17 @@ update session msg model =
                         ( _, _ ) ->
                             { model | stage3DateTimeModal = Stage3DateTimeModal }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.stage3DateTimeModal == NoDateTimeModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
                     )
 
                 CloseNoSaveDialog ->
-                    ( { model | stage3DateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+                    ( { model | stage3DateTimeModal = NoDateTimeModal }
+                    , Cmd.none
+                    , Route.back
+                    )
 
                 EditDialog ->
                     -- This dialog option is not used for stage 3 date time.
@@ -3703,7 +3749,10 @@ update session msg model =
                                     | stage3DateTimeModal = NoDateTimeModal
                                   }
                                 , Cmd.none
-                                , Task.perform (always outerMsg) (Task.succeed True)
+                                , Cmd.batch
+                                    [ Task.perform (always outerMsg) (Task.succeed True)
+                                    , Route.back
+                                    ]
                                 )
 
                         errors ->
@@ -3759,7 +3808,10 @@ update session msg model =
                                     NoStageSummaryModal
                           }
                         , Cmd.none
-                        , Cmd.none
+                        , if newModel.stage3SummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                          else
+                            Route.back
                         )
 
                 CloseNoSaveDialog ->
@@ -3767,7 +3819,7 @@ update session msg model =
                     -- form fields.
                     ( { model | stage3SummaryModal = NoStageSummaryModal }
                     , Cmd.none
-                    , Cmd.none
+                    , Route.back
                     )
 
                 EditDialog ->
@@ -3776,7 +3828,10 @@ update session msg model =
                     -- Stage3SummaryViewModal in that we are forcing edit here.
                     ( { model | stage3SummaryModal = Stage3SummaryEditModal }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.stage3SummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Cmd.none
                     )
 
                 CloseSaveDialog ->
@@ -3841,7 +3896,10 @@ update session msg model =
                             in
                                 ( { model | stage3SummaryModal = NoStageSummaryModal }
                                 , Cmd.none
-                                , Task.perform (always outerMsg) (Task.succeed True)
+                                , Cmd.batch
+                                    [ Task.perform (always outerMsg) (Task.succeed True)
+                                    , Route.back
+                                    ]
                                 )
 
                         errors ->
@@ -4015,19 +4073,25 @@ update session msg model =
                                     NoStageSummaryModal
                           }
                         , Cmd.none
-                        , Cmd.none
+                        , if model.babySummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                          else
+                            Route.back
                         )
 
                 CloseNoSaveDialog ->
                     ( { model | babySummaryModal = NoStageSummaryModal }
                     , Cmd.none
-                    , Cmd.none
+                    , Route.back
                     )
 
                 EditDialog ->
                     ( { model | babySummaryModal = BabySummaryEditModal }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.babySummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Cmd.none
                     )
 
                 CloseSaveDialog ->
@@ -4100,7 +4164,10 @@ update session msg model =
                             in
                                 ( { model | babySummaryModal = NoStageSummaryModal }
                                 , Cmd.none
-                                , Task.perform (always outerMsg) (Task.succeed True)
+                                , Cmd.batch
+                                    [ Task.perform (always outerMsg) (Task.succeed True)
+                                    , Route.back
+                                    ]
                                 )
 
                         errors ->
