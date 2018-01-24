@@ -1,4 +1,4 @@
-module Page.Postpartum
+module Page.ContPP
     exposing
         ( Model
         , buildModel
@@ -25,6 +25,10 @@ import Data.Baby
     exposing
         ( BabyRecord
         )
+import Data.ContPP
+    exposing
+        ( SubMsg(..)
+        )
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.Labor
     exposing
@@ -42,10 +46,6 @@ import Data.LaborStage2 exposing (LaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record)
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
-import Data.Postpartum
-    exposing
-        ( SubMsg(..)
-        )
 import Data.PostpartumCheck exposing (PostpartumCheck)
 import Data.Pregnancy
     exposing
@@ -103,7 +103,7 @@ init pregId laborRec session store =
             SelectQuery Labor (Just laborRec.id) [ LaborStage1, LaborStage2, LaborStage3, Baby ]
 
         ( processId, processStore ) =
-            Processing.add (SelectQueryType (PostpartumLoaded pregId laborRec) selectQuery) Nothing store
+            Processing.add (SelectQueryType (ContPPLoaded pregId laborRec) selectQuery) Nothing store
 
         msg =
             wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
@@ -203,7 +203,7 @@ refreshModelFromCache dc tables model =
                         _ ->
                             let
                                 _ =
-                                    Debug.log "Postpartum.refreshModelFromCache: Unhandled Table" <| toString t
+                                    Debug.log "ContPP.refreshModelFromCache: Unhandled Table" <| toString t
                             in
                                 m
                 )
@@ -290,17 +290,21 @@ view size session model =
         H.div []
             [ pregHeader |> H.map (\a -> RotatePregHeaderContent a)
             , H.div [ HA.class "content-wrapper" ]
-                [ viewBabyEdit model
+                [ viewContent model
                 ]
             ]
 
 
-viewBabyEdit : Model -> Html SubMsg
-viewBabyEdit model =
+viewContent : Model -> Html SubMsg
+viewContent model =
     H.div []
         [ H.h3 [ HA.class "c-heading u-medium" ]
             [ H.text "What will be on this page" ]
         , H.ul []
-            [ H.li [] [ H.text "Post-partum checks" ]
+            [ H.li [] [ H.text "Newborn exam" ]
+            , H.li [] [ H.text "Baby and Mother checks" ]
+            , H.li [] [ H.text "Vitamin A" ]
+            , H.li [] [ H.text "Discharge checklist" ]
+            , H.li [] [ H.text "Discharge vitals" ]
             ]
         ]

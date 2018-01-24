@@ -19,6 +19,7 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 
 type Route
     = AdmittingRoute
+    | ContPPRoute
     | LaborDelIppRoute
     | LaborDelIppDialogRoute
     | PostpartumRoute
@@ -27,6 +28,10 @@ type Route
 admittingRouteString : String
 admittingRouteString =
     ""
+
+contPPRouteString : String
+contPPRouteString =
+    "contpp"
 
 
 laborDelIppRouteString : String
@@ -48,6 +53,7 @@ route : Parser (Route -> a) a
 route =
     oneOf
         [ Url.map AdmittingRoute (s admittingRouteString)
+        , Url.map ContPPRoute (s contPPRouteString)
         , Url.map LaborDelIppDialogRoute (s laborDelIppRouteString </> s dialogRouteString)
         , Url.map LaborDelIppRoute (s laborDelIppRouteString)
         , Url.map PostpartumRoute (s postpartumRouteString)
@@ -65,6 +71,9 @@ routeToString page =
             case page of
                 AdmittingRoute ->
                     [ admittingRouteString ]
+
+                ContPPRoute ->
+                    [ contPPRouteString ]
 
                 LaborDelIppRoute ->
                     [ laborDelIppRouteString ]

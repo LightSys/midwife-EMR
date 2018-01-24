@@ -18,6 +18,7 @@ import Window
 
 import Data.Admitting as Admitting
 import Data.Baby exposing (BabyRecord, BabyRecordNew)
+import Data.ContPP as ContPP
 import Data.DatePicker exposing (DateField, DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
@@ -43,6 +44,8 @@ type Msg
     | SetRoute (Maybe Route)
     | AdmittingLoaded PregnancyId
     | AdmittingMsg Admitting.AdmittingSubMsg
+    | ContPPLoaded PregnancyId LaborRecord
+    | ContPPMsg ContPP.SubMsg
     | LaborDelIppLoaded PregnancyId
     | LaborDelIppMsg LaborDelIpp.SubMsg
     | PostpartumLoaded PregnancyId LaborRecord

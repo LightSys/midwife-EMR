@@ -23,6 +23,7 @@ import Data.Session as Session exposing (Session)
 import Data.SiteMessage exposing (SiteKeyValue(..))
 import Data.Toast exposing (ToastRecord, ToastType)
 import Page.Admitting as PageAdmitting
+import Page.ContPP as PageContPP
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
 import Page.Postpartum as PagePostpartum
@@ -34,6 +35,7 @@ type Page
     | NotFound
     | Errored PageLoadError
     | Admitting PageAdmitting.Model
+    | ContPP PageContPP.Model
     | LaborDelIpp PageLaborDelIpp.Model
     | Postpartum PagePostpartum.Model
 
