@@ -14,6 +14,7 @@ module Data.Baby
         , babyRecordToValue
         , getBabyId
         , getCustomScoresAsList
+        , getScoresAsList
         , getScoreAsStringByMinute
         , isBabyRecordFullyComplete
         , MaleFemale(..)
@@ -291,7 +292,7 @@ apgarScoreDictToApgarRecordList scores =
 
 apgarRecordListToApgarScoreDict : List ApgarRecord -> Dict Int ApgarScore
 apgarRecordListToApgarScoreDict scores =
-    List.map (\rec -> (rec.minute, apgarRecordToApgarScore rec)) scores
+    List.map (\rec -> ( rec.minute, apgarRecordToApgarScore rec )) scores
         |> Dict.fromList
 
 
@@ -327,7 +328,13 @@ getScoreAsStringByMinute minute scores =
         Nothing ->
             Just ""
 
+
+getScoresAsList : Dict Int ApgarScore -> List ApgarScore
+getScoresAsList scores =
+    Dict.values scores
+
+
 getCustomScoresAsList : Dict Int ApgarScore -> List ApgarScore
 getCustomScoresAsList scores =
-    Dict.filter (\min _ -> not <| List.member min [1,5,10]) scores
+    Dict.filter (\min _ -> not <| List.member min [ 1, 5, 10 ]) scores
         |> Dict.values

@@ -36,6 +36,7 @@ import Data.Baby
         , babyRecordToValue
         , getCustomScoresAsList
         , getScoreAsStringByMinute
+        , getScoresAsList
         , isBabyRecordFullyComplete
         , MaleFemale(..)
         , maleFemaleToFullString
@@ -1112,7 +1113,8 @@ dialogStage1SummaryEdit cfg =
                                     case Dict.get rec.labor_id lrecs of
                                         Just laborRec ->
                                             ( U.diff2DatesString laborRec.startLaborDate fd
-                                            , (Date.toTime laborRec.startLaborDate) - (Date.toTime fd)
+                                            , (Date.toTime laborRec.startLaborDate)
+                                                - (Date.toTime fd)
                                                 |> Time.inMinutes
                                                 |> round
                                                 |> abs
@@ -2142,17 +2144,8 @@ dialogBabySummaryView cfg =
                 Nothing ->
                     ( "", "", "", "" )
 
-        apgar1 =
-            Maybe.withDefault "" <| getScoreAsStringByMinute 1 cfg.model.apgarScores
-
-        apgar5 =
-            Maybe.withDefault "" <| getScoreAsStringByMinute 5 cfg.model.apgarScores
-
-        apgar10 =
-            Maybe.withDefault "" <| getScoreAsStringByMinute 10 cfg.model.apgarScores
-
-        customApgarsList =
-            getCustomScoresAsList cfg.model.apgarScores
+        apgarsList =
+            getScoresAsList cfg.model.apgarScores
     in
         H.div
             [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
@@ -2187,28 +2180,6 @@ dialogBabySummaryView cfg =
                         ]
                     , H.div [ HA.class "mw-form-field-2x" ]
                         [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Apgar 1: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text apgar1 ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Apgar 5: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text apgar5 ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Apgar 10: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text apgar10 ]
-                        ]
-                    , if List.length customApgarsList > 0 then
-                        customApgarsView customApgarsList False
-                      else
-                        H.text ""
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
                             [ H.text "Sex: " ]
                         , H.span [ HA.class "" ]
                             [ H.text sex ]
@@ -2219,6 +2190,7 @@ dialogBabySummaryView cfg =
                         , H.span [ HA.class "" ]
                             [ H.text birthWeight ]
                         ]
+                    , customApgarsView "Apgar Scores" apgarsList False
                     , H.div [ HA.class "mw-form-field-2x" ]
                         [ H.span [ HA.class "c-text--loud" ]
                             [ H.text "BFed established: " ]
@@ -2268,23 +2240,30 @@ dialogBabySummaryView cfg =
             ]
 
 
-customApgarsView : List ApgarScore -> Bool -> Html SubMsg
-customApgarsView scores isEditing =
-    H.div [ HA.class "mw-form-field" ]
-        ([ H.span [ HA.class "c-text--loud" ]
-            [ H.text "Custom Apgar Scores" ]
-         ]
-            ++ (List.map (customApgarView isEditing) scores)
-            ++ ([ H.span [ HA.class "c-text--quiet" ]
-                    [ H.text <|
-                        if isEditing then
-                            "After adding or deleting, press Save below."
-                        else
-                            ""
+customApgarsView : String -> List ApgarScore -> Bool -> Html SubMsg
+customApgarsView lbl scores isEditing =
+    let
+        outerClass =
+            if isEditing then
+                "mw-form-field"
+            else
+                "mw-form-field-2x"
+    in
+        H.div [ HA.class outerClass ]
+            ([ H.span [ HA.class "c-text--loud" ]
+                [ H.text lbl ]
+             ]
+                ++ (List.map (customApgarView isEditing) scores)
+                ++ ([ H.span [ HA.class "c-text--quiet" ]
+                        [ H.text <|
+                            if isEditing then
+                                "After adding or deleting, press Save below."
+                            else
+                                ""
+                        ]
                     ]
-                ]
-               )
-        )
+                   )
+            )
 
 
 customApgarView : Bool -> ApgarScore -> Html SubMsg
@@ -2423,6 +2402,23 @@ dialogBabySummaryEdit cfg =
                             cfg.model.bbMiddlename
                             (getErr BabyMiddlenameFld errors)
                         ]
+                    , Form.radioFieldset "Sex"
+                        "babySex"
+                        cfg.model.bbSex
+                        (FldChgString >> FldChgSubMsg BabySexFld)
+                        False
+                        [ "Male"
+                        , "Female"
+                        ]
+                        (getErr BabySexFld errors)
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg BabyBirthWeightFld)
+                            "Birth weight (grams)"
+                            "a number"
+                            True
+                            cfg.model.bbBirthWeight
+                            (getErr BabyBirthWeightFld errors)
+                        ]
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgIntString 1 >> FldChgSubMsg ApgarStandardFld)
                             "Apgar 1"
@@ -2448,27 +2444,10 @@ dialogBabySummaryEdit cfg =
                             ""
                         ]
                     , if List.length customApgarsList > 0 then
-                        customApgarsView customApgarsList True
+                        customApgarsView "Custom Apgar Scores" customApgarsList True
                       else
                         H.text ""
                     , addApgarWizard
-                    , Form.radioFieldset "Sex"
-                        "babySex"
-                        cfg.model.bbSex
-                        (FldChgString >> FldChgSubMsg BabySexFld)
-                        False
-                        [ "Male"
-                        , "Female"
-                        ]
-                        (getErr BabySexFld errors)
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg BabyBirthWeightFld)
-                            "Birth weight (grams)"
-                            "a number"
-                            True
-                            cfg.model.bbBirthWeight
-                            (getErr BabyBirthWeightFld errors)
-                        ]
                     , if cfg.model.browserSupportsDate then
                         H.div [ HA.class "c-card mw-form-field-2x" ]
                             [ H.div [ HA.class "c-card__item" ]
