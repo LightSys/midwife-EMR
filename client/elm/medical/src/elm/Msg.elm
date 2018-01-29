@@ -43,6 +43,7 @@ type Msg
     | LogConsole String
     | Toast (List String) Int ToastType
     | WindowResize (Maybe Window.Size)
+    | SetDialogActive Bool
     | SetRoute (Maybe Route)
     | AdmittingLoaded PregnancyId
     | AdmittingMsg Admitting.AdmittingSubMsg

@@ -3756,10 +3756,13 @@ update session msg model =
                         , s1Comments = comments
                       }
                     , Cmd.none
-                    , if model.stage1SummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if model.stage1SummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                        else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
                     )
 
                 CloseNoSaveDialog ->
@@ -3777,7 +3780,10 @@ update session msg model =
                     ( { model | stage1SummaryModal = Stage1SummaryEditModal }
                     , Cmd.none
                     , if model.stage1SummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.LaborDelIppRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
                       else
                         Cmd.none
                     )
@@ -4013,10 +4019,14 @@ update session msg model =
                                 NoStageSummaryModal
                       }
                     , Cmd.none
-                    , if newModel.stage2SummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if newModel.stage2SummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                        else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
+
                     )
 
                 CloseNoSaveDialog ->
@@ -4034,7 +4044,10 @@ update session msg model =
                     ( { model | stage2SummaryModal = Stage2SummaryEditModal }
                     , Cmd.none
                     , if model.stage2SummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.LaborDelIppRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
                       else
                         Cmd.none
                     )
@@ -4286,10 +4299,13 @@ update session msg model =
                                 NoStageSummaryModal
                       }
                     , Cmd.none
-                    , if newModel.stage3SummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if newModel.stage3SummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                        else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
                     )
 
                 CloseNoSaveDialog ->
@@ -4307,7 +4323,10 @@ update session msg model =
                     ( { model | stage3SummaryModal = Stage3SummaryEditModal }
                     , Cmd.none
                     , if model.stage3SummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.LaborDelIppRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
                       else
                         Cmd.none
                     )
@@ -4543,10 +4562,13 @@ update session msg model =
                                 NoStageSummaryModal
                       }
                     , Cmd.none
-                    , if model.membranesSummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if model.membranesSummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                          else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
                     )
 
                 CloseNoSaveDialog ->
@@ -4559,7 +4581,10 @@ update session msg model =
                     ( { model | membranesSummaryModal = MembranesSummaryEditModal }
                     , Cmd.none
                     , if model.membranesSummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.LaborDelIppRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
                       else
                         Cmd.none
                     )
@@ -4682,10 +4707,13 @@ update session msg model =
                                 NoStageSummaryModal
                       }
                     , Cmd.none
-                    , if model.babySummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if model.babySummaryModal == NoStageSummaryModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                          else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
                     )
 
                 CloseNoSaveDialog ->
@@ -4698,7 +4726,10 @@ update session msg model =
                     ( { model | babySummaryModal = BabySummaryEditModal }
                     , Cmd.none
                     , if model.babySummaryModal == NoStageSummaryModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.LaborDelIppRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
                       else
                         Cmd.none
                     )

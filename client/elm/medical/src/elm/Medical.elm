@@ -257,6 +257,15 @@ update msg noAutoTouchModel =
                 -- Keep the current window size in the Model.
                 { model | window = size } => Cmd.none
 
+            ( SetDialogActive bool, _ ) ->
+                -- This allows the top-level to know whether one of the pages has a dialog
+                -- open, which changes the route in order that the browser back button only
+                -- closes the dialog instead of truly going back a page. By knowing whether
+                -- a setRoute request is due to a dialog being open or not allows us to
+                -- decide whether we need to request all of the data for the page or not.
+                -- This in turn makes the user experience more seamless.
+                { model | dialogActive = bool } => Cmd.none
+
             ( Message incoming, _ ) ->
                 -- All messages from the server come through here first.
                 -- We record the time of the last contact with the server in order
@@ -1067,8 +1076,13 @@ setRoute maybeRoute model =
             Just (Route.LaborDelIppRoute) ->
                 case model.currPregId of
                     Just pid ->
-                        PageLaborDelIpp.init pid model.session model.processStore
-                            |> (\( store, cmd ) -> transition store cmd)
+                        if model.dialogActive then
+                            -- We are coming back from an open dialog, so no need to
+                            -- retrieve data from the server all over again.
+                            { model | dialogActive = False } => Cmd.none
+                        else
+                            PageLaborDelIpp.init pid model.session model.processStore
+                                |> (\( store, cmd ) -> transition store cmd)
 
                     Nothing ->
                         { model | pageState = Loaded NotFound } => Cmd.none

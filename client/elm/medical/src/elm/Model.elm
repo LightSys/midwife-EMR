@@ -54,6 +54,7 @@ type alias Model =
     , processStore : ProcessStore
     , dataCache : Dict String DataCache
     , window : Maybe Window.Size
+    , dialogActive : Bool
     , siteMessages : Dict String SiteKeyValue
     , laborRecords : Maybe (Dict Int LaborRecord)
     , patientRecord : Maybe PatientRecord
@@ -76,6 +77,7 @@ initialModel browserSupportsDate pregId time =
         , toast = Nothing
         , processStore = newStore
         , window = Nothing
+        , dialogActive = False
         , dataCache = Dict.empty
         , siteMessages = Dict.empty
         , laborRecords = Nothing
