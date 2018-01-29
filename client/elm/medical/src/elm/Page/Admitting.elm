@@ -938,7 +938,7 @@ update session msg model =
                             { model | laborTime = Just <| U.filterStringLikeTime value }
 
                         PosFld ->
-                            { model | pos = Just value }
+                            { model | pos = Just <| String.toUpper value }
 
                         FhFld ->
                             { model | fh = Just <| U.filterStringLikeInt value }
