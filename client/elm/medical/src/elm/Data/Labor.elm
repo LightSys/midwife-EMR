@@ -67,8 +67,6 @@ type alias LaborRecordNew =
 
 
 {-| Decode a LaborRecord from the server.
-
-partof: #SPC-dates-client-decode
 -}
 laborRecord : JD.Decoder LaborRecord
 laborRecord =

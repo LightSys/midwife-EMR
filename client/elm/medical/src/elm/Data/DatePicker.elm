@@ -29,6 +29,7 @@ type DateField
     | LaborDelIppStage2DateField
     | LaborDelIppStage3DateField
     | FalseLaborDateField
+    | MembranesResusRuptureDateField
     | BabyBFedEstablishedDateField
     | BabyNbsDateField
     | BabyBcgDateField
@@ -97,6 +98,9 @@ dateFieldToString df =
 
         LaborDelIppStage3DateField ->
             "laborStage3Id"
+
+        MembranesResusRuptureDateField ->
+            "membranesResusRuptureId"
 
         UnknownDateField str ->
             "Warning: Unknown DateField: " ++ str

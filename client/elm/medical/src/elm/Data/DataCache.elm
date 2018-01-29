@@ -16,6 +16,7 @@ import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record)
+import Data.MembranesResus exposing (MembranesResusRecord)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
 import Data.Table exposing (stringToTable, tableToString, Table(..))
@@ -29,6 +30,7 @@ type DataCache
     | LaborStage1DataCache LaborStage1Record
     | LaborStage2DataCache LaborStage2Record
     | LaborStage3DataCache LaborStage3Record
+    | MembranesResusDataCache MembranesResusRecord
     | PatientDataCache PatientRecord
     | PregnancyDataCache PregnancyRecord
 
@@ -54,6 +56,9 @@ getTableString dc =
 
         LaborStage3DataCache _ ->
             tableToString LaborStage3
+
+        MembranesResusDataCache _ ->
+            tableToString MembranesResus
 
         PatientDataCache _ ->
             tableToString Patient

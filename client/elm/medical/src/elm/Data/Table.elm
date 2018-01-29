@@ -13,14 +13,14 @@ import Json.Encode as JE
 
 type Table
     = Unknown
-    | Patient
-    | Pregnancy
+    | Baby
     | Labor
     | LaborStage1
     | LaborStage2
     | LaborStage3
-    | Baby
-
+    | MembranesResus
+    | Patient
+    | Pregnancy
 
 
 -- HELPERS --
@@ -52,6 +52,9 @@ tableToString tbl =
         LaborStage3 ->
             "laborStage3"
 
+        MembranesResus ->
+            "membranesResus"
+
         Patient ->
             "patient"
 
@@ -76,6 +79,9 @@ stringToTable tbl =
 
         "laborStage3" ->
             LaborStage3
+
+        "membranesResus" ->
+            MembranesResus
 
         "patient" ->
             Patient

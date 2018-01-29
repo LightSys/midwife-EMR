@@ -25,6 +25,7 @@ import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLabor
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
+import Data.MembranesResus exposing (membranesResusRecordNewToMembranesResusRecord, MembranesResusId(..))
 import Data.Postpartum exposing (SubMsg(..))
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
@@ -413,6 +414,16 @@ update msg noAutoTouchModel =
                         newSubMsg
                         subModel
 
+            ( LaborDelIppSelectQuery tbl key relatedTables, LaborDelIpp subModel ) ->
+                -- Request by the sub page to retrieve additional data from the
+                -- server after the page's initialization and load is already
+                -- complete.
+                let
+                    ( store, newCmd ) =
+                        PageLaborDelIpp.getTableData model.processStore tbl key relatedTables
+                in
+                    { model | processStore = store } => newCmd
+
             ( PostpartumLoaded pregId laborRec, _ ) ->
                 -- This page has enough of what it needs from the server in order
                 -- to display the page. The newCmd returned from
@@ -645,6 +656,20 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddMembranesResusType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membranesResusRecordNew) ->
+                                    let
+                                        membranesResusRec =
+                                            membranesResusRecordNewToMembranesResusRecord
+                                                (MembranesResusId dataAddMsg.response.id)
+                                                membranesResusRecordNew
+
+                                        subMsg =
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ MembranesResus ])
+                                    in
+                                        ( { model | dataCache = DCache.put (MembranesResusDataCache membranesResusRec) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
                                 _ ->
                                     let
                                         msgText =
@@ -750,6 +775,15 @@ updateMessage incoming model =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage3 ])
                                     in
                                         ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Record) model.dataCache }
+                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                Just (UpdateMembranesResusType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membranesResusRecord) ->
+                                    let
+                                        subMsg =
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ MembranesResus ])
+                                    in
+                                        ( { model | dataCache = DCache.put (MembranesResusDataCache membranesResusRecord) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
@@ -866,6 +900,19 @@ updateMessage incoming model =
                                             in
                                                 { mdl | dataCache = dc }
 
+                                        TableRecordMembranesResus recs ->
+                                            let
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (MembranesResusDataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+
+                                            in
+                                                { mdl | dataCache = dc }
+
                                         TableRecordPatient recs ->
                                             -- We only ever want one patient in our store at a time.
                                             let
@@ -918,16 +965,16 @@ updateMessage incoming model =
                         Just (AddBabyType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddLaborType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
-
-                        Just (AddLaborStage1Type msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
-
                         Just (UpdateBabyType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
+                        Just (AddLaborType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
                         Just (UpdateLaborType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (AddLaborStage1Type msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateLaborStage1Type msg _) ->
@@ -943,6 +990,12 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateLaborStage3Type msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (AddMembranesResusType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateMembranesResusType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (SelectQueryType msg _) ->

@@ -2,43 +2,30 @@ module Page.LaborDelIpp
     exposing
         ( Model
         , buildModel
+        , getTableData
         , init
         , update
         , view
         )
-
-import Date exposing (Date, Month(..), day, month, year)
-import Date.Extra.Compare as DEComp
-import Dict exposing (Dict)
-import Html as H exposing (Html)
-import Html.Attributes as HA
-import Html.Events as HE
-import Json.Decode as JD
-import List.Extra as LE
-import Task exposing (Task)
-import Time exposing (Time)
-import Validate exposing (ifBlank, ifInvalid, ifNotInt)
-import Window
-
 
 -- LOCAL IMPORTS --
 
 import Const exposing (FldChgValue(..))
 import Data.Baby
     exposing
-        ( apgarScoreDictToApgarRecordList
-        , apgarRecordListToApgarScoreDict
-        , ApgarScore(..)
+        ( ApgarScore(..)
         , BabyId(..)
         , BabyRecord
         , BabyRecordNew
+        , MaleFemale(..)
+        , apgarRecordListToApgarScoreDict
+        , apgarScoreDictToApgarRecordList
         , babyRecordNewToValue
         , babyRecordToValue
         , getCustomScoresAsList
         , getScoreAsStringByMinute
         , getScoresAsList
         , isBabyRecordFullyComplete
-        , MaleFemale(..)
         , maleFemaleToFullString
         , maleFemaleToString
         , maybeMaleFemaleToString
@@ -48,40 +35,13 @@ import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
 import Data.Labor
     exposing
-        ( getLaborId
-        , LaborId(..)
+        ( LaborId(..)
         , LaborRecord
         , LaborRecordNew
-        , laborRecordNewToValue
+        , getLaborId
         , laborRecordNewToLaborRecord
+        , laborRecordNewToValue
         , laborRecordToValue
-        )
-import Data.LaborStage1
-    exposing
-        ( laborStage1RecordNewToLaborStage1Record
-        , laborStage1RecordToValue
-        , laborStage1RecordNewToValue
-        , LaborStage1Id(..)
-        , LaborStage1Record
-        , LaborStage1RecordNew
-        )
-import Data.LaborStage2
-    exposing
-        ( isLaborStage2RecordComplete
-        , LaborStage2Record
-        , LaborStage2RecordNew
-        , laborStage2RecordNewToValue
-        , laborStage2RecordToValue
-        )
-import Data.LaborStage3
-    exposing
-        ( isLaborStage3RecordComplete
-        , LaborStage3Record
-        , LaborStage3RecordNew
-        , laborStage3RecordNewToValue
-        , laborStage3RecordToValue
-        , schultzDuncan2String
-        , string2SchultzDuncan
         )
 import Data.LaborDelIpp
     exposing
@@ -90,22 +50,77 @@ import Data.LaborDelIpp
         , Field(..)
         , SubMsg(..)
         )
+import Data.LaborStage1
+    exposing
+        ( LaborStage1Id(..)
+        , LaborStage1Record
+        , LaborStage1RecordNew
+        , laborStage1RecordNewToLaborStage1Record
+        , laborStage1RecordNewToValue
+        , laborStage1RecordToValue
+        )
+import Data.LaborStage2
+    exposing
+        ( LaborStage2Record
+        , LaborStage2RecordNew
+        , isLaborStage2RecordComplete
+        , laborStage2RecordNewToValue
+        , laborStage2RecordToValue
+        )
+import Data.LaborStage3
+    exposing
+        ( LaborStage3Record
+        , LaborStage3RecordNew
+        , isLaborStage3RecordComplete
+        , laborStage3RecordNewToValue
+        , laborStage3RecordToValue
+        , schultzDuncan2String
+        , string2SchultzDuncan
+        )
+import Data.MembranesResus
+    exposing
+        ( Amniotic(..)
+        , MembranesResusRecord
+        , MembranesResusRecordNew
+        , Rupture(..)
+        , amnioticToString
+        , isMembranesResusRecordComplete
+        , maybeAmnioticToString
+        , maybeRuptureToString
+        , maybeStringToAmniotic
+        , maybeStringToRupture
+        , membranesResusRecordNewToValue
+        , membranesResusRecordToValue
+        , ruptureToString
+        )
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
-import Data.Pregnancy exposing (getPregId, PregnancyId(..), PregnancyRecord)
+import Data.Pregnancy exposing (PregnancyId(..), PregnancyRecord, getPregId)
 import Data.PregnancyHeader as PregHeaderData
 import Data.Processing exposing (ProcessId(..))
 import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session)
-import Data.Table exposing (Table(..))
-import Msg exposing (logConsole, Msg(..), ProcessType(..), toastInfo, toastWarn, toastError)
+import Data.Table exposing (Table(..), tableToString)
+import Date exposing (Date, Month(..), day, month, year)
+import Date.Extra.Compare as DEComp
+import Dict exposing (Dict)
+import Html as H exposing (Html)
+import Html.Attributes as HA
+import Html.Events as HE
+import Json.Decode as JD
+import List.Extra as LE
+import Msg exposing (Msg(..), ProcessType(..), logConsole, toastError, toastInfo, toastWarn)
 import Page.Errored as Errored exposing (PageLoadError)
 import Ports
 import Processing exposing (ProcessStore)
 import Route
+import Task exposing (Task)
+import Time exposing (Time)
 import Util as U exposing ((=>))
+import Validate exposing (ifBlank, ifInvalid, ifNotInt)
 import Views.Form as Form
 import Views.PregnancyHeader as PregHeaderView
+import Window
 
 
 -- MODEL --
@@ -128,6 +143,8 @@ type StageSummaryModal
     | Stage3SummaryModal
     | Stage3SummaryViewModal
     | Stage3SummaryEditModal
+    | MembranesSummaryEditModal
+    | MembranesSummaryViewModal
     | BabySummaryViewModal
     | BabySummaryEditModal
 
@@ -139,6 +156,7 @@ type alias Model =
     , currLaborId : Maybe LaborId
     , currPregHeaderContent : PregHeaderData.PregHeaderContent
     , dataCache : Dict String DataCache
+    , pendingSelectQuery : Dict String Table
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
     , laborRecords : Maybe (Dict Int LaborRecord)
@@ -146,6 +164,7 @@ type alias Model =
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
     , babyRecord : Maybe BabyRecord
+    , membranesResusRecord : Maybe MembranesResusRecord
     , admittanceDate : Maybe Date
     , admittanceTime : Maybe String
     , laborDate : Maybe Date
@@ -212,6 +231,19 @@ type alias Model =
     , falseLaborDateTimeModal : DateTimeModal
     , falseLaborDate : Maybe Date
     , falseLaborTime : Maybe String
+    , membranesSummaryModal : StageSummaryModal
+    , mbRuptureDate : Maybe Date
+    , mbRuptureTime : Maybe String
+    , mbRupture : Maybe String
+    , mbRuptureComment : Maybe String
+    , mbAmniotic : Maybe String
+    , mbAmnioticComment : Maybe String
+    , mbBulb : Maybe Bool
+    , mbMachine : Maybe Bool
+    , mbFreeFlowO2 : Maybe Bool
+    , mbChestCompressions : Maybe Bool
+    , mbPpv : Maybe Bool
+    , mbComments : Maybe String
     , babySummaryModal : StageSummaryModal
     , bbBirthNbr : Maybe String
     , bbLastname : Maybe String
@@ -248,6 +280,13 @@ buildModel :
     -> ( Model, ProcessStore, Cmd Msg )
 buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
     let
+        -- Populate the pendingSelectQuery field with dependent tables that
+        -- we will need if they are available.
+        -- TODO: create a function to make this easier? is there ever a need to
+        --       call this proposed function other than here?
+        pendingSelectQuery =
+            Dict.singleton (tableToString MembranesResus) MembranesResus
+
         -- Sort by the admittanceDate, descending.
         admitSort a b =
             U.sortDate U.DescendingSort a.admittanceDate b.admittanceDate
@@ -264,7 +303,11 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                     of
                         Just rec ->
                             ( Just <| LaborId rec.id
-                            , getLaborDetails (LaborId rec.id) store
+                              --, getLaborDetails (LaborId rec.id) store
+                            , getTableData store
+                                Labor
+                                (Just rec.id)
+                                [ LaborStage1, LaborStage2, LaborStage3, Baby ]
                             )
 
                         Nothing ->
@@ -287,112 +330,130 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                       )
                     )
     in
-        ( Model browserSupportsDate
-            currTime
-            pregId
-            laborId
-            PregHeaderData.LaborContent
-            Dict.empty
-            patrec
-            pregRec
-            laborRecs
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            []
-            NoDateTimeModal
-            Nothing
-            Nothing
-            NoStageSummaryModal
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            NoDateTimeModal
-            Nothing
-            Nothing
-            NoStageSummaryModal
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            NoDateTimeModal
-            Nothing
-            Nothing
-            NoStageSummaryModal
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            NoDateTimeModal
-            Nothing
-            Nothing
-            NoStageSummaryModal
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Dict.empty
-            NotStartedAddOtherApgar
-            Nothing
-            Nothing
-        , newStore
-        , newOuterMsg
-        )
+    ( Model browserSupportsDate
+        currTime
+        pregId
+        laborId
+        PregHeaderData.LaborContent
+        Dict.empty
+        pendingSelectQuery
+        patrec
+        pregRec
+        laborRecs
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        []
+        NoDateTimeModal
+        Nothing
+        Nothing
+        NoStageSummaryModal
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoDateTimeModal
+        Nothing
+        Nothing
+        NoStageSummaryModal
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoDateTimeModal
+        Nothing
+        Nothing
+        NoStageSummaryModal
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoDateTimeModal
+        Nothing
+        Nothing
+        NoStageSummaryModal
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoStageSummaryModal
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Dict.empty
+        NotStartedAddOtherApgar
+        Nothing
+        Nothing
+    , newStore
+    , newOuterMsg
+    )
 
 
 {-| Request all of the labor details records from the server. This module
 will receive data via the DataCache SubMsg where we specify which tables
 we are interested in obtaining.
+
+TODO: retire this if not needed.
+
 -}
 getLaborDetails : LaborId -> ProcessStore -> ( ProcessStore, Cmd Msg )
 getLaborDetails lid store =
@@ -418,8 +479,40 @@ getLaborDetails lid store =
         msg =
             wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
     in
-        processStore
-            => Ports.outgoing msg
+    processStore
+        => Ports.outgoing msg
+
+
+{-| Retrieve additional data from the server as may be necessary after the page is
+fully loaded.
+
+Note that the apgar table does not use this because the apgar records are handled
+in a customized manner on the client and server as part of the baby records.
+
+TODO: see if getLaborDetails can be replaced with this.
+
+-}
+getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
+getTableData store table key relatedTbls =
+    let
+        selectQuery =
+            SelectQuery table key relatedTbls
+
+        ( processId, processStore ) =
+            Processing.add
+                (SelectQueryType
+                    (LaborDelIppMsg
+                        (DataCache Nothing (Just relatedTbls))
+                    )
+                    selectQuery
+                )
+                Nothing
+                store
+
+        msg =
+            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+    in
+    processStore => Ports.outgoing msg
 
 
 {-| On initialization, the Model will be updated by a call to buildModel once
@@ -438,8 +531,8 @@ init pregId session store =
         msg =
             wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
     in
-        processStore
-            => Ports.outgoing msg
+    processStore
+        => Ports.outgoing msg
 
 
 view : Maybe Window.Size -> Session -> Model -> Html SubMsg
@@ -463,6 +556,12 @@ view size session model =
             else
                 not (isStage3SummaryDone model)
 
+        isEditingMembranes =
+            if model.membranesSummaryModal == MembranesSummaryEditModal then
+                True
+            else
+                not (isMembranesSummaryDone model)
+
         isEditingBaby =
             if model.babySummaryModal == BabySummaryEditModal then
                 True
@@ -470,7 +569,7 @@ view size session model =
                 not (isBabySummaryDone model)
 
         dialogStage1Config =
-            DialogStage1Summary
+            DialogSummary
                 (model.stage1SummaryModal
                     == Stage1SummaryViewModal
                     || model.stage1SummaryModal
@@ -482,10 +581,9 @@ view size session model =
                 (HandleStage1SummaryModal CloseNoSaveDialog)
                 (HandleStage1SummaryModal CloseSaveDialog)
                 (HandleStage1SummaryModal EditDialog)
-                (FldChgString >> FldChgSubMsg Stage1MobilityFld)
 
         dialogStage2Config =
-            DialogStage2Summary
+            DialogSummary
                 (model.stage2SummaryModal
                     == Stage2SummaryViewModal
                     || model.stage2SummaryModal
@@ -499,7 +597,7 @@ view size session model =
                 (HandleStage2SummaryModal EditDialog)
 
         dialogStage3Config =
-            DialogStage3Summary
+            DialogSummary
                 (model.stage3SummaryModal
                     == Stage3SummaryViewModal
                     || model.stage3SummaryModal
@@ -512,8 +610,22 @@ view size session model =
                 (HandleStage3SummaryModal CloseSaveDialog)
                 (HandleStage3SummaryModal EditDialog)
 
+        dialogMembranesConfig =
+            DialogSummary
+                (model.membranesSummaryModal
+                    == MembranesSummaryViewModal
+                    || model.membranesSummaryModal
+                    == MembranesSummaryEditModal
+                )
+                isEditingMembranes
+                "Membranes/Resuscitation Summary"
+                model
+                (HandleMembranesSummaryModal CloseNoSaveDialog)
+                (HandleMembranesSummaryModal CloseSaveDialog)
+                (HandleMembranesSummaryModal EditDialog)
+
         dialogBabyConfig =
-            DialogBabySummary
+            DialogSummary
                 (model.babySummaryModal
                     == BabySummaryViewModal
                     || model.babySummaryModal
@@ -537,34 +649,36 @@ view size session model =
                                 model.laborStage2Record
                                 model.laborStage3Record
                     in
-                        PregHeaderView.view patRec
-                            pregRec
-                            laborInfo
-                            model.currPregHeaderContent
-                            model.currTime
-                            size
+                    PregHeaderView.view patRec
+                        pregRec
+                        laborInfo
+                        model.currPregHeaderContent
+                        model.currTime
+                        size
 
                 ( _, _ ) ->
                     H.text ""
     in
-        H.div []
-            [ pregHeader |> H.map (\a -> RotatePregHeaderContent a)
-            , H.div [ HA.class "content-wrapper" ]
-                [ viewLaborDetails model
-                , dialogStage1Summary dialogStage1Config
-                , dialogStage2Summary dialogStage2Config
-                , dialogStage3Summary dialogStage3Config
-                , dialogBabySummary dialogBabyConfig
-                  --, viewDetailsTableTEMP model
-                , viewDetailsNotImplemented model
-                ]
+    H.div []
+        [ pregHeader |> H.map (\a -> RotatePregHeaderContent a)
+        , H.div [ HA.class "content-wrapper" ]
+            [ viewLaborDetails model
+            , dialogStage1Summary dialogStage1Config
+            , dialogStage2Summary dialogStage2Config
+            , dialogStage3Summary dialogStage3Config
+            , dialogBabySummary dialogBabyConfig
+            , dialogMembranesSummary dialogMembranesConfig
+
+            --, viewDetailsTableTEMP model
+            , viewDetailsNotImplemented model
             ]
+        ]
 
 
 viewLaborDetails : Model -> Html SubMsg
 viewLaborDetails model =
     H.div [ HA.class "content-flex-wrapper" ]
-        [ viewStagesBaby model ]
+        [ viewStagesMembranesBaby model ]
 
 
 viewDetailsNotImplemented : Model -> Html SubMsg
@@ -716,6 +830,16 @@ isStage3SummaryDone model =
             False
 
 
+isMembranesSummaryDone : Model -> Bool
+isMembranesSummaryDone model =
+    case model.membranesResusRecord of
+        Just rec ->
+            isMembranesResusRecordComplete rec
+
+        Nothing ->
+            False
+
+
 isBabySummaryDone : Model -> Bool
 isBabySummaryDone model =
     case model.babyRecord of
@@ -727,21 +851,25 @@ isBabySummaryDone model =
 
 
 {-| View the buttons used to set false labor, stage 1, 2, and 3 date/time
-and related fields, and the initial baby record. Do not show all options,
-but only what makes sense for this progression of the labor.
+and related fields, the membranes fields, and the initial baby record.
+Do not show all options, but only what makes sense for this progression
+of the labor.
 
 Logic:
+
   - hide false labor if labor stage 1 exists and has fullDialation set.
   - hide stage 1 if labor record has falseLabor set to True.
   - hide stage 2 if stage 1 is hidden or labor stage 1 does not exist
     or does not have fullDialation set.
   - hide stage 3 if stage 2 is hidden or labor stage 2 does not exist
     or does not have birthDatetime set.
-  - hide baby is stage 2 is hidden or if labor stage 2 does not exist
+  - hide baby if stage 2 is hidden or if labor stage 2 does not exist
     or does not have the birthDatetime set.
+  - hide membranes if baby is hidden or baby does not exist.
+
 -}
-viewStagesBaby : Model -> Html SubMsg
-viewStagesBaby model =
+viewStagesMembranesBaby : Model -> Html SubMsg
+viewStagesMembranesBaby model =
     let
         hideFalse =
             case model.laborStage1Record of
@@ -767,311 +895,336 @@ viewStagesBaby model =
 
         hideS2 =
             hideS1
-                || case model.laborStage1Record of
-                    Just rec ->
-                        rec.fullDialation == Nothing
+                || (case model.laborStage1Record of
+                        Just rec ->
+                            rec.fullDialation == Nothing
 
-                    Nothing ->
-                        True
+                        Nothing ->
+                            True
+                   )
 
         hideS3 =
             hideS2
-                || case model.laborStage2Record of
-                    Just rec ->
-                        rec.birthDatetime == Nothing
+                || (case model.laborStage2Record of
+                        Just rec ->
+                            rec.birthDatetime == Nothing
 
-                    Nothing ->
-                        True
+                        Nothing ->
+                            True
+                   )
 
         hideBaby =
             hideS3
+
+        hideMembranes =
+            model.babyRecord == Nothing
     in
-        H.div [ HA.class "stage-wrapper" ]
-            [ H.div
-                [ HA.class "stage-content"
-                , HA.classList [ ( "isHidden", hideFalse ) ]
-                ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "False Labor" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleFalseLaborDateTimeModal OpenDialog
-                            ]
-                            [ H.text <|
-                                case ( model.laborRecords, model.currLaborId ) of
-                                    ( Just recs, Just lid ) ->
-                                        case Dict.get (getLaborId lid) recs of
-                                            Just rec ->
-                                                case ( rec.falseLabor, rec.dischargeDate ) of
-                                                    ( True, Just d ) ->
-                                                        U.dateTimeHMFormatter
-                                                            U.MDYDateFmt
-                                                            U.DashDateSep
-                                                            d
-
-                                                    ( _, _ ) ->
-                                                        "Click to set"
-
-                                            Nothing ->
-                                                "Click to set"
-
-                                    ( _, _ ) ->
-                                        -- TODO: handle this path better.
-                                        "Click to set"
-                            ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
-                                "False Labor Date/Time"
-                                (FldChgString >> FldChgSubMsg FalseLaborDateFld)
-                                (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
-                                (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
-                                (HandleFalseLaborDateTimeModal CloseSaveDialog)
-                                ClearFalseLaborDateTime
-                                model.falseLaborDate
-                                model.falseLaborTime
-                          else
-                            Form.dateTimePickerModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
-                                "False Labor Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgString >> FldChgSubMsg FalseLaborDateFld)
-                                (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
-                                (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
-                                (HandleFalseLaborDateTimeModal CloseSaveDialog)
-                                ClearFalseLaborDateTime
-                                FalseLaborDateField
-                                model.falseLaborDate
-                                model.falseLaborTime
-                        ]
-                    ]
-                ]
-            , H.div
-                [ HA.class "stage-content"
-                , HA.classList [ ( "isHidden", hideS1 ) ]
-                ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 1" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage1DateTimeModal OpenDialog
-                            ]
-                            [ H.text <|
-                                case model.laborStage1Record of
-                                    Just ls1rec ->
-                                        case ls1rec.fullDialation of
-                                            Just d ->
-                                                U.dateTimeHMFormatter
-                                                    U.MDYDateFmt
-                                                    U.DashDateSep
-                                                    d
-
-                                            Nothing ->
-                                                "Click to set"
-
-                                    Nothing ->
-                                        "Click to set"
-                            ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                                "Stage 1 Date/Time"
-                                (FldChgString >> FldChgSubMsg Stage1DateFld)
-                                (FldChgString >> FldChgSubMsg Stage1TimeFld)
-                                (HandleStage1DateTimeModal CloseNoSaveDialog)
-                                (HandleStage1DateTimeModal CloseSaveDialog)
-                                ClearStage1DateTime
-                                model.stage1Date
-                                model.stage1Time
-                          else
-                            Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                                "Stage 1 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgString >> FldChgSubMsg Stage1DateFld)
-                                (FldChgString >> FldChgSubMsg Stage1TimeFld)
-                                (HandleStage1DateTimeModal CloseNoSaveDialog)
-                                (HandleStage1DateTimeModal CloseSaveDialog)
-                                ClearStage1DateTime
-                                LaborDelIppStage1DateField
-                                model.stage1Date
-                                model.stage1Time
-                        ]
-                    ]
-                , H.div []
+    H.div [ HA.class "stage-wrapper" ]
+        [ H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", hideFalse ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "False Labor" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                     [ H.button
                         [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage1SummaryModal OpenDialog
+                        , HE.onClick <| HandleFalseLaborDateTimeModal OpenDialog
                         ]
-                        [ if isStage1SummaryDone model then
-                            H.i [ HA.class "fa fa-check" ]
-                                [ H.text "" ]
-                          else
-                            H.span [] [ H.text "" ]
-                        , H.text " Summary"
-                        ]
-                    ]
-                ]
-            , H.div
-                [ HA.class "stage-content"
-                , HA.classList [ ( "isHidden", hideS2 ) ]
-                ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 2" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage2DateTimeModal OpenDialog
-                            ]
-                            [ H.text <|
-                                case model.laborStage2Record of
-                                    Just ls2rec ->
-                                        case ls2rec.birthDatetime of
-                                            Just d ->
-                                                U.dateTimeHMFormatter
-                                                    U.MDYDateFmt
-                                                    U.DashDateSep
-                                                    d
+                        [ H.text <|
+                            case ( model.laborRecords, model.currLaborId ) of
+                                ( Just recs, Just lid ) ->
+                                    case Dict.get (getLaborId lid) recs of
+                                        Just rec ->
+                                            case ( rec.falseLabor, rec.dischargeDate ) of
+                                                ( True, Just d ) ->
+                                                    U.dateTimeHMFormatter
+                                                        U.MDYDateFmt
+                                                        U.DashDateSep
+                                                        d
 
-                                            Nothing ->
-                                                "Click to set"
+                                                ( _, _ ) ->
+                                                    "Click to set"
 
-                                    Nothing ->
-                                        "Click to set"
-                            ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                                "Stage 2 Date/Time"
-                                (FldChgString >> FldChgSubMsg Stage2DateFld)
-                                (FldChgString >> FldChgSubMsg Stage2TimeFld)
-                                (HandleStage2DateTimeModal CloseNoSaveDialog)
-                                (HandleStage2DateTimeModal CloseSaveDialog)
-                                ClearStage2DateTime
-                                model.stage2Date
-                                model.stage2Time
-                          else
-                            Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                                "Stage 2 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgString >> FldChgSubMsg Stage2DateFld)
-                                (FldChgString >> FldChgSubMsg Stage2TimeFld)
-                                (HandleStage2DateTimeModal CloseNoSaveDialog)
-                                (HandleStage2DateTimeModal CloseSaveDialog)
-                                ClearStage2DateTime
-                                LaborDelIppStage2DateField
-                                model.stage2Date
-                                model.stage2Time
-                        ]
-                    ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage2SummaryModal OpenDialog
-                        ]
-                        [ if isStage2SummaryDone model then
-                            H.i [ HA.class "fa fa-check" ]
-                                [ H.text "" ]
-                          else
-                            H.span [] [ H.text "" ]
-                        , H.text " Summary"
-                        ]
-                    ]
-                ]
-            , H.div
-                [ HA.class "stage-content"
-                , HA.classList [ ( "isHidden", hideS3 ) ]
-                ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Stage 3" ]
-                , H.div []
-                    [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                        [ H.button
-                            [ HA.class "c-button c-button--ghost-brand u-small"
-                            , HE.onClick <| HandleStage3DateTimeModal OpenDialog
-                            ]
-                            [ H.text <|
-                                case model.laborStage3Record of
-                                    Just ls3rec ->
-                                        case ls3rec.placentaDatetime of
-                                            Just d ->
-                                                U.dateTimeHMFormatter
-                                                    U.MDYDateFmt
-                                                    U.DashDateSep
-                                                    d
+                                        Nothing ->
+                                            "Click to set"
 
-                                            Nothing ->
-                                                "Click to set"
-
-                                    Nothing ->
-                                        "Click to set"
-                            ]
-                        , if model.browserSupportsDate then
-                            Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                                "Stage 3 Date/Time"
-                                (FldChgString >> FldChgSubMsg Stage3DateFld)
-                                (FldChgString >> FldChgSubMsg Stage3TimeFld)
-                                (HandleStage3DateTimeModal CloseNoSaveDialog)
-                                (HandleStage3DateTimeModal CloseSaveDialog)
-                                ClearStage3DateTime
-                                model.stage3Date
-                                model.stage3Time
-                          else
-                            Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                                "Stage 3 Date/Time"
-                                OpenDatePickerSubMsg
-                                (FldChgString >> FldChgSubMsg Stage3DateFld)
-                                (FldChgString >> FldChgSubMsg Stage3TimeFld)
-                                (HandleStage3DateTimeModal CloseNoSaveDialog)
-                                (HandleStage3DateTimeModal CloseSaveDialog)
-                                ClearStage3DateTime
-                                LaborDelIppStage3DateField
-                                model.stage3Date
-                                model.stage3Time
+                                ( _, _ ) ->
+                                    -- TODO: handle this path better.
+                                    "Click to set"
                         ]
-                    ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleStage3SummaryModal OpenDialog
-                        ]
-                        [ if isStage3SummaryDone model then
-                            H.i [ HA.class "fa fa-check" ]
-                                [ H.text "" ]
-                          else
-                            H.span [] [ H.text "" ]
-                        , H.text " Summary"
-                        ]
-                    ]
-                ]
-            , H.div
-                [ HA.class "stage-content"
-                , HA.classList [ ( "isHidden", hideBaby ) ]
-                ]
-                [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                    [ H.text "Baby" ]
-                , H.div []
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleBabySummaryModal OpenDialog
-                        ]
-                        [ if isBabySummaryDone model then
-                            H.i [ HA.class "fa fa-check" ]
-                                [ H.text "" ]
-                          else
-                            H.span [] [ H.text "" ]
-                        , H.text " Summary"
-                        ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
+                            "False Labor Date/Time"
+                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
+                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
+                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
+                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                            ClearFalseLaborDateTime
+                            model.falseLaborDate
+                            model.falseLaborTime
+                      else
+                        Form.dateTimePickerModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
+                            "False Labor Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
+                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
+                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
+                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                            ClearFalseLaborDateTime
+                            FalseLaborDateField
+                            model.falseLaborDate
+                            model.falseLaborTime
                     ]
                 ]
             ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", hideS1 ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 1" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage1DateTimeModal OpenDialog
+                        ]
+                        [ H.text <|
+                            case model.laborStage1Record of
+                                Just ls1rec ->
+                                    case ls1rec.fullDialation of
+                                        Just d ->
+                                            U.dateTimeHMFormatter
+                                                U.MDYDateFmt
+                                                U.DashDateSep
+                                                d
+
+                                        Nothing ->
+                                            "Click to set"
+
+                                Nothing ->
+                                    "Click to set"
+                        ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                            "Stage 1 Date/Time"
+                            (FldChgString >> FldChgSubMsg Stage1DateFld)
+                            (FldChgString >> FldChgSubMsg Stage1TimeFld)
+                            (HandleStage1DateTimeModal CloseNoSaveDialog)
+                            (HandleStage1DateTimeModal CloseSaveDialog)
+                            ClearStage1DateTime
+                            model.stage1Date
+                            model.stage1Time
+                      else
+                        Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
+                            "Stage 1 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgString >> FldChgSubMsg Stage1DateFld)
+                            (FldChgString >> FldChgSubMsg Stage1TimeFld)
+                            (HandleStage1DateTimeModal CloseNoSaveDialog)
+                            (HandleStage1DateTimeModal CloseSaveDialog)
+                            ClearStage1DateTime
+                            LaborDelIppStage1DateField
+                            model.stage1Date
+                            model.stage1Time
+                    ]
+                ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleStage1SummaryModal OpenDialog
+                    ]
+                    [ if isStage1SummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", hideS2 ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 2" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage2DateTimeModal OpenDialog
+                        ]
+                        [ H.text <|
+                            case model.laborStage2Record of
+                                Just ls2rec ->
+                                    case ls2rec.birthDatetime of
+                                        Just d ->
+                                            U.dateTimeHMFormatter
+                                                U.MDYDateFmt
+                                                U.DashDateSep
+                                                d
+
+                                        Nothing ->
+                                            "Click to set"
+
+                                Nothing ->
+                                    "Click to set"
+                        ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                            "Stage 2 Date/Time"
+                            (FldChgString >> FldChgSubMsg Stage2DateFld)
+                            (FldChgString >> FldChgSubMsg Stage2TimeFld)
+                            (HandleStage2DateTimeModal CloseNoSaveDialog)
+                            (HandleStage2DateTimeModal CloseSaveDialog)
+                            ClearStage2DateTime
+                            model.stage2Date
+                            model.stage2Time
+                      else
+                        Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
+                            "Stage 2 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgString >> FldChgSubMsg Stage2DateFld)
+                            (FldChgString >> FldChgSubMsg Stage2TimeFld)
+                            (HandleStage2DateTimeModal CloseNoSaveDialog)
+                            (HandleStage2DateTimeModal CloseSaveDialog)
+                            ClearStage2DateTime
+                            LaborDelIppStage2DateField
+                            model.stage2Date
+                            model.stage2Time
+                    ]
+                ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleStage2SummaryModal OpenDialog
+                    ]
+                    [ if isStage2SummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", hideS3 ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Stage 3" ]
+            , H.div []
+                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
+                    [ H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleStage3DateTimeModal OpenDialog
+                        ]
+                        [ H.text <|
+                            case model.laborStage3Record of
+                                Just ls3rec ->
+                                    case ls3rec.placentaDatetime of
+                                        Just d ->
+                                            U.dateTimeHMFormatter
+                                                U.MDYDateFmt
+                                                U.DashDateSep
+                                                d
+
+                                        Nothing ->
+                                            "Click to set"
+
+                                Nothing ->
+                                    "Click to set"
+                        ]
+                    , if model.browserSupportsDate then
+                        Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                            "Stage 3 Date/Time"
+                            (FldChgString >> FldChgSubMsg Stage3DateFld)
+                            (FldChgString >> FldChgSubMsg Stage3TimeFld)
+                            (HandleStage3DateTimeModal CloseNoSaveDialog)
+                            (HandleStage3DateTimeModal CloseSaveDialog)
+                            ClearStage3DateTime
+                            model.stage3Date
+                            model.stage3Time
+                      else
+                        Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
+                            "Stage 3 Date/Time"
+                            OpenDatePickerSubMsg
+                            (FldChgString >> FldChgSubMsg Stage3DateFld)
+                            (FldChgString >> FldChgSubMsg Stage3TimeFld)
+                            (HandleStage3DateTimeModal CloseNoSaveDialog)
+                            (HandleStage3DateTimeModal CloseSaveDialog)
+                            ClearStage3DateTime
+                            LaborDelIppStage3DateField
+                            model.stage3Date
+                            model.stage3Time
+                    ]
+                ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleStage3SummaryModal OpenDialog
+                    ]
+                    [ if isStage3SummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", hideBaby ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Baby" ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleBabySummaryModal OpenDialog
+                    ]
+                    [ if isBabySummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", hideMembranes ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Membranes" ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleMembranesSummaryModal OpenDialog
+                    ]
+                    [ if isMembranesSummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
+        ]
 
 
 
 -- Modal for Stage 1 Summary --
 
 
-type alias DialogStage1Summary =
+type alias DialogSummary =
     { isShown : Bool
     , isEditing : Bool
     , title : String
@@ -1079,11 +1232,10 @@ type alias DialogStage1Summary =
     , closeMsg : SubMsg
     , saveMsg : SubMsg
     , editMsg : SubMsg
-    , mobilityMsg : String -> SubMsg
     }
 
 
-dialogStage1Summary : DialogStage1Summary -> Html SubMsg
+dialogStage1Summary : DialogSummary -> Html SubMsg
 dialogStage1Summary cfg =
     case cfg.isEditing of
         True ->
@@ -1097,7 +1249,7 @@ dialogStage1Summary cfg =
 
 {-| Allow user to edit stage one summary fields.
 -}
-dialogStage1SummaryEdit : DialogStage1Summary -> Html SubMsg
+dialogStage1SummaryEdit : DialogSummary -> Html SubMsg
 dialogStage1SummaryEdit cfg =
     let
         errors =
@@ -1113,8 +1265,8 @@ dialogStage1SummaryEdit cfg =
                                     case Dict.get rec.labor_id lrecs of
                                         Just laborRec ->
                                             ( U.diff2DatesString laborRec.startLaborDate fd
-                                            , (Date.toTime laborRec.startLaborDate)
-                                                - (Date.toTime fd)
+                                            , Date.toTime laborRec.startLaborDate
+                                                - Date.toTime fd
                                                 |> Time.inMinutes
                                                 |> round
                                                 |> abs
@@ -1134,76 +1286,76 @@ dialogStage1SummaryEdit cfg =
                 Nothing ->
                     ( "", "" )
     in
-        H.div
-            [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
-            , HA.class "u-high"
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
-                ]
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Stage 1 Summary - Edit" ]
-            , H.div [ HA.class "c-text--quiet" ]
-                [ H.text <| "Stage 1 total: " ++ s1Total ++ " " ++ s1Minutes ]
-            , H.div [ HA.class "form-wrapper u-small" ]
-                [ H.div []
-                    [ Form.radioFieldsetWide "Mobility"
-                        "mobility"
-                        cfg.model.s1Mobility
-                        (FldChgString >> FldChgSubMsg Stage1MobilityFld)
-                        False
-                        [ "Moved around"
-                        , "Didn't move much"
-                        , "Movement restricted"
-                        ]
-                        (getErr Stage1MobilityFld errors)
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 1 Summary - Edit" ]
+        , H.div [ HA.class "c-text--quiet" ]
+            [ H.text <| "Stage 1 total: " ++ s1Total ++ " " ++ s1Minutes ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div []
+                [ Form.radioFieldsetWide "Mobility"
+                    "mobility"
+                    cfg.model.s1Mobility
+                    (FldChgString >> FldChgSubMsg Stage1MobilityFld)
+                    False
+                    [ "Moved around"
+                    , "Didn't move much"
+                    , "Movement restricted"
                     ]
-                , H.div []
-                    [ Form.formField (FldChgString >> FldChgSubMsg Stage1DurationLatentFld)
-                        "Duration latent (minutes)"
-                        "Number of minutes"
-                        True
-                        cfg.model.s1DurationLatent
-                        (getErr Stage1DurationLatentFld errors)
-                    , Form.formField (FldChgString >> FldChgSubMsg Stage1DurationActiveFld)
-                        "Duration active (minutes)"
-                        "Number of minutes"
-                        True
-                        cfg.model.s1DurationActive
-                        (getErr Stage1DurationActiveFld errors)
-                    ]
-                , Form.formTextareaFieldMin30em (FldChgString >> FldChgSubMsg Stage1CommentsFld)
-                    "Comments"
-                    "Meds, IV, Complications, Notes, etc."
+                    (getErr Stage1MobilityFld errors)
+                ]
+            , H.div []
+                [ Form.formField (FldChgString >> FldChgSubMsg Stage1DurationLatentFld)
+                    "Duration latent (minutes)"
+                    "Number of minutes"
                     True
-                    cfg.model.s1Comments
-                    3
-                , H.div
-                    [ HA.class "spacedButtons"
-                    , HA.style [ ( "width", "100%" ) ]
+                    cfg.model.s1DurationLatent
+                    (getErr Stage1DurationLatentFld errors)
+                , Form.formField (FldChgString >> FldChgSubMsg Stage1DurationActiveFld)
+                    "Duration active (minutes)"
+                    "Number of minutes"
+                    True
+                    cfg.model.s1DurationActive
+                    (getErr Stage1DurationActiveFld errors)
+                ]
+            , Form.formTextareaFieldMin30em (FldChgString >> FldChgSubMsg Stage1CommentsFld)
+                "Comments"
+                "Meds, IV, Complications, Notes, etc."
+                True
+                cfg.model.s1Comments
+                3
+            , H.div
+                [ HA.class "spacedButtons"
+                , HA.style [ ( "width", "100%" ) ]
+                ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button u-small"
+                    , HE.onClick cfg.closeMsg
                     ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button u-small"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "Cancel" ]
-                    , H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--brand u-small"
-                        , HE.onClick cfg.saveMsg
-                        ]
-                        [ H.text "Save" ]
+                    [ H.text "Cancel" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--brand u-small"
+                    , HE.onClick cfg.saveMsg
                     ]
+                    [ H.text "Save" ]
                 ]
             ]
+        ]
 
 
 {-| Display the stage one summary, including the first stage total,
 if available.
 -}
-dialogStage1SummaryView : DialogStage1Summary -> Html SubMsg
+dialogStage1SummaryView : DialogSummary -> Html SubMsg
 dialogStage1SummaryView cfg =
     let
         ( mobility, latent, active, comments, s1Total ) =
@@ -1236,85 +1388,74 @@ dialogStage1SummaryView cfg =
                 Nothing ->
                     ( "", "", "", "", "" )
     in
-        H.div
-            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
-            , HA.class "u-high"
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
+            ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 1 Summary" ]
+        , H.div [ HA.class "o-fieldset" ]
+            [ H.div []
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text "Stage 1 Total: " ]
+                , H.span [ HA.class "" ]
+                    [ H.text s1Total ]
+                ]
+            , H.div []
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text "Mobility: " ]
+                , H.span [ HA.class "" ]
+                    [ H.text mobility ]
+                ]
+            , H.div []
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text "Duration Latent: " ]
+                , H.span [ HA.class "" ]
+                    [ H.text latent ]
+                , H.span [ HA.class "" ]
+                    [ H.text " minutes" ]
+                ]
+            , H.div []
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text "Duration Active: " ]
+                , H.span [ HA.class "" ]
+                    [ H.text active ]
+                , H.span [ HA.class "" ]
+                    [ H.text " minutes" ]
+                ]
+            , H.div []
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text "Comments: " ]
+                , H.span [ HA.class "" ]
+                    [ H.text comments ]
+                ]
+            , H.div [ HA.class "spacedButtons" ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Close" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--ghost u-small"
+                    , HE.onClick cfg.editMsg
+                    ]
+                    [ H.text "Edit" ]
                 ]
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Stage 1 Summary" ]
-            , H.div [ HA.class "o-fieldset" ]
-                [ H.div []
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Stage 1 Total: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text s1Total ]
-                    ]
-                , H.div []
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Mobility: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text mobility ]
-                    ]
-                , H.div []
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Duration Latent: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text latent ]
-                    , H.span [ HA.class "" ]
-                        [ H.text " minutes" ]
-                    ]
-                , H.div []
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Duration Active: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text active ]
-                    , H.span [ HA.class "" ]
-                        [ H.text " minutes" ]
-                    ]
-                , H.div []
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Comments: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text comments ]
-                    ]
-                , H.div [ HA.class "spacedButtons" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button u-small"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "Close" ]
-                    , H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--ghost u-small"
-                        , HE.onClick cfg.editMsg
-                        ]
-                        [ H.text "Edit" ]
-                    ]
-                ]
-            ]
+        ]
 
 
 
 -- Modal for Stage 2 Summary --
 
 
-type alias DialogStage2Summary =
-    { isShown : Bool
-    , isEditing : Bool
-    , title : String
-    , model : Model
-    , closeMsg : SubMsg
-    , saveMsg : SubMsg
-    , editMsg : SubMsg
-    }
-
-
-dialogStage2Summary : DialogStage2Summary -> Html SubMsg
+dialogStage2Summary : DialogSummary -> Html SubMsg
 dialogStage2Summary cfg =
     case cfg.isEditing of
         True ->
@@ -1324,165 +1465,165 @@ dialogStage2Summary cfg =
             dialogStage2SummaryView cfg
 
 
-dialogStage2SummaryEdit : DialogStage2Summary -> Html SubMsg
+dialogStage2SummaryEdit : DialogSummary -> Html SubMsg
 dialogStage2SummaryEdit cfg =
     let
         errors =
             validateStage2 cfg.model
     in
-        H.div
-            [ HA.class "u-high"
-            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
-                ]
+    H.div
+        [ HA.class "u-high"
+        , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Stage 2 Summary - Edit" ]
-            , H.div [ HA.class "form-wrapper u-small" ]
-                [ H.div
-                    [ HA.class "o-fieldset form-wrapper"
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 2 Summary - Edit" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div
+                [ HA.class "o-fieldset form-wrapper"
+                ]
+                [ Form.radioFieldsetOther "Birth type"
+                    "birthType"
+                    cfg.model.s2BirthType
+                    (FldChgString >> FldChgSubMsg Stage2BirthTypeFld)
+                    False
+                    [ "Vaginal" ]
+                    (getErr Stage2BirthTypeFld errors)
+                , Form.radioFieldsetOther "Position for birth"
+                    "position"
+                    cfg.model.s2BirthPosition
+                    (FldChgString >> FldChgSubMsg Stage2BirthPositionFld)
+                    False
+                    [ "Semi-sitting"
+                    , "Lying on back"
+                    , "Side-Lying"
+                    , "Stool or Antipolo"
+                    , "Hands/Knees"
+                    , "Squat"
                     ]
-                    [ Form.radioFieldsetOther "Birth type"
-                        "birthType"
-                        cfg.model.s2BirthType
-                        (FldChgString >> FldChgSubMsg Stage2BirthTypeFld)
-                        False
-                        [ "Vaginal" ]
-                        (getErr Stage2BirthTypeFld errors)
-                    , Form.radioFieldsetOther "Position for birth"
-                        "position"
-                        cfg.model.s2BirthPosition
-                        (FldChgString >> FldChgSubMsg Stage2BirthPositionFld)
-                        False
-                        [ "Semi-sitting"
-                        , "Lying on back"
-                        , "Side-Lying"
-                        , "Stool or Antipolo"
-                        , "Hands/Knees"
-                        , "Squat"
-                        ]
-                        (getErr Stage2BirthPositionFld errors)
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2DurationPushingFld)
-                            "Duration of pushing"
-                            "Number of minutes"
-                            True
-                            cfg.model.s2DurationPushing
-                            (getErr Stage2DurationPushingFld errors)
-                        ]
-                    , Form.radioFieldsetOther "Baby's presentation at birth"
-                        "presentation"
-                        cfg.model.s2BirthPresentation
-                        (FldChgString >> FldChgSubMsg Stage2BirthPresentationFld)
-                        False
-                        [ "ROA"
-                        , "ROP"
-                        , "LOA"
-                        , "LOP"
-                        ]
-                        (getErr Stage2BirthPresentationFld errors)
-                    , Form.checkbox "Cord was wrapped" (FldChgBool >> FldChgSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
-                    , Form.radioFieldsetOther "Cord wrap type"
-                        "cordwraptype"
-                        cfg.model.s2CordWrapType
-                        (FldChgString >> FldChgSubMsg Stage2CordWrapTypeFld)
-                        False
-                        [ "Nuchal"
-                        , "Body"
-                        , "Cut on perineum"
-                        ]
-                        (getErr Stage2CordWrapTypeFld errors)
-                    , Form.radioFieldsetOther "Delivery type"
-                        "deliverytype"
-                        cfg.model.s2DeliveryType
-                        (FldChgString >> FldChgSubMsg Stage2DeliveryTypeFld)
-                        False
-                        [ "Spontaneous"
-                        , "Interventive"
-                        , "Vacuum"
-                        ]
-                        (getErr Stage2DeliveryTypeFld errors)
-                    , Form.checkbox "Shoulder Dystocia" (FldChgBool >> FldChgSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
-                            "Shoulder dystocia minutes"
-                            "Number of minutes"
-                            True
-                            cfg.model.s2ShoulderDystociaMinutes
-                            (getErr Stage2ShoulderDystociaMinutesFld errors)
-                        ]
-                    , Form.checkbox "Laceration" (FldChgBool >> FldChgSubMsg Stage2LacerationFld) cfg.model.s2Laceration
-                    , Form.checkbox "Episiotomy" (FldChgBool >> FldChgSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
-                    , Form.checkbox "Repair" (FldChgBool >> FldChgSubMsg Stage2RepairFld) cfg.model.s2Repair
-                    , Form.radioFieldset "Degree"
-                        "degree"
-                        cfg.model.s2Degree
-                        (FldChgString >> FldChgSubMsg Stage2DegreeFld)
-                        False
-                        [ "1st"
-                        , "2nd"
-                        , "3rd"
-                        , "4th"
-                        ]
-                        (getErr Stage2DegreeFld errors)
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2LacerationRepairedByFld)
-                            "Laceration repaired by"
-                            "Initials or lastname"
-                            True
-                            cfg.model.s2LacerationRepairedBy
-                            (getErr Stage2LacerationRepairedByFld errors)
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg Stage2BirthEBLFld)
-                            "EBL at birth"
-                            "in cc"
-                            True
-                            cfg.model.s2BirthEBL
-                            (getErr Stage2BirthEBLFld errors)
-                        ]
-                    , Form.radioFieldset "Meconium"
-                        "meconium"
-                        cfg.model.s2Meconium
-                        (FldChgString >> FldChgSubMsg Stage2MeconiumFld)
-                        False
-                        [ "None"
-                        , "Lt"
-                        , "Mod"
-                        , "Thick"
-                        ]
-                        (getErr Stage2MeconiumFld errors)
-                    , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage2CommentsFld)
-                        "Comments"
-                        "Meds, IV, Complications, Notes, etc."
+                    (getErr Stage2BirthPositionFld errors)
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage2DurationPushingFld)
+                        "Duration of pushing"
+                        "Number of minutes"
                         True
-                        cfg.model.s2Comments
-                        3
+                        cfg.model.s2DurationPushing
+                        (getErr Stage2DurationPushingFld errors)
                     ]
-                ]
-            , H.div
-                [ HA.class "spacedButtons"
-                , HA.style [ ( "width", "100%" ) ]
-                ]
-                [ H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button u-small"
-                    , HE.onClick cfg.closeMsg
+                , Form.radioFieldsetOther "Baby's presentation at birth"
+                    "presentation"
+                    cfg.model.s2BirthPresentation
+                    (FldChgString >> FldChgSubMsg Stage2BirthPresentationFld)
+                    False
+                    [ "ROA"
+                    , "ROP"
+                    , "LOA"
+                    , "LOP"
                     ]
-                    [ H.text "Cancel" ]
-                , H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button c-button--brand u-small"
-                    , HE.onClick cfg.saveMsg
+                    (getErr Stage2BirthPresentationFld errors)
+                , Form.checkbox "Cord was wrapped" (FldChgBool >> FldChgSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
+                , Form.radioFieldsetOther "Cord wrap type"
+                    "cordwraptype"
+                    cfg.model.s2CordWrapType
+                    (FldChgString >> FldChgSubMsg Stage2CordWrapTypeFld)
+                    False
+                    [ "Nuchal"
+                    , "Body"
+                    , "Cut on perineum"
                     ]
-                    [ H.text "Save" ]
+                    (getErr Stage2CordWrapTypeFld errors)
+                , Form.radioFieldsetOther "Delivery type"
+                    "deliverytype"
+                    cfg.model.s2DeliveryType
+                    (FldChgString >> FldChgSubMsg Stage2DeliveryTypeFld)
+                    False
+                    [ "Spontaneous"
+                    , "Interventive"
+                    , "Vacuum"
+                    ]
+                    (getErr Stage2DeliveryTypeFld errors)
+                , Form.checkbox "Shoulder Dystocia" (FldChgBool >> FldChgSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
+                        "Shoulder dystocia minutes"
+                        "Number of minutes"
+                        True
+                        cfg.model.s2ShoulderDystociaMinutes
+                        (getErr Stage2ShoulderDystociaMinutesFld errors)
+                    ]
+                , Form.checkbox "Laceration" (FldChgBool >> FldChgSubMsg Stage2LacerationFld) cfg.model.s2Laceration
+                , Form.checkbox "Episiotomy" (FldChgBool >> FldChgSubMsg Stage2EpisiotomyFld) cfg.model.s2Episiotomy
+                , Form.checkbox "Repair" (FldChgBool >> FldChgSubMsg Stage2RepairFld) cfg.model.s2Repair
+                , Form.radioFieldset "Degree"
+                    "degree"
+                    cfg.model.s2Degree
+                    (FldChgString >> FldChgSubMsg Stage2DegreeFld)
+                    False
+                    [ "1st"
+                    , "2nd"
+                    , "3rd"
+                    , "4th"
+                    ]
+                    (getErr Stage2DegreeFld errors)
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage2LacerationRepairedByFld)
+                        "Laceration repaired by"
+                        "Initials or lastname"
+                        True
+                        cfg.model.s2LacerationRepairedBy
+                        (getErr Stage2LacerationRepairedByFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage2BirthEBLFld)
+                        "EBL at birth"
+                        "in cc"
+                        True
+                        cfg.model.s2BirthEBL
+                        (getErr Stage2BirthEBLFld errors)
+                    ]
+                , Form.radioFieldset "Meconium"
+                    "meconium"
+                    cfg.model.s2Meconium
+                    (FldChgString >> FldChgSubMsg Stage2MeconiumFld)
+                    False
+                    [ "None"
+                    , "Lt"
+                    , "Mod"
+                    , "Thick"
+                    ]
+                    (getErr Stage2MeconiumFld errors)
+                , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage2CommentsFld)
+                    "Comments"
+                    "Meds, IV, Complications, Notes, etc."
+                    True
+                    cfg.model.s2Comments
+                    3
                 ]
             ]
+        , H.div
+            [ HA.class "spacedButtons"
+            , HA.style [ ( "width", "100%" ) ]
+            ]
+            [ H.button
+                [ HA.type_ "button"
+                , HA.class "c-button u-small"
+                , HE.onClick cfg.closeMsg
+                ]
+                [ H.text "Cancel" ]
+            , H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button--brand u-small"
+                , HE.onClick cfg.saveMsg
+                ]
+                [ H.text "Save" ]
+            ]
+        ]
 
 
-dialogStage2SummaryView : DialogStage2Summary -> Html SubMsg
+dialogStage2SummaryView : DialogSummary -> Html SubMsg
 dialogStage2SummaryView cfg =
     let
         ( birthType, birthPosition, durationPushing, birthPresentation, cordWrapAndType, deliveryType ) =
@@ -1515,7 +1656,7 @@ dialogStage2SummaryView cfg =
                     ( Maybe.map2
                         (\s m ->
                             if s then
-                                "Yes, " ++ (toString m) ++ " minutes"
+                                "Yes, " ++ toString m ++ " minutes"
                             else
                                 "No"
                         )
@@ -1579,151 +1720,140 @@ dialogStage2SummaryView cfg =
                 Nothing ->
                     ""
     in
-        H.div
-            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
-            , HA.class "u-high"
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
-                ]
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Stage 2 Summary" ]
-            , H.div []
-                [ H.div
-                    [ HA.class "o-fieldset form-wrapper"
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 2 Summary" ]
+        , H.div []
+            [ H.div
+                [ HA.class "o-fieldset form-wrapper"
+                ]
+                [ H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Stage 2 Total: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text s2Total ]
                     ]
-                    [ H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Stage 2 Total: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text s2Total ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Birth type: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text birthType ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Delivery type: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text deliveryType ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Position for birth: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text birthPosition ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Duration of pushing: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text <| durationPushing ++ " minutes" ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Presentation at birth: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text birthPresentation ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Cord wrap: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text cordWrapAndType ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Shoulder dystocia: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text shoulderDystocia ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Laceration: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text laceration ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Episiotomy: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text episiotomy ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Repair: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text repair ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Degree: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text degree ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Laceration repaired by: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text repairedBy ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Est blood loss at birth: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text ebl ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Meconium: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text meconium ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Comments: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text comments ]
-                        ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Birth type: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text birthType ]
                     ]
-                , H.div [ HA.class "spacedButtons" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button u-small"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "Close" ]
-                    , H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--ghost u-small"
-                        , HE.onClick cfg.editMsg
-                        ]
-                        [ H.text "Edit" ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Delivery type: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text deliveryType ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Position for birth: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text birthPosition ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Duration of pushing: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text <| durationPushing ++ " minutes" ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Presentation at birth: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text birthPresentation ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Cord wrap: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text cordWrapAndType ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Shoulder dystocia: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text shoulderDystocia ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Laceration: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text laceration ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Episiotomy: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text episiotomy ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Repair: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text repair ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Degree: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text degree ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Laceration repaired by: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text repairedBy ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Est blood loss at birth: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text ebl ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Meconium: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text meconium ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Comments: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text comments ]
                     ]
                 ]
+            , H.div [ HA.class "spacedButtons" ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Close" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--ghost u-small"
+                    , HE.onClick cfg.editMsg
+                    ]
+                    [ H.text "Edit" ]
+                ]
             ]
+        ]
 
 
 
 -- Modal for Stage 3 Summary --
 
 
-type alias DialogStage3Summary =
-    { isShown : Bool
-    , isEditing : Bool
-    , title : String
-    , model : Model
-    , closeMsg : SubMsg
-    , saveMsg : SubMsg
-    , editMsg : SubMsg
-    }
-
-
-dialogStage3Summary : DialogStage3Summary -> Html SubMsg
+dialogStage3Summary : DialogSummary -> Html SubMsg
 dialogStage3Summary cfg =
     case cfg.isEditing of
         True ->
@@ -1733,7 +1863,7 @@ dialogStage3Summary cfg =
             dialogStage3SummaryView cfg
 
 
-dialogStage3SummaryView : DialogStage3Summary -> Html SubMsg
+dialogStage3SummaryView : DialogSummary -> Html SubMsg
 dialogStage3SummaryView cfg =
     let
         yesNoBool bool =
@@ -1800,124 +1930,124 @@ dialogStage3SummaryView cfg =
                 Nothing ->
                     ""
     in
-        H.div
-            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
-            , HA.class "u-high"
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
-                ]
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Stage 3 Summary" ]
-            , H.div []
-                [ H.div
-                    [ HA.class "o-fieldset form-wrapper"
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 3 Summary" ]
+        , H.div []
+            [ H.div
+                [ HA.class "o-fieldset form-wrapper"
+                ]
+                [ H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Stage 3 Total: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text s3Total ]
                     ]
-                    [ H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Stage 3 Total: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text s3Total ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Delivery spontaneous: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text delSpon ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Delivery AMTSL: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text delAMTSL ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Delivery CCT: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text delCCT ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Delivery manual: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text delMan ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Maternal position: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text matPos ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Treatments: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text treatment ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Placenta shape: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text shape ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Plancenta insertion: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text insertion ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Placenta num vessels: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text numVessels ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Schultz/Duncan: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text schDun ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Membranes complete: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text complete ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Placenta other: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text other ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Comments: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text comments ]
-                        ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Delivery spontaneous: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text delSpon ]
                     ]
-                , H.div [ HA.class "spacedButtons" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button u-small"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "Close" ]
-                    , H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--ghost u-small"
-                        , HE.onClick cfg.editMsg
-                        ]
-                        [ H.text "Edit" ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Delivery AMTSL: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text delAMTSL ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Delivery CCT: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text delCCT ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Delivery manual: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text delMan ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Maternal position: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text matPos ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Treatments: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text treatment ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Placenta shape: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text shape ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Plancenta insertion: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text insertion ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Placenta num vessels: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text numVessels ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Schultz/Duncan: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text schDun ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Membranes complete: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text complete ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Placenta other: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text other ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Comments: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text comments ]
                     ]
                 ]
+            , H.div [ HA.class "spacedButtons" ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Close" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--ghost u-small"
+                    , HE.onClick cfg.editMsg
+                    ]
+                    [ H.text "Edit" ]
+                ]
             ]
+        ]
 
 
-dialogStage3SummaryEdit : DialogStage3Summary -> Html SubMsg
+dialogStage3SummaryEdit : DialogSummary -> Html SubMsg
 dialogStage3SummaryEdit cfg =
     let
         errors =
@@ -1935,167 +2065,448 @@ dialogStage3SummaryEdit cfg =
                 |> List.map Tuple.second
                 |> String.join ", "
     in
-        H.div
-            [ HA.class "u-high"
-            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
+    H.div
+        [ HA.class "u-high"
+        , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
+            ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Stage 3 Summary - Edit" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div
+                [ HA.class "o-fieldset form-wrapper"
+                ]
+                [ H.label [ HA.class "c-label o-form-element mw-form-field" ]
+                    [ H.span
+                        [ HA.class "c-text--loud" ]
+                        [ H.text "Placenta Delivery" ]
+                    , Form.checkbox "Spontaneous"
+                        (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliverySpontaneousFld)
+                        cfg.model.s3PlacentaDeliverySpontaneous
+                    , Form.checkbox "AMTSL"
+                        (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryAMTSLFld)
+                        cfg.model.s3PlacentaDeliveryAMTSL
+                    , Form.checkbox "CCT"
+                        (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryCCTFld)
+                        cfg.model.s3PlacentaDeliveryCCT
+                    , Form.checkbox "Manual"
+                        (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryManualFld)
+                        cfg.model.s3PlacentaDeliveryManual
+                    , if String.length deliveryErrorStr > 0 then
+                        H.div
+                            [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
+                            , HA.style
+                                [ ( "padding", "0.25em 0.25em" )
+                                , ( "margin", "0.75em 0 1.25em 0" )
+                                ]
+                            ]
+                            [ H.text deliveryErrorStr ]
+                      else
+                        H.span [] []
+                    ]
+                , Form.radioFieldsetOther "Maternal Position"
+                    "maternalPosition"
+                    cfg.model.s3MaternalPosition
+                    (FldChgString >> FldChgSubMsg Stage3MaternalPositionFld)
+                    False
+                    [ "Semi-sitting"
+                    , "Lying on back"
+                    , "Squat"
+                    ]
+                    (getErr Stage3MaternalPositionFld errors)
+                , H.div [ HA.class "mw-form-field" ]
+                    [ H.span
+                        [ HA.class "c-text--loud" ]
+                        [ H.text "Tx for Blood Loss" ]
+                    , Form.checkboxString "Oxytocin"
+                        (FldChgString >> FldChgSubMsg Stage3TxBloodLoss1Fld)
+                        cfg.model.s3TxBloodLoss1
+                    , Form.checkboxString "IV"
+                        (FldChgString >> FldChgSubMsg Stage3TxBloodLoss2Fld)
+                        cfg.model.s3TxBloodLoss2
+                    , Form.checkboxString "Bi-Manual Compression External/Internal"
+                        (FldChgString >> FldChgSubMsg Stage3TxBloodLoss3Fld)
+                        cfg.model.s3TxBloodLoss3
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaShapeFld)
+                        "Placenta Shape"
+                        "shape"
+                        True
+                        cfg.model.s3PlacentaShape
+                        (getErr Stage3PlacentaShapeFld errors)
+                    ]
+                , Form.radioFieldsetOther "Placenta Insertion"
+                    "placentaInsertion"
+                    cfg.model.s3PlacentaInsertion
+                    (FldChgString >> FldChgSubMsg Stage3PlacentaInsertionFld)
+                    False
+                    [ "Central"
+                    , "Semi-central"
+                    , "Marginal"
+                    ]
+                    (getErr Stage3PlacentaInsertionFld errors)
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaNumVesselsFld)
+                        "Number vessels"
+                        "a number"
+                        True
+                        cfg.model.s3PlacentaNumVessels
+                        (getErr Stage3PlacentaNumVesselsFld errors)
+                    ]
+                , Form.radioFieldset "Schultz/Duncan"
+                    "schultzDuncan"
+                    cfg.model.s3SchultzDuncan
+                    (FldChgString >> FldChgSubMsg Stage3SchultzDuncanFld)
+                    False
+                    [ "Schultz"
+                    , "Duncan"
+                    ]
+                    (getErr Stage3SchultzDuncanFld errors)
+                , H.div [ HA.class "" ]
+                    [ H.span
+                        [ HA.class "c-text--loud" ]
+                        [ H.text "Placenta Membrane" ]
+                    , Form.checkbox "Is Complete"
+                        (FldChgBool >> FldChgSubMsg Stage3PlacentaMembranesCompleteFld)
+                        cfg.model.s3PlacentaMembranesComplete
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaOtherFld)
+                        "Inspection notes"
+                        "notes"
+                        True
+                        cfg.model.s3PlacentaOther
+                        (getErr Stage3PlacentaOtherFld errors)
+                    ]
+                , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage3CommentsFld)
+                    "Comments"
+                    ""
+                    True
+                    cfg.model.s3Comments
+                    3
                 ]
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Stage 3 Summary - Edit" ]
-            , H.div [ HA.class "form-wrapper u-small" ]
-                [ H.div
-                    [ HA.class "o-fieldset form-wrapper"
+        , H.div
+            [ HA.class "spacedButtons"
+            , HA.style [ ( "width", "100%" ) ]
+            ]
+            [ H.button
+                [ HA.type_ "button"
+                , HA.class "c-button u-small"
+                , HE.onClick cfg.closeMsg
+                ]
+                [ H.text "Cancel" ]
+            , H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button--brand u-small"
+                , HE.onClick cfg.saveMsg
+                ]
+                [ H.text "Save" ]
+            ]
+        ]
+
+
+
+-- Modal for MembranesResus Summary --
+
+
+dialogMembranesSummary : DialogSummary -> Html SubMsg
+dialogMembranesSummary cfg =
+    case cfg.isEditing of
+        True ->
+            dialogMembranesSummaryEdit cfg
+
+        False ->
+            dialogMembranesSummaryView cfg
+
+
+dialogMembranesSummaryView : DialogSummary -> Html SubMsg
+dialogMembranesSummaryView cfg =
+    let
+        dateString date =
+            case date of
+                Just d ->
+                    U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep d
+
+                Nothing ->
+                    ""
+
+        yesNoBool bool =
+            case bool of
+                Just True ->
+                    "Yes"
+
+                _ ->
+                    "No"
+
+        ( ruptureDate, rupture, ruptureCmt, amniotic, amnioticCmt, bulb, machine, freeFlowO2, chestCompressions ) =
+            case cfg.model.membranesResusRecord of
+                Just rec ->
+                    ( dateString rec.ruptureDatetime
+                    , maybeRuptureToString rec.rupture
+                    , Maybe.withDefault "" rec.ruptureComment
+                    , maybeAmnioticToString rec.amniotic
+                    , Maybe.withDefault "" rec.amnioticComment
+                    , yesNoBool rec.bulb
+                    , yesNoBool rec.machine
+                    , yesNoBool rec.freeFlowO2
+                    , yesNoBool rec.chestCompressions
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "", "", "", "", "" )
+
+        ( ppv, comments ) =
+            case cfg.model.membranesResusRecord of
+                Just rec ->
+                    ( yesNoBool rec.ppv
+                    , Maybe.withDefault "" rec.comments
+                    )
+
+                Nothing ->
+                    ( "", "" )
+    in
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
+            ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Membranes/Resuscitation Summary" ]
+        , H.div []
+            [ H.div
+                [ HA.class "o-fieldset form-wrapper"
+                ]
+                [ H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Rupture Date and time: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text ruptureDate ]
                     ]
-                    [ H.label [ HA.class "c-label o-form-element mw-form-field" ]
-                        [ H.span
-                            [ HA.class "c-text--loud" ]
-                            [ H.text "Placenta Delivery" ]
-                        , Form.checkbox "Spontaneous"
-                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliverySpontaneousFld)
-                            cfg.model.s3PlacentaDeliverySpontaneous
-                        , Form.checkbox "AMTSL"
-                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryAMTSLFld)
-                            cfg.model.s3PlacentaDeliveryAMTSL
-                        , Form.checkbox "CCT"
-                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryCCTFld)
-                            cfg.model.s3PlacentaDeliveryCCT
-                        , Form.checkbox "Manual"
-                            (FldChgBool >> FldChgSubMsg Stage3PlacentaDeliveryManualFld)
-                            cfg.model.s3PlacentaDeliveryManual
-                        , if String.length deliveryErrorStr > 0 then
-                            H.div
-                                [ HA.class "c-text--mono c-text--loud u-xsmall u-bg-yellow"
-                                , HA.style
-                                    [ ( "padding", "0.25em 0.25em" )
-                                    , ( "margin", "0.75em 0 1.25em 0" )
-                                    ]
-                                ]
-                                [ H.text deliveryErrorStr ]
-                          else
-                            H.span [] []
-                        ]
-                    , Form.radioFieldsetOther "Maternal Position"
-                        "maternalPosition"
-                        cfg.model.s3MaternalPosition
-                        (FldChgString >> FldChgSubMsg Stage3MaternalPositionFld)
-                        False
-                        [ "Semi-sitting"
-                        , "Lying on back"
-                        , "Squat"
-                        ]
-                        (getErr Stage3MaternalPositionFld errors)
-                    , H.div [ HA.class "mw-form-field" ]
-                        [ H.span
-                            [ HA.class "c-text--loud" ]
-                            [ H.text "Tx for Blood Loss" ]
-                        , Form.checkboxString "Oxytocin"
-                            (FldChgString >> FldChgSubMsg Stage3TxBloodLoss1Fld)
-                            cfg.model.s3TxBloodLoss1
-                        , Form.checkboxString "IV"
-                            (FldChgString >> FldChgSubMsg Stage3TxBloodLoss2Fld)
-                            cfg.model.s3TxBloodLoss2
-                        , Form.checkboxString "Bi-Manual Compression External/Internal"
-                            (FldChgString >> FldChgSubMsg Stage3TxBloodLoss3Fld)
-                            cfg.model.s3TxBloodLoss3
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaShapeFld)
-                            "Placenta Shape"
-                            "shape"
-                            True
-                            cfg.model.s3PlacentaShape
-                            (getErr Stage3PlacentaShapeFld errors)
-                        ]
-                    , Form.radioFieldsetOther "Placenta Insertion"
-                        "placentaInsertion"
-                        cfg.model.s3PlacentaInsertion
-                        (FldChgString >> FldChgSubMsg Stage3PlacentaInsertionFld)
-                        False
-                        [ "Central"
-                        , "Semi-central"
-                        , "Marginal"
-                        ]
-                        (getErr Stage3PlacentaInsertionFld errors)
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaNumVesselsFld)
-                            "Number vessels"
-                            "a number"
-                            True
-                            cfg.model.s3PlacentaNumVessels
-                            (getErr Stage3PlacentaNumVesselsFld errors)
-                        ]
-                    , Form.radioFieldset "Schultz/Duncan"
-                        "schultzDuncan"
-                        cfg.model.s3SchultzDuncan
-                        (FldChgString >> FldChgSubMsg Stage3SchultzDuncanFld)
-                        False
-                        [ "Schultz"
-                        , "Duncan"
-                        ]
-                        (getErr Stage3SchultzDuncanFld errors)
-                    , H.div [ HA.class "" ]
-                        [ H.span
-                            [ HA.class "c-text--loud" ]
-                            [ H.text "Placenta Membrane" ]
-                        , Form.checkbox "Is Complete"
-                            (FldChgBool >> FldChgSubMsg Stage3PlacentaMembranesCompleteFld)
-                            cfg.model.s3PlacentaMembranesComplete
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaOtherFld)
-                            "Inspection notes"
-                            "notes"
-                            True
-                            cfg.model.s3PlacentaOther
-                            (getErr Stage3PlacentaOtherFld errors)
-                        ]
-                    , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage3CommentsFld)
-                        "Comments"
-                        ""
-                        True
-                        cfg.model.s3Comments
-                        3
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Rupture: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text rupture ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Rupture comment: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text ruptureCmt ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Amniotic: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text amniotic ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Amniotic comment: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text amnioticCmt ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Bulb: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text bulb ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Machine: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text machine ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Free Flow O2: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text freeFlowO2 ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Chest Compressions: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text chestCompressions ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "PPV: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text ppv ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Comments: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text comments ]
                     ]
                 ]
-            , H.div
-                [ HA.class "spacedButtons"
-                , HA.style [ ( "width", "100%" ) ]
-                ]
+            , H.div [ HA.class "spacedButtons" ]
                 [ H.button
                     [ HA.type_ "button"
                     , HA.class "c-button u-small"
                     , HE.onClick cfg.closeMsg
                     ]
-                    [ H.text "Cancel" ]
+                    [ H.text "Close" ]
                 , H.button
                     [ HA.type_ "button"
-                    , HA.class "c-button c-button--brand u-small"
-                    , HE.onClick cfg.saveMsg
+                    , HA.class "c-button c-button--ghost u-small"
+                    , HE.onClick cfg.editMsg
                     ]
-                    [ H.text "Save" ]
+                    [ H.text "Edit" ]
                 ]
             ]
+        ]
+
+
+dialogMembranesSummaryEdit : DialogSummary -> Html SubMsg
+dialogMembranesSummaryEdit cfg =
+    let
+        errors =
+            validateMembranesResus cfg.model
+    in
+    H.div
+        [ HA.class "u-high"
+        , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
+            ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Membranes/Resuscitation - Edit" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                [ if cfg.model.browserSupportsDate then
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Rupture date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg MBRuptureDateFld)
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.mbRuptureDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg MBRuptureTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.mbRuptureTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                  else
+                    -- Browser does not support date.
+                    H.div [ HA.class "c-card" ]
+                        [ H.div [ HA.class "c-card__body" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                    MembranesResusRuptureDateField
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.mbRuptureDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg MBRuptureTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.mbRuptureTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                , Form.radioFieldset "Rupture"
+                    "rupture"
+                    cfg.model.mbRupture
+                    (FldChgString >> FldChgSubMsg MBRuptureFld)
+                    False
+                    [ "AROM"
+                    , "SROM"
+                    , "Other"
+                    ]
+                    (getErr MBRuptureFld errors)
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg MBRuptureCommentFld)
+                        "Rupture Comments"
+                        ""
+                        True
+                        cfg.model.mbRuptureComment
+                        (getErr MBRuptureCommentFld errors)
+                    ]
+                , Form.radioFieldset "Amniotic"
+                    "amniotic"
+                    cfg.model.mbAmniotic
+                    (FldChgString >> FldChgSubMsg MBAmnioticFld)
+                    False
+                    [ "Clear"
+                    , "Lt Stain"
+                    , "Mod Stain"
+                    , "Thick Stain"
+                    , "Other"
+                    ]
+                    (getErr MBAmnioticFld errors)
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg MBAmnioticCommentFld)
+                        "Amniotic Comments"
+                        ""
+                        True
+                        cfg.model.mbAmnioticComment
+                        (getErr MBAmnioticCommentFld errors)
+                    ]
+                , Form.checkbox "Bulb" (FldChgBool >> FldChgSubMsg MBBulbFld) cfg.model.mbBulb
+                , Form.checkbox "Machine" (FldChgBool >> FldChgSubMsg MBMachineFld) cfg.model.mbMachine
+                , Form.checkbox "Free Flow O2" (FldChgBool >> FldChgSubMsg MBFreeFlowO2Fld) cfg.model.mbFreeFlowO2
+                , Form.checkbox "Chest Compressions" (FldChgBool >> FldChgSubMsg MBChestCompressionsFld) cfg.model.mbChestCompressions
+                , Form.checkbox "PPV" (FldChgBool >> FldChgSubMsg MBPpvFld) cfg.model.mbPpv
+                , Form.formTextareaField (FldChgString >> FldChgSubMsg MBCommentsFld)
+                    "Comments"
+                    ""
+                    True
+                    cfg.model.mbComments
+                    3
+                ]
+            ]
+        , H.div
+            [ HA.class "spacedButtons"
+            , HA.style [ ( "width", "100%" ) ]
+            ]
+            [ H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button u-small"
+                , HE.onClick cfg.closeMsg
+                ]
+                [ H.text "Cancel" ]
+            , H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button--brand u-small"
+                , HE.onClick cfg.saveMsg
+                ]
+                [ H.text "Save" ]
+            ]
+        ]
 
 
 
 -- Modal for Baby Summary --
 
 
-type alias DialogBabySummary =
-    { isShown : Bool
-    , isEditing : Bool
-    , title : String
-    , model : Model
-    , closeMsg : SubMsg
-    , saveMsg : SubMsg
-    , editMsg : SubMsg
-    }
-
-
-dialogBabySummary : DialogStage3Summary -> Html SubMsg
+dialogBabySummary : DialogSummary -> Html SubMsg
 dialogBabySummary cfg =
     case cfg.isEditing of
         True ->
@@ -2105,7 +2516,7 @@ dialogBabySummary cfg =
             dialogBabySummaryView cfg
 
 
-dialogBabySummaryView : DialogBabySummary -> Html SubMsg
+dialogBabySummaryView : DialogSummary -> Html SubMsg
 dialogBabySummaryView cfg =
     let
         dateString date =
@@ -2147,97 +2558,97 @@ dialogBabySummaryView cfg =
         apgarsList =
             getScoresAsList cfg.model.apgarScores
     in
-        H.div
-            [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
-            , HA.class "u-high"
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
-                ]
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Baby Details" ]
-            , H.div []
-                [ H.div
-                    [ HA.class "o-fieldset form-wrapper" ]
-                    [ H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Lastname: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text lastname ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Firstname: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text firstname ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Middlename: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text middlename ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Sex: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text sex ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Birth weight: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text birthWeight ]
-                        ]
-                    , customApgarsView "Apgar Scores" apgarsList False
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "BFed established: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text bFed ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "NBS date: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text nbsDate ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "NBS result: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text nbsResult ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "BCG date: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text bcgDate ]
-                        ]
-                    , H.div [ HA.class "mw-form-field-2x" ]
-                        [ H.span [ HA.class "c-text--loud" ]
-                            [ H.text "Comments: " ]
-                        , H.span [ HA.class "" ]
-                            [ H.text comments ]
-                        ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Baby Details" ]
+        , H.div []
+            [ H.div
+                [ HA.class "o-fieldset form-wrapper" ]
+                [ H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Lastname: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text lastname ]
                     ]
-                , H.div [ HA.class "spacedButtons" ]
-                    [ H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button u-small"
-                        , HE.onClick cfg.closeMsg
-                        ]
-                        [ H.text "Close" ]
-                    , H.button
-                        [ HA.type_ "button"
-                        , HA.class "c-button c-button--ghost u-small"
-                        , HE.onClick cfg.editMsg
-                        ]
-                        [ H.text "Edit" ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Firstname: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text firstname ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Middlename: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text middlename ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Sex: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text sex ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Birth weight: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text birthWeight ]
+                    ]
+                , customApgarsView "Apgar Scores" apgarsList False
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "BFed established: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text bFed ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "NBS date: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text nbsDate ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "NBS result: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text nbsResult ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "BCG date: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text bcgDate ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Comments: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text comments ]
                     ]
                 ]
+            , H.div [ HA.class "spacedButtons" ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Close" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--ghost u-small"
+                    , HE.onClick cfg.editMsg
+                    ]
+                    [ H.text "Edit" ]
+                ]
             ]
+        ]
 
 
 customApgarsView : String -> List ApgarScore -> Bool -> Html SubMsg
@@ -2249,21 +2660,20 @@ customApgarsView lbl scores isEditing =
             else
                 "mw-form-field-2x"
     in
-        H.div [ HA.class outerClass ]
-            ([ H.span [ HA.class "c-text--loud" ]
-                [ H.text lbl ]
-             ]
-                ++ (List.map (customApgarView isEditing) scores)
-                ++ ([ H.span [ HA.class "c-text--quiet" ]
-                        [ H.text <|
-                            if isEditing then
-                                "After adding or deleting, press Save below."
-                            else
-                                ""
-                        ]
+    H.div [ HA.class outerClass ]
+        ([ H.span [ HA.class "c-text--loud" ]
+            [ H.text lbl ]
+         ]
+            ++ List.map (customApgarView isEditing) scores
+            ++ [ H.span [ HA.class "c-text--quiet" ]
+                    [ H.text <|
+                        if isEditing then
+                            "After adding or deleting, press Save below."
+                        else
+                            ""
                     ]
-                   )
-            )
+               ]
+        )
 
 
 customApgarView : Bool -> ApgarScore -> Html SubMsg
@@ -2272,9 +2682,9 @@ customApgarView isEditing score =
         ApgarScore (Just m) (Just s) ->
             H.div []
                 [ H.span []
-                    [ H.text <| "Minute: " ++ (toString m) ]
+                    [ H.text <| "Minute: " ++ toString m ]
                 , H.span []
-                    [ H.text <| ", Score: " ++ (toString s) ]
+                    [ H.text <| ", Score: " ++ toString s ]
                 , H.span []
                     [ H.text " " ]
                 , if isEditing then
@@ -2292,7 +2702,7 @@ customApgarView isEditing score =
             H.text ""
 
 
-dialogBabySummaryEdit : DialogBabySummary -> Html SubMsg
+dialogBabySummaryEdit : DialogSummary -> Html SubMsg
 dialogBabySummaryEdit cfg =
     let
         errors =
@@ -2360,263 +2770,260 @@ dialogBabySummaryEdit cfg =
                             ]
                         ]
     in
-        H.div
-            [ HA.class "u-high"
-            , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
-            , HA.style
-                [ ( "padding", "0.8em" )
-                , ( "margin-top", "0.8em" )
-                ]
+    H.div
+        [ HA.class "u-high"
+        , HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-                [ H.text "Baby at Birth - Edit" ]
-            , H.div [ HA.class "form-wrapper u-small" ]
-                [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                    -- NOTE: we are ignoring the birthNbr field right now and assuming
-                    -- that we do not have twins or more. At the moment, the Philippines
-                    -- does not allow maternity clinics to deliver twins or more. But
-                    -- this will need to be changed for other countries. The database
-                    -- already has the birthNbr field so no schema change will be
-                    -- required to add this feature.
-                    [ H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg BabyLastnameFld)
-                            "Baby Lastname"
-                            "Lastname"
-                            True
-                            cfg.model.bbLastname
-                            (getErr BabyLastnameFld errors)
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg BabyFirstnameFld)
-                            "Baby Firstname"
-                            "Firstname"
-                            True
-                            cfg.model.bbFirstname
-                            (getErr BabyFirstnameFld errors)
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg BabyMiddlenameFld)
-                            "Baby Middlename"
-                            "Middlename"
-                            True
-                            cfg.model.bbMiddlename
-                            (getErr BabyMiddlenameFld errors)
-                        ]
-                    , Form.radioFieldset "Sex"
-                        "babySex"
-                        cfg.model.bbSex
-                        (FldChgString >> FldChgSubMsg BabySexFld)
-                        False
-                        [ "Male"
-                        , "Female"
-                        ]
-                        (getErr BabySexFld errors)
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg BabyBirthWeightFld)
-                            "Birth weight (grams)"
-                            "a number"
-                            True
-                            cfg.model.bbBirthWeight
-                            (getErr BabyBirthWeightFld errors)
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgIntString 1 >> FldChgSubMsg ApgarStandardFld)
-                            "Apgar 1"
-                            "0 to 10"
-                            True
-                            apgar1
-                            ""
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgIntString 5 >> FldChgSubMsg ApgarStandardFld)
-                            "Apgar 5"
-                            "0 to 10"
-                            True
-                            apgar5
-                            ""
-                        ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgIntString 10 >> FldChgSubMsg ApgarStandardFld)
-                            "Apgar 10"
-                            "0 to 10"
-                            True
-                            apgar10
-                            ""
-                        ]
-                    , if List.length customApgarsList > 0 then
-                        customApgarsView "Custom Apgar Scores" customApgarsList True
-                      else
-                        H.text ""
-                    , addApgarWizard
-                    , if cfg.model.browserSupportsDate then
-                        H.div [ HA.class "c-card mw-form-field-2x" ]
-                            [ H.div [ HA.class "c-card__item" ]
-                                [ H.div [ HA.class "c-text--loud" ]
-                                    [ H.text "BFed Established date and time" ]
-                                ]
-                            , H.div [ HA.class "c-card__body dateTimeModalBody" ]
-                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                    [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyBFedEstablishedDateFld)
-                                        "Date"
-                                        "e.g. 08/14/2017"
-                                        False
-                                        cfg.model.bbBFedEstablishedDate
-                                        ""
-                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
-                                        "Time"
-                                        "24 hr format, 14:44"
-                                        False
-                                        cfg.model.bbBFedEstablishedTime
-                                        ""
-                                    ]
-                                ]
-                            ]
-                      else
-                        -- Browser does not support date.
-                        -- TODO: test this.
-                        H.div [ HA.class "c-card" ]
-                            [ H.div [ HA.class "c-card__body" ]
-                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                    [ Form.formFieldDatePicker OpenDatePickerSubMsg
-                                        BabyBFedEstablishedDateField
-                                        "Date"
-                                        "e.g. 08/14/2017"
-                                        False
-                                        cfg.model.bbBFedEstablishedDate
-                                        ""
-                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
-                                        "Time"
-                                        "24 hr format, 14:44"
-                                        False
-                                        cfg.model.bbBFedEstablishedTime
-                                        ""
-                                    ]
-                                ]
-                            ]
-                    , if cfg.model.browserSupportsDate then
-                        H.div [ HA.class "c-card mw-form-field-2x" ]
-                            [ H.div [ HA.class "c-card__item" ]
-                                [ H.div [ HA.class "c-text--loud" ]
-                                    [ H.text "NBS date and time" ]
-                                ]
-                            , H.div [ HA.class "c-card__body dateTimeModalBody" ]
-                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                    [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyNbsDateFld)
-                                        "Date"
-                                        "e.g. 08/14/2017"
-                                        False
-                                        cfg.model.bbNbsDate
-                                        ""
-                                    , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
-                                        "Time"
-                                        "24 hr format, 14:44"
-                                        False
-                                        cfg.model.bbNbsTime
-                                        ""
-                                    ]
-                                ]
-                            ]
-                      else
-                        -- Browser does not support date.
-                        -- TODO: test this.
-                        H.div [ HA.class "c-card" ]
-                            [ H.div [ HA.class "c-card__body" ]
-                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                    [ Form.formFieldDatePicker OpenDatePickerSubMsg
-                                        BabyNbsDateField
-                                        "Date"
-                                        "e.g. 08/14/2017"
-                                        False
-                                        cfg.model.bbNbsDate
-                                        ""
-                                    , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
-                                        "Time"
-                                        "24 hr format, 14:44"
-                                        False
-                                        cfg.model.bbNbsTime
-                                        ""
-                                    ]
-                                ]
-                            ]
-                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                        [ Form.formField (FldChgString >> FldChgSubMsg BabyNbsResultFld)
-                            "NBS Result"
-                            "NBS Result"
-                            True
-                            cfg.model.bbNbsResult
-                            (getErr BabyNbsResultFld errors)
-                        ]
-                    , if cfg.model.browserSupportsDate then
-                        H.div [ HA.class "c-card mw-form-field-2x" ]
-                            [ H.div [ HA.class "c-card__item" ]
-                                [ H.div [ HA.class "c-text--loud" ]
-                                    [ H.text "BCG date and time" ]
-                                ]
-                            , H.div [ HA.class "c-card__body dateTimeModalBody" ]
-                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                    [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyBcgDateFld)
-                                        "Date"
-                                        "e.g. 08/14/2017"
-                                        False
-                                        cfg.model.bbBcgDate
-                                        ""
-                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBcgTimeFld)
-                                        "Time"
-                                        "24 hr format, 14:44"
-                                        False
-                                        cfg.model.bbBcgTime
-                                        ""
-                                    ]
-                                ]
-                            ]
-                      else
-                        -- Browser does not support date.
-                        -- TODO: test this.
-                        H.div [ HA.class "c-card" ]
-                            [ H.div [ HA.class "c-card__body" ]
-                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                    [ Form.formFieldDatePicker OpenDatePickerSubMsg
-                                        BabyBFedEstablishedDateField
-                                        "Date"
-                                        "e.g. 08/14/2017"
-                                        False
-                                        cfg.model.bbBFedEstablishedDate
-                                        ""
-                                    , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
-                                        "Time"
-                                        "24 hr format, 14:44"
-                                        False
-                                        cfg.model.bbBFedEstablishedTime
-                                        ""
-                                    ]
-                                ]
-                            ]
-                    , Form.formTextareaField (FldChgString >> FldChgSubMsg BabyCommentsFld)
-                        "Comments"
-                        ""
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Baby at Birth - Edit" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                -- NOTE: we are ignoring the birthNbr field right now and assuming
+                -- that we do not have twins or more. At the moment, the Philippines
+                -- does not allow maternity clinics to deliver twins or more. But
+                -- this will need to be changed for other countries. The database
+                -- already has the birthNbr field so no schema change will be
+                -- required to add this feature.
+                [ H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg BabyLastnameFld)
+                        "Baby Lastname"
+                        "Lastname"
                         True
-                        cfg.model.bbComments
-                        3
+                        cfg.model.bbLastname
+                        (getErr BabyLastnameFld errors)
                     ]
-                ]
-            , H.div
-                [ HA.class "spacedButtons"
-                , HA.style [ ( "width", "100%" ) ]
-                ]
-                [ H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button c-button u-small"
-                    , HE.onClick cfg.closeMsg
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg BabyFirstnameFld)
+                        "Baby Firstname"
+                        "Firstname"
+                        True
+                        cfg.model.bbFirstname
+                        (getErr BabyFirstnameFld errors)
                     ]
-                    [ H.text "Cancel" ]
-                , H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button c-button--brand u-small"
-                    , HE.onClick cfg.saveMsg
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg BabyMiddlenameFld)
+                        "Baby Middlename"
+                        "Middlename"
+                        True
+                        cfg.model.bbMiddlename
+                        (getErr BabyMiddlenameFld errors)
                     ]
-                    [ H.text "Save" ]
+                , Form.radioFieldset "Sex"
+                    "babySex"
+                    cfg.model.bbSex
+                    (FldChgString >> FldChgSubMsg BabySexFld)
+                    False
+                    [ "Male"
+                    , "Female"
+                    ]
+                    (getErr BabySexFld errors)
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg BabyBirthWeightFld)
+                        "Birth weight (grams)"
+                        "a number"
+                        True
+                        cfg.model.bbBirthWeight
+                        (getErr BabyBirthWeightFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgIntString 1 >> FldChgSubMsg ApgarStandardFld)
+                        "Apgar 1"
+                        "0 to 10"
+                        True
+                        apgar1
+                        ""
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgIntString 5 >> FldChgSubMsg ApgarStandardFld)
+                        "Apgar 5"
+                        "0 to 10"
+                        True
+                        apgar5
+                        ""
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgIntString 10 >> FldChgSubMsg ApgarStandardFld)
+                        "Apgar 10"
+                        "0 to 10"
+                        True
+                        apgar10
+                        ""
+                    ]
+                , if List.length customApgarsList > 0 then
+                    customApgarsView "Custom Apgar Scores" customApgarsList True
+                  else
+                    H.text ""
+                , addApgarWizard
+                , if cfg.model.browserSupportsDate then
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "BFed Established date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyBFedEstablishedDateFld)
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bbBFedEstablishedDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.bbBFedEstablishedTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                  else
+                    -- Browser does not support date.
+                    H.div [ HA.class "c-card" ]
+                        [ H.div [ HA.class "c-card__body" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                    BabyBFedEstablishedDateField
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bbBFedEstablishedDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.bbBFedEstablishedTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                , if cfg.model.browserSupportsDate then
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "NBS date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyNbsDateFld)
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bbNbsDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.bbNbsTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                  else
+                    -- Browser does not support date.
+                    H.div [ HA.class "c-card" ]
+                        [ H.div [ HA.class "c-card__body" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                    BabyNbsDateField
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bbNbsDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.bbNbsTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg BabyNbsResultFld)
+                        "NBS Result"
+                        "NBS Result"
+                        True
+                        cfg.model.bbNbsResult
+                        (getErr BabyNbsResultFld errors)
+                    ]
+                , if cfg.model.browserSupportsDate then
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "BCG date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyBcgDateFld)
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bbBcgDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg BabyBcgTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.bbBcgTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                  else
+                    -- Browser does not support date.
+                    H.div [ HA.class "c-card" ]
+                        [ H.div [ HA.class "c-card__body" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                    BabyBFedEstablishedDateField
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bbBFedEstablishedDate
+                                    ""
+                                , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.bbBFedEstablishedTime
+                                    ""
+                                ]
+                            ]
+                        ]
+                , Form.formTextareaField (FldChgString >> FldChgSubMsg BabyCommentsFld)
+                    "Comments"
+                    ""
+                    True
+                    cfg.model.bbComments
+                    3
                 ]
             ]
+        , H.div
+            [ HA.class "spacedButtons"
+            , HA.style [ ( "width", "100%" ) ]
+            ]
+            [ H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button u-small"
+                , HE.onClick cfg.closeMsg
+                ]
+                [ H.text "Cancel" ]
+            , H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button--brand u-small"
+                , HE.onClick cfg.saveMsg
+                ]
+                [ H.text "Save" ]
+            ]
+        ]
 
 
 
@@ -2632,6 +3039,9 @@ unexpectedly.
 refreshModelFromCache : Dict String DataCache -> List Table -> Model -> Model
 refreshModelFromCache dc tables model =
     let
+        _ =
+            Debug.log "refreshModelFromCache" <| toString tables
+
         newModel =
             List.foldl
                 (\t m ->
@@ -2676,17 +3086,25 @@ refreshModelFromCache dc tables model =
                                 _ ->
                                     m
 
+                        MembranesResus ->
+                            case DataCache.get t dc of
+                                Just (MembranesResusDataCache rec) ->
+                                    { m | membranesResusRecord = Just rec }
+
+                                _ ->
+                                    m
+
                         _ ->
                             let
                                 _ =
                                     Debug.log "LaborDelIpp.refreshModelFromCache: Unhandled Table" <| toString t
                             in
-                                m
+                            m
                 )
                 model
                 tables
     in
-        newModel
+    newModel
 
 
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
@@ -2697,25 +3115,49 @@ update session msg model =
                 _ =
                     Debug.log "PageNoop" "was called."
             in
-                ( model, Cmd.none, Cmd.none )
+            ( model, Cmd.none, Cmd.none )
 
         DataCache dc tbls ->
             -- If the dataCache and tables are something, this is the top-level
             -- intentionally sending it's dataCache to us as a read-only update
             -- on the latest data that it has. The specific records that need
             -- to be updated are in the tables list.
-            ( case ( dc, tbls ) of
-                ( Just dataCache, Just tables ) ->
-                    let
-                        newModel =
-                            refreshModelFromCache dataCache tables model
-                    in
-                        { newModel | dataCache = dataCache }
+            let
+                newModel =
+                    case ( dc, tbls ) of
+                        ( Just dataCache, Just tables ) ->
+                            let
+                                newModel =
+                                    refreshModelFromCache dataCache tables model
+                            in
+                            { newModel | dataCache = dataCache }
 
-                ( _, _ ) ->
-                    model
+                        ( _, _ ) ->
+                            model
+
+                ( newCmd, newPendingSQ ) =
+                    -- TODO: create a function to make this easier.
+                    case ( newModel.babyRecord, Dict.member (tableToString MembranesResus) newModel.pendingSelectQuery ) of
+                        ( Just baby, True ) ->
+                            -- We have a baby record and have not yet checked for a membranesResus record. Construct
+                            -- the query for the server and remove the query from pendingSelectQuery.
+                            ( Task.perform
+                                (always
+                                    (LaborDelIppSelectQuery Baby
+                                        (Just baby.id)
+                                        [ MembranesResus ]
+                                    )
+                                )
+                                (Task.succeed True)
+                            , Dict.remove (tableToString MembranesResus) newModel.pendingSelectQuery
+                            )
+
+                        ( _, _ ) ->
+                            ( Cmd.none, newModel.pendingSelectQuery )
+            in
+            ( { newModel | pendingSelectQuery = newPendingSQ }
             , Cmd.none
-            , Cmd.none
+            , newCmd
             )
 
         TickSubMsg time ->
@@ -2886,7 +3328,7 @@ update session msg model =
                                 _ =
                                     Debug.log "s3TxBloodLoss1" <| toString value
                             in
-                                { model | s3TxBloodLoss1 = Just value }
+                            { model | s3TxBloodLoss1 = Just value }
 
                         Stage3TxBloodLoss2Fld ->
                             { model | s3TxBloodLoss2 = Just value }
@@ -2924,6 +3366,27 @@ update session msg model =
 
                         FalseLaborTimeFld ->
                             { model | falseLaborTime = Just <| U.filterStringLikeTime value }
+
+                        MBRuptureDateFld ->
+                            { model | mbRuptureDate = Date.fromString value |> Result.toMaybe }
+
+                        MBRuptureTimeFld ->
+                            { model | mbRuptureTime = Just <| U.filterStringLikeTime value }
+
+                        MBRuptureFld ->
+                            { model | mbRupture = Just value }
+
+                        MBRuptureCommentFld ->
+                            { model | mbRuptureComment = Just value }
+
+                        MBAmnioticFld ->
+                            { model | mbAmniotic = Just value }
+
+                        MBAmnioticCommentFld ->
+                            { model | mbAmnioticComment = Just value }
+
+                        MBCommentsFld ->
+                            { model | mbComments = Just value }
 
                         BabyLastnameFld ->
                             { model | bbLastname = Just value }
@@ -2983,7 +3446,7 @@ update session msg model =
                                     Debug.log "LaborDelIpp.update FldChgSubMsg"
                                         "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
                             in
-                                model
+                            model
                     , Cmd.none
                     , Cmd.none
                     )
@@ -3055,13 +3518,28 @@ update session msg model =
                         Stage3PlacentaMembranesCompleteFld ->
                             { model | s3PlacentaMembranesComplete = Just value }
 
+                        MBBulbFld ->
+                            { model | mbBulb = Just value }
+
+                        MBMachineFld ->
+                            { model | mbMachine = Just value }
+
+                        MBFreeFlowO2Fld ->
+                            { model | mbFreeFlowO2 = Just value }
+
+                        MBChestCompressionsFld ->
+                            { model | mbChestCompressions = Just value }
+
+                        MBPpvFld ->
+                            { model | mbPpv = Just value }
+
                         _ ->
                             let
                                 _ =
                                     Debug.log "LaborDelIpp.update FldChgSubMsg"
                                         "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
                             in
-                                model
+                            model
                     , Cmd.none
                     , Cmd.none
                     )
@@ -3094,7 +3572,7 @@ update session msg model =
                                     Debug.log "LaborDelIpp.update FldChgSubMsg"
                                         "Unknown field encountered in FldChgTwoMaybeString. Possible mismatch between Field and FldChgValue."
                             in
-                                model
+                            model
                     , Cmd.none
                     , Cmd.none
                     )
@@ -3114,7 +3592,7 @@ update session msg model =
                                 PregHeaderData.IPPContent ->
                                     PregHeaderData.PrenatalContent
                     in
-                        ( { model | currPregHeaderContent = next }, Cmd.none, Cmd.none )
+                    ( { model | currPregHeaderContent = next }, Cmd.none, Cmd.none )
 
         HandleStage1DateTimeModal dialogState ->
             case dialogState of
@@ -3171,15 +3649,15 @@ update session msg model =
                                                         newRec =
                                                             { rec | fullDialation = Just (U.datePlusTimeTuple d ( h, m )) }
                                                     in
-                                                        ProcessTypeMsg
-                                                            (UpdateLaborStage1Type
-                                                                (LaborDelIppMsg
-                                                                    (DataCache Nothing (Just [ LaborStage1 ]))
-                                                                )
-                                                                newRec
+                                                    ProcessTypeMsg
+                                                        (UpdateLaborStage1Type
+                                                            (LaborDelIppMsg
+                                                                (DataCache Nothing (Just [ LaborStage1 ]))
                                                             )
-                                                            ChgMsgType
-                                                            (laborStage1RecordToValue newRec)
+                                                            newRec
+                                                        )
+                                                        ChgMsgType
+                                                        (laborStage1RecordToValue newRec)
 
                                                 Nothing ->
                                                     Noop
@@ -3190,15 +3668,15 @@ update session msg model =
                                                 newRec =
                                                     { rec | fullDialation = Nothing }
                                             in
-                                                ProcessTypeMsg
-                                                    (UpdateLaborStage1Type
-                                                        (LaborDelIppMsg
-                                                            (DataCache Nothing (Just [ LaborStage1 ]))
-                                                        )
-                                                        newRec
+                                            ProcessTypeMsg
+                                                (UpdateLaborStage1Type
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ LaborStage1 ]))
                                                     )
-                                                    ChgMsgType
-                                                    (laborStage1RecordToValue newRec)
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (laborStage1RecordToValue newRec)
 
                                         ( Nothing, Just _, Just _ ) ->
                                             -- Create a new laborStage1 record.
@@ -3222,15 +3700,15 @@ update session msg model =
                                         ( _, _, _ ) ->
                                             Noop
                             in
-                                ( { model
-                                    | stage1DateTimeModal = NoDateTimeModal
-                                  }
-                                , Cmd.none
-                                , Cmd.batch
-                                    [ Task.perform (always outerMsg) (Task.succeed True)
-                                    , Route.back
-                                    ]
-                                )
+                            ( { model
+                                | stage1DateTimeModal = NoDateTimeModal
+                              }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
 
                         errors ->
                             -- TODO: show errors to user somehow???
@@ -3261,28 +3739,28 @@ update session msg model =
                                     , Nothing
                                     )
                     in
-                        -- We set the modal to View but it will show the edit screen
-                        -- if there are fields not complete.
-                        -- Also, if we are not on the NoStageSummaryModal, we set the
-                        -- modal to that which has the effect of allowing the Summary
-                        -- button in the view to serve as a toggle.
-                        ( { model
-                            | stage1SummaryModal =
-                                if model.stage1SummaryModal == NoStageSummaryModal then
-                                    Stage1SummaryViewModal
-                                else
-                                    NoStageSummaryModal
-                            , s1Mobility = mobility
-                            , s1DurationLatent = latent
-                            , s1DurationActive = active
-                            , s1Comments = comments
-                          }
-                        , Cmd.none
-                        , if model.stage1SummaryModal == NoStageSummaryModal then
-                            Route.addDialogUrl Route.LaborDelIppRoute
-                          else
-                            Route.back
-                        )
+                    -- We set the modal to View but it will show the edit screen
+                    -- if there are fields not complete.
+                    -- Also, if we are not on the NoStageSummaryModal, we set the
+                    -- modal to that which has the effect of allowing the Summary
+                    -- button in the view to serve as a toggle.
+                    ( { model
+                        | stage1SummaryModal =
+                            if model.stage1SummaryModal == NoStageSummaryModal then
+                                Stage1SummaryViewModal
+                            else
+                                NoStageSummaryModal
+                        , s1Mobility = mobility
+                        , s1DurationLatent = latent
+                        , s1DurationActive = active
+                        , s1Comments = comments
+                      }
+                    , Cmd.none
+                    , if model.stage1SummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
+                    )
 
                 CloseNoSaveDialog ->
                     -- We keep whatever, if anything, the user entered into the
@@ -3322,15 +3800,15 @@ update session msg model =
                                                         , comments = model.s1Comments
                                                     }
                                             in
-                                                ProcessTypeMsg
-                                                    (UpdateLaborStage1Type
-                                                        (LaborDelIppMsg
-                                                            (DataCache Nothing (Just [ LaborStage1 ]))
-                                                        )
-                                                        newRec
+                                            ProcessTypeMsg
+                                                (UpdateLaborStage1Type
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ LaborStage1 ]))
                                                     )
-                                                    ChgMsgType
-                                                    (laborStage1RecordToValue newRec)
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (laborStage1RecordToValue newRec)
 
                                         Nothing ->
                                             -- Need to create a new stage 1 record for the server.
@@ -3351,13 +3829,13 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveLaborStage1RecordNew returned a Nothing"
                             in
-                                ( { model | stage1SummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , Cmd.batch
-                                    [ Task.perform (always outerMsg) (Task.succeed True)
-                                    , Route.back
-                                    ]
-                                )
+                            ( { model | stage1SummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
 
                         errors ->
                             -- TODO: Show errors to user?
@@ -3421,15 +3899,15 @@ update session msg model =
                                                         newRec =
                                                             { rec | birthDatetime = Just (U.datePlusTimeTuple d ( h, m )) }
                                                     in
-                                                        ProcessTypeMsg
-                                                            (UpdateLaborStage2Type
-                                                                (LaborDelIppMsg
-                                                                    (DataCache Nothing (Just [ LaborStage2 ]))
-                                                                )
-                                                                newRec
+                                                    ProcessTypeMsg
+                                                        (UpdateLaborStage2Type
+                                                            (LaborDelIppMsg
+                                                                (DataCache Nothing (Just [ LaborStage2 ]))
                                                             )
-                                                            ChgMsgType
-                                                            (laborStage2RecordToValue newRec)
+                                                            newRec
+                                                        )
+                                                        ChgMsgType
+                                                        (laborStage2RecordToValue newRec)
 
                                                 Nothing ->
                                                     Noop
@@ -3440,15 +3918,15 @@ update session msg model =
                                                 newRec =
                                                     { rec | birthDatetime = Nothing }
                                             in
-                                                ProcessTypeMsg
-                                                    (UpdateLaborStage2Type
-                                                        (LaborDelIppMsg
-                                                            (DataCache Nothing (Just [ LaborStage2 ]))
-                                                        )
-                                                        newRec
+                                            ProcessTypeMsg
+                                                (UpdateLaborStage2Type
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ LaborStage2 ]))
                                                     )
-                                                    ChgMsgType
-                                                    (laborStage2RecordToValue newRec)
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (laborStage2RecordToValue newRec)
 
                                         ( Nothing, Just _, Just _ ) ->
                                             -- Create a new laborStage2 record.
@@ -3472,15 +3950,15 @@ update session msg model =
                                         ( _, _, _ ) ->
                                             Noop
                             in
-                                ( { model
-                                    | stage2DateTimeModal = NoDateTimeModal
-                                  }
-                                , Cmd.none
-                                , Cmd.batch
-                                    [ Task.perform (always outerMsg) (Task.succeed True)
-                                    , Route.back
-                                    ]
-                                )
+                            ( { model
+                                | stage2DateTimeModal = NoDateTimeModal
+                              }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
 
                         errors ->
                             -- TODO: show errors to user somehow???
@@ -3523,23 +4001,23 @@ update session msg model =
                                 Nothing ->
                                     model
                     in
-                        -- We set the modal to View but it will show the edit screen
-                        -- if there are fields not complete.
-                        --
-                        -- The if below allows the summary button to toggle on/off the form.
-                        ( { newModel
-                            | stage2SummaryModal =
-                                if newModel.stage2SummaryModal == NoStageSummaryModal then
-                                    Stage2SummaryViewModal
-                                else
-                                    NoStageSummaryModal
-                          }
-                        , Cmd.none
-                        , if newModel.stage2SummaryModal == NoStageSummaryModal then
-                            Route.addDialogUrl Route.LaborDelIppRoute
-                          else
-                            Route.back
-                        )
+                    -- We set the modal to View but it will show the edit screen
+                    -- if there are fields not complete.
+                    --
+                    -- The if below allows the summary button to toggle on/off the form.
+                    ( { newModel
+                        | stage2SummaryModal =
+                            if newModel.stage2SummaryModal == NoStageSummaryModal then
+                                Stage2SummaryViewModal
+                            else
+                                NoStageSummaryModal
+                      }
+                    , Cmd.none
+                    , if newModel.stage2SummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
+                    )
 
                 CloseNoSaveDialog ->
                     -- We keep whatever, if anything, the user entered into the
@@ -3592,15 +4070,15 @@ update session msg model =
                                                         , comments = model.s2Comments
                                                     }
                                             in
-                                                ProcessTypeMsg
-                                                    (UpdateLaborStage2Type
-                                                        (LaborDelIppMsg
-                                                            (DataCache Nothing (Just [ LaborStage2 ]))
-                                                        )
-                                                        newRec
+                                            ProcessTypeMsg
+                                                (UpdateLaborStage2Type
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ LaborStage2 ]))
                                                     )
-                                                    ChgMsgType
-                                                    (laborStage2RecordToValue newRec)
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (laborStage2RecordToValue newRec)
 
                                         Nothing ->
                                             -- Need to create a new stage 2 record for the server.
@@ -3621,23 +4099,23 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveLaborStage2RecordNew returned a Nothing"
                             in
-                                ( { model | stage2SummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , Cmd.batch
-                                    [ Task.perform (always outerMsg) (Task.succeed True)
-                                    , Route.back
-                                    ]
-                                )
+                            ( { model | stage2SummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
 
                         errors ->
                             let
                                 msgs =
                                     List.map Tuple.second errors
                             in
-                                ( { model | stage2SummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , toastError msgs 10
-                                )
+                            ( { model | stage2SummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
 
         HandleStage3DateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for stage 3
@@ -3694,15 +4172,15 @@ update session msg model =
                                                         newRec =
                                                             { rec | placentaDatetime = Just (U.datePlusTimeTuple d ( h, m )) }
                                                     in
-                                                        ProcessTypeMsg
-                                                            (UpdateLaborStage3Type
-                                                                (LaborDelIppMsg
-                                                                    (DataCache Nothing (Just [ LaborStage3 ]))
-                                                                )
-                                                                newRec
+                                                    ProcessTypeMsg
+                                                        (UpdateLaborStage3Type
+                                                            (LaborDelIppMsg
+                                                                (DataCache Nothing (Just [ LaborStage3 ]))
                                                             )
-                                                            ChgMsgType
-                                                            (laborStage3RecordToValue newRec)
+                                                            newRec
+                                                        )
+                                                        ChgMsgType
+                                                        (laborStage3RecordToValue newRec)
 
                                                 Nothing ->
                                                     Noop
@@ -3713,15 +4191,15 @@ update session msg model =
                                                 newRec =
                                                     { rec | placentaDatetime = Nothing }
                                             in
-                                                ProcessTypeMsg
-                                                    (UpdateLaborStage3Type
-                                                        (LaborDelIppMsg
-                                                            (DataCache Nothing (Just [ LaborStage3 ]))
-                                                        )
-                                                        newRec
+                                            ProcessTypeMsg
+                                                (UpdateLaborStage3Type
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ LaborStage3 ]))
                                                     )
-                                                    ChgMsgType
-                                                    (laborStage3RecordToValue newRec)
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (laborStage3RecordToValue newRec)
 
                                         ( Nothing, Just _, Just _ ) ->
                                             -- Create a new laborStage3 record.
@@ -3745,15 +4223,15 @@ update session msg model =
                                         ( _, _, _ ) ->
                                             Noop
                             in
-                                ( { model
-                                    | stage3DateTimeModal = NoDateTimeModal
-                                  }
-                                , Cmd.none
-                                , Cmd.batch
-                                    [ Task.perform (always outerMsg) (Task.succeed True)
-                                    , Route.back
-                                    ]
-                                )
+                            ( { model
+                                | stage3DateTimeModal = NoDateTimeModal
+                              }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
 
                         errors ->
                             -- TODO: show errors to user somehow???
@@ -3796,23 +4274,23 @@ update session msg model =
                                 Nothing ->
                                     model
                     in
-                        -- We set the modal to View but it will show the edit screen
-                        -- if there are fields not complete.
-                        --
-                        -- The if below allows the summary button to toggle on/off the form.
-                        ( { newModel
-                            | stage3SummaryModal =
-                                if newModel.stage3SummaryModal == NoStageSummaryModal then
-                                    Stage3SummaryViewModal
-                                else
-                                    NoStageSummaryModal
-                          }
-                        , Cmd.none
-                        , if newModel.stage3SummaryModal == NoStageSummaryModal then
-                            Route.addDialogUrl Route.LaborDelIppRoute
-                          else
-                            Route.back
-                        )
+                    -- We set the modal to View but it will show the edit screen
+                    -- if there are fields not complete.
+                    --
+                    -- The if below allows the summary button to toggle on/off the form.
+                    ( { newModel
+                        | stage3SummaryModal =
+                            if newModel.stage3SummaryModal == NoStageSummaryModal then
+                                Stage3SummaryViewModal
+                            else
+                                NoStageSummaryModal
+                      }
+                    , Cmd.none
+                    , if newModel.stage3SummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
+                    )
 
                 CloseNoSaveDialog ->
                     -- We keep whatever, if anything, the user entered into the
@@ -3865,15 +4343,15 @@ update session msg model =
                                                         , comments = model.s3Comments
                                                     }
                                             in
-                                                ProcessTypeMsg
-                                                    (UpdateLaborStage3Type
-                                                        (LaborDelIppMsg
-                                                            (DataCache Nothing (Just [ LaborStage3 ]))
-                                                        )
-                                                        newRec
+                                            ProcessTypeMsg
+                                                (UpdateLaborStage3Type
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ LaborStage3 ]))
                                                     )
-                                                    ChgMsgType
-                                                    (laborStage3RecordToValue newRec)
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (laborStage3RecordToValue newRec)
 
                                         Nothing ->
                                             -- Need to create a new stage 3 record for the server.
@@ -3894,23 +4372,23 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveLaborStage3RecordNew returned a Nothing"
                             in
-                                ( { model | stage3SummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , Cmd.batch
-                                    [ Task.perform (always outerMsg) (Task.succeed True)
-                                    , Route.back
-                                    ]
-                                )
+                            ( { model | stage3SummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
 
                         errors ->
                             let
                                 msgs =
                                     List.map Tuple.second errors
                             in
-                                ( { model | stage3SummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , toastError msgs 10
-                                )
+                            ( { model | stage3SummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
 
         HandleFalseLaborDateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for a
@@ -3969,12 +4447,12 @@ update session msg model =
                                                         ChgMsgType
                                                         (laborRecordToValue newLaborRec)
                                             in
-                                                ( { model
-                                                    | falseLaborDateTimeModal = NoDateTimeModal
-                                                  }
-                                                , Cmd.none
-                                                , Task.perform (always outerMsg) (Task.succeed True)
-                                                )
+                                            ( { model
+                                                | falseLaborDateTimeModal = NoDateTimeModal
+                                              }
+                                            , Cmd.none
+                                            , Task.perform (always outerMsg) (Task.succeed True)
+                                            )
 
                                         Nothing ->
                                             -- Time in the form is not right, so do nothing.
@@ -4014,12 +4492,12 @@ update session msg model =
                                                 ChgMsgType
                                                 (laborRecordToValue newLaborRec)
                                     in
-                                        ( { model
-                                            | falseLaborDateTimeModal = NoDateTimeModal
-                                          }
-                                        , Cmd.none
-                                        , Task.perform (always outerMsg) (Task.succeed True)
-                                        )
+                                    ( { model
+                                        | falseLaborDateTimeModal = NoDateTimeModal
+                                      }
+                                    , Cmd.none
+                                    , Task.perform (always outerMsg) (Task.succeed True)
+                                    )
 
                                 Nothing ->
                                     -- Shouldn't get here because labor record not found.
@@ -4028,6 +4506,137 @@ update session msg model =
                         ( _, _, _, _ ) ->
                             -- Shouldn't get here because there has to be a labor record.
                             ( model, Cmd.none, Cmd.none )
+
+        HandleMembranesSummaryModal dialogState ->
+            case dialogState of
+                OpenDialog ->
+                    let
+                        newModel =
+                            case model.membranesResusRecord of
+                                Just rec ->
+                                    { model
+                                        | mbRuptureDate = rec.ruptureDatetime
+                                        , mbRuptureTime =
+                                            U.maybeOr
+                                                (Maybe.map U.dateToTimeString rec.ruptureDatetime)
+                                                model.mbRuptureTime
+                                        , mbRupture = U.maybeOr (Just (maybeRuptureToString rec.rupture)) model.mbRupture
+                                        , mbRuptureComment = U.maybeOr rec.ruptureComment model.mbRuptureComment
+                                        , mbAmniotic = U.maybeOr (Just (maybeAmnioticToString rec.amniotic)) model.mbAmniotic
+                                        , mbAmnioticComment = U.maybeOr rec.amnioticComment model.mbAmnioticComment
+                                        , mbBulb = U.maybeOr rec.bulb model.mbBulb
+                                        , mbMachine = U.maybeOr rec.machine model.mbMachine
+                                        , mbFreeFlowO2 = U.maybeOr rec.freeFlowO2 model.mbFreeFlowO2
+                                        , mbChestCompressions = U.maybeOr rec.chestCompressions model.mbChestCompressions
+                                        , mbPpv = U.maybeOr rec.ppv model.mbPpv
+                                        , mbComments = U.maybeOr rec.comments model.mbComments
+                                    }
+
+                                Nothing ->
+                                    model
+                    in
+                    ( { newModel
+                        | membranesSummaryModal =
+                            if model.membranesSummaryModal == NoStageSummaryModal then
+                                MembranesSummaryViewModal
+                            else
+                                NoStageSummaryModal
+                      }
+                    , Cmd.none
+                    , if model.membranesSummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
+                    )
+
+                CloseNoSaveDialog ->
+                    ( { model | membranesSummaryModal = NoStageSummaryModal }
+                    , Cmd.none
+                    , Route.back
+                    )
+
+                EditDialog ->
+                    ( { model | membranesSummaryModal = MembranesSummaryEditModal }
+                    , Cmd.none
+                    , if model.membranesSummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    case validateMembranesResus model of
+                        [] ->
+                            let
+                                ruptureDatetime =
+                                    U.maybeDatePlusTime model.mbRuptureDate model.mbRuptureTime
+
+                                outerMsg =
+                                    case model.membranesResusRecord of
+                                        Just rec ->
+                                            -- A membranesResus record already exists so update it.
+                                            let
+                                                newRec =
+                                                    { rec
+                                                        | ruptureDatetime = ruptureDatetime
+                                                        , rupture = maybeStringToRupture model.mbRupture
+                                                        , ruptureComment = model.mbRuptureComment
+                                                        , amniotic = maybeStringToAmniotic model.mbAmniotic
+                                                        , amnioticComment = model.mbAmnioticComment
+                                                        , bulb = model.mbBulb
+                                                        , machine = model.mbMachine
+                                                        , freeFlowO2 = model.mbFreeFlowO2
+                                                        , chestCompressions = model.mbChestCompressions
+                                                        , ppv = model.mbPpv
+                                                        , comments = model.mbComments
+                                                    }
+                                            in
+                                            ProcessTypeMsg
+                                                (UpdateMembranesResusType
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ MembranesResus ]))
+                                                    )
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (membranesResusRecordToValue newRec)
+
+                                        Nothing ->
+                                            -- A new membranesResus record is being created.
+                                            case deriveMembranesResusRecordNew model of
+                                                Just membranesResusRecordNew ->
+                                                    ProcessTypeMsg
+                                                        (AddMembranesResusType
+                                                            (LaborDelIppMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ MembranesResus ]))
+                                                            )
+                                                            membranesResusRecordNew
+                                                        )
+                                                        AddMsgType
+                                                        (membranesResusRecordNewToValue membranesResusRecordNew)
+
+                                                Nothing ->
+                                                    LogConsole "deriveMembranesResusRecordNew returned a Nothing"
+                            in
+                            ( { model | membranesSummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
+
+                        errors ->
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                            in
+                            ( { model | membranesSummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
 
         HandleBabySummaryModal dialogState ->
             case dialogState of
@@ -4065,19 +4674,19 @@ update session msg model =
                                 Nothing ->
                                     model
                     in
-                        ( { newModel
-                            | babySummaryModal =
-                                if model.babySummaryModal == NoStageSummaryModal then
-                                    BabySummaryViewModal
-                                else
-                                    NoStageSummaryModal
-                          }
-                        , Cmd.none
-                        , if model.babySummaryModal == NoStageSummaryModal then
-                            Route.addDialogUrl Route.LaborDelIppRoute
-                          else
-                            Route.back
-                        )
+                    ( { newModel
+                        | babySummaryModal =
+                            if model.babySummaryModal == NoStageSummaryModal then
+                                BabySummaryViewModal
+                            else
+                                NoStageSummaryModal
+                      }
+                    , Cmd.none
+                    , if model.babySummaryModal == NoStageSummaryModal then
+                        Route.addDialogUrl Route.LaborDelIppRoute
+                      else
+                        Route.back
+                    )
 
                 CloseNoSaveDialog ->
                     ( { model | babySummaryModal = NoStageSummaryModal }
@@ -4133,15 +4742,15 @@ update session msg model =
                                                         , apgarScores = apgarScoreDictToApgarRecordList model.apgarScores
                                                     }
                                             in
-                                                ProcessTypeMsg
-                                                    (UpdateBabyType
-                                                        (LaborDelIppMsg
-                                                            (DataCache Nothing (Just [ Baby ]))
-                                                        )
-                                                        newRec
+                                            ProcessTypeMsg
+                                                (UpdateBabyType
+                                                    (LaborDelIppMsg
+                                                        (DataCache Nothing (Just [ Baby ]))
                                                     )
-                                                    ChgMsgType
-                                                    (babyRecordToValue newRec)
+                                                    newRec
+                                                )
+                                                ChgMsgType
+                                                (babyRecordToValue newRec)
 
                                         ( Nothing, _ ) ->
                                             -- A new baby record is being created.
@@ -4162,23 +4771,23 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveBabyRecordNew returned a Nothing"
                             in
-                                ( { model | babySummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , Cmd.batch
-                                    [ Task.perform (always outerMsg) (Task.succeed True)
-                                    , Route.back
-                                    ]
-                                )
+                            ( { model | babySummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
 
                         errors ->
                             let
                                 msgs =
                                     List.map Tuple.second errors
                             in
-                                ( { model | babySummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , toastError msgs 10
-                                )
+                            ( { model | babySummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
 
         AddApgarWizard addOtherApgar ->
             case addOtherApgar of
@@ -4224,15 +4833,15 @@ update session msg model =
                                 ( _, _ ) ->
                                     model.apgarScores
                     in
-                        ( { model
-                            | pendingApgarWizard = NotStartedAddOtherApgar
-                            , pendingApgarMinute = Nothing
-                            , pendingApgarScore = Nothing
-                            , apgarScores = newApgarScores
-                          }
-                        , Cmd.none
-                        , Cmd.none
-                        )
+                    ( { model
+                        | pendingApgarWizard = NotStartedAddOtherApgar
+                        , pendingApgarMinute = Nothing
+                        , pendingApgarScore = Nothing
+                        , apgarScores = newApgarScores
+                      }
+                    , Cmd.none
+                    , Cmd.none
+                    )
 
         DeleteApgar minute ->
             -- Used for the custom apgars, ignore any of the standard minutes
@@ -4325,13 +4934,13 @@ deriveLaborStage1RecordNew model =
                         ( _, _ ) ->
                             Nothing
             in
-                LaborStage1RecordNew fullDialation
-                    model.s1Mobility
-                    (U.maybeStringToMaybeInt model.s1DurationLatent)
-                    (U.maybeStringToMaybeInt model.s1DurationActive)
-                    model.s1Comments
-                    id
-                    |> Just
+            LaborStage1RecordNew fullDialation
+                model.s1Mobility
+                (U.maybeStringToMaybeInt model.s1DurationLatent)
+                (U.maybeStringToMaybeInt model.s1DurationActive)
+                model.s1Comments
+                id
+                |> Just
 
         _ ->
             Nothing
@@ -4355,28 +4964,64 @@ deriveLaborStage2RecordNew model =
                         ( _, _ ) ->
                             Nothing
             in
-                LaborStage2RecordNew birthDatetime
-                    model.s2BirthType
-                    model.s2BirthPosition
-                    (U.maybeStringToMaybeInt model.s2DurationPushing)
-                    model.s2BirthPresentation
-                    model.s2CordWrap
-                    model.s2CordWrapType
-                    model.s2DeliveryType
-                    model.s2ShoulderDystocia
-                    (U.maybeStringToMaybeInt model.s2ShoulderDystociaMinutes)
-                    model.s2Laceration
-                    model.s2Episiotomy
-                    model.s2Repair
-                    model.s2Degree
-                    model.s2LacerationRepairedBy
-                    (U.maybeStringToMaybeInt model.s2BirthEBL)
-                    model.s2Meconium
-                    model.s2Comments
-                    id
-                    |> Just
+            LaborStage2RecordNew birthDatetime
+                model.s2BirthType
+                model.s2BirthPosition
+                (U.maybeStringToMaybeInt model.s2DurationPushing)
+                model.s2BirthPresentation
+                model.s2CordWrap
+                model.s2CordWrapType
+                model.s2DeliveryType
+                model.s2ShoulderDystocia
+                (U.maybeStringToMaybeInt model.s2ShoulderDystociaMinutes)
+                model.s2Laceration
+                model.s2Episiotomy
+                model.s2Repair
+                model.s2Degree
+                model.s2LacerationRepairedBy
+                (U.maybeStringToMaybeInt model.s2BirthEBL)
+                model.s2Meconium
+                model.s2Comments
+                id
+                |> Just
 
         _ ->
+            Nothing
+
+
+deriveMembranesResusRecordNew : Model -> Maybe MembranesResusRecordNew
+deriveMembranesResusRecordNew model =
+    case model.babyRecord of
+        Just baby ->
+            let
+                ruptureDatetime =
+                    case ( model.mbRuptureDate, model.mbRuptureTime ) of
+                        ( Just d, Just t ) ->
+                            case U.stringToTimeTuple t of
+                                Just tt ->
+                                    Just <| U.datePlusTimeTuple d tt
+
+                                Nothing ->
+                                    Nothing
+
+                        ( _, _ ) ->
+                            Nothing
+            in
+            MembranesResusRecordNew ruptureDatetime
+                (maybeStringToRupture model.mbRupture)
+                model.mbRuptureComment
+                (maybeStringToAmniotic model.mbAmniotic)
+                model.mbAmnioticComment
+                model.mbBulb
+                model.mbMachine
+                model.mbFreeFlowO2
+                model.mbChestCompressions
+                model.mbPpv
+                model.mbComments
+                baby.id
+                |> Just
+
+        Nothing ->
             Nothing
 
 
@@ -4424,20 +5069,20 @@ deriveBabyRecordNew model =
                         ( _, _ ) ->
                             Nothing
             in
-                BabyRecordNew 1
-                    model.bbLastname
-                    model.bbFirstname
-                    model.bbMiddlename
-                    (stringToMaleFemale sexStr)
-                    (U.maybeStringToMaybeInt model.bbBirthWeight)
-                    bFedDatetime
-                    nbsDatetime
-                    model.bbNbsResult
-                    bcgDatetime
-                    model.bbComments
-                    id
-                    (apgarScoreDictToApgarRecordList model.apgarScores)
-                    |> Just
+            BabyRecordNew 1
+                model.bbLastname
+                model.bbFirstname
+                model.bbMiddlename
+                (stringToMaleFemale sexStr)
+                (U.maybeStringToMaybeInt model.bbBirthWeight)
+                bFedDatetime
+                nbsDatetime
+                model.bbNbsResult
+                bcgDatetime
+                model.bbComments
+                id
+                (apgarScoreDictToApgarRecordList model.apgarScores)
+                |> Just
 
         ( _, _ ) ->
             Nothing
@@ -4461,26 +5106,26 @@ deriveLaborStage3RecordNew model =
                         ( _, _ ) ->
                             Nothing
             in
-                LaborStage3RecordNew placentaDatetime
-                    model.s3PlacentaDeliverySpontaneous
-                    model.s3PlacentaDeliveryAMTSL
-                    model.s3PlacentaDeliveryCCT
-                    model.s3PlacentaDeliveryManual
-                    model.s3MaternalPosition
-                    model.s3TxBloodLoss1
-                    model.s3TxBloodLoss2
-                    model.s3TxBloodLoss3
-                    model.s3TxBloodLoss4
-                    model.s3TxBloodLoss5
-                    model.s3PlacentaShape
-                    model.s3PlacentaInsertion
-                    (U.maybeStringToMaybeInt model.s3PlacentaNumVessels)
-                    (string2SchultzDuncan (Maybe.withDefault "" model.s3SchultzDuncan))
-                    model.s3PlacentaMembranesComplete
-                    model.s3PlacentaOther
-                    model.s3Comments
-                    id
-                    |> Just
+            LaborStage3RecordNew placentaDatetime
+                model.s3PlacentaDeliverySpontaneous
+                model.s3PlacentaDeliveryAMTSL
+                model.s3PlacentaDeliveryCCT
+                model.s3PlacentaDeliveryManual
+                model.s3MaternalPosition
+                model.s3TxBloodLoss1
+                model.s3TxBloodLoss2
+                model.s3TxBloodLoss3
+                model.s3TxBloodLoss4
+                model.s3TxBloodLoss5
+                model.s3PlacentaShape
+                model.s3PlacentaInsertion
+                (U.maybeStringToMaybeInt model.s3PlacentaNumVessels)
+                (string2SchultzDuncan (Maybe.withDefault "" model.s3SchultzDuncan))
+                model.s3PlacentaMembranesComplete
+                model.s3PlacentaOther
+                model.s3Comments
+                id
+                |> Just
 
         _ ->
             Nothing
@@ -4550,46 +5195,42 @@ validateStage2 =
         , .s2BirthPosition >> ifInvalid U.validatePopulatedString (Stage2BirthPositionFld => "Birth position must be provided.")
         , .s2DurationPushing >> ifInvalid U.validateInt (Stage2DurationPushingFld => "Duration pushing must be provided.")
         , .s2BirthPresentation >> ifInvalid U.validatePopulatedString (Stage2BirthPresentationFld => "Birth presentation must be provided.")
-        , (\mdl ->
+        , \mdl ->
             if mdl.s2CordWrapType /= Nothing && (mdl.s2CordWrap == Nothing || mdl.s2CordWrap == Just False) then
-                [ (Stage2CordWrapTypeFld => "Cord wrap type cannot be specified if cord wrap is not checked.") ]
+                [ Stage2CordWrapTypeFld => "Cord wrap type cannot be specified if cord wrap is not checked." ]
             else if mdl.s2CordWrap == Just True && String.length (Maybe.withDefault "" mdl.s2CordWrapType) == 0 then
-                [ (Stage2CordWrapTypeFld => "Cord wrap cannot be checked without also specifying cord wrap type.") ]
+                [ Stage2CordWrapTypeFld => "Cord wrap cannot be checked without also specifying cord wrap type." ]
             else
                 []
-          )
         , .s2DeliveryType >> ifInvalid U.validatePopulatedString (Stage2DeliveryTypeFld => "Delivery type must be provided.")
-        , (\mdl ->
+        , \mdl ->
             case U.maybeStringToMaybeInt mdl.s2ShoulderDystociaMinutes of
                 Just m ->
                     if m > 0 && (mdl.s2ShoulderDystocia == Nothing || mdl.s2ShoulderDystocia == Just False) then
-                        [ (Stage2ShoulderDystociaMinutesFld => "Shoulder dystocia minutes cannot be specified if shoulder dystocia is not checked.") ]
+                        [ Stage2ShoulderDystociaMinutesFld => "Shoulder dystocia minutes cannot be specified if shoulder dystocia is not checked." ]
                     else
                         []
 
                 Nothing ->
                     if mdl.s2ShoulderDystocia == Just True then
-                        [ (Stage2ShoulderDystociaMinutesFld => "Shoulder dystocia cannot be checked without specifying shoulder dystocia minutes.") ]
+                        [ Stage2ShoulderDystociaMinutesFld => "Shoulder dystocia cannot be checked without specifying shoulder dystocia minutes." ]
                     else
                         []
-          )
-        , (\mdl ->
+        , \mdl ->
             if mdl.s2Laceration == Just True || mdl.s2Episiotomy == Just True then
                 if mdl.s2Degree == Nothing then
-                    [ (Stage2DegreeFld => "Degree must be specified if laceration or episiotomy is checked.") ]
+                    [ Stage2DegreeFld => "Degree must be specified if laceration or episiotomy is checked." ]
                 else
                     []
             else if mdl.s2Degree /= Nothing then
-                [ (Stage2DegreeFld => "Either laceration and/or episiotomy must be checked if degree is specified.") ]
+                [ Stage2DegreeFld => "Either laceration and/or episiotomy must be checked if degree is specified." ]
             else
                 []
-          )
-        , (\mdl ->
+        , \mdl ->
             if mdl.s2Repair == Just True && String.length (Maybe.withDefault "" mdl.s2LacerationRepairedBy) == 0 then
-                [ (Stage2LacerationRepairedByFld => "Laceration repaired by field must be provided if repair field is checked.") ]
+                [ Stage2LacerationRepairedByFld => "Laceration repaired by field must be provided if repair field is checked." ]
             else
                 []
-          )
         , .s2BirthEBL >> ifInvalid U.validateInt (Stage2BirthEBLFld => "Estimated blood loss at birth must be provided.")
         , .s2Meconium >> ifInvalid U.validatePopulatedString (Stage2MeconiumFld => "Meconium must be provided.")
         ]
@@ -4598,7 +5239,7 @@ validateStage2 =
 validateStage3 : Model -> List FieldError
 validateStage3 =
     Validate.all
-        [ (\mdl ->
+        [ \mdl ->
             -- All four bools are not Nothing and not all False.
             if
                 (U.validateBool mdl.s3PlacentaDeliverySpontaneous
@@ -4612,10 +5253,9 @@ validateStage3 =
                             && (not <| Maybe.withDefault False mdl.s3PlacentaDeliveryManual)
                        )
             then
-                [ (Stage3PlacentaDeliverySpontaneousFld => "You must check one of the placenta delivery types.") ]
+                [ Stage3PlacentaDeliverySpontaneousFld => "You must check one of the placenta delivery types." ]
             else
                 []
-          )
         , .s3MaternalPosition >> ifInvalid U.validatePopulatedString (Stage3MaternalPositionFld => "Maternal position must be provided.")
         , .s3PlacentaShape >> ifInvalid U.validatePopulatedString (Stage3PlacentaShapeFld => "Placenta shape must be provided.")
         , .s3PlacentaInsertion >> ifInvalid U.validatePopulatedString (Stage3PlacentaInsertionFld => "Placenta insertion must be provided.")
@@ -4632,4 +5272,14 @@ validateBaby =
     Validate.all
         [ .bbSex >> ifInvalid (U.validatePopulatedStringInList [ "Male", "Female" ]) (BabySexFld => "Sex must be provided.")
         , .bbBirthWeight >> ifInvalid U.validateInt (BabyBirthWeightFld => "Birth weight in grams must be provided.")
+        ]
+
+
+{-| Nearly empty records are valid.
+-}
+validateMembranesResus : Model -> List FieldError
+validateMembranesResus =
+    Validate.all
+        [ .mbRuptureDate >> ifInvalid U.validateDate (MBRuptureDateFld => "Date of the rupture must be provided.")
+        , .mbRuptureTime >> ifInvalid U.validateTime (MBRuptureTimeFld => "Time of the rupture must be provided, ex: hh:mm.")
         ]

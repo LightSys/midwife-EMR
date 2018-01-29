@@ -48,6 +48,7 @@ type SubMsg
     | HandleStage3DateTimeModal Dialog
     | HandleStage3SummaryModal Dialog
     | HandleFalseLaborDateTimeModal Dialog
+    | HandleMembranesSummaryModal Dialog
     | HandleBabySummaryModal Dialog
     | AddApgarWizard AddOtherApgar
     | DeleteApgar Int
@@ -137,6 +138,18 @@ type Field
     | Stage3CommentsFld
     | FalseLaborDateFld
     | FalseLaborTimeFld
+    | MBRuptureDateFld
+    | MBRuptureTimeFld
+    | MBRuptureFld
+    | MBRuptureCommentFld
+    | MBAmnioticFld
+    | MBAmnioticCommentFld
+    | MBBulbFld
+    | MBMachineFld
+    | MBFreeFlowO2Fld
+    | MBChestCompressionsFld
+    | MBPpvFld
+    | MBCommentsFld
     | BabyLastnameFld
     | BabyFirstnameFld
     | BabyMiddlenameFld
