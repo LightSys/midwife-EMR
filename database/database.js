@@ -11,7 +11,7 @@
 var Knex = require('knex')
   , fs = require('fs')
   , path = require('path')
-  , sqlite3 = require('sqlite3').verbose()
+  //, sqlite3 = require('sqlite3').verbose()
   , util = require('../util')
     // Note: file references from the perspective of the top-level directory.
   , sqliteCreateSchemaFile = './database/sql/create_sqlite_schema.sql'
@@ -60,6 +60,7 @@ const init = (cfg, cb) => {
     // --------------------------------------------------------
     // Put the database in the correct directory.
     // --------------------------------------------------------
+    /*
     if (settings.directory.length === 0 ||
         ! fs.statSync(settings.directory).isDirectory()) {
       databaseFile = path.join(cfg.application.directory, settings.file)
@@ -114,6 +115,7 @@ const init = (cfg, cb) => {
         }
       })
     })
+    */
   } else {
     // --------------------------------------------------------
     // Handle a MySQL database.
