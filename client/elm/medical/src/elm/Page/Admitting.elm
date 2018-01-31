@@ -851,9 +851,14 @@ update session msg model =
 
                 errors ->
                     -- Add errors to model for user to address before submission.
+                    let
+                        msgs =
+                            List.map Tuple.second errors
+                                |> flip (++) [ "Record was not saved." ]
+                    in
                     ( { model | formErrors = errors }
                     , Cmd.none
-                    , logConsole (toString errors)
+                    , toastError msgs 10
                     )
 
         AdmitForLaborSaved laborRecNew lid ->

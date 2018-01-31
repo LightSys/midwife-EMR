@@ -240,6 +240,7 @@ var addBaby = function(data, userInfo, cb) {
       })
       .then(t.commit)
       .then(function() {
+        data.id = babyId;
         cb(null, true, data);
 
         // --------------------------------------------------------

@@ -1,59 +1,24 @@
 module Tests exposing (..)
 
-import Date
-import Date.Extra.Compare as DEComp
-import Date.Extra.Create as DEC
-import Date.Extra.Period as DEP
-import Date.Extra.Utils as DEU
-import Dict exposing (Dict)
-import Json.Decode as JD
-import Json.Decode.Extra as JDE
-import Test exposing (..)
-import Expect
-import Fuzz exposing (list, int, tuple, string)
-import String
-
-
 -- LOCAL IMPORTS
 
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.Labor as Labor
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.Table exposing (Table(..))
+import Date
+import Date.Extra.Compare as DEComp
+import Date.Extra.Create as DEC
+import Date.Extra.Period as DEP
+import Date.Extra.Utils as DEU
+import Dict exposing (Dict)
+import Expect
+import Fuzz exposing (int, list, string, tuple)
+import Json.Decode as JD
+import Json.Decode.Extra as JDE
+import String
+import Test exposing (..)
 import Util as U
-
-
-{--
-all : Test
-all =
-    describe "Sample Test Suite"
-        [ describe "Unit test examples"
-            [ test "Addition" <|
-                \() ->
-                    Expect.equal (3 + 7) 10
-            , test "String.left" <|
-                \() ->
-                    Expect.equal "a" (String.left 1 "abcdefg")
-            , test "This test should fail - you should remove it" <|
-                \() ->
-                    Expect.fail "Failed as expected!"
-            ]
-        , describe "Fuzz test examples, using randomly generated input"
-            [ fuzz (list int) "Lists always have positive length" <|
-                \aList ->
-                    List.length aList |> Expect.atLeast 0
-            , fuzz (list int) "Sorting a list does not change its length" <|
-                \aList ->
-                    List.sort aList |> List.length |> Expect.equal (List.length aList)
-            , fuzzWith { runs = 1000 } int "List.member will find an integer in a list containing it" <|
-                \i ->
-                    List.member i [ i ] |> Expect.true "If you see this, List.member returned False!"
-            , fuzz2 string string "The length of a string equals the sum of its substrings' lengths" <|
-                \s1 s2 ->
-                    s1 ++ s2 |> String.length |> Expect.equal (String.length s1 + String.length s2)
-            ]
-        ]
---}
 
 
 all : Test
@@ -61,6 +26,7 @@ all =
     describe "All Medical Tests"
         [ dateHandling
         , dataCache
+        , validations
         ]
 
 
@@ -84,7 +50,7 @@ dataCache =
                     dict =
                         DataCache.put v1 Dict.empty
                 in
-                    Expect.true "Expected dict size to be 1." (Dict.size dict == 1)
+                Expect.true "Expected dict size to be 1." (Dict.size dict == 1)
         , test "get retrieves values" <|
             \() ->
                 let
@@ -110,7 +76,7 @@ dataCache =
                             Nothing ->
                                 False
                 in
-                    Expect.true "Expected dict to contain value." found
+                Expect.true "Expected dict to contain value." found
         , test "del deletes values" <|
             \() ->
                 let
@@ -131,7 +97,7 @@ dataCache =
                     newDict =
                         DataCache.del LaborStage1 dict
                 in
-                    Expect.true "Expected dict to be empty." (Dict.size newDict == 0)
+                Expect.true "Expected dict to be empty." (Dict.size newDict == 0)
         ]
 
 
@@ -190,7 +156,7 @@ dateHandling =
                     controlDate =
                         DEP.add DEP.Minute offset tmpDate
                 in
-                    Expect.equal (DEComp.is DEComp.Same controlDate admittanceDate) True
+                Expect.equal (DEComp.is DEComp.Same controlDate admittanceDate) True
         , test "Remove time from Date" <|
             \() ->
                 Expect.equal
@@ -209,18 +175,18 @@ dateHandling =
                     ( h, m ) =
                         ( 3, 44 )
                 in
-                    Expect.equal
-                        (Date.fromTime 33842
-                            |> flip U.datePlusTimeTuple ( h, m )
-                        )
-                        (Date.fromTime 0
-                            |> DEC.getTimezoneOffset
-                            |> (*) (60 * 1000)
-                            |> (+) (h * 60 * 60 * 1000)
-                            |> (+) (m * 60 * 1000)
-                            |> toFloat
-                            |> Date.fromTime
-                        )
+                Expect.equal
+                    (Date.fromTime 33842
+                        |> flip U.datePlusTimeTuple ( h, m )
+                    )
+                    (Date.fromTime 0
+                        |> DEC.getTimezoneOffset
+                        |> (*) (60 * 1000)
+                        |> (+) (h * 60 * 60 * 1000)
+                        |> (+) (m * 60 * 1000)
+                        |> toFloat
+                        |> Date.fromTime
+                    )
         , test "Calculate the estimated due date" <|
             \() ->
                 Expect.equal
@@ -249,9 +215,9 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Sep 9 12 13 5 5
                         )
                 in
-                    Expect.equal
-                        (U.getGA edd rdate)
-                        ( "31", "6/7" )
+                Expect.equal
+                    (U.getGA edd rdate)
+                    ( "31", "6/7" )
         , test "sortDate unequal, ascending" <|
             \() ->
                 let
@@ -260,7 +226,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Feb 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.sortDate U.AscendingSort a b) LT
+                Expect.equal (U.sortDate U.AscendingSort a b) LT
         , test "sortDate unequal, descending" <|
             \() ->
                 let
@@ -269,7 +235,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Feb 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.sortDate U.DescendingSort a b) GT
+                Expect.equal (U.sortDate U.DescendingSort a b) GT
         , test "sortDate equal, ascending" <|
             \() ->
                 let
@@ -278,7 +244,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.sortDate U.AscendingSort a b) EQ
+                Expect.equal (U.sortDate U.AscendingSort a b) EQ
         , test "sortDate equal, descending" <|
             \() ->
                 let
@@ -287,7 +253,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.sortDate U.DescendingSort a b) EQ
+                Expect.equal (U.sortDate U.DescendingSort a b) EQ
         , test "diff2Date equal dates" <|
             \() ->
                 let
@@ -296,7 +262,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) ""
+                Expect.equal (U.diff2DatesString a b) ""
         , test "diff2Date dates ascending by hour" <|
             \() ->
                 let
@@ -305,7 +271,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 1 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "1 hour"
+                Expect.equal (U.diff2DatesString a b) "1 hour"
         , test "diff2Date dates descending by hour" <|
             \() ->
                 let
@@ -314,7 +280,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "1 hour"
+                Expect.equal (U.diff2DatesString a b) "1 hour"
         , test "diff2Date dates ascending multiple hours" <|
             \() ->
                 let
@@ -323,7 +289,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 2 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "2 hours"
+                Expect.equal (U.diff2DatesString a b) "2 hours"
         , test "diff2Date dates descending multiple hours" <|
             \() ->
                 let
@@ -332,7 +298,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "2 hours"
+                Expect.equal (U.diff2DatesString a b) "2 hours"
         , test "diff2Date dates ascending by minute" <|
             \() ->
                 let
@@ -341,7 +307,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 1 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "1 minute"
+                Expect.equal (U.diff2DatesString a b) "1 minute"
         , test "diff2Date dates descending by minute" <|
             \() ->
                 let
@@ -350,7 +316,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "1 minute"
+                Expect.equal (U.diff2DatesString a b) "1 minute"
         , test "diff2Date dates ascending by multiple minutes" <|
             \() ->
                 let
@@ -359,7 +325,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 5 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "5 minutes"
+                Expect.equal (U.diff2DatesString a b) "5 minutes"
         , test "diff2Date dates descending by multiple minutes" <|
             \() ->
                 let
@@ -368,7 +334,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "5 minutes"
+                Expect.equal (U.diff2DatesString a b) "5 minutes"
         , test "diff2Date dates ascending by day plus hours minutes" <|
             \() ->
                 let
@@ -377,7 +343,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 3 4 2 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "2 days, 4 hours, 2 minutes"
+                Expect.equal (U.diff2DatesString a b) "2 days, 4 hours, 2 minutes"
         , test "diff2Date dates descending by day plus hours minutes" <|
             \() ->
                 let
@@ -386,7 +352,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "2 days, 4 hours, 2 minutes"
+                Expect.equal (U.diff2DatesString a b) "2 days, 4 hours, 2 minutes"
         , test "diff2Date dates ascending by day plus minutes" <|
             \() ->
                 let
@@ -395,7 +361,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 3 0 2 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "2 days, 2 minutes"
+                Expect.equal (U.diff2DatesString a b) "2 days, 2 minutes"
         , test "diff2Date dates descending by day plus minutes" <|
             \() ->
                 let
@@ -404,7 +370,7 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Jan 1 0 0 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "2 days, 2 minutes"
+                Expect.equal (U.diff2DatesString a b) "2 days, 2 minutes"
         , test "diff2Date dates miscellaneous" <|
             \() ->
                 let
@@ -413,5 +379,71 @@ dateHandling =
                         , DEC.dateFromFields 2017 Date.Nov 9 15 32 0 0
                         )
                 in
-                    Expect.equal (U.diff2DatesString a b) "4 hours, 51 minutes"
+                Expect.equal (U.diff2DatesString a b) "4 hours, 51 minutes"
+        ]
+
+
+validations : Test
+validations =
+    describe "Form validations"
+        [ test "Returns True if the Maybe Bool is Nothing" <|
+            \() ->
+                Expect.equal (U.validateBool Nothing) True
+        , test "Returns False if the Maybe Bool is Just True" <|
+            \() ->
+                Expect.equal (U.validateBool (Just True)) False
+        , test "Returns False if the Maybe Bool is Just False" <|
+            \() ->
+                Expect.equal (U.validateBool (Just False)) False
+        , test "Returns True if the Maybe Date is Nothing" <|
+            \() ->
+                Expect.equal (U.validateDate Nothing) True
+        , test "Returns False if the Maybe Date is Just Date" <|
+            \() ->
+                Expect.equal (U.validateDate (Just (Date.fromTime 1000))) False
+        , test "Returns True if the Maybe String is Nothing." <|
+            \() ->
+                Expect.equal (U.validateFloat Nothing) True
+        , test "Returns False if the Maybe String can be contrued as a Float" <|
+            \() ->
+                Expect.equal (U.validateFloat (Just "1.0")) False
+        , test "Returns False if the Maybe String can be contrued as a Float, v2" <|
+            \() ->
+                Expect.equal (U.validateFloat (Just "1")) False
+        , test "Returns True if the Maybe String cannot be contrued as a Float" <|
+            \() ->
+                Expect.equal (U.validateFloat (Just "hi")) True
+        , test "Allow only characters in hh:mm pattern based on the String passed, v1" <|
+            \() ->
+                Expect.equal (U.filterStringLikeTime "02:03") "02:03"
+        , test "Allow only characters in hh:mm pattern based on the String passed, v2" <|
+            \() ->
+                Expect.equal (U.filterStringLikeTime "hi") ""
+        , test "Allow only characters in hh:mm pattern based on the String passed, v3" <|
+            \() ->
+                Expect.equal (U.filterStringLikeTime ":::::") ":::::"
+        , test "Allow only characters in hh:mm pattern based on the String passed, v4" <|
+            \() ->
+                Expect.equal (U.filterStringLikeTime "9::::12345678") "9::::"
+        , test "Return a String in the pattern hh:mm based on the String passed, v1" <|
+            \() ->
+                Expect.equal (U.stringToTimeString "12:13") "12:13"
+        , test "Return a String in the pattern hh:mm based on the String passed, v2" <|
+            \() ->
+                Expect.equal (U.stringToTimeString "2:3") "02:03"
+        , test "Return a String in the pattern hh:mm based on the String passed, v3" <|
+            \() ->
+                Expect.equal (U.stringToTimeString "02:03") "02:03"
+        , test "Return a time tuple from a String in a hh:nn pattern, v1" <|
+            \() ->
+                Expect.equal (U.stringToTimeTuple "02:03") <| Just (2, 3)
+        , test "Return a time tuple from a String in a hh:nn pattern, v2" <|
+            \() ->
+                Expect.equal (U.stringToTimeTuple "02:") <| Nothing
+        , test "Return a time tuple from a String in a hh:nn pattern, v3" <|
+            \() ->
+                Expect.equal (U.stringToTimeTuple "2:30") <| Just (2, 30)
+        , test "Return a time tuple from a String in a hh:nn pattern, v4" <|
+            \() ->
+                Expect.equal (U.stringToTimeTuple "2") <| Nothing
         ]

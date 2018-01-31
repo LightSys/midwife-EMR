@@ -61,7 +61,6 @@ var addBaby = function(data, cb) {
   assert.ok(! _.has(data, 'id'), m('data.id')); // Adding a baby should not have an id.
   assert.ok(_.has(data, 'sex'), m('data.sex'));
   assert.ok(data.sex !== 'F' || data.sex !== 'M', m('data.sex values'));
-  assert.ok(_.has(data, 'birthWeight') && _.isNumber(data.birthWeight), m('data.birthWeight'));
   assert.ok(_.isFunction(cb), m('cb'));
 };
 

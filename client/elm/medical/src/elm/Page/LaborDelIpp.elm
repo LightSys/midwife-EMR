@@ -101,6 +101,7 @@ import Data.Processing exposing (ProcessId(..))
 import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session)
 import Data.Table exposing (Table(..), tableToString)
+import Data.Toast exposing (ToastType(..))
 import Date exposing (Date, Month(..), day, month, year)
 import Date.Extra.Compare as DEComp
 import Dict exposing (Dict)
@@ -2400,13 +2401,13 @@ dialogMembranesSummaryEdit cfg =
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.mbRuptureDate
-                                    ""
+                                    (getErr MBRuptureDateFld errors)
                                 , Form.formField (FldChgString >> FldChgSubMsg MBRuptureTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.mbRuptureTime
-                                    ""
+                                    (getErr MBRuptureTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2421,13 +2422,13 @@ dialogMembranesSummaryEdit cfg =
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.mbRuptureDate
-                                    ""
+                                    (getErr MBRuptureDateFld errors)
                                 , Form.formField (FldChgString >> FldChgSubMsg MBRuptureTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.mbRuptureTime
-                                    ""
+                                    (getErr MBRuptureTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2871,13 +2872,13 @@ dialogBabySummaryEdit cfg =
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.bbBFedEstablishedDate
-                                    ""
+                                    (getErr BabyBFedEstablishedDateFld errors)
                                 , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.bbBFedEstablishedTime
-                                    ""
+                                    (getErr BabyBFedEstablishedTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2892,13 +2893,13 @@ dialogBabySummaryEdit cfg =
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.bbBFedEstablishedDate
-                                    ""
+                                    (getErr BabyBFedEstablishedDateFld errors)
                                 , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.bbBFedEstablishedTime
-                                    ""
+                                    (getErr BabyBFedEstablishedTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2915,13 +2916,13 @@ dialogBabySummaryEdit cfg =
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.bbNbsDate
-                                    ""
+                                    (getErr BabyNbsDateFld errors)
                                 , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.bbNbsTime
-                                    ""
+                                    (getErr BabyNbsTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2936,13 +2937,13 @@ dialogBabySummaryEdit cfg =
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.bbNbsDate
-                                    ""
+                                    (getErr BabyNbsDateFld errors)
                                 , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.bbNbsTime
-                                    ""
+                                    (getErr BabyNbsTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2967,13 +2968,13 @@ dialogBabySummaryEdit cfg =
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.bbBcgDate
-                                    ""
+                                    (getErr BabyBcgDateFld errors)
                                 , Form.formField (FldChgString >> FldChgSubMsg BabyBcgTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.bbBcgTime
-                                    ""
+                                    (getErr BabyBcgTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2983,18 +2984,18 @@ dialogBabySummaryEdit cfg =
                         [ H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
-                                    BabyBFedEstablishedDateField
+                                    BabyBcgDateField
                                     "Date"
                                     "e.g. 08/14/2017"
                                     False
                                     cfg.model.bbBFedEstablishedDate
-                                    ""
-                                , Form.formField (FldChgString >> FldChgSubMsg BabyBFedEstablishedTimeFld)
+                                    (getErr BabyBcgDateFld errors)
+                                , Form.formField (FldChgString >> FldChgSubMsg BabyBcgTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
                                     cfg.model.bbBFedEstablishedTime
-                                    ""
+                                    (getErr BabyBcgTimeFld errors)
                                 ]
                             ]
                         ]
@@ -3759,7 +3760,7 @@ update session msg model =
                     , Cmd.batch
                         [ if model.stage1SummaryModal == NoStageSummaryModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
-                        else
+                          else
                             Route.back
                         , Task.perform SetDialogActive <| Task.succeed True
                         ]
@@ -3844,10 +3845,14 @@ update session msg model =
                             )
 
                         errors ->
-                            -- TODO: Show errors to user?
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
+                            in
                             ( { model | stage1SummaryModal = NoStageSummaryModal }
                             , Cmd.none
-                            , logConsole <| toString errors
+                            , toastError msgs 10
                             )
 
         HandleStage2DateTimeModal dialogState ->
@@ -4022,11 +4027,10 @@ update session msg model =
                     , Cmd.batch
                         [ if newModel.stage2SummaryModal == NoStageSummaryModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
-                        else
+                          else
                             Route.back
                         , Task.perform SetDialogActive <| Task.succeed True
                         ]
-
                     )
 
                 CloseNoSaveDialog ->
@@ -4124,6 +4128,7 @@ update session msg model =
                             let
                                 msgs =
                                     List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
                             in
                             ( { model | stage2SummaryModal = NoStageSummaryModal }
                             , Cmd.none
@@ -4302,7 +4307,7 @@ update session msg model =
                     , Cmd.batch
                         [ if newModel.stage3SummaryModal == NoStageSummaryModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
-                        else
+                          else
                             Route.back
                         , Task.perform SetDialogActive <| Task.succeed True
                         ]
@@ -4403,6 +4408,7 @@ update session msg model =
                             let
                                 msgs =
                                     List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
                             in
                             ( { model | stage3SummaryModal = NoStageSummaryModal }
                             , Cmd.none
@@ -4594,16 +4600,26 @@ update session msg model =
                         [] ->
                             let
                                 ruptureDatetime =
-                                    U.maybeDatePlusTime model.mbRuptureDate model.mbRuptureTime
+                                    U.maybeDateMaybeTimeToMaybeDateTime model.bbBFedEstablishedDate
+                                        model.bbBFedEstablishedTime
+                                        "Please correct the date and time for the rupture."
+
+                                errors =
+                                    U.maybeDateTimeErrors [ ruptureDatetime ]
 
                                 outerMsg =
-                                    case model.membranesResusRecord of
-                                        Just rec ->
+                                    case ( List.length errors > 0, model.membranesResusRecord ) of
+                                        ( True, _ ) ->
+                                            -- Errors found in the date and time field, so notifiy user
+                                            -- instead of saving.
+                                            Toast (errors ++ [ "Record was not saved." ]) 10 ErrorToast
+
+                                        ( False, Just rec ) ->
                                             -- A membranesResus record already exists so update it.
                                             let
                                                 newRec =
                                                     { rec
-                                                        | ruptureDatetime = ruptureDatetime
+                                                        | ruptureDatetime = U.maybeDateTimeValue ruptureDatetime
                                                         , rupture = maybeStringToRupture model.mbRupture
                                                         , ruptureComment = model.mbRuptureComment
                                                         , amniotic = maybeStringToAmniotic model.mbAmniotic
@@ -4626,7 +4642,7 @@ update session msg model =
                                                 ChgMsgType
                                                 (membranesResusRecordToValue newRec)
 
-                                        Nothing ->
+                                        ( False, Nothing ) ->
                                             -- A new membranesResus record is being created.
                                             case deriveMembranesResusRecordNew model of
                                                 Just membranesResusRecordNew ->
@@ -4657,6 +4673,7 @@ update session msg model =
                             let
                                 msgs =
                                     List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
                             in
                             ( { model | membranesSummaryModal = NoStageSummaryModal }
                             , Cmd.none
@@ -4738,24 +4755,40 @@ update session msg model =
                     case validateBaby model of
                         [] ->
                             let
+                                -- Check that the date and corresponding time fields together
+                                -- produce valid dates.
                                 bfedDatetime =
-                                    U.maybeDatePlusTime model.bbBFedEstablishedDate model.bbBFedEstablishedTime
+                                    U.maybeDateMaybeTimeToMaybeDateTime model.bbBFedEstablishedDate
+                                        model.bbBFedEstablishedTime
+                                        "Please correct the date and time for the breast fed fields."
 
                                 nbsDatetime =
-                                    U.maybeDatePlusTime model.bbNbsDate model.bbNbsTime
+                                    U.maybeDateMaybeTimeToMaybeDateTime model.bbNbsDate
+                                        model.bbNbsTime
+                                        "Please correct the date and time for the NBS fields."
 
                                 bcgDatetime =
-                                    U.maybeDatePlusTime model.bbBcgDate model.bbBcgTime
+                                    U.maybeDateMaybeTimeToMaybeDateTime model.bbBcgDate
+                                        model.bbBcgTime
+                                        "Please correct the date and time for the BCG fields."
+
+                                errors =
+                                    U.maybeDateTimeErrors [ bfedDatetime, nbsDatetime, bcgDatetime ]
 
                                 outerMsg =
-                                    case ( model.babyRecord, model.bbSex ) of
-                                        ( Just rec, Nothing ) ->
+                                    case ( List.length errors > 0, model.babyRecord, model.bbSex ) of
+                                        ( _, Just rec, Nothing ) ->
                                             -- We should never get here.
                                             LogConsole <|
                                                 "LaborDelIpp.update in HandleBabySummaryModal,CloseSaveDialog "
                                                     ++ " branch with model.bbSex set to Nothing."
 
-                                        ( Just rec, Just sex ) ->
+                                        ( True, _, _ ) ->
+                                            -- Errors found in the date and time fields, so notifiy user
+                                            -- instead of saving.
+                                            Toast (errors ++ [ "Record was not saved." ]) 10 ErrorToast
+
+                                        ( False, Just rec, Just sex ) ->
                                             -- A baby record already exists so update it.
                                             let
                                                 newRec =
@@ -4765,10 +4798,10 @@ update session msg model =
                                                         , middlename = model.bbMiddlename
                                                         , sex = stringToMaleFemale sex
                                                         , birthWeight = U.maybeStringToMaybeInt model.bbBirthWeight
-                                                        , bFedEstablished = bfedDatetime
-                                                        , nbsDate = nbsDatetime
+                                                        , bFedEstablished = U.maybeDateTimeValue bfedDatetime
+                                                        , nbsDate = U.maybeDateTimeValue nbsDatetime
                                                         , nbsResult = model.bbNbsResult
-                                                        , bcgDate = bcgDatetime
+                                                        , bcgDate = U.maybeDateTimeValue bcgDatetime
                                                         , comments = model.bbComments
                                                         , apgarScores = apgarScoreDictToApgarRecordList model.apgarScores
                                                     }
@@ -4783,7 +4816,7 @@ update session msg model =
                                                 ChgMsgType
                                                 (babyRecordToValue newRec)
 
-                                        ( Nothing, _ ) ->
+                                        ( False, Nothing, _ ) ->
                                             -- A new baby record is being created.
                                             case deriveBabyRecordNew model of
                                                 Just babyRecordNew ->
@@ -4814,6 +4847,7 @@ update session msg model =
                             let
                                 msgs =
                                     List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
                             in
                             ( { model | babySummaryModal = NoStageSummaryModal }
                             , Cmd.none
@@ -5295,22 +5329,25 @@ validateStage3 =
         ]
 
 
-{-| We need only sex and birth weight for a valid record. All other fields might not be
+{-| We need only sex for a valid record. All other fields might not be
 able to be provided until later.
 -}
 validateBaby : Model -> List FieldError
 validateBaby =
     Validate.all
         [ .bbSex >> ifInvalid (U.validatePopulatedStringInList [ "Male", "Female" ]) (BabySexFld => "Sex must be provided.")
-        , .bbBirthWeight >> ifInvalid U.validateInt (BabyBirthWeightFld => "Birth weight in grams must be provided.")
         ]
 
 
 {-| Nearly empty records are valid.
+
+TODO: are all these fields minimally necessary for a saved record?
 -}
 validateMembranesResus : Model -> List FieldError
 validateMembranesResus =
     Validate.all
-        [ .mbRuptureDate >> ifInvalid U.validateDate (MBRuptureDateFld => "Date of the rupture must be provided.")
-        , .mbRuptureTime >> ifInvalid U.validateTime (MBRuptureTimeFld => "Time of the rupture must be provided, ex: hh:mm.")
+        --[ .mbRuptureDate >> ifInvalid U.validateDate (MBRuptureDateFld => "Date of the rupture must be provided.")
+        --, .mbRuptureTime >> ifInvalid U.validateTime (MBRuptureTimeFld => "Time of the rupture must be provided, ex: hh:mm.")
+        [ .mbRupture >> ifInvalid U.validatePopulatedString (MBRuptureFld => "Rupture type must be provided.")
+        , .mbAmniotic >> ifInvalid U.validatePopulatedString (MBAmnioticFld => "Amniotic type must be provided.")
         ]

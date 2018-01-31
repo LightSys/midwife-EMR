@@ -23,6 +23,10 @@ module Util
         , formatDohId
         , getGA
         , maybeBoolToMaybeInt
+        , MaybeDateTime(..)
+        , maybeDateMaybeTimeToMaybeDateTime
+        , maybeDateTimeErrors
+        , maybeDateTimeValue
         , maybeIntToMaybeBool
         , maybeIntToNegOne
         , maybeDatePlusTime
@@ -328,6 +332,54 @@ datePlusTimeTuple date ( hour, min ) =
         |> DEP.add DEP.Minute min
 
 
+type MaybeDateTime
+    = NoMaybeDateTime
+    | ValidMaybeDateTime Date
+    | InvalidMaybeDateTime String
+
+
+{-| Returns a MaybeDateTime taking a Maybe Date and a Maybe String, the latter which
+should evaluate to a time tuple, as well as an error message to use as necessary.
+-}
+maybeDateMaybeTimeToMaybeDateTime : Maybe Date -> Maybe String -> String -> MaybeDateTime
+maybeDateMaybeTimeToMaybeDateTime date timeTuple errMsg =
+    case ( date, timeTuple ) of
+        ( Just d, Just tt ) ->
+            case maybeDatePlusTime date timeTuple of
+                Just dt ->
+                    ValidMaybeDateTime dt
+
+                Nothing ->
+                    InvalidMaybeDateTime errMsg
+
+        ( _, _ ) ->
+            NoMaybeDateTime
+
+
+maybeDateTimeErrors : List MaybeDateTime -> List String
+maybeDateTimeErrors maybeDateTimes =
+    List.filterMap
+        (\dt ->
+            case dt of
+                InvalidMaybeDateTime err ->
+                    Just err
+
+                _ ->
+                    Nothing
+        )
+        maybeDateTimes
+
+
+maybeDateTimeValue : MaybeDateTime -> Maybe Date
+maybeDateTimeValue dt =
+    case dt of
+        ValidMaybeDateTime d ->
+            Just d
+
+        _ ->
+            Nothing
+
+
 {-| Add Maybe String representing time to a Maybe Date and return a
 Maybe Date. Returns Nothing if either argument is Nothing or
 if the Maybe String does not evaluate to a time tuple.
@@ -471,6 +523,9 @@ stringToTimeTuple t =
         |> String.split ":"
         |> (\list ->
                 let
+                    isValid =
+                        List.length list == 2
+
                     h =
                         List.head list
                             |> (\s -> stringToIntBetween s -1 24)
@@ -480,11 +535,11 @@ stringToTimeTuple t =
                             |> List.head
                             |> (\s -> stringToIntBetween s -1 60)
                 in
-                    case ( h, m ) of
-                        ( Just hour, Just minute ) ->
+                    case ( isValid, h, m ) of
+                        ( True, Just hour, Just minute ) ->
                             Just ( hour, minute )
 
-                        ( _, _ ) ->
+                        ( _, _, _ ) ->
                             Nothing
            )
 
