@@ -3598,8 +3598,8 @@ update session msg model =
         HandleStage1DateTimeModal dialogState ->
             case dialogState of
                 OpenDialog ->
-                    ( case ( model.stage1Date, model.stage1Time ) of
-                        ( Nothing, Nothing ) ->
+                    ( case ( model.stage1Date, model.stage1Time, model.laborStage1Record ) of
+                        ( Nothing, Nothing, Nothing ) ->
                             -- If not yet set, the set the date/time to
                             -- current as a convenience to user.
                             { model
@@ -3612,7 +3612,25 @@ update session msg model =
                                 , stage1Time = Just <| U.timeToTimeString model.currTime
                             }
 
-                        ( _, _ ) ->
+                        ( Nothing, Nothing, Just ls1Rec ) ->
+                            -- Use the date/time in the fullDialation field.
+                            { model
+                                | stage1DateTimeModal =
+                                    if model.stage1DateTimeModal == Stage1DateTimeModal then
+                                        NoDateTimeModal
+                                    else
+                                        Stage1DateTimeModal
+                                , stage1Date =
+                                    Just <|
+                                        Maybe.withDefault (Date.fromTime model.currTime)
+                                            ls1Rec.fullDialation
+                                , stage1Time =
+                                    Just <|
+                                        Maybe.withDefault (U.timeToTimeString model.currTime)
+                                            (U.maybeDateToTimeString ls1Rec.fullDialation)
+                            }
+
+                        ( _, _, _ ) ->
                             { model | stage1DateTimeModal = Stage1DateTimeModal }
                     , Cmd.none
                     , if model.stage1DateTimeModal == NoDateTimeModal then
@@ -3717,10 +3735,10 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                                ( { model | stage1DateTimeModal = NoDateTimeModal }
-                                , Cmd.none
-                                , toastError msgs 10
-                                )
+                            ( { model | stage1DateTimeModal = NoDateTimeModal }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
 
         HandleStage1SummaryModal dialogState ->
             case dialogState of
@@ -3866,17 +3884,41 @@ update session msg model =
             -- been previously selected.
             case dialogState of
                 OpenDialog ->
-                    ( case ( model.stage2Date, model.stage2Time ) of
-                        ( Nothing, Nothing ) ->
+                    ( case ( model.stage2Date, model.stage2Time, model.laborStage2Record ) of
+                        ( Nothing, Nothing, Nothing ) ->
                             -- If not yet set, the set the date/time to
                             -- current as a convenience to user.
                             { model
-                                | stage2DateTimeModal = Stage2DateTimeModal
+                                | stage2DateTimeModal =
+                                    if model.stage2DateTimeModal == Stage2DateTimeModal then
+                                        NoDateTimeModal
+                                    else
+                                        Stage2DateTimeModal
                                 , stage2Date = Just <| Date.fromTime model.currTime
                                 , stage2Time = Just <| U.timeToTimeString model.currTime
                             }
 
-                        ( _, _ ) ->
+                        ( Nothing, Nothing, Just ls2Rec ) ->
+                            -- Use the date/time in the birthDatetime field.
+                            { model
+                                | stage2DateTimeModal =
+                                    if model.stage2DateTimeModal == Stage2DateTimeModal then
+                                        NoDateTimeModal
+                                    else
+                                        Stage2DateTimeModal
+                                , stage2Date =
+                                    Just <|
+                                        Maybe.withDefault (Date.fromTime model.currTime)
+                                            ls2Rec.birthDatetime
+                                , stage2Time =
+                                    Just <|
+                                        Maybe.withDefault (U.timeToTimeString model.currTime)
+                                            (U.maybeDateToTimeString ls2Rec.birthDatetime)
+                            }
+
+
+
+                        ( _, _, _ ) ->
                             { model | stage2DateTimeModal = Stage2DateTimeModal }
                     , Cmd.none
                     , if model.stage2DateTimeModal == NoDateTimeModal then
@@ -3981,10 +4023,10 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                                ( { model | stage2DateTimeModal = NoDateTimeModal }
-                                , Cmd.none
-                                , toastError msgs 10
-                                )
+                            ( { model | stage2DateTimeModal = NoDateTimeModal }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
 
         HandleStage2SummaryModal dialogState ->
             case dialogState of
@@ -4150,17 +4192,39 @@ update session msg model =
             -- been previously selected.
             case dialogState of
                 OpenDialog ->
-                    ( case ( model.stage3Date, model.stage3Time ) of
-                        ( Nothing, Nothing ) ->
+                    ( case ( model.stage3Date, model.stage3Time, model.laborStage3Record ) of
+                        ( Nothing, Nothing, Nothing ) ->
                             -- If not yet set, the set the date/time to
                             -- current as a convenience to user.
                             { model
-                                | stage3DateTimeModal = Stage3DateTimeModal
+                                | stage3DateTimeModal =
+                                    if model.stage3DateTimeModal == Stage3DateTimeModal then
+                                        NoDateTimeModal
+                                    else
+                                        Stage3DateTimeModal
                                 , stage3Date = Just <| Date.fromTime model.currTime
                                 , stage3Time = Just <| U.timeToTimeString model.currTime
                             }
 
-                        ( _, _ ) ->
+                        ( Nothing, Nothing, Just ls3Rec ) ->
+                            -- Use the date/time in the placentaDatetime field.
+                            { model
+                                | stage3DateTimeModal =
+                                    if model.stage3DateTimeModal == Stage3DateTimeModal then
+                                        NoDateTimeModal
+                                    else
+                                        Stage3DateTimeModal
+                                , stage3Date =
+                                    Just <|
+                                        Maybe.withDefault (Date.fromTime model.currTime)
+                                            ls3Rec.placentaDatetime
+                                , stage3Time =
+                                    Just <|
+                                        Maybe.withDefault (U.timeToTimeString model.currTime)
+                                            (U.maybeDateToTimeString ls3Rec.placentaDatetime)
+                            }
+
+                        ( _, _, _ ) ->
                             { model | stage3DateTimeModal = Stage3DateTimeModal }
                     , Cmd.none
                     , if model.stage3DateTimeModal == NoDateTimeModal then
@@ -4422,10 +4486,10 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                                ( { model | stage3SummaryModal = NoStageSummaryModal }
-                                , Cmd.none
-                                , toastError msgs 10
-                                )
+                            ( { model | stage3SummaryModal = NoStageSummaryModal }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
 
         HandleFalseLaborDateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for a
@@ -5354,6 +5418,7 @@ validateBaby =
 {-| Nearly empty records are valid.
 
 TODO: are all these fields minimally necessary for a saved record?
+
 -}
 validateMembranesResus : Model -> List FieldError
 validateMembranesResus =

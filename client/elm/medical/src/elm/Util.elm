@@ -1,45 +1,46 @@
 module Util
     exposing
         ( (=>)
+        , DateFmt(..)
+        , DateSep(..)
+        , MaybeDateTime(..)
+        , SortOrder(..)
         , addToMaybeList
         , boolToInt
         , calcEdd
-        , DateFmt(..)
-        , DateSep(..)
-        , dateToDateMonString
-        , dateToTimeString
         , dateFormatter
         , datePlusTimeTuple
         , dateTimeHMFormatter
+        , dateToDateMonString
         , dateToStringValue
+        , dateToTimeString
         , deriveDateFromMaybeDateMaybeString
         , diff2DatesString
         , diff2MaybeDatesString
         , filterStringInList
-        , filterStringNotInList
-        , filterStringLikeInt
         , filterStringLikeFloat
+        , filterStringLikeInt
         , filterStringLikeTime
+        , filterStringNotInList
         , formatDohId
         , getGA
         , maybeBoolToMaybeInt
-        , MaybeDateTime(..)
         , maybeDateMaybeTimeToMaybeDateTime
+        , maybeDatePlusTime
         , maybeDateTimeErrors
         , maybeDateTimeValue
+        , maybeDateToTimeString
+        , maybeDateToValue
         , maybeIntToMaybeBool
         , maybeIntToNegOne
-        , maybeDatePlusTime
-        , maybeDateToValue
         , maybeOr
+        , maybeStringToIntValue
         , maybeStringToMaybeFloat
         , maybeStringToMaybeInt
-        , maybeStringToIntValue
         , monthToInt
         , nbsp
         , removeTimeFromDate
         , sortDate
-        , SortOrder(..)
         , stringToIntBetween
         , stringToTimeString
         , stringToTimeTuple
@@ -47,15 +48,15 @@ module Util
         , validateBool
         , validateDate
         , validateFloat
-        , validateJustTime
         , validateInt
+        , validateJustTime
         , validatePopulatedString
         , validatePopulatedStringInList
         , validateTime
         )
 
 import Char
-import Date exposing (Date, Month(..), day, month, year, hour, minute, second)
+import Date exposing (Date, Month(..), day, hour, minute, month, second, year)
 import Date.Extra.Compare as DEComp
 import Date.Extra.Config.Config_en_us as DECC
 import Date.Extra.Core as DECore
@@ -95,17 +96,17 @@ sortDate sortOrder a b =
                 DescendingSort ->
                     ( DEComp.SameOrBefore, DEComp.Before )
     in
-        case DEComp.is comp1 a b of
-            True ->
-                case DEComp.is comp2 a b of
-                    True ->
-                        GT
+    case DEComp.is comp1 a b of
+        True ->
+            case DEComp.is comp2 a b of
+                True ->
+                    GT
 
-                    False ->
-                        EQ
+                False ->
+                    EQ
 
-            False ->
-                LT
+        False ->
+            LT
 
 
 {-| Simple conversion of a Bool to an Int like the
@@ -155,6 +156,7 @@ filterStringInList strings str =
         False ->
             ""
 
+
 {-| Return the String if it is NOT in the list of disallowed
 strings, otherwise return an empty string.
 -}
@@ -181,6 +183,7 @@ filterStringLikeInt str =
 the decimal point.
 
 TODO: This needs to be localized.
+
 -}
 filterStringLikeFloat : String -> String
 filterStringLikeFloat str =
@@ -256,6 +259,7 @@ validatePopulatedStringInList strings str =
 
         Nothing ->
             True
+
 
 {-| Returns True if the String is Nothing or could not
 be contrued as a valid Int. This is used instead of
@@ -506,14 +510,14 @@ stringToTimeString t =
                             |> List.head
                             |> (\s -> stringToIntBetween s -1 60)
                 in
-                    case ( h, m ) of
-                        ( Just hour, Just minute ) ->
-                            (toString hour |> String.padLeft 2 '0')
-                                ++ ":"
-                                ++ (toString minute |> String.padLeft 2 '0')
+                case ( h, m ) of
+                    ( Just hour, Just minute ) ->
+                        (toString hour |> String.padLeft 2 '0')
+                            ++ ":"
+                            ++ (toString minute |> String.padLeft 2 '0')
 
-                        ( _, _ ) ->
-                            ""
+                    ( _, _ ) ->
+                        ""
            )
 
 
@@ -535,12 +539,12 @@ stringToTimeTuple t =
                             |> List.head
                             |> (\s -> stringToIntBetween s -1 60)
                 in
-                    case ( isValid, h, m ) of
-                        ( True, Just hour, Just minute ) ->
-                            Just ( hour, minute )
+                case ( isValid, h, m ) of
+                    ( True, Just hour, Just minute ) ->
+                        Just ( hour, minute )
 
-                        ( _, _, _ ) ->
-                            Nothing
+                    ( _, _, _ ) ->
+                        Nothing
            )
 
 
@@ -559,7 +563,7 @@ filterStringLikeTime str =
                 |> List.filter (\d -> Char.isDigit d || d == ':')
                 |> String.fromList
     in
-        filtered
+    filtered
 
 
 dateFormatter : DateFmt -> DateSep -> Date -> String
@@ -568,15 +572,15 @@ dateFormatter f s d =
         sep =
             dateSepToString s
     in
-        case f of
-            YMDDateFmt ->
-                DEF.format DECC.config ("%Y" ++ sep ++ "%m" ++ sep ++ "%d") d
+    case f of
+        YMDDateFmt ->
+            DEF.format DECC.config ("%Y" ++ sep ++ "%m" ++ sep ++ "%d") d
 
-            MDYDateFmt ->
-                DEF.format DECC.config ("%m" ++ sep ++ "%d" ++ sep ++ "%Y") d
+        MDYDateFmt ->
+            DEF.format DECC.config ("%m" ++ sep ++ "%d" ++ sep ++ "%Y") d
 
-            DMYDateFmt ->
-                DEF.format DECC.config ("%d" ++ sep ++ "%m" ++ sep ++ "%Y") d
+        DMYDateFmt ->
+            DEF.format DECC.config ("%d" ++ sep ++ "%m" ++ sep ++ "%Y") d
 
 
 {-| Human readable date and time formatter that does not
@@ -584,12 +588,22 @@ include seconds.
 -}
 dateTimeHMFormatter : DateFmt -> DateSep -> Date -> String
 dateTimeHMFormatter f s d =
-    (dateFormatter f s d) ++ " " ++ (DEF.format DECC.config "%H:%M" d)
+    dateFormatter f s d ++ " " ++ DEF.format DECC.config "%H:%M" d
 
 
 dateToTimeString : Date -> String
 dateToTimeString d =
     DEF.format DECC.config "%H:%M" d
+
+
+maybeDateToTimeString : Maybe Date -> Maybe String
+maybeDateToTimeString date =
+    case date of
+        Just d ->
+            Just <| dateToTimeString d
+
+        Nothing ->
+            Nothing
 
 
 dateToDateMonString : Date -> String -> String
@@ -633,6 +647,7 @@ minutes.
 
 Note: the order of the dates passed does not matter since
 the difference is expressed as a positive no matter what.
+
 -}
 diff2DatesString : Date -> Date -> String
 diff2DatesString d1 d2 =
@@ -655,7 +670,7 @@ diff2DatesString d1 d2 =
                     "1 " ++ unit
 
                 n ->
-                    (toString n) ++ " " ++ unit ++ "s"
+                    toString n ++ " " ++ unit ++ "s"
 
         dateDelta =
             case DEComp.is DEComp.Before d1 d2 of
@@ -676,9 +691,9 @@ diff2DatesString d1 d2 =
         minutes =
             doSingular dateDelta.minute "minute"
     in
-        doCommas days hours
-            |> flip doCommas minutes
-            |> String.trim
+    doCommas days hours
+        |> flip doCommas minutes
+        |> String.trim
 
 
 {-| Calculate the estimated due date based upon the
@@ -712,13 +727,13 @@ getGA edd rdate =
             ( delta.week, delta.day )
 
         ga =
-            ( toString weeks, (toString days) ++ "/7" )
+            ( toString weeks, toString days ++ "/7" )
     in
-        if weeks > 45 || weeks < 0 then
-            -- Do not return unreasonable values.
-            ( "", "" )
-        else
-            ga
+    if weeks > 45 || weeks < 0 then
+        -- Do not return unreasonable values.
+        ( "", "" )
+    else
+        ga
 
 
 maybeIntToNegOne : Maybe Int -> JE.Value
@@ -735,11 +750,11 @@ formatDohId : Maybe String -> String
 formatDohId doh =
     case doh of
         Just doh ->
-            (String.slice 0 2 doh)
+            String.slice 0 2 doh
                 ++ "-"
-                ++ (String.slice 2 4 doh)
+                ++ String.slice 2 4 doh
                 ++ "-"
-                ++ (String.slice 4 6 doh)
+                ++ String.slice 4 6 doh
 
         Nothing ->
             ""
@@ -806,7 +821,7 @@ maybeStringToMaybeFloat str =
 
 
 {-| Put a non-breaking space in between two strings within a span. Adapted from:
-https://stackoverflow.com/questions/33971362/how-can-i-get-special-characters-using-elm-html-module
+<https://stackoverflow.com/questions/33971362/how-can-i-get-special-characters-using-elm-html-module>
 -}
 nbsp : String -> String -> Html msg
 nbsp pre post =
