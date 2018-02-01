@@ -4600,8 +4600,8 @@ update session msg model =
                         [] ->
                             let
                                 ruptureDatetime =
-                                    U.maybeDateMaybeTimeToMaybeDateTime model.bbBFedEstablishedDate
-                                        model.bbBFedEstablishedTime
+                                    U.maybeDateMaybeTimeToMaybeDateTime model.mbRuptureDate
+                                        model.mbRuptureTime
                                         "Please correct the date and time for the rupture."
 
                                 errors =
