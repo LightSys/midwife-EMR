@@ -3637,7 +3637,8 @@ update session msg model =
                         [ if model.stage1DateTimeModal == NoDateTimeModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
                         else
-                            Route.back
+                            -- User likely clicked outside of modal, so do nothing.
+                            Cmd.none
                         , Task.perform SetDialogActive <| Task.succeed True
                         ]
                     )
@@ -3928,7 +3929,8 @@ update session msg model =
                         [ if model.stage2DateTimeModal == NoDateTimeModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
                         else
-                            Route.back
+                            -- User likely clicked outside of modal, so do nothing.
+                            Cmd.none
                         , Task.perform SetDialogActive <| Task.succeed True
                         ]
                     )
@@ -4237,7 +4239,8 @@ update session msg model =
                         [ if model.stage3DateTimeModal == NoDateTimeModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
                         else
-                            Route.back
+                            -- User likely clicked outside of modal, so do nothing.
+                            Cmd.none
                         , Task.perform SetDialogActive <| Task.succeed True
                         ]
                     )
