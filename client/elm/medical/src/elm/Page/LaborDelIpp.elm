@@ -3633,10 +3633,13 @@ update session msg model =
                         ( _, _, _ ) ->
                             { model | stage1DateTimeModal = Stage1DateTimeModal }
                     , Cmd.none
-                    , if model.stage1DateTimeModal == NoDateTimeModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if model.stage1DateTimeModal == NoDateTimeModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                        else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
                     )
 
                 CloseNoSaveDialog ->
@@ -3921,10 +3924,13 @@ update session msg model =
                         ( _, _, _ ) ->
                             { model | stage2DateTimeModal = Stage2DateTimeModal }
                     , Cmd.none
-                    , if model.stage2DateTimeModal == NoDateTimeModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if model.stage2DateTimeModal == NoDateTimeModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                        else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
                     )
 
                 CloseNoSaveDialog ->
@@ -4227,10 +4233,13 @@ update session msg model =
                         ( _, _, _ ) ->
                             { model | stage3DateTimeModal = Stage3DateTimeModal }
                     , Cmd.none
-                    , if model.stage3DateTimeModal == NoDateTimeModal then
-                        Route.addDialogUrl Route.LaborDelIppRoute
-                      else
-                        Route.back
+                    , Cmd.batch
+                        [ if model.stage3DateTimeModal == NoDateTimeModal then
+                            Route.addDialogUrl Route.LaborDelIppRoute
+                        else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
                     )
 
                 CloseNoSaveDialog ->
