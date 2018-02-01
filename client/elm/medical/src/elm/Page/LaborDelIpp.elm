@@ -3712,11 +3712,15 @@ update session msg model =
                             )
 
                         errors ->
-                            -- TODO: show errors to user somehow???
-                            ( { model | stage1DateTimeModal = NoDateTimeModal }
-                            , Cmd.none
-                            , logConsole <| toString errors
-                            )
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
+                            in
+                                ( { model | stage1DateTimeModal = NoDateTimeModal }
+                                , Cmd.none
+                                , toastError msgs 10
+                                )
 
         HandleStage1SummaryModal dialogState ->
             case dialogState of
@@ -3972,11 +3976,15 @@ update session msg model =
                             )
 
                         errors ->
-                            -- TODO: show errors to user somehow???
-                            ( { model | stage2DateTimeModal = NoDateTimeModal }
-                            , Cmd.none
-                            , logConsole <| toString errors
-                            )
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
+                            in
+                                ( { model | stage2DateTimeModal = NoDateTimeModal }
+                                , Cmd.none
+                                , toastError msgs 10
+                                )
 
         HandleStage2SummaryModal dialogState ->
             case dialogState of
@@ -4252,10 +4260,14 @@ update session msg model =
                             )
 
                         errors ->
-                            -- TODO: show errors to user somehow???
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
+                            in
                             ( { model | stage3DateTimeModal = NoDateTimeModal }
                             , Cmd.none
-                            , logConsole <| toString errors
+                            , toastError msgs 10
                             )
 
         HandleStage3SummaryModal dialogState ->
@@ -4410,10 +4422,10 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                            ( { model | stage3SummaryModal = NoStageSummaryModal }
-                            , Cmd.none
-                            , toastError msgs 10
-                            )
+                                ( { model | stage3SummaryModal = NoStageSummaryModal }
+                                , Cmd.none
+                                , toastError msgs 10
+                                )
 
         HandleFalseLaborDateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for a
