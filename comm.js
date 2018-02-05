@@ -14,8 +14,8 @@
  * irrespective of which server process they are currently attached to.
  *
  * All messages are "wrapped" in a wrapper that contains the following fields:
- * - id         - a unique id for the message
- * - type       - one of system, site, or data
+ * - msgId      - a unique id for the message
+ * - namespace  - one of system, site, or data
  * - updatedAt  - date/time in milliseconds of creation/update
  * - workerId   - the process.env.WORKER_ID that created/updated the message
  * - scope      - if specified, names the worker id that message is limited to
@@ -25,7 +25,7 @@
  * - Purpose: server to client broadcast to subscribers. System messages pertain to
  *   the server's operations as opposed to application issues. Examples include
  *   a shutdown notice, shutdown canceled, notification that a worker process is
- *   dying, etc.
+ *   dying, messages to administrator's about what users are doing, etc.
  * - Characteristics:
  *    - Client to server system messages are not allowed.
  *    - Messages are not aggregated on the server like site messages are. Instead
@@ -60,20 +60,16 @@
  *    - Client to server data messages are allowed.
  *    - Subscriptions to all data messages are not allowed, only subsets of data.
  *       - Allowable subscription levels:
- *          - Pregnancy id
- *          - Patient id
- *          - User id
  *          - Generally subscriptions are to the ids of major tables as opposed to
  *            the more detailed tables.
+ *          - Though there are exceptions, such as an administrator receiving notifications
+ *            about changes to all records in the user table, for example.
  *    - Sub-categories of data client to server messages.
  *       - Get data
  *          - Scope of message is automatically limited to receiving process, other
  *            processes on the server do not receive the message.
  *          - Data is returned to client.
  *          - Message is not broadcast to other clients.
- *          - ALTERNATIVE: subscribe to data against a BehaviorSubject, created on
- *            the fly, that returns the data as the first message and all changes
- *            to the data after that. ???
  *       - Subscribe to changes for specific data
  *          - Scope of message allows notification of all processes.
  *       - Update data
@@ -87,10 +83,12 @@
 var rx = require('rx')
   , uuid = require('uuid')
   , _ = require('underscore')
+  , assert = require('assert')
   , moment = require('moment')
   , cfg = require('./config')
   , User = require('./models').User
   , getLookupTable = require('./routes/comm/lookupTables').getLookupTable
+  , getTable2 = require('./routes/comm/lookupTables').getTable2
   , saveUser = require('./routes/comm/userRoles').saveUser
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
   , savePrenatal = require('./routes/comm/pregnancy').savePrenatal
@@ -98,9 +96,6 @@ var rx = require('rx')
   , socketToUserInfo = require('./commUtils').socketToUserInfo
   , sendData = require('./commUtils').sendData
   , isInitialized = false
-  , ioSystem          // our system socket
-  , ioSite            // our site socket
-  , ioData            // our data socket
   , sessionMiddleware
   , rxSite            // Stream for site messages
   , rxSystem          // Stream for system messages
@@ -125,6 +120,7 @@ var rx = require('rx')
   //
   // Elm Client stuff - corresponds with comm.js on the client.
   //
+  , ADD_CHG_DELETE = 'ADD_CHG_DELETE'       // data notification of a change by another client.
   , ADD = 'ADD'                             // data add request.
   , ADD_RESPONSE = 'ADD_RESPONSE'           // data add response.
   , CHG = 'CHG'                             // data change request.
@@ -136,15 +132,38 @@ var rx = require('rx')
   , ADHOC_LOGIN = 'ADHOC_LOGIN'             // adhocType from the client.
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
+  , ADHOC_TOUCH_SESSION = 'ADHOC_TOUCH_SESSION'   // Used by the Elm medical client
   , TABLE_keyValue = 'keyValue'
   , TABLE_labSuite = 'labSuite'
   , TABLE_labTest = 'labTest'
   , TABLE_labTestValue = 'labTestValue'
   , TABLE_medicationType = 'medicationType'
+  , TABLE_membranesResus = 'membranesResus'
   , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
+  , TABLE_labor = 'labor'
+  , TABLE_laborStage1 = 'laborStage1'
+  , TABLE_laborStage2 = 'laborStage2'
+  , TABLE_laborStage3 = 'laborStage3'
+  , TABLE_apgar = 'apgar'
+  , TABLE_baby = 'baby'
   , updateKeyValue = require('./routes/comm/lookupTables').updateKeyValue
+  , addBaby = require('./routes/comm/labor').addBaby
+  , updateBaby = require('./routes/comm/labor').updateBaby
+  , delBaby = require('./routes/comm/labor').delBaby
+  , addLabor = require('./routes/comm/labor').addLabor
+  , delLabor = require('./routes/comm/labor').delLabor
+  , updateLabor = require('./routes/comm/labor').updateLabor
+  , addLaborStage1 = require('./routes/comm/labor').addLaborStage1
+  , delLaborStage1 = require('./routes/comm/labor').delLaborStage1
+  , updateLaborStage1 = require('./routes/comm/labor').updateLaborStage1
+  , addLaborStage2 = require('./routes/comm/labor').addLaborStage2
+  , delLaborStage2 = require('./routes/comm/labor').delLaborStage2
+  , updateLaborStage2 = require('./routes/comm/labor').updateLaborStage2
+  , addLaborStage3 = require('./routes/comm/labor').addLaborStage3
+  , delLaborStage3 = require('./routes/comm/labor').delLaborStage3
+  , updateLaborStage3 = require('./routes/comm/labor').updateLaborStage3
   , addLabSuite = require('./routes/comm/lookupTables').addLabSuite
   , delLabSuite = require('./routes/comm/lookupTables').delLabSuite
   , updateLabSuite = require('./routes/comm/lookupTables').updateLabSuite
@@ -157,6 +176,9 @@ var rx = require('rx')
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
+  , addMembranesResus = require('./routes/comm/labor').addMembranesResus
+  , updateMembranesResus = require('./routes/comm/labor').updateMembranesResus
+  , delMembranesResus = require('./routes/comm/labor').delMembranesResus
   , addSelectData = require('./routes/comm/lookupTables').addSelectData
   , delSelectData = require('./routes/comm/lookupTables').delSelectData
   , updateSelectData = require('./routes/comm/lookupTables').updateSelectData
@@ -172,6 +194,8 @@ var rx = require('rx')
   , returnUserProfile = require('./util').returnUserProfile
   , returnUserProfileUpdate = require('./util').returnUserProfileUpdate
   , returnStatusADD = require('./util').returnStatusADD
+  , returnStatusADD2 = require('./util').returnStatusADD2
+  , returnStatusCHG2 = require('./util').returnStatusCHG2
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
   , returnStatusSELECT = require('./util').returnStatusSELECT
@@ -187,10 +211,26 @@ var rx = require('rx')
   , SqlErrorCode = require('./util').SqlErrorCode
   , UnknownTableErrorCode = require('./util').UnknownTableErrorCode
   , UnknownErrorCode = require('./util').UnknownErrorCode
+  , getProcessId = require('./util').getProcessId
   , assertModule = require('./comm_assert')
   , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
+  , KEY_VALUE_UPDATE = require('./constants').KEY_VALUE_UPDATE
   ;
 
+/* --------------------------------------------------------
+ * getIsInitialized()
+ *
+ * Returns a function that tells the caller if the comm
+ * module is initialized yet.
+ * -------------------------------------------------------- */
+function getIsInitialized() {return isInitialized;}
+
+
+// ========================================================
+// ========================================================
+// Logging functions.
+// ========================================================
+// ========================================================
 
 /* --------------------------------------------------------
  * getFormattedLogMsg()
@@ -299,11 +339,17 @@ var logCommError = function(msg, doSysMsg) {
   if (doSysMsg) sendSystem(SYSTEM_LOG, message);
 };
 
+// ========================================================
+// ========================================================
+// Message handling functions.
+// ========================================================
+// ========================================================
+
 /* --------------------------------------------------------
  * wrap()
  *
- * Wrap data in a message wrapper per the message type. The
- * message id, type, updatedAt, workerID, and processedBy
+ * Wrap data in a message wrapper per the message namespace. The
+ * message id, namespace, updatedAt, workerID, and processedBy
  * fields are automatically set. This is only done when new
  * data is sent into the stream.
  *
@@ -316,41 +362,41 @@ var logCommError = function(msg, doSysMsg) {
  * prevent messages from bouncing between processes without
  * end.
  *
- * param       type
+ * param       namespace
  * param       data
  * param       scope - optional, for system messages only
  * return      message object
  * -------------------------------------------------------- */
-var wrap = function(type, data, scope) {
+var wrap = function(namespace, data, scope) {
   return {
-    id: uuid.v1()
-    , type: type
+    msgId: uuid.v1()
+    , namespace: namespace
     , updatedAt: Date.now()
     , workerId: process.env.WORKER_ID
     , processedBy: [process.env.WORKER_ID]
-    , scope: type == CONST.TYPE.SITE? undefined:
-             type == CONST.TYPE.DATA? undefined:
-             type == CONST.TYPE.SYSTEM? scope: undefined
+    , scope: namespace == CONST.TYPE.SITE? undefined:
+             namespace == CONST.TYPE.DATA? undefined:
+             namespace == CONST.TYPE.SYSTEM? scope: undefined
     , data: data? data: {}
   };
 };
-// Initialize siteSubjectData with wrapper and empty data set.
-siteSubjectData = wrap(CONST.TYPE.SITE);
+// Initialize siteSubjectData with wrapper and the process startTime.
+siteSubjectData = wrap(CONST.TYPE.SITE, {processStartTime: Date.now()});
 
 /* --------------------------------------------------------
  * makeSend()
  *
- * Create a function that handles sending a certain type
+ * Create a function that handles sending a certain namespace
  * of message.
  *
- * param       type     - type: site, system, or data
+ * param       namespace     - namespace: SITE, SYSTEM, or DATA
  * return      function
  * -------------------------------------------------------- */
-function makeSend(type) {
+function makeSend(namespace) {
   return function(key, val, scope) {
     var data = {};
     var wrapped;
-    switch (type) {
+    switch (namespace) {
       case CONST.TYPE.SITE:
         // --------------------------------------------------------
         // For site messages, the most recent copy is stored so
@@ -359,9 +405,9 @@ function makeSend(type) {
         // message id to the caller.
         // --------------------------------------------------------
         data[key] = val;
-        siteSubjectData = wrap(type, _.extendOwn(siteSubjectData.data, data));
+        siteSubjectData = wrap(namespace, _.extendOwn(siteSubjectData.data, data));
         siteSubject.onNext(siteSubjectData);
-        return siteSubjectData.id;
+        return siteSubjectData.msgId;
 
       case CONST.TYPE.SYSTEM:
         // --------------------------------------------------------
@@ -369,12 +415,12 @@ function makeSend(type) {
         // is an optional scope parameter allowed.
         // --------------------------------------------------------
         data[key] = val;
-        wrapped = wrap(type, data, scope);
+        wrapped = wrap(namespace, data, scope);
         if (isInitialized) systemSubject.onNext(wrapped);
         break;
 
       default:
-        logCommError('Error: makeSend() unimplemented for this type: ' + type);
+        logCommError('Error: makeSend() unimplemented for this namespace: ' + namespace);
     }
   };
 };
@@ -383,12 +429,12 @@ function makeSend(type) {
  * sendSite()
  * sendSystem()
  *
- * Send a message of a certain type.
+ * Send a message of a certain namespace.
  *
  * param       key      - the key of the key/val pair
  * param       val      - the value of the key/val pair
  * param       scope    - the scope of the message (system only)
- * return      id       - the unique message id
+ * return      msgId    - the unique message id
  * -------------------------------------------------------- */
 var sendSite = makeSend(CONST.TYPE.SITE);
 var sendSystem = makeSend(CONST.TYPE.SYSTEM);
@@ -396,9 +442,68 @@ var sendSystem = makeSend(CONST.TYPE.SYSTEM);
 //var sendData = makeSend(CONST.TYPE.DATA);
 
 /* --------------------------------------------------------
+ * wrapByType()
+ *
+ * Used for sending messages out to the client.
+ *
+ * Wrap a message with a outer object with a field named
+ * namespace that specifies the course level type of message
+ * this is, which is one of 'SYSTEM', 'SITE', or 'DATA'.
+ * Another field named msgType specifies at a more granular
+ * level the type of message. The field named payload contains
+ * the data passed.
+ *
+ * Return a stringifed object to the caller.
+ *
+ * param       namespace
+ * param       msgType
+ * param       data
+ * return      stringifed object
+ * -------------------------------------------------------- */
+var wrapByType = function(namespace, msgType, data) {
+  // We do not allow fields used solely for routing between the
+  // process and RxJS systems to go to the client.
+  // Also, namespace is already specified one level up so
+  // no need to repeat it if it exists.
+  var payload = _.omit(data, ['namespace', 'msgId', 'workerId', 'processedBy', 'scope']);
+
+  // Temporary sanity checks.
+  if (! msgType) {
+    console.log('===== wrapByType() discrepancy ======');
+    console.log('msgType field not passed.');
+    console.log('namespace: ' + namespace);
+    console.log(data);
+    console.log('===== end wrapByType() =====');
+  } else if (! data) {
+    console.log('===== wrapByType() discrepancy ======');
+    console.log('data field not passed.');
+    console.log('namespace: ' + namespace + ', msgType: ' + msgType);
+    console.log('===== end wrapByType() =====');
+  } else if (data.type) {
+    console.log('===== wrapByType() discrepancy ======');
+    console.log('data.type field passed.');
+    console.log('namespace: ' + namespace + ', msgType: ' + msgType);
+    console.log('===== end wrapByType() =====');
+  } else if ((data.msgType && data.msgType !== msgType) || data.msgType) {
+    console.log('----- wrapByType() inner msgType -----');
+    console.log('data.msgType found and/or does not equal msgType.');
+    console.log('namespace: ' + namespace + ', msgType: ' + msgType);
+    if (msgType === CONST.TYPE.SYSTEM) console.log(data);
+    console.log('----- end wrapByType() -----');
+  }
+
+  var retVal = JSON.stringify({namespace: namespace, msgType: msgType, payload: payload});
+  //console.log(getProcessId() + ': ' + retVal);
+  return retVal;
+};
+var wrapSystem = function(msgType, data) { return wrapByType('SYSTEM', msgType, data); };
+var wrapSite = function(msgType, data) { return wrapByType('SITE', msgType, data); };
+var wrapData = function(msgType, data) { return wrapByType('DATA', msgType, data); };
+
+/* --------------------------------------------------------
  * subscribeSite()
  *
- * Allows other modules to subscribe to site type messages.
+ * Allows other modules to subscribe to site namespace messages.
  *
  * param       onNext       - function to call upon msg
  * param       onError      - function to call upon error
@@ -412,7 +517,7 @@ var subscribeSite = function(onNext, onError, onCompleted) {
 /* --------------------------------------------------------
  * subscribeSystem()
  *
- * Allows other modules to subscribe to system type messages.
+ * Allows other modules to subscribe to system namespace messages.
  *
  * param       onNext       - function to call upon msg
  * param       onError      - function to call upon error
@@ -426,7 +531,7 @@ var subscribeSystem = function(onNext, onError, onCompleted) {
 /* --------------------------------------------------------
  * subscribeData()
  *
- * Allows other modules to subscribe to data type messages.
+ * Allows other modules to subscribe to data namespace messages.
  *
  * param       onNext       - function to call upon msg
  * param       onError      - function to call upon error
@@ -436,6 +541,12 @@ var subscribeSystem = function(onNext, onError, onCompleted) {
 var subscribeData = function(onNext, onError, onCompleted) {
   return dataSubject.subscribe(onNext, onError, onCompleted);
 };
+
+// ========================================================
+// ========================================================
+// Utils for session validity, logins, and profiles.
+// ========================================================
+// ========================================================
 
 /* --------------------------------------------------------
   * isValidSocketSession()
@@ -464,7 +575,9 @@ var isValidSocketSession = function(socket) {
  * touchSocketSession()
  *
  * Touch the session within the socket passed in order to
- * extend the expiry timeout accordingly.
+ * extend the expiry timeout accordingly. We call save()
+ * with a do nothing function in order to have the expires
+ * field in the sessions table in the database updated as well.
  *
  * param       socket
  * return      undefined
@@ -472,6 +585,7 @@ var isValidSocketSession = function(socket) {
 var touchSocketSession = function(socket) {
   if (DO_ASSERT) assertModule.touchSocketSession(socket);
   socket.request.session.touch();
+  socket.request.session.save(function() {});
 };
 
 /* --------------------------------------------------------
@@ -520,173 +634,6 @@ var loginUser = function(username, password, cb) {
   });
 };
 
-var getFuncForTableOp = function(table, op) {
-  var func = void 0;
-  switch (table) {
-    case TABLE_keyValue:
-      switch (op) {
-        // keyValue table can only be updated.
-        case CHG: func = updateKeyValue; break;
-      }
-      break;
-    case TABLE_labSuite:
-      switch (op) {
-        case ADD: func = addLabSuite; break;
-        case CHG: func = updateLabSuite; break;
-        case DEL: func = delLabSuite; break;
-      }
-      break;
-    case TABLE_labTest:
-      switch (op) {
-        case ADD: func = addLabTest; break;
-        case CHG: func = updateLabTest; break;
-        case DEL: func = delLabTest; break;
-      }
-      break;
-    case TABLE_labTestValue:
-      switch (op) {
-        case ADD: func = addLabTestValue; break;
-        case CHG: func = updateLabTestValue; break;
-        case DEL: func = delLabTestValue; break;
-      }
-      break;
-    case TABLE_medicationType:
-      switch (op) {
-        case ADD: func = addMedicationType; break;
-        case CHG: func = updateMedicationType; break;
-        case DEL: func = delMedicationType; break;
-      }
-      break;
-    case TABLE_selectData:
-      switch (op) {
-        case ADD: func = addSelectData; break;
-        case CHG: func = updateSelectData; break;
-        case DEL: func = delSelectData; break;
-      }
-      break;
-    case TABLE_user:
-      switch (op) {
-        case ADD: func = addUser; break;
-        case CHG: func = updateUser; break;
-        case DEL: func = delUser; break;
-      }
-      break;
-    case TABLE_vaccinationType:
-      switch (op) {
-        case ADD: func = addVaccinationType; break;
-        case CHG: func = updateVaccinationType; break;
-        case DEL: func = delVaccinationType; break;
-      }
-      break;
-  }
-  return func;
-};
-
-/* --------------------------------------------------------
- * handleData()
- *
- * Handle a Socket.io event in the DATA namespace.
- *
- * param        evtName
- * param        payload
- * param        socket
- * return       undefined
- * -------------------------------------------------------- */
-var handleData = function(evtName, payload, socket) {
-  if (DO_ASSERT) assertModule.handleData(evtName, payload, socket);
-  var wrapper = JSON.parse(payload);
-  var table = wrapper.table? wrapper.table: void 0
-    , data = wrapper.data? wrapper.data: {}
-    , recId = data? data.id: -1
-    , userInfo = socketToUserInfo(socket)
-    , retAction
-    , dataFunc
-    , returnStatusFunc
-    , responseEvt
-  ;
-  switch (evtName) {
-    case ADD:
-      if (! table || ! data || (! recId < 0) ) {
-        // TODO: send the proper msg back to the client to this effect.
-        console.log('Data ADD request: Improper data sent from client!');
-        return;
-      }
-      returnStatusFunc = returnStatusADD;
-      responseEvt = ADD_RESPONSE;
-      break;
-
-    case CHG:
-      if (! table || ! data || recId === -1 || data.stateId === -1) {
-        // TODO: send the proper msg back to the client to this effect.
-        console.log('Data CHG request: Improper data sent from client!');
-        return;
-      }
-      returnStatusFunc = returnStatusCHG;
-      responseEvt = CHG_RESPONSE;
-      break;
-
-    case DEL:
-      if (! table || ! data || recId === -1 || data.stateId === -1) {
-        // TODO: send the proper msg back to the client to this effect.
-        console.log('Data DEL request: Improper data sent from client!');
-        return;
-      }
-      returnStatusFunc = returnStatusDEL;
-      responseEvt = DEL_RESPONSE;
-      break;
-
-    default:
-      console.log('UNKNOWN event of ' + evtName + ' in handeData().');
-      retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This event cannot be handled by the server: " + evtName + '.');
-      return socket.emit(responseEvt, JSON.stringify(retAction));
-  }
-
-  dataFunc = getFuncForTableOp(table, evtName);
-  if (! dataFunc) {
-    retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This table cannot be handled by the server.");
-    console.log(retAction);
-    return socket.emit(responseEvt, JSON.stringify(retAction));
-  }
-
-  if (! isValidSocketSession(socket)) {
-    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired. Please login again.");
-    console.log(retAction);
-    return socket.emit(responseEvt, JSON.stringify(retAction));
-  } else touchSocketSession(socket);
-
-  if (! userInfo) {
-    // NOTE: this is an error that occurs and I have not been able to track down yet.
-    console.log('ERROR: userInfo object not populated in comm.js handleData(). ABORTING!');
-    return;
-  }
-
-  dataFunc(data, userInfo, function(err, success, additionalData) {
-    var errMsg;
-    if (err) {
-      logCommError(err);
-      errMsg = err.message? err.message: err;
-      if (evtName === ADD) {
-        retAction = returnStatusFunc(table, data.id, data.id, false, SqlErrorCode, errMsg);
-      } else {
-        retAction = returnStatusFunc(table, data.id, data.stateId, false, SqlErrorCode, errMsg);
-      }
-      return socket.emit(responseEvt, JSON.stringify(retAction));
-    }
-    if (evtName == ADD) {
-      retAction = returnStatusFunc(table, data.id, additionalData.id, true);
-    } else {
-      retAction = returnStatusFunc(table, data.id, data.stateId, true);
-    }
-    socket.emit(responseEvt, JSON.stringify(retAction));
-
-    // --------------------------------------------------------
-    // Write out to the log and SYSTEM_LOG for administrators.
-    // --------------------------------------------------------
-    return logCommInfo(userInfo.user.username + ": " + table + ": " + evtName, true);
-  });
-
-};
-
 var handleLogin = function(json, socket) {
   if (DO_ASSERT) assertModule.handleLogin(json, socket);
   var username = json.data && json.data.username ? json.data.username: void 0;
@@ -698,7 +645,7 @@ var handleLogin = function(json, socket) {
   if (! username || ! password ) {
     msg = 'Username and/or password not supplied.';
     retAction = returnLogin(false, LoginFailErrorCode, msg);
-    return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+    return socket.send(wrapData(ADHOC_RESPONSE, retAction));
   }
 
   // Check if this is the same user as is possibly in the session now.
@@ -716,7 +663,7 @@ var handleLogin = function(json, socket) {
       // Unknown failure, not just a failed login.
       console.log(err);
       retAction = returnLogin(false, LoginFailErrorCode, err);
-      return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+      return socket.send(wrapData(ADHOC_RESPONSE, retAction));
     }
 
     if (user) {
@@ -729,7 +676,7 @@ var handleLogin = function(json, socket) {
       // Failed login.
       console.log(msgObj);
       retAction = returnLogin(false, LoginFailErrorCode, msgObj.message);
-      return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+      return socket.send(wrapData(ADHOC_RESPONSE, retAction));
     }
   });
 };
@@ -747,12 +694,12 @@ var handleUserProfile = function(socket, data, userInfo) {
           if (err) {
             console.log(err);
             retAction = returnUserProfileUpdate(false, UserProfileUpdateFailErrorCode);
-            return socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+            return socket.send(wrapData(ADHOC_RESPONSE, retAction));
           }
           errCode = UserProfileUpdateFailErrorCode;
           if (success) errCode = UserProfileUpdateSuccessErrorCode;
           retAction = returnUserProfileUpdate(!!success, errCode);
-          socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+          socket.send(wrapData(ADHOC_RESPONSE, retAction));
 
           // --------------------------------------------------------
           // Write out to the log and SYSTEM_LOG for administrators.
@@ -847,12 +794,387 @@ var sendUserProfile = function(socket, user, errCode) {
         }
         // Assumes roleName assigned to session earlier in this function.
         if (! retAction.roleName) retAction.roleName = socket.request.session.roleInfo.roleName;
-        socket.emit(ADHOC_RESPONSE, JSON.stringify(retAction));
+        socket.send(wrapData(ADHOC_RESPONSE, retAction));
       }
     });
   }
 
 };
+
+
+// ========================================================
+// ========================================================
+// High-level data processing functions.
+// ========================================================
+// ========================================================
+
+/* --------------------------------------------------------
+ * getFuncForTableOp()
+ *
+ * Returns a function for a combination of table and operation
+ * that will be used for processing. This works for legacy
+ * messages and version 2 messages.
+ *
+ * param       table
+ * param       op
+ * return      func
+ * -------------------------------------------------------- */
+var getFuncForTableOp = function(table, op) {
+  var func = void 0;
+  switch (table) {
+    case TABLE_baby:
+      switch (op) {
+        case ADD: func = addBaby; break;
+        case CHG: func = updateBaby; break;
+        case DEL: func = delBaby; break;
+      }
+      break;
+    case TABLE_keyValue:
+      switch (op) {
+        // keyValue table can only be updated.
+        case CHG: func = updateKeyValue; break;
+      }
+      break;
+    case TABLE_labor:
+      switch (op) {
+        case ADD: func = addLabor; break;
+        case CHG: func = updateLabor; break;
+        case DEL: func = delLabor; break;
+      }
+      break;
+    case TABLE_laborStage1:
+      switch (op) {
+        case ADD: func = addLaborStage1; break;
+        case CHG: func = updateLaborStage1; break;
+        case DEL: func = delLaborStage1; break;
+      }
+      break;
+    case TABLE_laborStage2:
+      switch (op) {
+        case ADD: func = addLaborStage2; break;
+        case CHG: func = updateLaborStage2; break;
+        case DEL: func = delLaborStage2; break;
+      }
+      break;
+    case TABLE_laborStage3:
+      switch (op) {
+        case ADD: func = addLaborStage3; break;
+        case CHG: func = updateLaborStage3; break;
+        case DEL: func = delLaborStage3; break;
+      }
+      break;
+    case TABLE_labSuite:
+      switch (op) {
+        case ADD: func = addLabSuite; break;
+        case CHG: func = updateLabSuite; break;
+        case DEL: func = delLabSuite; break;
+      }
+      break;
+    case TABLE_labTest:
+      switch (op) {
+        case ADD: func = addLabTest; break;
+        case CHG: func = updateLabTest; break;
+        case DEL: func = delLabTest; break;
+      }
+      break;
+    case TABLE_labTestValue:
+      switch (op) {
+        case ADD: func = addLabTestValue; break;
+        case CHG: func = updateLabTestValue; break;
+        case DEL: func = delLabTestValue; break;
+      }
+      break;
+    case TABLE_medicationType:
+      switch (op) {
+        case ADD: func = addMedicationType; break;
+        case CHG: func = updateMedicationType; break;
+        case DEL: func = delMedicationType; break;
+      }
+      break;
+    case TABLE_membranesResus:
+      switch (op) {
+        case ADD: func = addMembranesResus; break;
+        case CHG: func = updateMembranesResus; break;
+        case DEL: func = delMembranesResus; break;
+      }
+      break;
+    case TABLE_selectData:
+      switch (op) {
+        case ADD: func = addSelectData; break;
+        case CHG: func = updateSelectData; break;
+        case DEL: func = delSelectData; break;
+      }
+      break;
+    case TABLE_user:
+      switch (op) {
+        case ADD: func = addUser; break;
+        case CHG: func = updateUser; break;
+        case DEL: func = delUser; break;
+      }
+      break;
+    case TABLE_vaccinationType:
+      switch (op) {
+        case ADD: func = addVaccinationType; break;
+        case CHG: func = updateVaccinationType; break;
+        case DEL: func = delVaccinationType; break;
+      }
+      break;
+  }
+  return func;
+};
+
+/* --------------------------------------------------------
+ * handleData2
+ *
+ * Handle a Socket.io event in the DATA namespace for version
+ * 2 messages. Note that for version 2 messages we do not use
+ * wrapData() and the evtName we are called with is what we
+ * return as the msgType.
+ *
+ * param       evtName, i.e. msgType
+ * param       json - the whole message from the client.
+ * param       socket
+ * return      undefined
+ * -------------------------------------------------------- */
+var handleData2 = function(evtName, json, socket) {
+  if (DO_ASSERT) assertModule.handleData2(evtName, json, socket);
+
+  var table = json.payload.table
+    , data = json.payload.data
+    , messageId = json.messageId
+    , userInfo = socketToUserInfo(socket)
+    , retAction
+    , dataFunc
+    , returnStatusFunc
+    ;
+
+  switch (evtName) {
+    case ADD:
+      if (! table || ! data ) {
+        // NOTE: version 2 messages do not send an id for ADD.
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data ADD request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusADD2;
+      break;
+
+    case CHG:
+      if (! table || ! data || ! _.has(data, 'id') || data.id === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data CHG request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusCHG2;
+      break;
+
+    default:
+      console.log('UNKNOWN event of ' + evtName + ' in handeData2().');
+      retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+          UnknownErrorCode, "This event cannot be handled by the server: " + evtName + '.');
+      return socket.send(JSON.stringify(retAction));
+  }
+
+  dataFunc = getFuncForTableOp(table, evtName);
+  if (! dataFunc) {
+    retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+        UnknownErrorCode, "This table cannot be handled by the server.");
+    console.log(retAction);
+    return socket.send(JSON.stringify(retAction));
+  }
+
+  if (! isValidSocketSession(socket)) {
+    retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+        SessionExpiredErrorCode, "Your session has expired.");
+    console.log(retAction);
+    return socket.send(JSON.stringify(retAction));
+  } else touchSocketSession(socket);
+
+  if (! userInfo) {
+    // NOTE: this is an error that occurs and I have not been able to track down yet.
+    console.log('ERROR: userInfo object not populated in comm.js handleData2(). ABORTING!');
+    return;
+  }
+
+  dataFunc(data, userInfo, function(err, success, additionalData) {
+    var errMsg;
+    if (err) {
+      logCommError(err);
+      errMsg = err.message? err.message: err;
+      retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
+        SqlErrorCode, errMsg);
+      return socket.send(JSON.stringify(retAction));
+    }
+    retAction = returnStatusFunc(evtName, messageId, table, additionalData.id, true);
+    socket.send(JSON.stringify(retAction));
+
+    // --------------------------------------------------------
+    // Write out to the log and SYSTEM_LOG for administrators.
+    // --------------------------------------------------------
+    return logCommInfo(userInfo.user.username + ": " + table + ": " + evtName, true);
+  });
+};
+
+/* --------------------------------------------------------
+ * handleData()
+ *
+ * Handle a Socket.io event in the DATA namespace.
+ *
+ * param        evtName
+ * param        payload
+ * param        socket
+ * return       undefined
+ * -------------------------------------------------------- */
+var handleData = function(evtName, payload, socket) {
+  if (DO_ASSERT) assertModule.handleData(evtName, payload, socket);
+  //var wrapper = JSON.parse(payload);
+  var table = payload.table? payload.table: void 0
+    , data = payload.data? payload.data: {}
+    , recId = data? data.id: -1
+    , userInfo = socketToUserInfo(socket)
+    , retAction
+    , dataFunc
+    , returnStatusFunc
+    , responseEvt
+  ;
+  switch (evtName) {
+    case ADD:
+      if (! table || ! data || (! recId < 0) ) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data ADD request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusADD;
+      responseEvt = ADD_RESPONSE;
+      break;
+
+    case CHG:
+      if (! table || ! data || recId === -1 || data.stateId === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data CHG request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusCHG;
+      responseEvt = CHG_RESPONSE;
+      break;
+
+    case DEL:
+      if (! table || ! data || recId === -1 || data.stateId === -1) {
+        // TODO: send the proper msg back to the client to this effect.
+        console.log('Data DEL request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusDEL;
+      responseEvt = DEL_RESPONSE;
+      break;
+
+    default:
+      console.log('UNKNOWN event of ' + evtName + ' in handeData().');
+      retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This event cannot be handled by the server: " + evtName + '.');
+      return socket.send(wrapData(responseEvt, retAction));
+  }
+
+  dataFunc = getFuncForTableOp(table, evtName);
+  if (! dataFunc) {
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, UnknownErrorCode, "This table cannot be handled by the server.");
+    console.log(retAction);
+    return socket.send(wrapData(responseEvt, retAction));
+  }
+
+  if (! isValidSocketSession(socket)) {
+    retAction = returnStatusFunc(table, data.id, data.stateId, false, SessionExpiredErrorCode, "Your session has expired. Please login again.");
+    console.log(retAction);
+    return socket.send(wrapData(responseEvt, retAction));
+  } else touchSocketSession(socket);
+
+  if (! userInfo) {
+    // NOTE: this is an error that occurs and I have not been able to track down yet.
+    console.log('ERROR: userInfo object not populated in comm.js handleData(). ABORTING!');
+    return;
+  }
+
+  dataFunc(data, userInfo, function(err, success, additionalData) {
+    var errMsg;
+    if (err) {
+      logCommError(err);
+      errMsg = err.message? err.message: err;
+      if (evtName === ADD) {
+        retAction = returnStatusFunc(table, data.id, data.id, false, SqlErrorCode, errMsg);
+      } else {
+        retAction = returnStatusFunc(table, data.id, data.stateId, false, SqlErrorCode, errMsg);
+      }
+      return socket.send(wrapData(responseEvt, retAction));
+    }
+    if (evtName == ADD) {
+      retAction = returnStatusFunc(table, data.id, additionalData.id, true);
+    } else {
+      retAction = returnStatusFunc(table, data.id, data.stateId, true);
+    }
+    socket.send(wrapData(responseEvt, retAction));
+
+    // --------------------------------------------------------
+    // Write out to the log and SYSTEM_LOG for administrators.
+    // --------------------------------------------------------
+    return logCommInfo(userInfo.user.username + ": " + table + ": " + evtName, true);
+  });
+
+};
+
+/* --------------------------------------------------------
+ * getTable()
+ *
+ * Select and return data requested back to the client.
+ *
+ * param       socket
+ * param       json
+ * return      undefined
+ * -------------------------------------------------------- */
+var getTable = function(socket, json) {
+  var retVal = _.omit(json, 'payload'); // version 2 only
+
+  if (DO_ASSERT) assertModule.getTable(socket, json);
+
+  if (json.payload && json.payload.table) {
+    console.log('Table: ' + json.payload.table + ', id: ' + json.payload.id + ', related: ' + json.payload.related);
+
+    if (json.version && json.version === 2) {
+      // Version 2
+      getTable2(json.payload.table, json.payload.id, json.payload.related, function(err, data) {
+        if (err) {
+          logCommError(err);
+          retVal.response = returnStatusSELECT({}, void 0, false, SqlErrorCode, err && err.msg? err.msg: '');
+          // TEMP
+          console.log(JSON.stringify(retVal));
+          return socket.send(JSON.stringify(retVal));
+        }
+        retVal.response = returnStatusSELECT({}, data, true);
+        return socket.send(JSON.stringify(retVal));
+      });
+    } else {
+      // Legacy version.
+      getLookupTable(json.payload.table, json.payload.id,
+        json.payload.pregnancy_id, json.payload.patient_id, function(err, data) {
+        if (err) {
+          logCommError(err);
+          retAction = returnStatusSELECT(json.payload, void 0, false, SqlErrorCode, err.msg);
+          return socket.send(wrapData(DATA_SELECT_RESPONSE, retAction));
+        }
+        retAction = returnStatusSELECT(json.payload, data, true);
+        return socket.send(wrapData(DATA_SELECT_RESPONSE, retAction));
+      });
+    }
+  } else {
+    console.log('=== Socket id: ' + socket.id + ' ===');
+    retAction = returnStatusSELECT(json.payload, void 0, false, UnknownErrorCode, 'Table not specified.');
+    return socket.send(wrapData(DATA_SELECT_RESPONSE, retAction));
+  }
+};
+
+// ========================================================
+// ========================================================
+// Initialization of our three communication interfaces.
+// ========================================================
+// ========================================================
 
 /* --------------------------------------------------------
  * init()
@@ -867,6 +1189,13 @@ var sendUserProfile = function(socket, user, errCode) {
  * worker process, cross-process communication, and socket
  * server communication.
  *
+ * Only one Socket.io connection is used with each client
+ * rather than one each for SITE, SYSTEM, and DATA messages.
+ * This is for the sake of potential future compatibility
+ * with standard websocket which does not multiplex the
+ * connection like Socket.io does, so we would not want to
+ * have so many websocket connections to each client in reality.
+ *
  * param       io             - the Socket.io socket
  * param       sessionMiddle  - authorization routine
  * return
@@ -875,12 +1204,20 @@ var init = function(io, sessionMiddle) {
   if (isInitialized) return;
   isInitialized = true;
 
+  // ========================================================
+  // ========================================================
+  // Receiving messages from other processes and forwarding
+  // into the RxJS interface.
+  // ========================================================
+  // ========================================================
+
   // --------------------------------------------------------
-  // Handle messages from other worker processes.
+  // Handle messages from other worker processes and forward
+  // the messages into the rxJS interface.
   // --------------------------------------------------------
   process.on('message', function(wrapper) {
     var data = wrapper.data;
-    switch (wrapper.type) {
+    switch (wrapper.namespace) {
       case CONST.TYPE.DATA:
         dataSubject.onNext(data);
         break;
@@ -902,8 +1239,8 @@ var init = function(io, sessionMiddle) {
         // overwrite any new, yet unpublished key/val pairs in
         // the existing siteSubjectData.data due to a race condition.
         // --------------------------------------------------------
-        siteSubjectData.id = data.id;
-        siteSubjectData.type = data.type;
+        siteSubjectData.msgId = data.msgId;
+        siteSubjectData.namespace = data.namespace;
         siteSubjectData.updatedAt = data.updatedAt;
         siteSubjectData.workerId = data.workerId;
         siteSubjectData.scope = undefined;    // by definition for site
@@ -927,16 +1264,24 @@ var init = function(io, sessionMiddle) {
 
       default:
         // --------------------------------------------------------
-        // There are other messages that we are not interested in.
+        // There are other messages that we are not interested in but
+        // other things use. Only report on what we don't recognize.
         // --------------------------------------------------------
-        //logCommInfo('Client: Received UNHANDLED msg: ' + JSON.stringify(wrapper));
+        if (! _.has(wrapper, 'cmd')) {
+          if (_.isObject(wrapper) && _.has(wrapper, KEY_VALUE_UPDATE)) {
+            // config/index.js handles this, so ignore.
+          } else {
+            logCommInfo('Client: Received UNHANDLED msg: ' + JSON.stringify(wrapper));
+          }
+        }
     }
   });
 
 
   // ========================================================
   // ========================================================
-  // Configure the RxJS Streams.
+  // Receiving messages from the RxJS interface and forwarding
+  // to other processes.
   // ========================================================
   // ========================================================
 
@@ -959,7 +1304,7 @@ var init = function(io, sessionMiddle) {
       if (data && data.workerId && data.workerId !== process.env.WORKER_ID) {
         return;
       }
-      process.send({type: CONST.TYPE.SITE, data: data});
+      process.send({namespace: CONST.TYPE.SITE, data: data});
     },
     function(err) {
       logCommError('Error: ' + err);
@@ -985,7 +1330,7 @@ var init = function(io, sessionMiddle) {
       if (data && data.scope && data.scope === process.env.WORKER_ID) {
         return;
       }
-      process.send({type: CONST.TYPE.SYSTEM, data: data});
+      process.send({namespace: CONST.TYPE.SYSTEM, data: data});
     },
     function(err) {
       logCommError('Error: ' + err);
@@ -996,13 +1341,14 @@ var init = function(io, sessionMiddle) {
   );
 
   // --------------------------------------------------------
-  // Whatever is received here is sent to the sockets.
+  // Whatever is received here is sent to the clients.
   // --------------------------------------------------------
   dataSubject = new rx.Subject();
 
   // ========================================================
   // ========================================================
-  // Configure the Socket.io sockets.
+  // Handling communications from this NodeJS process to it's
+  // connected clients, i.e. the users.
   // ========================================================
   // ========================================================
 
@@ -1011,40 +1357,143 @@ var init = function(io, sessionMiddle) {
   // Integrate Express sessions into Socket.io.
   // See: https://stackoverflow.com/a/25618636
   // --------------------------------------------------------
-  ioSystem = io.of('/system');
-  ioData = io.of('/data');
-  ioSite = io.of('/site');
+  ioSocket = io.of('/');
   sessionMiddleware = sessionMiddle;
-  ioSystem.use(function(socket, next) {
-    sessionMiddleware(socket.request, socket.request.res, next);
-  });
-  ioSite.use(function(socket, next) {
-    sessionMiddleware(socket.request, socket.request.res, next);
-  });
-  ioData.use(function(socket, next) {
+  ioSocket.use(function(socket, next) {
+    // Note: for this to work, Socket.io must be allowed to
+    // use polling, i.e. a websocket only transport causes
+    // this to fail because the response instance is unavailable.
     sessionMiddleware(socket.request, socket.request.res, next);
   });
 
   // --------------------------------------------------------
-  // The system namespace.
-  // Purpose: Server to client broadcast of anything regarding
-  //          the operation of this instance of the Midwife-EMR
-  //          system. This does not handle client to server
-  //          communication.
-  // Examples:
-  //  - pending shutdown
-  //  - shutdown
-  //  - suspend
-  //  - unsuspend
-  //  - cluster worker process failure
+  // The Socket.io connection using a single namespace.
   // --------------------------------------------------------
-  ioSystem.on('connection', function(socket) {
+  ioSocket.on('connection', function(socket) {
     var systemSubscription;
     socket.on('disconnect', function() {
       systemSubscription.dispose();
-      cntSystem--;
     });
-    cntSystem++;
+
+    socket.on('error', function(err) {
+      console.log('===== SOCKET ERROR =====');
+      console.log(err);
+      console.log('===== SOCKET ERROR =====');
+    });
+
+    socket.on('message', function(data) {
+      assert(_.isString(data));
+      var json = JSON.parse(data);
+      var userInfo = socketToUserInfo(socket);
+      assert(json.namespace && json.msgType);
+
+      // --------------------------------------------------------
+      // Sanity check that the client is not trying to send
+      // messages using an invalid namespace.
+      // --------------------------------------------------------
+      if (json.namespace !== CONST.TYPE.DATA) {
+          console.log('##### ERROR: invalid namespace received from client: ' + json.namespace);
+          return;
+      }
+
+      // --------------------------------------------------------
+      // Handle incoming message from the clients in the DATA
+      // namespace.
+      //
+      // Differentiate between different versions of messages.
+      // The Elm admin client uses the original message type that
+      // does not have a version field, while the Elm medical
+      // client uses the newer message type that has a version
+      // field with a value of 2.
+      // --------------------------------------------------------
+      if (_.has(json, "version") && json.version === 2) {
+        // Medical Elm client.
+        switch (json.msgType) {
+          case DATA_SELECT:
+            getTable(socket, json);
+            break;
+
+          case ADD:
+            if (DO_ASSERT) assertModule.ioData_socket_on_ADD(json.payload);
+            handleData2(ADD, json, socket);
+            break;
+
+          case CHG:
+            if (DO_ASSERT) assertModule.ioData_socket_on_CHG(json.payload);
+            handleData2(CHG, json, socket);
+            break;
+
+          case ADHOC_TOUCH_SESSION:
+            touchSocketSession(socket);
+            break;
+
+          default:
+            console.log('ERROR: unhandled data msgType of: ' + json.msgType);
+            console.log(json);
+        }
+      } else {
+        // Admin Elm client.
+        switch (json.msgType) {
+          case ADHOC_LOGIN:
+            handleLogin(json.payload, socket);
+            break;
+
+          case ADHOC_USER_PROFILE:
+            handleUserProfile(socket);
+            break;
+
+          case ADHOC_USER_PROFILE_UPDATE:
+            handleUserProfile(socket, json.payload, userInfo);
+            break;
+
+          case DATA_SELECT:
+            getTable(socket, json);
+            break;
+
+          case ADD:
+            if (DO_ASSERT) assertModule.ioData_socket_on_ADD(json.payload);
+            handleData(ADD, json.payload, socket);
+            break;
+
+          case CHG:
+            if (DO_ASSERT) assertModule.ioData_socket_on_CHG(json.payload);
+            handleData(CHG, json.payload, socket);
+            break;
+
+          case DEL:
+            if (DO_ASSERT) assertModule.ioData_socket_on_DEL(json.payload);
+            handleData(DEL, json.payload, socket);
+            break;
+
+          default:
+            console.log('ERROR: unhandled data msgType of: ' + json.msgType);
+            console.log(json);
+        }
+      }
+    });
+
+    // --------------------------------------------------------
+    // Send data change notifications to the client if the
+    // change originated with another client.
+    // --------------------------------------------------------
+    dataSubscription = dataSubject.subscribe(
+      function(data) {
+        // Don't do work unless logged in.
+        if (! isValidSocketSession(socket)) return;
+
+        if (data.sessionID && getSocketSessionId(socket) !== data.sessionID) {
+          // We don't leak sessionID to other clients.
+          console.log('=== Socket id: ' + socket.id + ' ===');
+          socket.send(wrapData(ADD_CHG_DELETE, _.omit(data, 'sessionID')));
+        }
+      },
+      function(err) {
+        logCommInfo('Error: ' + err);
+      },
+      function() {
+        logCommInfo('dataSubject completed.');
+      }
+    );
 
     // --------------------------------------------------------
     // Send all system messages out to the authenticated clients.
@@ -1065,8 +1514,18 @@ var init = function(io, sessionMiddle) {
           if (socket.request.session.roleInfo.roleName !== 'administrator') {
             return;
           }
+          // Hack: we know what this is, so we set the msgType explicitly.
+          // See to do below.
+          console.log('=== Socket id: ' + socket.id + ' ===');
+          socket.send(wrapSystem(SYSTEM_LOG, data));
+        } else {
+          // TODO: Need to handle msgType for all types of system messages.
+          // This needs to be better handled in the format of the process
+          // and rxJS messages. This needs to be done when we actually get
+          // more types of system messages other than SYSTEM_LOG.
+          console.log('=== Socket id: ' + socket.id + ' ===');
+          socket.send(wrapSystem(data.msgType, data));
         }
-        socket.emit(CONST.TYPE.SYSTEM, data);
       },
       function(err) {
         logCommError('Error: ' + err);
@@ -1075,30 +1534,6 @@ var init = function(io, sessionMiddle) {
         logCommInfo('systemSubject completed.');
       }
     );
-  });
-
-  // --------------------------------------------------------
-  // The site namespace.
-  // Purpose: Server to client broadcast of anything regarding
-  //          stats about the current Midwife-EMR instance.
-  //          This does not handle client to server communication.
-  //
-  // Note that each message to the client contains the entirety
-  // of the site messages in one object.
-  //
-  // Examples:
-  //  - number of connected clients
-  //  - number of prenatal exams completed today, this week, month
-  //  - number of patients waiting to be served
-  //  - number of logged in staff
-  // --------------------------------------------------------
-  ioSite.on('connection', function(socket) {
-    var siteSubscription;
-    socket.on('disconnect', function() {
-      siteSubscription.dispose();
-      cntSite--;
-    });
-    cntSite++;
 
     // --------------------------------------------------------
     // Send all site messages out to the authenticated clients.
@@ -1107,7 +1542,11 @@ var init = function(io, sessionMiddle) {
       function(data) {
         // Don't do work unless logged in.
         if (! isValidSocketSession(socket)) return;
-        socket.emit(CONST.TYPE.SITE, data);
+        console.log('=== Socket id: ' + socket.id + ' ===');
+        console.log('**********************');
+        console.log(data);
+        console.log('**********************');
+        socket.send(wrapSite(CONST.TYPE.SITE, data));
       },
       function(err) {
         logCommInfo('Error: ' + err);
@@ -1117,299 +1556,7 @@ var init = function(io, sessionMiddle) {
       }
     );
   });
-
-  // --------------------------------------------------------
-  // The data namespace.
-  // Purpose: Bi-directional communication between each client
-  //          and the server in regard to Midwife-EMR data.
-  //          This may include patient, pregnancy, user, or
-  //          other data that is stored in the database. Allows
-  //          clients to request data, write data, and otherwise
-  //          interact with data. Server pushes data updates to
-  //          clients per client subscriptions.
-  // Examples:
-  //  - search
-  //  - get pregnancy
-  //  - write new field value
-  //  - receive update on field value another client changed
-  // --------------------------------------------------------
-  ioData.on('connection', function(socket) {
-
-    // --------------------------------------------------------
-    // ADHOC processing for the Elm client on the data channel.
-    // --------------------------------------------------------
-    socket.on(ADHOC, function(data) {
-      if (DO_ASSERT) assertModule.ioData_socket_on_ADHOC(data);
-      var json = JSON.parse(data);
-      var adhocType = json.adhocType;
-      var userInfo = socketToUserInfo(socket);
-
-      switch (adhocType) {
-        case ADHOC_LOGIN:
-          handleLogin(json, socket);
-          break;
-
-        case ADHOC_USER_PROFILE:
-          handleUserProfile(socket);
-          break;
-
-        case ADHOC_USER_PROFILE_UPDATE:
-          handleUserProfile(socket, json.data, userInfo);
-          break;
-
-        default:
-          console.log('UNKNOWN adhocType of ' + adhocType + ' encountered.');
-      }
-
-    });
-
-    // --------------------------------------------------------
-    // SELECT event for the Elm client.
-    // --------------------------------------------------------
-    socket.on(DATA_SELECT, function(data) {
-      if (DO_ASSERT) assertModule.ioData_socket_on_DATA_SELECT(data);
-      var json = JSON.parse(data);
-      var retAction;
-
-      if (! isValidSocketSession(socket)) {
-        retAction = returnStatusSELECT(json, void 0, false, SessionExpiredErrorCode, "Your session has expired. Please login again.");
-        console.log(retAction);
-        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
-      } else touchSocketSession(socket);
-
-      // --------------------------------------------------------
-      // TODO: handle all tables, not just certain ones and handle
-      // requests for individual records instead of all records.
-      // --------------------------------------------------------
-      if (json.table) {
-        getLookupTable(json.table, json.id, json.pregnancy_id, json.patient_id, function(err, data) {
-          if (err) {
-            logCommError(err);
-            retAction = returnStatusSELECT(json, void 0, false, SqlErrorCode, err.msg);
-            return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
-          }
-          retAction = returnStatusSELECT(json, data, true);
-          return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
-        });
-      } else {
-        retAction = returnStatusSELECT(json, void 0, false, UnknownErrorCode, 'Table not specified.');
-        return socket.emit(DATA_SELECT_RESPONSE, JSON.stringify(retAction));
-      }
-    });
-
-    // --------------------------------------------------------
-    // Data ADD request from the Elm client.
-    // --------------------------------------------------------
-    socket.on(ADD, function(payload) {
-      if (DO_ASSERT) assertModule.ioData_socket_on_ADD(payload);
-      handleData(ADD, payload, socket);
-    });
-
-    // --------------------------------------------------------
-    // Data CHG request from the Elm client. Record will have
-    // a stateId field with the client's transaction
-    // id. This needs to be stripped and not inserted into DB,
-    // but response needs to include it.
-    // --------------------------------------------------------
-    socket.on(CHG, function(payload) {
-      if (DO_ASSERT) assertModule.ioData_socket_on_CHG(payload);
-      handleData(CHG, payload, socket);
-    });
-
-    // --------------------------------------------------------
-    // Data DEL request from the Elm client. Record will have
-    // a stateId field with the client's transaction
-    // id. This needs to be stripped and not inserted into DB,
-    // but response needs to include it.
-    // --------------------------------------------------------
-    socket.on(DEL, function(payload) {
-      if (DO_ASSERT) assertModule.ioData_socket_on_DEL(payload);
-      handleData(DEL, payload, socket);
-    });
-
-    // ========================================================
-    // ========================================================
-    //
-    //
-    //
-    // NOTE: SOME of the following code from the React/Redux
-    // client that is no longer being used such as:
-    // socket.on(DATA_TABLE_REQUEST, ...
-    // socket.on(DATA_CHANGE, ...
-    //
-    // NOTE: this IS still being used:
-    // dataSubscription = dataSubject.subscribe(
-    //
-    //
-    // ========================================================
-    // ========================================================
-
-    // --------------------------------------------------------
-    // DATA_TABLE_REQUEST: this is used to populate the lookup
-    // tables on the client. Only certain tables are allowed.
-    // --------------------------------------------------------
-    socket.on(DATA_TABLE_REQUEST, function(data) {
-      var action = JSON.parse(data);
-      var retAction
-      var table = action && action.payload && action.payload.table? action.payload.table: void 0;
-      if (table) {
-        logCommInfo(DATA_TABLE_REQUEST + ': ' + table);
-        getLookupTable(table, function(err, data) {
-          if (err) {
-            logCommError(err);
-            retAction = {
-              type: DATA_TABLE_FAILURE,
-              payload: {
-                error: err
-              }
-            }
-            return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
-          }
-          retAction = {
-            type: DATA_TABLE_SUCCESS,
-            payload: {
-              table: table,
-              data: data
-            }
-          }
-          return socket.emit(DATA_TABLE_SUCCESS, JSON.stringify(retAction));
-        });
-      }
-    });
-
-    // --------------------------------------------------------
-    // Handle a data change request from a client.
-    // --------------------------------------------------------
-    socket.on(DATA_CHANGE, function(data) {
-      var action = JSON.parse(data)
-        , retAction = _.extend({}, action)
-        , payload = action && action.payload? action.payload: void 0
-        , transaction = action && action.transaction? action.transaction: void 0
-        , userInfo = socketToUserInfo(socket)
-        , dataChangeFunc      // the function to handle the data change
-        , payloadKey          // the key to store return object to caller
-        , dataTableName       // the table name for the sendData operation
-        , humanOpName         // the name of the operation for logging
-        , errMsg = ''
-        ;
-      if (payload && transaction && userInfo) {
-        // --------------------------------------------------------
-        // Determine what action is required and handle unknown action types.
-        // --------------------------------------------------------
-        switch (action.type) {
-          case ADD_USER_REQUEST:
-            dataChangeFunc = saveUser;
-            payloadKey = 'user';
-            dataTableName = 'user';
-            humanOpName = 'Add User';
-            break;
-          case CHECK_IN_OUT_REQUEST:
-            dataChangeFunc = checkInOut;
-            payloadKey = void 0;    // signify to merge with payload.
-            dataTableName = 'priority';
-            humanOpName = 'checkin/checkout';
-            break;
-          case SAVE_PRENATAL_REQUEST:
-            dataChangeFunc = savePrenatal;
-            payloadKey = 'preg';
-            dataTableName = 'pregnancy';
-            humanOpName = 'prenatal';
-            break;
-
-          default:
-            errMsg = 'Comm: received unknown action.type: ' + action.type;
-            break;
-        }
-        if (! dataChangeFunc || ! dataTableName) {
-          retAction.payload.error = errMsg;
-          logCommWarn(errMsg, true);
-          return socket.emit(DATA_TABLE_FAILURE, JSON.stringify(retAction));
-        }
-
-        // --------------------------------------------------------
-        // Execute the change against the database and respond to
-        // the client appropriately.
-        // --------------------------------------------------------
-        dataChangeFunc(payload, userInfo, function(err, newData) {
-          var data;
-          if (err) {
-            // We do not return to caller with DATA_TABLE_FAILURE because
-            // the error is not due to a coding error, but rather more
-            // likely that the user tried to checkin/out the wrong patient.
-            // By returning on the same transaction, we allow the caller
-            // to handle this "normal" use case rather than treat it as
-            // something completely unexpected, which is what
-            // DATA_TABLE_FAILURE is used for.
-            retAction.payload.error = err;
-            return socket.emit(''+transaction, JSON.stringify(retAction));
-          }
-
-          // --------------------------------------------------------
-          // Return the action object back to the caller.
-          // Note: if payloadKey is undefined, merge newData with payload.
-          // --------------------------------------------------------
-          if (payloadKey) {
-            retAction.payload[payloadKey] = newData;
-          } else {
-            _.extendOwn(retAction.payload, newData);
-          }
-          socket.emit(''+transaction, JSON.stringify(retAction));
-
-          // --------------------------------------------------------
-          // Write out to the log and SYSTEM_LOG for administrators.
-          // --------------------------------------------------------
-          logCommInfo(userInfo.user.username + ": " + humanOpName, true);
-
-          // --------------------------------------------------------
-          // Notify all clients of the change.
-          // NOTE: we assume that the payloadKey is the table name.
-          // --------------------------------------------------------
-          data = {
-            table: dataTableName,
-            id: newData.id,
-            updatedBy: socket.request.session.user.id,
-            sessionID: getSocketSessionId(socket)
-          };
-          sendData(DATA_CHANGE, JSON.stringify(data));
-        })
-      }
-    });
-
-    // --------------------------------------------------------
-    // Send all data messages out to the authenticated clients.
-    // Note: we ARE using this for the Elm client.
-    // --------------------------------------------------------
-    dataSubscription = dataSubject.subscribe(
-      function(data) {
-        // Don't do work unless logged in.
-        if (! isValidSocketSession(socket)) return;
-
-        // --------------------------------------------------------
-        // Send the data change notification to the client if the
-        // change originated with another client.
-        // --------------------------------------------------------
-        if (data.sessionID && getSocketSessionId(socket) !== data.sessionID) {
-          // We don't leak sessionID to other clients.
-          socket.emit(CONST.TYPE.DATA, _.omit(data, 'sessionID'));
-        }
-      },
-      function(err) {
-        logCommInfo('Error: ' + err);
-      },
-      function() {
-        logCommInfo('dataSubject completed.');
-      }
-    );
-  });
-};
-
-/* --------------------------------------------------------
- * getIsInitialized()
- *
- * Returns a function that tells the caller if the comm
- * module is initialized yet.
- * -------------------------------------------------------- */
-function getIsInitialized() {return isInitialized;}
+};    // end init()
 
 module.exports = {
   init

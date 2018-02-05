@@ -20,6 +20,7 @@ var moment = require('moment')
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
+  , getProcessId = require('../util').getProcessId
   , addBlankSelectData = require('../util').addBlankSelectData
   , User = {}
   , userCacheKey = 'users'
@@ -70,6 +71,7 @@ process.on('message', function(msg) {
   if (msg && msg.cmd && msg.cmd === 'User:saved') {
     userIdMapCache.del(userCacheKey, function() {
       User.getUserIdMap();
+      console.log('Updated user cache for process ' + getProcessId());
     });
     userIdMapCache.del(teachersCacheKey, function() {
       User.getTeachersSelectData();

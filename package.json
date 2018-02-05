@@ -32,11 +32,11 @@
     "errorhandler": "^1.4.2",
     "es6-promise": "^3.2.1",
     "es6-shim": "^0.35.1",
-    "express": "^4.13.4",
+    "express": "^4.16.2",
     "express-device": "^0.4.2",
     "express-flash": "0.0.2",
-    "express-mysql-session": "^1.0.0",
-    "express-session": "^1.11.3",
+    "express-mysql-session": "^1.2.2",
+    "express-session": "^1.15.6",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "gulp": "^3.9.1",
@@ -107,9 +107,12 @@
     "watch": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V -- cluster.js --config config/config.development.json",
     "simple": "NODE_ENV=development nodemon --ignore client/ --ignore static/ -V -- cluster.js --config /home/kurt/work/config.simple.js",
     "build": "gulp",
-    "build_admin_client_watch": "(cd client/elm;docker build -f Dockerfile -t midwife-emr-watch-admin-client .)",
-    "admin_client_watch": "docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest",
-    "clean": "rm -f static/js/*"
+    "clean": "rm -f static/js/*",
+    "build_admin_client_watch": "(cd client/elm/admin;docker build -f Dockerfile -t midwife-emr-watch-admin-client --no-cache .)",
+    "admin_client_watch": "docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm/admin:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest",
+    "build_medical_client_watch": "(cd client/elm/medical;docker build -f Dockerfile -t midwife-emr-watch-medical-client --no-cache .)",
+    "medical_client_watch": "docker run --init --name=midwife-emr-watch-medical-client --rm -v $(pwd)/client/elm/medical:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-medical-client:latest",
+    "medical_client_tests": "echo '===== NOTE: medical_client_watch needs to be running. =====';docker container exec -it midwife-emr-watch-medical-client elm-test"
   },
   "jshintConfig": {
     "laxcomma": true

@@ -11,6 +11,17 @@ var assert = require('assert')
     verbose = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   ;
 
+function getTable2(table, id, related, cb) {
+  var m = msg('lookupTables_assert/getTable2()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isString(table), m('table'));
+  assert.ok(_.isNumber(id), m('id'));
+  assert.ok(_.isArray(related), m('related'));
+  assert.ok(_.isFunction(cb), m('cb'));
+  assert.ok(cb.length === 2, m('cb arguments'));
+}
+
 function getLookupTable(table, id, pregnancy_id, patient_id, cb) {
   var m = msg('lookupTables_assert/getLookupTable()');
   if (verbose) console.log(m());
@@ -24,5 +35,6 @@ function getLookupTable(table, id, pregnancy_id, patient_id, cb) {
 }
 
 module.exports = {
-  getLookupTable
+  getLookupTable,
+  getTable2
 };

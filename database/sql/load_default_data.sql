@@ -138,7 +138,10 @@ VALUES
   ('teachingTopics', 'PP/NB', 'PP/NB', 0, 1, NOW()),
   ('teachingTopics', 'Cln Catch', 'Cln Catch', 0, 1, NOW()),
   ('teachingTopics', 'Labr/ROM', 'Labr/ROM', 0, 1, NOW()),
-  ('teachingTopics', 'Iron/Vit', 'Iron/Vit', 0, 1, NOW())
+  ('teachingTopics', 'Iron/Vit', 'Iron/Vit', 0, 1, NOW()),
+  ('stage3TxBloodLoss', 'Oxytocin', 'Oxytocin', 0, 1, NOW()),
+  ('stage3TxBloodLoss', 'IV', 'IV', 0, 1, NOW()),
+  ('stage3TxBloodLoss', 'Bi-Manual Compression External/Internal', 'Bi-Manual Compression External/Internal', 0, 1, NOW())
 ;
 
 SELECT 'vaccinationType' AS 'Loading' FROM DUAL;

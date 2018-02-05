@@ -65,5 +65,19 @@ module.exports = {
   , Pregnotes: require('./Pregnote').Pregnotes
   , PregnoteType: require('./PregnoteType').PregnoteType
   , PregnoteTypes: require('./PregnoteType').PregnoteTypes
+  , Labor: require('./Labor').Labor
+  , Labors: require('./Labor').Labors
+  , LaborStage1: require('./LaborStage1').LaborStage1
+  , LaborStage1s: require('./LaborStage1').LaborStage1s
+  , LaborStage2: require('./LaborStage2').LaborStage2
+  , LaborStage2s: require('./LaborStage2').LaborStage2s
+  , LaborStage3: require('./LaborStage3').LaborStage3
+  , LaborStage3s: require('./LaborStage3').LaborStage3s
+  , Baby: require('./Baby').Baby
+  , Babys: require('./Baby').Babys
+  , Apgar: require('./Apgar').Apgar
+  , Apgars: require('./Apgar').Apgars
+  , MembranesResus: require('./MembranesResus').MembranesResus
+  , MembranesResuses: require('./MembranesResus').MembranesResuses
 };
 

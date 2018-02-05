@@ -314,6 +314,18 @@ cfg.jumpTo.vaccinationAdd = cfg.path.vaccinationAdd;
 cfg.jumpTo.medicationAdd = cfg.path.medicationAdd;
 cfg.jumpTo.prenatalLatest = cfg.path.pregnancyPrenatalExamLatest;
 
+// --------------------------------------------------------
+// While some parts of the application use full page loads
+// (prenatal) while others use an SPA (labor, delivery, pp),
+// provide routes which allow users to switch between them
+// easily.
+//
+// See routes/home.js, handleSPA().
+// See routes/api/index.js, doSpa().
+// --------------------------------------------------------
+cfg.path.toLabor = '/tolabor/:pregId?';                                // GET
+cfg.path.toPrenatal = '/toprenatal/:pregId?';                          // GET
+
 module.exports = cfg;
 
 

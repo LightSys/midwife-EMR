@@ -11,19 +11,22 @@ var path = require('path');
 const CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin
 const OccurenceOrderPlugin = webpack.optimize.OccurenceOrderPlugin
 
-const ELM_ADMIN = path.resolve(__dirname, 'client', 'elm', 'src', 'administrator.js')
-const ELM_MEDICAL = path.resolve(__dirname, 'client', 'elm', 'src', 'medical.js')
 const BUILD_PATH = path.resolve(__dirname, 'static', 'js')
 const MODULE_DIRS = ['node_modules']
-const ELM_SOURCE = path.resolve(__dirname, 'client', 'elm')
+
+const ELM_ADMIN_TOP = path.resolve(__dirname, 'client', 'elm', 'admin')
+const ELM_ADMIN_MAIN = path.resolve(ELM_ADMIN_TOP, 'src', 'administrator.js')
+
+const ELM_MEDICAL_TOP = path.resolve(__dirname, 'client', 'elm', 'medical')
+const ELM_MEDICAL_MAIN = path.resolve(ELM_MEDICAL_TOP, 'src', 'medical.js')
 
 module.exports = {
   entry: {
-    'elm-vendor': [
+    'vendor-socketio': [
       'socket.io-client/lib/index.js'
     ],
-    'administrator': ELM_ADMIN,
-    'medical': ELM_MEDICAL
+    'administrator': ELM_ADMIN_MAIN,
+    'medical': ELM_MEDICAL_MAIN
   },
   resolve: {
     root: __dirname,
@@ -49,8 +52,24 @@ module.exports = {
       {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        loader: 'elm-webpack?cwd=' + ELM_SOURCE
+        include: [ELM_ADMIN_TOP],
+        loader: 'elm-webpack?cwd=' + ELM_ADMIN_TOP
       },
+      {
+        test: /\.elm$/,
+        exclude: [/elm-stuff/, /node_modules/],
+        include: [ELM_MEDICAL_TOP],
+        loader: 'elm-webpack?cwd=' + ELM_MEDICAL_TOP
+      },
+      // Left over from initial failed attempt to load jquery ui for the datepicker widget
+      // while properly resolving jQuery itself.
+      //{
+        //test: /\.(jpe?g|png|gif|svg)$/i,
+        //loaders: [
+          //'file-loader?hash=sha512&digest=hex&name=[hash].[ext]',
+          //'image-webpack-loader?{gifsicle: {interlaced: true}, optipng: {optimizationLevel: 7}, pngquant:{quality: "65-90", speed: 4}, mozjpeg: {quality: 65}}'
+        //]
+      //},
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: "url-loader?limit=10000&minetype=application/font-woff"

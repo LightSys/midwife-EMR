@@ -1,0 +1,27 @@
+doctype html
+html(lang="en")
+  head
+    title= title
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible" content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no")
+
+    link(rel='stylesheet' href='/js/medical.styles.css')
+    link(href="/font-awesome/css/font-awesome.min.css", rel="stylesheet")
+
+    //- Custom jQueryUI providing a datepicker and theme closely matching our style.
+    //- TODO: integrate into Webpack.
+    link(rel='stylesheet' href='/jquery-ui-1.12.1.custom/jquery-ui.min.css')
+
+  body()
+    div(id='app' data-pregId=pregId)
+
+    //- jQueryUI providing a datepicker and theme closely matching our style.
+    //- The external jquery is the barebones jQuery that jQueryUI needs.
+    //- TODO: integrate into Webpack.
+    script(src='/jquery-ui-1.12.1.custom/external/jquery/jquery.js')
+    script(src='/jquery-ui-1.12.1.custom/jquery-ui.js')
+
+    script(src='/js/medical.mwemr-bundle.js')
+      p This is an SPA for medical staff, phase 2 stuff.
+

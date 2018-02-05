@@ -579,6 +579,163 @@ CREATE TABLE IF NOT EXISTS `pregnote` (
 );
 SHOW WARNINGS;
 
+CREATE TABLE IF NOT EXISTS `labor` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  admittanceDate DATETIME NOT NULL,
+  startLaborDate DATETIME NOT NULL,
+  dischargeDate DATETIME NULL,
+  falseLabor TINYINT NOT NULL DEFAULT 0,
+  pos VARCHAR(10) NULL,
+  fh INT NULL,
+  fht INT NULL,
+  systolic INT NULL,
+  diastolic INT NULL,
+  cr INT NULL,
+  temp DECIMAL(4,1) NULL,
+  comments VARCHAR(300),
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  pregnancy_id INT NOT NULL,
+  FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
+CREATE TABLE IF NOT EXISTS `laborStage1` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fullDialation DATETIME NULL,
+  mobility VARCHAR(200) NULL,
+  durationLatent INT NULL,
+  durationActive INT NULL,
+  comments VARCHAR(500) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE(labor_id),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
+CREATE TABLE IF NOT EXISTS `laborStage2` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  birthDatetime DATETIME NULL,
+  birthType VARCHAR(50) NULL,
+  birthPosition VARCHAR(100) NULL,
+  durationPushing INT NULL,
+  birthPresentation VARCHAR(100) NULL,
+  cordWrap BOOLEAN NULL,
+  cordWrapType VARCHAR(50) NULL,
+  deliveryType VARCHAR(100) NULL,
+  shoulderDystocia BOOLEAN NULL,
+  shoulderDystociaMinutes INT NULL,
+  laceration BOOLEAN NULL,
+  episiotomy BOOLEAN NULL,
+  repair BOOLEAN NULL,
+  degree VARCHAR(50) NULL,
+  lacerationRepairedBy VARCHAR(100) NULL,
+  birthEBL INT NULL,
+  meconium VARCHAR(50) NULL,
+  comments VARCHAR(500) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE(labor_id),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
+CREATE TABLE IF NOT EXISTS `laborStage3` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  placentaDatetime DATETIME NULL,
+  placentaDeliverySpontaneous BOOLEAN NULL,
+  placentaDeliveryAMTSL BOOLEAN NULL,
+  placentaDeliveryCCT BOOLEAN NULL,
+  placentaDeliveryManual BOOLEAN NULL,
+  maternalPosition VARCHAR(50) NULL,
+  txBloodLoss1 VARCHAR(50) NULL,
+  txBloodLoss2 VARCHAR(50) NULL,
+  txBloodLoss3 VARCHAR(50) NULL,
+  txBloodLoss4 VARCHAR(50) NULL,
+  txBloodLoss5 VARCHAR(50) NULL,
+  placentaShape VARCHAR(50) NULL,
+  placentaInsertion VARCHAR(50) NULL,
+  placentaNumVessels INT NULL,
+  schultzDuncan ENUM('Schultz', 'Duncan') NULL,
+  placentaMembranesComplete BOOLEAN NULL,
+  placentaOther VARCHAR(100) NULL,
+  comments VARCHAR(500) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE(labor_id),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+SHOW WARNINGS;
+
+CREATE TABLE IF NOT EXISTS `baby` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  birthNbr INT NOT NULL,
+  lastname VARCHAR(50) NULL,
+  firstname VARCHAR(50) NULL,
+  middlename VARCHAR(50) NULL,
+  sex ENUM('M', 'F') NOT NULL,
+  birthWeight INT NULL,
+  bFedEstablished DATETIME NULL,
+  nbsDate DATETIME NULL,
+  nbsResult VARCHAR(50) NULL,
+  bcgDate DATETIME NULL,
+  comments VARCHAR(500) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE(labor_id, birthNbr),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `apgar` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  minute INT NOT NULL,
+  score INT NOT NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  baby_id INT NOT NULL,
+  UNIQUE(baby_id, minute),
+  FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `membranesResus` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ruptureDatetime DATETIME NULL,
+  rupture ENUM('AROM', 'SROM', 'Other') NULL,
+  ruptureComment VARCHAR(300) NULL,
+  amniotic ENUM('Clear', 'Lt Stain', 'Mod Stain', 'Thick Stain', 'Other') NULL,
+  amnioticComment VARCHAR(300) NULL,
+  bulb BOOLEAN NULL,
+  machine BOOLEAN NULL,
+  freeFlowO2 BOOLEAN NULL,
+  chestCompressions BOOLEAN NULL,
+  ppv BOOLEAN NULL,
+  comments VARCHAR(300) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  baby_id INT NOT NULL,
+  UNIQUE(baby_id),
+  FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;
 
 

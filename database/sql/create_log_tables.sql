@@ -220,3 +220,72 @@ ALTER TABLE pregnoteLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE pregnoteLog DROP PRIMARY KEY;
 ALTER TABLE pregnoteLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating laborLog
+SELECT 'laborLog' AS Creating FROM DUAL;
+CREATE TABLE laborLog LIKE labor;
+ALTER TABLE laborLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE laborLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE laborLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE laborLog DROP PRIMARY KEY;
+ALTER TABLE laborLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating laborStage1Log
+SELECT 'laborStage1Log' AS Creating FROM DUAL;
+CREATE TABLE laborStage1Log LIKE laborStage1;
+ALTER TABLE laborStage1Log ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE laborStage1Log ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE laborStage1Log MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE laborStage1Log DROP PRIMARY KEY;
+ALTER TABLE laborStage1Log ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE laborStage1Log DROP KEY labor_id;
+--
+-- Creating laborStage2Log
+SELECT 'laborStage2Log' AS Creating FROM DUAL;
+CREATE TABLE laborStage2Log LIKE laborStage2;
+ALTER TABLE laborStage2Log ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE laborStage2Log ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE laborStage2Log MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE laborStage2Log DROP PRIMARY KEY;
+ALTER TABLE laborStage2Log ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE laborStage2Log DROP KEY labor_id;
+--
+-- Creating laborStage3Log
+SELECT 'laborStage3Log' AS Creating FROM DUAL;
+CREATE TABLE laborStage3Log LIKE laborStage3;
+ALTER TABLE laborStage3Log ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE laborStage3Log ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE laborStage3Log MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE laborStage3Log DROP PRIMARY KEY;
+ALTER TABLE laborStage3Log ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE laborStage3Log DROP KEY labor_id;
+--
+-- Creating babyLog
+SELECT 'babyLog' AS Creating FROM DUAL;
+CREATE TABLE babyLog LIKE baby;
+ALTER TABLE babyLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyLog DROP PRIMARY KEY;
+ALTER TABLE babyLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE babyLog DROP KEY labor_id;
+--
+-- Creating apgarLog
+SELECT 'apgarLog' AS Creating FROM DUAL;
+CREATE TABLE apgarLog LIKE apgar;
+ALTER TABLE apgarLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE apgarLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE apgarLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE apgarLog DROP PRIMARY KEY;
+ALTER TABLE apgarLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE apgarLog DROP KEY baby_id;
+--
+-- Creating membranesResusLog
+SELECT 'membranesResusLog' AS Creating FROM DUAL;
+CREATE TABLE membranesResusLog LIKE membranesResus;
+ALTER TABLE membranesResusLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE membranesResusLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE membranesResusLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE membranesResusLog DROP PRIMARY KEY;
+ALTER TABLE membranesResusLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE membranesResusLog DROP KEY baby_id;
+--
