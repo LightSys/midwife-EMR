@@ -366,14 +366,16 @@ or not.
 checkboxCore : String -> Bool -> (Bool -> msg) -> Maybe Bool -> Html msg
 checkboxCore lbl isBoldLabel msg val =
     H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-        [ H.input
-            [ HA.type_ "checkbox"
-            , HE.onClick (msg <| not <| Maybe.withDefault False val)
-            , HA.checked <| Maybe.withDefault False val
+        [ H.label []
+            [ H.input
+                [ HA.type_ "checkbox"
+                , HE.onClick (msg <| not <| Maybe.withDefault False val)
+                , HA.checked <| Maybe.withDefault False val
+                ]
+                []
+            , H.span [ HA.classList [ ( "c-text--loud", isBoldLabel ) ] ]
+                [ H.text lbl ]
             ]
-            []
-        , H.span [ HA.classList [ ( "c-text--loud", isBoldLabel ) ] ]
-            [ H.text lbl ]
         ]
 
 
