@@ -196,6 +196,27 @@ type EditableSelectDataName
     | ReferralsSDN
     | ReligionSDN
     | TeachingTopicsSDN
+    | NewbornExamAbdomenSDN
+    | NewbornExamAnusSDN
+    | NewbornExamAppearanceSDN
+    | NewbornExamBackSDN
+    | NewbornExamChestSDN
+    | NewbornExamColorSDN
+    | NewbornExamCordSDN
+    | NewbornExamEarsSDN
+    | NewbornExamExtremitiesSDN
+    | NewbornExamEyesSDN
+    | NewbornExamFemoralPulsesSDN
+    | NewbornExamGenitaliaFemaleSDN
+    | NewbornExamGenitaliaMaleSDN
+    | NewbornExamHeadSDN
+    | NewbornExamHeartSDN
+    | NewbornExamHipsSDN
+    | NewbornExamLungsSDN
+    | NewbornExamMouthSDN
+    | NewbornExamNeckSDN
+    | NewbornExamNoseSDN
+    | NewbornExamSkinSDN
 
 
 type TableResponse
