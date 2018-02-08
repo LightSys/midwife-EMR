@@ -39,6 +39,7 @@ module Util
         , maybeStringToMaybeInt
         , monthToInt
         , nbsp
+        , pipeToComma
         , removeTimeFromDate
         , sortDate
         , stringToIntBetween
@@ -72,7 +73,6 @@ import Time exposing (Time)
 
 
 -- LOCAL IMPORTS --
-
 
 (=>) : a -> b -> ( a, b )
 (=>) =
@@ -120,6 +120,15 @@ boolToInt bool =
 
         False ->
             0
+
+
+{-| Takes a string with pipes as separators and
+returns a string with commas as separators.
+-}
+pipeToComma : String -> String
+pipeToComma str =
+    String.split "|" str
+        |> String.join ", "
 
 
 {-| Convert a String to a Maybe Int if the String can be

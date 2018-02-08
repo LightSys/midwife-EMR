@@ -27,6 +27,7 @@ import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
 import Data.LaborStage3 exposing (LaborStage3Record, LaborStage3RecordNew)
 import Data.MembranesResus exposing (MembranesResusRecordNew, MembranesResusRecord)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
+import Data.NewbornExam exposing (NewbornExamRecord, NewbornExamRecordNew)
 import Data.Postpartum as Postpartum
 import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
@@ -49,6 +50,7 @@ type Msg
     | AdmittingMsg Admitting.AdmittingSubMsg
     | ContPPLoaded PregnancyId LaborRecord
     | ContPPMsg ContPP.SubMsg
+    | ContPPSelectQuery Table (Maybe Int) (List Table)
     | LaborDelIppLoaded PregnancyId
     | LaborDelIppMsg LaborDelIpp.SubMsg
     | LaborDelIppSelectQuery Table (Maybe Int) (List Table)
@@ -110,10 +112,12 @@ type ProcessType
     | AddLaborStage2Type Msg LaborStage2RecordNew
     | AddLaborStage3Type Msg LaborStage3RecordNew
     | AddMembranesResusType Msg MembranesResusRecordNew
+    | AddNewbornExamType Msg NewbornExamRecordNew
     | UpdateBabyType Msg BabyRecord
     | UpdateLaborType Msg LaborRecord
     | UpdateLaborStage1Type Msg LaborStage1Record
     | UpdateLaborStage2Type Msg LaborStage2Record
     | UpdateLaborStage3Type Msg LaborStage3Record
     | UpdateMembranesResusType Msg MembranesResusRecord
+    | UpdateNewbornExamType Msg NewbornExamRecord
     | SelectQueryType Msg SelectQuery

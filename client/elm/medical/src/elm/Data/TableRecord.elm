@@ -16,8 +16,10 @@ import Data.LaborStage1 exposing (LaborStage1Record, laborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record, laborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record, laborStage3Record)
 import Data.MembranesResus exposing (MembranesResusRecord, membranesResusRecord)
+import Data.NewbornExam exposing (NewbornExamRecord, newbornExamRecord)
 import Data.Patient exposing (PatientRecord, patientRecord)
 import Data.Pregnancy exposing (PregnancyRecord, pregnancyRecord)
+import Data.SelectData exposing (SelectDataRecord, selectDataRecord)
 import Data.Table as DT exposing (Table(..))
 
 
@@ -30,6 +32,8 @@ type TableRecord
     | TableRecordLaborStage3 (List LaborStage3Record)
     | TableRecordBaby (List BabyRecord)
     | TableRecordMembranesResus (List MembranesResusRecord)
+    | TableRecordNewbornExam (List NewbornExamRecord)
+    | TableRecordSelectData (List SelectDataRecord)
 
 
 tableRecord : Table -> JD.Decoder TableRecord
@@ -53,11 +57,17 @@ tableRecord table =
         MembranesResus ->
             JD.map TableRecordMembranesResus (JD.list membranesResusRecord)
 
+        NewbornExam ->
+            JD.map TableRecordNewbornExam (JD.list newbornExamRecord)
+
         Patient ->
             JD.map TableRecordPatient (JD.list patientRecord)
 
         Pregnancy ->
             JD.map TableRecordPregnancy (JD.list pregnancyRecord)
+
+        SelectData ->
+            JD.map TableRecordSelectData (JD.list selectDataRecord)
 
         _ ->
             JD.fail <| "Cannot yet handle table of " ++ (DT.tableToString table) ++ " in Data.TableRecord.tableRecord."

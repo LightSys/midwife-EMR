@@ -70,29 +70,21 @@ type alias LaborRecordNew =
 -}
 laborRecord : JD.Decoder LaborRecord
 laborRecord =
-    let
-        handleBool id ad ld ed fl pos fh fht sys dias cr temp comm pregId =
-            let
-                falseLabor =
-                    fl == 1
-            in
-                LaborRecord id ad ld ed falseLabor pos fh fht sys dias cr temp comm pregId
-    in
-        JDP.decode handleBool
-            |> JDP.required "id" JD.int
-            |> JDP.required "admittanceDate" JDE.date
-            |> JDP.required "startLaborDate" JDE.date
-            |> JDP.optional "dischargeDate" (JD.maybe JDE.date) Nothing
-            |> JDP.required "falseLabor" JD.int
-            |> JDP.required "pos" JD.string
-            |> JDP.required "fh" JD.int
-            |> JDP.required "fht" JD.int
-            |> JDP.required "systolic" JD.int
-            |> JDP.required "diastolic" JD.int
-            |> JDP.required "cr" JD.int
-            |> JDP.required "temp" JD.float
-            |> JDP.required "comments" (JD.maybe JD.string)
-            |> JDP.required "pregnancy_id" JD.int
+    JDP.decode LaborRecord
+        |> JDP.required "id" JD.int
+        |> JDP.required "admittanceDate" JDE.date
+        |> JDP.required "startLaborDate" JDE.date
+        |> JDP.optional "dischargeDate" (JD.maybe JDE.date) Nothing
+        |> JDP.required "falseLabor" (JD.map (\f -> f == 1) JD.int)
+        |> JDP.required "pos" JD.string
+        |> JDP.required "fh" JD.int
+        |> JDP.required "fht" JD.int
+        |> JDP.required "systolic" JD.int
+        |> JDP.required "diastolic" JD.int
+        |> JDP.required "cr" JD.int
+        |> JDP.required "temp" JD.float
+        |> JDP.required "comments" (JD.maybe JD.string)
+        |> JDP.required "pregnancy_id" JD.int
 
 
 {-| Encode LaborRecordNew for sending to the server as

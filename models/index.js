@@ -79,5 +79,7 @@ module.exports = {
   , Apgars: require('./Apgar').Apgars
   , MembranesResus: require('./MembranesResus').MembranesResus
   , MembranesResuses: require('./MembranesResus').MembranesResuses
+  , NewbornExam: require('./NewbornExam').NewbornExam
+  , NewbornExams: require('./NewbornExam').NewbornExams
 };
 

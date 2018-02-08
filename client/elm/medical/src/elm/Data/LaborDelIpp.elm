@@ -1,7 +1,6 @@
 module Data.LaborDelIpp
     exposing
         ( AddOtherApgar(..)
-        , Dialog(..)
         , Field(..)
         , SubMsg(..)
         )
@@ -12,7 +11,7 @@ import Time exposing (Time)
 
 -- LOCAL IMPORTS --
 
-import Const exposing (FldChgValue)
+import Const exposing (Dialog(..), FldChgValue)
 import Data.Baby exposing (ApgarScore)
 import Data.DataCache exposing (DataCache)
 import Data.DatePicker exposing (DateFieldMessage)
@@ -70,13 +69,6 @@ type AddOtherApgar
     | MinuteAddOtherApgar
     | ScoreAddOtherApgar
     | FinishedAddOtherApgar
-
-type Dialog
-    = OpenDialog
-    | CloseNoSaveDialog
-    | CloseSaveDialog
-    | EditDialog
-
 
 type Field
     = AdmittanceDateFld

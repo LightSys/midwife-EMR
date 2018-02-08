@@ -10,7 +10,7 @@ module Page.LaborDelIpp
 
 -- LOCAL IMPORTS --
 
-import Const exposing (FldChgValue(..))
+import Const exposing (Dialog(..), FldChgValue(..))
 import Data.Baby
     exposing
         ( ApgarScore(..)
@@ -46,7 +46,6 @@ import Data.Labor
 import Data.LaborDelIpp
     exposing
         ( AddOtherApgar(..)
-        , Dialog(..)
         , Field(..)
         , SubMsg(..)
         )
@@ -304,7 +303,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                     of
                         Just rec ->
                             ( Just <| LaborId rec.id
-                              --, getLaborDetails (LaborId rec.id) store
                             , getTableData store
                                 Labor
                                 (Just rec.id)
@@ -449,49 +447,11 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
     )
 
 
-{-| Request all of the labor details records from the server. This module
-will receive data via the DataCache SubMsg where we specify which tables
-we are interested in obtaining.
-
-TODO: retire this if not needed.
-
--}
-getLaborDetails : LaborId -> ProcessStore -> ( ProcessStore, Cmd Msg )
-getLaborDetails lid store =
-    let
-        selectQuery =
-            SelectQuery Labor
-                (Just (getLaborId lid))
-                [ LaborStage1, LaborStage2, LaborStage3, Baby ]
-
-        ( processId, processStore ) =
-            Processing.add
-                (SelectQueryType
-                    (LaborDelIppMsg
-                        (DataCache Nothing
-                            (Just [ LaborStage1, LaborStage2, LaborStage3, Baby ])
-                        )
-                    )
-                    selectQuery
-                )
-                Nothing
-                store
-
-        msg =
-            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
-    in
-    processStore
-        => Ports.outgoing msg
-
-
 {-| Retrieve additional data from the server as may be necessary after the page is
 fully loaded.
 
 Note that the apgar table does not use this because the apgar records are handled
 in a customized manner on the client and server as part of the baby records.
-
-TODO: see if getLaborDetails can be replaced with this.
-
 -}
 getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
 getTableData store table key relatedTbls =
@@ -499,11 +459,17 @@ getTableData store table key relatedTbls =
         selectQuery =
             SelectQuery table key relatedTbls
 
+        -- We add the primary table to the list of tables so that refreshModelFromCache
+        -- will update our model for the primary table too.
+        -- TODO: ContPP needed this, alright here too?
+        dataCacheTables =
+            relatedTbls ++ [ table ]
+
         ( processId, processStore ) =
             Processing.add
                 (SelectQueryType
                     (LaborDelIppMsg
-                        (DataCache Nothing (Just relatedTbls))
+                        (DataCache Nothing (Just dataCacheTables))
                     )
                     selectQuery
                 )
@@ -3448,6 +3414,12 @@ update session msg model =
                                         "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
                             in
                             model
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
+                FldChgStringList _ _ ->
+                    ( model
                     , Cmd.none
                     , Cmd.none
                     )

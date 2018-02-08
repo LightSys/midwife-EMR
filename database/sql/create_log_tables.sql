@@ -289,3 +289,13 @@ ALTER TABLE membranesResusLog DROP PRIMARY KEY;
 ALTER TABLE membranesResusLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE membranesResusLog DROP KEY baby_id;
 --
+-- Creating newbornExamLog
+SELECT 'newbornExamLog' AS Creating FROM DUAL;
+CREATE TABLE newbornExamLog LIKE newbornExam;
+ALTER TABLE newbornExamLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE newbornExamLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE newbornExamLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE newbornExamLog DROP PRIMARY KEY;
+ALTER TABLE newbornExamLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE newbornExamLog DROP KEY baby_id;
+--

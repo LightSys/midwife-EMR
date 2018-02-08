@@ -19,8 +19,10 @@ type Table
     | LaborStage2
     | LaborStage3
     | MembranesResus
+    | NewbornExam
     | Patient
     | Pregnancy
+    | SelectData
 
 
 -- HELPERS --
@@ -55,11 +57,17 @@ tableToString tbl =
         MembranesResus ->
             "membranesResus"
 
+        NewbornExam ->
+            "newbornExam"
+
         Patient ->
             "patient"
 
         Pregnancy ->
             "pregnancy"
+
+        SelectData ->
+            "selectData"
 
 
 stringToTable : String -> Table
@@ -83,11 +91,17 @@ stringToTable tbl =
         "membranesResus" ->
             MembranesResus
 
+        "newbornExam" ->
+            NewbornExam
+
         "patient" ->
             Patient
 
         "pregnancy" ->
             Pregnancy
+
+        "selectData" ->
+            SelectData
 
         _ ->
             Unknown

@@ -139,6 +139,7 @@ var rx = require('rx')
   , TABLE_labTestValue = 'labTestValue'
   , TABLE_medicationType = 'medicationType'
   , TABLE_membranesResus = 'membranesResus'
+  , TABLE_newbornExam = 'newbornExam'
   , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
@@ -179,6 +180,9 @@ var rx = require('rx')
   , addMembranesResus = require('./routes/comm/labor').addMembranesResus
   , updateMembranesResus = require('./routes/comm/labor').updateMembranesResus
   , delMembranesResus = require('./routes/comm/labor').delMembranesResus
+  , addNewbornExam = require('./routes/comm/labor').addNewbornExam
+  , updateNewbornExam = require('./routes/comm/labor').updateNewbornExam
+  , delNewbornExam = require('./routes/comm/labor').delNewbornExam
   , addSelectData = require('./routes/comm/lookupTables').addSelectData
   , delSelectData = require('./routes/comm/lookupTables').delSelectData
   , updateSelectData = require('./routes/comm/lookupTables').updateSelectData
@@ -896,6 +900,13 @@ var getFuncForTableOp = function(table, op) {
         case ADD: func = addMembranesResus; break;
         case CHG: func = updateMembranesResus; break;
         case DEL: func = delMembranesResus; break;
+      }
+      break;
+    case TABLE_newbornExam:
+      switch (op) {
+        case ADD: func = addNewbornExam; break;
+        case CHG: func = updateNewbornExam; break;
+        case DEL: func = delNewbornExam; break;
       }
       break;
     case TABLE_selectData:

@@ -969,6 +969,12 @@ update session msg model =
                     , Cmd.none
                     )
 
+                FldChgStringList _ _ ->
+                    ( model
+                    , Cmd.none
+                    , Cmd.none
+                    )
+
                 FldChgBool value ->
                     ( case fld of
                         _ ->

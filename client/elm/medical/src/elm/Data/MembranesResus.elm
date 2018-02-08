@@ -29,6 +29,7 @@ import Json.Encode.Extra as JEE
 
 -- LOCAL IMPORTS --
 
+import Data.Table exposing (Table(..), tableToString)
 import Util as U
 
 
@@ -232,7 +233,7 @@ membranesResusRecord =
 membranesResusRecordToValue : MembranesResusRecord -> JE.Value
 membranesResusRecordToValue rec =
     JE.object
-        [ ( "table", (JE.string "membranesResus") )
+        [ ( "table", (JE.string (tableToString MembranesResus)) )
         , ( "data"
           , JE.object
                 [ ( "id", (JE.int rec.id) )

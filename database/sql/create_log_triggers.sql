@@ -672,6 +672,48 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: newbornExam_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS newbornExam_after_insert;
+CREATE TRIGGER newbornExam_after_insert AFTER INSERT ON newbornExam
+FOR EACH ROW
+BEGIN
+  INSERT INTO newbornExamLog
+  (id, examDatetime, examiners, rr, hr, temperature, length, headCir, chestCir, appearance, color, skin, head, eyes, ears, nose, mouth, neck, chest, lungs, heart, abdomen, hips, cord, femoralPulses, genitalia, anus, back, extremities, estGA, moroReflex, moroReflexComment, palmarReflex, palmarReflexComment, steppingReflex, steppingReflexComment, plantarReflex, plantarReflexComment, babinskiReflex, babinskiReflexComment, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.examDatetime, NEW.examiners, NEW.rr, NEW.hr, NEW.temperature, NEW.length, NEW.headCir, NEW.chestCir, NEW.appearance, NEW.color, NEW.skin, NEW.head, NEW.eyes, NEW.ears, NEW.nose, NEW.mouth, NEW.neck, NEW.chest, NEW.lungs, NEW.heart, NEW.abdomen, NEW.hips, NEW.cord, NEW.femoralPulses, NEW.genitalia, NEW.anus, NEW.back, NEW.extremities, NEW.estGA, NEW.moroReflex, NEW.moroReflexComment, NEW.palmarReflex, NEW.palmarReflexComment, NEW.steppingReflex, NEW.steppingReflexComment, NEW.plantarReflex, NEW.plantarReflexComment, NEW.babinskiReflex, NEW.babinskiReflexComment, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: newbornExam_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS newbornExam_after_update;
+CREATE TRIGGER newbornExam_after_update AFTER UPDATE ON newbornExam
+FOR EACH ROW
+BEGIN
+  INSERT INTO newbornExamLog
+  (id, examDatetime, examiners, rr, hr, temperature, length, headCir, chestCir, appearance, color, skin, head, eyes, ears, nose, mouth, neck, chest, lungs, heart, abdomen, hips, cord, femoralPulses, genitalia, anus, back, extremities, estGA, moroReflex, moroReflexComment, palmarReflex, palmarReflexComment, steppingReflex, steppingReflexComment, plantarReflex, plantarReflexComment, babinskiReflex, babinskiReflexComment, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.examDatetime, NEW.examiners, NEW.rr, NEW.hr, NEW.temperature, NEW.length, NEW.headCir, NEW.chestCir, NEW.appearance, NEW.color, NEW.skin, NEW.head, NEW.eyes, NEW.ears, NEW.nose, NEW.mouth, NEW.neck, NEW.chest, NEW.lungs, NEW.heart, NEW.abdomen, NEW.hips, NEW.cord, NEW.femoralPulses, NEW.genitalia, NEW.anus, NEW.back, NEW.extremities, NEW.estGA, NEW.moroReflex, NEW.moroReflexComment, NEW.palmarReflex, NEW.palmarReflexComment, NEW.steppingReflex, NEW.steppingReflexComment, NEW.plantarReflex, NEW.plantarReflexComment, NEW.babinskiReflex, NEW.babinskiReflexComment, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: newbornExam_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS newbornExam_after_delete;
+CREATE TRIGGER newbornExam_after_delete AFTER DELETE ON newbornExam
+FOR EACH ROW
+BEGIN
+  INSERT INTO newbornExamLog
+  (id, examDatetime, examiners, rr, hr, temperature, length, headCir, chestCir, appearance, color, skin, head, eyes, ears, nose, mouth, neck, chest, lungs, heart, abdomen, hips, cord, femoralPulses, genitalia, anus, back, extremities, estGA, moroReflex, moroReflexComment, palmarReflex, palmarReflexComment, steppingReflex, steppingReflexComment, plantarReflex, plantarReflexComment, babinskiReflex, babinskiReflexComment, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.examDatetime, OLD.examiners, OLD.rr, OLD.hr, OLD.temperature, OLD.length, OLD.headCir, OLD.chestCir, OLD.appearance, OLD.color, OLD.skin, OLD.head, OLD.eyes, OLD.ears, OLD.nose, OLD.mouth, OLD.neck, OLD.chest, OLD.lungs, OLD.heart, OLD.abdomen, OLD.hips, OLD.cord, OLD.femoralPulses, OLD.genitalia, OLD.anus, OLD.back, OLD.extremities, OLD.estGA, OLD.moroReflex, OLD.moroReflexComment, OLD.palmarReflex, OLD.palmarReflexComment, OLD.steppingReflex, OLD.steppingReflexComment, OLD.plantarReflex, OLD.plantarReflexComment, OLD.babinskiReflex, OLD.babinskiReflexComment, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: patient_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

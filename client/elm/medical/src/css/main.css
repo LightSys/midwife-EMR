@@ -216,6 +216,9 @@
   width: 100%;
   margin: 0 0;
 }
+.mw-form-field-vertical {
+  margin-bottom: 0.5em;
+}
 .error-msg-right {
   text-align: right;
   padding: 10px 0;

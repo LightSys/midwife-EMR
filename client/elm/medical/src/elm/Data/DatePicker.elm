@@ -33,6 +33,7 @@ type DateField
     | BabyBFedEstablishedDateField
     | BabyNbsDateField
     | BabyBcgDateField
+    | NewBornExamDateField
 
 
 stringToDateField : String -> DateField
@@ -64,6 +65,9 @@ stringToDateField str =
 
         "laborStage3Id" ->
             LaborDelIppStage3DateField
+
+        "newbornExamId" ->
+            NewBornExamDateField
 
         _ ->
             UnknownDateField str
@@ -102,6 +106,8 @@ dateFieldToString df =
         MembranesResusRuptureDateField ->
             "membranesResusRuptureId"
 
+        NewBornExamDateField ->
+            "newbornExamId"
         UnknownDateField str ->
             "Warning: Unknown DateField: " ++ str
 

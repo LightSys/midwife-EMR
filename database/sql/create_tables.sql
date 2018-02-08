@@ -736,6 +736,55 @@ CREATE TABLE IF NOT EXISTS `membranesResus` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `newbornExam` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  examDatetime DATETIME NOT NULL,
+  examiners VARCHAR(50) NOT NULL,
+  rr INT NULL,
+  hr INT NULL,
+  temperature DECIMAL(4,1) NULL,
+  length INT NULL,
+  headCir INT NULL,
+  chestCir INT NULL,
+  appearance VARCHAR(500) NULL,
+  color VARCHAR(500) NULL,
+  skin VARCHAR(500) NULL,
+  head VARCHAR(500) NULL,
+  eyes VARCHAR(500) NULL,
+  ears VARCHAR(500) NULL,
+  nose VARCHAR(500) NULL,
+  mouth VARCHAR(500) NULL,
+  neck VARCHAR(500) NULL,
+  chest VARCHAR(500) NULL,
+  lungs VARCHAR(500) NULL,
+  heart VARCHAR(500) NULL,
+  abdomen VARCHAR(500) NULL,
+  hips VARCHAR(500) NULL,
+  cord VARCHAR(500) NULL,
+  femoralPulses VARCHAR(500) NULL,
+  genitalia VARCHAR(500) NULL,
+  anus VARCHAR(500) NULL,
+  back VARCHAR(500) NULL,
+  extremities VARCHAR(500) NULL,
+  estGA VARCHAR(50) NULL,
+  moroReflex BOOLEAN NULL,
+  moroReflexComment VARCHAR(50) NULL,
+  palmarReflex BOOLEAN NULL,
+  palmarReflexComment VARCHAR(50) NULL,
+  steppingReflex BOOLEAN NULL,
+  steppingReflexComment VARCHAR(50) NULL,
+  plantarReflex BOOLEAN NULL,
+  plantarReflexComment VARCHAR(50) NULL,
+  babinskiReflex BOOLEAN NULL,
+  babinskiReflexComment VARCHAR(50) NULL,
+  comments VARCHAR(300) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  baby_id INT NOT NULL,
+  UNIQUE(baby_id),
+  FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;
-
-

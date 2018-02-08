@@ -26,6 +26,7 @@ import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLabor
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.MembranesResus exposing (membranesResusRecordNewToMembranesResusRecord, MembranesResusId(..))
+import Data.NewbornExam exposing (NewbornExamId(..), newbornExamRecordNewToNewbornExamRecord)
 import Data.Postpartum exposing (SubMsg(..))
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
@@ -383,6 +384,16 @@ update msg noAutoTouchModel =
                         newSubMsg
                         subModel
 
+            ( ContPPSelectQuery tbl key relatedTables, ContPP subModel ) ->
+                -- Request by the sub page to retrieve additional data from the
+                -- server after the page's initialization and load is already
+                -- complete.
+                let
+                    ( store, newCmd ) =
+                        PageContPP.getTableData model.processStore tbl key relatedTables
+                in
+                    { model | processStore = store } => newCmd
+
             ( LaborDelIppLoaded pregId, _ ) ->
                 -- This page has enough of what it needs from the server in order
                 -- to display the page. The newCmd returned from
@@ -679,6 +690,20 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddNewbornExamType (ContPPMsg (Data.ContPP.DataCache _ _)) newbornExamRecordNew) ->
+                                    let
+                                        newbornExamRec =
+                                            newbornExamRecordNewToNewbornExamRecord
+                                                (NewbornExamId dataAddMsg.response.id)
+                                                newbornExamRecordNew
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ NewbornExam ])
+                                    in
+                                        ( { model | dataCache = DCache.put (NewbornExamDataCache newbornExamRec) model.dataCache }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
+                                        )
+
                                 _ ->
                                     let
                                         msgText =
@@ -794,6 +819,15 @@ updateMessage incoming model =
                                     in
                                         ( { model | dataCache = DCache.put (MembranesResusDataCache membranesResusRecord) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                Just (UpdateNewbornExamType (ContPPMsg (Data.ContPP.DataCache _ _)) newbornExamRecord) ->
+                                    let
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ NewbornExam ])
+                                    in
+                                        ( { model | dataCache = DCache.put (NewbornExamDataCache newbornExamRecord) model.dataCache }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
                                         )
 
                                 _ ->
@@ -922,6 +956,19 @@ updateMessage incoming model =
                                             in
                                                 { mdl | dataCache = dc }
 
+                                        TableRecordNewbornExam recs ->
+                                            let
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (NewbornExamDataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+
+                                            in
+                                                { mdl | dataCache = dc }
+
                                         TableRecordPatient recs ->
                                             -- We only ever want one patient in our store at a time.
                                             let
@@ -957,6 +1004,14 @@ updateMessage incoming model =
                                                             mdl.dataCache
                                             in
                                                 { mdl | pregnancyRecord = rec, dataCache = dc }
+
+                                        TableRecordSelectData recs ->
+                                            let
+                                                dc =
+                                                    DCache.put (SelectDataDataCache recs) mdl.dataCache
+                                            in
+                                                { mdl | selectDataRecords = recs, dataCache = dc }
+
                                 )
                                 model
                                 dataMsg.response.data
@@ -1007,7 +1062,17 @@ updateMessage incoming model =
                         Just (UpdateMembranesResusType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (SelectQueryType msg _) ->
+                        Just (AddNewbornExamType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateNewbornExamType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (SelectQueryType msg selectQuery) ->
+                            let
+                                _ =
+                                    Debug.log "selectQuery" <| toString selectQuery
+                            in
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Nothing ->
@@ -1041,37 +1106,45 @@ setRoute maybeRoute model =
                         { model | pageState = Loaded NotFound } => Cmd.none
 
             Just (Route.ContPPRoute) ->
-                case ( model.currPregId, model.laborRecords ) of
-                    ( Just pregId, Just recs ) ->
-                        let
-                            -- Get the most recent labor record which we assume is
-                            -- the current one to use.
-                            laborRec =
-                                Dict.values recs
-                                    |> LE.maximumBy
-                                        (\lr ->
-                                            if lr.falseLabor then
-                                                -1
-                                            else
-                                                Date.toTime lr.admittanceDate
-                                        )
-                        in
-                            case laborRec of
-                                Just rec ->
-                                    if not rec.falseLabor then
-                                        PageContPP.init pregId rec model.session model.processStore
-                                            |> (\( store, cmd ) -> transition store cmd)
-                                    else
+                if model.dialogActive then
+                    -- We are coming back from an open dialog, so no need to
+                    -- retrieve data from the server all over again.
+                    { model | dialogActive = False } => Cmd.none
+                else
+                    case ( model.currPregId, model.laborRecords ) of
+                        ( Just pregId, Just recs ) ->
+                            let
+                                -- Get the most recent labor record which we assume is
+                                -- the current one to use.
+                                laborRec =
+                                    Dict.values recs
+                                        |> LE.maximumBy
+                                            (\lr ->
+                                                if lr.falseLabor then
+                                                    -1
+                                                else
+                                                    Date.toTime lr.admittanceDate
+                                            )
+                            in
+                                case laborRec of
+                                    Just rec ->
+                                        if not rec.falseLabor then
+                                            PageContPP.init pregId rec model.session model.processStore
+                                                |> (\( store, cmd ) -> transition store cmd)
+                                        else
+                                            -- We don't go there if we are not ready.
+                                            model => Cmd.none
+
+                                    Nothing ->
                                         -- We don't go there if we are not ready.
                                         model => Cmd.none
 
-                                Nothing ->
-                                    -- We don't go there if we are not ready.
-                                    model => Cmd.none
+                        ( _, _ ) ->
+                            -- We don't go there if we are not ready.
+                            model => Cmd.none
 
-                    ( _, _ ) ->
-                        -- We don't go there if we are not ready.
-                        model => Cmd.none
+            Just (Route.ContPPDialogRoute) ->
+                model => Cmd.none
 
             Just (Route.LaborDelIppRoute) ->
                 case model.currPregId of

@@ -21,6 +21,7 @@ var _ = require('underscore')
   , LabTestValue = require('../../models').LabTestValue
   , MedicationType = require('../../models').MedicationType
   , MembranesResus = require('../../models').MembranesResus
+  , NewbornExam = require('../../models').NewbornExam
   , SelectData = require('../../models').SelectData
   , VaccinationType = require('../../models').VaccinationType
   , User = require('../../models').User
@@ -54,6 +55,7 @@ var LOOKUP_TABLES = [
   'labTestValue',
   'medicationType',
   'membranesResus',
+  'newbornExam',
   'patient',
   'pregnancy',
   'pregnoteType',
@@ -547,8 +549,14 @@ var updateVaccinationType = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
 };
 
-
-
+// --------------------------------------------------------
+// Note: the add, update, and delete functions below are for
+// tables managed by the administrator role and not directly
+// regarding patient data.
+//
+// The lookup tables functions are used by the admin and
+// patient management roles.
+// --------------------------------------------------------
 module.exports = {
   getLookupTable,
   getTable2,

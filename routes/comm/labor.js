@@ -20,6 +20,7 @@ var _ = require('underscore')
   , LaborStage2 = require('../../models').LaborStage2
   , LaborStage3 = require('../../models').LaborStage3
   , MembranesResus = require('../../models').MembranesResus
+  , NewbornExam = require('../../models').NewbornExam
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
@@ -48,6 +49,7 @@ moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
 moduleTables.laborStage3 = ['placentaDatetime'];
 moduleTables.membranesResus = ['ruptureDatetime'];
+moduleTables.newbornExam = ['examDatetime'];
 
 /* --------------------------------------------------------
  * adjustDatesToLocal()
@@ -454,6 +456,16 @@ var updateMembranesResus = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, MembranesResus, 'membranesResus');
 };
 
+var addNewbornExam = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addNewbornExam(data, cb);
+  addTable(data, userInfo, cb, NewbornExam, 'newbornExam');
+};
+
+var updateNewbornExam = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateNewbornExam(data, cb);
+  updateTable(data, userInfo, cb, NewbornExam, 'newbornExam');
+};
+
 var notDefinedYet = function(data, userInfo, cb) {
   var msg = 'WARNING: notDefinedYet() called in "routes/comm/labor.js"';
   console.log(msg);
@@ -481,5 +493,8 @@ module.exports = {
   updateLaborStage3,
   addMembranesResus,
   updateMembranesResus,
-  delMembranesResus: notDefinedYet
+  delMembranesResus: notDefinedYet,
+  addNewbornExam,
+  updateNewbornExam,
+  delNewbornExam : notDefinedYet
 };

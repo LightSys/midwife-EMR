@@ -19,6 +19,7 @@ import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyRecord, PregnancyId(..))
+import Data.SelectData exposing (SelectDataRecord)
 import Data.Session as Session exposing (Session)
 import Data.SiteMessage exposing (SiteKeyValue(..))
 import Data.Toast exposing (ToastRecord, ToastType)
@@ -60,6 +61,7 @@ type alias Model =
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
     , babyRecords : Maybe (Dict Int BabyRecord)
+    , selectDataRecords : List SelectDataRecord
     }
 
 
@@ -84,6 +86,7 @@ initialModel browserSupportsDate pregId time =
         , patientRecord = Nothing
         , pregnancyRecord = Nothing
         , babyRecords = Nothing
+        , selectDataRecords = []
         }
 
 

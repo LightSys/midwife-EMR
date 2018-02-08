@@ -17,8 +17,10 @@ import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record)
 import Data.MembranesResus exposing (MembranesResusRecord)
+import Data.NewbornExam exposing (NewbornExamRecord)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
+import Data.SelectData exposing (SelectDataRecord)
 import Data.Table exposing (stringToTable, tableToString, Table(..))
 
 
@@ -31,8 +33,10 @@ type DataCache
     | LaborStage2DataCache LaborStage2Record
     | LaborStage3DataCache LaborStage3Record
     | MembranesResusDataCache MembranesResusRecord
+    | NewbornExamDataCache NewbornExamRecord
     | PatientDataCache PatientRecord
     | PregnancyDataCache PregnancyRecord
+    | SelectDataDataCache (List SelectDataRecord)
 
 
 {-| Return the Table name as a String that cooresponds to
@@ -60,11 +64,17 @@ getTableString dc =
         MembranesResusDataCache _ ->
             tableToString MembranesResus
 
+        NewbornExamDataCache _ ->
+            tableToString NewbornExam
+
         PatientDataCache _ ->
             tableToString Patient
 
         PregnancyDataCache _ ->
             tableToString Pregnancy
+
+        SelectDataDataCache _ ->
+            tableToString SelectData
 
 
 put : DataCache -> Dict String DataCache -> Dict String DataCache
