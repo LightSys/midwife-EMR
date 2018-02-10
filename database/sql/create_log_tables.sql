@@ -299,3 +299,13 @@ ALTER TABLE newbornExamLog DROP PRIMARY KEY;
 ALTER TABLE newbornExamLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE newbornExamLog DROP KEY baby_id;
 --
+-- Creating membraneLog
+SELECT 'membraneLog' AS Creating FROM DUAL;
+CREATE TABLE membraneLog LIKE membrane;
+ALTER TABLE membraneLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE membraneLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE membraneLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE membraneLog DROP PRIMARY KEY;
+ALTER TABLE membraneLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE membraneLog DROP KEY labor_id;
+--

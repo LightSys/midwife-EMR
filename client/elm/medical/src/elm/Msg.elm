@@ -25,7 +25,7 @@ import Data.LaborDelIpp as LaborDelIpp
 import Data.LaborStage1 exposing (LaborStage1Record, LaborStage1RecordNew)
 import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
 import Data.LaborStage3 exposing (LaborStage3Record, LaborStage3RecordNew)
-import Data.MembranesResus exposing (MembranesResusRecordNew, MembranesResusRecord)
+import Data.Membrane exposing (MembraneRecordNew, MembraneRecord)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
 import Data.NewbornExam exposing (NewbornExamRecord, NewbornExamRecordNew)
 import Data.Postpartum as Postpartum
@@ -111,13 +111,13 @@ type ProcessType
     | AddLaborStage1Type Msg LaborStage1RecordNew
     | AddLaborStage2Type Msg LaborStage2RecordNew
     | AddLaborStage3Type Msg LaborStage3RecordNew
-    | AddMembranesResusType Msg MembranesResusRecordNew
+    | AddMembraneType Msg MembraneRecordNew
     | AddNewbornExamType Msg NewbornExamRecordNew
     | UpdateBabyType Msg BabyRecord
     | UpdateLaborType Msg LaborRecord
     | UpdateLaborStage1Type Msg LaborStage1Record
     | UpdateLaborStage2Type Msg LaborStage2Record
     | UpdateLaborStage3Type Msg LaborStage3Record
-    | UpdateMembranesResusType Msg MembranesResusRecord
+    | UpdateMembraneType Msg MembraneRecord
     | UpdateNewbornExamType Msg NewbornExamRecord
     | SelectQueryType Msg SelectQuery

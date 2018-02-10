@@ -19,7 +19,7 @@ var _ = require('underscore')
   , LaborStage1 = require('../../models').LaborStage1
   , LaborStage2 = require('../../models').LaborStage2
   , LaborStage3 = require('../../models').LaborStage3
-  , MembranesResus = require('../../models').MembranesResus
+  , Membrane = require('../../models').Membrane
   , NewbornExam = require('../../models').NewbornExam
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
@@ -48,7 +48,7 @@ moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
 moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
 moduleTables.laborStage3 = ['placentaDatetime'];
-moduleTables.membranesResus = ['ruptureDatetime'];
+moduleTables.membrane = ['ruptureDatetime'];
 moduleTables.newbornExam = ['examDatetime'];
 
 /* --------------------------------------------------------
@@ -203,6 +203,11 @@ var addBaby = function(data, userInfo, cb) {
         nbsDate: data.nbsDate,
         nbsResult: data.nbsResult,
         bcgDate: data.bcgDate,
+        bulb: data.bulb,
+        machine: data.machine,
+        freeFlowO2: data.freeFlowO2,
+        chestCompressions: data.chestCompressions,
+        ppv: data.ppv,
         comments: data.comments,
         updatedBy: userInfo.user.id,
         updatedAt: knex.fn.now(),
@@ -281,6 +286,11 @@ var updateBaby = function(data, userInfo, cb) {
         nbsDate: data.nbsDate,
         nbsResult: data.nbsResult,
         bcgDate: data.bcgDate,
+        bulb: data.bulb,
+        machine: data.machine,
+        freeFlowO2: data.freeFlowO2,
+        chestCompressions: data.chestCompressions,
+        ppv: data.ppv,
         comments: data.comments,
         updatedBy: userInfo.user.id,
         updatedAt: knex.fn.now(),
@@ -446,14 +456,14 @@ var updateLaborStage3 = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, LaborStage3, 'laborStage3');
 };
 
-var addMembranesResus = function(data, userInfo, cb) {
-  if (DO_ASSERT) assertModule.addMembranesResus(data, cb);
-  addTable(data, userInfo, cb, MembranesResus, 'membranesResus');
+var addMembrane = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addMembrane(data, cb);
+  addTable(data, userInfo, cb, Membrane, 'membrane');
 };
 
-var updateMembranesResus = function(data, userInfo, cb) {
-  if (DO_ASSERT) assertModule.updateMembranesResus(data, cb);
-  updateTable(data, userInfo, cb, MembranesResus, 'membranesResus');
+var updateMembrane = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateMembrane(data, cb);
+  updateTable(data, userInfo, cb, Membrane, 'membrane');
 };
 
 var addNewbornExam = function(data, userInfo, cb) {
@@ -491,9 +501,9 @@ module.exports = {
   addLaborStage3,
   delLaborStage3: notDefinedYet,
   updateLaborStage3,
-  addMembranesResus,
-  updateMembranesResus,
-  delMembranesResus: notDefinedYet,
+  addMembrane,
+  updateMembrane,
+  delMembrane: notDefinedYet,
   addNewbornExam,
   updateNewbornExam,
   delNewbornExam : notDefinedYet

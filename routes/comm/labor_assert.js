@@ -30,8 +30,8 @@ var updateNewbornExam = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
-var addMembranesResus = function(data, cb) {
-  var m = msg('labor_assert/addMembranesResus()');
+var addMembrane = function(data, cb) {
+  var m = msg('labor_assert/addMembrane()');
   if (verbose) console.log(m());
 
   assert.ok(_.isObject(data), m('data'));
@@ -39,8 +39,8 @@ var addMembranesResus = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
-var updateMembranesResus = function(data, cb) {
-  var m = msg('labor_assert/updateMembranesResus()');
+var updateMembrane = function(data, cb) {
+  var m = msg('labor_assert/updateMembrane()');
   if (verbose) console.log(m());
 
   assert.ok(_.isObject(data), m('data'));
@@ -193,8 +193,8 @@ module.exports = {
   updateLaborStage2,
   addLaborStage3,
   updateLaborStage3,
-  addMembranesResus,
-  updateMembranesResus,
+  addMembrane,
+  updateMembrane,
   addNewbornExam,
   updateNewbornExam
 };

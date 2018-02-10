@@ -77,9 +77,9 @@ module.exports = {
   , Babys: require('./Baby').Babys
   , Apgar: require('./Apgar').Apgar
   , Apgars: require('./Apgar').Apgars
-  , MembranesResus: require('./MembranesResus').MembranesResus
-  , MembranesResuses: require('./MembranesResus').MembranesResuses
   , NewbornExam: require('./NewbornExam').NewbornExam
   , NewbornExams: require('./NewbornExam').NewbornExams
+  , Membrane: require('./Membrane').Membrane
+  , Membranes: require('./Membrane').Membranes
 };
 

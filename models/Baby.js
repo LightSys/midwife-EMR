@@ -28,6 +28,11 @@ CREATE TABLE `baby` (
   `nbsDate` datetime DEFAULT NULL,
   `nbsResult` varchar(50) DEFAULT NULL,
   `bcgDate` datetime DEFAULT NULL,
+  `bulb` tinyint(1) DEFAULT NULL,
+  `machine` tinyint(1) DEFAULT NULL,
+  `freeFlowO2` tinyint(1) DEFAULT NULL,
+  `chestCompressions` tinyint(1) DEFAULT NULL,
+  `ppv` tinyint(1) DEFAULT NULL,
   `comments` varchar(500) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
@@ -38,7 +43,8 @@ CREATE TABLE `baby` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `baby_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `baby_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1
+
 */
 
 Baby = Bookshelf.Model.extend({
@@ -46,6 +52,7 @@ Baby = Bookshelf.Model.extend({
 
   , permittedAttributes: ['id', 'birthNbr', 'lastname', 'firstname', 'middlename',
      'sex', 'birthWeight', 'bFedEstablished', 'nbsDate', 'nbsResult', 'bcgDate',
+     'bulb', 'machine', 'freeFlowO2', 'chestCompressions', 'ppv',
      'comments', 'updatedBy', 'updatedAt', 'supervisor', 'labor_id']
 
   , initialize: function() {

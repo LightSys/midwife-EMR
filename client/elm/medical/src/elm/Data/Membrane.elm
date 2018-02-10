@@ -1,21 +1,17 @@
-module Data.MembranesResus
+module Data.Membrane
     exposing
-        ( Amniotic(..)
-        , amnioticToString
-        , isMembranesResusRecordComplete
+        ( isMembraneRecordComplete
         , maybeAmnioticToString
         , maybeRuptureToString
         , maybeStringToAmniotic
         , maybeStringToRupture
-        , MembranesResusId(..)
-        , MembranesResusRecord
-        , MembranesResusRecordNew
-        , membranesResusRecord
-        , membranesResusRecordNewToMembranesResusRecord
-        , membranesResusRecordNewToValue
-        , membranesResusRecordToValue
-        , Rupture(..)
-        , ruptureToString
+        , MembraneId(..)
+        , MembraneRecord
+        , membraneRecord
+        , MembraneRecordNew
+        , membraneRecordNewToMembraneRecord
+        , membraneRecordNewToValue
+        , membraneRecordToValue
         )
 
 import Date exposing (Date)
@@ -33,9 +29,8 @@ import Data.Table exposing (Table(..), tableToString)
 import Util as U
 
 
-type MembranesResusId
-    = MembranesResusId Int
-
+type MembraneId
+    = MembraneId Int
 
 type Rupture
     = AROMRupture
@@ -179,61 +174,46 @@ maybeStringToAmniotic str =
             Nothing
 
 
-type alias MembranesResusRecord =
+type alias MembraneRecord =
     { id : Int
     , ruptureDatetime : Maybe Date
     , rupture : Maybe Rupture
     , ruptureComment : Maybe String
     , amniotic : Maybe Amniotic
     , amnioticComment : Maybe String
-    , bulb : Maybe Bool
-    , machine : Maybe Bool
-    , freeFlowO2 : Maybe Bool
-    , chestCompressions : Maybe Bool
-    , ppv : Maybe Bool
     , comments : Maybe String
-    , baby_id : Int
+    , labor_id : Int
     }
 
 
-type alias MembranesResusRecordNew =
+type alias MembraneRecordNew =
     { ruptureDatetime : Maybe Date
     , rupture : Maybe Rupture
     , ruptureComment : Maybe String
     , amniotic : Maybe Amniotic
     , amnioticComment : Maybe String
-    , bulb : Maybe Bool
-    , machine : Maybe Bool
-    , freeFlowO2 : Maybe Bool
-    , chestCompressions : Maybe Bool
-    , ppv : Maybe Bool
     , comments : Maybe String
-    , baby_id : Int
+    , labor_id : Int
     }
 
 
-membranesResusRecord : JD.Decoder MembranesResusRecord
-membranesResusRecord =
-    JDP.decode MembranesResusRecord
+membraneRecord : JD.Decoder MembraneRecord
+membraneRecord =
+    JDP.decode MembraneRecord
         |> JDP.required "id" JD.int
         |> JDP.optional "ruptureDatetime" (JD.maybe JDE.date) Nothing
         |> JDP.required "rupture" (JD.maybe JD.string |> JD.map maybeStringToRupture)
         |> JDP.required "ruptureComment" (JD.maybe JD.string)
         |> JDP.required "amniotic" (JD.maybe JD.string |> JD.map maybeStringToAmniotic)
         |> JDP.required "amnioticComment" (JD.maybe JD.string)
-        |> JDP.required "bulb" U.maybeIntToMaybeBool
-        |> JDP.required "machine" U.maybeIntToMaybeBool
-        |> JDP.required "freeFlowO2" U.maybeIntToMaybeBool
-        |> JDP.required "chestCompressions" U.maybeIntToMaybeBool
-        |> JDP.required "ppv" U.maybeIntToMaybeBool
         |> JDP.required "comments" (JD.maybe JD.string)
-        |> JDP.required "baby_id" JD.int
+        |> JDP.required "labor_id" JD.int
 
 
-membranesResusRecordToValue : MembranesResusRecord -> JE.Value
-membranesResusRecordToValue rec =
+membraneRecordToValue : MembraneRecord -> JE.Value
+membraneRecordToValue rec =
     JE.object
-        [ ( "table", (JE.string (tableToString MembranesResus)) )
+        [ ( "table", (JE.string (tableToString Membrane)) )
         , ( "data"
           , JE.object
                 [ ( "id", (JE.int rec.id) )
@@ -242,22 +222,17 @@ membranesResusRecordToValue rec =
                 , ( "ruptureComment", (JEE.maybe JE.string rec.ruptureComment) )
                 , ( "amniotic", (JEE.maybe (\a -> (JE.string (amnioticToString a))) rec.amniotic) )
                 , ( "amnioticComment", (JEE.maybe JE.string rec.amnioticComment) )
-                , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
-                , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
-                , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
-                , ( "chestCompressions", (U.maybeBoolToMaybeInt rec.chestCompressions) )
-                , ( "ppv", (U.maybeBoolToMaybeInt rec.ppv) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
-                , ( "baby_id", (JE.int rec.baby_id) )
+                , ( "labor_id", (JE.int rec.labor_id) )
                 ]
           )
         ]
 
 
-membranesResusRecordNewToValue : MembranesResusRecordNew -> JE.Value
-membranesResusRecordNewToValue rec =
+membraneRecordNewToValue : MembraneRecordNew -> JE.Value
+membraneRecordNewToValue rec =
     JE.object
-        [ ( "table", (JE.string "membranesResus") )
+        [ ( "table", (JE.string "membrane") )
         , ( "data"
           , JE.object
                 [ ( "ruptureDatetime", (JEE.maybe U.dateToStringValue rec.ruptureDatetime) )
@@ -265,37 +240,27 @@ membranesResusRecordNewToValue rec =
                 , ( "ruptureComment", (JEE.maybe JE.string rec.ruptureComment) )
                 , ( "amniotic", (JEE.maybe (\a -> (JE.string (amnioticToString a))) rec.amniotic) )
                 , ( "amnioticComment", (JEE.maybe JE.string rec.amnioticComment) )
-                , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
-                , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
-                , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
-                , ( "chestCompressions", (U.maybeBoolToMaybeInt rec.chestCompressions) )
-                , ( "ppv", (U.maybeBoolToMaybeInt rec.ppv) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
-                , ( "baby_id", (JE.int rec.baby_id) )
+                , ( "labor_id", (JE.int rec.labor_id) )
                 ]
           )
         ]
 
 
-membranesResusRecordNewToMembranesResusRecord : MembranesResusId -> MembranesResusRecordNew -> MembranesResusRecord
-membranesResusRecordNewToMembranesResusRecord (MembranesResusId id) newRec =
-    MembranesResusRecord id
+membraneRecordNewToMembraneRecord : MembraneId -> MembraneRecordNew -> MembraneRecord
+membraneRecordNewToMembraneRecord (MembraneId id) newRec =
+    MembraneRecord id
         newRec.ruptureDatetime
         newRec.rupture
         newRec.ruptureComment
         newRec.amniotic
         newRec.amnioticComment
-        newRec.bulb
-        newRec.machine
-        newRec.freeFlowO2
-        newRec.chestCompressions
-        newRec.ppv
         newRec.comments
-        newRec.baby_id
+        newRec.labor_id
 
 
-isMembranesResusRecordComplete : MembranesResusRecord -> Bool
-isMembranesResusRecordComplete rec =
+isMembraneRecordComplete : MembraneRecord -> Bool
+isMembraneRecordComplete rec =
     not <|
         ((U.validateDate rec.ruptureDatetime)
             || (rec.rupture == Nothing)

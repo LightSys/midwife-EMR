@@ -18,7 +18,7 @@ type Table
     | LaborStage1
     | LaborStage2
     | LaborStage3
-    | MembranesResus
+    | Membrane
     | NewbornExam
     | Patient
     | Pregnancy
@@ -54,8 +54,8 @@ tableToString tbl =
         LaborStage3 ->
             "laborStage3"
 
-        MembranesResus ->
-            "membranesResus"
+        Membrane ->
+            "membrane"
 
         NewbornExam ->
             "newbornExam"
@@ -88,8 +88,8 @@ stringToTable tbl =
         "laborStage3" ->
             LaborStage3
 
-        "membranesResus" ->
-            MembranesResus
+        "membrane" ->
+            Membrane
 
         "newbornExam" ->
             NewbornExam

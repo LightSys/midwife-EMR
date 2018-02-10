@@ -691,6 +691,11 @@ CREATE TABLE IF NOT EXISTS `baby` (
   nbsDate DATETIME NULL,
   nbsResult VARCHAR(50) NULL,
   bcgDate DATETIME NULL,
+  bulb BOOLEAN NULL,
+  machine BOOLEAN NULL,
+  freeFlowO2 BOOLEAN NULL,
+  chestCompressions BOOLEAN NULL,
+  ppv BOOLEAN NULL,
   comments VARCHAR(500) NULL,
   updatedBy INT NOT NULL,
   updatedAt DATETIME NOT NULL,
@@ -784,6 +789,23 @@ CREATE TABLE IF NOT EXISTS `newbornExam` (
   baby_id INT NOT NULL,
   UNIQUE(baby_id),
   FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `membrane` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ruptureDatetime DATETIME NULL,
+  rupture ENUM('AROM', 'SROM', 'Other') NULL,
+  ruptureComment VARCHAR(300) NULL,
+  amniotic ENUM('Clear', 'Lt Stain', 'Mod Stain', 'Thick Stain', 'Other') NULL,
+  amnioticComment VARCHAR(300) NULL,
+  comments VARCHAR(300) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE(labor_id),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 

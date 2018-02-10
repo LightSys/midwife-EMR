@@ -76,21 +76,13 @@ import Data.LaborStage3
         , schultzDuncan2String
         , string2SchultzDuncan
         )
-import Data.MembranesResus
+import Data.Membrane
     exposing
-        ( Amniotic(..)
-        , MembranesResusRecord
-        , MembranesResusRecordNew
-        , Rupture(..)
-        , amnioticToString
-        , isMembranesResusRecordComplete
-        , maybeAmnioticToString
-        , maybeRuptureToString
-        , maybeStringToAmniotic
-        , maybeStringToRupture
-        , membranesResusRecordNewToValue
-        , membranesResusRecordToValue
-        , ruptureToString
+        ( isMembraneRecordComplete
+        , MembraneRecord
+        , MembraneRecordNew
+        , membraneRecordNewToValue
+        , membraneRecordToValue
         )
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
@@ -134,19 +126,18 @@ type DateTimeModal
     | FalseLaborDateTimeModal
 
 
-type StageSummaryModal
-    = NoStageSummaryModal
-    | Stage1SummaryViewModal
-    | Stage1SummaryEditModal
-    | Stage2SummaryViewModal
-    | Stage2SummaryEditModal
-    | Stage3SummaryModal
-    | Stage3SummaryViewModal
-    | Stage3SummaryEditModal
-    | MembranesSummaryEditModal
-    | MembranesSummaryViewModal
-    | BabySummaryViewModal
-    | BabySummaryEditModal
+type ViewEditState
+    = NoViewEditState
+    | BabyEditState
+    | BabyViewState
+    | MembraneEditState
+    | MembraneViewState
+    | Stage1EditState
+    | Stage1ViewState
+    | Stage2EditState
+    | Stage2ViewState
+    | Stage3EditState
+    | Stage3ViewState
 
 
 type alias Model =
@@ -164,7 +155,7 @@ type alias Model =
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
     , babyRecord : Maybe BabyRecord
-    , membranesResusRecord : Maybe MembranesResusRecord
+    , membraneRecord : Maybe MembraneRecord
     , admittanceDate : Maybe Date
     , admittanceTime : Maybe String
     , laborDate : Maybe Date
@@ -181,7 +172,7 @@ type alias Model =
     , stage1DateTimeModal : DateTimeModal
     , stage1Date : Maybe Date
     , stage1Time : Maybe String
-    , stage1SummaryModal : StageSummaryModal
+    , stage1SummaryModal : ViewEditState
     , s1Mobility : Maybe String
     , s1DurationLatent : Maybe String
     , s1DurationActive : Maybe String
@@ -189,7 +180,7 @@ type alias Model =
     , stage2DateTimeModal : DateTimeModal
     , stage2Date : Maybe Date
     , stage2Time : Maybe String
-    , stage2SummaryModal : StageSummaryModal
+    , stage2SummaryModal : ViewEditState
     , s2BirthType : Maybe String
     , s2BirthPosition : Maybe String
     , s2DurationPushing : Maybe String
@@ -210,7 +201,7 @@ type alias Model =
     , stage3DateTimeModal : DateTimeModal
     , stage3Date : Maybe Date
     , stage3Time : Maybe String
-    , stage3SummaryModal : StageSummaryModal
+    , stage3SummaryModal : ViewEditState
     , s3PlacentaDeliverySpontaneous : Maybe Bool
     , s3PlacentaDeliveryAMTSL : Maybe Bool
     , s3PlacentaDeliveryCCT : Maybe Bool
@@ -231,7 +222,15 @@ type alias Model =
     , falseLaborDateTimeModal : DateTimeModal
     , falseLaborDate : Maybe Date
     , falseLaborTime : Maybe String
-    , membranesSummaryModal : StageSummaryModal
+    , membraneSummaryModal : ViewEditState
+    , membraneRuptureDate : Maybe Date
+    , membraneRuptureTime : Maybe String
+    , membraneRupture : Maybe String
+    , membraneRuptureComment : Maybe String
+    , membraneAmniotic : Maybe String
+    , membraneAmnioticComment : Maybe String
+    , membraneComments : Maybe String
+    , membranesSummaryModal : ViewEditState
     , mbRuptureDate : Maybe Date
     , mbRuptureTime : Maybe String
     , mbRupture : Maybe String
@@ -244,7 +243,7 @@ type alias Model =
     , mbChestCompressions : Maybe Bool
     , mbPpv : Maybe Bool
     , mbComments : Maybe String
-    , babySummaryModal : StageSummaryModal
+    , babySummaryModal : ViewEditState
     , bbBirthNbr : Maybe String
     , bbLastname : Maybe String
     , bbFirstname : Maybe String
@@ -258,6 +257,11 @@ type alias Model =
     , bbNbsResult : Maybe String
     , bbBcgDate : Maybe Date
     , bbBcgTime : Maybe String
+    , bbBulb : Maybe Bool
+    , bbMachine : Maybe Bool
+    , bbFreeFlowO2 : Maybe Bool
+    , bbChestCompressions : Maybe Bool
+    , bbPpv : Maybe Bool
     , bbComments : Maybe String
     , apgarScores : Dict Int ApgarScore
     , pendingApgarWizard : AddOtherApgar
@@ -280,13 +284,6 @@ buildModel :
     -> ( Model, ProcessStore, Cmd Msg )
 buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
     let
-        -- Populate the pendingSelectQuery field with dependent tables that
-        -- we will need if they are available.
-        -- TODO: create a function to make this easier? is there ever a need to
-        --       call this proposed function other than here?
-        pendingSelectQuery =
-            Dict.singleton (tableToString MembranesResus) MembranesResus
-
         -- Sort by the admittanceDate, descending.
         admitSort a b =
             U.sortDate U.DescendingSort a.admittanceDate b.admittanceDate
@@ -306,7 +303,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                             , getTableData store
                                 Labor
                                 (Just rec.id)
-                                [ LaborStage1, LaborStage2, LaborStage3, Baby ]
+                                [ LaborStage1, LaborStage2, LaborStage3, Baby, Membrane ]
                             )
 
                         Nothing ->
@@ -335,7 +332,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         laborId
         PregHeaderData.LaborContent
         Dict.empty
-        pendingSelectQuery
+        Dict.empty
         patrec
         pregRec
         laborRecs
@@ -360,7 +357,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         NoDateTimeModal
         Nothing
         Nothing
-        NoStageSummaryModal
+        NoViewEditState
         Nothing
         Nothing
         Nothing
@@ -368,28 +365,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         NoDateTimeModal
         Nothing
         Nothing
-        NoStageSummaryModal
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        NoDateTimeModal
-        Nothing
-        Nothing
-        NoStageSummaryModal
+        NoViewEditState
         Nothing
         Nothing
         Nothing
@@ -410,7 +386,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         NoDateTimeModal
         Nothing
         Nothing
-        NoStageSummaryModal
+        NoViewEditState
         Nothing
         Nothing
         Nothing
@@ -423,7 +399,41 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         Nothing
         Nothing
         Nothing
-        NoStageSummaryModal
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoDateTimeModal
+        Nothing
+        Nothing
+        NoViewEditState
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoViewEditState
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoViewEditState
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
         Nothing
         Nothing
         Nothing
@@ -506,31 +516,31 @@ view : Maybe Window.Size -> Session -> Model -> Html SubMsg
 view size session model =
     let
         isEditingS1 =
-            if model.stage1SummaryModal == Stage1SummaryEditModal then
+            if model.stage1SummaryModal == Stage1EditState then
                 True
             else
                 not (isStage1SummaryDone model)
 
         isEditingS2 =
-            if model.stage2SummaryModal == Stage2SummaryEditModal then
+            if model.stage2SummaryModal == Stage2EditState then
                 True
             else
                 not (isStage2SummaryDone model)
 
         isEditingS3 =
-            if model.stage3SummaryModal == Stage3SummaryEditModal then
+            if model.stage3SummaryModal == Stage3EditState then
                 True
             else
                 not (isStage3SummaryDone model)
 
-        isEditingMembranes =
-            if model.membranesSummaryModal == MembranesSummaryEditModal then
+        isEditingMembrane =
+            if model.membraneSummaryModal == MembraneEditState then
                 True
             else
-                not (isMembranesSummaryDone model)
+                not (isMembraneSummaryDone model)
 
         isEditingBaby =
-            if model.babySummaryModal == BabySummaryEditModal then
+            if model.babySummaryModal == BabyEditState then
                 True
             else
                 not (isBabySummaryDone model)
@@ -538,9 +548,9 @@ view size session model =
         dialogStage1Config =
             DialogSummary
                 (model.stage1SummaryModal
-                    == Stage1SummaryViewModal
+                    == Stage1ViewState
                     || model.stage1SummaryModal
-                    == Stage1SummaryEditModal
+                    == Stage1EditState
                 )
                 isEditingS1
                 "Stage 1 Summary"
@@ -552,9 +562,9 @@ view size session model =
         dialogStage2Config =
             DialogSummary
                 (model.stage2SummaryModal
-                    == Stage2SummaryViewModal
+                    == Stage2ViewState
                     || model.stage2SummaryModal
-                    == Stage2SummaryEditModal
+                    == Stage2EditState
                 )
                 isEditingS2
                 "Stage 2 Summary"
@@ -566,9 +576,9 @@ view size session model =
         dialogStage3Config =
             DialogSummary
                 (model.stage3SummaryModal
-                    == Stage3SummaryViewModal
+                    == Stage3ViewState
                     || model.stage3SummaryModal
-                    == Stage3SummaryEditModal
+                    == Stage3EditState
                 )
                 isEditingS3
                 "Stage 3 Summary"
@@ -577,26 +587,26 @@ view size session model =
                 (HandleStage3SummaryModal CloseSaveDialog)
                 (HandleStage3SummaryModal EditDialog)
 
-        dialogMembranesConfig =
+        dialogMembraneConfig =
             DialogSummary
-                (model.membranesSummaryModal
-                    == MembranesSummaryViewModal
-                    || model.membranesSummaryModal
-                    == MembranesSummaryEditModal
+                (model.membraneSummaryModal
+                    == MembraneViewState
+                    || model.membraneSummaryModal
+                    == MembraneEditState
                 )
-                isEditingMembranes
-                "Membranes/Resuscitation Summary"
+                isEditingMembrane
+                "Membrane Summary"
                 model
-                (HandleMembranesSummaryModal CloseNoSaveDialog)
-                (HandleMembranesSummaryModal CloseSaveDialog)
-                (HandleMembranesSummaryModal EditDialog)
+                (HandleMembraneSummaryModal CloseNoSaveDialog)
+                (HandleMembraneSummaryModal CloseSaveDialog)
+                (HandleMembraneSummaryModal EditDialog)
 
         dialogBabyConfig =
             DialogSummary
                 (model.babySummaryModal
-                    == BabySummaryViewModal
+                    == BabyViewState
                     || model.babySummaryModal
-                    == BabySummaryEditModal
+                    == BabyEditState
                 )
                 isEditingBaby
                 "Baby"
@@ -631,10 +641,10 @@ view size session model =
         , H.div [ HA.class "content-wrapper" ]
             [ viewLaborDetails model
             , dialogStage1Summary dialogStage1Config
+            , dialogMembraneSummary dialogMembraneConfig
             , dialogStage2Summary dialogStage2Config
             , dialogStage3Summary dialogStage3Config
             , dialogBabySummary dialogBabyConfig
-            , dialogMembranesSummary dialogMembranesConfig
 
             --, viewDetailsTableTEMP model
             , viewDetailsNotImplemented model
@@ -797,11 +807,11 @@ isStage3SummaryDone model =
             False
 
 
-isMembranesSummaryDone : Model -> Bool
-isMembranesSummaryDone model =
-    case model.membranesResusRecord of
+isMembraneSummaryDone : Model -> Bool
+isMembraneSummaryDone model =
+    case model.membraneRecord of
         Just rec ->
-            isMembranesResusRecordComplete rec
+            isMembraneRecordComplete rec
 
         Nothing ->
             False
@@ -824,7 +834,9 @@ of the labor.
 
 Logic:
 
-  - hide false labor if labor stage 1 exists and has fullDialation set.
+  - hide false labor if labor stage 1 exists and has fullDialation set
+    or if membrane exists.
+  - hide membrane if labor record has falseLabor set to True.
   - hide stage 1 if labor record has falseLabor set to True.
   - hide stage 2 if stage 1 is hidden or labor stage 1 does not exist
     or does not have fullDialation set.
@@ -832,33 +844,34 @@ Logic:
     or does not have birthDatetime set.
   - hide baby if stage 2 is hidden or if labor stage 2 does not exist
     or does not have the birthDatetime set.
-  - hide membranes if baby is hidden or baby does not exist.
-
 -}
 viewStagesMembranesBaby : Model -> Html SubMsg
 viewStagesMembranesBaby model =
     let
         hideFalse =
-            case model.laborStage1Record of
-                Just s1Rec ->
+            case ( model.laborStage1Record, model.membraneRecord ) of
+                ( Just s1Rec, Nothing ) ->
                     s1Rec.fullDialation /= Nothing
 
-                Nothing ->
+                ( _, Just memRec ) ->
+                    True
+
+                ( Nothing, Nothing ) ->
                     False
 
-        hideS1 =
+        ( hideS1, hideMembrane ) =
             case ( model.laborRecords, model.currLaborId ) of
                 ( Just recs, Just lid ) ->
                     case Dict.get (getLaborId lid) recs of
                         Just rec ->
-                            rec.falseLabor
+                            ( rec.falseLabor, rec.falseLabor )
 
                         Nothing ->
-                            False
+                            ( False, False )
 
                 ( _, _ ) ->
                     -- Should not get here.
-                    False
+                    ( False, False )
 
         hideS2 =
             hideS1
@@ -943,6 +956,26 @@ viewStagesMembranesBaby model =
                             FalseLaborDateField
                             model.falseLaborDate
                             model.falseLaborTime
+                    ]
+                ]
+            ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", hideMembrane ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Membrane" ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleMembraneSummaryModal OpenDialog
+                    ]
+                    [ if isMembraneSummaryDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
                     ]
                 ]
             ]
@@ -1156,26 +1189,6 @@ viewStagesMembranesBaby model =
                     , HE.onClick <| HandleBabySummaryModal OpenDialog
                     ]
                     [ if isBabySummaryDone model then
-                        H.i [ HA.class "fa fa-check" ]
-                            [ H.text "" ]
-                      else
-                        H.span [] [ H.text "" ]
-                    , H.text " Summary"
-                    ]
-                ]
-            ]
-        , H.div
-            [ HA.class "stage-content"
-            , HA.classList [ ( "isHidden", hideMembranes ) ]
-            ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Membranes" ]
-            , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    , HE.onClick <| HandleMembranesSummaryModal OpenDialog
-                    ]
-                    [ if isMembranesSummaryDone model then
                         H.i [ HA.class "fa fa-check" ]
                             [ H.text "" ]
                       else
@@ -2176,23 +2189,20 @@ dialogStage3SummaryEdit cfg =
             ]
         ]
 
+-- Modal for Membrane Summary --
 
-
--- Modal for MembranesResus Summary --
-
-
-dialogMembranesSummary : DialogSummary -> Html SubMsg
-dialogMembranesSummary cfg =
+dialogMembraneSummary : DialogSummary -> Html SubMsg
+dialogMembraneSummary cfg =
     case cfg.isEditing of
         True ->
-            dialogMembranesSummaryEdit cfg
+            dialogMembraneSummaryEdit cfg
 
         False ->
-            dialogMembranesSummaryView cfg
+            dialogMembraneSummaryView cfg
 
 
-dialogMembranesSummaryView : DialogSummary -> Html SubMsg
-dialogMembranesSummaryView cfg =
+dialogMembraneSummaryView : DialogSummary -> Html SubMsg
+dialogMembraneSummaryView cfg =
     let
         dateString date =
             case date of
@@ -2202,145 +2212,62 @@ dialogMembranesSummaryView cfg =
                 Nothing ->
                     ""
 
-        yesNoBool bool =
-            case bool of
-                Just True ->
-                    "Yes"
-
-                _ ->
-                    "No"
-
-        ( ruptureDate, rupture, ruptureCmt, amniotic, amnioticCmt, bulb, machine, freeFlowO2, chestCompressions ) =
-            case cfg.model.membranesResusRecord of
-                Just rec ->
-                    ( dateString rec.ruptureDatetime
-                    , maybeRuptureToString rec.rupture
-                    , Maybe.withDefault "" rec.ruptureComment
-                    , maybeAmnioticToString rec.amniotic
-                    , Maybe.withDefault "" rec.amnioticComment
-                    , yesNoBool rec.bulb
-                    , yesNoBool rec.machine
-                    , yesNoBool rec.freeFlowO2
-                    , yesNoBool rec.chestCompressions
-                    )
-
-                Nothing ->
-                    ( "", "", "", "", "", "", "", "", "" )
-
-        ( ppv, comments ) =
-            case cfg.model.membranesResusRecord of
-                Just rec ->
-                    ( yesNoBool rec.ppv
-                    , Maybe.withDefault "" rec.comments
-                    )
-
-                Nothing ->
-                    ( "", "" )
+        viewField label value =
+            H.div [ HA.class "mw-form-field-2x" ]
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text <| label ++ ": " ]
+                , H.span [ HA.class "" ]
+                    [ H.text value ]
+                ]
     in
-    H.div
-        [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
-        , HA.class "u-high"
-        , HA.style
-            [ ( "padding", "0.8em" )
-            , ( "margin-top", "0.8em" )
-            ]
-        ]
-        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-            [ H.text "Membranes/Resuscitation Summary" ]
-        , H.div []
-            [ H.div
-                [ HA.class "o-fieldset form-wrapper"
-                ]
-                [ H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Rupture Date and time: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text ruptureDate ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Rupture: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text rupture ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Rupture comment: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text ruptureCmt ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Amniotic: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text amniotic ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Amniotic comment: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text amnioticCmt ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Bulb: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text bulb ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Machine: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text machine ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Free Flow O2: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text freeFlowO2 ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Chest Compressions: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text chestCompressions ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "PPV: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text ppv ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Comments: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text comments ]
-                    ]
-                ]
-            , H.div [ HA.class "spacedButtons" ]
-                [ H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button u-small"
-                    , HE.onClick cfg.closeMsg
-                    ]
-                    [ H.text "Close" ]
-                , H.button
-                    [ HA.type_ "button"
-                    , HA.class "c-button c-button--ghost u-small"
-                    , HE.onClick cfg.editMsg
-                    ]
-                    [ H.text "Edit" ]
-                ]
-            ]
-        ]
+    case cfg.model.membraneRecord of
+        Nothing ->
+            H.text ""
 
+        Just rec ->
+            H.div
+                [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+                , HA.class "u-high"
+                , HA.style
+                    [ ( "padding", "0.8em" )
+                    , ( "margin-top", "0.8em" )
+                    ]
+                ]
+                [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                    [ H.text "Membranes/Resuscitation Summary" ]
+                , H.div []
+                    [ H.div
+                        [ HA.class "o-fieldset form-wrapper"
+                        ]
+                        [ viewField "Rupture Date and time" <| dateString rec.ruptureDatetime
+                        , viewField "Rupture" <| Data.Membrane.maybeRuptureToString rec.rupture
+                        , viewField "Rupture comment" <| Maybe.withDefault "" rec.ruptureComment
+                        , viewField "Amniotic" <| Data.Membrane.maybeAmnioticToString rec.amniotic
+                        , viewField "Amniotic comment" <| Maybe.withDefault "" rec.amnioticComment
+                        , viewField "Comments" <| Maybe.withDefault "" rec.comments
+                        ]
+                    , H.div [ HA.class "spacedButtons" ]
+                        [ H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button u-small"
+                            , HE.onClick cfg.closeMsg
+                            ]
+                            [ H.text "Close" ]
+                        , H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button--ghost u-small"
+                            , HE.onClick cfg.editMsg
+                            ]
+                            [ H.text "Edit" ]
+                        ]
+                    ]
+                ]
 
-dialogMembranesSummaryEdit : DialogSummary -> Html SubMsg
-dialogMembranesSummaryEdit cfg =
+dialogMembraneSummaryEdit : DialogSummary -> Html SubMsg
+dialogMembraneSummaryEdit cfg =
     let
         errors =
-            validateMembranesResus cfg.model
+            validateMembrane cfg.model
     in
     H.div
         [ HA.class "u-high"
@@ -2351,7 +2278,7 @@ dialogMembranesSummaryEdit cfg =
             ]
         ]
         [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
-            [ H.text "Membranes/Resuscitation - Edit" ]
+            [ H.text "Membrane - Edit" ]
         , H.div [ HA.class "form-wrapper u-small" ]
             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                 [ if cfg.model.browserSupportsDate then
@@ -2362,18 +2289,18 @@ dialogMembranesSummaryEdit cfg =
                             ]
                         , H.div [ HA.class "c-card__body dateTimeModalBody" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg MBRuptureDateFld)
+                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg MembraneRuptureDateFld)
                                     "Date"
                                     "e.g. 08/14/2017"
                                     False
-                                    cfg.model.mbRuptureDate
-                                    (getErr MBRuptureDateFld errors)
-                                , Form.formField (FldChgString >> FldChgSubMsg MBRuptureTimeFld)
+                                    cfg.model.membraneRuptureDate
+                                    (getErr MembraneRuptureDateFld errors)
+                                , Form.formField (FldChgString >> FldChgSubMsg MembraneRuptureTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
-                                    cfg.model.mbRuptureTime
-                                    (getErr MBRuptureTimeFld errors)
+                                    cfg.model.membraneRuptureTime
+                                    (getErr MembraneRuptureTimeFld errors)
                                 ]
                             ]
                         ]
@@ -2387,39 +2314,39 @@ dialogMembranesSummaryEdit cfg =
                                     "Date"
                                     "e.g. 08/14/2017"
                                     False
-                                    cfg.model.mbRuptureDate
-                                    (getErr MBRuptureDateFld errors)
-                                , Form.formField (FldChgString >> FldChgSubMsg MBRuptureTimeFld)
+                                    cfg.model.membraneRuptureDate
+                                    (getErr MembraneRuptureDateFld errors)
+                                , Form.formField (FldChgString >> FldChgSubMsg MembraneRuptureTimeFld)
                                     "Time"
                                     "24 hr format, 14:44"
                                     False
-                                    cfg.model.mbRuptureTime
-                                    (getErr MBRuptureTimeFld errors)
+                                    cfg.model.membraneRuptureTime
+                                    (getErr MembraneRuptureTimeFld errors)
                                 ]
                             ]
                         ]
                 , Form.radioFieldset "Rupture"
                     "rupture"
-                    cfg.model.mbRupture
-                    (FldChgString >> FldChgSubMsg MBRuptureFld)
+                    cfg.model.membraneRupture
+                    (FldChgString >> FldChgSubMsg MembraneRuptureFld)
                     False
                     [ "AROM"
                     , "SROM"
                     , "Other"
                     ]
-                    (getErr MBRuptureFld errors)
+                    (getErr MembraneRuptureFld errors)
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgString >> FldChgSubMsg MBRuptureCommentFld)
+                    [ Form.formField (FldChgString >> FldChgSubMsg MembraneRuptureCommentFld)
                         "Rupture Comments"
                         ""
                         True
-                        cfg.model.mbRuptureComment
-                        (getErr MBRuptureCommentFld errors)
+                        cfg.model.membraneRuptureComment
+                        (getErr MembraneRuptureCommentFld errors)
                     ]
                 , Form.radioFieldset "Amniotic"
                     "amniotic"
-                    cfg.model.mbAmniotic
-                    (FldChgString >> FldChgSubMsg MBAmnioticFld)
+                    cfg.model.membraneAmniotic
+                    (FldChgString >> FldChgSubMsg MembraneAmnioticFld)
                     False
                     [ "Clear"
                     , "Lt Stain"
@@ -2427,25 +2354,20 @@ dialogMembranesSummaryEdit cfg =
                     , "Thick Stain"
                     , "Other"
                     ]
-                    (getErr MBAmnioticFld errors)
+                    (getErr MembraneAmnioticFld errors)
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgString >> FldChgSubMsg MBAmnioticCommentFld)
+                    [ Form.formField (FldChgString >> FldChgSubMsg MembraneAmnioticCommentFld)
                         "Amniotic Comments"
                         ""
                         True
-                        cfg.model.mbAmnioticComment
-                        (getErr MBAmnioticCommentFld errors)
+                        cfg.model.membraneAmnioticComment
+                        (getErr MembraneAmnioticCommentFld errors)
                     ]
-                , Form.checkbox "Bulb" (FldChgBool >> FldChgSubMsg MBBulbFld) cfg.model.mbBulb
-                , Form.checkbox "Machine" (FldChgBool >> FldChgSubMsg MBMachineFld) cfg.model.mbMachine
-                , Form.checkbox "Free Flow O2" (FldChgBool >> FldChgSubMsg MBFreeFlowO2Fld) cfg.model.mbFreeFlowO2
-                , Form.checkbox "Chest Compressions" (FldChgBool >> FldChgSubMsg MBChestCompressionsFld) cfg.model.mbChestCompressions
-                , Form.checkbox "PPV" (FldChgBool >> FldChgSubMsg MBPpvFld) cfg.model.mbPpv
-                , Form.formTextareaField (FldChgString >> FldChgSubMsg MBCommentsFld)
+                , Form.formTextareaField (FldChgString >> FldChgSubMsg MembraneCommentsFld)
                     "Comments"
                     ""
                     True
-                    cfg.model.mbComments
+                    cfg.model.membraneComments
                     3
                 ]
             ]
@@ -2965,6 +2887,11 @@ dialogBabySummaryEdit cfg =
                                 ]
                             ]
                         ]
+                , Form.checkbox "Bulb" (FldChgBool >> FldChgSubMsg BabyBulbFld) cfg.model.bbBulb
+                , Form.checkbox "Machine" (FldChgBool >> FldChgSubMsg BabyMachineFld) cfg.model.bbMachine
+                , Form.checkbox "Free Flow O2" (FldChgBool >> FldChgSubMsg BabyFreeFlowO2Fld) cfg.model.bbFreeFlowO2
+                , Form.checkbox "Chest Compressions" (FldChgBool >> FldChgSubMsg BabyChestCompressionsFld) cfg.model.bbChestCompressions
+                , Form.checkbox "PPV" (FldChgBool >> FldChgSubMsg BabyPpvFld) cfg.model.bbPpv
                 , Form.formTextareaField (FldChgString >> FldChgSubMsg BabyCommentsFld)
                     "Comments"
                     ""
@@ -3053,10 +2980,10 @@ refreshModelFromCache dc tables model =
                                 _ ->
                                     m
 
-                        MembranesResus ->
+                        Membrane ->
                             case DataCache.get t dc of
-                                Just (MembranesResusDataCache rec) ->
-                                    { m | membranesResusRecord = Just rec }
+                                Just (MembraneDataCache rec) ->
+                                    { m | membraneRecord = Just rec }
 
                                 _ ->
                                     m
@@ -3101,30 +3028,10 @@ update session msg model =
 
                         ( _, _ ) ->
                             model
-
-                ( newCmd, newPendingSQ ) =
-                    -- TODO: create a function to make this easier.
-                    case ( newModel.babyRecord, Dict.member (tableToString MembranesResus) newModel.pendingSelectQuery ) of
-                        ( Just baby, True ) ->
-                            -- We have a baby record and have not yet checked for a membranesResus record. Construct
-                            -- the query for the server and remove the query from pendingSelectQuery.
-                            ( Task.perform
-                                (always
-                                    (LaborDelIppSelectQuery Baby
-                                        (Just baby.id)
-                                        [ MembranesResus ]
-                                    )
-                                )
-                                (Task.succeed True)
-                            , Dict.remove (tableToString MembranesResus) newModel.pendingSelectQuery
-                            )
-
-                        ( _, _ ) ->
-                            ( Cmd.none, newModel.pendingSelectQuery )
             in
-            ( { newModel | pendingSelectQuery = newPendingSQ }
+            ( newModel
             , Cmd.none
-            , newCmd
+            , Cmd.none
             )
 
         TickSubMsg time ->
@@ -3334,26 +3241,26 @@ update session msg model =
                         FalseLaborTimeFld ->
                             { model | falseLaborTime = Just <| U.filterStringLikeTime value }
 
-                        MBRuptureDateFld ->
-                            { model | mbRuptureDate = Date.fromString value |> Result.toMaybe }
+                        MembraneRuptureDateFld ->
+                            { model | membraneRuptureDate = Date.fromString value |> Result.toMaybe }
 
-                        MBRuptureTimeFld ->
-                            { model | mbRuptureTime = Just <| U.filterStringLikeTime value }
+                        MembraneRuptureTimeFld ->
+                            { model | membraneRuptureTime = Just <| U.filterStringLikeTime value }
 
-                        MBRuptureFld ->
-                            { model | mbRupture = Just value }
+                        MembraneRuptureFld ->
+                            { model | membraneRupture = Just value }
 
-                        MBRuptureCommentFld ->
-                            { model | mbRuptureComment = Just value }
+                        MembraneRuptureCommentFld ->
+                            { model | membraneRuptureComment = Just value }
 
-                        MBAmnioticFld ->
-                            { model | mbAmniotic = Just value }
+                        MembraneAmnioticFld ->
+                            { model | membraneAmniotic = Just value }
 
-                        MBAmnioticCommentFld ->
-                            { model | mbAmnioticComment = Just value }
+                        MembraneAmnioticCommentFld ->
+                            { model | membraneAmnioticComment = Just value }
 
-                        MBCommentsFld ->
-                            { model | mbComments = Just value }
+                        MembraneCommentsFld ->
+                            { model | membraneComments = Just value }
 
                         BabyLastnameFld ->
                             { model | bbLastname = Just value }
@@ -3491,20 +3398,20 @@ update session msg model =
                         Stage3PlacentaMembranesCompleteFld ->
                             { model | s3PlacentaMembranesComplete = Just value }
 
-                        MBBulbFld ->
-                            { model | mbBulb = Just value }
+                        BabyBulbFld ->
+                            { model | bbBulb = Just value }
 
-                        MBMachineFld ->
-                            { model | mbMachine = Just value }
+                        BabyMachineFld ->
+                            { model | bbMachine = Just value }
 
-                        MBFreeFlowO2Fld ->
-                            { model | mbFreeFlowO2 = Just value }
+                        BabyFreeFlowO2Fld ->
+                            { model | bbFreeFlowO2 = Just value }
 
-                        MBChestCompressionsFld ->
-                            { model | mbChestCompressions = Just value }
+                        BabyChestCompressionsFld ->
+                            { model | bbChestCompressions = Just value }
 
-                        MBPpvFld ->
-                            { model | mbPpv = Just value }
+                        BabyPpvFld ->
+                            { model | bbPpv = Just value }
 
                         _ ->
                             let
@@ -3740,15 +3647,15 @@ update session msg model =
                     in
                     -- We set the modal to View but it will show the edit screen
                     -- if there are fields not complete.
-                    -- Also, if we are not on the NoStageSummaryModal, we set the
+                    -- Also, if we are not on the NoViewEditState, we set the
                     -- modal to that which has the effect of allowing the Summary
                     -- button in the view to serve as a toggle.
                     ( { model
                         | stage1SummaryModal =
-                            if model.stage1SummaryModal == NoStageSummaryModal then
-                                Stage1SummaryViewModal
+                            if model.stage1SummaryModal == NoViewEditState then
+                                Stage1ViewState
                             else
-                                NoStageSummaryModal
+                                NoViewEditState
                         , s1Mobility = mobility
                         , s1DurationLatent = latent
                         , s1DurationActive = active
@@ -3756,7 +3663,7 @@ update session msg model =
                       }
                     , Cmd.none
                     , Cmd.batch
-                        [ if model.stage1SummaryModal == NoStageSummaryModal then
+                        [ if model.stage1SummaryModal == NoViewEditState then
                             Route.addDialogUrl Route.LaborDelIppRoute
                           else
                             Route.back
@@ -3767,7 +3674,7 @@ update session msg model =
                 CloseNoSaveDialog ->
                     -- We keep whatever, if anything, the user entered into the
                     -- form fields.
-                    ( { model | stage1SummaryModal = NoStageSummaryModal }
+                    ( { model | stage1SummaryModal = NoViewEditState }
                     , Cmd.none
                     , Route.back
                     )
@@ -3775,10 +3682,10 @@ update session msg model =
                 EditDialog ->
                     -- Transitioning from a viewing summary state to editing again by
                     -- explicitly setting the mode to edit. This is different that
-                    -- Stage1SummaryViewModal in that we are forcing edit here.
-                    ( { model | stage1SummaryModal = Stage1SummaryEditModal }
+                    -- Stage1ViewState in that we are forcing edit here.
+                    ( { model | stage1SummaryModal = Stage1EditState }
                     , Cmd.none
-                    , if model.stage1SummaryModal == NoStageSummaryModal then
+                    , if model.stage1SummaryModal == NoViewEditState then
                         Cmd.batch
                             [ Route.addDialogUrl Route.LaborDelIppRoute
                             , Task.perform SetDialogActive <| Task.succeed True
@@ -3834,7 +3741,7 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveLaborStage1RecordNew returned a Nothing"
                             in
-                            ( { model | stage1SummaryModal = NoStageSummaryModal }
+                            ( { model | stage1SummaryModal = NoViewEditState }
                             , Cmd.none
                             , Cmd.batch
                                 [ Task.perform (always outerMsg) (Task.succeed True)
@@ -3848,7 +3755,7 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                            ( { model | stage1SummaryModal = NoStageSummaryModal }
+                            ( { model | stage1SummaryModal = NoViewEditState }
                             , Cmd.none
                             , toastError msgs 10
                             )
@@ -4048,14 +3955,14 @@ update session msg model =
                     -- The if below allows the summary button to toggle on/off the form.
                     ( { newModel
                         | stage2SummaryModal =
-                            if newModel.stage2SummaryModal == NoStageSummaryModal then
-                                Stage2SummaryViewModal
+                            if newModel.stage2SummaryModal == NoViewEditState then
+                                Stage2ViewState
                             else
-                                NoStageSummaryModal
+                                NoViewEditState
                       }
                     , Cmd.none
                     , Cmd.batch
-                        [ if newModel.stage2SummaryModal == NoStageSummaryModal then
+                        [ if newModel.stage2SummaryModal == NoViewEditState then
                             Route.addDialogUrl Route.LaborDelIppRoute
                           else
                             Route.back
@@ -4066,7 +3973,7 @@ update session msg model =
                 CloseNoSaveDialog ->
                     -- We keep whatever, if anything, the user entered into the
                     -- form fields.
-                    ( { model | stage2SummaryModal = NoStageSummaryModal }
+                    ( { model | stage2SummaryModal = NoViewEditState }
                     , Cmd.none
                     , Route.back
                     )
@@ -4074,10 +3981,10 @@ update session msg model =
                 EditDialog ->
                     -- Transitioning from a viewing summary state to editing again by
                     -- explicitly setting the mode to edit. This is different that
-                    -- Stage2SummaryViewModal in that we are forcing edit here.
-                    ( { model | stage2SummaryModal = Stage2SummaryEditModal }
+                    -- Stage2ViewState in that we are forcing edit here.
+                    ( { model | stage2SummaryModal = Stage2EditState }
                     , Cmd.none
-                    , if model.stage2SummaryModal == NoStageSummaryModal then
+                    , if model.stage2SummaryModal == NoViewEditState then
                         Cmd.batch
                             [ Route.addDialogUrl Route.LaborDelIppRoute
                             , Task.perform SetDialogActive <| Task.succeed True
@@ -4146,7 +4053,7 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveLaborStage2RecordNew returned a Nothing"
                             in
-                            ( { model | stage2SummaryModal = NoStageSummaryModal }
+                            ( { model | stage2SummaryModal = NoViewEditState }
                             , Cmd.none
                             , Cmd.batch
                                 [ Task.perform (always outerMsg) (Task.succeed True)
@@ -4160,7 +4067,7 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                            ( { model | stage2SummaryModal = NoStageSummaryModal }
+                            ( { model | stage2SummaryModal = NoViewEditState }
                             , Cmd.none
                             , toastError msgs 10
                             )
@@ -4358,14 +4265,14 @@ update session msg model =
                     -- The if below allows the summary button to toggle on/off the form.
                     ( { newModel
                         | stage3SummaryModal =
-                            if newModel.stage3SummaryModal == NoStageSummaryModal then
-                                Stage3SummaryViewModal
+                            if newModel.stage3SummaryModal == NoViewEditState then
+                                Stage3ViewState
                             else
-                                NoStageSummaryModal
+                                NoViewEditState
                       }
                     , Cmd.none
                     , Cmd.batch
-                        [ if newModel.stage3SummaryModal == NoStageSummaryModal then
+                        [ if newModel.stage3SummaryModal == NoViewEditState then
                             Route.addDialogUrl Route.LaborDelIppRoute
                           else
                             Route.back
@@ -4376,7 +4283,7 @@ update session msg model =
                 CloseNoSaveDialog ->
                     -- We keep whatever, if anything, the user entered into the
                     -- form fields.
-                    ( { model | stage3SummaryModal = NoStageSummaryModal }
+                    ( { model | stage3SummaryModal = NoViewEditState }
                     , Cmd.none
                     , Route.back
                     )
@@ -4384,10 +4291,10 @@ update session msg model =
                 EditDialog ->
                     -- Transitioning from a viewing summary state to editing again by
                     -- explicitly setting the mode to edit. This is different that
-                    -- Stage3SummaryViewModal in that we are forcing edit here.
-                    ( { model | stage3SummaryModal = Stage3SummaryEditModal }
+                    -- Stage3ViewState in that we are forcing edit here.
+                    ( { model | stage3SummaryModal = Stage3EditState }
                     , Cmd.none
-                    , if model.stage3SummaryModal == NoStageSummaryModal then
+                    , if model.stage3SummaryModal == NoViewEditState then
                         Cmd.batch
                             [ Route.addDialogUrl Route.LaborDelIppRoute
                             , Task.perform SetDialogActive <| Task.succeed True
@@ -4456,7 +4363,7 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveLaborStage3RecordNew returned a Nothing"
                             in
-                            ( { model | stage3SummaryModal = NoStageSummaryModal }
+                            ( { model | stage3SummaryModal = NoViewEditState }
                             , Cmd.none
                             , Cmd.batch
                                 [ Task.perform (always outerMsg) (Task.succeed True)
@@ -4470,7 +4377,7 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                            ( { model | stage3SummaryModal = NoStageSummaryModal }
+                            ( { model | stage3SummaryModal = NoViewEditState }
                             , Cmd.none
                             , toastError msgs 10
                             )
@@ -4592,44 +4499,39 @@ update session msg model =
                             -- Shouldn't get here because there has to be a labor record.
                             ( model, Cmd.none, Cmd.none )
 
-        HandleMembranesSummaryModal dialogState ->
+        HandleMembraneSummaryModal dialogState ->
             case dialogState of
                 OpenDialog ->
                     let
                         newModel =
-                            case model.membranesResusRecord of
+                            case model.membraneRecord of
                                 Just rec ->
                                     { model
-                                        | mbRuptureDate = rec.ruptureDatetime
-                                        , mbRuptureTime =
+                                        | membraneRuptureDate = rec.ruptureDatetime
+                                        , membraneRuptureTime =
                                             U.maybeOr
                                                 (Maybe.map U.dateToTimeString rec.ruptureDatetime)
-                                                model.mbRuptureTime
-                                        , mbRupture = U.maybeOr (Just (maybeRuptureToString rec.rupture)) model.mbRupture
-                                        , mbRuptureComment = U.maybeOr rec.ruptureComment model.mbRuptureComment
-                                        , mbAmniotic = U.maybeOr (Just (maybeAmnioticToString rec.amniotic)) model.mbAmniotic
-                                        , mbAmnioticComment = U.maybeOr rec.amnioticComment model.mbAmnioticComment
-                                        , mbBulb = U.maybeOr rec.bulb model.mbBulb
-                                        , mbMachine = U.maybeOr rec.machine model.mbMachine
-                                        , mbFreeFlowO2 = U.maybeOr rec.freeFlowO2 model.mbFreeFlowO2
-                                        , mbChestCompressions = U.maybeOr rec.chestCompressions model.mbChestCompressions
-                                        , mbPpv = U.maybeOr rec.ppv model.mbPpv
-                                        , mbComments = U.maybeOr rec.comments model.mbComments
+                                                model.membraneRuptureTime
+                                        , membraneRupture = U.maybeOr (Just (Data.Membrane.maybeRuptureToString rec.rupture)) model.membraneRupture
+                                        , membraneRuptureComment = U.maybeOr rec.ruptureComment model.membraneRuptureComment
+                                        , membraneAmniotic = U.maybeOr (Just (Data.Membrane.maybeAmnioticToString rec.amniotic)) model.membraneAmniotic
+                                        , membraneAmnioticComment = U.maybeOr rec.amnioticComment model.membraneAmnioticComment
+                                        , membraneComments = U.maybeOr rec.comments model.membraneComments
                                     }
 
                                 Nothing ->
                                     model
                     in
                     ( { newModel
-                        | membranesSummaryModal =
-                            if model.membranesSummaryModal == NoStageSummaryModal then
-                                MembranesSummaryViewModal
+                        | membraneSummaryModal =
+                            if model.membraneSummaryModal == NoViewEditState then
+                                MembraneViewState
                             else
-                                NoStageSummaryModal
+                                NoViewEditState
                       }
                     , Cmd.none
                     , Cmd.batch
-                        [ if model.membranesSummaryModal == NoStageSummaryModal then
+                        [ if model.membraneSummaryModal == NoViewEditState then
                             Route.addDialogUrl Route.LaborDelIppRoute
                           else
                             Route.back
@@ -4638,15 +4540,15 @@ update session msg model =
                     )
 
                 CloseNoSaveDialog ->
-                    ( { model | membranesSummaryModal = NoStageSummaryModal }
+                    ( { model | membraneSummaryModal = NoViewEditState }
                     , Cmd.none
                     , Route.back
                     )
 
                 EditDialog ->
-                    ( { model | membranesSummaryModal = MembranesSummaryEditModal }
+                    ( { model | membraneSummaryModal = MembraneEditState }
                     , Cmd.none
-                    , if model.membranesSummaryModal == NoStageSummaryModal then
+                    , if model.membraneSummaryModal == NoViewEditState then
                         Cmd.batch
                             [ Route.addDialogUrl Route.LaborDelIppRoute
                             , Task.perform SetDialogActive <| Task.succeed True
@@ -4656,72 +4558,67 @@ update session msg model =
                     )
 
                 CloseSaveDialog ->
-                    case validateMembranesResus model of
+                    case validateMembrane model of
                         [] ->
                             let
                                 ruptureDatetime =
-                                    U.maybeDateMaybeTimeToMaybeDateTime model.mbRuptureDate
-                                        model.mbRuptureTime
+                                    U.maybeDateMaybeTimeToMaybeDateTime model.membraneRuptureDate
+                                        model.membraneRuptureTime
                                         "Please correct the date and time for the rupture."
 
                                 errors =
                                     U.maybeDateTimeErrors [ ruptureDatetime ]
 
                                 outerMsg =
-                                    case ( List.length errors > 0, model.membranesResusRecord ) of
+                                    case ( List.length errors > 0, model.membraneRecord ) of
                                         ( True, _ ) ->
                                             -- Errors found in the date and time field, so notifiy user
                                             -- instead of saving.
                                             Toast (errors ++ [ "Record was not saved." ]) 10 ErrorToast
 
                                         ( False, Just rec ) ->
-                                            -- A membranesResus record already exists so update it.
+                                            -- A membrane record already exists so update it.
                                             let
                                                 newRec =
                                                     { rec
                                                         | ruptureDatetime = U.maybeDateTimeValue ruptureDatetime
-                                                        , rupture = maybeStringToRupture model.mbRupture
-                                                        , ruptureComment = model.mbRuptureComment
-                                                        , amniotic = maybeStringToAmniotic model.mbAmniotic
-                                                        , amnioticComment = model.mbAmnioticComment
-                                                        , bulb = model.mbBulb
-                                                        , machine = model.mbMachine
-                                                        , freeFlowO2 = model.mbFreeFlowO2
-                                                        , chestCompressions = model.mbChestCompressions
-                                                        , ppv = model.mbPpv
-                                                        , comments = model.mbComments
+                                                        , rupture = Data.Membrane.maybeStringToRupture model.membraneRupture
+                                                        , ruptureComment = model.membraneRuptureComment
+                                                        , amniotic = Data.Membrane.maybeStringToAmniotic model.membraneAmniotic
+                                                        , amnioticComment = model.membraneAmnioticComment
+                                                        , comments = model.membraneComments
                                                     }
                                             in
                                             ProcessTypeMsg
-                                                (UpdateMembranesResusType
+                                                (UpdateMembraneType
                                                     (LaborDelIppMsg
-                                                        (DataCache Nothing (Just [ MembranesResus ]))
+                                                        (DataCache Nothing (Just [ Membrane ]))
                                                     )
                                                     newRec
                                                 )
                                                 ChgMsgType
-                                                (membranesResusRecordToValue newRec)
+                                                (membraneRecordToValue newRec)
 
                                         ( False, Nothing ) ->
-                                            -- A new membranesResus record is being created.
-                                            case deriveMembranesResusRecordNew model of
-                                                Just membranesResusRecordNew ->
+                                            -- A new membrane record is being created.
+                                            case deriveMembraneRecordNew model of
+                                                Just membraneRecordNew ->
                                                     ProcessTypeMsg
-                                                        (AddMembranesResusType
+                                                        (AddMembraneType
                                                             (LaborDelIppMsg
                                                                 -- Request top-level to provide data in
                                                                 -- the dataCache once received from server.
-                                                                (DataCache Nothing (Just [ MembranesResus ]))
+                                                                (DataCache Nothing (Just [ Membrane ]))
                                                             )
-                                                            membranesResusRecordNew
+                                                            membraneRecordNew
                                                         )
                                                         AddMsgType
-                                                        (membranesResusRecordNewToValue membranesResusRecordNew)
+                                                        (membraneRecordNewToValue membraneRecordNew)
 
                                                 Nothing ->
-                                                    LogConsole "deriveMembranesResusRecordNew returned a Nothing"
+                                                    LogConsole "deriveMembraneRecordNew returned a Nothing"
                             in
-                            ( { model | membranesSummaryModal = NoStageSummaryModal }
+                            ( { model | membraneSummaryModal = NoViewEditState }
                             , Cmd.none
                             , Cmd.batch
                                 [ Task.perform (always outerMsg) (Task.succeed True)
@@ -4735,7 +4632,7 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                            ( { model | membranesSummaryModal = NoStageSummaryModal }
+                            ( { model | membraneSummaryModal = NoViewEditState }
                             , Cmd.none
                             , toastError msgs 10
                             )
@@ -4769,6 +4666,11 @@ update session msg model =
                                             U.maybeOr
                                                 (Maybe.map U.dateToTimeString rec.bcgDate)
                                                 model.bbBcgTime
+                                        , bbBulb = U.maybeOr rec.bulb model.bbBulb
+                                        , bbMachine = U.maybeOr rec.machine model.bbMachine
+                                        , bbFreeFlowO2 = U.maybeOr rec.freeFlowO2 model.bbFreeFlowO2
+                                        , bbChestCompressions = U.maybeOr rec.chestCompressions model.bbChestCompressions
+                                        , bbPpv = U.maybeOr rec.ppv model.bbPpv
                                         , bbComments = U.maybeOr rec.comments model.bbComments
                                         , apgarScores = apgarRecordListToApgarScoreDict rec.apgarScores
                                     }
@@ -4778,14 +4680,14 @@ update session msg model =
                     in
                     ( { newModel
                         | babySummaryModal =
-                            if model.babySummaryModal == NoStageSummaryModal then
-                                BabySummaryViewModal
+                            if model.babySummaryModal == NoViewEditState then
+                                BabyViewState
                             else
-                                NoStageSummaryModal
+                                NoViewEditState
                       }
                     , Cmd.none
                     , Cmd.batch
-                        [ if model.babySummaryModal == NoStageSummaryModal then
+                        [ if model.babySummaryModal == NoViewEditState then
                             Route.addDialogUrl Route.LaborDelIppRoute
                           else
                             Route.back
@@ -4794,15 +4696,15 @@ update session msg model =
                     )
 
                 CloseNoSaveDialog ->
-                    ( { model | babySummaryModal = NoStageSummaryModal }
+                    ( { model | babySummaryModal = NoViewEditState }
                     , Cmd.none
                     , Route.back
                     )
 
                 EditDialog ->
-                    ( { model | babySummaryModal = BabySummaryEditModal }
+                    ( { model | babySummaryModal = BabyEditState }
                     , Cmd.none
-                    , if model.babySummaryModal == NoStageSummaryModal then
+                    , if model.babySummaryModal == NoViewEditState then
                         Cmd.batch
                             [ Route.addDialogUrl Route.LaborDelIppRoute
                             , Task.perform SetDialogActive <| Task.succeed True
@@ -4862,6 +4764,11 @@ update session msg model =
                                                         , nbsDate = U.maybeDateTimeValue nbsDatetime
                                                         , nbsResult = model.bbNbsResult
                                                         , bcgDate = U.maybeDateTimeValue bcgDatetime
+                                                        , bulb = model.bbBulb
+                                                        , machine = model.bbMachine
+                                                        , freeFlowO2 = model.bbFreeFlowO2
+                                                        , chestCompressions = model.bbChestCompressions
+                                                        , ppv = model.bbPpv
                                                         , comments = model.bbComments
                                                         , apgarScores = apgarScoreDictToApgarRecordList model.apgarScores
                                                     }
@@ -4895,7 +4802,7 @@ update session msg model =
                                                 Nothing ->
                                                     LogConsole "deriveBabyRecordNew returned a Nothing"
                             in
-                            ( { model | babySummaryModal = NoStageSummaryModal }
+                            ( { model | babySummaryModal = NoViewEditState }
                             , Cmd.none
                             , Cmd.batch
                                 [ Task.perform (always outerMsg) (Task.succeed True)
@@ -4909,7 +4816,7 @@ update session msg model =
                                     List.map Tuple.second errors
                                         |> flip (++) [ "Record was not saved." ]
                             in
-                            ( { model | babySummaryModal = NoStageSummaryModal }
+                            ( { model | babySummaryModal = NoViewEditState }
                             , Cmd.none
                             , toastError msgs 10
                             )
@@ -5114,13 +5021,13 @@ deriveLaborStage2RecordNew model =
             Nothing
 
 
-deriveMembranesResusRecordNew : Model -> Maybe MembranesResusRecordNew
-deriveMembranesResusRecordNew model =
-    case model.babyRecord of
-        Just baby ->
+deriveMembraneRecordNew : Model -> Maybe MembraneRecordNew
+deriveMembraneRecordNew model =
+    case model.currLaborId of
+        Just (LaborId lid) ->
             let
                 ruptureDatetime =
-                    case ( model.mbRuptureDate, model.mbRuptureTime ) of
+                    case ( model.membraneRuptureDate, model.membraneRuptureTime ) of
                         ( Just d, Just t ) ->
                             case U.stringToTimeTuple t of
                                 Just tt ->
@@ -5132,18 +5039,13 @@ deriveMembranesResusRecordNew model =
                         ( _, _ ) ->
                             Nothing
             in
-            MembranesResusRecordNew ruptureDatetime
-                (maybeStringToRupture model.mbRupture)
-                model.mbRuptureComment
-                (maybeStringToAmniotic model.mbAmniotic)
-                model.mbAmnioticComment
-                model.mbBulb
-                model.mbMachine
-                model.mbFreeFlowO2
-                model.mbChestCompressions
-                model.mbPpv
-                model.mbComments
-                baby.id
+            MembraneRecordNew ruptureDatetime
+                (Data.Membrane.maybeStringToRupture model.membraneRupture)
+                model.membraneRuptureComment
+                (Data.Membrane.maybeStringToAmniotic model.membraneAmniotic)
+                model.membraneAmnioticComment
+                model.membraneComments
+                lid
                 |> Just
 
         Nothing ->
@@ -5204,6 +5106,11 @@ deriveBabyRecordNew model =
                 nbsDatetime
                 model.bbNbsResult
                 bcgDatetime
+                model.bbBulb
+                model.bbMachine
+                model.bbFreeFlowO2
+                model.bbChestCompressions
+                model.bbPpv
                 model.bbComments
                 id
                 (apgarScoreDictToApgarRecordList model.apgarScores)
@@ -5399,16 +5306,9 @@ validateBaby =
         ]
 
 
-{-| Nearly empty records are valid.
-
-TODO: are all these fields minimally necessary for a saved record?
-
--}
-validateMembranesResus : Model -> List FieldError
-validateMembranesResus =
+validateMembrane : Model -> List FieldError
+validateMembrane =
     Validate.all
-        --[ .mbRuptureDate >> ifInvalid U.validateDate (MBRuptureDateFld => "Date of the rupture must be provided.")
-        --, .mbRuptureTime >> ifInvalid U.validateTime (MBRuptureTimeFld => "Time of the rupture must be provided, ex: hh:mm.")
-        [ .mbRupture >> ifInvalid U.validatePopulatedString (MBRuptureFld => "Rupture type must be provided.")
-        , .mbAmniotic >> ifInvalid U.validatePopulatedString (MBAmnioticFld => "Amniotic type must be provided.")
+        [ .membraneRupture >> ifInvalid U.validatePopulatedString (MembraneRuptureFld => "Rupture type must be provided.")
+        , .membraneAmniotic >> ifInvalid U.validatePopulatedString (MembraneAmnioticFld => "Amniotic type must be provided.")
         ]

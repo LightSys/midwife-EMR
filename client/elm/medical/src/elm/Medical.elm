@@ -25,7 +25,7 @@ import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLabor
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
-import Data.MembranesResus exposing (membranesResusRecordNewToMembranesResusRecord, MembranesResusId(..))
+import Data.Membrane exposing (membraneRecordNewToMembraneRecord, MembraneId(..))
 import Data.NewbornExam exposing (NewbornExamId(..), newbornExamRecordNewToNewbornExamRecord)
 import Data.Postpartum exposing (SubMsg(..))
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
@@ -676,17 +676,17 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
-                                Just (AddMembranesResusType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membranesResusRecordNew) ->
+                                Just (AddMembraneType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membraneRecordNew) ->
                                     let
-                                        membranesResusRec =
-                                            membranesResusRecordNewToMembranesResusRecord
-                                                (MembranesResusId dataAddMsg.response.id)
-                                                membranesResusRecordNew
+                                        membraneRec =
+                                            membraneRecordNewToMembraneRecord
+                                                (MembraneId dataAddMsg.response.id)
+                                                membraneRecordNew
 
                                         subMsg =
-                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ MembranesResus ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Membrane ])
                                     in
-                                        ( { model | dataCache = DCache.put (MembranesResusDataCache membranesResusRec) model.dataCache }
+                                        ( { model | dataCache = DCache.put (MembraneDataCache membraneRec) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
@@ -812,12 +812,12 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
-                                Just (UpdateMembranesResusType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membranesResusRecord) ->
+                                Just (UpdateMembraneType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membraneRecord) ->
                                     let
                                         subMsg =
-                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ MembranesResus ])
+                                            Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Membrane ])
                                     in
-                                        ( { model | dataCache = DCache.put (MembranesResusDataCache membranesResusRecord) model.dataCache }
+                                        ( { model | dataCache = DCache.put (MembraneDataCache membraneRecord) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
@@ -943,12 +943,12 @@ updateMessage incoming model =
                                             in
                                                 { mdl | dataCache = dc }
 
-                                        TableRecordMembranesResus recs ->
+                                        TableRecordMembrane recs ->
                                             let
                                                 dc =
                                                     case List.head recs of
                                                         Just r ->
-                                                            DCache.put (MembranesResusDataCache r) mdl.dataCache
+                                                            DCache.put (MembraneDataCache r) mdl.dataCache
 
                                                         Nothing ->
                                                             mdl.dataCache
@@ -1056,10 +1056,10 @@ updateMessage incoming model =
                         Just (UpdateLaborStage3Type msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddMembranesResusType msg _) ->
+                        Just (AddMembraneType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateMembranesResusType msg _) ->
+                        Just (UpdateMembraneType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (AddNewbornExamType msg _) ->

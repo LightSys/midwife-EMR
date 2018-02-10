@@ -135,6 +135,11 @@ type alias BabyRecord =
     , nbsDate : Maybe Date
     , nbsResult : Maybe String
     , bcgDate : Maybe Date
+    , bulb : Maybe Bool
+    , machine : Maybe Bool
+    , freeFlowO2 : Maybe Bool
+    , chestCompressions : Maybe Bool
+    , ppv : Maybe Bool
     , comments : Maybe String
     , labor_id : Int
     , apgarScores : List ApgarRecord
@@ -152,6 +157,11 @@ type alias BabyRecordNew =
     , nbsDate : Maybe Date
     , nbsResult : Maybe String
     , bcgDate : Maybe Date
+    , bulb : Maybe Bool
+    , machine : Maybe Bool
+    , freeFlowO2 : Maybe Bool
+    , chestCompressions : Maybe Bool
+    , ppv : Maybe Bool
     , comments : Maybe String
     , labor_id : Int
     , apgarScores : List ApgarRecord
@@ -171,6 +181,11 @@ babyRecordNewToBabyRecord (BabyId id) babyNew =
         babyNew.nbsDate
         babyNew.nbsResult
         babyNew.bcgDate
+        babyNew.bulb
+        babyNew.machine
+        babyNew.freeFlowO2
+        babyNew.chestCompressions
+        babyNew.ppv
         babyNew.comments
         babyNew.labor_id
         babyNew.apgarScores
@@ -206,6 +221,11 @@ babyRecordNewToValue rec =
                 , ( "nbsDate", (JEE.maybe U.dateToStringValue rec.nbsDate) )
                 , ( "nbsResult", (JEE.maybe JE.string rec.nbsResult) )
                 , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
+                , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
+                , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
+                , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
+                , ( "chestCompressions", (U.maybeBoolToMaybeInt rec.chestCompressions) )
+                , ( "ppv", (U.maybeBoolToMaybeInt rec.ppv) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 , ( "apgarScores", (JE.list <| List.map apgarRecordToValue rec.apgarScores) )
@@ -231,6 +251,11 @@ babyRecordToValue rec =
                 , ( "nbsDate", (JEE.maybe U.dateToStringValue rec.nbsDate) )
                 , ( "nbsResult", (JEE.maybe JE.string rec.nbsResult) )
                 , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
+                , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
+                , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
+                , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
+                , ( "chestCompressions", (U.maybeBoolToMaybeInt rec.chestCompressions) )
+                , ( "ppv", (U.maybeBoolToMaybeInt rec.ppv) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 , ( "apgarScores", (JE.list <| List.map apgarRecordToValue rec.apgarScores) )
@@ -260,6 +285,11 @@ babyRecord =
         |> JDP.required "nbsDate" (JD.maybe JDE.date)
         |> JDP.required "nbsResult" (JD.maybe JD.string)
         |> JDP.required "bcgDate" (JD.maybe JDE.date)
+        |> JDP.required "bulb" U.maybeIntToMaybeBool
+        |> JDP.required "machine" U.maybeIntToMaybeBool
+        |> JDP.required "freeFlowO2" U.maybeIntToMaybeBool
+        |> JDP.required "chestCompressions" U.maybeIntToMaybeBool
+        |> JDP.required "ppv" U.maybeIntToMaybeBool
         |> JDP.required "comments" (JD.maybe JD.string)
         |> JDP.required "labor_id" JD.int
         |> JDP.required "apgarScores" (JD.list apgarRecord)
