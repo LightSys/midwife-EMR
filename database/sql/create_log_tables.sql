@@ -279,16 +279,6 @@ ALTER TABLE apgarLog DROP PRIMARY KEY;
 ALTER TABLE apgarLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE apgarLog DROP KEY baby_id;
 --
--- Creating membranesResusLog
-SELECT 'membranesResusLog' AS Creating FROM DUAL;
-CREATE TABLE membranesResusLog LIKE membranesResus;
-ALTER TABLE membranesResusLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE membranesResusLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE membranesResusLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE membranesResusLog DROP PRIMARY KEY;
-ALTER TABLE membranesResusLog ADD PRIMARY KEY (id, replacedAt);
-ALTER TABLE membranesResusLog DROP KEY baby_id;
---
 -- Creating newbornExamLog
 SELECT 'newbornExamLog' AS Creating FROM DUAL;
 CREATE TABLE newbornExamLog LIKE newbornExam;
