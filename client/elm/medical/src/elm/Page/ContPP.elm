@@ -251,80 +251,80 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords br
             getBabyRecord babyRecords
     in
     ( { browserSupportsDate = browserSupportsDate
-        , currTime = currTime
-        , pregnancy_id = pregId
-        , currLaborId = (Just (LaborId laborRec.id))
-        , currContPostpartumCheckId = Nothing
-        , currPregHeaderContent = PregHeaderData.IPPContent
-        , dataCache = Dict.empty
-        , pendingSelectQuery = pendingSelectQuery
-        , patientRecord = patRec
-        , pregnancyRecord = pregRec
-        , laborRecord = laborRec
-        , laborStage1Record = stage1Rec
-        , laborStage2Record = stage2Rec
-        , laborStage3Record = stage3Rec
-        , babyRecord = babyRecord
-        , newbornExamRecord = Nothing
-        , contPostpartumCheckRecords = contPPCheckRecs
-        , selectDataRecords = []
-        , newbornExamViewEditState = NoViewEditState
-        , nbsDate = Nothing
-        , nbsTime = Nothing
-        , nbsExaminers = Nothing
-        , nbsRR = Nothing
-        , nbsHR = Nothing
-        , nbsTemperature = Nothing
-        , nbsLength = Nothing
-        , nbsHeadCir = Nothing
-        , nbsChestCir = Nothing
-        , nbsAppearance = []
-        , nbsColor = []
-        , nbsSkin = []
-        , nbsHead = []
-        , nbsEyes = []
-        , nbsEars = []
-        , nbsNose = []
-        , nbsMouth = []
-        , nbsNeck = []
-        , nbsChest = []
-        , nbsLungs = []
-        , nbsHeart = []
-        , nbsAbdomen = []
-        , nbsHips = []
-        , nbsCord = []
-        , nbsFemoralPulses = []
-        , nbsGenitalia = []
-        , nbsAnus = []
-        , nbsBack = []
-        , nbsExtremities = []
-        , nbsEstGA = Nothing
-        , nbsMoroReflex = Nothing
-        , nbsMoroReflexComment = Nothing
-        , nbsPalmarReflex = Nothing
-        , nbsPalmarReflexComment = Nothing
-        , nbsSteppingReflex = Nothing
-        , nbsSteppingReflexComment = Nothing
-        , nbsPlantarReflexComment = Nothing
-        , nbsPlantarReflex = Nothing
-        , nbsBabinskiReflexComment = Nothing
-        , nbsBabinskiReflex = Nothing
-        , nbsComments = Nothing
-        , contPostpartumCheckViewEditState = NoViewEditState
-        , cpcCheckDate = Nothing
-        , cpcCheckTime = Nothing
-        , cpcMotherSystolic = Nothing
-        , cpcMotherDiastolic = Nothing
-        , cpcMotherCR = Nothing
-        , cpcMotherTemp = Nothing
-        , cpcMotherFundus = Nothing
-        , cpcMotherEBL = Nothing
-        , cpcBabyBFed = Nothing
-        , cpcBabyTemp = Nothing
-        , cpcBabyRR = Nothing
-        , cpcBabyCR = Nothing
-        , cpcComments = Nothing
-        }
+      , currTime = currTime
+      , pregnancy_id = pregId
+      , currLaborId = Just (LaborId laborRec.id)
+      , currContPostpartumCheckId = Nothing
+      , currPregHeaderContent = PregHeaderData.IPPContent
+      , dataCache = Dict.empty
+      , pendingSelectQuery = pendingSelectQuery
+      , patientRecord = patRec
+      , pregnancyRecord = pregRec
+      , laborRecord = laborRec
+      , laborStage1Record = stage1Rec
+      , laborStage2Record = stage2Rec
+      , laborStage3Record = stage3Rec
+      , babyRecord = babyRecord
+      , newbornExamRecord = Nothing
+      , contPostpartumCheckRecords = contPPCheckRecs
+      , selectDataRecords = []
+      , newbornExamViewEditState = NoViewEditState
+      , nbsDate = Nothing
+      , nbsTime = Nothing
+      , nbsExaminers = Nothing
+      , nbsRR = Nothing
+      , nbsHR = Nothing
+      , nbsTemperature = Nothing
+      , nbsLength = Nothing
+      , nbsHeadCir = Nothing
+      , nbsChestCir = Nothing
+      , nbsAppearance = []
+      , nbsColor = []
+      , nbsSkin = []
+      , nbsHead = []
+      , nbsEyes = []
+      , nbsEars = []
+      , nbsNose = []
+      , nbsMouth = []
+      , nbsNeck = []
+      , nbsChest = []
+      , nbsLungs = []
+      , nbsHeart = []
+      , nbsAbdomen = []
+      , nbsHips = []
+      , nbsCord = []
+      , nbsFemoralPulses = []
+      , nbsGenitalia = []
+      , nbsAnus = []
+      , nbsBack = []
+      , nbsExtremities = []
+      , nbsEstGA = Nothing
+      , nbsMoroReflex = Nothing
+      , nbsMoroReflexComment = Nothing
+      , nbsPalmarReflex = Nothing
+      , nbsPalmarReflexComment = Nothing
+      , nbsSteppingReflex = Nothing
+      , nbsSteppingReflexComment = Nothing
+      , nbsPlantarReflexComment = Nothing
+      , nbsPlantarReflex = Nothing
+      , nbsBabinskiReflexComment = Nothing
+      , nbsBabinskiReflex = Nothing
+      , nbsComments = Nothing
+      , contPostpartumCheckViewEditState = NoViewEditState
+      , cpcCheckDate = Nothing
+      , cpcCheckTime = Nothing
+      , cpcMotherSystolic = Nothing
+      , cpcMotherDiastolic = Nothing
+      , cpcMotherCR = Nothing
+      , cpcMotherTemp = Nothing
+      , cpcMotherFundus = Nothing
+      , cpcMotherEBL = Nothing
+      , cpcBabyBFed = Nothing
+      , cpcBabyTemp = Nothing
+      , cpcBabyRR = Nothing
+      , cpcBabyCR = Nothing
+      , cpcComments = Nothing
+      }
     , newStore
     , newCmd
     )
@@ -1121,10 +1121,13 @@ update session msg model =
                             Date.fromTime model.currTime
 
                         newModel =
-                            { model
-                                | cpcCheckDate = Just currDate
-                                , cpcCheckTime = Just <| U.dateToTimeString currDate
-                            }
+                            clearContPostpartumCheckModelFields model
+                                |> (\mdl ->
+                                        { mdl
+                                            | cpcCheckDate = Just currDate
+                                            , cpcCheckTime = Just <| U.dateToTimeString currDate
+                                        }
+                                   )
                     in
                     ( { newModel | contPostpartumCheckViewEditState = ContPostpartumCheckEditState }
                     , Cmd.none
@@ -1314,6 +1317,27 @@ update session msg model =
                                     PregHeaderData.PrenatalContent
                     in
                     ( { model | currPregHeaderContent = next }, Cmd.none, Cmd.none )
+
+
+{-| Clear the continued postpartum check fields in the model.
+-}
+clearContPostpartumCheckModelFields : Model -> Model
+clearContPostpartumCheckModelFields model =
+    { model
+        | cpcCheckDate = Nothing
+        , cpcCheckTime = Nothing
+        , cpcMotherSystolic = Nothing
+        , cpcMotherDiastolic = Nothing
+        , cpcMotherCR = Nothing
+        , cpcMotherTemp = Nothing
+        , cpcMotherFundus = Nothing
+        , cpcMotherEBL = Nothing
+        , cpcBabyBFed = Nothing
+        , cpcBabyTemp = Nothing
+        , cpcBabyRR = Nothing
+        , cpcBabyCR = Nothing
+        , cpcComments = Nothing
+    }
 
 
 deriveContPostpartumCheckRecordNew : Model -> Maybe ContPostpartumCheckRecordNew
