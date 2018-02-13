@@ -14,6 +14,7 @@ import Json.Encode as JE
 type Table
     = Unknown
     | Baby
+    | ContPostpartumCheck
     | Labor
     | LaborStage1
     | LaborStage2
@@ -41,6 +42,9 @@ tableToString tbl =
 
         Baby ->
             "baby"
+
+        ContPostpartumCheck ->
+            "contPostpartumCheck"
 
         Labor ->
             "labor"
@@ -75,6 +79,9 @@ stringToTable tbl =
     case tbl of
         "baby" ->
             Baby
+
+        "contPostpartumCheck" ->
+            ContPostpartumCheck
 
         "labor" ->
             Labor

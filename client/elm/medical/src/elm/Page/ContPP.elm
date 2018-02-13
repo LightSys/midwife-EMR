@@ -20,6 +20,14 @@ import Data.ContPP
         ( Field(..)
         , SubMsg(..)
         )
+import Data.ContPostpartumCheck
+    exposing
+        ( ContPostpartumCheckId(..)
+        , ContPostpartumCheckRecord
+        , ContPostpartumCheckRecordNew
+        , contPostpartumCheckRecordNewToValue
+        , contPostpartumCheckRecordToValue
+        )
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
 import Data.Labor
@@ -103,6 +111,8 @@ type ViewEditState
     = NoViewEditState
     | NewbornExamViewState
     | NewbornExamEditState
+    | ContPostpartumCheckViewState
+    | ContPostpartumCheckEditState
 
 
 type alias Model =
@@ -110,6 +120,7 @@ type alias Model =
     , currTime : Time
     , pregnancy_id : PregnancyId
     , currLaborId : Maybe LaborId
+    , currContPostpartumCheckId : Maybe ContPostpartumCheckId
     , currPregHeaderContent : PregHeaderData.PregHeaderContent
     , dataCache : Dict String DataCache
     , pendingSelectQuery : Dict String Table
@@ -121,6 +132,7 @@ type alias Model =
     , laborStage3Record : Maybe LaborStage3Record
     , babyRecord : Maybe BabyRecord
     , newbornExamRecord : Maybe NewbornExamRecord
+    , contPostpartumCheckRecords : List ContPostpartumCheckRecord
     , selectDataRecords : List SelectDataRecord
     , newbornExamViewEditState : ViewEditState
     , nbsDate : Maybe Date
@@ -164,6 +176,20 @@ type alias Model =
     , nbsBabinskiReflexComment : Maybe String
     , nbsBabinskiReflex : Maybe Bool
     , nbsComments : Maybe String
+    , contPostpartumCheckViewEditState : ViewEditState
+    , cpcCheckDate : Maybe Date
+    , cpcCheckTime : Maybe String
+    , cpcMotherSystolic : Maybe String
+    , cpcMotherDiastolic : Maybe String
+    , cpcMotherCR : Maybe String
+    , cpcMotherTemp : Maybe String
+    , cpcMotherFundus : Maybe String
+    , cpcMotherEBL : Maybe String
+    , cpcBabyBFed : Maybe Bool
+    , cpcBabyTemp : Maybe String
+    , cpcBabyRR : Maybe String
+    , cpcBabyCR : Maybe String
+    , cpcComments : Maybe String
     }
 
 
@@ -174,7 +200,14 @@ init : PregnancyId -> LaborRecord -> Session -> ProcessStore -> ( ProcessStore, 
 init pregId laborRec session store =
     let
         selectQuery =
-            SelectQuery Labor (Just laborRec.id) [ LaborStage1, LaborStage2, LaborStage3, Baby ]
+            SelectQuery Labor
+                (Just laborRec.id)
+                [ LaborStage1
+                , LaborStage2
+                , LaborStage3
+                , Baby
+                , ContPostpartumCheck
+                ]
 
         ( processId, processStore ) =
             Processing.add (SelectQueryType (ContPPLoaded pregId laborRec) selectQuery) Nothing store
@@ -193,6 +226,7 @@ buildModel :
     -> Maybe LaborStage1Record
     -> Maybe LaborStage2Record
     -> Maybe LaborStage3Record
+    -> List ContPostpartumCheckRecord
     -> Maybe (Dict Int BabyRecord)
     -> Bool
     -> Time
@@ -201,7 +235,7 @@ buildModel :
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel laborRec stage1Rec stage2Rec stage3Rec babyRecords browserSupportsDate currTime store pregId patRec pregRec =
+buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords browserSupportsDate currTime store pregId patRec pregRec =
     let
         ( newStore, newCmd ) =
             getTableData store SelectData Nothing []
@@ -220,6 +254,7 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec babyRecords browserSupportsDat
         currTime
         pregId
         (Just (LaborId laborRec.id))
+        Nothing
         PregHeaderData.IPPContent
         Dict.empty
         pendingSelectQuery
@@ -231,6 +266,7 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec babyRecords browserSupportsDat
         stage3Rec
         babyRecord
         Nothing
+        contPPCheckRecs
         []
         NoViewEditState
         Nothing
@@ -262,6 +298,20 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec babyRecords browserSupportsDat
         []
         []
         []
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        NoViewEditState
+        Nothing
         Nothing
         Nothing
         Nothing
@@ -346,6 +396,14 @@ refreshModelFromCache dc tables model =
                             case DataCache.get t dc of
                                 Just (BabyDataCache rec) ->
                                     { m | babyRecord = Just rec }
+
+                                _ ->
+                                    m
+
+                        ContPostpartumCheck ->
+                            case DataCache.get t dc of
+                                Just (ContPostpartumCheckDataCache recs) ->
+                                    { m | contPostpartumCheckRecords = recs }
 
                                 _ ->
                                     m
@@ -542,6 +600,42 @@ update session msg model =
                         NBSCommentsFld ->
                             { model | nbsComments = Just value }
 
+                        CPCCheckDateFld ->
+                            { model | cpcCheckDate = Date.fromString value |> Result.toMaybe }
+
+                        CPCCheckTimeFld ->
+                            { model | cpcCheckTime = Just <| U.filterStringLikeTime value }
+
+                        CPCMotherSystolicFld ->
+                            { model | cpcMotherSystolic = Just <| U.filterStringLikeInt value }
+
+                        CPCMotherDiastolicFld ->
+                            { model | cpcMotherDiastolic = Just <| U.filterStringLikeInt value }
+
+                        CPCMotherCRFld ->
+                            { model | cpcMotherCR = Just <| U.filterStringLikeInt value }
+
+                        CPCMotherTempFld ->
+                            { model | cpcMotherTemp = Just <| U.filterStringLikeFloat value }
+
+                        CPCMotherFundusFld ->
+                            { model | cpcMotherFundus = Just value }
+
+                        CPCMotherEBLFld ->
+                            { model | cpcMotherEBL = Just <| U.filterStringLikeInt value }
+
+                        CPCBabyTempFld ->
+                            { model | cpcBabyTemp = Just <| U.filterStringLikeFloat value }
+
+                        CPCBabyRRFld ->
+                            { model | cpcBabyRR = Just <| U.filterStringLikeInt value }
+
+                        CPCBabyCRFld ->
+                            { model | cpcBabyCR = Just <| U.filterStringLikeInt value }
+
+                        CPCCommentsFld ->
+                            { model | cpcComments = Just value }
+
                         _ ->
                             model
                     , Cmd.none
@@ -632,6 +726,9 @@ update session msg model =
 
                         NBSBabinskiReflexFld ->
                             { model | nbsBabinskiReflex = Just value }
+
+                        CPCBabyBFedFld ->
+                            { model | cpcBabyBFed = Just value }
 
                         _ ->
                             model
@@ -1012,6 +1109,191 @@ update session msg model =
                             , toastError msgs 10
                             )
 
+        HandleContPostpartumCheckModal dialogState cpcId ->
+            case dialogState of
+                OpenDialog ->
+                    -- This is used only for new records. EditDialog if used to edit
+                    -- existing records using the id passed.
+                    let
+                        -- Default to the current time and date.
+                        currDate =
+                            Date.fromTime model.currTime
+
+                        newModel =
+                            { model
+                                | cpcCheckDate = Just currDate
+                                , cpcCheckTime = Just <| U.dateToTimeString currDate
+                            }
+                    in
+                    ( { newModel | contPostpartumCheckViewEditState = ContPostpartumCheckEditState }
+                    , Cmd.none
+                    , Cmd.batch
+                        [ if model.contPostpartumCheckViewEditState == NoViewEditState then
+                            Route.addDialogUrl Route.ContPPRoute
+                          else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
+                    )
+
+                CloseNoSaveDialog ->
+                    ( { model | contPostpartumCheckViewEditState = NoViewEditState }
+                    , Cmd.none
+                    , Route.back
+                    )
+
+                EditDialog ->
+                    let
+                        newModel =
+                            case ( cpcId, DataCache.get ContPostpartumCheck model.dataCache ) of
+                                ( Just (ContPostpartumCheckId theId), Just (ContPostpartumCheckDataCache recs) ) ->
+                                    case LE.find (\r -> r.id == theId) recs of
+                                        Just rec ->
+                                            { model
+                                                | cpcCheckDate = Just rec.checkDatetime
+                                                , cpcCheckTime = Just <| U.dateToTimeString rec.checkDatetime
+                                                , cpcMotherSystolic = Maybe.map toString rec.motherSystolic
+                                                , cpcMotherDiastolic = Maybe.map toString rec.motherDiastolic
+                                                , cpcMotherCR = Maybe.map toString rec.motherCR
+                                                , cpcMotherTemp = Maybe.map toString rec.motherTemp
+                                                , cpcMotherFundus = rec.motherFundus
+                                                , cpcMotherEBL = Maybe.map toString rec.motherEBL
+                                                , cpcBabyBFed = rec.babyBFed
+                                                , cpcBabyTemp = Maybe.map toString rec.babyTemp
+                                                , cpcBabyRR = Maybe.map toString rec.babyRR
+                                                , cpcBabyCR = Maybe.map toString rec.babyCR
+                                                , cpcComments = rec.comments
+                                            }
+
+                                        Nothing ->
+                                            model
+
+                                ( _, _ ) ->
+                                    model
+                    in
+                    ( { newModel
+                        | contPostpartumCheckViewEditState = ContPostpartumCheckEditState
+                        , currContPostpartumCheckId = cpcId
+                      }
+                    , Cmd.none
+                    , if newModel.contPostpartumCheckViewEditState == NoViewEditState then
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.ContPPRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
+                      else
+                        Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    case validateContPostpartumCheck model of
+                        [] ->
+                            let
+                                -- Check that the date and corresponding time fields together
+                                -- produce valid dates.
+                                checkDatetime =
+                                    U.maybeDateMaybeTimeToMaybeDateTime model.cpcCheckDate
+                                        model.cpcCheckTime
+                                        "Please correct the date and time for the postpartum check fields."
+
+                                errors =
+                                    U.maybeDateTimeErrors [ checkDatetime ]
+
+                                _ =
+                                    Debug.log "cpcId" <| toString cpcId
+
+                                outerMsg =
+                                    case ( List.length errors > 0, model.currLaborId, cpcId ) of
+                                        ( True, _, _ ) ->
+                                            -- Errors found in the date and time field, so notifiy user
+                                            -- instead of saving.
+                                            Toast (errors ++ [ "Record was not saved." ]) 10 ErrorToast
+
+                                        ( _, Nothing, _ ) ->
+                                            LogConsole "Error: Current labor id is not known."
+
+                                        ( False, Just (LaborId lid), Nothing ) ->
+                                            -- New check being created.
+                                            case deriveContPostpartumCheckRecordNew model of
+                                                Just check ->
+                                                    ProcessTypeMsg
+                                                        (AddContPostpartumCheckType
+                                                            (ContPPMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ ContPostpartumCheck ]))
+                                                            )
+                                                            check
+                                                        )
+                                                        AddMsgType
+                                                        (contPostpartumCheckRecordNewToValue check)
+
+                                                Nothing ->
+                                                    LogConsole "deriveContPostpartumCheckRecordNew returned a Nothing"
+
+                                        ( False, Just (LaborId lid), Just (ContPostpartumCheckId checkId) ) ->
+                                            -- Existing check being updated.
+                                            case DataCache.get ContPostpartumCheck model.dataCache of
+                                                Just (ContPostpartumCheckDataCache checks) ->
+                                                    case LE.find (\c -> c.id == checkId) checks of
+                                                        Just check ->
+                                                            let
+                                                                newCheck =
+                                                                    { check
+                                                                        | checkDatetime =
+                                                                            Maybe.withDefault check.checkDatetime
+                                                                                (U.maybeDateTimeValue checkDatetime)
+                                                                        , motherSystolic = U.maybeStringToMaybeInt model.cpcMotherSystolic
+                                                                        , motherDiastolic = U.maybeStringToMaybeInt model.cpcMotherDiastolic
+                                                                        , motherCR = U.maybeStringToMaybeInt model.cpcMotherCR
+                                                                        , motherTemp = U.maybeStringToMaybeFloat model.cpcMotherTemp
+                                                                        , motherFundus = model.cpcMotherFundus
+                                                                        , motherEBL = U.maybeStringToMaybeInt model.cpcMotherEBL
+                                                                        , babyBFed = model.cpcBabyBFed
+                                                                        , babyTemp = U.maybeStringToMaybeFloat model.cpcBabyTemp
+                                                                        , babyRR = U.maybeStringToMaybeInt model.cpcBabyRR
+                                                                        , babyCR = U.maybeStringToMaybeInt model.cpcBabyCR
+                                                                        , comments = model.cpcComments
+                                                                    }
+                                                            in
+                                                            ProcessTypeMsg
+                                                                (UpdateContPostpartumCheckType
+                                                                    (ContPPMsg
+                                                                        (DataCache Nothing (Just [ ContPostpartumCheck ]))
+                                                                    )
+                                                                    newCheck
+                                                                )
+                                                                ChgMsgType
+                                                                (contPostpartumCheckRecordToValue newCheck)
+
+                                                        Nothing ->
+                                                            LogConsole "HandleContPostpartumCheckModal: did not find PPCheck in data cache."
+
+                                                _ ->
+                                                    Noop
+                            in
+                            ( { model
+                                | contPostpartumCheckViewEditState = NoViewEditState
+                                , currContPostpartumCheckId = Nothing
+                              }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
+
+                        errors ->
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
+                            in
+                            ( { model | contPostpartumCheckViewEditState = NoViewEditState }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
+
         OpenDatePickerSubMsg id ->
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
 
@@ -1031,6 +1313,39 @@ update session msg model =
                                     PregHeaderData.PrenatalContent
                     in
                     ( { model | currPregHeaderContent = next }, Cmd.none, Cmd.none )
+
+
+deriveContPostpartumCheckRecordNew : Model -> Maybe ContPostpartumCheckRecordNew
+deriveContPostpartumCheckRecordNew model =
+    case model.currLaborId of
+        Just (LaborId lid) ->
+            let
+                checkDatetime =
+                    U.maybeDateMaybeTimeToMaybeDateTime model.cpcCheckDate model.cpcCheckTime ""
+                        |> U.maybeDateTimeValue
+            in
+            case checkDatetime of
+                Just d ->
+                    Just <|
+                        ContPostpartumCheckRecordNew d
+                            (U.maybeStringToMaybeInt model.cpcMotherSystolic)
+                            (U.maybeStringToMaybeInt model.cpcMotherDiastolic)
+                            (U.maybeStringToMaybeInt model.cpcMotherCR)
+                            (U.maybeStringToMaybeFloat model.cpcMotherTemp)
+                            model.cpcMotherFundus
+                            (U.maybeStringToMaybeInt model.cpcMotherEBL)
+                            model.cpcBabyBFed
+                            (U.maybeStringToMaybeFloat model.cpcBabyTemp)
+                            (U.maybeStringToMaybeInt model.cpcBabyRR)
+                            (U.maybeStringToMaybeInt model.cpcBabyCR)
+                            model.cpcComments
+                            lid
+
+                Nothing ->
+                    Nothing
+
+        Nothing ->
+            Nothing
 
 
 deriveNewbornExamRecordNew : Model -> Maybe NewbornExamRecordNew
@@ -1140,12 +1455,28 @@ view size session model =
                 (HandleNewbornExamModal CloseNoSaveDialog)
                 (HandleNewbornExamModal CloseSaveDialog)
                 (HandleNewbornExamModal EditDialog)
+
+        contPostpartumCheckViewEditStageConfig =
+            ViewEditStageConfig
+                (model.contPostpartumCheckViewEditState
+                    == ContPostpartumCheckViewState
+                    || model.contPostpartumCheckViewEditState
+                    == NoViewEditState
+                )
+                (model.contPostpartumCheckViewEditState == ContPostpartumCheckEditState)
+                "Continued Postpartum Checks"
+                model
+                (HandleContPostpartumCheckModal CloseNoSaveDialog Nothing)
+                -- These two are not used because of ContPostpartumCheckId being passed.
+                PageNoop
+                PageNoop
     in
     H.div []
         [ pregHeader |> H.map (\a -> RotatePregHeaderContent a)
         , H.div [ HA.class "content-wrapper" ]
             [ viewButtons model
             , dialogNewbornExamSummary newbornExamViewEditStageConfig
+            , viewContPostpartumChecks contPostpartumCheckViewEditStageConfig
             , viewWhatIsComing model
             ]
         ]
@@ -1208,6 +1539,300 @@ type alias ViewEditStageConfig =
     , saveMsg : SubMsg
     , editMsg : SubMsg
     }
+
+
+
+-- View Continued Postpartum checks --
+
+
+{-| Display the various components of continued postpartum checks.
+-}
+viewContPostpartumChecks : ViewEditStageConfig -> Html SubMsg
+viewContPostpartumChecks cfg =
+    let
+        dateSort a b =
+            U.sortDate U.AscendingSort a.checkDatetime b.checkDatetime
+
+        checks =
+            List.sortWith dateSort cfg.model.contPostpartumCheckRecords
+                |> List.map viewContPostpartumCheck
+    in
+    H.div []
+        [ H.h3 [] [ H.text cfg.title ]
+        , H.div
+            [ HA.style [ ( "margin-bottom", "1em" ) ]
+            , HA.classList [ ( "isHidden", not cfg.isShown ) ]
+            ]
+            checks
+        , H.button
+            [ HA.type_ "button"
+            , HA.class "c-button c-button u-small"
+            , HA.classList [ ( "isHidden", not cfg.isShown ) ]
+            , HE.onClick <| HandleContPostpartumCheckModal OpenDialog Nothing
+            ]
+            [ H.text "Add Continued Postpartum Check" ]
+        , dialogContPostpartumCheckEdit cfg
+        ]
+
+
+{-| Displays a view of a single continued postpartum check.
+-}
+viewContPostpartumCheck : ContPostpartumCheckRecord -> Html SubMsg
+viewContPostpartumCheck rec =
+    let
+        checkDate =
+            U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep rec.checkDatetime
+
+        field lbl val =
+            H.div [ HA.class "u-small" ]
+                [ H.span
+                    [ HA.class "c-text--quiet"
+                    , HA.style [ ( "display", "inline-block" ), ( "min-width", "5.0em" ) ]
+                    ]
+                    [ H.text <| lbl ++ ": " ]
+                , H.span [ HA.class "c-text--loud" ]
+                    [ H.text val ]
+                ]
+
+        toStringDefault val =
+            stringDefault (Maybe.map toString val)
+
+        stringDefault val =
+            Maybe.withDefault "" val
+
+        yesNoBool bool =
+            case bool of
+                Just True ->
+                    "Yes"
+
+                _ ->
+                    "No"
+
+        bp =
+            case ( rec.motherSystolic, rec.motherDiastolic ) of
+                ( Just sys, Just dia ) ->
+                    toString sys ++ " / " ++ toString dia
+
+                ( _, _ ) ->
+                    ""
+    in
+    H.div [ HA.class "c-card" ]
+        [ H.div
+            [ HA.class "c-card__item u-color-white primary-dark-bg"
+
+            -- In order to float the edit button below to the right.
+            , HA.style [ ( "overflow", "hidden" ) ]
+            ]
+            [ H.span []
+                [ H.text checkDate ]
+            , H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button--ghost u-color-white u-xsmall"
+                , HA.style [ ( "float", "right" ) ]
+                , HE.onClick <|
+                    HandleContPostpartumCheckModal EditDialog
+                        (Just (ContPostpartumCheckId rec.id))
+                ]
+                [ H.text "Edit" ]
+            ]
+        , H.div [ HA.class "c-card__item" ]
+            [ H.div [ HA.class "contPP-wrapper" ]
+                [ H.div [ HA.class "c-card contPP-content" ]
+                    [ H.div [ HA.class "c-card__item u-small u-color-white accent-bg" ]
+                        [ H.text "Mother" ]
+                    , field "BP" bp
+                    , field "CR" <| toStringDefault rec.motherCR
+                    , field "Temp" <| toStringDefault rec.motherTemp
+                    , field "Fundus" <| stringDefault rec.motherFundus
+                    , field "EBL" <| toStringDefault rec.motherEBL
+                    ]
+                , H.div [ HA.class "c-card contPP-content" ]
+                    [ H.div [ HA.class "c-card__item u-small u-color-white accent-bg" ]
+                        [ H.text "Baby" ]
+                    , field "Bfed" (yesNoBool rec.babyBFed)
+                    , field "Temp" <| toStringDefault rec.babyTemp
+                    , field "RR" <| toStringDefault rec.babyRR
+                    , field "CR" <| toStringDefault rec.babyCR
+                    ]
+                ]
+            ]
+        , H.div [ HA.class "c-card__item" ]
+            [ H.text <| stringDefault rec.comments ]
+        ]
+
+
+{-| Allows user to edit a new or existing continued postpartum check.
+-}
+dialogContPostpartumCheckEdit : ViewEditStageConfig -> Html SubMsg
+dialogContPostpartumCheckEdit cfg =
+    let
+        errors =
+            validateContPostpartumCheck cfg.model
+
+        getMsgSD fld modelFld =
+            List.map (\sd -> ( FldChgStringList sd.selectKey >> FldChgSubMsg fld, sd )) modelFld
+    in
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
+            ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Continued Postpartum Check" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                [ if cfg.model.browserSupportsDate then
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Check date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg CPCCheckDateFld)
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.cpcCheckDate
+                                    (getErr CPCCheckDateFld errors)
+                                , Form.formField (FldChgString >> FldChgSubMsg CPCCheckTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.cpcCheckTime
+                                    (getErr CPCCheckTimeFld errors)
+                                ]
+                            ]
+                        ]
+                  else
+                    -- Browser does not support date.
+                    H.div [ HA.class "c-card" ]
+                        [ H.div [ HA.class "c-card__body" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                    ContPostpartumCheckDateField
+                                    "Date"
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.cpcCheckDate
+                                    (getErr CPCCheckDateFld errors)
+                                , Form.formField (FldChgString >> FldChgSubMsg CPCCheckTimeFld)
+                                    "Time"
+                                    "24 hr format, 14:44"
+                                    False
+                                    cfg.model.cpcCheckTime
+                                    (getErr CPCCheckTimeFld errors)
+                                ]
+                            ]
+                        ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCMotherSystolicFld)
+                        "Mother systolic"
+                        ""
+                        True
+                        cfg.model.cpcMotherSystolic
+                        (getErr CPCMotherSystolicFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCMotherDiastolicFld)
+                        "Mother diastolic"
+                        ""
+                        True
+                        cfg.model.cpcMotherDiastolic
+                        (getErr CPCMotherDiastolicFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCMotherCRFld)
+                        "Mother CR"
+                        ""
+                        True
+                        cfg.model.cpcMotherCR
+                        (getErr CPCMotherCRFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCMotherTempFld)
+                        "Mother temperature"
+                        ""
+                        True
+                        cfg.model.cpcMotherTemp
+                        (getErr CPCMotherTempFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCMotherFundusFld)
+                        "Mother Fundus"
+                        ""
+                        True
+                        cfg.model.cpcMotherFundus
+                        (getErr CPCMotherFundusFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCMotherEBLFld)
+                        "Mother EBL"
+                        ""
+                        True
+                        cfg.model.cpcMotherEBL
+                        (getErr CPCMotherEBLFld errors)
+                    ]
+                , Form.checkbox "Baby BFed" (FldChgBool >> FldChgSubMsg CPCBabyBFedFld) cfg.model.cpcBabyBFed
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCBabyTempFld)
+                        "Baby Temperature"
+                        ""
+                        True
+                        cfg.model.cpcBabyTemp
+                        (getErr CPCBabyTempFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCBabyRRFld)
+                        "Baby RR"
+                        ""
+                        True
+                        cfg.model.cpcBabyRR
+                        (getErr CPCBabyRRFld errors)
+                    ]
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCBabyCRFld)
+                        "Baby CR"
+                        ""
+                        True
+                        cfg.model.cpcBabyCR
+                        (getErr CPCBabyCRFld errors)
+                    ]
+                , Form.formTextareaField (FldChgString >> FldChgSubMsg CPCCommentsFld)
+                    "Comments"
+                    ""
+                    True
+                    cfg.model.cpcComments
+                    3
+                ]
+            ]
+        , H.div
+            [ HA.class "spacedButtons"
+            , HA.style [ ( "width", "100%" ) ]
+            ]
+            [ H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button u-small"
+                , HE.onClick cfg.closeMsg
+                ]
+                [ H.text "Cancel" ]
+            , H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button--brand u-small"
+                , HE.onClick <|
+                    HandleContPostpartumCheckModal CloseSaveDialog
+                        cfg.model.currContPostpartumCheckId
+                ]
+                [ H.text "Save" ]
+            ]
+        ]
+
+
+
+-- View newborn exams --
 
 
 dialogNewbornExamSummary : ViewEditStageConfig -> Html SubMsg
@@ -1647,8 +2272,7 @@ viewWhatIsComing model =
         [ H.h3 [ HA.class "c-heading u-medium" ]
             [ H.text "What else will be on this page eventually?" ]
         , H.ul []
-            [ H.li [] [ H.text "Baby and Mother checks" ]
-            , H.li [] [ H.text "Vitamin A" ]
+            [ H.li [] [ H.text "Vitamin A" ]
             , H.li [] [ H.text "Discharge checklist" ]
             , H.li [] [ H.text "Discharge vitals" ]
             ]
@@ -1669,4 +2293,12 @@ validateNewbornExam =
         [ .nbsDate >> ifInvalid U.validateDate (NBSDateFld => "Date of exam must be provided.")
         , .nbsTime >> ifInvalid U.validateTime (NBSTimeFld => "Exam time must be provided, ex: hh:mm.")
         , .nbsExaminers >> ifInvalid U.validatePopulatedString (NBSExaminersFld => "Examiners must be provided.")
+        ]
+
+
+validateContPostpartumCheck : Model -> List FieldError
+validateContPostpartumCheck =
+    Validate.all
+        [ .cpcCheckDate >> ifInvalid U.validateDate (CPCCheckDateFld => "Date of check must be provided.")
+        , .cpcCheckTime >> ifInvalid U.validateTime (CPCCheckTimeFld => "Time of check must be provided.")
         ]

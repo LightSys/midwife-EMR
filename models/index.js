@@ -81,5 +81,7 @@ module.exports = {
   , NewbornExams: require('./NewbornExam').NewbornExams
   , Membrane: require('./Membrane').Membrane
   , Membranes: require('./Membrane').Membranes
+  , ContPostpartumCheck: require('./ContPostpartumCheck').ContPostpartumCheck
+  , ContPostpartumChecks: require('./ContPostpartumCheck').ContPostpartumChecks
 };
 

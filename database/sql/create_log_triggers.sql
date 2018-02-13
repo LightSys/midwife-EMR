@@ -84,6 +84,48 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: contPostpartumCheck_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS contPostpartumCheck_after_insert;
+CREATE TRIGGER contPostpartumCheck_after_insert AFTER INSERT ON contPostpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO contPostpartumCheckLog
+  (id, checkDatetime, motherSystolic, motherDiastolic, motherCR, motherTemp, motherFundus, motherEBL, babyBFed, babyTemp, babyRR, babyCR, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.checkDatetime, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherCR, NEW.motherTemp, NEW.motherFundus, NEW.motherEBL, NEW.babyBFed, NEW.babyTemp, NEW.babyRR, NEW.babyCR, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: contPostpartumCheck_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS contPostpartumCheck_after_update;
+CREATE TRIGGER contPostpartumCheck_after_update AFTER UPDATE ON contPostpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO contPostpartumCheckLog
+  (id, checkDatetime, motherSystolic, motherDiastolic, motherCR, motherTemp, motherFundus, motherEBL, babyBFed, babyTemp, babyRR, babyCR, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.checkDatetime, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherCR, NEW.motherTemp, NEW.motherFundus, NEW.motherEBL, NEW.babyBFed, NEW.babyTemp, NEW.babyRR, NEW.babyCR, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: contPostpartumCheck_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS contPostpartumCheck_after_delete;
+CREATE TRIGGER contPostpartumCheck_after_delete AFTER DELETE ON contPostpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO contPostpartumCheckLog
+  (id, checkDatetime, motherSystolic, motherDiastolic, motherCR, motherTemp, motherFundus, motherEBL, babyBFed, babyTemp, babyRR, babyCR, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.checkDatetime, OLD.motherSystolic, OLD.motherDiastolic, OLD.motherCR, OLD.motherTemp, OLD.motherFundus, OLD.motherEBL, OLD.babyBFed, OLD.babyTemp, OLD.babyRR, OLD.babyCR, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: customField_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$
@@ -668,48 +710,6 @@ BEGIN
   INSERT INTO membraneLog
   (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
   VALUES (OLD.id, OLD.ruptureDatetime, OLD.rupture, OLD.ruptureComment, OLD.amniotic, OLD.amnioticComment, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
-END;$$
-DELIMITER ;
- 
--- ---------------------------------------------------------------
--- Trigger: membranesResus_after_insert
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS membranesResus_after_insert;
-CREATE TRIGGER membranesResus_after_insert AFTER INSERT ON membranesResus
-FOR EACH ROW
-BEGIN
-  INSERT INTO membranesResusLog
-  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
-  VALUES (NEW.id, NEW.ruptureDatetime, NEW.rupture, NEW.ruptureComment, NEW.amniotic, NEW.amnioticComment, NEW.bulb, NEW.machine, NEW.freeFlowO2, NEW.chestCompressions, NEW.ppv, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
-END;$$
-DELIMITER ;
- 
--- ---------------------------------------------------------------
--- Trigger: membranesResus_after_update
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS membranesResus_after_update;
-CREATE TRIGGER membranesResus_after_update AFTER UPDATE ON membranesResus
-FOR EACH ROW
-BEGIN
-  INSERT INTO membranesResusLog
-  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
-  VALUES (NEW.id, NEW.ruptureDatetime, NEW.rupture, NEW.ruptureComment, NEW.amniotic, NEW.amnioticComment, NEW.bulb, NEW.machine, NEW.freeFlowO2, NEW.chestCompressions, NEW.ppv, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
-END;$$
-DELIMITER ;
- 
--- ---------------------------------------------------------------
--- Trigger: membranesResus_after_delete
--- ---------------------------------------------------------------
-DELIMITER $$
-DROP TRIGGER IF EXISTS membranesResus_after_delete;
-CREATE TRIGGER membranesResus_after_delete AFTER DELETE ON membranesResus
-FOR EACH ROW
-BEGIN
-  INSERT INTO membranesResusLog
-  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
-  VALUES (OLD.id, OLD.ruptureDatetime, OLD.rupture, OLD.ruptureComment, OLD.amniotic, OLD.amnioticComment, OLD.bulb, OLD.machine, OLD.freeFlowO2, OLD.chestCompressions, OLD.ppv, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
 END;$$
 DELIMITER ;
  

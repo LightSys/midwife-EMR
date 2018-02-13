@@ -19,6 +19,11 @@ import Window
 import Data.Admitting as Admitting
 import Data.Baby exposing (BabyRecord, BabyRecordNew)
 import Data.ContPP as ContPP
+import Data.ContPostpartumCheck
+    exposing
+        ( ContPostpartumCheckRecord
+        , ContPostpartumCheckRecordNew
+        )
 import Data.DatePicker exposing (DateField, DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
@@ -107,6 +112,7 @@ to "remember" what we should do when the server responds positively.
 -}
 type ProcessType
     = AddBabyType Msg BabyRecordNew
+    | AddContPostpartumCheckType Msg ContPostpartumCheckRecordNew
     | AddLaborType Msg LaborRecordNew
     | AddLaborStage1Type Msg LaborStage1RecordNew
     | AddLaborStage2Type Msg LaborStage2RecordNew
@@ -114,6 +120,7 @@ type ProcessType
     | AddMembraneType Msg MembraneRecordNew
     | AddNewbornExamType Msg NewbornExamRecordNew
     | UpdateBabyType Msg BabyRecord
+    | UpdateContPostpartumCheckType Msg ContPostpartumCheckRecord
     | UpdateLaborType Msg LaborRecord
     | UpdateLaborStage1Type Msg LaborStage1Record
     | UpdateLaborStage2Type Msg LaborStage2Record

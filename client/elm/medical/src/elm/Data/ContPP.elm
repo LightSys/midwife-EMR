@@ -9,6 +9,7 @@ import Dict exposing (Dict)
 -- LOCAL IMPORTS --
 
 import Const exposing (Dialog(..), FldChgValue)
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckId)
 import Data.DataCache exposing (DataCache)
 import Data.DatePicker exposing (DateFieldMessage)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
@@ -26,6 +27,7 @@ type SubMsg
       -- list of tables passed through.
     | DataCache (Maybe (Dict String DataCache)) (Maybe (List Table))
     | HandleNewbornExamModal Dialog
+    | HandleContPostpartumCheckModal Dialog (Maybe ContPostpartumCheckId)
       -- These two are used for browsers that do not support the
       -- input date type and require the use of jQueryUI datepicker.
     | OpenDatePickerSubMsg String
@@ -75,3 +77,16 @@ type Field
     | NBSPlantarReflexCommentFld
     | NBSSteppingReflexFld
     | NBSPalmarReflexCommentFld
+    | CPCCheckDateFld
+    | CPCCheckTimeFld
+    | CPCMotherSystolicFld
+    | CPCMotherDiastolicFld
+    | CPCMotherCRFld
+    | CPCMotherTempFld
+    | CPCMotherFundusFld
+    | CPCMotherEBLFld
+    | CPCBabyBFedFld
+    | CPCBabyTempFld
+    | CPCBabyRRFld
+    | CPCBabyCRFld
+    | CPCCommentsFld

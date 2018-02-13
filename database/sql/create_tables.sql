@@ -787,4 +787,26 @@ CREATE TABLE IF NOT EXISTS `membrane` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `contPostpartumCheck` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  checkDatetime DATETIME NOT NULL,
+  motherSystolic INT NULL,
+  motherDiastolic INT NULL,
+  motherCR INT NULL,
+  motherTemp DECIMAL(4,1) NULL,
+  motherFundus VARCHAR(200) NULL,
+  motherEBL INT NULL,
+  babyBFed BOOLEAN NULL,
+  babyTemp DECIMAL(4,1) NULL,
+  babyRR INT NULL,
+  babyCR INT NULL,
+  comments VARCHAR(300) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;

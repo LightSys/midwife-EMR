@@ -12,6 +12,24 @@ var assert = require('assert')
     verbose = true
   ;
 
+var addContPostpartumCheck = function(data, cb) {
+  var m = msg('labor_assert/addContPostpartumCheck()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id')); // Adding a record should not have an id.
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
+var updateContPostpartumCheck = function(data, cb) {
+  var m = msg('labor_assert/updateContPostpartumCheck()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addNewbornExam = function(data, cb) {
   var m = msg('labor_assert/addNewbornExam()');
   if (verbose) console.log(m());
@@ -183,6 +201,8 @@ var updateLaborStage3 = function(data, cb) {
 module.exports = {
   addApgar,
   updateApgar,
+  addContPostpartumCheck,
+  updateContPostpartumCheck,
   addBaby,
   updateBaby,
   addLabor,

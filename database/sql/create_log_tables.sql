@@ -299,3 +299,12 @@ ALTER TABLE membraneLog DROP PRIMARY KEY;
 ALTER TABLE membraneLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE membraneLog DROP KEY labor_id;
 --
+-- Creating contPostpartumCheckLog
+SELECT 'contPostpartumCheckLog' AS Creating FROM DUAL;
+CREATE TABLE contPostpartumCheckLog LIKE contPostpartumCheck;
+ALTER TABLE contPostpartumCheckLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE contPostpartumCheckLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE contPostpartumCheckLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE contPostpartumCheckLog DROP PRIMARY KEY;
+ALTER TABLE contPostpartumCheckLog ADD PRIMARY KEY (id, replacedAt);
+--

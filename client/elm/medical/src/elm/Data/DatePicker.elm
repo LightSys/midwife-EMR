@@ -34,6 +34,7 @@ type DateField
     | BabyNbsDateField
     | BabyBcgDateField
     | NewBornExamDateField
+    | ContPostpartumCheckDateField
 
 
 stringToDateField : String -> DateField
@@ -50,6 +51,9 @@ stringToDateField str =
 
         "babyNbsId" ->
             BabyNbsDateField
+
+        "contPostpartumCheckId" ->
+            ContPostpartumCheckDateField
 
         "falseLaborDateId" ->
             FalseLaborDateField
@@ -87,6 +91,9 @@ dateFieldToString df =
 
         BabyNbsDateField ->
             "babyNbsId"
+
+        ContPostpartumCheckDateField ->
+            "contPostpartumCheckId"
 
         FalseLaborDateField ->
             "falseLaborDateId"

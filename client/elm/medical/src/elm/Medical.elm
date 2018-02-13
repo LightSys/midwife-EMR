@@ -17,6 +17,7 @@ import Window
 import Data.Admitting exposing (AdmittingSubMsg(..))
 import Data.Baby exposing (BabyId(..), babyRecordNewToBabyRecord)
 import Data.ContPP exposing (SubMsg(..))
+import Data.ContPostpartumCheck exposing (contPostpartumCheckRecordNewToContPostpartumCheckRecord, ContPostpartumCheckId(..))
 import Data.DataCache as DCache exposing (DataCache(..))
 import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
 import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
@@ -294,7 +295,7 @@ update msg noAutoTouchModel =
                         Processing.add processType Nothing model.processStore
 
                     _ =
-                        Debug.log "ProcessTypeMsg" <| toString jeVal
+                        Debug.log "wrapPayload" <| toString <| wrapPayload processId msgType jeVal
                 in
                     ( { model | processStore = processStore }
                     , Ports.outgoing <| wrapPayload processId msgType jeVal
@@ -324,7 +325,7 @@ update msg noAutoTouchModel =
                 let
                     -- Get the labor stage records from the data cache which the
                     -- init function just requested records from the server for.
-                    ( stage1, stage2, stage3 ) =
+                    ( stage1, stage2, stage3, contPPCheck ) =
                         ( case DCache.get LaborStage1 model.dataCache of
                             Just (LaborStage1DataCache s1) ->
                                 Just s1
@@ -343,6 +344,13 @@ update msg noAutoTouchModel =
 
                             _ ->
                                 Nothing
+                        , case DCache.get ContPostpartumCheck model.dataCache of
+                            Just (ContPostpartumCheckDataCache recs) ->
+                                -- Not a Maybe.
+                                recs
+
+                            _ ->
+                                []
                         )
 
                     ( subModel, newStore, newCmd ) =
@@ -350,6 +358,7 @@ update msg noAutoTouchModel =
                             stage1
                             stage2
                             stage3
+                            contPPCheck
                             model.babyRecords
                             model.browserSupportsDate
                             model.currTime
@@ -618,6 +627,31 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddContPostpartumCheckType (ContPPMsg (Data.ContPP.DataCache _ _)) contPostpartumCheckRecordNew) ->
+                                    let
+                                        -- Server accepted new record; create normal record.
+                                        contPostpartumCheckRec =
+                                            contPostpartumCheckRecordNewToContPostpartumCheckRecord
+                                                (ContPostpartumCheckId dataAddMsg.response.id)
+                                                contPostpartumCheckRecordNew
+
+                                        -- Add the record to the data cache. We are not storing separately
+                                        -- in top-level model.
+                                        dc =
+                                            case DCache.get ContPostpartumCheck model.dataCache of
+                                                Just (ContPostpartumCheckDataCache recs) ->
+                                                    DCache.put (ContPostpartumCheckDataCache (contPostpartumCheckRec :: recs)) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ ContPostpartumCheck ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (AddLaborType (AdmittingMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
                                     let
                                         laborRecs =
@@ -751,6 +785,30 @@ updateMessage incoming model =
                                     in
                                         ( { model | dataCache = DCache.put (BabyDataCache babyRecord) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                Just (UpdateContPostpartumCheckType (ContPPMsg (Data.ContPP.DataCache _ _)) contPostpartumCheckRecord) ->
+                                    let
+                                        -- Updating the data cache with the updated record.
+                                        dc =
+                                            case DCache.get ContPostpartumCheck model.dataCache of
+                                                Just (ContPostpartumCheckDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            LE.replaceIf (\c -> c.id == contPostpartumCheckRecord.id)
+                                                                contPostpartumCheckRecord
+                                                                recs
+                                                    in
+                                                    DCache.put (ContPostpartumCheckDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ ContPostpartumCheck ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
                                         )
 
                                 Just (UpdateLaborType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborRecord) ->
@@ -891,6 +949,14 @@ updateMessage incoming model =
                                                     , dataCache = dc
                                                 }
 
+                                        TableRecordContPostpartumCheck recs ->
+                                            let
+                                                dc =
+                                                    DCache.put (ContPostpartumCheckDataCache recs) mdl.dataCache
+                                            in
+                                                -- Only adding contPostpartumCheck records into data cache.
+                                                { mdl | dataCache = dc }
+
                                         TableRecordLabor recs ->
                                             let
                                                 dictList =
@@ -1029,6 +1095,12 @@ updateMessage incoming model =
                         Just (AddBabyType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
+                        Just (AddContPostpartumCheckType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateContPostpartumCheckType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
                         Just (UpdateBabyType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
@@ -1069,10 +1141,6 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (SelectQueryType msg selectQuery) ->
-                            let
-                                _ =
-                                    Debug.log "selectQuery" <| toString selectQuery
-                            in
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Nothing ->

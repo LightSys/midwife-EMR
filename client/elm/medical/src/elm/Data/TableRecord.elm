@@ -11,6 +11,7 @@ import Json.Decode.Pipeline as JDP
 -- LOCAL IMPORTS --
 
 import Data.Baby exposing (BabyRecord, babyRecord)
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord, contPostpartumCheckRecord)
 import Data.Labor exposing (LaborRecord, laborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record, laborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record, laborStage2Record)
@@ -31,6 +32,7 @@ type TableRecord
     | TableRecordLaborStage2 (List LaborStage2Record)
     | TableRecordLaborStage3 (List LaborStage3Record)
     | TableRecordBaby (List BabyRecord)
+    | TableRecordContPostpartumCheck (List ContPostpartumCheckRecord)
     | TableRecordMembrane (List MembraneRecord)
     | TableRecordNewbornExam (List NewbornExamRecord)
     | TableRecordSelectData (List SelectDataRecord)
@@ -41,6 +43,9 @@ tableRecord table =
     case table of
         Baby ->
             JD.map TableRecordBaby (JD.list babyRecord)
+
+        ContPostpartumCheck ->
+            JD.map TableRecordContPostpartumCheck (JD.list contPostpartumCheckRecord)
 
         Labor ->
             JD.map TableRecordLabor (JD.list laborRecord)

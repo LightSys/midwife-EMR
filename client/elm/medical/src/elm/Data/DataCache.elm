@@ -12,6 +12,7 @@ import Dict exposing (Dict)
 -- LOCAL IMPORTS --
 
 import Data.Baby exposing (BabyRecord)
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord)
 import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
@@ -28,6 +29,7 @@ import Data.Table exposing (stringToTable, tableToString, Table(..))
 -}
 type DataCache
     = BabyDataCache BabyRecord
+    | ContPostpartumCheckDataCache (List ContPostpartumCheckRecord)
     | LaborDataCache (Dict Int LaborRecord)
     | LaborStage1DataCache LaborStage1Record
     | LaborStage2DataCache LaborStage2Record
@@ -48,6 +50,9 @@ getTableString dc =
     case dc of
         BabyDataCache _ ->
             tableToString Baby
+
+        ContPostpartumCheckDataCache _ ->
+            tableToString ContPostpartumCheck
 
         LaborDataCache _ ->
             tableToString Labor

@@ -13,6 +13,7 @@ var _ = require('underscore')
   , cfg = require('../../config')
   , KeyValue = require('../../models').KeyValue
   , Apgar = require('../../models').Apgar
+  , ContPostpartumCheck = require('../../models').ContPostpartumCheck
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
   , LaborStage2 = require('../../models').LaborStage2
@@ -45,6 +46,7 @@ var _ = require('underscore')
 var LOOKUP_TABLES = [
   'apgar',
   'baby',
+  'contPostpartumCheck',
   'eventType',
   'labor',
   'laborStage1',
