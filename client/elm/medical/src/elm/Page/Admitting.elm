@@ -143,29 +143,30 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                 AdmissionStateEdit laborId ->
                     ( PregHeaderData.PrenatalContent, Just laborId )
     in
-        ( Model browserSupportsDate
-            currTime
-            pregId
-            laborId
-            pregHeaderContent
-            Dict.empty
-            patrec
-            pregRec
-            laborRecs
-            admissionState
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            Nothing
-            []
+        ( { browserSupportsDate = browserSupportsDate
+          , currTime = currTime
+          , pregnancy_id = pregId
+          , currLaborId = laborId
+          , currPregHeaderContent = pregHeaderContent
+          , dataCache = Dict.empty
+          , patientRecord = patrec
+          , pregnancyRecord = pregRec
+          , laborRecord = laborRecs
+          , admissionState = admissionState
+          , admittanceDate = Nothing
+          , admittanceTime = Nothing
+          , laborDate = Nothing
+          , laborTime = Nothing
+          , pos = Nothing
+          , fh = Nothing
+          , fht = Nothing
+          , systolic = Nothing
+          , diastolic = Nothing
+          , cr = Nothing
+          , temp = Nothing
+          , comments = Nothing
+          , formErrors = []
+          }
         , newStore
         , newOuterMsg
         )

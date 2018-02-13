@@ -326,132 +326,133 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                       )
                     )
     in
-    ( Model browserSupportsDate
-        currTime
-        pregId
-        laborId
-        PregHeaderData.LaborContent
-        Dict.empty
-        Dict.empty
-        patrec
-        pregRec
-        laborRecs
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        []
-        NoDateTimeModal
-        Nothing
-        Nothing
-        NoViewEditState
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        NoDateTimeModal
-        Nothing
-        Nothing
-        NoViewEditState
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        NoDateTimeModal
-        Nothing
-        Nothing
-        NoViewEditState
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        NoDateTimeModal
-        Nothing
-        Nothing
-        NoViewEditState
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        NoViewEditState
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        NoViewEditState
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Nothing
-        Dict.empty
-        NotStartedAddOtherApgar
-        Nothing
-        Nothing
+    ( { browserSupportsDate = browserSupportsDate
+      , currTime = currTime
+      , pregnancy_id = pregId
+      , currLaborId = laborId
+      , currPregHeaderContent = PregHeaderData.LaborContent
+      , dataCache = Dict.empty
+      , pendingSelectQuery = Dict.empty
+      , patientRecord = patrec
+      , pregnancyRecord = pregRec
+      , laborRecords = laborRecs
+      , laborStage1Record = Nothing
+      , laborStage2Record = Nothing
+      , laborStage3Record = Nothing
+      , babyRecord = Nothing
+      , membraneRecord = Nothing
+      , admittanceDate = Nothing
+      , admittanceTime = Nothing
+      , laborDate = Nothing
+      , laborTime = Nothing
+      , pos = Nothing
+      , fh = Nothing
+      , fht = Nothing
+      , systolic = Nothing
+      , diastolic = Nothing
+      , cr = Nothing
+      , temp = Nothing
+      , comments = Nothing
+      , formErrors = []
+      , stage1DateTimeModal = NoDateTimeModal
+      , stage1Date = Nothing
+      , stage1Time = Nothing
+      , stage1SummaryModal = NoViewEditState
+      , s1Mobility = Nothing
+      , s1DurationLatent = Nothing
+      , s1DurationActive = Nothing
+      , s1Comments = Nothing
+      , stage2DateTimeModal = NoDateTimeModal
+      , stage2Date = Nothing
+      , stage2Time = Nothing
+      , stage2SummaryModal = NoViewEditState
+      , s2BirthType = Nothing
+      , s2BirthPosition = Nothing
+      , s2DurationPushing = Nothing
+      , s2BirthPresentation = Nothing
+      , s2CordWrap = Nothing
+      , s2CordWrapType = Nothing
+      , s2DeliveryType = Nothing
+      , s2ShoulderDystocia = Nothing
+      , s2ShoulderDystociaMinutes = Nothing
+      , s2Laceration = Nothing
+      , s2Episiotomy = Nothing
+      , s2Repair = Nothing
+      , s2Degree = Nothing
+      , s2LacerationRepairedBy = Nothing
+      , s2BirthEBL = Nothing
+      , s2Meconium = Nothing
+      , s2Comments = Nothing
+      , stage3DateTimeModal = NoDateTimeModal
+      , stage3Date = Nothing
+      , stage3Time = Nothing
+      , stage3SummaryModal = NoViewEditState
+      , s3PlacentaDeliverySpontaneous = Nothing
+      , s3PlacentaDeliveryAMTSL = Nothing
+      , s3PlacentaDeliveryCCT = Nothing
+      , s3PlacentaDeliveryManual = Nothing
+      , s3MaternalPosition = Nothing
+      , s3TxBloodLoss1 = Nothing
+      , s3TxBloodLoss2 = Nothing
+      , s3TxBloodLoss3 = Nothing
+      , s3TxBloodLoss4 = Nothing
+      , s3TxBloodLoss5 = Nothing
+      , s3PlacentaShape = Nothing
+      , s3PlacentaInsertion = Nothing
+      , s3PlacentaNumVessels = Nothing
+      , s3SchultzDuncan = Nothing
+      , s3PlacentaMembranesComplete = Nothing
+      , s3PlacentaOther = Nothing
+      , s3Comments = Nothing
+      , falseLaborDateTimeModal = NoDateTimeModal
+      , falseLaborDate = Nothing
+      , falseLaborTime = Nothing
+      , membraneSummaryModal = NoViewEditState
+      , membraneRuptureDate = Nothing
+      , membraneRuptureTime = Nothing
+      , membraneRupture = Nothing
+      , membraneRuptureComment = Nothing
+      , membraneAmniotic = Nothing
+      , membraneAmnioticComment = Nothing
+      , membraneComments = Nothing
+      , membranesSummaryModal = NoViewEditState
+      , mbRuptureDate = Nothing
+      , mbRuptureTime = Nothing
+      , mbRupture = Nothing
+      , mbRuptureComment = Nothing
+      , mbAmniotic = Nothing
+      , mbAmnioticComment = Nothing
+      , mbBulb = Nothing
+      , mbMachine = Nothing
+      , mbFreeFlowO2 = Nothing
+      , mbChestCompressions = Nothing
+      , mbPpv = Nothing
+      , mbComments = Nothing
+      , babySummaryModal = NoViewEditState
+      , bbBirthNbr = Nothing
+      , bbLastname = Nothing
+      , bbFirstname = Nothing
+      , bbMiddlename = Nothing
+      , bbSex = Nothing
+      , bbBirthWeight = Nothing
+      , bbBFedEstablishedDate = Nothing
+      , bbBFedEstablishedTime = Nothing
+      , bbNbsDate = Nothing
+      , bbNbsTime = Nothing
+      , bbNbsResult = Nothing
+      , bbBcgDate = Nothing
+      , bbBcgTime = Nothing
+      , bbBulb = Nothing
+      , bbMachine = Nothing
+      , bbFreeFlowO2 = Nothing
+      , bbChestCompressions = Nothing
+      , bbPpv = Nothing
+      , bbComments = Nothing
+      , apgarScores = Dict.empty
+      , pendingApgarWizard = NotStartedAddOtherApgar
+      , pendingApgarMinute = Nothing
+      , pendingApgarScore = Nothing
+      }
     , newStore
     , newOuterMsg
     )
