@@ -231,18 +231,6 @@ type alias Model =
     , membraneAmnioticComment : Maybe String
     , membraneComments : Maybe String
     , membranesSummaryModal : ViewEditState
-    , mbRuptureDate : Maybe Date
-    , mbRuptureTime : Maybe String
-    , mbRupture : Maybe String
-    , mbRuptureComment : Maybe String
-    , mbAmniotic : Maybe String
-    , mbAmnioticComment : Maybe String
-    , mbBulb : Maybe Bool
-    , mbMachine : Maybe Bool
-    , mbFreeFlowO2 : Maybe Bool
-    , mbChestCompressions : Maybe Bool
-    , mbPpv : Maybe Bool
-    , mbComments : Maybe String
     , babySummaryModal : ViewEditState
     , bbBirthNbr : Maybe String
     , bbLastname : Maybe String
@@ -416,18 +404,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , membraneAmnioticComment = Nothing
       , membraneComments = Nothing
       , membranesSummaryModal = NoViewEditState
-      , mbRuptureDate = Nothing
-      , mbRuptureTime = Nothing
-      , mbRupture = Nothing
-      , mbRuptureComment = Nothing
-      , mbAmniotic = Nothing
-      , mbAmnioticComment = Nothing
-      , mbBulb = Nothing
-      , mbMachine = Nothing
-      , mbFreeFlowO2 = Nothing
-      , mbChestCompressions = Nothing
-      , mbPpv = Nothing
-      , mbComments = Nothing
       , babySummaryModal = NoViewEditState
       , bbBirthNbr = Nothing
       , bbLastname = Nothing
@@ -2311,7 +2287,7 @@ dialogMembraneSummaryEdit cfg =
                         [ H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
-                                    MembranesResusRuptureDateField
+                                    MembraneRuptureDateField
                                     "Date"
                                     "e.g. 08/14/2017"
                                     False
@@ -2773,8 +2749,12 @@ dialogBabySummaryEdit cfg =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "BFed Established date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     BabyBFedEstablishedDateField
@@ -2817,8 +2797,12 @@ dialogBabySummaryEdit cfg =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "NBS date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     BabyNbsDateField
@@ -2869,8 +2853,12 @@ dialogBabySummaryEdit cfg =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "BCG date and time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     BabyBcgDateField
@@ -3040,6 +3028,10 @@ update session msg model =
             ( { model | currTime = time }, Cmd.none, Cmd.none )
 
         OpenDatePickerSubMsg id ->
+            let
+                _ =
+                    Debug.log "LaborDelIPP OpenDatePickerSubMsg" <| toString id
+            in
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
 
         DateFieldSubMsg dateFldMsg ->
@@ -3071,8 +3063,11 @@ update session msg model =
                         LaborDelIppStage3DateField ->
                             ( { model | stage3Date = Just date }, Cmd.none, Cmd.none )
 
+                        MembraneRuptureDateField ->
+                            ( { model | membraneRuptureDate = Just date }, Cmd.none, Cmd.none )
+
                         UnknownDateField str ->
-                            ( model, Cmd.none, logConsole str )
+                            ( model, Cmd.none, logConsole <| "Unknown date field: " ++ str )
 
                         _ ->
                             -- This page is not the only one with date fields, we only

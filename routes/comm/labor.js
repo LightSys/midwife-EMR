@@ -15,6 +15,7 @@ var _ = require('underscore')
   , cfg = require('../../config')
   , Apgar = require('../../models').Apgar
   , Baby = require('../../models').Baby
+  , BabyMedication = require('../../models').BabyMedication
   , ContPostpartumCheck = require('../../models').ContPostpartumCheck
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
@@ -45,6 +46,7 @@ var _ = require('underscore')
 // --------------------------------------------------------
 moduleTables.apgar = [];
 moduleTables.baby = ['bFedEstablished', 'nbsDate', 'bcgDate'];
+moduleTables.babyMedication = ['medicationDate'];
 moduleTables.contPostpartumCheck = ['checkDatetime'];
 moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
 moduleTables.laborStage1 = ['fullDialation'];
@@ -418,6 +420,16 @@ var updateBaby = function(data, userInfo, cb) {
   });
 };
 
+var addBabyMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBabyMedication(data, cb);
+  addTable(data, userInfo, cb, BabyMedication, 'babyMedication');
+};
+
+var updateBabyMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBabyMedication(data, cb);
+  updateTable(data, userInfo, cb, BabyMedication, 'babyMedication');
+};
+
 var addContPostpartumCheck = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addContPostpartumCheck(data, cb);
   addTable(data, userInfo, cb, ContPostpartumCheck, 'contPostpartumCheck');
@@ -501,6 +513,9 @@ module.exports = {
   addBaby,
   updateBaby,
   delBaby: notDefinedYet,
+  addBabyMedication,
+  updateBabyMedication,
+  delBabyMedication: notDefinedYet,
   addContPostpartumCheck,
   updateContPostpartumCheck,
   delContPostpartumCheck: notDefinedYet,

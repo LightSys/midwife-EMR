@@ -1,6 +1,7 @@
 module Data.ContPP
     exposing
         ( Field(..)
+        , MedVacLab(..)
         , SubMsg(..)
         )
 
@@ -27,6 +28,7 @@ type SubMsg
       -- list of tables passed through.
     | DataCache (Maybe (Dict String DataCache)) (Maybe (List Table))
     | HandleNewbornExamModal Dialog
+    | HandleBabyMedVacLabModal Dialog (Maybe MedVacLab)
     | HandleContPostpartumCheckModal Dialog (Maybe ContPostpartumCheckId)
       -- These two are used for browsers that do not support the
       -- input date type and require the use of jQueryUI datepicker.
@@ -34,6 +36,14 @@ type SubMsg
     | DateFieldSubMsg DateFieldMessage
     | FldChgSubMsg Field FldChgValue
 
+
+{-| The Int parameter refers to the respective
+medication, vaccination, or lab id.
+-}
+type MedVacLab
+    = MedMVL Int
+    | VacMVL Int
+    | LabMVL Int
 
 type Field
     = NBSDateFld
@@ -90,3 +100,8 @@ type Field
     | CPCBabyRRFld
     | CPCBabyCRFld
     | CPCCommentsFld
+    | BabyMedDateFld
+    | BabyMedTimeFld
+    | BabyMedLocationFld
+    | BabyMedInitialsFld
+    | BabyMedCommentsFld

@@ -133,6 +133,7 @@ var rx = require('rx')
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , ADHOC_TOUCH_SESSION = 'ADHOC_TOUCH_SESSION'   // Used by the Elm medical client
+  , TABLE_babyMedication = 'babyMedication'
   , TABLE_contPostpartumCheck = 'contPostpartumCheck'
   , TABLE_keyValue = 'keyValue'
   , TABLE_labSuite = 'labSuite'
@@ -154,6 +155,9 @@ var rx = require('rx')
   , addBaby = require('./routes/comm/labor').addBaby
   , updateBaby = require('./routes/comm/labor').updateBaby
   , delBaby = require('./routes/comm/labor').delBaby
+  , addBabyMedication = require('./routes/comm/labor').addBabyMedication
+  , updateBabyMedication = require('./routes/comm/labor').updateBabyMedication
+  , delBabyMedication = require('./routes/comm/labor').delBabyMedication
   , addContPostpartumCheck = require('./routes/comm/labor').addContPostpartumCheck
   , updateContPostpartumCheck = require('./routes/comm/labor').updateContPostpartumCheck
   , delContPostpartumCheck = require('./routes/comm/labor').delContPostpartumCheck
@@ -835,6 +839,13 @@ var getFuncForTableOp = function(table, op) {
         case ADD: func = addBaby; break;
         case CHG: func = updateBaby; break;
         case DEL: func = delBaby; break;
+      }
+      break;
+    case TABLE_babyMedication:
+      switch (op) {
+        case ADD: func = addBabyMedication; break;
+        case CHG: func = updateBabyMedication; break;
+        case DEL: func = delBabyMedication; break;
       }
       break;
     case TABLE_contPostpartumCheck:

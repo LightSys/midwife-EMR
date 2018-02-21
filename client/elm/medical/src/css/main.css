@@ -19,6 +19,7 @@
 .accent-contrast-fg {
   color: #5B5B5B;
 }
+/* rgb(0,150,136) */
 .primary-bg {
   background-color: #009688;
 }
@@ -226,6 +227,16 @@
 .c-field-minPadding {
   padding: 0.125em 0;
 }
+/* Provides a bit of padding around a form. Good to use
+ * with Blaze u-high or similar classes.
+ */
+.form-padding {
+  padding: 0.5em 0.5em;
+  margin-bottom: 0.5em;
+}
+.form-border-light {
+  border: 1px solid rgba(0, 150, 136, 0.4);
+}
 
 /* Page content */
 .content-flex-wrapper {
@@ -248,6 +259,11 @@
   flex-flow: row nowrap;
   justify-content: space-between;
   padding-top: 0;
+}
+.right-to-left {
+  display: flex;
+  flex-flow: row-reverse nowrap;
+  justify-content: space-between;
 }
 
 /* Stage section on labor page */

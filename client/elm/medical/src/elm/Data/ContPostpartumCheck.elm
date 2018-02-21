@@ -10,8 +10,6 @@ module Data.ContPostpartumCheck
         , isContPostpartumCheckRecordComplete
         )
 
--- LOCAL IMPORTS --
-
 import Data.Table exposing (Table(..), tableToString)
 import Date exposing (Date)
 import Dict exposing (Dict)

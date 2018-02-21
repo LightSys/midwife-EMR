@@ -12,6 +12,7 @@ import Time exposing (Time)
 
 import Const exposing (FldChgValue)
 import Data.DataCache exposing (DataCache)
+import Data.DatePicker exposing (DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 import Data.Table exposing (Table)
@@ -37,8 +38,10 @@ type AdmittingSubMsg
     | EditAdmittance LaborId
       -- All changes to fields in the user add/edit form.
     | FldChgSubMsg Field FldChgValue
-      -- Date picker for add/edit labor form.
+      -- These two are used for browsers that do not support the
+      -- input date type and require the use of jQueryUI datepicker.
     | OpenDatePickerSubMsg String
+    | DateFieldSubMsg DateFieldMessage
       -- View an existing labor record.
     | ViewLaborRecord LaborId
 

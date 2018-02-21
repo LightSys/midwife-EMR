@@ -236,14 +236,14 @@ dateTimeModal isShown title dateMsg timeMsg closeMsg saveMsg clearMsg dateVal ti
             , HA.classList [ ( "isHidden", not isShown ) ]
             ]
             [ H.div [ HA.class "c-card" ]
-                [ H.div [ HA.class "c-card__item u-bg-brand u-color-beige" ]
+                [ H.div [ HA.class "c-card__header" ]
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--close"
                         , HE.onClick closeMsg
                         ]
                         [ H.text "x" ]
-                    , H.div [ HA.class "c-loud" ]
+                    , H.div [ HA.class "c-heading" ]
                         [ H.text title ]
                     ]
                 , H.div [ HA.class "c-card__body dateTimeModalBody" ]
@@ -298,7 +298,7 @@ dateTimePickerModal :
     -> Maybe String
     -> Html msg
 dateTimePickerModal isShown title openMsg dateMsg timeMsg closeMsg saveMsg clearMsg dateField dateVal timeVal =
-    H.div [ HA.classList [ ( "c-overlay c-overlay--transparent", isShown ) ] ]
+    H.div [ HA.classList [ ( "c-overlay c-overlay--visible", isShown ) ] ]
         [ H.div
             [ HA.class "o-modal dateTimeModal"
             , HA.classList [ ( "isHidden", not isShown ) ]

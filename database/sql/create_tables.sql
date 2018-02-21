@@ -809,4 +809,32 @@ CREATE TABLE IF NOT EXISTS `contPostpartumCheck` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `babyMedicationType` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(100) NULL,
+  useLocation BOOLEAN NOT NULL DEFAULT 0,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `babyMedication` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  babyMedicationType INT NOT NULL,
+  medicationDate DATETIME NOT NULL,
+  location VARCHAR(50) NULL,
+  initials VARCHAR(50) NULL,
+  comments VARCHAR(100) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  baby_id INT NOT NULL,
+  UNIQUE (baby_id, babyMedicationType),
+  FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (babyMedicationType) REFERENCES babyMedicationType (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;

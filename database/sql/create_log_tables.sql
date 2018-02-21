@@ -308,3 +308,22 @@ ALTER TABLE contPostpartumCheckLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE contPostpartumCheckLog DROP PRIMARY KEY;
 ALTER TABLE contPostpartumCheckLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating babyMedicationTypeLog
+SELECT 'babyMedicationTypeLog' AS Creating FROM DUAL;
+CREATE TABLE babyMedicationTypeLog LIKE babyMedicationType;
+ALTER TABLE babyMedicationTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyMedicationTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyMedicationTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyMedicationTypeLog DROP PRIMARY KEY;
+ALTER TABLE babyMedicationTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating babyMedicationLog
+SELECT 'babyMedicationLog' AS Creating FROM DUAL;
+CREATE TABLE babyMedicationLog LIKE babyMedication;
+ALTER TABLE babyMedicationLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyMedicationLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyMedicationLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyMedicationLog DROP PRIMARY KEY;
+ALTER TABLE babyMedicationLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE babyMedicationLog DROP KEY baby_id;
+--

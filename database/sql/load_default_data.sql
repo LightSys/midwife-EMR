@@ -572,3 +572,11 @@ VALUES
   ('searchRowsPerPage', '20', 'The number of rows of search results to display per page.', 'integer', '', 0)
 ;
 
+SELECT 'babyMedicationType' AS 'Loading' FROM DUAL;
+INSERT INTO babyMedicationType
+  (name, description, useLocation, updatedBy, updatedAt)
+VALUES
+  ('Vitamin K', 'Vitamin K', 1, 1, NOW()),
+  ('Eye Ointment', 'Eye Ointment', 0, 1, NOW())
+;
+

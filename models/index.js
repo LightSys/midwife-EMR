@@ -83,5 +83,9 @@ module.exports = {
   , Membranes: require('./Membrane').Membranes
   , ContPostpartumCheck: require('./ContPostpartumCheck').ContPostpartumCheck
   , ContPostpartumChecks: require('./ContPostpartumCheck').ContPostpartumChecks
+  , BabyMedicationType: require('./BabyMedicationType').BabyMedicationType
+  , BabyMedicationTypes: require('./BabyMedicationType').BabyMedicationTypes
+  , BabyMedication: require('./BabyMedication').BabyMedication
+  , BabyMedications: require('./BabyMedication').BabyMedications
 };
 

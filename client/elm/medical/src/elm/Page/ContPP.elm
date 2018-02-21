@@ -15,9 +15,22 @@ import Data.Baby
     exposing
         ( BabyRecord
         )
+import Data.BabyMedication
+    exposing
+        ( BabyMedicationRecord
+        , BabyMedicationRecordNew
+        , babyMedicationRecordNewToValue
+        , babyMedicationRecordToValue
+        )
+import Data.BabyMedicationType
+    exposing
+        ( BabyMedicationTypeRecord
+        , getNameUseLocation
+        )
 import Data.ContPP
     exposing
         ( Field(..)
+        , MedVacLab(..)
         , SubMsg(..)
         )
 import Data.ContPostpartumCheck
@@ -113,6 +126,46 @@ type ViewEditState
     | NewbornExamEditState
     | ContPostpartumCheckViewState
     | ContPostpartumCheckEditState
+    | BabyMedVacLabViewState
+    | BabyMedVacLabEditState
+
+
+{-| Handles user input for new or existing medication and
+vaccination records.
+
+TODO: add fields for labs.
+
+-}
+type alias MedVacLabFlds =
+    { id : Maybe Int
+    , date : Maybe Date
+    , time : Maybe String
+    , location : Maybe String
+    , initials : Maybe String
+    , comments : Maybe String
+    , baby_id : Int
+    , isEditing : Bool
+    }
+
+
+{-| Used with the DateField with the DynamicDateField
+constructor as the first parameter.
+-}
+babyMedicalDynamicDateCategory : Int
+babyMedicalDynamicDateCategory =
+    1
+
+
+{-| Used with the DateField with the DynamicDateField
+constructor as the first parameter.
+-}
+babyVaccinationDynamicDateCategory : Int
+babyVaccinationDynamicDateCategory =
+    2
+
+babyLabsDynamicDateCategory : Int
+babyLabsDynamicDateCategory =
+    3
 
 
 type alias Model =
@@ -133,7 +186,9 @@ type alias Model =
     , babyRecord : Maybe BabyRecord
     , newbornExamRecord : Maybe NewbornExamRecord
     , contPostpartumCheckRecords : List ContPostpartumCheckRecord
+    , babyMedicationRecords : List BabyMedicationRecord
     , selectDataRecords : List SelectDataRecord
+    , babyMedicationTypeRecords : List BabyMedicationTypeRecord
     , newbornExamViewEditState : ViewEditState
     , nbsDate : Maybe Date
     , nbsTime : Maybe String
@@ -190,7 +245,47 @@ type alias Model =
     , cpcBabyRR : Maybe String
     , cpcBabyCR : Maybe String
     , cpcComments : Maybe String
+    , babyMedVacLabViewEditState : ViewEditState
+    , babyMedFlds : Dict Int MedVacLabFlds
     }
+
+
+babyMedicationRecordToMedVacLabFlds : BabyMedicationRecord -> MedVacLabFlds
+babyMedicationRecordToMedVacLabFlds rec =
+    MedVacLabFlds (Just rec.id)
+        (Just rec.medicationDate)
+        (Just <| U.dateToTimeString rec.medicationDate)
+        rec.location
+        rec.initials
+        rec.comments
+        rec.baby_id
+        False
+
+
+defaultMedBabyMedVacLabFlds : Int -> MedVacLabFlds
+defaultMedBabyMedVacLabFlds baby_id =
+    MedVacLabFlds Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        baby_id
+        False
+
+
+setEditingBabyMedVacLabFlds : Int -> Bool -> Dict Int MedVacLabFlds -> Dict Int MedVacLabFlds
+setEditingBabyMedVacLabFlds typeId isEditing fields =
+    Dict.update typeId
+        (\rec ->
+            case rec of
+                Just r ->
+                    Just { r | isEditing = isEditing }
+
+                Nothing ->
+                    Nothing
+        )
+        fields
 
 
 {-| Get records from the server that we don't already have like baby and
@@ -237,13 +332,18 @@ buildModel :
     -> ( Model, ProcessStore, Cmd Msg )
 buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords browserSupportsDate currTime store pregId patRec pregRec =
     let
-        ( newStore, newCmd ) =
+        -- Get the lookup tables that this page will need.
+        ( newStore, getSelectDataCmd ) =
             getTableData store SelectData Nothing []
 
+        ( newStore2, getBabyMedicationTypeCmd ) =
+            getTableData newStore BabyMedicationType Nothing []
+
         -- Populate the pendingSelectQuery field with dependent tables that
-        -- we will need if they are available.
+        -- we will need if/when they are available.
         pendingSelectQuery =
             Dict.singleton (tableToString NewbornExam) NewbornExam
+                |> Dict.insert (tableToString BabyMedication) BabyMedication
 
         -- We are not setup yet for multiple births, therefore we assume that there
         -- is only one baby.
@@ -267,7 +367,9 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords br
       , babyRecord = babyRecord
       , newbornExamRecord = Nothing
       , contPostpartumCheckRecords = contPPCheckRecs
+      , babyMedicationRecords = []
       , selectDataRecords = []
+      , babyMedicationTypeRecords = []
       , newbornExamViewEditState = NoViewEditState
       , nbsDate = Nothing
       , nbsTime = Nothing
@@ -324,9 +426,11 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords br
       , cpcBabyRR = Nothing
       , cpcBabyCR = Nothing
       , cpcComments = Nothing
+      , babyMedVacLabViewEditState = NoViewEditState
+      , babyMedFlds = Dict.empty
       }
-    , newStore
-    , newCmd
+    , newStore2
+    , Cmd.batch [ getSelectDataCmd, getBabyMedicationTypeCmd ]
     )
 
 
@@ -397,6 +501,22 @@ refreshModelFromCache dc tables model =
                             case DataCache.get t dc of
                                 Just (BabyDataCache rec) ->
                                     { m | babyRecord = Just rec }
+
+                                _ ->
+                                    m
+
+                        BabyMedication ->
+                            case DataCache.get t dc of
+                                Just (BabyMedicationDataCache recs) ->
+                                    { m | babyMedicationRecords = recs }
+
+                                _ ->
+                                    m
+
+                        BabyMedicationType ->
+                            case DataCache.get t dc of
+                                Just (BabyMedicationTypeDataCache recs) ->
+                                    { m | babyMedicationTypeRecords = recs }
 
                                 _ ->
                                     m
@@ -497,29 +617,52 @@ update session msg model =
                             let
                                 newModel =
                                     refreshModelFromCache dataCache (Maybe.withDefault [] tables) model
+
+                                -- If BabyMedication data has come in and we have the dialog
+                                -- open, then update the form fields.
+                                newModel2 =
+                                    case tables of
+                                        Just tbls ->
+                                            if
+                                                List.member BabyMedication tbls
+                                                    && model.babyMedVacLabViewEditState
+                                                    /= NoViewEditState
+                                            then
+                                                populateBabyMedFields newModel
+                                            else
+                                                newModel
+
+                                        Nothing ->
+                                            newModel
                             in
-                            { newModel | dataCache = dataCache }
+                            { newModel2 | dataCache = dataCache }
 
                         ( _, _ ) ->
                             model
 
+                -- Get all sub tables of baby that are pending retrieval from the server.
                 ( newCmd, newPendingSQ ) =
-                    case ( newModel.babyRecord, Dict.member (tableToString NewbornExam) newModel.pendingSelectQuery ) of
-                        ( Just baby, True ) ->
-                            -- We have a baby record and have not yet checked for a newbornExam record. Construct
-                            -- the query for the server and remove the query from pendingSelectQuery.
-                            ( Task.perform
-                                (always
-                                    (ContPPSelectQuery Baby
-                                        (Just baby.id)
-                                        [ NewbornExam ]
+                    case newModel.babyRecord of
+                        Just baby ->
+                            if
+                                Dict.member (tableToString NewbornExam) newModel.pendingSelectQuery
+                                    || Dict.member (tableToString BabyMedication) newModel.pendingSelectQuery
+                            then
+                                ( Task.perform
+                                    (always
+                                        (ContPPSelectQuery Baby
+                                            (Just baby.id)
+                                            [ NewbornExam, BabyMedication ]
+                                        )
                                     )
+                                    (Task.succeed True)
+                                , Dict.remove (tableToString NewbornExam) newModel.pendingSelectQuery
+                                    |> Dict.remove (tableToString BabyMedication)
                                 )
-                                (Task.succeed True)
-                            , Dict.remove (tableToString NewbornExam) newModel.pendingSelectQuery
-                            )
+                            else
+                                ( Cmd.none, newModel.pendingSelectQuery )
 
-                        ( _, _ ) ->
+                        Nothing ->
                             ( Cmd.none, newModel.pendingSelectQuery )
             in
             ( { newModel | pendingSelectQuery = newPendingSQ }
@@ -532,13 +675,50 @@ update session msg model =
             case dateFldMsg of
                 DateFieldMessage { dateField, date } ->
                     case dateField of
+                        ContPostpartumCheckDateField ->
+                            ( { model | cpcCheckDate = Just date }, Cmd.none, Cmd.none )
+
                         NewBornExamDateField ->
                             ( { model | nbsDate = Just date }, Cmd.none, Cmd.none )
+
+                        DynamicDateField type_ typeId ->
+                            -- The type_ identifies whether this is a babyMedication or
+                            -- babyVaccination, etc. The typeId identifies the specifc
+                            -- medication or vaccination and is the same as the
+                            -- babyMedicationType or babyVaccinationType fields in
+                            -- the respective records.
+                            if type_ == babyMedicalDynamicDateCategory then
+                                let
+                                    _ =
+                                        Debug.log "DynamicDateField" <| (toString type_) ++ ", " ++ (toString typeId)
+
+                                    newModel =
+                                        case Dict.get typeId model.babyMedFlds of
+                                            Just medFlds ->
+                                                { model
+                                                    | babyMedFlds =
+                                                        Dict.insert typeId
+                                                            { medFlds | date = Just date }
+                                                            model.babyMedFlds
+                                                }
+
+                                            Nothing ->
+                                                model
+                                in
+                                ( newModel, Cmd.none, Cmd.none )
+                            else if type_ == babyVaccinationDynamicDateCategory then
+                                ( model, Cmd.none, Cmd.none )
+                            else
+                                ( model, Cmd.none, logConsole <| "Unknown DynamicDateField category of: " ++ toString type_ )
 
                         UnknownDateField str ->
                             ( model, Cmd.none, logConsole str )
 
                         _ ->
+                            let
+                                _ =
+                                    Debug.log "ContPP DateFieldSubMsg" <| toString dateFldMsg
+                            in
                             -- This page is not the only one with date fields, we only
                             -- handle what we know about.
                             ( model, Cmd.none, Cmd.none )
@@ -737,8 +917,97 @@ update session msg model =
                     , Cmd.none
                     )
 
-                FldChgIntString _ _ ->
-                    ( model
+                FldChgIntString intVal strVal ->
+                    -- For the BabyMed and BabyVac fields, the intVal is the medicationType
+                    -- or vaccinationType id, respectively.
+                    ( case fld of
+                        BabyMedDateFld ->
+                            let
+                                newModel =
+                                    case Dict.get intVal model.babyMedFlds of
+                                        Just medFlds ->
+                                            { model
+                                                | babyMedFlds =
+                                                    Dict.insert intVal
+                                                        { medFlds | date = Date.fromString strVal |> Result.toMaybe }
+                                                        model.babyMedFlds
+                                            }
+
+                                        Nothing ->
+                                            model
+                            in
+                            newModel
+
+                        BabyMedTimeFld ->
+                            let
+                                newModel =
+                                    case Dict.get intVal model.babyMedFlds of
+                                        Just medFlds ->
+                                            { model
+                                                | babyMedFlds =
+                                                    Dict.insert intVal
+                                                        { medFlds | time = Just <| U.filterStringLikeTime strVal }
+                                                        model.babyMedFlds
+                                            }
+
+                                        Nothing ->
+                                            model
+                            in
+                            newModel
+
+                        BabyMedLocationFld ->
+                            let
+                                newModel =
+                                    case Dict.get intVal model.babyMedFlds of
+                                        Just medFlds ->
+                                            { model
+                                                | babyMedFlds =
+                                                    Dict.insert intVal
+                                                        { medFlds | location = Just strVal }
+                                                        model.babyMedFlds
+                                            }
+
+                                        Nothing ->
+                                            model
+                            in
+                            newModel
+
+                        BabyMedInitialsFld ->
+                            let
+                                newModel =
+                                    case Dict.get intVal model.babyMedFlds of
+                                        Just medFlds ->
+                                            { model
+                                                | babyMedFlds =
+                                                    Dict.insert intVal
+                                                        { medFlds | initials = Just strVal }
+                                                        model.babyMedFlds
+                                            }
+
+                                        Nothing ->
+                                            model
+                            in
+                            newModel
+
+                        BabyMedCommentsFld ->
+                            let
+                                newModel =
+                                    case Dict.get intVal model.babyMedFlds of
+                                        Just medFlds ->
+                                            { model
+                                                | babyMedFlds =
+                                                    Dict.insert intVal
+                                                        { medFlds | comments = Just strVal }
+                                                        model.babyMedFlds
+                                            }
+
+                                        Nothing ->
+                                            model
+                            in
+                            newModel
+
+                        _ ->
+                            model
                     , Cmd.none
                     , Cmd.none
                     )
@@ -1203,9 +1472,6 @@ update session msg model =
                                 errors =
                                     U.maybeDateTimeErrors [ checkDatetime ]
 
-                                _ =
-                                    Debug.log "cpcId" <| toString cpcId
-
                                 outerMsg =
                                     case ( List.length errors > 0, model.currLaborId, cpcId ) of
                                         ( True, _, _ ) ->
@@ -1298,6 +1564,158 @@ update session msg model =
                             , toastError msgs 10
                             )
 
+        HandleBabyMedVacLabModal dialogState medVacLab ->
+            case dialogState of
+                OpenDialog ->
+                    -- Opens the main page displaying editing and view forms for each of the
+                    -- medications, vaccinations, and labs.
+                    --
+                    -- TODO: populate the respective model fields based on the medicationType,
+                    -- vaccinationType, and labType records for baby.
+                    --
+                    -- NOTE: a unique contraint in the database does not allow more than one
+                    -- babyMedication record per babyMedicationType per baby_id.
+                    let
+                        newModel =
+                            populateBabyMedFields model
+                    in
+                    ( { newModel
+                        | babyMedVacLabViewEditState =
+                            if newModel.babyMedVacLabViewEditState == NoViewEditState then
+                                BabyMedVacLabViewState
+                            else
+                                NoViewEditState
+                      }
+                    , Cmd.none
+                    , Cmd.batch
+                        [ if newModel.babyMedVacLabViewEditState == NoViewEditState then
+                            Route.addDialogUrl Route.ContPPRoute
+                          else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
+                    )
+
+                CloseNoSaveDialog ->
+                    -- Closes the main page dialog.
+                    ( { model | babyMedVacLabViewEditState = NoViewEditState }
+                    , Cmd.none
+                    , Route.back
+                    )
+
+                EditDialog ->
+                    -- Edits a specific medication, vaccination, or lab record as
+                    -- specified in medVacLab.
+                    let
+                        newModel =
+                            case medVacLab of
+                                Just mvl ->
+                                    case mvl of
+                                        MedMVL id ->
+                                            let
+                                                newBabyMedFlds =
+                                                    setEditingBabyMedVacLabFlds id
+                                                        True
+                                                        model.babyMedFlds
+                                            in
+                                            { model | babyMedFlds = newBabyMedFlds }
+
+                                        VacMVL id ->
+                                            model
+
+                                        LabMVL id ->
+                                            model
+
+                                Nothing ->
+                                    model
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , if model.babyMedVacLabViewEditState == NoViewEditState then
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.ContPPRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
+                      else
+                        Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    -- Saves a specific medication, vaccination, or lab record as
+                    -- specified in medVacLab.
+                    -- Note: this does not close the dialog but a successful save
+                    -- should change the specific edit form to a view form.
+                    let
+                        msg =
+                            case medVacLab of
+                                Just mvl ->
+                                    case mvl of
+                                        MedMVL id ->
+                                            "Medication " ++ toString id
+
+                                        VacMVL id ->
+                                            "Vaccination " ++ toString id
+
+                                        LabMVL id ->
+                                            "Lab " ++ toString id
+
+                                Nothing ->
+                                    "Error"
+
+                        ( newModel, outerMsg ) =
+                            case medVacLab of
+                                Just mvl ->
+                                    case mvl of
+                                        MedMVL id ->
+                                            let
+                                                useLocation =
+                                                    case getNameUseLocation id model.babyMedicationTypeRecords of
+                                                        Just ( _, ul ) ->
+                                                            ul
+
+                                                        Nothing ->
+                                                            False
+
+                                                ( msg, success ) =
+                                                    deriveBabyMedicationMsg id useLocation model.babyMedFlds
+
+                                                newBabyMedFlds =
+                                                    if success then
+                                                        setEditingBabyMedVacLabFlds id
+                                                            False
+                                                            model.babyMedFlds
+                                                    else
+                                                        model.babyMedFlds
+                                            in
+                                            ( { model | babyMedFlds = newBabyMedFlds }
+                                            , msg
+                                            )
+
+                                        VacMVL id ->
+                                            ( model
+                                            , LogConsole "CloseSaveDialog does not handle vaccinations yet."
+                                            )
+
+                                        LabMVL id ->
+                                            ( model
+                                            , LogConsole "CloseSaveDialog does not handle labs yet."
+                                            )
+
+                                Nothing ->
+                                    ( model
+                                    , LogConsole "Error: medVacLab is Nothing in CloseSaveDialog."
+                                    )
+
+                        _ =
+                            Debug.log "HandleBabyMedVacLabModal CloseSaveDialog: " msg
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , Cmd.batch
+                        [ Task.perform (always outerMsg) (Task.succeed True)
+                        ]
+                    )
+
         OpenDatePickerSubMsg id ->
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
 
@@ -1338,6 +1756,150 @@ clearContPostpartumCheckModelFields model =
         , cpcBabyCR = Nothing
         , cpcComments = Nothing
     }
+
+
+{-| Populate the babyMedFlds in the Model according to
+the babyMedicationTypeRecords and the existing babyMedicationRecords.
+-}
+populateBabyMedFields : Model -> Model
+populateBabyMedFields model =
+    case model.babyRecord of
+        Just baby ->
+            List.foldl
+                (\medTypeRec mdl ->
+                    let
+                        newModel =
+                            case
+                                LE.find
+                                    (\m -> m.babyMedicationType == medTypeRec.id)
+                                    mdl.babyMedicationRecords
+                            of
+                                Just babyMedRec ->
+                                    -- There is an existing BabyMedicationRecord
+                                    -- so use it to populate form fields.
+                                    { mdl
+                                        | babyMedFlds =
+                                            Dict.insert medTypeRec.id
+                                                (babyMedicationRecordToMedVacLabFlds babyMedRec)
+                                                mdl.babyMedFlds
+                                    }
+
+                                Nothing ->
+                                    -- There is no BabyMedicationRecord so
+                                    -- populate the form fields with defaults,
+                                    -- but only if it is not already there cuz
+                                    -- maybe the user has already partially
+                                    -- completed the form but not pressed save.
+                                    case Dict.member medTypeRec.id mdl.babyMedFlds of
+                                        False ->
+                                            { mdl
+                                                | babyMedFlds =
+                                                    Dict.insert medTypeRec.id
+                                                        (defaultMedBabyMedVacLabFlds baby.id)
+                                                        mdl.babyMedFlds
+                                            }
+
+                                        True ->
+                                            mdl
+                    in
+                    newModel
+                )
+                model
+                model.babyMedicationTypeRecords
+
+        Nothing ->
+            -- Don't have a baby record, really?
+            model
+
+
+{-| Generate a Msg and a Bool flagging successfully sending a Msg to the server.
+Upon error, the Msg will be either to the console or a Toast to the user.
+-}
+deriveBabyMedicationMsg : Int -> Bool -> Dict Int MedVacLabFlds -> ( Msg, Bool )
+deriveBabyMedicationMsg medicationTypeId useLocation dict =
+    case Dict.get medicationTypeId dict of
+        Just rec ->
+            let
+                errors =
+                    validateBabyMedication useLocation rec
+
+                dateTime =
+                    U.maybeDateMaybeTimeToMaybeDateTime rec.date
+                        rec.time
+                        ""
+                        |> U.maybeDateTimeValue
+            in
+            case validateBabyMedication useLocation rec of
+                [] ->
+                    case dateTime of
+                        Just date ->
+                            case rec.id of
+                                Nothing ->
+                                    -- New record
+                                    let
+                                        newRec =
+                                            BabyMedicationRecordNew medicationTypeId
+                                                date
+                                                rec.location
+                                                rec.initials
+                                                rec.comments
+                                                rec.baby_id
+                                    in
+                                    ( ProcessTypeMsg
+                                        (AddBabyMedicationType
+                                            (ContPPMsg
+                                                (DataCache Nothing (Just [ BabyMedication ]))
+                                            )
+                                            newRec
+                                        )
+                                        AddMsgType
+                                        (babyMedicationRecordNewToValue newRec)
+                                    , True
+                                    )
+
+                                Just id ->
+                                    -- Update an existing record.
+                                    let
+                                        updatedRec =
+                                            BabyMedicationRecord id
+                                                medicationTypeId
+                                                date
+                                                rec.location
+                                                rec.initials
+                                                rec.comments
+                                                rec.baby_id
+                                    in
+                                    ( ProcessTypeMsg
+                                        (UpdateBabyMedicationType
+                                            (ContPPMsg
+                                                (DataCache Nothing (Just [ BabyMedication ]))
+                                            )
+                                            updatedRec
+                                        )
+                                        ChgMsgType
+                                        (babyMedicationRecordToValue updatedRec)
+                                    , True
+                                    )
+
+                        Nothing ->
+                            ( LogConsole "deriveBabyMedicationMsg: date and time values are not right."
+                            , False
+                            )
+
+                errors ->
+                    let
+                        msgs =
+                            List.map Tuple.second errors
+                                |> flip (++) [ "Record was not saved." ]
+                    in
+                    ( Toast msgs 10 ErrorToast
+                    , False
+                    )
+
+        Nothing ->
+            ( LogConsole "deriveBabyMedicationMsg: Error: unable to find record in babyMedFlds."
+            , False
+            )
 
 
 deriveContPostpartumCheckRecordNew : Model -> Maybe ContPostpartumCheckRecordNew
@@ -1481,6 +2043,27 @@ view size session model =
                 (HandleNewbornExamModal CloseSaveDialog)
                 (HandleNewbornExamModal EditDialog)
 
+        isEditingBabyMedVacLab =
+            if model.babyMedVacLabViewEditState == NewbornExamEditState then
+                True
+            else
+                not (isBabyMedVacLabDone model)
+
+        babyMedVacLabViewEditStageConfig =
+            ViewEditStageConfig
+                (model.babyMedVacLabViewEditState
+                    == BabyMedVacLabViewState
+                    || model.babyMedVacLabViewEditState
+                    == BabyMedVacLabEditState
+                )
+                isEditingBabyMedVacLab
+                "Baby Meds, Vacs, and Labs"
+                model
+                (HandleBabyMedVacLabModal CloseNoSaveDialog Nothing)
+                -- These two are customized in a subview.
+                PageNoop
+                PageNoop
+
         contPostpartumCheckViewEditStageConfig =
             ViewEditStageConfig
                 (model.contPostpartumCheckViewEditState
@@ -1501,6 +2084,7 @@ view size session model =
         , H.div [ HA.class "content-wrapper" ]
             [ viewButtons model
             , dialogNewbornExamSummary newbornExamViewEditStageConfig
+            , dialogBabyMedVacLab babyMedVacLabViewEditStageConfig
             , viewContPostpartumChecks contPostpartumCheckViewEditStageConfig
             , viewWhatIsComing model
             ]
@@ -1530,6 +2114,26 @@ viewButtons model =
                     ]
                 ]
             ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", False ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Baby Med Vac Lab" ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleBabyMedVacLabModal OpenDialog Nothing
+                    ]
+                    [ if isBabyMedVacLabDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
         ]
 
 
@@ -1541,6 +2145,31 @@ isNewbornExamDone model =
 
         Nothing ->
             False
+
+
+{-| Should be a medication record for every
+medicationType record. Same for vaccination and
+labs.
+
+TODO: do vaccinations.
+TODO: do labs.
+
+-}
+isBabyMedVacLabDone : Model -> Bool
+isBabyMedVacLabDone model =
+    let
+        medsDone =
+            List.foldl
+                (\mt bool ->
+                    bool
+                        && LE.count (\m -> m.babyMedicationType == mt.id)
+                            model.babyMedicationRecords
+                        > 0
+                )
+                True
+                model.babyMedicationTypeRecords
+    in
+    medsDone
 
 
 getErr : Field -> List FieldError -> String
@@ -1564,6 +2193,296 @@ type alias ViewEditStageConfig =
     , saveMsg : SubMsg
     , editMsg : SubMsg
     }
+
+
+
+-- View Baby Medication, Vaccination, and Labs --
+
+
+{-| The view and edit forms are the same form which displays
+each medication, vaccination, and lab according to whether it
+has been completed or not.
+-}
+dialogBabyMedVacLab : ViewEditStageConfig -> Html SubMsg
+dialogBabyMedVacLab cfg =
+    let
+        closeBtn =
+            [ H.div
+                [ HA.class "spacedButtons"
+                , HA.style [ ( "width", "100%" ) ]
+                ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Close" ]
+                ]
+            ]
+
+        medViews =
+            List.map
+                (\( id, medRec ) ->
+                    case
+                        Data.BabyMedicationType.getNameUseLocation id
+                            cfg.model.babyMedicationTypeRecords
+                    of
+                        Just ( name, useLocation ) ->
+                            babyMVLFormViewEdit (MedMVL id)
+                                name
+                                useLocation
+                                medRec
+                                cfg.isEditing
+                                cfg.model.browserSupportsDate
+
+                        Nothing ->
+                            let
+                                _ =
+                                    Debug.log "dialogBabyMedVacLab" "Error: getNameUseLocation returned Nothing."
+                            in
+                            H.text ""
+                )
+                (Dict.toList cfg.model.babyMedFlds)
+    in
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
+            ]
+        ]
+        [ H.div [ HA.class "" ] medViews
+        , H.div
+            [ HA.class "spacedButtons"
+            , HA.style
+                [ ( "width", "100%" )
+                , ( "margin-top", "0.5em" )
+                ]
+            ]
+            [ H.button
+                [ HA.type_ "button"
+                , HA.class "c-button c-button u-small"
+                , HE.onClick cfg.closeMsg
+                ]
+                [ H.text "Close" ]
+            ]
+        ]
+
+
+babyMVLFormViewEdit : MedVacLab -> String -> Bool -> MedVacLabFlds -> Bool -> Bool -> Html SubMsg
+babyMVLFormViewEdit mvl name useLocation mvlRec isEditing browserSupportsDate =
+    case mvl of
+        MedMVL refId ->
+            case mvlRec.id of
+                Just id ->
+                    -- Existing record, so default to view only unless user chose otherwise.
+                    if mvlRec.isEditing then
+                        babyMedVacEdit mvl name useLocation mvlRec browserSupportsDate
+                    else
+                        babyMedVacView mvl name useLocation mvlRec
+
+                Nothing ->
+                    -- No record yet, so have to edit.
+                    babyMedVacEdit mvl name useLocation mvlRec browserSupportsDate
+
+        VacMVL refId ->
+            H.text <| "babyMVLFormViewEdit Vaccination" ++ toString refId
+
+        LabMVL refId ->
+            H.text <| "babyMVLFormViewEdit Lab" ++ toString refId
+
+
+babyMedVacEdit : MedVacLab -> String -> Bool -> MedVacLabFlds -> Bool -> Html SubMsg
+babyMedVacEdit mvl name useLocation mvlRec browserSupportsDate =
+    let
+        errors =
+            validateBabyMedication useLocation mvlRec
+
+        ( type_, typeId ) =
+            case mvl of
+                MedMVL id ->
+                    (babyMedicalDynamicDateCategory, id)
+
+                VacMVL id ->
+                    (babyVaccinationDynamicDateCategory, id)
+
+                LabMVL id ->
+                    (babyLabsDynamicDateCategory, id)
+
+        medVacEdit refId name useLocation mvlRec browserSupportsDate errors =
+            H.div
+                [ HA.class "form-border u-high"
+                , HA.style
+                    [ ( "padding", "0.5em" )
+                    ]
+                ]
+                [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                    [ H.text name ]
+                , H.div [ HA.class "form-wrapper u-small" ]
+                    [ H.div [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ if browserSupportsDate then
+                            H.div [ HA.class "c-card" ]
+                                [ H.div [ HA.class "c-card__item" ]
+                                    [ H.div [ HA.class "c-text--loud" ]
+                                        [ H.text "Date and time" ]
+                                    ]
+                                , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                                    [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                        [ Form.formFieldDate (FldChgIntString refId >> FldChgSubMsg BabyMedDateFld)
+                                            "Date"
+                                            "e.g. 08/14/2017"
+                                            False
+                                            mvlRec.date
+                                            (getErr BabyMedDateFld errors)
+                                        , Form.formField (FldChgIntString refId >> FldChgSubMsg BabyMedTimeFld)
+                                            "Time"
+                                            "24 hr format, 14:44"
+                                            False
+                                            mvlRec.time
+                                            (getErr BabyMedTimeFld errors)
+                                        ]
+                                    ]
+                                ]
+                          else
+                            -- Browser does not support date.
+                            H.div [ HA.class "c-card" ]
+                                [ H.div [ HA.class "c-card__body" ]
+                                    [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                        [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                            (DynamicDateField type_ typeId)
+                                            "Date"
+                                            "e.g. 08/14/2017"
+                                            False
+                                            mvlRec.date
+                                            (getErr BabyMedDateFld errors)
+                                        , Form.formField (FldChgIntString refId >> FldChgSubMsg BabyMedTimeFld)
+                                            "Time"
+                                            "24 hr format, 14:44"
+                                            False
+                                            mvlRec.time
+                                            (getErr BabyMedTimeFld errors)
+                                        ]
+                                    ]
+                                ]
+                        ]
+                    , if useLocation then
+                        H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                            [ Form.formField (FldChgIntString refId >> FldChgSubMsg BabyMedLocationFld)
+                                "Location"
+                                ""
+                                True
+                                mvlRec.location
+                                (getErr BabyMedLocationFld errors)
+                            ]
+                      else
+                        H.text ""
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgIntString refId >> FldChgSubMsg BabyMedInitialsFld)
+                            "Initials"
+                            ""
+                            True
+                            mvlRec.initials
+                            (getErr BabyMedInitialsFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgIntString refId >> FldChgSubMsg BabyMedCommentsFld)
+                            "Comments"
+                            ""
+                            True
+                            mvlRec.comments
+                            (getErr BabyMedCommentsFld errors)
+                        ]
+                    ]
+                , H.div
+                    [ HA.class "right-to-left"
+                    , HA.style
+                        [ ( "width", "100%" )
+                        , ( "margin", "0.2em 1em 0.5em 0" )
+                        ]
+                    ]
+                    [ H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button c-button--brand u-small"
+                        , HE.onClick <| HandleBabyMedVacLabModal CloseSaveDialog (Just (MedMVL refId))
+                        ]
+                        [ H.text "Save" ]
+                    ]
+                ]
+    in
+    case mvl of
+        MedMVL refId ->
+            medVacEdit refId name useLocation mvlRec browserSupportsDate errors
+
+        VacMVL refId ->
+            medVacEdit refId name useLocation mvlRec browserSupportsDate errors
+
+        LabMVL _ ->
+            H.text ""
+
+
+babyMedVacView : MedVacLab -> String -> Bool -> MedVacLabFlds -> Html SubMsg
+babyMedVacView mvl name useLocation mvlRec =
+    let
+        dateStr =
+            case U.maybeDatePlusTime mvlRec.date mvlRec.time of
+                Just d ->
+                    U.dateToDateMonString d "-"
+                        |> flip (++) " "
+                        |> flip (++) (Maybe.withDefault "" mvlRec.time)
+
+                Nothing ->
+                    ""
+
+        location =
+            Maybe.withDefault "" mvlRec.location
+
+        initials =
+            Maybe.withDefault "" mvlRec.initials
+
+        comments =
+            Maybe.withDefault "" mvlRec.comments
+    in
+    case mvl of
+        MedMVL refId ->
+            H.div [ HA.class "form-padding form-border-light" ]
+                [ H.span [ HA.class "c-text--brand" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text <| name ++ ": " ]
+                    , H.button
+                        [ HA.type_ "button"
+                        , HA.class "c-button u-color-white u-xsmall"
+                        , HA.style [ ( "float", "right" ) ]
+                        , HE.onClick <|
+                            HandleBabyMedVacLabModal EditDialog
+                                (Just (MedMVL refId))
+                        ]
+                        [ H.text "Edit" ]
+                    ]
+                , H.span [ HA.class "c-text" ]
+                    [ H.text <| dateStr ]
+                , if String.length location > 0 then
+                    H.span [ HA.class "c-text" ]
+                        [ H.text <| " @ " ++ location ]
+                  else
+                    H.text ""
+                , if String.length comments > 0 then
+                    H.span [ HA.class "c-text" ]
+                        [ H.text <| ", " ++ comments ]
+                  else
+                    H.text ""
+                , if String.length initials > 0 then
+                    H.span [ HA.class "c-text--quiet" ]
+                        [ H.text <| " -- " ++ initials ]
+                  else
+                    H.text ""
+                ]
+
+        VacMVL refId ->
+            H.text ""
+
+        LabMVL _ ->
+            H.text ""
 
 
 
@@ -2297,7 +3216,8 @@ viewWhatIsComing model =
         [ H.h3 [ HA.class "c-heading u-medium" ]
             [ H.text "What else will be on this page eventually?" ]
         , H.ul []
-            [ H.li [] [ H.text "Vitamin A" ]
+            [ H.li [] [ H.text "Baby medications, vaccinations, and labs" ]
+            , H.li [] [ H.text "Mother medications" ]
             , H.li [] [ H.text "Discharge checklist" ]
             , H.li [] [ H.text "Discharge vitals" ]
             ]
@@ -2326,4 +3246,16 @@ validateContPostpartumCheck =
     Validate.all
         [ .cpcCheckDate >> ifInvalid U.validateDate (CPCCheckDateFld => "Date of check must be provided.")
         , .cpcCheckTime >> ifInvalid U.validateTime (CPCCheckTimeFld => "Time of check must be provided.")
+        ]
+
+
+validateBabyMedication : Bool -> MedVacLabFlds -> List FieldError
+validateBabyMedication useLocation =
+    Validate.all
+        [ .date >> ifInvalid U.validateDate (BabyMedDateFld => "Date of medication must be provided.")
+        , .time >> ifInvalid U.validateTime (BabyMedTimeFld => "Time of medication must be provided.")
+        , if useLocation then
+            .location >> ifInvalid U.validatePopulatedString (BabyMedLocationFld => "Location must be provided.")
+          else
+            \_ -> []
         ]

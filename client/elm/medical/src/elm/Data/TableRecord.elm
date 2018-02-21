@@ -11,6 +11,8 @@ import Json.Decode.Pipeline as JDP
 -- LOCAL IMPORTS --
 
 import Data.Baby exposing (BabyRecord, babyRecord)
+import Data.BabyMedication exposing (BabyMedicationRecord, babyMedicationRecord)
+import Data.BabyMedicationType exposing (BabyMedicationTypeRecord, babyMedicationTypeRecord)
 import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord, contPostpartumCheckRecord)
 import Data.Labor exposing (LaborRecord, laborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record, laborStage1Record)
@@ -25,16 +27,18 @@ import Data.Table as DT exposing (Table(..))
 
 
 type TableRecord
-    = TableRecordPatient (List PatientRecord)
-    | TableRecordPregnancy (List PregnancyRecord)
+    = TableRecordBaby (List BabyRecord)
+    | TableRecordBabyMedication (List BabyMedicationRecord)
+    | TableRecordBabyMedicationType (List BabyMedicationTypeRecord)
+    | TableRecordContPostpartumCheck (List ContPostpartumCheckRecord)
     | TableRecordLabor (List LaborRecord)
     | TableRecordLaborStage1 (List LaborStage1Record)
     | TableRecordLaborStage2 (List LaborStage2Record)
     | TableRecordLaborStage3 (List LaborStage3Record)
-    | TableRecordBaby (List BabyRecord)
-    | TableRecordContPostpartumCheck (List ContPostpartumCheckRecord)
     | TableRecordMembrane (List MembraneRecord)
     | TableRecordNewbornExam (List NewbornExamRecord)
+    | TableRecordPatient (List PatientRecord)
+    | TableRecordPregnancy (List PregnancyRecord)
     | TableRecordSelectData (List SelectDataRecord)
 
 
@@ -43,6 +47,12 @@ tableRecord table =
     case table of
         Baby ->
             JD.map TableRecordBaby (JD.list babyRecord)
+
+        BabyMedication ->
+            JD.map TableRecordBabyMedication (JD.list babyMedicationRecord)
+
+        BabyMedicationType ->
+            JD.map TableRecordBabyMedicationType (JD.list babyMedicationTypeRecord)
 
         ContPostpartumCheck ->
             JD.map TableRecordContPostpartumCheck (JD.list contPostpartumCheckRecord)

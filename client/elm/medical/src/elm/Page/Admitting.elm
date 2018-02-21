@@ -508,7 +508,7 @@ viewAdmitForm laborId model =
                             (getErr LaborDateFld errors)
                       else
                         Form.formFieldDatePicker OpenDatePickerSubMsg
-                            LaborDelIppLaborDateField
+                            AdmittingStartLaborDateField
                             "Date start of labor"
                             "e.g. 08/14/2017"
                             True
@@ -674,6 +674,28 @@ update session msg model =
             , Cmd.none
             , Cmd.none
             )
+
+        DateFieldSubMsg dateFldMsg ->
+            -- For browsers that do not support a native date field.
+            case dateFldMsg of
+                DateFieldMessage { dateField, date } ->
+                    case dateField of
+                        AdmittingAdmittanceDateField ->
+                            ( { model | admittanceDate = Just date }, Cmd.none, Cmd.none )
+
+                        AdmittingStartLaborDateField ->
+                            ( { model | laborDate = Just date }, Cmd.none, Cmd.none )
+
+                        UnknownDateField str ->
+                            ( model, Cmd.none, logConsole <| "Unknown date field: " ++ str )
+
+                        _ ->
+                            -- This page is not the only one with date fields, we only
+                            -- handle what we know about.
+                            ( model, Cmd.none, Cmd.none )
+
+                UnknownDateFieldMessage str ->
+                    ( model, Cmd.none, Cmd.none )
 
         RotatePregHeaderContent pregHeaderMsg ->
             case pregHeaderMsg of

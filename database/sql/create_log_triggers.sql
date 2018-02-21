@@ -84,6 +84,90 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: babyMedication_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedication_after_insert;
+CREATE TRIGGER babyMedication_after_insert AFTER INSERT ON babyMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationLog
+  (id, babyMedicationType, medicationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyMedicationType, NEW.medicationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedication_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedication_after_update;
+CREATE TRIGGER babyMedication_after_update AFTER UPDATE ON babyMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationLog
+  (id, babyMedicationType, medicationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyMedicationType, NEW.medicationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedication_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedication_after_delete;
+CREATE TRIGGER babyMedication_after_delete AFTER DELETE ON babyMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationLog
+  (id, babyMedicationType, medicationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.babyMedicationType, OLD.medicationDate, OLD.location, OLD.initials, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedicationType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedicationType_after_insert;
+CREATE TRIGGER babyMedicationType_after_insert AFTER INSERT ON babyMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedicationType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedicationType_after_update;
+CREATE TRIGGER babyMedicationType_after_update AFTER UPDATE ON babyMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedicationType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedicationType_after_delete;
+CREATE TRIGGER babyMedicationType_after_delete AFTER DELETE ON babyMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.useLocation, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: contPostpartumCheck_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$
