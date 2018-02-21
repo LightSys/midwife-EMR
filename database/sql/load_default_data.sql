@@ -580,3 +580,11 @@ VALUES
   ('Eye Ointment', 'Eye Ointment', 0, 1, NOW())
 ;
 
+SELECT 'babyVaccinationType' AS 'Loading' FROM DUAL;
+INSERT INTO babyVaccinationType
+  (name, description, useLocation, updatedBy, updatedAt)
+VALUES
+  ('Hep B', 'Hep B', 1, 1, NOW()),
+  ('BCG (Bacillus Calmette-Guerin)', 'BCG (Bacillus Calmette-Guerin)', 0, 1, NOW())
+;
+

@@ -837,4 +837,32 @@ CREATE TABLE IF NOT EXISTS `babyMedication` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `babyVaccinationType` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(100) NULL,
+  useLocation BOOLEAN NOT NULL DEFAULT 0,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `babyVaccination` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  babyVaccinationType INT NOT NULL,
+  vaccinationDate DATETIME NOT NULL,
+  location VARCHAR(50) NULL,
+  initials VARCHAR(50) NULL,
+  comments VARCHAR(100) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  baby_id INT NOT NULL,
+  UNIQUE (baby_id, babyVaccinationType),
+  FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (babyVaccinationType) REFERENCES babyVaccinationType (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;

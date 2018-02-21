@@ -36,6 +36,30 @@ var updateBabyMedication = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
+var addBabyVaccination = function(data, cb) {
+  var m = msg('labor_assert/addBabyVaccination()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id')); // Adding a record should not have an id.
+  assert.ok(_.has(data, 'babyVaccinationType'), m('data.babyVaccinationType'));
+  assert.ok(_.isNumber(data.babyVaccinationType), m('data.babyVaccinationType is a number'));
+  assert.ok(_.has(data, 'vaccinationDate'), m('data.vaccinationDate'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
+var updateBabyVaccination = function(data, cb) {
+  var m = msg('labor_assert/updateBabyVaccination()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.has(data, 'babyVaccinationType'), m('data.babyVaccinationType'));
+  assert.ok(_.isNumber(data.babyVaccinationType), m('data.babyVaccinationType is a number'));
+  assert.ok(_.has(data, 'vaccinationDate'), m('data.vaccinationDate'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addContPostpartumCheck = function(data, cb) {
   var m = msg('labor_assert/addContPostpartumCheck()');
   if (verbose) console.log(m());
@@ -227,6 +251,8 @@ module.exports = {
   updateApgar,
   addBabyMedication,
   updateBabyMedication,
+  addBabyVaccination,
+  updateBabyVaccination,
   addContPostpartumCheck,
   updateContPostpartumCheck,
   addBaby,

@@ -327,3 +327,22 @@ ALTER TABLE babyMedicationLog DROP PRIMARY KEY;
 ALTER TABLE babyMedicationLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE babyMedicationLog DROP KEY baby_id;
 --
+-- Creating babyVaccinationTypeLog
+SELECT 'babyVaccinationTypeLog' AS Creating FROM DUAL;
+CREATE TABLE babyVaccinationTypeLog LIKE babyVaccinationType;
+ALTER TABLE babyVaccinationTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyVaccinationTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyVaccinationTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyVaccinationTypeLog DROP PRIMARY KEY;
+ALTER TABLE babyVaccinationTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating babyVaccinationLog
+SELECT 'babyVaccinationLog' AS Creating FROM DUAL;
+CREATE TABLE babyVaccinationLog LIKE babyVaccination;
+ALTER TABLE babyVaccinationLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyVaccinationLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyVaccinationLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyVaccinationLog DROP PRIMARY KEY;
+ALTER TABLE babyVaccinationLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE babyVaccinationLog DROP KEY baby_id;
+--

@@ -16,6 +16,8 @@ type Table
     | Baby
     | BabyMedication
     | BabyMedicationType
+    | BabyVaccination
+    | BabyVaccinationType
     | ContPostpartumCheck
     | Labor
     | LaborStage1
@@ -50,6 +52,12 @@ tableToString tbl =
 
         BabyMedicationType ->
             "babyMedicationType"
+
+        BabyVaccination ->
+            "babyVaccination"
+
+        BabyVaccinationType ->
+            "babyVaccinationType"
 
         ContPostpartumCheck ->
             "contPostpartumCheck"
@@ -93,6 +101,12 @@ stringToTable tbl =
 
         "babyMedicationType" ->
             BabyMedicationType
+
+        "babyVaccination" ->
+            BabyVaccination
+
+        "babyVaccinationType" ->
+            BabyVaccinationType
 
         "contPostpartumCheck" ->
             ContPostpartumCheck

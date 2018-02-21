@@ -168,6 +168,90 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: babyVaccination_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccination_after_insert;
+CREATE TRIGGER babyVaccination_after_insert AFTER INSERT ON babyVaccination
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationLog
+  (id, babyVaccinationType, vaccinationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyVaccinationType, NEW.vaccinationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccination_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccination_after_update;
+CREATE TRIGGER babyVaccination_after_update AFTER UPDATE ON babyVaccination
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationLog
+  (id, babyVaccinationType, vaccinationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyVaccinationType, NEW.vaccinationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccination_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccination_after_delete;
+CREATE TRIGGER babyVaccination_after_delete AFTER DELETE ON babyVaccination
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationLog
+  (id, babyVaccinationType, vaccinationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.babyVaccinationType, OLD.vaccinationDate, OLD.location, OLD.initials, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccinationType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccinationType_after_insert;
+CREATE TRIGGER babyVaccinationType_after_insert AFTER INSERT ON babyVaccinationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccinationType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccinationType_after_update;
+CREATE TRIGGER babyVaccinationType_after_update AFTER UPDATE ON babyVaccinationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccinationType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccinationType_after_delete;
+CREATE TRIGGER babyVaccinationType_after_delete AFTER DELETE ON babyVaccinationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.useLocation, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: contPostpartumCheck_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

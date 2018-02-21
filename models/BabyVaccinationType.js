@@ -1,8 +1,8 @@
 /*
  * -------------------------------------------------------------------------------
- * BabyMedicationType.js
+ * BabyVaccinationType.js
  *
- * The model for the babyMedicationType table.
+ * The model for the babyVaccinationType table.
  * -------------------------------------------------------------------------------
  */
 
@@ -11,12 +11,12 @@ var moment = require('moment')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
-  , BabyMedicationType = {}
-  , BabyMedicationTypes
+  , BabyVaccinationType = {}
+  , BabyVaccinationTypes
   ;
 
 /*
-CREATE TABLE `babyMedicationType` (
+CREATE TABLE `babyVaccinationType` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `description` varchar(100) DEFAULT NULL,
@@ -26,12 +26,12 @@ CREATE TABLE `babyMedicationType` (
   `supervisor` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `updatedBy` (`updatedBy`),
-  CONSTRAINT `babyMedicationType_ibfk_1` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `babyVaccinationType_ibfk_1` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1
 */
 
-BabyMedicationType = Bookshelf.Model.extend({
-  tableName: 'babyMedicationType'
+BabyVaccinationType = Bookshelf.Model.extend({
+  tableName: 'babyVaccinationType'
 
   , permittedAttributes: ['id', 'name', 'description', 'useLocation',
     'updatedBy', 'updatedAt', 'supervisor']
@@ -52,8 +52,8 @@ BabyMedicationType = Bookshelf.Model.extend({
   // https://github.com/tgriesser/bookshelf/issues/105
   // --------------------------------------------------------
 
-  , babyMedication: function() {
-      return this.hasMany(require('./BabyMedication').BabyMedication, 'babyMedicationType');
+  , babyVaccination: function() {
+      return this.hasMany(require('./BabyVaccination').BabyVaccination, 'babyVaccinationType');
     }
 
 }, {
@@ -63,12 +63,13 @@ BabyMedicationType = Bookshelf.Model.extend({
 
 });
 
-BabyMedicationTypes = Bookshelf.Collection.extend({
-  model: BabyMedicationType
+BabyVaccinationTypes = Bookshelf.Collection.extend({
+  model: BabyVaccinationType
 });
 
 module.exports = {
-  BabyMedicationType: BabyMedicationType
-  , BabyMedicationTypes: BabyMedicationTypes
+  BabyVaccinationType: BabyVaccinationType
+  , BabyVaccinationTypes: BabyVaccinationTypes
 };
+
 

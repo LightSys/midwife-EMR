@@ -87,5 +87,9 @@ module.exports = {
   , BabyMedicationTypes: require('./BabyMedicationType').BabyMedicationTypes
   , BabyMedication: require('./BabyMedication').BabyMedication
   , BabyMedications: require('./BabyMedication').BabyMedications
+  , BabyVaccinationType: require('./BabyVaccinationType').BabyVaccinationType
+  , BabyVaccinationTypes: require('./BabyVaccinationType').BabyVaccinationTypes
+  , BabyVaccination: require('./BabyVaccination').BabyVaccination
+  , BabyVaccinations: require('./BabyVaccination').BabyVaccinations
 };
 

@@ -13,6 +13,8 @@ import Json.Decode.Pipeline as JDP
 import Data.Baby exposing (BabyRecord, babyRecord)
 import Data.BabyMedication exposing (BabyMedicationRecord, babyMedicationRecord)
 import Data.BabyMedicationType exposing (BabyMedicationTypeRecord, babyMedicationTypeRecord)
+import Data.BabyVaccination exposing (BabyVaccinationRecord, babyVaccinationRecord)
+import Data.BabyVaccinationType exposing (BabyVaccinationTypeRecord, babyVaccinationTypeRecord)
 import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord, contPostpartumCheckRecord)
 import Data.Labor exposing (LaborRecord, laborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record, laborStage1Record)
@@ -30,6 +32,8 @@ type TableRecord
     = TableRecordBaby (List BabyRecord)
     | TableRecordBabyMedication (List BabyMedicationRecord)
     | TableRecordBabyMedicationType (List BabyMedicationTypeRecord)
+    | TableRecordBabyVaccination (List BabyVaccinationRecord)
+    | TableRecordBabyVaccinationType (List BabyVaccinationTypeRecord)
     | TableRecordContPostpartumCheck (List ContPostpartumCheckRecord)
     | TableRecordLabor (List LaborRecord)
     | TableRecordLaborStage1 (List LaborStage1Record)
@@ -53,6 +57,12 @@ tableRecord table =
 
         BabyMedicationType ->
             JD.map TableRecordBabyMedicationType (JD.list babyMedicationTypeRecord)
+
+        BabyVaccination ->
+            JD.map TableRecordBabyVaccination (JD.list babyVaccinationRecord)
+
+        BabyVaccinationType ->
+            JD.map TableRecordBabyVaccinationType (JD.list babyVaccinationTypeRecord)
 
         ContPostpartumCheck ->
             JD.map TableRecordContPostpartumCheck (JD.list contPostpartumCheckRecord)

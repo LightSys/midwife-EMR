@@ -45,8 +45,12 @@ type MedVacLab
     | VacMVL Int
     | LabMVL Int
 
+{-| The fields we use. NotUsed is a special case for handling a MedVacLab
+when we have not started working with Labs yet.
+-}
 type Field
-    = NBSDateFld
+    = NotUsed
+    | NBSDateFld
     | NBSTimeFld
     | NBSExaminersFld
     | NBSRRFld
@@ -105,3 +109,8 @@ type Field
     | BabyMedLocationFld
     | BabyMedInitialsFld
     | BabyMedCommentsFld
+    | BabyVacDateFld
+    | BabyVacTimeFld
+    | BabyVacLocationFld
+    | BabyVacInitialsFld
+    | BabyVacCommentsFld
