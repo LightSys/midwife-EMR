@@ -137,11 +137,6 @@ type Field
     | BabyBirthWeightFld
     | BabyBFedEstablishedDateFld
     | BabyBFedEstablishedTimeFld
-    | BabyNbsDateFld
-    | BabyNbsTimeFld
-    | BabyNbsResultFld
-    | BabyBcgDateFld
-    | BabyBcgTimeFld
     | BabyBulbFld
     | BabyMachineFld
     | BabyFreeFlowO2Fld

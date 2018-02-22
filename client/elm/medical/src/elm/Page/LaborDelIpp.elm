@@ -240,11 +240,6 @@ type alias Model =
     , bbBirthWeight : Maybe String
     , bbBFedEstablishedDate : Maybe Date
     , bbBFedEstablishedTime : Maybe String
-    , bbNbsDate : Maybe Date
-    , bbNbsTime : Maybe String
-    , bbNbsResult : Maybe String
-    , bbBcgDate : Maybe Date
-    , bbBcgTime : Maybe String
     , bbBulb : Maybe Bool
     , bbMachine : Maybe Bool
     , bbFreeFlowO2 : Maybe Bool
@@ -413,11 +408,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , bbBirthWeight = Nothing
       , bbBFedEstablishedDate = Nothing
       , bbBFedEstablishedTime = Nothing
-      , bbNbsDate = Nothing
-      , bbNbsTime = Nothing
-      , bbNbsResult = Nothing
-      , bbBcgDate = Nothing
-      , bbBcgTime = Nothing
       , bbBulb = Nothing
       , bbMachine = Nothing
       , bbFreeFlowO2 = Nothing
@@ -2393,7 +2383,7 @@ dialogBabySummaryView cfg =
                 Nothing ->
                     ""
 
-        ( lastname, firstname, middlename, sex, birthWeight, bFed ) =
+        ( lastname, firstname, middlename, sex, birthWeight, bFed, comments ) =
             case cfg.model.babyRecord of
                 Just rec ->
                     ( Maybe.withDefault "" rec.lastname
@@ -2404,22 +2394,11 @@ dialogBabySummaryView cfg =
                         |> toString
                         |> flip String.append " g"
                     , dateString rec.bFedEstablished
-                    )
-
-                Nothing ->
-                    ( "", "", "", "", "", "" )
-
-        ( nbsDate, nbsResult, bcgDate, comments ) =
-            case cfg.model.babyRecord of
-                Just rec ->
-                    ( dateString rec.nbsDate
-                    , Maybe.withDefault "" rec.nbsResult
-                    , dateString rec.bcgDate
                     , Maybe.withDefault "" rec.comments
                     )
 
                 Nothing ->
-                    ( "", "", "", "" )
+                    ( "", "", "", "", "", "", "" )
 
         apgarsList =
             getScoresAsList cfg.model.apgarScores
@@ -2473,24 +2452,6 @@ dialogBabySummaryView cfg =
                         [ H.text "BFed established: " ]
                     , H.span [ HA.class "" ]
                         [ H.text bFed ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "NBS date: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text nbsDate ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "NBS result: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text nbsResult ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "BCG date: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text bcgDate ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
@@ -2772,110 +2733,6 @@ dialogBabySummaryEdit cfg =
                                 ]
                             ]
                         ]
-                , if cfg.model.browserSupportsDate then
-                    H.div [ HA.class "c-card mw-form-field-2x" ]
-                        [ H.div [ HA.class "c-card__item" ]
-                            [ H.div [ HA.class "c-text--loud" ]
-                                [ H.text "NBS date and time" ]
-                            ]
-                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
-                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyNbsDateFld)
-                                    "Date"
-                                    "e.g. 08/14/2017"
-                                    False
-                                    cfg.model.bbNbsDate
-                                    (getErr BabyNbsDateFld errors)
-                                , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
-                                    "Time"
-                                    "24 hr format, 14:44"
-                                    False
-                                    cfg.model.bbNbsTime
-                                    (getErr BabyNbsTimeFld errors)
-                                ]
-                            ]
-                        ]
-                  else
-                    -- Browser does not support date.
-                    H.div [ HA.class "c-card mw-form-field-2x" ]
-                        [ H.div [ HA.class "c-card__item" ]
-                            [ H.div [ HA.class "c-text--loud" ]
-                                [ H.text "NBS date and time" ]
-                            ]
-                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
-                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
-                                    BabyNbsDateField
-                                    "Date"
-                                    "e.g. 08/14/2017"
-                                    False
-                                    cfg.model.bbNbsDate
-                                    (getErr BabyNbsDateFld errors)
-                                , Form.formField (FldChgString >> FldChgSubMsg BabyNbsTimeFld)
-                                    "Time"
-                                    "24 hr format, 14:44"
-                                    False
-                                    cfg.model.bbNbsTime
-                                    (getErr BabyNbsTimeFld errors)
-                                ]
-                            ]
-                        ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgString >> FldChgSubMsg BabyNbsResultFld)
-                        "NBS Result"
-                        "NBS Result"
-                        True
-                        cfg.model.bbNbsResult
-                        (getErr BabyNbsResultFld errors)
-                    ]
-                , if cfg.model.browserSupportsDate then
-                    H.div [ HA.class "c-card mw-form-field-2x" ]
-                        [ H.div [ HA.class "c-card__item" ]
-                            [ H.div [ HA.class "c-text--loud" ]
-                                [ H.text "BCG date and time" ]
-                            ]
-                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
-                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg BabyBcgDateFld)
-                                    "Date"
-                                    "e.g. 08/14/2017"
-                                    False
-                                    cfg.model.bbBcgDate
-                                    (getErr BabyBcgDateFld errors)
-                                , Form.formField (FldChgString >> FldChgSubMsg BabyBcgTimeFld)
-                                    "Time"
-                                    "24 hr format, 14:44"
-                                    False
-                                    cfg.model.bbBcgTime
-                                    (getErr BabyBcgTimeFld errors)
-                                ]
-                            ]
-                        ]
-                  else
-                    -- Browser does not support date.
-                    H.div [ HA.class "c-card mw-form-field-2x" ]
-                        [ H.div [ HA.class "c-card__item" ]
-                            [ H.div [ HA.class "c-text--loud" ]
-                                [ H.text "BCG date and time" ]
-                            ]
-                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
-                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
-                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
-                                    BabyBcgDateField
-                                    "Date"
-                                    "e.g. 08/14/2017"
-                                    False
-                                    cfg.model.bbBFedEstablishedDate
-                                    (getErr BabyBcgDateFld errors)
-                                , Form.formField (FldChgString >> FldChgSubMsg BabyBcgTimeFld)
-                                    "Time"
-                                    "24 hr format, 14:44"
-                                    False
-                                    cfg.model.bbBFedEstablishedTime
-                                    (getErr BabyBcgTimeFld errors)
-                                ]
-                            ]
-                        ]
                 , Form.checkbox "Bulb" (FldChgBool >> FldChgSubMsg BabyBulbFld) cfg.model.bbBulb
                 , Form.checkbox "Machine" (FldChgBool >> FldChgSubMsg BabyMachineFld) cfg.model.bbMachine
                 , Form.checkbox "Free Flow O2" (FldChgBool >> FldChgSubMsg BabyFreeFlowO2Fld) cfg.model.bbFreeFlowO2
@@ -3041,12 +2898,6 @@ update session msg model =
                     case dateField of
                         BabyBFedEstablishedDateField ->
                             ( { model | bbBFedEstablishedDate = Just date }, Cmd.none, Cmd.none )
-
-                        BabyNbsDateField ->
-                            ( { model | bbNbsDate = Just date }, Cmd.none, Cmd.none )
-
-                        BabyBcgDateField ->
-                            ( { model | bbBcgDate = Just date }, Cmd.none, Cmd.none )
 
                         FalseLaborDateField ->
                             ( { model | falseLaborDate = Just date }, Cmd.none, Cmd.none )
@@ -3278,21 +3129,6 @@ update session msg model =
 
                         BabyBFedEstablishedTimeFld ->
                             { model | bbBFedEstablishedTime = Just <| U.filterStringLikeTime value }
-
-                        BabyNbsDateFld ->
-                            { model | bbNbsDate = Date.fromString value |> Result.toMaybe }
-
-                        BabyNbsTimeFld ->
-                            { model | bbNbsTime = Just <| U.filterStringLikeTime value }
-
-                        BabyNbsResultFld ->
-                            { model | bbNbsResult = Just value }
-
-                        BabyBcgDateFld ->
-                            { model | bbBcgDate = Date.fromString value |> Result.toMaybe }
-
-                        BabyBcgTimeFld ->
-                            { model | bbBcgTime = Just <| U.filterStringLikeTime value }
 
                         BabyCommentsFld ->
                             { model | bbComments = Just value }
@@ -4651,17 +4487,6 @@ update session msg model =
                                             U.maybeOr
                                                 (Maybe.map U.dateToTimeString rec.bFedEstablished)
                                                 model.bbBFedEstablishedTime
-                                        , bbNbsDate = U.maybeOr rec.nbsDate model.bbNbsDate
-                                        , bbNbsTime =
-                                            U.maybeOr
-                                                (Maybe.map U.dateToTimeString rec.nbsDate)
-                                                model.bbNbsTime
-                                        , bbNbsResult = U.maybeOr rec.nbsResult model.bbNbsResult
-                                        , bbBcgDate = U.maybeOr rec.bcgDate model.bbBcgDate
-                                        , bbBcgTime =
-                                            U.maybeOr
-                                                (Maybe.map U.dateToTimeString rec.bcgDate)
-                                                model.bbBcgTime
                                         , bbBulb = U.maybeOr rec.bulb model.bbBulb
                                         , bbMachine = U.maybeOr rec.machine model.bbMachine
                                         , bbFreeFlowO2 = U.maybeOr rec.freeFlowO2 model.bbFreeFlowO2
@@ -4720,18 +4545,8 @@ update session msg model =
                                         model.bbBFedEstablishedTime
                                         "Please correct the date and time for the breast fed fields."
 
-                                nbsDatetime =
-                                    U.maybeDateMaybeTimeToMaybeDateTime model.bbNbsDate
-                                        model.bbNbsTime
-                                        "Please correct the date and time for the NBS fields."
-
-                                bcgDatetime =
-                                    U.maybeDateMaybeTimeToMaybeDateTime model.bbBcgDate
-                                        model.bbBcgTime
-                                        "Please correct the date and time for the BCG fields."
-
                                 errors =
-                                    U.maybeDateTimeErrors [ bfedDatetime, nbsDatetime, bcgDatetime ]
+                                    U.maybeDateTimeErrors [ bfedDatetime ]
 
                                 outerMsg =
                                     case ( List.length errors > 0, model.babyRecord, model.bbSex ) of
@@ -4757,9 +4572,6 @@ update session msg model =
                                                         , sex = stringToMaleFemale sex
                                                         , birthWeight = U.maybeStringToMaybeInt model.bbBirthWeight
                                                         , bFedEstablished = U.maybeDateTimeValue bfedDatetime
-                                                        , nbsDate = U.maybeDateTimeValue nbsDatetime
-                                                        , nbsResult = model.bbNbsResult
-                                                        , bcgDate = U.maybeDateTimeValue bcgDatetime
                                                         , bulb = model.bbBulb
                                                         , machine = model.bbMachine
                                                         , freeFlowO2 = model.bbFreeFlowO2
@@ -5066,31 +4878,6 @@ deriveBabyRecordNew model =
                         ( _, _ ) ->
                             Nothing
 
-                nbsDatetime =
-                    case ( model.bbNbsDate, model.bbNbsTime ) of
-                        ( Just d, Just t ) ->
-                            case U.stringToTimeTuple t of
-                                Just tt ->
-                                    Just <| U.datePlusTimeTuple d tt
-
-                                Nothing ->
-                                    Nothing
-
-                        ( _, _ ) ->
-                            Nothing
-
-                bcgDatetime =
-                    case ( model.bbBcgDate, model.bbBcgTime ) of
-                        ( Just d, Just t ) ->
-                            case U.stringToTimeTuple t of
-                                Just tt ->
-                                    Just <| U.datePlusTimeTuple d tt
-
-                                Nothing ->
-                                    Nothing
-
-                        ( _, _ ) ->
-                            Nothing
             in
             BabyRecordNew 1
                 model.bbLastname
@@ -5099,9 +4886,6 @@ deriveBabyRecordNew model =
                 (stringToMaleFemale sexStr)
                 (U.maybeStringToMaybeInt model.bbBirthWeight)
                 bFedDatetime
-                nbsDatetime
-                model.bbNbsResult
-                bcgDatetime
                 model.bbBulb
                 model.bbMachine
                 model.bbFreeFlowO2

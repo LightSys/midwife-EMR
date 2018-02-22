@@ -132,9 +132,6 @@ type alias BabyRecord =
     , sex : MaleFemale
     , birthWeight : Maybe Int
     , bFedEstablished : Maybe Date
-    , nbsDate : Maybe Date
-    , nbsResult : Maybe String
-    , bcgDate : Maybe Date
     , bulb : Maybe Bool
     , machine : Maybe Bool
     , freeFlowO2 : Maybe Bool
@@ -154,9 +151,6 @@ type alias BabyRecordNew =
     , sex : MaleFemale
     , birthWeight : Maybe Int
     , bFedEstablished : Maybe Date
-    , nbsDate : Maybe Date
-    , nbsResult : Maybe String
-    , bcgDate : Maybe Date
     , bulb : Maybe Bool
     , machine : Maybe Bool
     , freeFlowO2 : Maybe Bool
@@ -178,9 +172,6 @@ babyRecordNewToBabyRecord (BabyId id) babyNew =
         babyNew.sex
         babyNew.birthWeight
         babyNew.bFedEstablished
-        babyNew.nbsDate
-        babyNew.nbsResult
-        babyNew.bcgDate
         babyNew.bulb
         babyNew.machine
         babyNew.freeFlowO2
@@ -218,9 +209,6 @@ babyRecordNewToValue rec =
                 , ( "sex", (maleFemaleToString rec.sex |> JE.string) )
                 , ( "birthWeight", (JEE.maybe JE.int rec.birthWeight) )
                 , ( "bFedEstablished", (JEE.maybe U.dateToStringValue rec.bFedEstablished) )
-                , ( "nbsDate", (JEE.maybe U.dateToStringValue rec.nbsDate) )
-                , ( "nbsResult", (JEE.maybe JE.string rec.nbsResult) )
-                , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
                 , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
                 , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
                 , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
@@ -248,9 +236,6 @@ babyRecordToValue rec =
                 , ( "sex", (maleFemaleToString rec.sex |> JE.string) )
                 , ( "birthWeight", (JEE.maybe JE.int rec.birthWeight) )
                 , ( "bFedEstablished", (JEE.maybe U.dateToStringValue rec.bFedEstablished) )
-                , ( "nbsDate", (JEE.maybe U.dateToStringValue rec.nbsDate) )
-                , ( "nbsResult", (JEE.maybe JE.string rec.nbsResult) )
-                , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
                 , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
                 , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
                 , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
@@ -282,9 +267,6 @@ babyRecord =
         |> JDP.required "sex" (JD.string |> maleFemale)
         |> JDP.required "birthWeight" (JD.maybe JD.int)
         |> JDP.required "bFedEstablished" (JD.maybe JDE.date)
-        |> JDP.required "nbsDate" (JD.maybe JDE.date)
-        |> JDP.required "nbsResult" (JD.maybe JD.string)
-        |> JDP.required "bcgDate" (JD.maybe JDE.date)
         |> JDP.required "bulb" U.maybeIntToMaybeBool
         |> JDP.required "machine" U.maybeIntToMaybeBool
         |> JDP.required "freeFlowO2" U.maybeIntToMaybeBool
@@ -308,8 +290,6 @@ isBabyRecordFullyComplete rec =
             || (U.validatePopulatedString rec.firstname)
             || ((Maybe.withDefault 0 rec.birthWeight) <= 0)
             || (U.validateDate rec.bFedEstablished)
-            || (U.validateDate rec.nbsDate)
-            || (U.validateDate rec.bcgDate)
         )
 
 

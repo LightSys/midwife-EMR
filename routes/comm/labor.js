@@ -47,7 +47,7 @@ var _ = require('underscore')
 // are no date fields present in the table.
 // --------------------------------------------------------
 moduleTables.apgar = [];
-moduleTables.baby = ['bFedEstablished', 'nbsDate', 'bcgDate'];
+moduleTables.baby = ['bFedEstablished' ];
 moduleTables.babyMedication = ['medicationDate'];
 moduleTables.babyLab = ['dateTime'];
 moduleTables.babyVaccination = ['vaccinationDate'];
@@ -208,9 +208,6 @@ var addBaby = function(data, userInfo, cb) {
         sex: data.sex,
         birthWeight: data.birthWeight,
         bFedEstablished: data.bFedEstablished,
-        nbsDate: data.nbsDate,
-        nbsResult: data.nbsResult,
-        bcgDate: data.bcgDate,
         bulb: data.bulb,
         machine: data.machine,
         freeFlowO2: data.freeFlowO2,
@@ -291,9 +288,6 @@ var updateBaby = function(data, userInfo, cb) {
         sex: data.sex,
         birthWeight: data.birthWeight,
         bFedEstablished: data.bFedEstablished,
-        nbsDate: data.nbsDate,
-        nbsResult: data.nbsResult,
-        bcgDate: data.bcgDate,
         bulb: data.bulb,
         machine: data.machine,
         freeFlowO2: data.freeFlowO2,
