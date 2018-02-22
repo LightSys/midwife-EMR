@@ -91,5 +91,9 @@ module.exports = {
   , BabyVaccinationTypes: require('./BabyVaccinationType').BabyVaccinationTypes
   , BabyVaccination: require('./BabyVaccination').BabyVaccination
   , BabyVaccinations: require('./BabyVaccination').BabyVaccinations
+  , BabyLabType: require('./BabyLabType').BabyLabType
+  , BabyLabTypes: require('./BabyLabType').BabyLabTypes
+  , BabyLab: require('./BabyLab').BabyLab
+  , BabyLabs: require('./BabyLab').BabyLabs
 };
 

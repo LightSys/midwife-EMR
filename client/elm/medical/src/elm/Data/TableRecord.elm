@@ -12,6 +12,8 @@ import Json.Decode.Pipeline as JDP
 
 import Data.Baby exposing (BabyRecord, babyRecord)
 import Data.BabyMedication exposing (BabyMedicationRecord, babyMedicationRecord)
+import Data.BabyLab exposing (BabyLabRecord, babyLabRecord)
+import Data.BabyLabType exposing (BabyLabTypeRecord, babyLabTypeRecord)
 import Data.BabyMedicationType exposing (BabyMedicationTypeRecord, babyMedicationTypeRecord)
 import Data.BabyVaccination exposing (BabyVaccinationRecord, babyVaccinationRecord)
 import Data.BabyVaccinationType exposing (BabyVaccinationTypeRecord, babyVaccinationTypeRecord)
@@ -30,6 +32,8 @@ import Data.Table as DT exposing (Table(..))
 
 type TableRecord
     = TableRecordBaby (List BabyRecord)
+    | TableRecordBabyLab (List BabyLabRecord)
+    | TableRecordBabyLabType (List BabyLabTypeRecord)
     | TableRecordBabyMedication (List BabyMedicationRecord)
     | TableRecordBabyMedicationType (List BabyMedicationTypeRecord)
     | TableRecordBabyVaccination (List BabyVaccinationRecord)
@@ -51,6 +55,12 @@ tableRecord table =
     case table of
         Baby ->
             JD.map TableRecordBaby (JD.list babyRecord)
+
+        BabyLab ->
+            JD.map TableRecordBabyLab (JD.list babyLabRecord)
+
+        BabyLabType ->
+            JD.map TableRecordBabyLabType (JD.list babyLabTypeRecord)
 
         BabyMedication ->
             JD.map TableRecordBabyMedication (JD.list babyMedicationRecord)

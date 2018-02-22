@@ -588,3 +588,11 @@ VALUES
   ('BCG (Bacillus Calmette-Guerin)', 'BCG (Bacillus Calmette-Guerin)', 0, 1, NOW())
 ;
 
+SELECT 'babyLabType' AS 'Loading' FROM DUAL;
+INSERT INTO babyLabType
+  (name, description, fld1Name, fld1Type, fld2Name, fld2Type,
+  fld3Name, fld3Type, fld4Name, fld4Type, active, updatedBy, updatedAt)
+VALUES
+  ('Newborn Screening', 'Newborn Screening', 'Filter Card #', 'Integer',
+  'Result', 'String', NULL, NULL, NULL, NULL, 1, 1, NOW())
+;

@@ -16,6 +16,7 @@ var _ = require('underscore')
   , Apgar = require('../../models').Apgar
   , Baby = require('../../models').Baby
   , BabyMedication = require('../../models').BabyMedication
+  , BabyLab = require('../../models').BabyLab
   , BabyVaccination = require('../../models').BabyVaccination
   , ContPostpartumCheck = require('../../models').ContPostpartumCheck
   , Labor = require('../../models').Labor
@@ -48,6 +49,7 @@ var _ = require('underscore')
 moduleTables.apgar = [];
 moduleTables.baby = ['bFedEstablished', 'nbsDate', 'bcgDate'];
 moduleTables.babyMedication = ['medicationDate'];
+moduleTables.babyLab = ['dateTime'];
 moduleTables.babyVaccination = ['vaccinationDate'];
 moduleTables.contPostpartumCheck = ['checkDatetime'];
 moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
@@ -422,6 +424,16 @@ var updateBaby = function(data, userInfo, cb) {
   });
 };
 
+var addBabyLab = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBabyLab(data, cb);
+  addTable(data, userInfo, cb, BabyLab, 'babyLab');
+};
+
+var updateBabyLab = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBabyLab(data, cb);
+  updateTable(data, userInfo, cb, BabyLab, 'babyLab');
+};
+
 var addBabyMedication = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addBabyMedication(data, cb);
   addTable(data, userInfo, cb, BabyMedication, 'babyMedication');
@@ -525,6 +537,9 @@ module.exports = {
   addBaby,
   updateBaby,
   delBaby: notDefinedYet,
+  addBabyLab,
+  updateBabyLab,
+  delBabyLab: notDefinedYet,
   addBabyMedication,
   updateBabyMedication,
   delBabyMedication: notDefinedYet,

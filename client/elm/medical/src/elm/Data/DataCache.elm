@@ -12,6 +12,8 @@ import Dict exposing (Dict)
 -- LOCAL IMPORTS --
 
 import Data.Baby exposing (BabyRecord)
+import Data.BabyLab exposing (BabyLabRecord)
+import Data.BabyLabType exposing (BabyLabTypeRecord)
 import Data.BabyMedication exposing (BabyMedicationRecord)
 import Data.BabyMedicationType exposing (BabyMedicationTypeRecord)
 import Data.BabyVaccination exposing (BabyVaccinationRecord)
@@ -33,6 +35,8 @@ import Data.Table exposing (stringToTable, tableToString, Table(..))
 -}
 type DataCache
     = BabyDataCache BabyRecord
+    | BabyLabDataCache (List BabyLabRecord)
+    | BabyLabTypeDataCache (List BabyLabTypeRecord)
     | BabyMedicationDataCache (List BabyMedicationRecord)
     | BabyMedicationTypeDataCache (List BabyMedicationTypeRecord)
     | BabyVaccinationDataCache (List BabyVaccinationRecord)
@@ -58,6 +62,12 @@ getTableString dc =
     case dc of
         BabyDataCache _ ->
             tableToString Baby
+
+        BabyLabDataCache _ ->
+            tableToString BabyLab
+
+        BabyLabTypeDataCache _ ->
+            tableToString BabyLabType
 
         BabyMedicationDataCache _ ->
             tableToString BabyMedication

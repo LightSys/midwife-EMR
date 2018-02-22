@@ -14,6 +14,8 @@ import Json.Encode as JE
 type Table
     = Unknown
     | Baby
+    | BabyLab
+    | BabyLabType
     | BabyMedication
     | BabyMedicationType
     | BabyVaccination
@@ -46,6 +48,12 @@ tableToString tbl =
 
         Baby ->
             "baby"
+
+        BabyLab ->
+            "babyLab"
+
+        BabyLabType ->
+            "babyLabType"
 
         BabyMedication ->
             "babyMedication"
@@ -95,6 +103,12 @@ stringToTable tbl =
     case tbl of
         "baby" ->
             Baby
+
+        "babyLab" ->
+            BabyLab
+
+        "babyLabType" ->
+            BabyLabType
 
         "babyMedication" ->
             BabyMedication

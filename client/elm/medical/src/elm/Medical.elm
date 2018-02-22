@@ -16,6 +16,7 @@ import Window
 
 import Data.Admitting exposing (AdmittingSubMsg(..))
 import Data.Baby exposing (BabyId(..), babyRecordNewToBabyRecord)
+import Data.BabyLab exposing (BabyLabId(..), babyLabRecordNewToBabyLabRecord)
 import Data.BabyMedication exposing (BabyMedicationId(..), babyMedicationRecordNewToBabyMedicationRecord)
 import Data.BabyVaccination exposing (BabyVaccinationId(..), babyVaccinationRecordNewToBabyVaccinationRecord)
 import Data.ContPP exposing (SubMsg(..))
@@ -649,6 +650,29 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddBabyLabType (ContPPMsg (Data.ContPP.DataCache _ _)) babyLabRecordNew) ->
+                                    -- Note: this is BabyLabRecord, not BabyLabTypeRecord.
+                                    let
+                                        babyLabRec =
+                                            babyLabRecordNewToBabyLabRecord
+                                                (BabyLabId dataAddMsg.response.id)
+                                                babyLabRecordNew
+
+                                        dc =
+                                            case DCache.get BabyLab model.dataCache of
+                                                Just (BabyLabDataCache recs) ->
+                                                    DCache.put (BabyLabDataCache (babyLabRec :: recs)) model.dataCache
+
+                                                _ ->
+                                                    DCache.put (BabyLabDataCache ([ babyLabRec ])) model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyLab ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (AddBabyMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyMedicationRecordNew) ->
                                     -- Note: this is BabyMedicationRecord, not BabyMedicationTypeRecord.
                                     let
@@ -853,6 +877,30 @@ updateMessage incoming model =
                                     in
                                         ( { model | dataCache = DCache.put (BabyDataCache babyRecord) model.dataCache }
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                        )
+
+                                Just (UpdateBabyLabType (ContPPMsg (Data.ContPP.DataCache _ _)) babyLabRecord) ->
+                                    let
+                                        -- Updating the data cache with the updated record.
+                                        dc =
+                                            case DCache.get BabyLab model.dataCache of
+                                                Just (BabyLabDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            LE.replaceIf (\b -> b.id == babyLabRecord.id)
+                                                                babyLabRecord
+                                                                recs
+                                                    in
+                                                    DCache.put (BabyLabDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyLab ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
                                         )
 
                                 Just (UpdateBabyMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyMedicationRecord) ->
@@ -1065,6 +1113,14 @@ updateMessage incoming model =
                                                     , dataCache = dc
                                                 }
 
+                                        TableRecordBabyLab recs ->
+                                            { mdl | dataCache = DCache.put (BabyLabDataCache recs) mdl.dataCache }
+
+                                        TableRecordBabyLabType recs ->
+                                            -- This is a lookup table, so we always replace the contents
+                                            -- of the data cache with what we receive.
+                                            { mdl | dataCache = DCache.put (BabyLabTypeDataCache recs) mdl.dataCache }
+
                                         TableRecordBabyMedication recs ->
                                             { mdl | dataCache = DCache.put (BabyMedicationDataCache recs) mdl.dataCache }
 
@@ -1227,6 +1283,9 @@ updateMessage incoming model =
                         Just (AddBabyType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
+                        Just (AddBabyLabType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
                         Just (AddBabyMedicationType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
@@ -1240,6 +1299,9 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateBabyType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateBabyLabType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateBabyMedicationType msg _) ->

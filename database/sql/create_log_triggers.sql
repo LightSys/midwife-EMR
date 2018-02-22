@@ -42,6 +42,90 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: babyLab_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLab_after_insert;
+CREATE TRIGGER babyLab_after_insert AFTER INSERT ON babyLab
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabLog
+  (id, babyLabType, dateTime, fld1Value, fld2Value, fld3Value, fld4Value, initials, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyLabType, NEW.dateTime, NEW.fld1Value, NEW.fld2Value, NEW.fld3Value, NEW.fld4Value, NEW.initials, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLab_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLab_after_update;
+CREATE TRIGGER babyLab_after_update AFTER UPDATE ON babyLab
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabLog
+  (id, babyLabType, dateTime, fld1Value, fld2Value, fld3Value, fld4Value, initials, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyLabType, NEW.dateTime, NEW.fld1Value, NEW.fld2Value, NEW.fld3Value, NEW.fld4Value, NEW.initials, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLab_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLab_after_delete;
+CREATE TRIGGER babyLab_after_delete AFTER DELETE ON babyLab
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabLog
+  (id, babyLabType, dateTime, fld1Value, fld2Value, fld3Value, fld4Value, initials, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.babyLabType, OLD.dateTime, OLD.fld1Value, OLD.fld2Value, OLD.fld3Value, OLD.fld4Value, OLD.initials, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLabType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLabType_after_insert;
+CREATE TRIGGER babyLabType_after_insert AFTER INSERT ON babyLabType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabTypeLog
+  (id, name, description, fld1Name, fld1Type, fld2Name, fld2Type, fld3Name, fld3Type, fld4Name, fld4Type, active, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.fld1Name, NEW.fld1Type, NEW.fld2Name, NEW.fld2Type, NEW.fld3Name, NEW.fld3Type, NEW.fld4Name, NEW.fld4Type, NEW.active, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLabType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLabType_after_update;
+CREATE TRIGGER babyLabType_after_update AFTER UPDATE ON babyLabType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabTypeLog
+  (id, name, description, fld1Name, fld1Type, fld2Name, fld2Type, fld3Name, fld3Type, fld4Name, fld4Type, active, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.fld1Name, NEW.fld1Type, NEW.fld2Name, NEW.fld2Type, NEW.fld3Name, NEW.fld3Type, NEW.fld4Name, NEW.fld4Type, NEW.active, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLabType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLabType_after_delete;
+CREATE TRIGGER babyLabType_after_delete AFTER DELETE ON babyLabType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabTypeLog
+  (id, name, description, fld1Name, fld1Type, fld2Name, fld2Type, fld3Name, fld3Type, fld4Name, fld4Type, active, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.fld1Name, OLD.fld1Type, OLD.fld2Name, OLD.fld2Type, OLD.fld3Name, OLD.fld3Type, OLD.fld4Name, OLD.fld4Type, OLD.active, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: baby_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

@@ -114,3 +114,10 @@ type Field
     | BabyVacLocationFld
     | BabyVacInitialsFld
     | BabyVacCommentsFld
+    | BabyLabDateFld
+    | BabyLabTimeFld
+    | BabyLabFld1ValueFld
+    | BabyLabFld2ValueFld
+    | BabyLabFld3ValueFld
+    | BabyLabFld4ValueFld
+    | BabyLabInitialsFld

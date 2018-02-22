@@ -79,7 +79,6 @@ Baby = Bookshelf.Model.extend({
       return this.hasMany(require('./Apgar').Apgar, 'labor_id');
     }
 
-
 }, {
   // --------------------------------------------------------
   // Class Properties.

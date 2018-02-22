@@ -865,4 +865,44 @@ CREATE TABLE IF NOT EXISTS `babyVaccination` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+-- Changes to records of this table, except for the description
+-- and active fields, must not be allowed if dependent
+-- records in the babyLab table exist.
+CREATE TABLE IF NOT EXISTS `babyLabType` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(200) NULL,
+  fld1Name VARCHAR(50) NOT NULL,
+  fld1Type ENUM('String', 'Integer', 'Float', 'Bool') NOT NULL DEFAULT 'String',
+  fld2Name VARCHAR(50) NULL,
+  fld2Type ENUM('String', 'Integer', 'Float', 'Bool') NULL,
+  fld3Name VARCHAR(50) NULL,
+  fld3Type ENUM('String', 'Integer', 'Float', 'Bool') NULL,
+  fld4Name VARCHAR(50) NULL,
+  fld4Type ENUM('String', 'Integer', 'Float', 'Bool') NULL,
+  active BOOLEAN NOT NULL DEFAULT 1,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `babyLab` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  babyLabType INT NOT NULL,
+  dateTime DATETIME NOT NULL,
+  fld1Value VARCHAR(300) NULL,
+  fld2Value VARCHAR(300) NULL,
+  fld3Value VARCHAR(300) NULL,
+  fld4Value VARCHAR(300) NULL,
+  initials VARCHAR(50) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  baby_id INT NOT NULL,
+  FOREIGN KEY (baby_id) REFERENCES baby (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (babyLabType) REFERENCES babyLabType (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;
