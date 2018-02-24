@@ -26,6 +26,8 @@ type Table
     | LaborStage2
     | LaborStage3
     | Membrane
+    | MotherMedication
+    | MotherMedicationType
     | NewbornExam
     | Patient
     | Pregnancy
@@ -85,6 +87,12 @@ tableToString tbl =
         Membrane ->
             "membrane"
 
+        MotherMedication ->
+            "motherMedication"
+
+        MotherMedicationType ->
+            "motherMedicationType"
+
         NewbornExam ->
             "newbornExam"
 
@@ -139,6 +147,12 @@ stringToTable tbl =
 
         "membrane" ->
             Membrane
+
+        "motherMedication" ->
+            MotherMedication
+
+        "motherMedicationType" ->
+            MotherMedicationType
 
         "newbornExam" ->
             NewbornExam

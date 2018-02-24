@@ -902,4 +902,30 @@ CREATE TABLE IF NOT EXISTS `babyLab` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `motherMedicationType` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(100) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS `motherMedication` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  motherMedicationType INT NOT NULL,
+  medicationDate DATETIME NOT NULL,
+  initials VARCHAR(50) NULL,
+  comments VARCHAR(100) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE (labor_id, motherMedicationType),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (motherMedicationType) REFERENCES motherMedicationType (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;

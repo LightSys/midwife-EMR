@@ -29,6 +29,7 @@ type SubMsg
     | DataCache (Maybe (Dict String DataCache)) (Maybe (List Table))
     | HandleNewbornExamModal Dialog
     | HandleBabyMedVacLabModal Dialog (Maybe MedVacLab)
+    | HandleMotherMedicationModal Dialog (Maybe Int)
     | HandleContPostpartumCheckModal Dialog (Maybe ContPostpartumCheckId)
       -- These two are used for browsers that do not support the
       -- input date type and require the use of jQueryUI datepicker.
@@ -121,3 +122,7 @@ type Field
     | BabyLabFld3ValueFld
     | BabyLabFld4ValueFld
     | BabyLabInitialsFld
+    | MotherMedDateFld
+    | MotherMedTimeFld
+    | MotherMedInitialsFld
+    | MotherMedCommentsFld

@@ -364,3 +364,22 @@ ALTER TABLE babyLabLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE babyLabLog DROP PRIMARY KEY;
 ALTER TABLE babyLabLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating motherMedicationTypeLog
+SELECT 'motherMedicationTypeLog' AS Creating FROM DUAL;
+CREATE TABLE motherMedicationTypeLog LIKE motherMedicationType;
+ALTER TABLE motherMedicationTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE motherMedicationTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE motherMedicationTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE motherMedicationTypeLog DROP PRIMARY KEY;
+ALTER TABLE motherMedicationTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating motherMedicationLog
+SELECT 'motherMedicationLog' AS Creating FROM DUAL;
+CREATE TABLE motherMedicationLog LIKE motherMedication;
+ALTER TABLE motherMedicationLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE motherMedicationLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE motherMedicationLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE motherMedicationLog DROP PRIMARY KEY;
+ALTER TABLE motherMedicationLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE motherMedicationLog DROP KEY labor_id;
+--

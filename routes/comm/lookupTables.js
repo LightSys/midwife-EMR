@@ -28,6 +28,8 @@ var _ = require('underscore')
   , LabTestValue = require('../../models').LabTestValue
   , MedicationType = require('../../models').MedicationType
   , Membrane = require('../../models').Membrane
+  , MotherMedication = require('../../models').MotherMedication
+  , MotherMedicationType = require('../../models').MotherMedicationType
   , NewbornExam = require('../../models').NewbornExam
   , SelectData = require('../../models').SelectData
   , VaccinationType = require('../../models').VaccinationType
@@ -69,6 +71,8 @@ var LOOKUP_TABLES = [
   'labTestValue',
   'medicationType',
   'membrane',
+  'motherMedication',
+  'motherMedicationType',
   'newbornExam',
   'patient',
   'pregnancy',

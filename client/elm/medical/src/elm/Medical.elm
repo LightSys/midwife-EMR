@@ -29,6 +29,7 @@ import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLabor
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
+import Data.MotherMedication exposing (MotherMedicationId(..), motherMedicationRecordNewToMotherMedicationRecord)
 import Data.Membrane exposing (membraneRecordNewToMembraneRecord, MembraneId(..))
 import Data.NewbornExam exposing (NewbornExamId(..), newbornExamRecordNewToNewbornExamRecord)
 import Data.Postpartum exposing (SubMsg(..))
@@ -328,7 +329,7 @@ update msg noAutoTouchModel =
                 let
                     -- Get the labor stage records from the data cache which the
                     -- init function just requested records from the server for.
-                    ( stage1, stage2, stage3, contPPCheck ) =
+                    ( stage1, stage2, stage3, contPPCheck, motherMedication ) =
                         ( case DCache.get LaborStage1 model.dataCache of
                             Just (LaborStage1DataCache s1) ->
                                 Just s1
@@ -354,6 +355,13 @@ update msg noAutoTouchModel =
 
                             _ ->
                                 []
+
+                        , case DCache.get MotherMedication model.dataCache of
+                            Just (MotherMedicationDataCache recs) ->
+                                recs
+
+                            _ ->
+                                []
                         )
 
                     ( subModel, newStore, newCmd ) =
@@ -362,6 +370,7 @@ update msg noAutoTouchModel =
                             stage2
                             stage3
                             contPPCheck
+                            motherMedication
                             model.babyRecords
                             model.browserSupportsDate
                             model.currTime
@@ -816,6 +825,29 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddMotherMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) motherMedicationRecordNew) ->
+                                    -- Note: this is MotherMedicationRecord, not MotherMedicationTypeRecord.
+                                    let
+                                        motherMedicationRec =
+                                            motherMedicationRecordNewToMotherMedicationRecord
+                                                (MotherMedicationId dataAddMsg.response.id)
+                                                motherMedicationRecordNew
+
+                                        dc =
+                                            case DCache.get MotherMedication model.dataCache of
+                                                Just (MotherMedicationDataCache recs) ->
+                                                    DCache.put (MotherMedicationDataCache (motherMedicationRec :: recs)) model.dataCache
+
+                                                _ ->
+                                                    DCache.put (MotherMedicationDataCache ([ motherMedicationRec ])) model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ MotherMedication ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (AddNewbornExamType (ContPPMsg (Data.ContPP.DataCache _ _)) newbornExamRecordNew) ->
                                     let
                                         newbornExamRec =
@@ -1043,6 +1075,30 @@ updateMessage incoming model =
                                         , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                         )
 
+                                Just (UpdateMotherMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) motherMedicationRecord) ->
+                                    let
+                                        -- Updating the data cache with the updated record.
+                                        dc =
+                                            case DCache.get MotherMedication model.dataCache of
+                                                Just (MotherMedicationDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            LE.replaceIf (\b -> b.id == motherMedicationRecord.id)
+                                                                motherMedicationRecord
+                                                                recs
+                                                    in
+                                                    DCache.put (MotherMedicationDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ MotherMedication ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (UpdateNewbornExamType (ContPPMsg (Data.ContPP.DataCache _ _)) newbornExamRecord) ->
                                     let
                                         subMsg =
@@ -1210,6 +1266,14 @@ updateMessage incoming model =
                                             in
                                                 { mdl | dataCache = dc }
 
+                                        TableRecordMotherMedication recs ->
+                                            { mdl | dataCache = DCache.put (MotherMedicationDataCache recs) mdl.dataCache }
+
+                                        TableRecordMotherMedicationType recs ->
+                                            -- This is a lookup table, so we always replace the contents
+                                            -- of the data cache with what we receive.
+                                            { mdl | dataCache = DCache.put (MotherMedicationTypeDataCache recs) mdl.dataCache }
+
                                         TableRecordNewbornExam recs ->
                                             let
                                                 dc =
@@ -1295,6 +1359,9 @@ updateMessage incoming model =
                         Just (AddContPostpartumCheckType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
+                        Just (AddMotherMedicationType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
                         Just (UpdateContPostpartumCheckType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
@@ -1338,6 +1405,9 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateMembraneType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateMotherMedicationType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (AddNewbornExamType msg _) ->

@@ -24,6 +24,8 @@ import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record)
 import Data.Membrane exposing (MembraneRecord)
+import Data.MotherMedication exposing (MotherMedicationRecord)
+import Data.MotherMedicationType exposing (MotherMedicationTypeRecord)
 import Data.NewbornExam exposing (NewbornExamRecord)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
@@ -47,6 +49,8 @@ type DataCache
     | LaborStage2DataCache LaborStage2Record
     | LaborStage3DataCache LaborStage3Record
     | MembraneDataCache MembraneRecord
+    | MotherMedicationDataCache (List MotherMedicationRecord)
+    | MotherMedicationTypeDataCache (List MotherMedicationTypeRecord)
     | NewbornExamDataCache NewbornExamRecord
     | PatientDataCache PatientRecord
     | PregnancyDataCache PregnancyRecord
@@ -98,6 +102,12 @@ getTableString dc =
 
         MembraneDataCache _ ->
             tableToString Membrane
+
+        MotherMedicationDataCache _ ->
+            tableToString MotherMedication
+
+        MotherMedicationTypeDataCache _ ->
+            tableToString MotherMedicationType
 
         NewbornExamDataCache _ ->
             tableToString NewbornExam

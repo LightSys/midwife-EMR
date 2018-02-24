@@ -596,3 +596,11 @@ VALUES
   ('Newborn Screening', 'Newborn Screening', 'Filter Card #', 'Integer',
   'Result', 'String', NULL, NULL, NULL, NULL, 1, 1, NOW())
 ;
+
+SELECT 'motherMedicationType' AS 'Loading' FROM DUAL;
+INSERT INTO motherMedicationType
+  (name, description, updatedBy, updatedAt)
+VALUES
+  ('Vitamin A', 'Vitamin A', 1, NOW())
+;
+

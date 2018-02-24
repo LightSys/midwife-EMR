@@ -35,6 +35,7 @@ import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
 import Data.LaborStage3 exposing (LaborStage3Record, LaborStage3RecordNew)
 import Data.Membrane exposing (MembraneRecordNew, MembraneRecord)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
+import Data.MotherMedication exposing (MotherMedicationRecord, MotherMedicationRecordNew)
 import Data.NewbornExam exposing (NewbornExamRecord, NewbornExamRecordNew)
 import Data.Postpartum as Postpartum
 import Data.Pregnancy exposing (PregnancyId)
@@ -124,6 +125,7 @@ type ProcessType
     | AddLaborStage2Type Msg LaborStage2RecordNew
     | AddLaborStage3Type Msg LaborStage3RecordNew
     | AddMembraneType Msg MembraneRecordNew
+    | AddMotherMedicationType Msg MotherMedicationRecordNew
     | AddNewbornExamType Msg NewbornExamRecordNew
     | UpdateBabyType Msg BabyRecord
     | UpdateBabyLabType Msg BabyLabRecord
@@ -135,5 +137,6 @@ type ProcessType
     | UpdateLaborStage2Type Msg LaborStage2Record
     | UpdateLaborStage3Type Msg LaborStage3Record
     | UpdateMembraneType Msg MembraneRecord
+    | UpdateMotherMedicationType Msg MotherMedicationRecord
     | UpdateNewbornExamType Msg NewbornExamRecord
     | SelectQueryType Msg SelectQuery

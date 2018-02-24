@@ -140,6 +140,30 @@ var updateMembrane = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
+var addMotherMedication = function(data, cb) {
+  var m = msg('labor_assert/addMotherMedication()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id')); // Adding a record should not have an id.
+  assert.ok(_.has(data, 'motherMedicationType'), m('data.motherMedicationType'));
+  assert.ok(_.isNumber(data.motherMedicationType), m('data.motherMedicationType is a number'));
+  assert.ok(_.has(data, 'medicationDate'), m('data.medicationDate'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
+var updateMotherMedication = function(data, cb) {
+  var m = msg('labor_assert/updateMotherMedication()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.has(data, 'motherMedicationType'), m('data.motherMedicationType'));
+  assert.ok(_.isNumber(data.motherMedicationType), m('data.motherMedicationType is a number'));
+  assert.ok(_.has(data, 'medicationDate'), m('data.medicationDate'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addApgar = function(data, cb) {
   var m = msg('labor_assert/addApgar()');
   if (verbose) console.log(m());
@@ -295,6 +319,8 @@ module.exports = {
   updateLaborStage3,
   addMembrane,
   updateMembrane,
+  addMotherMedication,
+  updateMotherMedication,
   addNewbornExam,
   updateNewbornExam
 };

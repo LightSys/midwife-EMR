@@ -24,6 +24,7 @@ var _ = require('underscore')
   , LaborStage2 = require('../../models').LaborStage2
   , LaborStage3 = require('../../models').LaborStage3
   , Membrane = require('../../models').Membrane
+  , MotherMedication = require('../../models').MotherMedication
   , NewbornExam = require('../../models').NewbornExam
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
@@ -57,6 +58,7 @@ moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
 moduleTables.laborStage3 = ['placentaDatetime'];
 moduleTables.membrane = ['ruptureDatetime'];
+moduleTables.motherMedication = ['medicationDate'];
 moduleTables.newbornExam = ['examDatetime'];
 
 /* --------------------------------------------------------
@@ -508,6 +510,16 @@ var updateMembrane = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, Membrane, 'membrane');
 };
 
+var addMotherMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addMotherMedication(data, cb);
+  addTable(data, userInfo, cb, MotherMedication, 'motherMedication');
+};
+
+var updateMotherMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateMotherMedication(data, cb);
+  updateTable(data, userInfo, cb, MotherMedication, 'motherMedication');
+};
+
 var addNewbornExam = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addNewbornExam(data, cb);
   addTable(data, userInfo, cb, NewbornExam, 'newbornExam');
@@ -558,6 +570,9 @@ module.exports = {
   addMembrane,
   updateMembrane,
   delMembrane: notDefinedYet,
+  addMotherMedication,
+  updateMotherMedication,
+  delMotherMedication: notDefinedYet,
   addNewbornExam,
   updateNewbornExam,
   delNewbornExam : notDefinedYet

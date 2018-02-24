@@ -966,6 +966,90 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: motherMedication_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedication_after_insert;
+CREATE TRIGGER motherMedication_after_insert AFTER INSERT ON motherMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationLog
+  (id, motherMedicationType, medicationDate, initials, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.motherMedicationType, NEW.medicationDate, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedication_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedication_after_update;
+CREATE TRIGGER motherMedication_after_update AFTER UPDATE ON motherMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationLog
+  (id, motherMedicationType, medicationDate, initials, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.motherMedicationType, NEW.medicationDate, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedication_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedication_after_delete;
+CREATE TRIGGER motherMedication_after_delete AFTER DELETE ON motherMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationLog
+  (id, motherMedicationType, medicationDate, initials, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.motherMedicationType, OLD.medicationDate, OLD.initials, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedicationType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedicationType_after_insert;
+CREATE TRIGGER motherMedicationType_after_insert AFTER INSERT ON motherMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationTypeLog
+  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedicationType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedicationType_after_update;
+CREATE TRIGGER motherMedicationType_after_update AFTER UPDATE ON motherMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationTypeLog
+  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedicationType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedicationType_after_delete;
+CREATE TRIGGER motherMedicationType_after_delete AFTER DELETE ON motherMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationTypeLog
+  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: newbornExam_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

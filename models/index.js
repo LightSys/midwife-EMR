@@ -95,5 +95,9 @@ module.exports = {
   , BabyLabTypes: require('./BabyLabType').BabyLabTypes
   , BabyLab: require('./BabyLab').BabyLab
   , BabyLabs: require('./BabyLab').BabyLabs
+  , MotherMedicationType: require('./MotherMedicationType').MotherMedicationType
+  , MotherMedicationTypes: require('./MotherMedicationType').MotherMedicationTypes
+  , MotherMedication: require('./MotherMedication').MotherMedication
+  , MotherMedications: require('./MotherMedication').MotherMedications
 };
 
