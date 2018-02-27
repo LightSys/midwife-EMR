@@ -28,6 +28,7 @@ import Data.ContPostpartumCheck
         , ContPostpartumCheckRecordNew
         )
 import Data.DatePicker exposing (DateField, DateFieldMessage)
+import Data.Discharge exposing (DischargeRecord, DischargeRecordNew)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
 import Data.LaborStage1 exposing (LaborStage1Record, LaborStage1RecordNew)
@@ -120,6 +121,7 @@ type ProcessType
     | AddBabyMedicationType Msg BabyMedicationRecordNew
     | AddBabyVaccinationType Msg BabyVaccinationRecordNew
     | AddContPostpartumCheckType Msg ContPostpartumCheckRecordNew
+    | AddDischargeType Msg DischargeRecordNew
     | AddLaborType Msg LaborRecordNew
     | AddLaborStage1Type Msg LaborStage1RecordNew
     | AddLaborStage2Type Msg LaborStage2RecordNew
@@ -132,6 +134,7 @@ type ProcessType
     | UpdateBabyMedicationType Msg BabyMedicationRecord
     | UpdateBabyVaccinationType Msg BabyVaccinationRecord
     | UpdateContPostpartumCheckType Msg ContPostpartumCheckRecord
+    | UpdateDischargeType Msg DischargeRecord
     | UpdateLaborType Msg LaborRecord
     | UpdateLaborStage1Type Msg LaborStage1Record
     | UpdateLaborStage2Type Msg LaborStage2Record

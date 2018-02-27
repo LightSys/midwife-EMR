@@ -45,6 +45,7 @@ type DateField
       -- the second Int is the find grained identifier
       -- which can be correlated to an id of some sort.
     | DynamicDateField Int Int
+    | DischargeDateField
 
 
 dynamicRegex : Regex
@@ -75,6 +76,9 @@ stringToDateField str =
 
         "contPostpartumCheckId" ->
             ContPostpartumCheckDateField
+
+        "dischargeDateId" ->
+            DischargeDateField
 
         "falseLaborDateId" ->
             FalseLaborDateField
@@ -165,6 +169,9 @@ dateFieldToString df =
 
         ContPostpartumCheckDateField ->
             "contPostpartumCheckId"
+
+        DischargeDateField ->
+            "dischargeDateId"
 
         FalseLaborDateField ->
             "falseLaborDateId"

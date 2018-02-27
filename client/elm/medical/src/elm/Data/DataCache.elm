@@ -19,6 +19,7 @@ import Data.BabyMedicationType exposing (BabyMedicationTypeRecord)
 import Data.BabyVaccination exposing (BabyVaccinationRecord)
 import Data.BabyVaccinationType exposing (BabyVaccinationTypeRecord)
 import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord)
+import Data.Discharge exposing (DischargeRecord)
 import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
@@ -44,6 +45,7 @@ type DataCache
     | BabyVaccinationDataCache (List BabyVaccinationRecord)
     | BabyVaccinationTypeDataCache (List BabyVaccinationTypeRecord)
     | ContPostpartumCheckDataCache (List ContPostpartumCheckRecord)
+    | DischargeDataCache DischargeRecord
     | LaborDataCache (Dict Int LaborRecord)
     | LaborStage1DataCache LaborStage1Record
     | LaborStage2DataCache LaborStage2Record
@@ -87,6 +89,9 @@ getTableString dc =
 
         ContPostpartumCheckDataCache _ ->
             tableToString ContPostpartumCheck
+
+        DischargeDataCache _ ->
+            tableToString Discharge
 
         LaborDataCache _ ->
             tableToString Labor

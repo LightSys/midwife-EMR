@@ -3,6 +3,7 @@ module Data.MotherMedicationType
         ( MotherMedicationTypeId(..)
         , MotherMedicationTypeRecord
         , motherMedicationTypeRecord
+        , getByName
         , getName
         )
 
@@ -44,3 +45,8 @@ getName id recsList =
         Nothing ->
             Nothing
 
+getByName : String -> List MotherMedicationTypeRecord -> Maybe MotherMedicationTypeRecord
+getByName name recsList =
+    LE.find
+        (\r -> String.contains (String.toLower name) (String.toLower r.name))
+        recsList

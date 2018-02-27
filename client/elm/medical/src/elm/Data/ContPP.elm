@@ -30,6 +30,7 @@ type SubMsg
     | HandleNewbornExamModal Dialog
     | HandleBabyMedVacLabModal Dialog (Maybe MedVacLab)
     | HandleMotherMedicationModal Dialog (Maybe Int)
+    | HandleDischargeModal Dialog
     | HandleContPostpartumCheckModal Dialog (Maybe ContPostpartumCheckId)
       -- These two are used for browsers that do not support the
       -- input date type and require the use of jQueryUI datepicker.
@@ -126,3 +127,29 @@ type Field
     | MotherMedTimeFld
     | MotherMedInitialsFld
     | MotherMedCommentsFld
+    | DischargeDateFld
+    | DischargeTimeFld
+    | DischargeMotherSystolicFld
+    | DischargeMotherDiastolicFld
+    | DischargeMotherTempFld
+    | DischargeMotherCRFld
+    | DischargeBabyRRFld
+    | DischargeBabyTempFld
+    | DischargeBabyCRFld
+    | DischargePpInstructionsScheduleFld
+    | DischargeBirthCertWorksheetFld
+    | DischargeBirthRecordedFld
+    | DischargeChartsCompleteFld
+    | DischargeLogsCompleteFld
+    | DischargeBillPaidFld
+    | DischargeNbsFld
+    | DischargeImmunizationReferralFld
+    | DischargeBreastFeedingEstablishedFld
+    | DischargeNewbornBathFld
+    | DischargeFundusFirmBleedingCtldFld
+    | DischargeMotherAteDrankFld
+    | DischargeMotherUrinatedFld
+    | DischargePlacentaGoneFld
+    | DischargePrayerFld
+    | DischargeBibleFld
+    | DischargeInitialsFld

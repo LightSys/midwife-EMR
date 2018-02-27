@@ -383,3 +383,13 @@ ALTER TABLE motherMedicationLog DROP PRIMARY KEY;
 ALTER TABLE motherMedicationLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE motherMedicationLog DROP KEY labor_id;
 --
+-- Creating dischargeLog
+SELECT 'dischargeLog' AS Creating FROM DUAL;
+CREATE TABLE dischargeLog LIKE discharge;
+ALTER TABLE dischargeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE dischargeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE dischargeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE dischargeLog DROP PRIMARY KEY;
+ALTER TABLE dischargeLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE dischargeLog DROP KEY labor_id;
+--

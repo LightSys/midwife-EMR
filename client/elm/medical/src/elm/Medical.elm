@@ -23,6 +23,7 @@ import Data.ContPP exposing (SubMsg(..))
 import Data.ContPostpartumCheck exposing (contPostpartumCheckRecordNewToContPostpartumCheckRecord, ContPostpartumCheckId(..))
 import Data.DataCache as DCache exposing (DataCache(..))
 import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
+import Data.Discharge exposing (DischargeId(..), dischargeRecordNewToDischargeRecord)
 import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
 import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLaborStage1Record)
@@ -329,7 +330,7 @@ update msg noAutoTouchModel =
                 let
                     -- Get the labor stage records from the data cache which the
                     -- init function just requested records from the server for.
-                    ( stage1, stage2, stage3, contPPCheck, motherMedication ) =
+                    ( stage1, stage2, stage3, contPPCheck, motherMedication, discharge ) =
                         ( case DCache.get LaborStage1 model.dataCache of
                             Just (LaborStage1DataCache s1) ->
                                 Just s1
@@ -362,6 +363,13 @@ update msg noAutoTouchModel =
 
                             _ ->
                                 []
+
+                        , case DCache.get Discharge model.dataCache of
+                            Just (DischargeDataCache rec) ->
+                                Just rec
+
+                            _ ->
+                                Nothing
                         )
 
                     ( subModel, newStore, newCmd ) =
@@ -371,6 +379,7 @@ update msg noAutoTouchModel =
                             stage3
                             contPPCheck
                             motherMedication
+                            discharge
                             model.babyRecords
                             model.browserSupportsDate
                             model.currTime
@@ -753,6 +762,20 @@ updateMessage incoming model =
                                         , Task.perform ContPPMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddDischargeType (ContPPMsg (Data.ContPP.DataCache _ _)) dischargeRecordNew) ->
+                                    let
+                                        dischargeRec =
+                                            dischargeRecordNewToDischargeRecord
+                                                (DischargeId dataAddMsg.response.id)
+                                                dischargeRecordNew
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ Discharge ])
+                                    in
+                                        ( { model | dataCache = DCache.put (DischargeDataCache dischargeRec) model.dataCache }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (AddLaborType (AdmittingMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
                                     let
                                         laborRecs =
@@ -1007,6 +1030,15 @@ updateMessage incoming model =
                                         , Task.perform ContPPMsg (Task.succeed subMsg)
                                         )
 
+                                Just (UpdateDischargeType (ContPPMsg (Data.ContPP.DataCache _ _)) dischargeRecord) ->
+                                    let
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just model.dataCache) (Just [ Discharge ])
+                                    in
+                                        ( { model | dataCache = DCache.put (DischargeDataCache dischargeRecord) model.dataCache }
+                                        , Task.perform ContPPMsg (Task.succeed subMsg)
+                                        )
+
                                 Just (UpdateLaborType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborRecord) ->
                                     -- TODO: why only updating the data cache here and not the top-level laborRecord?
                                     -- Don't we want to do both? But if we do, which is the master record?
@@ -1201,6 +1233,21 @@ updateMessage incoming model =
                                                 -- Only adding contPostpartumCheck records into data cache.
                                                 { mdl | dataCache = dc }
 
+                                        TableRecordDischarge recs ->
+                                            -- There should ever be only one discharge record
+                                            -- sent because there is only one allowed per
+                                            -- labor, but the data arrives in an array anyway.
+                                            let
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (DischargeDataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
+                                            in
+                                                { mdl | dataCache = dc }
+
                                         TableRecordLabor recs ->
                                             let
                                                 dictList =
@@ -1359,6 +1406,9 @@ updateMessage incoming model =
                         Just (AddContPostpartumCheckType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
+                        Just (AddDischargeType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
                         Just (AddMotherMedicationType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
@@ -1375,6 +1425,9 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateBabyVaccinationType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdateDischargeType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (AddLaborType msg _) ->

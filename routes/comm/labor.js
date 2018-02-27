@@ -19,6 +19,7 @@ var _ = require('underscore')
   , BabyLab = require('../../models').BabyLab
   , BabyVaccination = require('../../models').BabyVaccination
   , ContPostpartumCheck = require('../../models').ContPostpartumCheck
+  , Discharge = require('../../models').Discharge
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
   , LaborStage2 = require('../../models').LaborStage2
@@ -53,6 +54,7 @@ moduleTables.babyMedication = ['medicationDate'];
 moduleTables.babyLab = ['dateTime'];
 moduleTables.babyVaccination = ['vaccinationDate'];
 moduleTables.contPostpartumCheck = ['checkDatetime'];
+moduleTables.discharge = ['dateTime' ];
 moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
 moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
@@ -460,6 +462,16 @@ var updateContPostpartumCheck = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, ContPostpartumCheck, 'contPostpartumCheck');
 };
 
+var addDischarge = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addDischarge(data, cb);
+  addTable(data, userInfo, cb, Discharge, 'discharge');
+};
+
+var updateDischarge = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateDischarge(data, cb);
+  updateTable(data, userInfo, cb, Discharge, 'discharge');
+};
+
 var addLabor = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addLabor(data, cb);
   addTable(data, userInfo, cb, Labor, 'labor');
@@ -555,6 +567,9 @@ module.exports = {
   addContPostpartumCheck,
   updateContPostpartumCheck,
   delContPostpartumCheck: notDefinedYet,
+  addDischarge,
+  updateDischarge,
+  delDischarge: notDefinedYet,
   addLabor,
   delLabor: notDefinedYet,
   updateLabor,

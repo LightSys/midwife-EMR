@@ -3,6 +3,7 @@ module Data.BabyMedicationType
         ( BabyMedicationTypeId(..)
         , BabyMedicationTypeRecord
         , babyMedicationTypeRecord
+        , getByName
         , getNameUseLocation
         )
 
@@ -37,12 +38,18 @@ babyMedicationTypeRecord =
         |> JDP.required "useLocation" (JD.map (\u -> u == 1) JD.int)
 
 
-getNameUseLocation : Int -> List BabyMedicationTypeRecord -> Maybe (String, Bool)
+getNameUseLocation : Int -> List BabyMedicationTypeRecord -> Maybe ( String, Bool )
 getNameUseLocation id recsList =
     case LE.find (\r -> r.id == id) recsList of
         Just rec ->
-            Just (rec.name, rec.useLocation)
+            Just ( rec.name, rec.useLocation )
 
         Nothing ->
             Nothing
 
+
+getByName : String -> List BabyMedicationTypeRecord -> Maybe BabyMedicationTypeRecord
+getByName name recsList =
+    LE.find
+        (\r -> String.contains (String.toLower name) (String.toLower r.name))
+        recsList

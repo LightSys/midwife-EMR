@@ -1,7 +1,7 @@
 module Data.Table
     exposing
-        ( decodeTable
-        , Table(..)
+        ( Table(..)
+        , decodeTable
         , stringToTable
         , tableToString
         , tableToValue
@@ -21,6 +21,7 @@ type Table
     | BabyVaccination
     | BabyVaccinationType
     | ContPostpartumCheck
+    | Discharge
     | Labor
     | LaborStage1
     | LaborStage2
@@ -32,6 +33,7 @@ type Table
     | Patient
     | Pregnancy
     | SelectData
+
 
 
 -- HELPERS --
@@ -71,6 +73,9 @@ tableToString tbl =
 
         ContPostpartumCheck ->
             "contPostpartumCheck"
+
+        Discharge ->
+            "discharge"
 
         Labor ->
             "labor"
@@ -133,6 +138,9 @@ stringToTable tbl =
         "contPostpartumCheck" ->
             ContPostpartumCheck
 
+        "discharge" ->
+            Discharge
+
         "labor" ->
             Labor
 
@@ -173,4 +181,3 @@ stringToTable tbl =
 decodeTable : JD.Decoder Table
 decodeTable =
     JD.string |> JD.map stringToTable
-

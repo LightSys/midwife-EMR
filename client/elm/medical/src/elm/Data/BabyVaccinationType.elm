@@ -3,6 +3,7 @@ module Data.BabyVaccinationType
         ( BabyVaccinationTypeId(..)
         , BabyVaccinationTypeRecord
         , babyVaccinationTypeRecord
+        , getByName
         , getNameUseLocation
         )
 
@@ -46,3 +47,8 @@ getNameUseLocation id recsList =
         Nothing ->
             Nothing
 
+getByName : String -> List BabyVaccinationTypeRecord -> Maybe BabyVaccinationTypeRecord
+getByName name recsList =
+    LE.find
+        (\r -> String.contains (String.toLower name) (String.toLower r.name))
+        recsList

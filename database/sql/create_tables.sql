@@ -928,4 +928,40 @@ CREATE TABLE IF NOT EXISTS `motherMedication` (
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS `discharge` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  dateTime DATETIME NULL,
+  motherSystolic INT NULL,
+  motherDiastolic INT NULL,
+  motherTemp Float NULL,
+  motherCR INT NULL,
+  babyRR INT NULL,
+  babyTemp Float NULL,
+  babyCR INT NULL,
+  ppInstructionsSchedule BOOLEAN NULL DEFAULT 0,
+  birthCertWorksheet BOOLEAN NULL DEFAULT 0,
+  birthRecorded BOOLEAN NULL DEFAULT 0,
+  chartsComplete BOOLEAN NULL DEFAULT 0,
+  logsComplete BOOLEAN NULL DEFAULT 0,
+  billPaid BOOLEAN NULL DEFAULT 0,
+  nbs ENUM('Waived', 'Scheduled') NULL,
+  immunizationReferral BOOLEAN NULL DEFAULT 0,
+  breastFeedingEstablished BOOLEAN NULL DEFAULT 0,
+  newbornBath BOOLEAN NULL DEFAULT 0,
+  fundusFirmBleedingCtld BOOLEAN NULL DEFAULT 0,
+  motherAteDrank BOOLEAN NULL DEFAULT 0,
+  motherUrinated BOOLEAN NULL DEFAULT 0,
+  placentaGone BOOLEAN NULL DEFAULT 0,
+  prayer BOOLEAN NULL DEFAULT 0,
+  bible BOOLEAN NULL DEFAULT 0,
+  initials VARCHAR(50) NULL,
+  updatedBy INT NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  supervisor INT NULL,
+  labor_id INT NOT NULL,
+  UNIQUE (labor_id),
+  FOREIGN KEY (labor_id) REFERENCES labor (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
 SET foreign_key_checks = 1;

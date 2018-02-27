@@ -99,5 +99,7 @@ module.exports = {
   , MotherMedicationTypes: require('./MotherMedicationType').MotherMedicationTypes
   , MotherMedication: require('./MotherMedication').MotherMedication
   , MotherMedications: require('./MotherMedication').MotherMedications
+  , Discharge: require('./Discharge').Discharge
+  , Discharges: require('./Discharge').Discharges
 };
 

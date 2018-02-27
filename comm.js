@@ -138,6 +138,7 @@ var rx = require('rx')
   , TABLE_motherMedication = 'motherMedication'
   , TABLE_babyLab = 'babyLab'
   , TABLE_contPostpartumCheck = 'contPostpartumCheck'
+  , TABLE_discharge = 'discharge'
   , TABLE_keyValue = 'keyValue'
   , TABLE_labSuite = 'labSuite'
   , TABLE_labTest = 'labTest'
@@ -173,6 +174,9 @@ var rx = require('rx')
   , addContPostpartumCheck = require('./routes/comm/labor').addContPostpartumCheck
   , updateContPostpartumCheck = require('./routes/comm/labor').updateContPostpartumCheck
   , delContPostpartumCheck = require('./routes/comm/labor').delContPostpartumCheck
+  , addDischarge = require('./routes/comm/labor').addDischarge
+  , updateDischarge = require('./routes/comm/labor').updateDischarge
+  , delDischarge = require('./routes/comm/labor').delDischarge
   , addLabor = require('./routes/comm/labor').addLabor
   , delLabor = require('./routes/comm/labor').delLabor
   , updateLabor = require('./routes/comm/labor').updateLabor
@@ -876,9 +880,16 @@ var getFuncForTableOp = function(table, op) {
       break;
     case TABLE_contPostpartumCheck:
       switch (op) {
-        case ADD: func = addContPostpartumCheck; break;
-        case CHG: func = updateContPostpartumCheck; break;
-        case DEL: func = delContPostpartumCheck; break;
+        case ADD: func = addDischarge; break;
+        case CHG: func = updateDischarge; break;
+        case DEL: func = delDischarge; break;
+      }
+      break;
+    case TABLE_discharge:
+      switch (op) {
+        case ADD: func = addDischarge; break;
+        case CHG: func = updateDischarge; break;
+        case DEL: func = delDischarge; break;
       }
       break;
     case TABLE_keyValue:

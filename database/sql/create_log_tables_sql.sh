@@ -26,7 +26,7 @@ uniq_pregnancy_tbls='scheduleLog riskLog'
 uniq_custom_field_tbls='customFieldLog'
 uniq_sortOrder_tbls='medicationTypeLog vaccinationTypeLog'
 uniq_kvKey_tbls='keyValueLog'
-uniq_laborId_tbls='laborStage1Log laborStage2Log laborStage3Log babyLog membraneLog motherMedicationLog'
+uniq_laborId_tbls='laborStage1Log laborStage2Log laborStage3Log babyLog membraneLog motherMedicationLog dischargeLog'
 uniq_babyId_tbls='apgarLog newbornExamLog babyMedicationLog babyVaccinationLog'
 
 # Get the list of tables from the creation script.

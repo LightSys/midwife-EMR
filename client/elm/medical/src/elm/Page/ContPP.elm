@@ -65,6 +65,13 @@ import Data.ContPostpartumCheck
         )
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
+import Data.Discharge
+    exposing
+        ( DischargeRecord
+        , DischargeRecordNew
+        , dischargeRecordNewToValue
+        , isDischargeRecordComplete
+        )
 import Data.Labor
     exposing
         ( LaborId(..)
@@ -163,6 +170,8 @@ type ViewEditState
     | BabyMedVacLabEditState
     | MotherMedicationViewState
     | MotherMedicationEditState
+    | DischargeViewState
+    | DischargeEditState
 
 
 {-| Handles user input for new or existing baby
@@ -259,6 +268,7 @@ type alias Model =
     , babyMedicationRecords : List BabyMedicationRecord
     , babyVaccinationRecords : List BabyVaccinationRecord
     , motherMedicationRecords : List MotherMedicationRecord
+    , dischargeRecord : Maybe DischargeRecord
     , selectDataRecords : List SelectDataRecord
     , babyLabTypeRecords : List BabyLabTypeRecord
     , babyMedicationTypeRecords : List BabyMedicationTypeRecord
@@ -326,6 +336,33 @@ type alias Model =
     , babyLabFlds : Dict Int LabFlds
     , motherMedicationViewEditState : ViewEditState
     , motherMedFlds : Dict Int MotherMedFlds
+    , dischargeViewEditState : ViewEditState
+    , dischargeDate : Maybe Date
+    , dischargeTime : Maybe String
+    , dischargeMotherSystolic : Maybe String
+    , dischargeMotherDiastolic : Maybe String
+    , dischargeMotherTemp : Maybe String
+    , dischargeMotherCR : Maybe String
+    , dischargeBabyRR : Maybe String
+    , dischargeBabyTemp : Maybe String
+    , dischargeBabyCR : Maybe String
+    , dischargePPInstructionsSchedule : Maybe Bool
+    , dischargeBirthCertWorksheet : Maybe Bool
+    , dischargeBirthRecorded : Maybe Bool
+    , dischargeChartsComplete : Maybe Bool
+    , dischargeLogsComplete : Maybe Bool
+    , dischargeBillPaid : Maybe Bool
+    , dischargeNbs : Maybe String
+    , dischargeImmunizationReferral : Maybe Bool
+    , dischargeBreastFeedingEstablished : Maybe Bool
+    , dischargeNewbornBath : Maybe Bool
+    , dischargeFundusFirmBleedingCtld : Maybe Bool
+    , dischargeMotherAteDrank : Maybe Bool
+    , dischargeMotherUrinated : Maybe Bool
+    , dischargePlacentaGone : Maybe Bool
+    , dischargePrayer : Maybe Bool
+    , dischargeBible : Maybe Bool
+    , dischargeInitials : Maybe String
     }
 
 
@@ -456,6 +493,7 @@ init pregId laborRec session store =
                 , Baby
                 , ContPostpartumCheck
                 , MotherMedication
+                , Discharge
                 ]
 
         ( processId, processStore ) =
@@ -477,6 +515,7 @@ buildModel :
     -> Maybe LaborStage3Record
     -> List ContPostpartumCheckRecord
     -> List MotherMedicationRecord
+    -> Maybe DischargeRecord
     -> Maybe (Dict Int BabyRecord)
     -> Bool
     -> Time
@@ -485,7 +524,7 @@ buildModel :
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicationRecords babyRecords browserSupportsDate currTime store pregId patRec pregRec =
+buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicationRecords dischargeRec babyRecords browserSupportsDate currTime store pregId patRec pregRec =
     let
         -- Get the lookup tables that this page will need.
         ( newStore, getSelectDataCmd ) =
@@ -538,6 +577,7 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicati
       , babyMedicationRecords = []
       , babyVaccinationRecords = []
       , motherMedicationRecords = motherMedicationRecords
+      , dischargeRecord = dischargeRec
       , selectDataRecords = []
       , babyLabTypeRecords = []
       , babyMedicationTypeRecords = []
@@ -605,6 +645,33 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicati
       , babyLabFlds = Dict.empty
       , motherMedicationViewEditState = NoViewEditState
       , motherMedFlds = Dict.empty
+      , dischargeViewEditState = NoViewEditState
+      , dischargeDate = Nothing
+      , dischargeTime = Nothing
+      , dischargeMotherSystolic = Nothing
+      , dischargeMotherDiastolic = Nothing
+      , dischargeMotherTemp = Nothing
+      , dischargeMotherCR = Nothing
+      , dischargeBabyRR = Nothing
+      , dischargeBabyTemp = Nothing
+      , dischargeBabyCR = Nothing
+      , dischargePPInstructionsSchedule = Nothing
+      , dischargeBirthCertWorksheet = Nothing
+      , dischargeBirthRecorded = Nothing
+      , dischargeChartsComplete = Nothing
+      , dischargeLogsComplete = Nothing
+      , dischargeBillPaid = Nothing
+      , dischargeNbs = Nothing
+      , dischargeImmunizationReferral = Nothing
+      , dischargeBreastFeedingEstablished = Nothing
+      , dischargeNewbornBath = Nothing
+      , dischargeFundusFirmBleedingCtld = Nothing
+      , dischargeMotherAteDrank = Nothing
+      , dischargeMotherUrinated = Nothing
+      , dischargePlacentaGone = Nothing
+      , dischargePrayer = Nothing
+      , dischargeBible = Nothing
+      , dischargeInitials = Nothing
       }
     , newStore5
     , Cmd.batch
@@ -740,6 +807,14 @@ refreshModelFromCache dc tables model =
                             case DataCache.get t dc of
                                 Just (ContPostpartumCheckDataCache recs) ->
                                     { m | contPostpartumCheckRecords = recs }
+
+                                _ ->
+                                    m
+
+                        Discharge ->
+                            case DataCache.get t dc of
+                                Just (DischargeDataCache rec) ->
+                                    { m | dischargeRecord = Just rec }
 
                                 _ ->
                                     m
@@ -1014,6 +1089,9 @@ update session msg model =
                             else
                                 ( model, Cmd.none, logConsole <| "Unknown DynamicDateField category of: " ++ toString type_ )
 
+                        DischargeDateField ->
+                            ( { model | dischargeDate = Just date }, Cmd.none, Cmd.none )
+
                         UnknownDateField str ->
                             ( model, Cmd.none, logConsole str )
 
@@ -1120,6 +1198,39 @@ update session msg model =
                         CPCCommentsFld ->
                             { model | cpcComments = Just value }
 
+                        DischargeDateFld ->
+                            { model | dischargeDate = Date.fromString value |> Result.toMaybe }
+
+                        DischargeTimeFld ->
+                            { model | dischargeTime = Just <| U.filterStringLikeTime value }
+
+                        DischargeMotherSystolicFld ->
+                            { model | dischargeMotherSystolic = Just <| U.filterStringLikeInt value }
+
+                        DischargeMotherDiastolicFld ->
+                            { model | dischargeMotherDiastolic = Just <| U.filterStringLikeInt value }
+
+                        DischargeMotherTempFld ->
+                            { model | dischargeMotherTemp = Just <| U.filterStringLikeFloat value }
+
+                        DischargeMotherCRFld ->
+                            { model | dischargeMotherCR = Just <| U.filterStringLikeInt value }
+
+                        DischargeBabyRRFld ->
+                            { model | dischargeBabyRR = Just <| U.filterStringLikeInt value }
+
+                        DischargeBabyTempFld ->
+                            { model | dischargeBabyTemp = Just <| U.filterStringLikeFloat value }
+
+                        DischargeBabyCRFld ->
+                            { model | dischargeBabyCR = Just <| U.filterStringLikeInt value }
+
+                        DischargeNbsFld ->
+                            { model | dischargeNbs = Just value }
+
+                        DischargeInitialsFld ->
+                            { model | dischargeInitials = Just value }
+
                         _ ->
                             model
                     , Cmd.none
@@ -1213,6 +1324,51 @@ update session msg model =
 
                         CPCBabyBFedFld ->
                             { model | cpcBabyBFed = Just value }
+
+                        DischargePpInstructionsScheduleFld ->
+                            { model | dischargePPInstructionsSchedule = Just value }
+
+                        DischargeBirthCertWorksheetFld ->
+                            { model | dischargeBirthCertWorksheet = Just value }
+
+                        DischargeBirthRecordedFld ->
+                            { model | dischargeBirthRecorded = Just value }
+
+                        DischargeChartsCompleteFld ->
+                            { model | dischargeChartsComplete = Just value }
+
+                        DischargeLogsCompleteFld ->
+                            { model | dischargeLogsComplete = Just value }
+
+                        DischargeBillPaidFld ->
+                            { model | dischargeBillPaid = Just value }
+
+                        DischargeImmunizationReferralFld ->
+                            { model | dischargeImmunizationReferral = Just value }
+
+                        DischargeBreastFeedingEstablishedFld ->
+                            { model | dischargeBreastFeedingEstablished = Just value }
+
+                        DischargeNewbornBathFld ->
+                            { model | dischargeNewbornBath = Just value }
+
+                        DischargeFundusFirmBleedingCtldFld ->
+                            { model | dischargeFundusFirmBleedingCtld = Just value }
+
+                        DischargeMotherAteDrankFld ->
+                            { model | dischargeMotherAteDrank = Just value }
+
+                        DischargeMotherUrinatedFld ->
+                            { model | dischargeMotherUrinated = Just value }
+
+                        DischargePlacentaGoneFld ->
+                            { model | dischargePlacentaGone = Just value }
+
+                        DischargePrayerFld ->
+                            { model | dischargePrayer = Just value }
+
+                        DischargeBibleFld ->
+                            { model | dischargeBible = Just value }
 
                         _ ->
                             model
@@ -2440,6 +2596,200 @@ update session msg model =
                         ]
                     )
 
+        HandleDischargeModal dialogState ->
+            case dialogState of
+                OpenDialog ->
+                    let
+                        newModel =
+                            case model.dischargeRecord of
+                                Just rec ->
+                                    -- There is already a discharge record.
+                                    { model
+                                        | dischargeDate = rec.dateTime
+                                        , dischargeTime = U.maybeDateToTimeString rec.dateTime
+                                        , dischargeMotherSystolic = Maybe.map toString rec.motherSystolic
+                                        , dischargeMotherDiastolic = Maybe.map toString rec.motherDiastolic
+                                        , dischargeMotherTemp = Maybe.map toString rec.motherTemp
+                                        , dischargeMotherCR = Maybe.map toString rec.motherCR
+                                        , dischargeBabyRR = Maybe.map toString rec.babyRR
+                                        , dischargeBabyTemp = Maybe.map toString rec.babyTemp
+                                        , dischargeBabyCR = Maybe.map toString rec.babyCR
+                                        , dischargePPInstructionsSchedule = rec.ppInstructionsSchedule
+                                        , dischargeBirthCertWorksheet = rec.birthCertWorksheet
+                                        , dischargeBirthRecorded = rec.birthRecorded
+                                        , dischargeChartsComplete = rec.chartsComplete
+                                        , dischargeLogsComplete = rec.logsComplete
+                                        , dischargeBillPaid = rec.billPaid
+                                        , dischargeNbs = Data.Discharge.maybeNBSToMaybeString rec.nbs
+                                        , dischargeImmunizationReferral = rec.immunizationReferral
+                                        , dischargeBreastFeedingEstablished = rec.breastFeedingEstablished
+                                        , dischargeNewbornBath = rec.newbornBath
+                                        , dischargeFundusFirmBleedingCtld = rec.fundusFirmBleedingCtld
+                                        , dischargeMotherAteDrank = rec.motherAteDrank
+                                        , dischargeMotherUrinated = rec.motherUrinated
+                                        , dischargePlacentaGone = rec.placentaGone
+                                        , dischargePrayer = rec.prayer
+                                        , dischargeBible = rec.bible
+                                        , dischargeInitials = rec.initials
+                                    }
+
+                                Nothing ->
+                                    -- There is no discharge record, so default to
+                                    -- current date/time.
+                                    let
+                                        currDate =
+                                            Date.fromTime model.currTime
+                                    in
+                                    { model
+                                        | dischargeDate = Just currDate
+                                        , dischargeTime = Just <| U.dateToTimeString currDate
+                                    }
+                    in
+                    ( { newModel
+                        | dischargeViewEditState =
+                            if model.dischargeViewEditState == NoViewEditState then
+                                DischargeViewState
+                            else
+                                NoViewEditState
+                      }
+                    , Cmd.none
+                    , Cmd.batch
+                        [ if model.dischargeViewEditState == NoViewEditState then
+                            Route.addDialogUrl Route.ContPPRoute
+                          else
+                            Route.back
+                        , Task.perform SetDialogActive <| Task.succeed True
+                        ]
+                    )
+
+                CloseNoSaveDialog ->
+                    ( { model | dischargeViewEditState = NoViewEditState }
+                    , Cmd.none
+                    , Route.back
+                    )
+
+                EditDialog ->
+                    ( { model | dischargeViewEditState = DischargeEditState }
+                    , Cmd.none
+                    , if model.dischargeViewEditState == NoViewEditState then
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.ContPPRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
+                      else
+                        Cmd.none
+                    )
+
+                CloseSaveDialog ->
+                    case validateDischarge model of
+                        [] ->
+                            let
+                                -- Check that the date and corresponding time fields together
+                                -- produce valid dates.
+                                dischargeDateTime =
+                                    case
+                                        model.dischargeDate
+                                            /= Nothing
+                                            && model.dischargeTime
+                                            /= Nothing
+                                    of
+                                        True ->
+                                            U.maybeDateMaybeTimeToMaybeDateTime model.dischargeDate
+                                                model.dischargeTime
+                                                "Please correct the date and time for the discharge fields."
+
+                                        False ->
+                                            U.NoMaybeDateTime
+
+                                errors =
+                                    U.maybeDateTimeErrors [ dischargeDateTime ]
+
+                                outerMsg =
+                                    case ( List.length errors > 0, model.dischargeRecord ) of
+                                        ( True, _ ) ->
+                                            -- Errors found in the date and time field, so notifiy user
+                                            -- instead of saving.
+                                            Toast (errors ++ [ "Record was not saved." ]) 10 ErrorToast
+
+                                        ( False, Just dischargeRec ) ->
+                                            let
+                                                updatedDischargeRec =
+                                                    { dischargeRec
+                                                        | dateTime = U.maybeDateTimeValue dischargeDateTime
+                                                        , motherSystolic = U.maybeStringToMaybeInt model.dischargeMotherSystolic
+                                                        , motherDiastolic = U.maybeStringToMaybeInt model.dischargeMotherDiastolic
+                                                        , motherTemp = U.maybeStringToMaybeFloat model.dischargeMotherTemp
+                                                        , motherCR = U.maybeStringToMaybeInt model.dischargeMotherCR
+                                                        , babyRR = U.maybeStringToMaybeInt model.dischargeBabyRR
+                                                        , babyTemp = U.maybeStringToMaybeFloat model.dischargeBabyTemp
+                                                        , babyCR = U.maybeStringToMaybeInt model.dischargeBabyCR
+                                                        , ppInstructionsSchedule = model.dischargePPInstructionsSchedule
+                                                        , birthCertWorksheet = model.dischargeBirthCertWorksheet
+                                                        , birthRecorded = model.dischargeBirthRecorded
+                                                        , chartsComplete = model.dischargeChartsComplete
+                                                        , logsComplete = model.dischargeLogsComplete
+                                                        , billPaid = model.dischargeBillPaid
+                                                        , nbs = Data.Discharge.maybeStringToNBS model.dischargeNbs
+                                                        , immunizationReferral = model.dischargeImmunizationReferral
+                                                        , breastFeedingEstablished = model.dischargeBreastFeedingEstablished
+                                                        , newbornBath = model.dischargeNewbornBath
+                                                        , fundusFirmBleedingCtld = model.dischargeFundusFirmBleedingCtld
+                                                        , motherAteDrank = model.dischargeMotherAteDrank
+                                                        , motherUrinated = model.dischargeMotherUrinated
+                                                        , placentaGone = model.dischargePlacentaGone
+                                                        , prayer = model.dischargePrayer
+                                                        , bible = model.dischargeBible
+                                                        , initials = model.dischargeInitials
+                                                    }
+                                            in
+                                            ProcessTypeMsg
+                                                (UpdateDischargeType
+                                                    (ContPPMsg
+                                                        (DataCache Nothing (Just [ Discharge ]))
+                                                    )
+                                                    updatedDischargeRec
+                                                )
+                                                ChgMsgType
+                                                (Data.Discharge.dischargeRecordToValue updatedDischargeRec)
+
+                                        ( False, Nothing ) ->
+                                            -- Creating a discharge record.
+                                            case deriveDischargeRecordNew model of
+                                                Just discharge ->
+                                                    ProcessTypeMsg
+                                                        (AddDischargeType
+                                                            (ContPPMsg
+                                                                -- Request top-level to provide data in
+                                                                -- the dataCache once received from server.
+                                                                (DataCache Nothing (Just [ Discharge ]))
+                                                            )
+                                                            discharge
+                                                        )
+                                                        AddMsgType
+                                                        (dischargeRecordNewToValue discharge)
+
+                                                Nothing ->
+                                                    LogConsole "deriveDischargeRecordNew returned a Nothing"
+                            in
+                            ( { model | dischargeViewEditState = NoViewEditState }
+                            , Cmd.none
+                            , Cmd.batch
+                                [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
+                                ]
+                            )
+
+                        errors ->
+                            let
+                                msgs =
+                                    List.map Tuple.second errors
+                                        |> flip (++) [ "Record was not saved." ]
+                            in
+                            ( { model | dischargeViewEditState = NoViewEditState }
+                            , Cmd.none
+                            , toastError msgs 10
+                            )
+
         OpenDatePickerSubMsg id ->
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
 
@@ -3082,6 +3432,47 @@ deriveContPostpartumCheckRecordNew model =
             Nothing
 
 
+deriveDischargeRecordNew : Model -> Maybe DischargeRecordNew
+deriveDischargeRecordNew model =
+    let
+        dateTime =
+            U.maybeDateMaybeTimeToMaybeDateTime model.dischargeDate model.dischargeTime ""
+                |> U.maybeDateTimeValue
+    in
+    case model.currLaborId of
+        Just (LaborId labor_id) ->
+            Just <|
+                DischargeRecordNew dateTime
+                    (U.maybeStringToMaybeInt model.dischargeMotherSystolic)
+                    (U.maybeStringToMaybeInt model.dischargeMotherDiastolic)
+                    (U.maybeStringToMaybeFloat model.dischargeMotherTemp)
+                    (U.maybeStringToMaybeInt model.dischargeMotherCR)
+                    (U.maybeStringToMaybeInt model.dischargeBabyRR)
+                    (U.maybeStringToMaybeFloat model.dischargeBabyTemp)
+                    (U.maybeStringToMaybeInt model.dischargeBabyCR)
+                    model.dischargePPInstructionsSchedule
+                    model.dischargeBirthCertWorksheet
+                    model.dischargeBirthRecorded
+                    model.dischargeChartsComplete
+                    model.dischargeLogsComplete
+                    model.dischargeBillPaid
+                    (Data.Discharge.maybeStringToNBS model.dischargeNbs)
+                    model.dischargeImmunizationReferral
+                    model.dischargeBreastFeedingEstablished
+                    model.dischargeNewbornBath
+                    model.dischargeFundusFirmBleedingCtld
+                    model.dischargeMotherAteDrank
+                    model.dischargeMotherUrinated
+                    model.dischargePlacentaGone
+                    model.dischargePrayer
+                    model.dischargeBible
+                    model.dischargeInitials
+                    labor_id
+
+        Nothing ->
+            Nothing
+
+
 deriveNewbornExamRecordNew : Model -> Maybe NewbornExamRecordNew
 deriveNewbornExamRecordNew model =
     case model.babyRecord of
@@ -3232,6 +3623,26 @@ view size session model =
                 PageNoop
                 PageNoop
 
+        isEditingDischarge =
+            if model.dischargeViewEditState == DischargeEditState then
+                True
+            else
+                not (isDischargeDone model)
+
+        dischargeViewEditStageConfig =
+            ViewEditStageConfig
+                (model.dischargeViewEditState
+                    == DischargeViewState
+                    || model.dischargeViewEditState
+                    == DischargeEditState
+                )
+                isEditingDischarge
+                "Discharge"
+                model
+                (HandleDischargeModal CloseNoSaveDialog)
+                (HandleDischargeModal CloseSaveDialog)
+                (HandleDischargeModal EditDialog)
+
         contPostpartumCheckViewEditStageConfig =
             ViewEditStageConfig
                 (model.contPostpartumCheckViewEditState
@@ -3254,8 +3665,8 @@ view size session model =
             , dialogNewbornExamSummary newbornExamViewEditStageConfig
             , dialogBabyMedVacLab babyMedVacLabViewEditStageConfig
             , dialogMotherMedication motherMedicationViewEditStageConfig
+            , dialogDischarge dischargeViewEditStageConfig
             , viewContPostpartumChecks contPostpartumCheckViewEditStageConfig
-            , viewWhatIsComing model
             ]
         ]
 
@@ -3323,6 +3734,26 @@ viewButtons model =
                     ]
                 ]
             ]
+        , H.div
+            [ HA.class "stage-content"
+            , HA.classList [ ( "isHidden", False ) ]
+            ]
+            [ H.div [ HA.class "c-text--brand c-text--loud" ]
+                [ H.text "Discharge" ]
+            , H.div []
+                [ H.button
+                    [ HA.class "c-button c-button--ghost-brand u-small"
+                    , HE.onClick <| HandleDischargeModal OpenDialog
+                    ]
+                    [ if isDischargeDone model then
+                        H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else
+                        H.span [] [ H.text "" ]
+                    , H.text " Summary"
+                    ]
+                ]
+            ]
         ]
 
 
@@ -3331,6 +3762,16 @@ isNewbornExamDone model =
     case model.newbornExamRecord of
         Just rec ->
             isNewbornExamRecordComplete rec
+
+        Nothing ->
+            False
+
+
+isDischargeDone : Model -> Bool
+isDischargeDone model =
+    case model.dischargeRecord of
+        Just rec ->
+            isDischargeRecordComplete rec
 
         Nothing ->
             False
@@ -3417,6 +3858,542 @@ type alias ViewEditStageConfig =
     , saveMsg : SubMsg
     , editMsg : SubMsg
     }
+
+
+
+-- View Discharge --
+
+
+isBabyMedDone : Model -> String -> Bool
+isBabyMedDone model name =
+    case
+        Data.BabyMedicationType.getByName name
+            model.babyMedicationTypeRecords
+    of
+        Just mtRec ->
+            case
+                LE.find (\r -> r.babyMedicationType == mtRec.id)
+                    model.babyMedicationRecords
+            of
+                Just mRec ->
+                    True
+
+                Nothing ->
+                    False
+
+        Nothing ->
+            False
+
+
+isBabyVacDone : Model -> String -> Bool
+isBabyVacDone model name =
+    case
+        Data.BabyVaccinationType.getByName name
+            model.babyVaccinationTypeRecords
+    of
+        Just mtRec ->
+            case
+                LE.find (\r -> r.babyVaccinationType == mtRec.id)
+                    model.babyVaccinationRecords
+            of
+                Just mRec ->
+                    True
+
+                Nothing ->
+                    False
+
+        Nothing ->
+            False
+
+
+isMotherMedDone : Model -> String -> Bool
+isMotherMedDone model name =
+    case
+        Data.MotherMedicationType.getByName name
+            model.motherMedicationTypeRecords
+    of
+        Just mtRec ->
+            case
+                LE.find (\r -> r.motherMedicationType == mtRec.id)
+                    model.motherMedicationRecords
+            of
+                Just mRec ->
+                    True
+
+                Nothing ->
+                    False
+
+        Nothing ->
+            False
+
+
+dialogDischarge : ViewEditStageConfig -> Html SubMsg
+dialogDischarge cfg =
+    case cfg.isEditing of
+        True ->
+            dialogDischargeEdit cfg
+
+        False ->
+            dialogDischargeView cfg
+
+
+dialogDischargeEdit : ViewEditStageConfig -> Html SubMsg
+dialogDischargeEdit cfg =
+    let
+        errors =
+            validateDischarge cfg.model
+
+        newbornExamDone =
+            cfg.model.newbornExamRecord /= Nothing
+
+        vitKDone =
+            isBabyMedDone cfg.model "Vitamin K"
+
+        hepBDone =
+            isBabyVacDone cfg.model "Hep B" || isBabyVacDone cfg.model "Hepatitis B"
+
+        eyeMedsDone =
+            isBabyMedDone cfg.model "Eye"
+
+        vitADone =
+            isMotherMedDone cfg.model "Vitamin A"
+    in
+    H.div
+        [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
+        , HA.class "u-high"
+        , HA.style
+            [ ( "padding", "0.8em" )
+            , ( "margin-top", "0.8em" )
+            ]
+        ]
+        [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.text "Discharge Checklist" ]
+        , H.div [ HA.class "form-wrapper u-small" ]
+            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                [ H.div [ HA.class "c-card mw-form-field-2x" ]
+                    [ H.h1 [ HA.class "c-heading u-xlarge" ]
+                        [ H.text "Papers/Forms" ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "PP Instructions and Schedule"
+                            (FldChgBool >> FldChgSubMsg DischargePpInstructionsScheduleFld)
+                            cfg.model.dischargePPInstructionsSchedule
+                        , H.text (getErr DischargePpInstructionsScheduleFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "BCert Worksheet completed"
+                            (FldChgBool >> FldChgSubMsg DischargeBirthCertWorksheetFld)
+                            cfg.model.dischargeBirthCertWorksheet
+                        , H.text (getErr DischargeBirthCertWorksheetFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Birth recorded in birth book"
+                            (FldChgBool >> FldChgSubMsg DischargeBirthRecordedFld)
+                            cfg.model.dischargeBirthRecorded
+                        , H.text (getErr DischargeBirthRecordedFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Charting complete"
+                            (FldChgBool >> FldChgSubMsg DischargeChartsCompleteFld)
+                            cfg.model.dischargeChartsComplete
+                        , H.text (getErr DischargeChartsCompleteFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "All logbooks done"
+                            (FldChgBool >> FldChgSubMsg DischargeLogsCompleteFld)
+                            cfg.model.dischargeLogsComplete
+                        , H.text (getErr DischargeLogsCompleteFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Supplies bill paid"
+                            (FldChgBool >> FldChgSubMsg DischargeBillPaidFld)
+                            cfg.model.dischargeBillPaid
+                        , H.text (getErr DischargeBillPaidFld errors)
+                        ]
+                    , Form.radioFieldset "NBS"
+                        "nbs"
+                        cfg.model.dischargeNbs
+                        (FldChgString >> FldChgSubMsg DischargeNbsFld)
+                        False
+                        [ "Scheduled"
+                        , "Waived"
+                        ]
+                        (getErr DischargeNbsFld errors)
+                    ]
+                , H.div [ HA.class "c-card mw-form-field-2x" ]
+                    [ H.h1 [ HA.class "c-heading u-xlarge" ]
+                        [ H.text "Baby" ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Imm referral to HC"
+                            (FldChgBool >> FldChgSubMsg DischargeImmunizationReferralFld)
+                            cfg.model.dischargeImmunizationReferral
+                        , H.text (getErr DischargeImmunizationReferralFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Breastfeeding established"
+                            (FldChgBool >> FldChgSubMsg DischargeBreastFeedingEstablishedFld)
+                            cfg.model.dischargeBreastFeedingEstablished
+                        , H.text (getErr DischargeBreastFeedingEstablishedFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Newborn bath"
+                            (FldChgBool >> FldChgSubMsg DischargeNewbornBathFld)
+                            cfg.model.dischargeNewbornBath
+                        , H.text (getErr DischargeNewbornBathFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkOrNot "Newborn exam done"
+                            False
+                            True
+                            newbornExamDone
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkOrNot "Vit K given"
+                            False
+                            True
+                            vitKDone
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkOrNot "Hep B given"
+                            False
+                            True
+                            hepBDone
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkOrNot "Eye meds given"
+                            False
+                            True
+                            eyeMedsDone
+                        ]
+                    ]
+                , H.div [ HA.class "c-card mw-form-field-2x" ]
+                    [ H.h1 [ HA.class "c-heading u-xlarge" ]
+                        [ H.text "Mother" ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Fundus firm, bleeding cntrld"
+                            (FldChgBool >> FldChgSubMsg DischargeFundusFirmBleedingCtldFld)
+                            cfg.model.dischargeFundusFirmBleedingCtld
+                        , H.text (getErr DischargeFundusFirmBleedingCtldFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Mother ate and drank"
+                            (FldChgBool >> FldChgSubMsg DischargeMotherAteDrankFld)
+                            cfg.model.dischargeMotherAteDrank
+                        , H.text (getErr DischargeMotherAteDrankFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Mother urinated"
+                            (FldChgBool >> FldChgSubMsg DischargeMotherUrinatedFld)
+                            cfg.model.dischargeMotherUrinated
+                        , H.text (getErr DischargeMotherUrinatedFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkOrNot "Vitamin A given"
+                            False
+                            True
+                            vitADone
+                        ]
+                    ]
+                , H.div [ HA.class "c-card mw-form-field-2x" ]
+                    [ H.h1 [ HA.class "c-heading u-xlarge" ]
+                        [ H.text "Other" ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Placenta gone"
+                            (FldChgBool >> FldChgSubMsg DischargePlacentaGoneFld)
+                            cfg.model.dischargePlacentaGone
+                        , H.text (getErr DischargePlacentaGoneFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Prayer"
+                            (FldChgBool >> FldChgSubMsg DischargePrayerFld)
+                            cfg.model.dischargePrayer
+                        , H.text (getErr DischargePrayerFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Bible given"
+                            (FldChgBool >> FldChgSubMsg DischargeBibleFld)
+                            cfg.model.dischargeBible
+                        , H.text (getErr DischargeBibleFld errors)
+                        ]
+                    ]
+                , H.div [ HA.class "c-card mw-form-field-wide form-wrapper" ]
+                    [ H.h1 [ HA.class "c-heading u-xlarge mw-form-field-wide" ]
+                        [ H.text "Discharge" ]
+                    , if cfg.model.browserSupportsDate then
+                        H.div [ HA.class "c-card mw-form-field-2x" ]
+                            [ H.div [ HA.class "c-card__item" ]
+                                [ H.div [ HA.class "c-text--loud" ]
+                                    [ H.text "Discharge date and time" ]
+                                ]
+                            , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDate (FldChgString >> FldChgSubMsg DischargeDateFld)
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.dischargeDate
+                                        (getErr DischargeDateFld errors)
+                                    , Form.formField (FldChgString >> FldChgSubMsg DischargeTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.dischargeTime
+                                        (getErr DischargeTimeFld errors)
+                                    ]
+                                ]
+                            ]
+                      else
+                        -- Browser does not support date.
+                        H.div [ HA.class "c-card" ]
+                            [ H.div [ HA.class "c-card__body" ]
+                                [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                    [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                        DischargeDateField
+                                        "Date"
+                                        "e.g. 08/14/2017"
+                                        False
+                                        cfg.model.dischargeDate
+                                        (getErr NBSDateFld errors)
+                                    , Form.formField (FldChgString >> FldChgSubMsg DischargeTimeFld)
+                                        "Time"
+                                        "24 hr format, 14:44"
+                                        False
+                                        cfg.model.dischargeTime
+                                        (getErr DischargeTimeFld errors)
+                                    ]
+                                ]
+                            ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeMotherSystolicFld)
+                            "Mother systolic"
+                            ""
+                            True
+                            cfg.model.dischargeMotherSystolic
+                            (getErr DischargeMotherSystolicFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeMotherDiastolicFld)
+                            "Mother diastolic"
+                            ""
+                            True
+                            cfg.model.dischargeMotherDiastolic
+                            (getErr DischargeMotherDiastolicFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeMotherTempFld)
+                            "Mother temperature"
+                            ""
+                            True
+                            cfg.model.dischargeMotherTemp
+                            (getErr DischargeMotherTempFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeMotherCRFld)
+                            "Mother pulse"
+                            ""
+                            True
+                            cfg.model.dischargeMotherCR
+                            (getErr DischargeMotherCRFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeBabyRRFld)
+                            "Baby RR"
+                            ""
+                            True
+                            cfg.model.dischargeBabyRR
+                            (getErr DischargeBabyRRFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeBabyTempFld)
+                            "Baby Temperature"
+                            ""
+                            True
+                            cfg.model.dischargeBabyTemp
+                            (getErr DischargeBabyTempFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeBabyCRFld)
+                            "Baby heart rate"
+                            ""
+                            True
+                            cfg.model.dischargeBabyCR
+                            (getErr DischargeBabyCRFld errors)
+                        ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                        [ Form.formField (FldChgString >> FldChgSubMsg DischargeInitialsFld)
+                            "Initials"
+                            ""
+                            True
+                            cfg.model.dischargeInitials
+                            (getErr DischargeInitialsFld errors)
+                        ]
+                    ]
+                ]
+            , H.div
+                [ HA.class "spacedButtons"
+                , HA.style [ ( "width", "100%" ) ]
+                ]
+                [ H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button u-small"
+                    , HE.onClick cfg.closeMsg
+                    ]
+                    [ H.text "Cancel" ]
+                , H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--brand u-small"
+                    , HE.onClick cfg.saveMsg
+                    ]
+                    [ H.text "Save" ]
+                ]
+            ]
+        ]
+
+
+dialogDischargeView : ViewEditStageConfig -> Html SubMsg
+dialogDischargeView cfg =
+    let
+        dateString date =
+            case date of
+                Just d ->
+                    U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep d
+
+                Nothing ->
+                    ""
+
+        yesNoBool bool =
+            case bool of
+                Just True ->
+                    "Yes"
+
+                _ ->
+                    "No"
+
+        bp sys dias =
+            case ( sys, dias ) of
+                ( Just s, Just d ) ->
+                    toString s ++ "/" ++ toString d
+
+                ( _, _ ) ->
+                    ""
+
+        viewField label value =
+            H.div [ HA.class "mw-form-field-2x" ]
+                [ H.span [ HA.class "c-text--loud" ]
+                    [ H.text <| label ++ ": " ]
+                , H.span [ HA.class "" ]
+                    [ H.text value ]
+                ]
+
+        maybeWithDefault func val =
+            Maybe.map func val
+                |> Maybe.withDefault ""
+
+        newbornExamDone =
+            cfg.model.newbornExamRecord /= Nothing
+
+        vitKDone =
+            isBabyMedDone cfg.model "Vitamin K"
+
+        hepBDone =
+            isBabyVacDone cfg.model "Hep B" || isBabyVacDone cfg.model "Hepatitis B"
+
+        eyeMedsDone =
+            isBabyMedDone cfg.model "Eye"
+
+        vitADone =
+            isMotherMedDone cfg.model "Vitamin A"
+    in
+    case cfg.model.dischargeRecord of
+        Nothing ->
+            H.text ""
+
+        Just rec ->
+            H.div
+                [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
+                , HA.class "u-high"
+                , HA.style
+                    [ ( "padding", "0.8em" )
+                    , ( "margin-top", "0.8em" )
+                    ]
+                ]
+                [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+                    [ H.text "Discharge Summary" ]
+                , H.div []
+                    [ H.div []
+                        [ H.h1 [ HA.class "c-header u-small c-text--quiet" ]
+                            [ H.text "Paper/Forms" ]
+                        , H.div [ HA.class "o-fieldset form-wrapper" ]
+                            [ viewField "PP Instructions & schedule" <| yesNoBool rec.ppInstructionsSchedule
+                            , viewField "BCert worksheet completed" <| yesNoBool rec.birthCertWorksheet
+                            , viewField "Birth recorded in birth book" <| yesNoBool rec.birthRecorded
+                            , viewField "Charting complete" <| yesNoBool rec.chartsComplete
+                            , viewField "All logbooks done" <| yesNoBool rec.logsComplete
+                            , viewField "NBS (waived, scheduled)" <| Maybe.withDefault "" <| Data.Discharge.maybeNBSToMaybeString rec.nbs
+                            , viewField "Supplies bill paid" <| yesNoBool rec.billPaid
+                            ]
+                        ]
+                    , H.div []
+                        [ H.h1 [ HA.class "c-header u-small c-text--quiet" ]
+                            [ H.text "Baby" ]
+                        , H.div [ HA.class "o-fieldset form-wrapper" ]
+                            [ viewField "Imm referal to HC" <| yesNoBool rec.immunizationReferral
+                            , viewField "Newborn exam done" <| yesNoBool <| Just newbornExamDone
+                            , viewField "Vit K given" <| yesNoBool <| Just vitKDone
+                            , viewField "Hep B given" <| yesNoBool <| Just hepBDone
+                            , viewField "Eye meds given" <| yesNoBool <| Just eyeMedsDone
+                            , viewField "Breastfeeding established" <| yesNoBool rec.breastFeedingEstablished
+                            , viewField "Newborn bath" <| yesNoBool rec.newbornBath
+                            ]
+                        ]
+                    , H.div []
+                        [ H.h1 [ HA.class "c-header u-small c-text--quiet" ]
+                            [ H.text "Mother" ]
+                        , H.div [ HA.class "o-fieldset form-wrapper" ]
+                            [ viewField "Fundus firm, bleeding cntrld" <| yesNoBool rec.fundusFirmBleedingCtld
+                            , viewField "Mother ate & drank" <| yesNoBool rec.motherAteDrank
+                            , viewField "Mother urinated" <| yesNoBool rec.motherUrinated
+                            , viewField "Vit A given" <| yesNoBool <| Just vitADone
+                            ]
+                        ]
+                    , H.div []
+                        [ H.h1 [ HA.class "c-header u-small c-text--quiet" ]
+                            [ H.text "Other" ]
+                        , H.div [ HA.class "o-fieldset form-wrapper" ]
+                            [ viewField "Placenta gone" <| yesNoBool rec.placentaGone
+                            , viewField "Prayer" <| yesNoBool rec.prayer
+                            , viewField "Bible given" <| yesNoBool rec.bible
+                            ]
+                        ]
+                    , H.div []
+                        [ H.h1 [ HA.class "c-header u-small c-text--quiet" ]
+                            [ H.text "Discharge" ]
+                        , H.div [ HA.class "o-fieldset form-wrapper" ]
+                            [ viewField "Mother BP" <| bp rec.motherSystolic rec.motherDiastolic
+                            , viewField "Mother temp" <| maybeWithDefault toString rec.motherTemp
+                            , viewField "Mother pulse" <| maybeWithDefault toString rec.motherCR
+                            , viewField "Baby RR" <| maybeWithDefault toString rec.babyRR
+                            , viewField "Baby temp" <| maybeWithDefault toString rec.babyTemp
+                            , viewField "Baby HR" <| maybeWithDefault toString rec.babyCR
+                            , viewField "Discharge Date/time" <| dateString rec.dateTime
+                            , viewField "Initials" <| Maybe.withDefault "" rec.initials
+                            ]
+                        ]
+                    , H.div [ HA.class "spacedButtons" ]
+                        [ H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button u-small"
+                            , HE.onClick cfg.closeMsg
+                            ]
+                            [ H.text "Close" ]
+                        , H.button
+                            [ HA.type_ "button"
+                            , HA.class "c-button c-button--ghost u-small"
+                            , HE.onClick cfg.editMsg
+                            ]
+                            [ H.text "Edit" ]
+                        ]
+                    ]
+                ]
 
 
 
@@ -3828,7 +4805,6 @@ babyLabEdit mvl name labRec browserSupportsDate babyLabTypeRecords =
         babyLabFields =
             Data.BabyLabType.getBabyLabFields refId babyLabTypeRecords
 
-        -- TODO: handle field types of Bool with a checkbox.
         fieldView num =
             case LE.find (\f -> f.num == num) babyLabFields of
                 Just blf ->
@@ -5003,18 +5979,6 @@ dialogNewbornExamSummaryView cfg =
                 ]
 
 
-viewWhatIsComing : Model -> Html SubMsg
-viewWhatIsComing model =
-    H.div []
-        [ H.h3 [ HA.class "c-heading u-medium" ]
-            [ H.text "What else will be on this page eventually?" ]
-        , H.ul []
-            [ H.li [] [ H.text "Discharge checklist" ]
-            , H.li [] [ H.text "Discharge vitals" ]
-            ]
-        ]
-
-
 
 -- VALIDATION of the ContPP Model form fields, not the records sent to the server. --
 
@@ -5078,3 +6042,13 @@ validateMotherMedication =
         [ .date >> ifInvalid U.validateDate (MotherMedDateFld => "Date of medication must be provided.")
         , .time >> ifInvalid U.validateTime (MotherMedTimeFld => "Time of medication must be provided.")
         ]
+
+
+{-| Since it is assumed that this form is filled over time, we don't
+make a point of highlighting fields that will ultimately be needed in
+order to be considered complete.
+-}
+validateDischarge : Model -> List FieldError
+validateDischarge =
+    Validate.all
+        []
