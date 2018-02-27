@@ -270,6 +270,10 @@ dischargeRecordNewToDischargeRecord (DischargeId id) newRec =
         newRec.labor_id
 
 
+{-| Took a guess that Bible and prayer can be refused
+by the patient and the discharge should still be
+considered complete.
+-}
 isDischargeRecordComplete : DischargeRecord -> Bool
 isDischargeRecordComplete rec =
     let
@@ -299,6 +303,4 @@ isDischargeRecordComplete rec =
             || (validateBool rec.motherAteDrank)
             || (validateBool rec.motherUrinated)
             || (validateBool rec.placentaGone)
-            || (validateBool rec.prayer)
-            || (validateBool rec.bible)
         )

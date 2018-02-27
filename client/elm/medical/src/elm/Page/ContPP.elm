@@ -2634,16 +2634,10 @@ update session msg model =
                                     }
 
                                 Nothing ->
-                                    -- There is no discharge record, so default to
-                                    -- current date/time.
-                                    let
-                                        currDate =
-                                            Date.fromTime model.currTime
-                                    in
-                                    { model
-                                        | dischargeDate = Just currDate
-                                        , dischargeTime = Just <| U.dateToTimeString currDate
-                                    }
+                                    -- There is no discharge record, but we do not default
+                                    -- to the current date and time because this discharge
+                                    -- checklist may be edited long before actual discharge.
+                                    model
                     in
                     ( { newModel
                         | dischargeViewEditState =
