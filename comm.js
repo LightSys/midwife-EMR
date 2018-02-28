@@ -880,9 +880,9 @@ var getFuncForTableOp = function(table, op) {
       break;
     case TABLE_contPostpartumCheck:
       switch (op) {
-        case ADD: func = addDischarge; break;
-        case CHG: func = updateDischarge; break;
-        case DEL: func = delDischarge; break;
+        case ADD: func = addContPostpartumCheck; break;
+        case CHG: func = updateContPostpartumCheck; break;
+        case DEL: func = delContPostpartumCheck; break;
       }
       break;
     case TABLE_discharge:
