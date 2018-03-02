@@ -2273,8 +2273,12 @@ dialogMembraneSummaryEdit cfg =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Membrane rupture date/time" ]
+                            ]
+                        , H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     MembraneRuptureDateField

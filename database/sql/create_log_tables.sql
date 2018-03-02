@@ -393,3 +393,12 @@ ALTER TABLE dischargeLog DROP PRIMARY KEY;
 ALTER TABLE dischargeLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE dischargeLog DROP KEY labor_id;
 --
+-- Creating postpartumCheckLog
+SELECT 'postpartumCheckLog' AS Creating FROM DUAL;
+CREATE TABLE postpartumCheckLog LIKE postpartumCheck;
+ALTER TABLE postpartumCheckLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE postpartumCheckLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE postpartumCheckLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE postpartumCheckLog DROP PRIMARY KEY;
+ALTER TABLE postpartumCheckLog ADD PRIMARY KEY (id, replacedAt);
+--

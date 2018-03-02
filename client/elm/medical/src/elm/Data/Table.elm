@@ -31,6 +31,7 @@ type Table
     | MotherMedicationType
     | NewbornExam
     | Patient
+    | PostpartumCheck
     | Pregnancy
     | SelectData
 
@@ -104,6 +105,9 @@ tableToString tbl =
         Patient ->
             "patient"
 
+        PostpartumCheck ->
+            "postpartumCheck"
+
         Pregnancy ->
             "pregnancy"
 
@@ -167,6 +171,9 @@ stringToTable tbl =
 
         "patient" ->
             Patient
+
+        "postpartumCheck" ->
+            PostpartumCheck
 
         "pregnancy" ->
             Pregnancy

@@ -6,6 +6,7 @@ module Data.BabyLabType
         , BabyLabTypeRecord
         , babyLabTypeRecord
         , getBabyLabFields
+        , getByName
         , getName
         , getType
         )
@@ -145,3 +146,10 @@ getType id fldNum recsList =
 
         Nothing ->
             Nothing
+
+
+getByName : String -> List BabyLabTypeRecord -> Maybe BabyLabTypeRecord
+getByName name recsList =
+    LE.find
+        (\r -> String.contains (String.toLower name) (String.toLower r.name))
+        recsList

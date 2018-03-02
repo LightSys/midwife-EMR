@@ -12,6 +12,26 @@ var assert = require('assert')
     verbose = true
   ;
 
+var addPostpartumCheck = function(data, cb) {
+  var m = msg('labor_assert/addPostpartumCheck()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id')); // Adding a postpartumCheck should not have an id.
+  assert.ok(_.has(data, 'checkDatetime'), m('data.checkDatetime'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
+var updatePostpartumCheck = function(data, cb) {
+  var m = msg('labor_assert/updatePostpartumCheck()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.has(data, 'checkDatetime'), m('data.checkDatetime'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addDischarge = function(data, cb) {
   var m = msg('labor_assert/addDischarge()');
   if (verbose) console.log(m());
@@ -342,5 +362,7 @@ module.exports = {
   addMotherMedication,
   updateMotherMedication,
   addNewbornExam,
-  updateNewbornExam
+  updateNewbornExam,
+  addPostpartumCheck,
+  updatePostpartumCheck
 };

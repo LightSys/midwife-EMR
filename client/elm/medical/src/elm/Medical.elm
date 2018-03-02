@@ -34,6 +34,7 @@ import Data.MotherMedication exposing (MotherMedicationId(..), motherMedicationR
 import Data.Membrane exposing (membraneRecordNewToMembraneRecord, MembraneId(..))
 import Data.NewbornExam exposing (NewbornExamId(..), newbornExamRecordNewToNewbornExamRecord)
 import Data.Postpartum exposing (SubMsg(..))
+import Data.PostpartumCheck exposing (postpartumCheckRecordNewToPostpartumCheckRecord, PostpartumCheckId(..))
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
 import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
@@ -337,18 +338,21 @@ update msg noAutoTouchModel =
 
                             _ ->
                                 Nothing
+
                         , case DCache.get LaborStage2 model.dataCache of
                             Just (LaborStage2DataCache s2) ->
                                 Just s2
 
                             _ ->
                                 Nothing
+
                         , case DCache.get LaborStage3 model.dataCache of
                             Just (LaborStage3DataCache s3) ->
                                 Just s3
 
                             _ ->
                                 Nothing
+
                         , case DCache.get ContPostpartumCheck model.dataCache of
                             Just (ContPostpartumCheckDataCache recs) ->
                                 -- Not a Maybe.
@@ -481,7 +485,7 @@ update msg noAutoTouchModel =
                 let
                     -- Get the labor stage records from the data cache which the
                     -- init function just requested records from the server for.
-                    ( stage1, stage2, stage3 ) =
+                    ( stage1, stage2, stage3, postpartumCheck ) =
                         ( case DCache.get LaborStage1 model.dataCache of
                             Just (LaborStage1DataCache s1) ->
                                 Just s1
@@ -500,6 +504,15 @@ update msg noAutoTouchModel =
 
                             _ ->
                                 Nothing
+
+                        , case DCache.get PostpartumCheck model.dataCache of
+                            Just (PostpartumCheckDataCache recs) ->
+                                -- Not a Maybe.
+                                recs
+
+                            _ ->
+                                []
+
                         )
 
                     ( subModel, newStore, newCmd ) =
@@ -508,6 +521,7 @@ update msg noAutoTouchModel =
                             stage2
                             stage3
                             model.babyRecords
+                            postpartumCheck
                             model.browserSupportsDate
                             model.currTime
                             model.processStore
@@ -540,6 +554,16 @@ update msg noAutoTouchModel =
                         (PagePostpartum.update model.session)
                         newSubMsg
                         subModel
+
+            ( PostpartumSelectQuery tbl key relatedTables, Postpartum subModel ) ->
+                -- Request by the sub page to retrieve additional data from the
+                -- server after the page's initialization and load is already
+                -- complete.
+                let
+                    ( store, newCmd ) =
+                        PagePostpartum.getTableData model.processStore tbl key relatedTables
+                in
+                    { model | processStore = store } => newCmd
 
             ( AdmittingMsg subMsg, Admitting subModel ) ->
                 -- All Admitting page sub messages are routed here.
@@ -602,6 +626,16 @@ update msg noAutoTouchModel =
                     model
                     (PageContPP.update model.session)
                     (Data.ContPP.DateFieldSubMsg dateFieldMsg)
+                    subModel
+
+            ( IncomingDatePicker dateFieldMsg, Postpartum subModel ) ->
+                -- For browsers without native date support in the input element,
+                -- receive the user's date selection from the jQueryUI datepicker.
+                updateForPage Postpartum
+                    PostpartumMsg
+                    model
+                    (PagePostpartum.update model.session)
+                    (Data.Postpartum.DateFieldSubMsg dateFieldMsg)
                     subModel
 
             ( AddLabor, LaborDelIpp subModel ) ->
@@ -885,6 +919,31 @@ updateMessage incoming model =
                                         , Task.perform ContPPMsg (Task.succeed subMsg)
                                         )
 
+                                Just (AddPostpartumCheckType (PostpartumMsg (Data.Postpartum.DataCache _ _)) postpartumCheckRecordNew) ->
+                                    let
+                                        -- Server accepted new record; create normal record.
+                                        postpartumCheckRec =
+                                            postpartumCheckRecordNewToPostpartumCheckRecord
+                                                (PostpartumCheckId dataAddMsg.response.id)
+                                                postpartumCheckRecordNew
+
+                                        -- Add the record to the data cache. We are not storing separately
+                                        -- in top-level model.
+                                        dc =
+                                            case DCache.get PostpartumCheck model.dataCache of
+                                                Just (PostpartumCheckDataCache recs) ->
+                                                    DCache.put (PostpartumCheckDataCache (postpartumCheckRec :: recs)) model.dataCache
+
+                                                _ ->
+                                                    DCache.put (PostpartumCheckDataCache ([postpartumCheckRec])) model.dataCache
+
+                                        subMsg =
+                                            Data.Postpartum.DataCache (Just model.dataCache) (Just [ PostpartumCheck ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform PostpartumMsg (Task.succeed subMsg)
+                                        )
+
                                 _ ->
                                     let
                                         msgText =
@@ -1140,6 +1199,30 @@ updateMessage incoming model =
                                         , Task.perform ContPPMsg (Task.succeed subMsg)
                                         )
 
+                                Just (UpdatePostpartumCheckType (PostpartumMsg (Data.Postpartum.DataCache _ _)) postpartumCheckRecord) ->
+                                    let
+                                        -- Updating the data cache with the updated record.
+                                        dc =
+                                            case DCache.get PostpartumCheck model.dataCache of
+                                                Just (PostpartumCheckDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            LE.replaceIf (\c -> c.id == postpartumCheckRecord.id)
+                                                                postpartumCheckRecord
+                                                                recs
+                                                    in
+                                                    DCache.put (PostpartumCheckDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.Postpartum.DataCache (Just model.dataCache) (Just [ PostpartumCheck ])
+                                    in
+                                        ( { model | dataCache = dc }
+                                        , Task.perform PostpartumMsg (Task.succeed subMsg)
+                                        )
+
                                 _ ->
                                     let
                                         msgText =
@@ -1352,6 +1435,14 @@ updateMessage incoming model =
                                             in
                                                 { mdl | patientRecord = rec, dataCache = dc }
 
+                                        TableRecordPostpartumCheck recs ->
+                                            let
+                                                dc =
+                                                    DCache.put (PostpartumCheckDataCache recs) mdl.dataCache
+                                            in
+                                                -- Only adding contPostpartumCheck records into data cache.
+                                                { mdl | dataCache = dc }
+
                                         TableRecordPregnancy recs ->
                                             -- We only ever want one pregnancy in our store at a time.
                                             let
@@ -1412,6 +1503,9 @@ updateMessage incoming model =
                         Just (AddMotherMedicationType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
+                        Just (AddPostpartumCheckType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
                         Just (UpdateContPostpartumCheckType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
@@ -1467,6 +1561,9 @@ updateMessage incoming model =
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (UpdateNewbornExamType msg _) ->
+                            newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                        Just (UpdatePostpartumCheckType msg _) ->
                             newModel2 => Task.perform (always msg) (Task.succeed True)
 
                         Just (SelectQueryType msg selectQuery) ->
@@ -1561,37 +1658,46 @@ setRoute maybeRoute model =
                 model => Cmd.none
 
             Just (Route.PostpartumRoute) ->
-                case ( model.currPregId, model.laborRecords ) of
-                    ( Just pregId, Just recs ) ->
-                        let
-                            -- Get the most recent labor record which we assume is
-                            -- the current one to use.
-                            laborRec =
-                                Dict.values recs
-                                    |> LE.maximumBy
-                                        (\lr ->
-                                            if lr.falseLabor then
-                                                -1
-                                            else
-                                                Date.toTime lr.admittanceDate
-                                        )
-                        in
-                            case laborRec of
-                                Just rec ->
-                                    if not rec.falseLabor then
-                                        PagePostpartum.init pregId rec model.session model.processStore
-                                            |> (\( store, cmd ) -> transition store cmd)
-                                    else
+                if model.dialogActive then
+                    -- We are coming back from an open dialog, so no need to
+                    -- retrieve data from the server all over again.
+                    { model | dialogActive = False } => Cmd.none
+                else
+                    case ( model.currPregId, model.laborRecords ) of
+                        ( Just pregId, Just recs ) ->
+                            let
+                                -- Get the most recent labor record which we assume is
+                                -- the current one to use.
+                                laborRec =
+                                    Dict.values recs
+                                        |> LE.maximumBy
+                                            (\lr ->
+                                                if lr.falseLabor then
+                                                    -1
+                                                else
+                                                    Date.toTime lr.admittanceDate
+                                            )
+                            in
+                                case laborRec of
+                                    Just rec ->
+                                        if not rec.falseLabor then
+                                            PagePostpartum.init pregId rec model.session model.processStore
+                                                |> (\( store, cmd ) -> transition store cmd)
+                                        else
+                                            -- We don't go there if we are not ready.
+                                            model => Cmd.none
+
+                                    Nothing ->
                                         -- We don't go there if we are not ready.
                                         model => Cmd.none
 
-                                Nothing ->
-                                    -- We don't go there if we are not ready.
-                                    model => Cmd.none
+                        ( _, _ ) ->
+                            -- We don't go there if we are not ready.
+                            model => Cmd.none
 
-                    ( _, _ ) ->
-                        -- We don't go there if we are not ready.
-                        model => Cmd.none
+            Just (Route.PostpartumDialogRoute) ->
+                model => Cmd.none
+
 
 
 pageErrored : Model -> ActivePage -> String -> ( Model, Cmd msg )

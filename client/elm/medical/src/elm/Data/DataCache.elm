@@ -29,6 +29,7 @@ import Data.MotherMedication exposing (MotherMedicationRecord)
 import Data.MotherMedicationType exposing (MotherMedicationTypeRecord)
 import Data.NewbornExam exposing (NewbornExamRecord)
 import Data.Patient exposing (PatientRecord)
+import Data.PostpartumCheck exposing (PostpartumCheckRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
 import Data.SelectData exposing (SelectDataRecord)
 import Data.Table exposing (stringToTable, tableToString, Table(..))
@@ -55,6 +56,7 @@ type DataCache
     | MotherMedicationTypeDataCache (List MotherMedicationTypeRecord)
     | NewbornExamDataCache NewbornExamRecord
     | PatientDataCache PatientRecord
+    | PostpartumCheckDataCache (List PostpartumCheckRecord)
     | PregnancyDataCache PregnancyRecord
     | SelectDataDataCache (List SelectDataRecord)
 
@@ -119,6 +121,9 @@ getTableString dc =
 
         PatientDataCache _ ->
             tableToString Patient
+
+        PostpartumCheckDataCache _ ->
+            tableToString PostpartumCheck
 
         PregnancyDataCache _ ->
             tableToString Pregnancy

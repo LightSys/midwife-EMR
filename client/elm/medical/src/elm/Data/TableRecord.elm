@@ -4,12 +4,6 @@ module Data.TableRecord
         , tableRecord
         )
 
-import Json.Decode as JD
-import Json.Decode.Pipeline as JDP
-
-
--- LOCAL IMPORTS --
-
 import Data.Baby exposing (BabyRecord, babyRecord)
 import Data.BabyLab exposing (BabyLabRecord, babyLabRecord)
 import Data.BabyLabType exposing (BabyLabTypeRecord, babyLabTypeRecord)
@@ -28,9 +22,12 @@ import Data.MotherMedication exposing (MotherMedicationRecord, motherMedicationR
 import Data.MotherMedicationType exposing (MotherMedicationTypeRecord, motherMedicationTypeRecord)
 import Data.NewbornExam exposing (NewbornExamRecord, newbornExamRecord)
 import Data.Patient exposing (PatientRecord, patientRecord)
+import Data.PostpartumCheck exposing (PostpartumCheckRecord, postpartumCheckRecord)
 import Data.Pregnancy exposing (PregnancyRecord, pregnancyRecord)
 import Data.SelectData exposing (SelectDataRecord, selectDataRecord)
 import Data.Table as DT exposing (Table(..))
+import Json.Decode as JD
+import Json.Decode.Pipeline as JDP
 
 
 type TableRecord
@@ -52,6 +49,7 @@ type TableRecord
     | TableRecordMotherMedicationType (List MotherMedicationTypeRecord)
     | TableRecordNewbornExam (List NewbornExamRecord)
     | TableRecordPatient (List PatientRecord)
+    | TableRecordPostpartumCheck (List PostpartumCheckRecord)
     | TableRecordPregnancy (List PregnancyRecord)
     | TableRecordSelectData (List SelectDataRecord)
 
@@ -113,6 +111,9 @@ tableRecord table =
         Patient ->
             JD.map TableRecordPatient (JD.list patientRecord)
 
+        PostpartumCheck ->
+            JD.map TableRecordPostpartumCheck (JD.list postpartumCheckRecord)
+
         Pregnancy ->
             JD.map TableRecordPregnancy (JD.list pregnancyRecord)
 
@@ -120,4 +121,4 @@ tableRecord table =
             JD.map TableRecordSelectData (JD.list selectDataRecord)
 
         _ ->
-            JD.fail <| "Cannot yet handle table of " ++ (DT.tableToString table) ++ " in Data.TableRecord.tableRecord."
+            JD.fail <| "Cannot yet handle table of " ++ DT.tableToString table ++ " in Data.TableRecord.tableRecord."

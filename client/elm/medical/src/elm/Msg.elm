@@ -39,6 +39,7 @@ import Data.Message as Message exposing (IncomingMessage(..), MsgType)
 import Data.MotherMedication exposing (MotherMedicationRecord, MotherMedicationRecordNew)
 import Data.NewbornExam exposing (NewbornExamRecord, NewbornExamRecordNew)
 import Data.Postpartum as Postpartum
+import Data.PostpartumCheck exposing (PostpartumCheckRecord, PostpartumCheckRecordNew)
 import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
 import Data.SelectQuery exposing (SelectQuery)
@@ -66,6 +67,7 @@ type Msg
     | LaborDelIppSelectQuery Table (Maybe Int) (List Table)
     | PostpartumLoaded PregnancyId LaborRecord
     | PostpartumMsg Postpartum.SubMsg
+    | PostpartumSelectQuery Table (Maybe Int) (List Table)
     | Message IncomingMessage
     | ProcessTypeMsg ProcessType MsgType JE.Value
     | OpenDatePicker String
@@ -129,6 +131,7 @@ type ProcessType
     | AddMembraneType Msg MembraneRecordNew
     | AddMotherMedicationType Msg MotherMedicationRecordNew
     | AddNewbornExamType Msg NewbornExamRecordNew
+    | AddPostpartumCheckType Msg PostpartumCheckRecordNew
     | UpdateBabyType Msg BabyRecord
     | UpdateBabyLabType Msg BabyLabRecord
     | UpdateBabyMedicationType Msg BabyMedicationRecord
@@ -142,4 +145,5 @@ type ProcessType
     | UpdateMembraneType Msg MembraneRecord
     | UpdateMotherMedicationType Msg MotherMedicationRecord
     | UpdateNewbornExamType Msg NewbornExamRecord
+    | UpdatePostpartumCheckType Msg PostpartumCheckRecord
     | SelectQueryType Msg SelectQuery

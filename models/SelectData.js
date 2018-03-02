@@ -18,8 +18,8 @@ var moment = require('moment')
 /*
 CREATE TABLE `selectData` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(30) NOT NULL,
-  `selectKey` varchar(30) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `selectKey` varchar(50) NOT NULL,
   `label` varchar(150) NOT NULL,
   `selected` tinyint(1) NOT NULL DEFAULT '0',
   `updatedBy` int(11) NOT NULL,

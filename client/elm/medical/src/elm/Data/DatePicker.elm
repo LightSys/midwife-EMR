@@ -46,6 +46,9 @@ type DateField
       -- which can be correlated to an id of some sort.
     | DynamicDateField Int Int
     | DischargeDateField
+    | PostpartumCheckDateField
+    | PostpartumCheckHgbField
+    | PostpartumCheckScheduledField
 
 
 dynamicRegex : Regex
@@ -100,6 +103,15 @@ stringToDateField str =
 
         "newbornExamId" ->
             NewBornExamDateField
+
+        "postpartumCheckId" ->
+            PostpartumCheckDateField
+
+        "postpartumCheckHgbId" ->
+            PostpartumCheckHgbField
+
+        "postpartumCheckScheduledId" ->
+            PostpartumCheckScheduledField
 
         str ->
             case Regex.find Regex.All dynamicRegex str
@@ -193,6 +205,15 @@ dateFieldToString df =
 
         NewBornExamDateField ->
             "newbornExamId"
+
+        PostpartumCheckDateField ->
+            "postpartumCheckId"
+
+        PostpartumCheckHgbField ->
+            "postpartumCheckHgbId"
+
+        PostpartumCheckScheduledField ->
+            "postpartumCheckScheduledId"
 
         UnknownDateField str ->
             "Warning: Unknown DateField: " ++ str

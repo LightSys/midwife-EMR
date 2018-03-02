@@ -148,3 +148,61 @@ newbornExamNose =
 newbornExamSkin : String
 newbornExamSkin =
     "newbornExamSkin"
+
+postpartumCheckBabyLungs : String
+postpartumCheckBabyLungs =
+    "postpartumCheckBabyLungs"
+
+postpartumCheckBabyColor : String
+postpartumCheckBabyColor =
+    "postpartumCheckBabyColor"
+
+postpartumCheckBabySkin : String
+postpartumCheckBabySkin =
+    "postpartumCheckBabySkin"
+
+postpartumCheckBabyCord : String
+postpartumCheckBabyCord =
+    "postpartumCheckBabyCord"
+
+postpartumCheckBabySSInfection : String
+postpartumCheckBabySSInfection =
+    "postpartumCheckBabySSInfection"
+
+postpartumCheckBabyFeeding : String
+postpartumCheckBabyFeeding =
+    "postpartumCheckBabyFeeding"
+
+postpartumCheckMotherBreasts : String
+postpartumCheckMotherBreasts =
+    "postpartumCheckMotherBreasts"
+
+postpartumCheckMotherFundus : String
+postpartumCheckMotherFundus =
+    "postpartumCheckMotherFundus"
+
+postpartumCheckMotherPerineum : String
+postpartumCheckMotherPerineum =
+    "postpartumCheckMotherPerineum"
+
+postpartumCheckMotherLochia : String
+postpartumCheckMotherLochia =
+    "postpartumCheckMotherLochia"
+
+postpartumCheckMotherUrine : String
+postpartumCheckMotherUrine =
+    "postpartumCheckMotherUrine"
+
+postpartumCheckMotherStool : String
+postpartumCheckMotherStool =
+    "postpartumCheckMotherStool"
+
+postpartumCheckMotherSSInfection : String
+postpartumCheckMotherSSInfection =
+    "postpartumCheckMotherSSInfection"
+
+postpartumCheckMotherFamilyPlanning : String
+postpartumCheckMotherFamilyPlanning =
+    "postpartumCheckMotherFamilyPlanning"
+
+

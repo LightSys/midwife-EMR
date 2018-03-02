@@ -24,6 +24,7 @@ type Route
     | LaborDelIppRoute
     | LaborDelIppDialogRoute
     | PostpartumRoute
+    | PostpartumDialogRoute
 
 
 admittingRouteString : String
@@ -58,6 +59,7 @@ route =
         , Url.map ContPPRoute (s contPPRouteString)
         , Url.map LaborDelIppDialogRoute (s laborDelIppRouteString </> s dialogRouteString)
         , Url.map LaborDelIppRoute (s laborDelIppRouteString)
+        , Url.map PostpartumDialogRoute (s postpartumRouteString </> s dialogRouteString)
         , Url.map PostpartumRoute (s postpartumRouteString)
         ]
 
@@ -88,6 +90,9 @@ routeToString page =
 
                 PostpartumRoute ->
                     [ postpartumRouteString ]
+
+                PostpartumDialogRoute ->
+                    [ postpartumRouteString, dialogRouteString ]
     in
         case List.length pieces of
             0 ->

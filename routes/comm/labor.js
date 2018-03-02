@@ -27,6 +27,7 @@ var _ = require('underscore')
   , Membrane = require('../../models').Membrane
   , MotherMedication = require('../../models').MotherMedication
   , NewbornExam = require('../../models').NewbornExam
+  , PostpartumCheck = require('../../models').PostpartumCheck
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
@@ -62,6 +63,7 @@ moduleTables.laborStage3 = ['placentaDatetime'];
 moduleTables.membrane = ['ruptureDatetime'];
 moduleTables.motherMedication = ['medicationDate'];
 moduleTables.newbornExam = ['examDatetime'];
+moduleTables.postpartumCheck = ['checkDatetime'];
 
 /* --------------------------------------------------------
  * adjustDatesToLocal()
@@ -542,6 +544,16 @@ var updateNewbornExam = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, NewbornExam, 'newbornExam');
 };
 
+var addPostpartumCheck = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addPostpartumCheck(data, cb);
+  addTable(data, userInfo, cb, PostpartumCheck, 'postpartumCheck');
+};
+
+var updatePostpartumCheck = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updatePostpartumCheck(data, cb);
+  updateTable(data, userInfo, cb, PostpartumCheck, 'postpartumCheck');
+};
+
 var notDefinedYet = function(data, userInfo, cb) {
   var msg = 'WARNING: notDefinedYet() called in "routes/comm/labor.js"';
   console.log(msg);
@@ -590,5 +602,8 @@ module.exports = {
   delMotherMedication: notDefinedYet,
   addNewbornExam,
   updateNewbornExam,
-  delNewbornExam : notDefinedYet
+  delNewbornExam : notDefinedYet,
+  addPostpartumCheck,
+  updatePostpartumCheck,
+  delPostpartumCheck: notDefinedYet
 };

@@ -433,6 +433,48 @@ editableSelectDataNameToString sdn =
         PlaceOfBirthSDN ->
             "placeOfBirth"
 
+        PostpartumCheckBabyColorSDN ->
+            "postpartumCheckBabyColor"
+
+        PostpartumCheckBabyCordSDN ->
+            "postpartumCheckBabyCord"
+
+        PostpartumCheckBabyFeedingSDN ->
+            "postpartumCheckBabyFeeding"
+
+        PostpartumCheckBabyLungsSDN ->
+            "postpartumCheckBabyLungs"
+
+        PostpartumCheckBabySkinSDN ->
+            "postpartumCheckBabySkin"
+
+        PostpartumCheckBabySSInfectionSDN ->
+            "postpartumCheckBabySSInfection"
+
+        PostpartumCheckMotherBreastsSDN ->
+            "postpartumCheckMotherBreasts"
+
+        PostpartumCheckMotherFundusSDN ->
+            "postpartumCheckMotherFundus"
+
+        PostpartumCheckMotherLochiaSDN ->
+            "postpartumCheckMotherLochia"
+
+        PostpartumCheckMotherPerineumSDN ->
+            "postpartumCheckMotherPerineum"
+
+        PostpartumCheckMotherSSInfectionSDN ->
+            "postpartumCheckMotherSSInfection"
+
+        PostpartumCheckMotherStoolSDN ->
+            "postpartumCheckMotherStool"
+
+        PostpartumCheckMotherUrineSDN ->
+            "postpartumCheckMotherUrine"
+
+        PostpartumCheckMotherFamilyPlanningSDN ->
+            "postpartumCheckMotherFamilyPlanning"
+
         ReferralsSDN ->
             "referrals"
 
@@ -523,6 +565,48 @@ editableStringToSelectDataName str =
 
         "placeOfBirth" ->
             Just PlaceOfBirthSDN
+
+        "postpartumCheckBabyColor" ->
+            Just PostpartumCheckBabyColorSDN
+
+        "postpartumCheckBabyCord" ->
+            Just PostpartumCheckBabyCordSDN
+
+        "postpartumCheckBabyFeeding" ->
+            Just PostpartumCheckBabyFeedingSDN
+
+        "postpartumCheckBabyLungs" ->
+            Just PostpartumCheckBabyLungsSDN
+
+        "postpartumCheckBabySkin" ->
+            Just PostpartumCheckBabySkinSDN
+
+        "postpartumCheckBabySSInfection" ->
+            Just PostpartumCheckBabySSInfectionSDN
+
+        "postpartumCheckMotherBreasts" ->
+            Just PostpartumCheckMotherBreastsSDN
+
+        "postpartumCheckMotherFundus" ->
+            Just PostpartumCheckMotherFundusSDN
+
+        "postpartumCheckMotherLochia" ->
+            Just PostpartumCheckMotherLochiaSDN
+
+        "postpartumCheckMotherPerineum" ->
+            Just PostpartumCheckMotherPerineumSDN
+
+        "postpartumCheckMotherSSInfection" ->
+            Just PostpartumCheckMotherSSInfectionSDN
+
+        "postpartumCheckMotherStool" ->
+            Just PostpartumCheckMotherStoolSDN
+
+        "postpartumCheckMotherUrine" ->
+            Just PostpartumCheckMotherUrineSDN
+
+        "postpartumCheckMotherFamilyPlanning" ->
+            Just PostpartumCheckMotherFamilyPlanningSDN
 
         "referrals" ->
             Just ReferralsSDN

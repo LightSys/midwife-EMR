@@ -1,15 +1,16 @@
 module Data.NewbornExam
     exposing
-        ( isNewbornExamRecordComplete
-        , NewbornExamId(..)
+        ( NewbornExamId(..)
         , NewbornExamRecord
         , NewbornExamRecordNew
+        , isNewbornExamRecordComplete
         , newbornExamRecord
         , newbornExamRecordNewToNewbornExamRecord
         , newbornExamRecordNewToValue
         , newbornExamRecordToValue
         )
 
+import Data.Table exposing (Table(..), tableToString)
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Json.Decode as JD
@@ -17,11 +18,6 @@ import Json.Decode.Extra as JDE
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Json.Encode.Extra as JEE
-
-
--- LOCAL IMPORTS --
-
-import Data.Table exposing (Table(..), tableToString)
 import Util as U
 
 
@@ -170,102 +166,103 @@ newbornExamRecord =
 newbornExamRecordToValue : NewbornExamRecord -> JE.Value
 newbornExamRecordToValue rec =
     JE.object
-        [ ( "table", (JE.string (tableToString NewbornExam)) )
+        [ ( "table", JE.string (tableToString NewbornExam) )
         , ( "data"
           , JE.object
-                [ ( "id", (JE.int rec.id) )
+                [ ( "id", JE.int rec.id )
                 , ( "examDatetime", U.dateToStringValue rec.examDatetime )
-                , ( "examiners", (JE.string rec.examiners) )
-                , ( "rr", (JEE.maybe JE.int rec.rr) )
-                , ( "hr", (JEE.maybe JE.int rec.hr) )
-                , ( "temperature", (JEE.maybe JE.float rec.temperature) )
-                , ( "length", (JEE.maybe JE.int rec.length) )
-                , ( "headCir", (JEE.maybe JE.int rec.headCir) )
-                , ( "chestCir", (JEE.maybe JE.int rec.chestCir) )
-                , ( "appearance", (JEE.maybe JE.string rec.appearance) )
-                , ( "color", (JEE.maybe JE.string rec.color) )
-                , ( "skin", (JEE.maybe JE.string rec.skin) )
-                , ( "head", (JEE.maybe JE.string rec.head) )
-                , ( "eyes", (JEE.maybe JE.string rec.eyes) )
-                , ( "ears", (JEE.maybe JE.string rec.ears) )
-                , ( "nose", (JEE.maybe JE.string rec.nose) )
-                , ( "mouth", (JEE.maybe JE.string rec.mouth) )
-                , ( "neck", (JEE.maybe JE.string rec.neck) )
-                , ( "chest", (JEE.maybe JE.string rec.chest) )
-                , ( "lungs", (JEE.maybe JE.string rec.lungs) )
-                , ( "heart", (JEE.maybe JE.string rec.heart) )
-                , ( "abdomen", (JEE.maybe JE.string rec.abdomen) )
-                , ( "hips", (JEE.maybe JE.string rec.hips) )
-                , ( "cord", (JEE.maybe JE.string rec.cord) )
-                , ( "femoralPulses", (JEE.maybe JE.string rec.femoralPulses) )
-                , ( "genitalia", (JEE.maybe JE.string rec.genitalia) )
-                , ( "anus", (JEE.maybe JE.string rec.anus) )
-                , ( "back", (JEE.maybe JE.string rec.back) )
-                , ( "extremities", (JEE.maybe JE.string rec.extremities) )
-                , ( "estGA", (JEE.maybe JE.string rec.estGA) )
-                , ( "moroReflex", (U.maybeBoolToMaybeInt rec.moroReflex) )
-                , ( "moroReflexComment", (JEE.maybe JE.string rec.moroReflexComment) )
-                , ( "palmarReflex", (U.maybeBoolToMaybeInt rec.palmarReflex) )
-                , ( "palmarReflexComment", (JEE.maybe JE.string rec.palmarReflexComment) )
-                , ( "steppingReflex", (U.maybeBoolToMaybeInt rec.steppingReflex) )
-                , ( "steppingReflexComment", (JEE.maybe JE.string rec.steppingReflexComment) )
-                , ( "plantarReflex", (U.maybeBoolToMaybeInt rec.plantarReflex) )
-                , ( "plantarReflexComment", (JEE.maybe JE.string rec.plantarReflexComment) )
-                , ( "babinskiReflex", (U.maybeBoolToMaybeInt rec.babinskiReflex) )
-                , ( "babinskiReflexComment", (JEE.maybe JE.string rec.babinskiReflexComment) )
-                , ( "comments", (JEE.maybe JE.string rec.comments) )
-                , ( "baby_id", (JE.int rec.baby_id) )
+                , ( "examiners", JE.string rec.examiners )
+                , ( "rr", JEE.maybe JE.int rec.rr )
+                , ( "hr", JEE.maybe JE.int rec.hr )
+                , ( "temperature", JEE.maybe JE.float rec.temperature )
+                , ( "length", JEE.maybe JE.int rec.length )
+                , ( "headCir", JEE.maybe JE.int rec.headCir )
+                , ( "chestCir", JEE.maybe JE.int rec.chestCir )
+                , ( "appearance", JEE.maybe JE.string rec.appearance )
+                , ( "color", JEE.maybe JE.string rec.color )
+                , ( "skin", JEE.maybe JE.string rec.skin )
+                , ( "head", JEE.maybe JE.string rec.head )
+                , ( "eyes", JEE.maybe JE.string rec.eyes )
+                , ( "ears", JEE.maybe JE.string rec.ears )
+                , ( "nose", JEE.maybe JE.string rec.nose )
+                , ( "mouth", JEE.maybe JE.string rec.mouth )
+                , ( "neck", JEE.maybe JE.string rec.neck )
+                , ( "chest", JEE.maybe JE.string rec.chest )
+                , ( "lungs", JEE.maybe JE.string rec.lungs )
+                , ( "heart", JEE.maybe JE.string rec.heart )
+                , ( "abdomen", JEE.maybe JE.string rec.abdomen )
+                , ( "hips", JEE.maybe JE.string rec.hips )
+                , ( "cord", JEE.maybe JE.string rec.cord )
+                , ( "femoralPulses", JEE.maybe JE.string rec.femoralPulses )
+                , ( "genitalia", JEE.maybe JE.string rec.genitalia )
+                , ( "anus", JEE.maybe JE.string rec.anus )
+                , ( "back", JEE.maybe JE.string rec.back )
+                , ( "extremities", JEE.maybe JE.string rec.extremities )
+                , ( "estGA", JEE.maybe JE.string rec.estGA )
+                , ( "moroReflex", U.maybeBoolToMaybeInt rec.moroReflex )
+                , ( "moroReflexComment", JEE.maybe JE.string rec.moroReflexComment )
+                , ( "palmarReflex", U.maybeBoolToMaybeInt rec.palmarReflex )
+                , ( "palmarReflexComment", JEE.maybe JE.string rec.palmarReflexComment )
+                , ( "steppingReflex", U.maybeBoolToMaybeInt rec.steppingReflex )
+                , ( "steppingReflexComment", JEE.maybe JE.string rec.steppingReflexComment )
+                , ( "plantarReflex", U.maybeBoolToMaybeInt rec.plantarReflex )
+                , ( "plantarReflexComment", JEE.maybe JE.string rec.plantarReflexComment )
+                , ( "babinskiReflex", U.maybeBoolToMaybeInt rec.babinskiReflex )
+                , ( "babinskiReflexComment", JEE.maybe JE.string rec.babinskiReflexComment )
+                , ( "comments", JEE.maybe JE.string rec.comments )
+                , ( "baby_id", JE.int rec.baby_id )
                 ]
           )
         ]
 
+
 newbornExamRecordNewToValue : NewbornExamRecordNew -> JE.Value
 newbornExamRecordNewToValue rec =
     JE.object
-        [ ( "table", (JE.string (tableToString NewbornExam)) )
+        [ ( "table", JE.string (tableToString NewbornExam) )
         , ( "data"
           , JE.object
                 [ ( "examDatetime", U.dateToStringValue rec.examDatetime )
-                , ( "examiners", (JE.string rec.examiners) )
-                , ( "rr", (JEE.maybe JE.int rec.rr) )
-                , ( "hr", (JEE.maybe JE.int rec.hr) )
-                , ( "temperature", (JEE.maybe JE.float rec.temperature) )
-                , ( "length", (JEE.maybe JE.int rec.length) )
-                , ( "headCir", (JEE.maybe JE.int rec.headCir) )
-                , ( "chestCir", (JEE.maybe JE.int rec.chestCir) )
-                , ( "appearance", (JEE.maybe JE.string rec.appearance) )
-                , ( "color", (JEE.maybe JE.string rec.color) )
-                , ( "skin", (JEE.maybe JE.string rec.skin) )
-                , ( "head", (JEE.maybe JE.string rec.head) )
-                , ( "eyes", (JEE.maybe JE.string rec.eyes) )
-                , ( "ears", (JEE.maybe JE.string rec.ears) )
-                , ( "nose", (JEE.maybe JE.string rec.nose) )
-                , ( "mouth", (JEE.maybe JE.string rec.mouth) )
-                , ( "neck", (JEE.maybe JE.string rec.neck) )
-                , ( "chest", (JEE.maybe JE.string rec.chest) )
-                , ( "lungs", (JEE.maybe JE.string rec.lungs) )
-                , ( "heart", (JEE.maybe JE.string rec.heart) )
-                , ( "abdomen", (JEE.maybe JE.string rec.abdomen) )
-                , ( "hips", (JEE.maybe JE.string rec.hips) )
-                , ( "cord", (JEE.maybe JE.string rec.cord) )
-                , ( "femoralPulses", (JEE.maybe JE.string rec.femoralPulses) )
-                , ( "genitalia", (JEE.maybe JE.string rec.genitalia) )
-                , ( "anus", (JEE.maybe JE.string rec.anus) )
-                , ( "back", (JEE.maybe JE.string rec.back) )
-                , ( "extremities", (JEE.maybe JE.string rec.extremities) )
-                , ( "estGA", (JEE.maybe JE.string rec.estGA) )
-                , ( "moroReflex", (U.maybeBoolToMaybeInt rec.moroReflex) )
-                , ( "moroReflexComment", (JEE.maybe JE.string rec.moroReflexComment) )
-                , ( "palmarReflex", (U.maybeBoolToMaybeInt rec.palmarReflex) )
-                , ( "palmarReflexComment", (JEE.maybe JE.string rec.palmarReflexComment) )
-                , ( "steppingReflex", (U.maybeBoolToMaybeInt rec.steppingReflex) )
-                , ( "steppingReflexComment", (JEE.maybe JE.string rec.steppingReflexComment) )
-                , ( "plantarReflex", (U.maybeBoolToMaybeInt rec.plantarReflex) )
-                , ( "plantarReflexComment", (JEE.maybe JE.string rec.plantarReflexComment) )
-                , ( "babinskiReflex", (U.maybeBoolToMaybeInt rec.babinskiReflex) )
-                , ( "babinskiReflexComment", (JEE.maybe JE.string rec.babinskiReflexComment) )
-                , ( "comments", (JEE.maybe JE.string rec.comments) )
-                , ( "baby_id", (JE.int rec.baby_id) )
+                , ( "examiners", JE.string rec.examiners )
+                , ( "rr", JEE.maybe JE.int rec.rr )
+                , ( "hr", JEE.maybe JE.int rec.hr )
+                , ( "temperature", JEE.maybe JE.float rec.temperature )
+                , ( "length", JEE.maybe JE.int rec.length )
+                , ( "headCir", JEE.maybe JE.int rec.headCir )
+                , ( "chestCir", JEE.maybe JE.int rec.chestCir )
+                , ( "appearance", JEE.maybe JE.string rec.appearance )
+                , ( "color", JEE.maybe JE.string rec.color )
+                , ( "skin", JEE.maybe JE.string rec.skin )
+                , ( "head", JEE.maybe JE.string rec.head )
+                , ( "eyes", JEE.maybe JE.string rec.eyes )
+                , ( "ears", JEE.maybe JE.string rec.ears )
+                , ( "nose", JEE.maybe JE.string rec.nose )
+                , ( "mouth", JEE.maybe JE.string rec.mouth )
+                , ( "neck", JEE.maybe JE.string rec.neck )
+                , ( "chest", JEE.maybe JE.string rec.chest )
+                , ( "lungs", JEE.maybe JE.string rec.lungs )
+                , ( "heart", JEE.maybe JE.string rec.heart )
+                , ( "abdomen", JEE.maybe JE.string rec.abdomen )
+                , ( "hips", JEE.maybe JE.string rec.hips )
+                , ( "cord", JEE.maybe JE.string rec.cord )
+                , ( "femoralPulses", JEE.maybe JE.string rec.femoralPulses )
+                , ( "genitalia", JEE.maybe JE.string rec.genitalia )
+                , ( "anus", JEE.maybe JE.string rec.anus )
+                , ( "back", JEE.maybe JE.string rec.back )
+                , ( "extremities", JEE.maybe JE.string rec.extremities )
+                , ( "estGA", JEE.maybe JE.string rec.estGA )
+                , ( "moroReflex", U.maybeBoolToMaybeInt rec.moroReflex )
+                , ( "moroReflexComment", JEE.maybe JE.string rec.moroReflexComment )
+                , ( "palmarReflex", U.maybeBoolToMaybeInt rec.palmarReflex )
+                , ( "palmarReflexComment", JEE.maybe JE.string rec.palmarReflexComment )
+                , ( "steppingReflex", U.maybeBoolToMaybeInt rec.steppingReflex )
+                , ( "steppingReflexComment", JEE.maybe JE.string rec.steppingReflexComment )
+                , ( "plantarReflex", U.maybeBoolToMaybeInt rec.plantarReflex )
+                , ( "plantarReflexComment", JEE.maybe JE.string rec.plantarReflexComment )
+                , ( "babinskiReflex", U.maybeBoolToMaybeInt rec.babinskiReflex )
+                , ( "babinskiReflexComment", JEE.maybe JE.string rec.babinskiReflexComment )
+                , ( "comments", JEE.maybe JE.string rec.comments )
+                , ( "baby_id", JE.int rec.baby_id )
                 ]
           )
         ]
@@ -274,83 +271,83 @@ newbornExamRecordNewToValue rec =
 newbornExamRecordNewToNewbornExamRecord : NewbornExamId -> NewbornExamRecordNew -> NewbornExamRecord
 newbornExamRecordNewToNewbornExamRecord (NewbornExamId id) newRec =
     NewbornExamRecord id
-      newRec.examDatetime
-      newRec.examiners
-      newRec.rr
-      newRec.hr
-      newRec.temperature
-      newRec.length
-      newRec.headCir
-      newRec.chestCir
-      newRec.appearance
-      newRec.color
-      newRec.skin
-      newRec.head
-      newRec.eyes
-      newRec.ears
-      newRec.nose
-      newRec.mouth
-      newRec.neck
-      newRec.chest
-      newRec.lungs
-      newRec.heart
-      newRec.abdomen
-      newRec.hips
-      newRec.cord
-      newRec.femoralPulses
-      newRec.genitalia
-      newRec.anus
-      newRec.back
-      newRec.extremities
-      newRec.estGA
-      newRec.moroReflex
-      newRec.moroReflexComment
-      newRec.palmarReflex
-      newRec.palmarReflexComment
-      newRec.steppingReflex
-      newRec.steppingReflexComment
-      newRec.plantarReflex
-      newRec.plantarReflexComment
-      newRec.babinskiReflex
-      newRec.babinskiReflexComment
-      newRec.comments
-      newRec.baby_id
+        newRec.examDatetime
+        newRec.examiners
+        newRec.rr
+        newRec.hr
+        newRec.temperature
+        newRec.length
+        newRec.headCir
+        newRec.chestCir
+        newRec.appearance
+        newRec.color
+        newRec.skin
+        newRec.head
+        newRec.eyes
+        newRec.ears
+        newRec.nose
+        newRec.mouth
+        newRec.neck
+        newRec.chest
+        newRec.lungs
+        newRec.heart
+        newRec.abdomen
+        newRec.hips
+        newRec.cord
+        newRec.femoralPulses
+        newRec.genitalia
+        newRec.anus
+        newRec.back
+        newRec.extremities
+        newRec.estGA
+        newRec.moroReflex
+        newRec.moroReflexComment
+        newRec.palmarReflex
+        newRec.palmarReflexComment
+        newRec.steppingReflex
+        newRec.steppingReflexComment
+        newRec.plantarReflex
+        newRec.plantarReflexComment
+        newRec.babinskiReflex
+        newRec.babinskiReflexComment
+        newRec.comments
+        newRec.baby_id
 
 
 isNewbornExamRecordComplete : NewbornExamRecord -> Bool
 isNewbornExamRecordComplete rec =
     not <|
-        ((U.validateDate (Just rec.examDatetime))
-            || (U.validatePopulatedString (Just rec.examiners))
+        (U.validateDate (Just rec.examDatetime)
+            || U.validatePopulatedString (Just rec.examiners)
             || (rec.rr == Nothing)
             || (rec.hr == Nothing)
             || (rec.temperature == Nothing)
             || (rec.length == Nothing)
             || (rec.headCir == Nothing)
             || (rec.chestCir == Nothing)
-            || (U.validatePopulatedString rec.appearance)
-            || (U.validatePopulatedString rec.color)
-            || (U.validatePopulatedString rec.skin)
-            || (U.validatePopulatedString rec.head)
-            || (U.validatePopulatedString rec.eyes)
-            || (U.validatePopulatedString rec.ears)
-            || (U.validatePopulatedString rec.nose)
-            || (U.validatePopulatedString rec.mouth)
-            || (U.validatePopulatedString rec.neck)
-            || (U.validatePopulatedString rec.chest)
-            || (U.validatePopulatedString rec.lungs)
-            || (U.validatePopulatedString rec.heart)
-            || (U.validatePopulatedString rec.abdomen)
-            || (U.validatePopulatedString rec.hips)
-            || (U.validatePopulatedString rec.cord)
-            || (U.validatePopulatedString rec.femoralPulses)
-            || (U.validatePopulatedString rec.genitalia)
-            || (U.validatePopulatedString rec.anus)
-            || (U.validatePopulatedString rec.back)
-            || (U.validatePopulatedString rec.extremities)
-            || (U.validateBool rec.moroReflex)
-            || (U.validateBool rec.palmarReflex)
-            || (U.validateBool rec.steppingReflex)
-            || (U.validateBool rec.plantarReflex)
-            || (U.validateBool rec.babinskiReflex)
+            || U.validatePopulatedString rec.appearance
+            || U.validatePopulatedString rec.color
+            || U.validatePopulatedString rec.skin
+            || U.validatePopulatedString rec.head
+            || U.validatePopulatedString rec.eyes
+            || U.validatePopulatedString rec.ears
+            || U.validatePopulatedString rec.nose
+            || U.validatePopulatedString rec.mouth
+            || U.validatePopulatedString rec.neck
+            || U.validatePopulatedString rec.chest
+            || U.validatePopulatedString rec.lungs
+            || U.validatePopulatedString rec.heart
+            || U.validatePopulatedString rec.abdomen
+            || U.validatePopulatedString rec.hips
+            || U.validatePopulatedString rec.cord
+            || U.validatePopulatedString rec.femoralPulses
+            || U.validatePopulatedString rec.genitalia
+            || U.validatePopulatedString rec.anus
+            || U.validatePopulatedString rec.back
+            || U.validatePopulatedString rec.extremities
+            || U.validateBool rec.moroReflex
+            || U.validateBool rec.palmarReflex
+            || U.validateBool rec.steppingReflex
+            || U.validateBool rec.plantarReflex
+            || U.validateBool rec.babinskiReflex
         )

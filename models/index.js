@@ -101,5 +101,7 @@ module.exports = {
   , MotherMedications: require('./MotherMedication').MotherMedications
   , Discharge: require('./Discharge').Discharge
   , Discharges: require('./Discharge').Discharges
+  , PostpartumCheck: require('./PostpartumCheck').PostpartumCheck
+  , PostpartumChecks: require('./PostpartumCheck').PostpartumChecks
 };
 

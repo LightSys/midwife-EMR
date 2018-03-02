@@ -34,6 +34,7 @@ module Util
         , maybeIntToMaybeBool
         , maybeIntToNegOne
         , maybeOr
+        , maybeStringLength
         , maybeStringToIntValue
         , maybeStringToMaybeFloat
         , maybeStringToMaybeInt
@@ -119,6 +120,15 @@ boolToInt bool =
             1
 
         False ->
+            0
+
+maybeStringLength : Maybe String -> Int
+maybeStringLength str =
+    case str of
+        Just s ->
+            String.length s
+
+        Nothing ->
             0
 
 

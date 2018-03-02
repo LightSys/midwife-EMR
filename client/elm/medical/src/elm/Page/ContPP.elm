@@ -109,7 +109,6 @@ import Data.NewbornExam
         , newbornExamRecordToValue
         )
 import Data.Patient exposing (PatientRecord)
-import Data.PostpartumCheck exposing (PostpartumCheck)
 import Data.Pregnancy
     exposing
         ( PregnancyId(..)
@@ -4137,8 +4136,12 @@ dialogDischargeEdit cfg =
                             ]
                       else
                         -- Browser does not support date.
-                        H.div [ HA.class "c-card" ]
-                            [ H.div [ HA.class "c-card__body" ]
+                        H.div [ HA.class "c-card mw-form-field-2x" ]
+                            [ H.div [ HA.class "c-card__item" ]
+                                [ H.div [ HA.class "c-text--loud" ]
+                                    [ H.text "Date/time of discharge" ]
+                                ]
+                            , H.div [ HA.class "c-card__body" ]
                                 [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                     [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                         DischargeDateField
@@ -4174,7 +4177,7 @@ dialogDischargeEdit cfg =
                         ]
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgString >> FldChgSubMsg DischargeMotherTempFld)
-                            "Mother temperature"
+                            "Mother temp"
                             ""
                             True
                             cfg.model.dischargeMotherTemp
@@ -4198,7 +4201,7 @@ dialogDischargeEdit cfg =
                         ]
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgString >> FldChgSubMsg DischargeBabyTempFld)
-                            "Baby Temperature"
+                            "Baby Temp"
                             ""
                             True
                             cfg.model.dischargeBabyTemp
@@ -4206,7 +4209,7 @@ dialogDischargeEdit cfg =
                         ]
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgString >> FldChgSubMsg DischargeBabyCRFld)
-                            "Baby heart rate"
+                            "Baby HR"
                             ""
                             True
                             cfg.model.dischargeBabyCR
@@ -4491,8 +4494,12 @@ motherMedicationEdit refId name medCfg browserSupportsDate =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Date/time administered" ]
+                            ]
+                        , H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     (DynamicDateField motherMedicationDynamicDateCategory refId)
@@ -4875,8 +4882,12 @@ babyLabEdit mvl name labRec browserSupportsDate babyLabTypeRecords =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Date/time administered" ]
+                            ]
+                        , H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     (DynamicDateField type_ refId)
@@ -5106,8 +5117,12 @@ babyMedVacEdit mvl name useLocation mvlRec browserSupportsDate =
                                 ]
                           else
                             -- Browser does not support date.
-                            H.div [ HA.class "c-card" ]
-                                [ H.div [ HA.class "c-card__body" ]
+                            H.div [ HA.class "c-card mw-form-field-2x" ]
+                                [ H.div [ HA.class "c-card__item" ]
+                                    [ H.div [ HA.class "c-text--loud" ]
+                                        [ H.text "Date/time administered" ]
+                                    ]
+                                , H.div [ HA.class "c-card__body" ]
                                     [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                         [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                             (DynamicDateField type_ typeId)
@@ -5416,8 +5431,12 @@ dialogContPostpartumCheckEdit cfg =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Date/time of check" ]
+                            ]
+                        , H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     ContPostpartumCheckDateField
@@ -5598,8 +5617,12 @@ dialogNewbornExamSummaryEdit cfg =
                         ]
                   else
                     -- Browser does not support date.
-                    H.div [ HA.class "c-card" ]
-                        [ H.div [ HA.class "c-card__body" ]
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Date/time of newborn exam" ]
+                            ]
+                        , H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
                                 [ Form.formFieldDatePicker OpenDatePickerSubMsg
                                     NewBornExamDateField

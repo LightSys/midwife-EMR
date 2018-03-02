@@ -217,6 +217,20 @@ type EditableSelectDataName
     | NewbornExamNeckSDN
     | NewbornExamNoseSDN
     | NewbornExamSkinSDN
+    | PostpartumCheckBabyColorSDN
+    | PostpartumCheckBabyCordSDN
+    | PostpartumCheckBabyFeedingSDN
+    | PostpartumCheckBabyLungsSDN
+    | PostpartumCheckBabySkinSDN
+    | PostpartumCheckBabySSInfectionSDN
+    | PostpartumCheckMotherBreastsSDN
+    | PostpartumCheckMotherFundusSDN
+    | PostpartumCheckMotherLochiaSDN
+    | PostpartumCheckMotherPerineumSDN
+    | PostpartumCheckMotherSSInfectionSDN
+    | PostpartumCheckMotherStoolSDN
+    | PostpartumCheckMotherUrineSDN
+    | PostpartumCheckMotherFamilyPlanningSDN
 
 
 type TableResponse
