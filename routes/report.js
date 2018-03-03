@@ -17,6 +17,7 @@ var _ = require('underscore')
   , dohMasterList = require('./dohMasterListRpt')
   , philHealthDailyRpt = require('./philHealthDailyRpt')
   , inactiveRpt = require('./inactiveRpt')
+  , vitaminARpt = require('./vitaminARpt')
   ;
 
 
@@ -119,6 +120,11 @@ var form = function(req, res) {
     , selected: false
     , label: 'Inactive Report'
   }
+  , {
+    selectKey: 'vitaminA'
+    , selected: false
+    , label: 'Vitamin A'
+  }
   ];
 
   new Users()
@@ -166,6 +172,7 @@ var run = function(req, res) {
   if (report === 'dohmasterlist') dohMasterList.run(req, res);
   if (report === 'philHealthDaily') philHealthDailyRpt.run(req, res);
   if (report === 'inactive') inactiveRpt.run(req, res);
+  if (report === 'vitaminA') vitaminARpt.run(req, res);
 };
 
 module.exports = {
