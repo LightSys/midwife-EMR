@@ -1437,7 +1437,9 @@ dialogStage2SummaryEdit cfg =
                     cfg.model.s2BirthType
                     (FldChgString >> FldChgSubMsg Stage2BirthTypeFld)
                     False
-                    [ "Vaginal" ]
+                    [ "Single"
+                    , "Twin"
+                    ]
                     (getErr Stage2BirthTypeFld errors)
                 , Form.radioFieldsetOther "Position for birth"
                     "position"
