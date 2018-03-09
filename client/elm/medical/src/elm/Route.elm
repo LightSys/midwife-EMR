@@ -25,6 +25,7 @@ type Route
     | LaborDelIppDialogRoute
     | PostpartumRoute
     | PostpartumDialogRoute
+    | BirthCertificateRoute
 
 
 admittingRouteString : String
@@ -45,6 +46,9 @@ postpartumRouteString : String
 postpartumRouteString =
     "postpartum"
 
+birthCertificateRouteString : String
+birthCertificateRouteString =
+    "birthcertificate"
 
 dialogRouteString : String
 dialogRouteString =
@@ -61,6 +65,7 @@ route =
         , Url.map LaborDelIppRoute (s laborDelIppRouteString)
         , Url.map PostpartumDialogRoute (s postpartumRouteString </> s dialogRouteString)
         , Url.map PostpartumRoute (s postpartumRouteString)
+        , Url.map BirthCertificateRoute (s birthCertificateRouteString)
         ]
 
 
@@ -75,6 +80,9 @@ routeToString page =
             case page of
                 AdmittingRoute ->
                     [ admittingRouteString ]
+
+                BirthCertificateRoute ->
+                    [ birthCertificateRouteString ]
 
                 ContPPRoute ->
                     [ contPPRouteString ]

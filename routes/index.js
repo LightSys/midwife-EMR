@@ -31,4 +31,5 @@ module.exports = {
   , invWork: require('./invWork')
   , generateBarcodes: require('./barcodes').generateBarcodes
   , vitaminARpt: require('./vitaminARpt')
+  , birthCertificateRpt: require('./birthCertificateRpt')
 };

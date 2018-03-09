@@ -76,12 +76,7 @@ import Data.Labor
     exposing
         ( LaborId(..)
         , LaborRecord
-          --, LaborRecordNew
-          --, laborRecordNewToValue
-          --, laborRecordNewToLaborRecord
-          --, laborRecordToValue
         , getLaborId
-          --, getMostRecentLaborRecord
         )
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
@@ -5280,7 +5275,8 @@ viewContPostpartumChecks cfg =
                 |> List.map viewContPostpartumCheck
     in
     H.div []
-        [ H.h3 [] [ H.text cfg.title ]
+        [ H.h1 [ HA.class "c-heading u-large" ]
+            [ H.text cfg.title ]
         , H.div
             [ HA.style [ ( "margin-bottom", "1em" ) ]
             , HA.classList [ ( "isHidden", not cfg.isShown ) ]

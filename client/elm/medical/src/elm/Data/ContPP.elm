@@ -5,16 +5,13 @@ module Data.ContPP
         , SubMsg(..)
         )
 
-import Dict exposing (Dict)
-
--- LOCAL IMPORTS --
-
 import Const exposing (Dialog(..), FldChgValue)
 import Data.ContPostpartumCheck exposing (ContPostpartumCheckId)
 import Data.DataCache exposing (DataCache)
 import Data.DatePicker exposing (DateFieldMessage)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 import Data.Table exposing (Table)
+import Dict exposing (Dict)
 
 
 type SubMsg
@@ -46,6 +43,7 @@ type MedVacLab
     = MedMVL Int
     | VacMVL Int
     | LabMVL Int
+
 
 {-| The fields we use. NotUsed is a special case for handling a MedVacLab
 when we have not started working with Labs yet.

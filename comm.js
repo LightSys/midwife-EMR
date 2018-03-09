@@ -136,6 +136,7 @@ var rx = require('rx')
   , TABLE_babyMedication = 'babyMedication'
   , TABLE_babyVaccination = 'babyVaccination'
   , TABLE_motherMedication = 'motherMedication'
+  , TABLE_birthCertificate = 'birthCertificate'
   , TABLE_babyLab = 'babyLab'
   , TABLE_contPostpartumCheck = 'contPostpartumCheck'
   , TABLE_postpartumCheck = 'postpartumCheck'
@@ -169,6 +170,9 @@ var rx = require('rx')
   , addBabyVaccination = require('./routes/comm/labor').addBabyVaccination
   , updateBabyVaccination = require('./routes/comm/labor').updateBabyVaccination
   , delBabyVaccination = require('./routes/comm/labor').delBabyVaccination
+  , addBirthCertificate = require('./routes/comm/labor').addBirthCertificate
+  , updateBirthCertificate = require('./routes/comm/labor').updateBirthCertificate
+  , delBirthCertificate = require('./routes/comm/labor').delBirthCertificate
   , addMotherMedication = require('./routes/comm/labor').addMotherMedication
   , updateMotherMedication = require('./routes/comm/labor').updateMotherMedication
   , delMotherMedication = require('./routes/comm/labor').delMotherMedication
@@ -880,6 +884,13 @@ var getFuncForTableOp = function(table, op) {
         case ADD: func = addBabyVaccination; break;
         case CHG: func = updateBabyVaccination; break;
         case DEL: func = delBabyVaccination; break;
+      }
+      break;
+    case TABLE_birthCertificate:
+      switch (op) {
+        case ADD: func = addBirthCertificate; break;
+        case CHG: func = updateBirthCertificate; break;
+        case DEL: func = delBirthCertificate; break;
       }
       break;
     case TABLE_contPostpartumCheck:

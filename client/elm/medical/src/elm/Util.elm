@@ -20,6 +20,7 @@ module Util
         , filterStringInList
         , filterStringLikeFloat
         , filterStringLikeInt
+        , filterStringLikeIntOrNegInt
         , filterStringLikeTime
         , filterStringNotInList
         , formatDohId
@@ -75,6 +76,7 @@ import Time exposing (Time)
 
 -- LOCAL IMPORTS --
 
+
 (=>) : a -> b -> ( a, b )
 (=>) =
     (,)
@@ -121,6 +123,7 @@ boolToInt bool =
 
         False ->
             0
+
 
 maybeStringLength : Maybe String -> Int
 maybeStringLength str =
@@ -196,6 +199,25 @@ filterStringLikeInt str =
     String.toList str
         |> List.filter (\d -> Char.isDigit d)
         |> String.fromList
+
+
+{-| Return a String that contains only digits but
+will allow a negative.
+-}
+filterStringLikeIntOrNegInt : String -> String
+filterStringLikeIntOrNegInt str =
+    let
+        result =
+            (String.toList str
+                |> List.take 1
+                |> List.filter (\d -> Char.isDigit d || d == '-')
+            )
+                ++ (String.toList str
+                        |> List.drop 1
+                        |> List.filter (\d -> Char.isDigit d)
+                   )
+    in
+    String.fromList result
 
 
 {-| Return a String that contains only digits or

@@ -465,6 +465,9 @@ KeyValue.getKeyValues().then(function(data) {
     // If url is for transitioning from SPA to full page load, ignore.
     if (/^\/toprenatal/.test(req.url)) return next();
 
+    // Ignore the birth certificate.
+    if (/^\/printBirthCertificate/.test(req.url)) return next();
+
     if (req.session && req.session.isSpaOnly) return api.doSpa(req, res, next);
     next();
   });
@@ -704,6 +707,10 @@ KeyValue.getKeyValues().then(function(data) {
   // Invoice Worksheet
   app.get(cfg.path.invoiceWorksheet, common,
       inRoles(['supervisor', 'clerk', 'attending']), invWork.invoiceWorksheet);
+
+  // Birth Certificate printing
+  app.get(cfg.path.birthCertificatePrinting, common,
+      inRoles(['supervisor', 'clerk', 'attending']), report.birthCertificate);
 
   // ========================================================
   // ========================================================

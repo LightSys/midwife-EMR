@@ -390,7 +390,7 @@ viewAdmittingData model =
                 , ( "margin-top", "0.8em" )
                 ]
             ]
-            [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
+            [ H.h1 [ HA.class "c-heading u-large" ]
                 [ H.text title ]
             , H.div []
                 [ H.div [ HA.class "o-fieldset form-wrapper" ]

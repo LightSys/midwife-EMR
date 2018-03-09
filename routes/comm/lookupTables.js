@@ -19,6 +19,7 @@ var _ = require('underscore')
   , BabyLabType = require('../../models').BabyLabType
   , BabyVaccination = require('../../models').BabyVaccination
   , BabyVaccinationType = require('../../models').BabyVaccinationType
+  , BirthCertificate = require('../../models').BirthCertificate
   , ContPostpartumCheck = require('../../models').ContPostpartumCheck
   , Discharge = require('../../models').Discharge
   , Labor = require('../../models').Labor
@@ -62,6 +63,7 @@ var LOOKUP_TABLES = [
   'babyLabType',
   'babyVaccination',
   'babyVaccinationType',
+  'birthCertificate',
   'contPostpartumCheck',
   'discharge',
   'eventType',

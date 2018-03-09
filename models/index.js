@@ -103,5 +103,7 @@ module.exports = {
   , Discharges: require('./Discharge').Discharges
   , PostpartumCheck: require('./PostpartumCheck').PostpartumCheck
   , PostpartumChecks: require('./PostpartumCheck').PostpartumChecks
+  , BirthCertificate: require('./BirthCertificate').BirthCertificate
+  , BirthCertificates: require('./BirthCertificate').BirthCertificates
 };
 

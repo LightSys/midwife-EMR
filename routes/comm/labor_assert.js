@@ -12,6 +12,24 @@ var assert = require('assert')
     verbose = true
   ;
 
+var addBirthCertificate = function(data, cb) {
+  var m = msg('labor_assert/addBirthCertificate()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(! _.has(data, 'id'), m('data.id')); // Adding a record should not have an id.
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
+var updateBirthCertificate = function(data, cb) {
+  var m = msg('labor_assert/updateBirthCertificate()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addPostpartumCheck = function(data, cb) {
   var m = msg('labor_assert/addPostpartumCheck()');
   if (verbose) console.log(m());
@@ -343,6 +361,8 @@ module.exports = {
   updateBabyMedication,
   addBabyVaccination,
   updateBabyVaccination,
+  addBirthCertificate,
+  updateBirthCertificate,
   addContPostpartumCheck,
   updateContPostpartumCheck,
   addDischarge,

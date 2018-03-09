@@ -18,6 +18,7 @@ var _ = require('underscore')
   , BabyMedication = require('../../models').BabyMedication
   , BabyLab = require('../../models').BabyLab
   , BabyVaccination = require('../../models').BabyVaccination
+  , BirthCertificate = require('../../models').BirthCertificate
   , ContPostpartumCheck = require('../../models').ContPostpartumCheck
   , Discharge = require('../../models').Discharge
   , Labor = require('../../models').Labor
@@ -48,12 +49,16 @@ var _ = require('underscore')
 //
 // Note that every table needs to be listed even if there
 // are no date fields present in the table.
+//
+// Note that fields using DATE rather than DATETIME do not
+// need to be present here.
 // --------------------------------------------------------
 moduleTables.apgar = [];
 moduleTables.baby = ['bFedEstablished' ];
 moduleTables.babyMedication = ['medicationDate'];
 moduleTables.babyLab = ['dateTime'];
 moduleTables.babyVaccination = ['vaccinationDate'];
+moduleTables.birthCertificate = [];
 moduleTables.contPostpartumCheck = ['checkDatetime'];
 moduleTables.discharge = ['dateTime' ];
 moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
@@ -454,6 +459,16 @@ var updateBabyVaccination = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, BabyVaccination, 'babyVaccination');
 };
 
+var addBirthCertificate = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBirthCertificate(data, cb);
+  addTable(data, userInfo, cb, BirthCertificate, 'birthCertificate');
+};
+
+var updateBirthCertificate = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBirthCertificate(data, cb);
+  updateTable(data, userInfo, cb, BirthCertificate, 'birthCertificate');
+};
+
 var addContPostpartumCheck = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addContPostpartumCheck(data, cb);
   addTable(data, userInfo, cb, ContPostpartumCheck, 'contPostpartumCheck');
@@ -576,6 +591,9 @@ module.exports = {
   addBabyVaccination,
   updateBabyVaccination,
   delBabyVaccination: notDefinedYet,
+  addBirthCertificate,
+  updateBirthCertificate,
+  delBirthCertificate: notDefinedYet,
   addContPostpartumCheck,
   updateContPostpartumCheck,
   delContPostpartumCheck: notDefinedYet,

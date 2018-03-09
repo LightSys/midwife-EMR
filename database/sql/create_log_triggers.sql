@@ -336,6 +336,48 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: birthCertificate_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS birthCertificate_after_insert;
+CREATE TRIGGER birthCertificate_after_insert AFTER INSERT ON birthCertificate
+FOR EACH ROW
+BEGIN
+  INSERT INTO birthCertificateLog
+  (id, birthOrder, motherMaidenLastname, motherMiddlename, motherFirstname, motherCitizenship, motherNumChildrenBornAlive, motherNumChildrenLiving, motherNumChildrenBornAliveNowDead, motherAddress, motherCity, motherProvince, motherCountry, fatherLastname, fatherMiddlename, fatherFirstname, fatherCitizenship, fatherReligion, fatherOccupation, fatherAgeAtBirth, fatherAddress, fatherCity, fatherProvince, fatherCountry, dateOfMarriage, cityOfMarriage, provinceOfMarriage, countryOfMarriage, attendantType, attendantOther, attendantFullname, attendantTitle, attendantAddr1, attendantAddr2, informantFullname, informantRelationToChild, informantAddress, preparedByFullname, preparedByTitle, commTaxNumber, commTaxDate, commTaxPlace, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthOrder, NEW.motherMaidenLastname, NEW.motherMiddlename, NEW.motherFirstname, NEW.motherCitizenship, NEW.motherNumChildrenBornAlive, NEW.motherNumChildrenLiving, NEW.motherNumChildrenBornAliveNowDead, NEW.motherAddress, NEW.motherCity, NEW.motherProvince, NEW.motherCountry, NEW.fatherLastname, NEW.fatherMiddlename, NEW.fatherFirstname, NEW.fatherCitizenship, NEW.fatherReligion, NEW.fatherOccupation, NEW.fatherAgeAtBirth, NEW.fatherAddress, NEW.fatherCity, NEW.fatherProvince, NEW.fatherCountry, NEW.dateOfMarriage, NEW.cityOfMarriage, NEW.provinceOfMarriage, NEW.countryOfMarriage, NEW.attendantType, NEW.attendantOther, NEW.attendantFullname, NEW.attendantTitle, NEW.attendantAddr1, NEW.attendantAddr2, NEW.informantFullname, NEW.informantRelationToChild, NEW.informantAddress, NEW.preparedByFullname, NEW.preparedByTitle, NEW.commTaxNumber, NEW.commTaxDate, NEW.commTaxPlace, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: birthCertificate_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS birthCertificate_after_update;
+CREATE TRIGGER birthCertificate_after_update AFTER UPDATE ON birthCertificate
+FOR EACH ROW
+BEGIN
+  INSERT INTO birthCertificateLog
+  (id, birthOrder, motherMaidenLastname, motherMiddlename, motherFirstname, motherCitizenship, motherNumChildrenBornAlive, motherNumChildrenLiving, motherNumChildrenBornAliveNowDead, motherAddress, motherCity, motherProvince, motherCountry, fatherLastname, fatherMiddlename, fatherFirstname, fatherCitizenship, fatherReligion, fatherOccupation, fatherAgeAtBirth, fatherAddress, fatherCity, fatherProvince, fatherCountry, dateOfMarriage, cityOfMarriage, provinceOfMarriage, countryOfMarriage, attendantType, attendantOther, attendantFullname, attendantTitle, attendantAddr1, attendantAddr2, informantFullname, informantRelationToChild, informantAddress, preparedByFullname, preparedByTitle, commTaxNumber, commTaxDate, commTaxPlace, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthOrder, NEW.motherMaidenLastname, NEW.motherMiddlename, NEW.motherFirstname, NEW.motherCitizenship, NEW.motherNumChildrenBornAlive, NEW.motherNumChildrenLiving, NEW.motherNumChildrenBornAliveNowDead, NEW.motherAddress, NEW.motherCity, NEW.motherProvince, NEW.motherCountry, NEW.fatherLastname, NEW.fatherMiddlename, NEW.fatherFirstname, NEW.fatherCitizenship, NEW.fatherReligion, NEW.fatherOccupation, NEW.fatherAgeAtBirth, NEW.fatherAddress, NEW.fatherCity, NEW.fatherProvince, NEW.fatherCountry, NEW.dateOfMarriage, NEW.cityOfMarriage, NEW.provinceOfMarriage, NEW.countryOfMarriage, NEW.attendantType, NEW.attendantOther, NEW.attendantFullname, NEW.attendantTitle, NEW.attendantAddr1, NEW.attendantAddr2, NEW.informantFullname, NEW.informantRelationToChild, NEW.informantAddress, NEW.preparedByFullname, NEW.preparedByTitle, NEW.commTaxNumber, NEW.commTaxDate, NEW.commTaxPlace, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: birthCertificate_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS birthCertificate_after_delete;
+CREATE TRIGGER birthCertificate_after_delete AFTER DELETE ON birthCertificate
+FOR EACH ROW
+BEGIN
+  INSERT INTO birthCertificateLog
+  (id, birthOrder, motherMaidenLastname, motherMiddlename, motherFirstname, motherCitizenship, motherNumChildrenBornAlive, motherNumChildrenLiving, motherNumChildrenBornAliveNowDead, motherAddress, motherCity, motherProvince, motherCountry, fatherLastname, fatherMiddlename, fatherFirstname, fatherCitizenship, fatherReligion, fatherOccupation, fatherAgeAtBirth, fatherAddress, fatherCity, fatherProvince, fatherCountry, dateOfMarriage, cityOfMarriage, provinceOfMarriage, countryOfMarriage, attendantType, attendantOther, attendantFullname, attendantTitle, attendantAddr1, attendantAddr2, informantFullname, informantRelationToChild, informantAddress, preparedByFullname, preparedByTitle, commTaxNumber, commTaxDate, commTaxPlace, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.birthOrder, OLD.motherMaidenLastname, OLD.motherMiddlename, OLD.motherFirstname, OLD.motherCitizenship, OLD.motherNumChildrenBornAlive, OLD.motherNumChildrenLiving, OLD.motherNumChildrenBornAliveNowDead, OLD.motherAddress, OLD.motherCity, OLD.motherProvince, OLD.motherCountry, OLD.fatherLastname, OLD.fatherMiddlename, OLD.fatherFirstname, OLD.fatherCitizenship, OLD.fatherReligion, OLD.fatherOccupation, OLD.fatherAgeAtBirth, OLD.fatherAddress, OLD.fatherCity, OLD.fatherProvince, OLD.fatherCountry, OLD.dateOfMarriage, OLD.cityOfMarriage, OLD.provinceOfMarriage, OLD.countryOfMarriage, OLD.attendantType, OLD.attendantOther, OLD.attendantFullname, OLD.attendantTitle, OLD.attendantAddr1, OLD.attendantAddr2, OLD.informantFullname, OLD.informantRelationToChild, OLD.informantAddress, OLD.preparedByFullname, OLD.preparedByTitle, OLD.commTaxNumber, OLD.commTaxDate, OLD.commTaxPlace, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: contPostpartumCheck_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$

@@ -24,6 +24,7 @@ import Data.Session as Session exposing (Session)
 import Data.SiteMessage exposing (SiteKeyValue(..))
 import Data.Toast exposing (ToastRecord, ToastType)
 import Page.Admitting as PageAdmitting
+import Page.BirthCert as PageBirthCert
 import Page.ContPP as PageContPP
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
@@ -39,6 +40,7 @@ type Page
     | ContPP PageContPP.Model
     | LaborDelIpp PageLaborDelIpp.Model
     | Postpartum PagePostpartum.Model
+    | BirthCert PageBirthCert.Model
 
 
 type PageState

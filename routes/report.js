@@ -18,6 +18,7 @@ var _ = require('underscore')
   , philHealthDailyRpt = require('./philHealthDailyRpt')
   , inactiveRpt = require('./inactiveRpt')
   , vitaminARpt = require('./vitaminARpt')
+  , birthCertificateRpt = require('./birthCertificateRpt')
   ;
 
 
@@ -175,10 +176,21 @@ var run = function(req, res) {
   if (report === 'vitaminA') vitaminARpt.run(req, res);
 };
 
+
+/* --------------------------------------------------------
+ * birthCertificate()
+ *
+ * Runs the birth certificate report.
+ * -------------------------------------------------------- */
+var birthCertificate = function(req, res) {
+  birthCertificateRpt.run(req, res);
+};
+
 module.exports = {
   form: form
   , run: run
   , summary: summary
+  , birthCertificate
 };
 
 

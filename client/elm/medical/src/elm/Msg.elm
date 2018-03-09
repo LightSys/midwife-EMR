@@ -21,6 +21,8 @@ import Data.Baby exposing (BabyRecord, BabyRecordNew)
 import Data.BabyLab exposing (BabyLabRecord, BabyLabRecordNew)
 import Data.BabyMedication exposing (BabyMedicationRecord, BabyMedicationRecordNew)
 import Data.BabyVaccination exposing (BabyVaccinationRecord, BabyVaccinationRecordNew)
+import Data.BirthCert
+import Data.BirthCertificate exposing (BirthCertificateRecord, BirthCertificateRecordNew)
 import Data.ContPP as ContPP
 import Data.ContPostpartumCheck
     exposing
@@ -73,6 +75,9 @@ type Msg
     | OpenDatePicker String
     | IncomingDatePicker DateFieldMessage
     | AddLabor
+    | BirthCertLoaded PregnancyId LaborRecord
+    | BirthCertMsg Data.BirthCert.SubMsg
+    | BirthCertSelectQuery Table (Maybe Int) (List Table)
 
 
 {-| Initiate a Cmd to send a message to the console. This function
@@ -122,6 +127,7 @@ type ProcessType
     | AddBabyLabType Msg BabyLabRecordNew
     | AddBabyMedicationType Msg BabyMedicationRecordNew
     | AddBabyVaccinationType Msg BabyVaccinationRecordNew
+    | AddBirthCertificateType Msg BirthCertificateRecordNew
     | AddContPostpartumCheckType Msg ContPostpartumCheckRecordNew
     | AddDischargeType Msg DischargeRecordNew
     | AddLaborType Msg LaborRecordNew
@@ -136,6 +142,7 @@ type ProcessType
     | UpdateBabyLabType Msg BabyLabRecord
     | UpdateBabyMedicationType Msg BabyMedicationRecord
     | UpdateBabyVaccinationType Msg BabyVaccinationRecord
+    | UpdateBirthCertificateType Msg BirthCertificateRecord
     | UpdateContPostpartumCheckType Msg ContPostpartumCheckRecord
     | UpdateDischargeType Msg DischargeRecord
     | UpdateLaborType Msg LaborRecord

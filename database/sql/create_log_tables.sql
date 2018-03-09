@@ -402,3 +402,13 @@ ALTER TABLE postpartumCheckLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE postpartumCheckLog DROP PRIMARY KEY;
 ALTER TABLE postpartumCheckLog ADD PRIMARY KEY (id, replacedAt);
 --
+-- Creating birthCertificateLog
+SELECT 'birthCertificateLog' AS Creating FROM DUAL;
+CREATE TABLE birthCertificateLog LIKE birthCertificate;
+ALTER TABLE birthCertificateLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE birthCertificateLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE birthCertificateLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE birthCertificateLog DROP PRIMARY KEY;
+ALTER TABLE birthCertificateLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE birthCertificateLog DROP KEY baby_id;
+--

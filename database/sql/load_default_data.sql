@@ -652,7 +652,12 @@ VALUES
   ('siteShortName', 'YourClinic', 'A relatively short name for the clinic, i.e. under 10 characters.', 'text', '', 0),
   ('siteLongName', 'Your Full Clinic Name', 'The full name for the clinic.', 'text', '', 0),
   ('defaultCity', 'Home Town Name', 'The default locality you want to use that most of your patients come from.', 'text', '', 0),
-  ('searchRowsPerPage', '20', 'The number of rows of search results to display per page.', 'integer', '', 0)
+  ('searchRowsPerPage', '20', 'The number of rows of search results to display per page.', 'integer', '', 0),
+  ('birthCertInstitution', 'YourInstitution', 'Used in the birth certificate form, field #4.', 'text', '', 0),
+  ('birthCertProvince', 'YourProvince', 'Used in the birth certificate form, field #4.', 'text', '', 0),
+  ('birthCertCity', 'YourCity', 'Used in the birth certificate form, field #4.', 'text', '', 0),
+  ('birthCertProvinceTop', 'YourProvince', 'Used at the TOP of the birth certificate form in the Province field.', 'text', '', 0),
+  ('birthCertCityTop', 'YourCity', 'Used at the TOP of the birth certificate form in the City/Municipality field.', 'text', '', 0)
 ;
 
 SELECT 'babyMedicationType' AS 'Loading' FROM DUAL;
