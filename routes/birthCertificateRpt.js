@@ -370,6 +370,9 @@ var doFirstPage = function(doc, data, opts) {
  * Prints the second page of the Certificate of Live Birth
  * form, but only the top section for Admission of Paternity.
  *
+ * Note that this should not be called if the comm tax
+ * fields are complete.
+ *
  * param       doc
  * param       data
  * param       opts
@@ -425,7 +428,7 @@ var doSecondPage = function(doc, data, opts) {
   // who exhinited to me (his/her) Community Tax Cert No.
   writeField(fldPos.paternity.commTaxNumber[0], fldPos.paternity.commTaxNumber[1], data.bc.commTaxNumber);
   // issued on
-  writeField(fldPos.paternity.commTaxDate[0], fldPos.paternity.commTaxDate[1], moment(data.bc.commTaxDate).format('M/D/YYYY'));
+  writeField(fldPos.paternity.commTaxDate[0], fldPos.paternity.commTaxDate[1], moment(data.bc.commTaxDate).format('DD-MMM-YYYY'));
   // at
   writeField(fldPos.paternity.commTaxPlace[0], fldPos.paternity.commTaxPlace[1], data.bc.commTaxPlace);
 };
@@ -433,6 +436,16 @@ var doSecondPage = function(doc, data, opts) {
 var doPages = function(doc, data, opts) {
   // First page with margins as originally set for page one.
   doFirstPage(doc, data, opts);
+
+  // --------------------------------------------------------
+  // We only print the second page if we have the data.
+  // --------------------------------------------------------
+  if (! data.bc.commTaxNumber ||
+      ! data.bc.commTaxPlace ||
+      ! data.bc.commTaxDate ||
+      ! _.isDate(data.bc.commTaxDate)) {
+    return;
+  }
 
   // Second page set with page two margins.
   opts.margins = opts.margins2;
@@ -469,7 +482,7 @@ var getData = function(babyId) {
         // Get the birth certificate.
         // --------------------------------------------------------
         return new BirthCertificate().query()
-          .where('id', babyId)
+          .where('baby_id', babyId)
           .select();
       })
       .then(function(birthCert) {
