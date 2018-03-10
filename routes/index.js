@@ -32,4 +32,5 @@ module.exports = {
   , generateBarcodes: require('./barcodes').generateBarcodes
   , vitaminARpt: require('./vitaminARpt')
   , birthCertificateRpt: require('./birthCertificateRpt')
+  , bcgRpt: require('./bcgRpt')
 };

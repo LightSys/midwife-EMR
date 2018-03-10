@@ -18,6 +18,7 @@ var _ = require('underscore')
   , philHealthDailyRpt = require('./philHealthDailyRpt')
   , inactiveRpt = require('./inactiveRpt')
   , vitaminARpt = require('./vitaminARpt')
+  , bcgRpt = require('./bcgRpt')
   , birthCertificateRpt = require('./birthCertificateRpt')
   ;
 
@@ -126,6 +127,11 @@ var form = function(req, res) {
     , selected: false
     , label: 'Vitamin A'
   }
+  , {
+    selectKey: 'bcg'
+    , selected: false
+    , label: 'BCG Report'
+  }
   ];
 
   new Users()
@@ -174,6 +180,7 @@ var run = function(req, res) {
   if (report === 'philHealthDaily') philHealthDailyRpt.run(req, res);
   if (report === 'inactive') inactiveRpt.run(req, res);
   if (report === 'vitaminA') vitaminARpt.run(req, res);
+  if (report === 'bcg') bcgRpt.run(req, res);
 };
 
 
