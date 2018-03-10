@@ -19,6 +19,7 @@ var _ = require('underscore')
   , inactiveRpt = require('./inactiveRpt')
   , vitaminARpt = require('./vitaminARpt')
   , bcgRpt = require('./bcgRpt')
+  , hepbRpt = require('./hepbRpt')
   , birthCertificateRpt = require('./birthCertificateRpt')
   ;
 
@@ -132,6 +133,11 @@ var form = function(req, res) {
     , selected: false
     , label: 'BCG Report'
   }
+  , {
+    selectKey: 'hepb'
+    , selected: false
+    , label: 'Hep B Report'
+  }
   ];
 
   new Users()
@@ -181,6 +187,7 @@ var run = function(req, res) {
   if (report === 'inactive') inactiveRpt.run(req, res);
   if (report === 'vitaminA') vitaminARpt.run(req, res);
   if (report === 'bcg') bcgRpt.run(req, res);
+  if (report === 'hepb') hepbRpt.run(req, res);
 };
 
 

@@ -33,4 +33,5 @@ module.exports = {
   , vitaminARpt: require('./vitaminARpt')
   , birthCertificateRpt: require('./birthCertificateRpt')
   , bcgRpt: require('./bcgRpt')
+  , hepbRpt: require('./hepbRpt')
 };
