@@ -381,7 +381,7 @@ viewAdmittingData model =
                     ( "", "", False )
 
         title =
-            "Admitting Information"
+            "Admitting Diagnosis"
                 |> (\s -> if earlyLabor then s ++ " (early labor)" else s)
     in
         H.div
