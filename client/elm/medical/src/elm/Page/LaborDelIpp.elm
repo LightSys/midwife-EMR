@@ -123,7 +123,7 @@ type DateTimeModal
     | Stage1DateTimeModal
     | Stage2DateTimeModal
     | Stage3DateTimeModal
-    | FalseLaborDateTimeModal
+    | EarlyLaborDateTimeModal
 
 
 type ViewEditState
@@ -872,12 +872,12 @@ viewStagesMembranesBaby model =
             , HA.classList [ ( "isHidden", hideFalse ) ]
             ]
             [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "False Labor" ]
+                [ H.text "Early Labor" ]
             , H.div []
                 [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                     [ H.button
                         [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleFalseLaborDateTimeModal OpenDialog
+                        , HE.onClick <| HandleEarlyLaborDateTimeModal OpenDialog
                         ]
                         [ H.text <|
                             case ( model.laborRecords, model.currLaborId ) of
@@ -902,23 +902,23 @@ viewStagesMembranesBaby model =
                                     "Click to set"
                         ]
                     , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
-                            "False Labor Date/Time"
-                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
-                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
-                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
-                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                        Form.dateTimeModal (model.falseLaborDateTimeModal == EarlyLaborDateTimeModal)
+                            "Early Labor Date/Time"
+                            (FldChgString >> FldChgSubMsg EarlyLaborDateFld)
+                            (FldChgString >> FldChgSubMsg EarlyLaborTimeFld)
+                            (HandleEarlyLaborDateTimeModal CloseNoSaveDialog)
+                            (HandleEarlyLaborDateTimeModal CloseSaveDialog)
                             ClearFalseLaborDateTime
                             model.falseLaborDate
                             model.falseLaborTime
                       else
-                        Form.dateTimePickerModal (model.falseLaborDateTimeModal == FalseLaborDateTimeModal)
-                            "False Labor Date/Time"
+                        Form.dateTimePickerModal (model.falseLaborDateTimeModal == EarlyLaborDateTimeModal)
+                            "Early Labor Date/Time"
                             OpenDatePickerSubMsg
-                            (FldChgString >> FldChgSubMsg FalseLaborDateFld)
-                            (FldChgString >> FldChgSubMsg FalseLaborTimeFld)
-                            (HandleFalseLaborDateTimeModal CloseNoSaveDialog)
-                            (HandleFalseLaborDateTimeModal CloseSaveDialog)
+                            (FldChgString >> FldChgSubMsg EarlyLaborDateFld)
+                            (FldChgString >> FldChgSubMsg EarlyLaborTimeFld)
+                            (HandleEarlyLaborDateTimeModal CloseNoSaveDialog)
+                            (HandleEarlyLaborDateTimeModal CloseSaveDialog)
                             ClearFalseLaborDateTime
                             FalseLaborDateField
                             model.falseLaborDate
@@ -3088,10 +3088,10 @@ update session msg model =
                         Stage3CommentsFld ->
                             { model | s3Comments = Just value }
 
-                        FalseLaborDateFld ->
+                        EarlyLaborDateFld ->
                             { model | falseLaborDate = Date.fromString value |> Result.toMaybe }
 
-                        FalseLaborTimeFld ->
+                        EarlyLaborTimeFld ->
                             { model | falseLaborTime = Just <| U.filterStringLikeTime value }
 
                         MembraneRuptureDateFld ->
@@ -4220,7 +4220,7 @@ update session msg model =
                             , toastError msgs 10
                             )
 
-        HandleFalseLaborDateTimeModal dialogState ->
+        HandleEarlyLaborDateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for a
             -- false labor. We default to the current date/time for convenience if
             -- this is an open event, but only if the date/time has not already
@@ -4232,13 +4232,13 @@ update session msg model =
                             -- If not yet set, the set the date/time to
                             -- current as a convenience to user.
                             { model
-                                | falseLaborDateTimeModal = FalseLaborDateTimeModal
+                                | falseLaborDateTimeModal = EarlyLaborDateTimeModal
                                 , falseLaborDate = Just <| Date.fromTime model.currTime
                                 , falseLaborTime = Just <| U.timeToTimeString model.currTime
                             }
 
                         ( _, _ ) ->
-                            { model | falseLaborDateTimeModal = FalseLaborDateTimeModal }
+                            { model | falseLaborDateTimeModal = EarlyLaborDateTimeModal }
                     , Cmd.none
                     , Cmd.none
                     )

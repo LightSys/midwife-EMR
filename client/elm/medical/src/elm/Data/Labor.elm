@@ -1,15 +1,17 @@
 module Data.Labor
     exposing
-        ( getLaborId
-        , getMostRecentLaborRecord
-        , LaborId(..)
+        ( LaborId(..)
         , LaborRecord
-        , laborRecord
         , LaborRecordNew
+        , getLaborId
+        , getMostRecentLaborRecord
+        , laborRecord
         , laborRecordNewToLaborRecord
         , laborRecordNewToValue
         , laborRecordToValue
         )
+
+-- LOCAL IMPORTS --
 
 import Date exposing (Date)
 import Dict exposing (Dict)
@@ -19,10 +21,6 @@ import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Json.Encode.Extra as JEE
 import List
-
-
--- LOCAL IMPORTS --
-
 import Util as U
 
 
@@ -30,6 +28,9 @@ type LaborId
     = LaborId Int
 
 
+{-| Note that false labor is also known as
+early labor.
+-}
 type alias LaborRecord =
     { id : Int
     , admittanceDate : Date
@@ -93,23 +94,24 @@ a payload object that is ready to be wrapped with wrapPayload.
 laborRecordNewToValue : LaborRecordNew -> JE.Value
 laborRecordNewToValue rec =
     JE.object
-        [ ( "table", (JE.string "labor") )
+        [ ( "table", JE.string "labor" )
         , ( "data"
           , JE.object
-                [ ( "admittanceDate", (U.dateToStringValue rec.admittanceDate) )
-                , ( "startLaborDate", (U.dateToStringValue rec.startLaborDate) )
-                , ( "pos", (JE.string rec.pos) )
-                , ( "fh", (JE.int rec.fh) )
-                , ( "fht", (JE.int rec.fht) )
-                , ( "systolic", (JE.int rec.systolic) )
-                , ( "diastolic", (JE.int rec.diastolic) )
-                , ( "cr", (JE.int rec.cr) )
-                , ( "temp", (JE.float rec.temp) )
-                , ( "comments", (JEE.maybe JE.string rec.comments) )
-                , ( "pregnancy_id", (JE.int rec.pregnancy_id) )
+                [ ( "admittanceDate", U.dateToStringValue rec.admittanceDate )
+                , ( "startLaborDate", U.dateToStringValue rec.startLaborDate )
+                , ( "pos", JE.string rec.pos )
+                , ( "fh", JE.int rec.fh )
+                , ( "fht", JE.int rec.fht )
+                , ( "systolic", JE.int rec.systolic )
+                , ( "diastolic", JE.int rec.diastolic )
+                , ( "cr", JE.int rec.cr )
+                , ( "temp", JE.float rec.temp )
+                , ( "comments", JEE.maybe JE.string rec.comments )
+                , ( "pregnancy_id", JE.int rec.pregnancy_id )
                 ]
           )
         ]
+
 
 {-| Encode LaborRecord for sending to the server as
 a payload object that is ready to be wrapped with wrapPayload.
@@ -117,23 +119,23 @@ a payload object that is ready to be wrapped with wrapPayload.
 laborRecordToValue : LaborRecord -> JE.Value
 laborRecordToValue rec =
     JE.object
-        [ ( "table", (JE.string "labor") )
+        [ ( "table", JE.string "labor" )
         , ( "data"
           , JE.object
-                [ ( "id", (JE.int rec.id) )
-                , ( "admittanceDate", (U.dateToStringValue rec.admittanceDate) )
-                , ( "startLaborDate", (U.dateToStringValue rec.startLaborDate) )
-                , ( "dischargeDate", (U.maybeDateToValue rec.dischargeDate) )
-                , ( "falseLabor", (U.boolToInt rec.falseLabor |> JE.int) )
-                , ( "pos", (JE.string rec.pos) )
-                , ( "fh", (JE.int rec.fh) )
-                , ( "fht", (JE.int rec.fht) )
-                , ( "systolic", (JE.int rec.systolic) )
-                , ( "diastolic", (JE.int rec.diastolic) )
-                , ( "cr", (JE.int rec.cr) )
-                , ( "temp", (JE.float rec.temp) )
-                , ( "comments", (JEE.maybe JE.string rec.comments) )
-                , ( "pregnancy_id", (JE.int rec.pregnancy_id) )
+                [ ( "id", JE.int rec.id )
+                , ( "admittanceDate", U.dateToStringValue rec.admittanceDate )
+                , ( "startLaborDate", U.dateToStringValue rec.startLaborDate )
+                , ( "dischargeDate", U.maybeDateToValue rec.dischargeDate )
+                , ( "falseLabor", U.boolToInt rec.falseLabor |> JE.int )
+                , ( "pos", JE.string rec.pos )
+                , ( "fh", JE.int rec.fh )
+                , ( "fht", JE.int rec.fht )
+                , ( "systolic", JE.int rec.systolic )
+                , ( "diastolic", JE.int rec.diastolic )
+                , ( "cr", JE.int rec.cr )
+                , ( "temp", JE.float rec.temp )
+                , ( "comments", JEE.maybe JE.string rec.comments )
+                , ( "pregnancy_id", JE.int rec.pregnancy_id )
                 ]
           )
         ]
@@ -169,6 +171,5 @@ getMostRecentLaborRecord recs =
         admitSort a b =
             U.sortDate U.DescendingSort a.admittanceDate b.admittanceDate
     in
-        List.sortWith admitSort (Dict.values recs)
-            |> List.head
-
+    List.sortWith admitSort (Dict.values recs)
+        |> List.head

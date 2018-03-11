@@ -46,7 +46,7 @@ type SubMsg
     | HandleStage2SummaryModal Dialog
     | HandleStage3DateTimeModal Dialog
     | HandleStage3SummaryModal Dialog
-    | HandleFalseLaborDateTimeModal Dialog
+    | HandleEarlyLaborDateTimeModal Dialog
     | HandleMembraneSummaryModal Dialog
     | HandleBabySummaryModal Dialog
     | AddApgarWizard AddOtherApgar
@@ -128,8 +128,8 @@ type Field
     | Stage3PlacentaMembranesCompleteFld
     | Stage3PlacentaOtherFld
     | Stage3CommentsFld
-    | FalseLaborDateFld
-    | FalseLaborTimeFld
+    | EarlyLaborDateFld
+    | EarlyLaborTimeFld
     | BabyLastnameFld
     | BabyFirstnameFld
     | BabyMiddlenameFld

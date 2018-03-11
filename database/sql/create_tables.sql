@@ -579,6 +579,8 @@ CREATE TABLE IF NOT EXISTS `pregnote` (
 );
 SHOW WARNINGS;
 
+-- Note: false labor is more properly known
+-- as an early labor.
 CREATE TABLE IF NOT EXISTS `labor` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   admittanceDate DATETIME NOT NULL,

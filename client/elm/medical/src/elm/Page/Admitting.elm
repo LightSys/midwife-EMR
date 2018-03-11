@@ -114,10 +114,11 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                             else
                                 -- There was a discharge date.
                                 if rec.falseLabor then
-                                    -- The labor is closed and has been labeled a false labor.
+                                    -- The labor is closed and has been labeled
+                                    -- a false, i.e. early labor.
                                     ( AdmissionStateNone, ( store, Cmd.none ) )
                                 else
-                                    -- Patient discharged, not a false labor.
+                                    -- Patient discharged, not a false/early labor.
                                     ( AdmissionStateView (LaborId rec.id)
                                     , ( store, Cmd.none )
                                     )
@@ -250,12 +251,12 @@ view size session model =
                         Just rec ->
                             if rec.falseLabor && isCurrentNewest then
                                 -- The most recent labor record has already been
-                                -- flagged as false and it is the one being selected.
+                                -- flagged as false/early and it is the one being selected.
                                 -- We offer the option to start a new labor record.
                                 viewAdmitButton
                             else
                                 -- The current labor record is not already flagged
-                                -- as a false labor, though there may be an earlier
+                                -- as a false/early labor, though there may be an earlier
                                 -- labor record that is, but that is beside the point.
                                 H.text ""
 
@@ -285,8 +286,8 @@ getErr fld errors =
 
 
 {-| Show current admitting labor record and any historical
-"false" labor records. Allow user to click on a historical
-record to view it, etc.
+"false" labor records (also more properly known as early labors).
+Allow user to click on a historical record to view it, etc.
 -}
 viewLaborRecords : Model -> Html AdmittingSubMsg
 viewLaborRecords model =
@@ -328,7 +329,7 @@ viewLaborRecords model =
                                     , H.th [ HA.class "c-table__cell" ]
                                         [ H.text "Admitted" ]
                                     , H.th [ HA.class "c-table__cell" ]
-                                        [ H.text "False Labor" ]
+                                        [ H.text "Early Labor" ]
                                     ]
                                 ]
                             , H.tbody [ HA.class "c-table__body" ] <|
@@ -368,7 +369,7 @@ viewAdmittingData model =
                 Nothing ->
                     ( "", "", "", "", "", "", "", "" )
 
-        ( temp, comments, falseLabor ) =
+        ( temp, comments, earlyLabor ) =
             case laborRec of
                 Just rec ->
                     ( toString rec.temp
@@ -381,7 +382,7 @@ viewAdmittingData model =
 
         title =
             "Admitting Information"
-                |> (\s -> if falseLabor then s ++ " (false labor)" else s)
+                |> (\s -> if earlyLabor then s ++ " (early labor)" else s)
     in
         H.div
             [ HA.class "u-high"
@@ -453,7 +454,7 @@ viewAdmittingData model =
                     [ H.button
                         [ HA.type_ "button"
                         , HA.class "c-button c-button--ghost u-small"
-                        , HA.classList [ ( "isHidden", falseLabor ) ]
+                        , HA.classList [ ( "isHidden", earlyLabor ) ]
                         , case model.currLaborId of
                             Just lid ->
                                 HE.onClick (EditAdmittance lid)
@@ -776,7 +777,7 @@ update session msg model =
                                 Just rec ->
                                     if rec.falseLabor then
                                         -- Create another record since the existing record is a
-                                        -- false labor and we are not changing it anymore.
+                                        -- false/early labor and we are not changing it anymore.
                                         case deriveLaborRecordNew model of
                                             Just laborRecNew ->
                                                 ProcessTypeMsg
