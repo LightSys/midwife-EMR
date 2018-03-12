@@ -1567,7 +1567,7 @@ dialogStage2SummaryEdit cfg =
                         cfg.model.s2BirthEBL
                         (getErr Stage2BirthEBLFld errors)
                     ]
-                , Form.radioFieldset "Meconium"
+                , Form.radioFieldset "Fluid at birth"
                     "meconium"
                     cfg.model.s2Meconium
                     (FldChgString >> FldChgSubMsg Stage2MeconiumFld)
@@ -1794,7 +1794,7 @@ dialogStage2SummaryView cfg =
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Meconium: " ]
+                        [ H.text "Fluid at birth: " ]
                     , H.span [ HA.class "" ]
                         [ H.text meconium ]
                     ]
