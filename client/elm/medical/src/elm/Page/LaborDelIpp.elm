@@ -1521,9 +1521,11 @@ dialogStage2SummaryEdit cfg =
                     cfg.model.s2DeliveryType
                     (FldChgString >> FldChgSubMsg Stage2DeliveryTypeFld)
                     False
-                    [ "Spontaneous"
-                    , "Interventive"
+                    [ "NSVD"
+                    , "Interventive vaginal delivery"
                     , "Vacuum"
+                    , "Forceps"
+                    , "CS"
                     ]
                     (getErr Stage2DeliveryTypeFld errors)
                 , Form.checkbox "Shoulder Dystocia" (FldChgBool >> FldChgSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
