@@ -10,6 +10,7 @@ module Util
         , calcEdd
         , dateFormatter
         , datePlusTimeTuple
+        , datesInOrder
         , dateTimeHMFormatter
         , dateToDateMonString
         , dateToStringValue
@@ -735,6 +736,13 @@ diff2DatesString d1 d2 =
     doCommas days hours
         |> flip doCommas minutes
         |> String.trim
+
+
+{-| Return True if d1 precedes or is equal to d2.
+-}
+datesInOrder : Date -> Date -> Bool
+datesInOrder d1 d2 =
+    DEComp.is DEComp.SameOrBefore d1 d2
 
 
 {-| Calculate the estimated due date based upon the

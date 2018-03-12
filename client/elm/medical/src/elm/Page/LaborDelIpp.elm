@@ -3376,18 +3376,37 @@ update session msg model =
                                             case U.stringToTimeTuple t of
                                                 Just ( h, m ) ->
                                                     let
+                                                        -- Need to insure that the new proposed date/time for
+                                                        -- this stage does not fall after the next stage, if
+                                                        -- it exists.
+                                                        isSane =
+                                                            case model.laborStage2Record of
+                                                                Just ls2Rec ->
+                                                                    sanityCheckStageDateTimes ls2Rec.birthDatetime
+                                                                        model.stage1Date
+                                                                        model.stage1Time
+                                                                            |> not
+
+                                                                Nothing ->
+                                                                    True
+
                                                         newRec =
                                                             { rec | fullDialation = Just (U.datePlusTimeTuple d ( h, m )) }
                                                     in
-                                                    ProcessTypeMsg
-                                                        (UpdateLaborStage1Type
-                                                            (LaborDelIppMsg
-                                                                (DataCache Nothing (Just [ LaborStage1 ]))
+                                                    if isSane then
+                                                        ProcessTypeMsg
+                                                            (UpdateLaborStage1Type
+                                                                (LaborDelIppMsg
+                                                                    (DataCache Nothing (Just [ LaborStage1 ]))
+                                                                )
+                                                                newRec
                                                             )
-                                                            newRec
-                                                        )
-                                                        ChgMsgType
-                                                        (laborStage1RecordToValue newRec)
+                                                            ChgMsgType
+                                                            (laborStage1RecordToValue newRec)
+                                                    else
+                                                        Toast [ "Stage 1, 2, and 3 dates and times must be in chronological order." ]
+                                                            10
+                                                            ErrorToast
 
                                                 Nothing ->
                                                     Noop
@@ -3661,30 +3680,66 @@ update session msg model =
                     case validateStage2New model of
                         [] ->
                             let
+                                -- Simple check that the date/time proposed falls after the prior stage
+                                -- date/time.
+                                isSane =
+                                    case model.laborStage1Record of
+                                        Just ls1Rec ->
+                                            sanityCheckStageDateTimes ls1Rec.fullDialation
+                                                model.stage2Date
+                                                model.stage2Time
+
+                                        Nothing ->
+                                            False
+
                                 outerMsg =
-                                    case ( model.laborStage2Record, model.stage2Date, model.stage2Time ) of
+                                    case ( isSane, model.laborStage2Record, model.stage2Date, model.stage2Time ) of
+                                        ( False, _, _, _ ) ->
+                                            Toast [ "The stage 1, 2, and 3 dates and times must be in chronological order." ]
+                                                10
+                                                ErrorToast
+
                                         -- A laborStage2 record already exists, so update it.
-                                        ( Just rec, Just d, Just t ) ->
+                                        ( True, Just rec, Just d, Just t ) ->
                                             case U.stringToTimeTuple t of
                                                 Just ( h, m ) ->
                                                     let
+                                                        -- Need to insure that the new proposed date/time for
+                                                        -- this stage does not fall after the next stage, if
+                                                        -- it exists.
+                                                        isSane =
+                                                            case model.laborStage3Record of
+                                                                Just ls3Rec ->
+                                                                    sanityCheckStageDateTimes ls3Rec.placentaDatetime
+                                                                        model.stage2Date
+                                                                        model.stage2Time
+                                                                            |> not
+
+                                                                Nothing ->
+                                                                    True
+
                                                         newRec =
                                                             { rec | birthDatetime = Just (U.datePlusTimeTuple d ( h, m )) }
                                                     in
-                                                    ProcessTypeMsg
-                                                        (UpdateLaborStage2Type
-                                                            (LaborDelIppMsg
-                                                                (DataCache Nothing (Just [ LaborStage2 ]))
+                                                    if isSane then
+                                                        ProcessTypeMsg
+                                                            (UpdateLaborStage2Type
+                                                                (LaborDelIppMsg
+                                                                    (DataCache Nothing (Just [ LaborStage2 ]))
+                                                                )
+                                                                newRec
                                                             )
-                                                            newRec
-                                                        )
-                                                        ChgMsgType
-                                                        (laborStage2RecordToValue newRec)
+                                                            ChgMsgType
+                                                            (laborStage2RecordToValue newRec)
+                                                    else
+                                                        Toast [ "Stage 1, 2, and 3 dates and times must be in chronological order." ]
+                                                            10
+                                                            ErrorToast
 
                                                 Nothing ->
                                                     Noop
 
-                                        ( Just rec, Nothing, Nothing ) ->
+                                        ( True, Just rec, Nothing, Nothing ) ->
                                             -- User unset the birthDatetime, so update the server.
                                             let
                                                 newRec =
@@ -3700,7 +3755,7 @@ update session msg model =
                                                 ChgMsgType
                                                 (laborStage2RecordToValue newRec)
 
-                                        ( Nothing, Just _, Just _ ) ->
+                                        ( True, Nothing, Just _, Just _ ) ->
                                             -- Create a new laborStage2 record.
                                             case deriveLaborStage2RecordNew model of
                                                 Just laborStage2RecNew ->
@@ -3719,7 +3774,7 @@ update session msg model =
                                                 Nothing ->
                                                     Noop
 
-                                        ( _, _, _ ) ->
+                                        ( True, _, _, _ ) ->
                                             Noop
                             in
                             ( { model
@@ -3971,10 +4026,25 @@ update session msg model =
                     case validateStage3New model of
                         [] ->
                             let
+                                isSane =
+                                    case model.laborStage2Record of
+                                        Just ls2Rec ->
+                                            sanityCheckStageDateTimes ls2Rec.birthDatetime
+                                                model.stage3Date
+                                                model.stage3Time
+
+                                        Nothing ->
+                                            False
+
                                 outerMsg =
-                                    case ( model.laborStage3Record, model.stage3Date, model.stage3Time ) of
+                                    case ( isSane, model.laborStage3Record, model.stage3Date, model.stage3Time ) of
+                                        ( False, _, _, _ ) ->
+                                            Toast [ "The stage 1, 2, and 3 dates and times must be in chronological order." ]
+                                                10
+                                                ErrorToast
+
                                         -- A laborStage3 record already exists, so update it.
-                                        ( Just rec, Just d, Just t ) ->
+                                        ( True, Just rec, Just d, Just t ) ->
                                             case U.stringToTimeTuple t of
                                                 Just ( h, m ) ->
                                                     let
@@ -3994,7 +4064,7 @@ update session msg model =
                                                 Nothing ->
                                                     Noop
 
-                                        ( Just rec, Nothing, Nothing ) ->
+                                        ( True, Just rec, Nothing, Nothing ) ->
                                             -- User unset the placentaDatetime, so update the server.
                                             let
                                                 newRec =
@@ -4010,7 +4080,7 @@ update session msg model =
                                                 ChgMsgType
                                                 (laborStage3RecordToValue newRec)
 
-                                        ( Nothing, Just _, Just _ ) ->
+                                        ( True, Nothing, Just _, Just _ ) ->
                                             -- Create a new laborStage3 record.
                                             case deriveLaborStage3RecordNew model of
                                                 Just laborStage3RecNew ->
@@ -4029,7 +4099,7 @@ update session msg model =
                                                 Nothing ->
                                                     Noop
 
-                                        ( _, _, _ ) ->
+                                        ( True, _, _, _ ) ->
                                             Noop
                             in
                             ( { model
@@ -4746,6 +4816,37 @@ update session msg model =
             , Cmd.none
             , Cmd.none
             )
+
+
+{-| Return whether the newDate and newTime evaluate to a datetime
+equal or after the reference date passed.
+-}
+sanityCheckStageDateTimes : Maybe Date -> Maybe Date -> Maybe String -> Bool
+sanityCheckStageDateTimes refDate newDate newTime =
+    let
+        newDatetime =
+            U.maybeDateMaybeTimeToMaybeDateTime newDate
+                newTime
+                ""
+    in
+    case newDatetime of
+        U.NoMaybeDateTime ->
+            -- Clearing the date/time which is allowed.
+            True
+
+        U.InvalidMaybeDateTime _ ->
+            -- Not valid proposed date/time.
+            False
+
+        U.ValidMaybeDateTime d ->
+            case refDate of
+                Just rd ->
+                    U.datesInOrder rd d
+
+                Nothing ->
+                    -- We do not allow a date to follow our reference
+                    -- date or be a date when our reference date is not.
+                    False
 
 
 {-| Derive a LaborStage1RecordNew from the form fields, if possible.
