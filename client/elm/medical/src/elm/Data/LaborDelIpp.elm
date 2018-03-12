@@ -86,8 +86,10 @@ type Field
     | Stage1DateFld
     | Stage1TimeFld
     | Stage1MobilityFld
-    | Stage1DurationLatentFld
-    | Stage1DurationActiveFld
+    | Stage1DurationLatentHoursFld
+    | Stage1DurationLatentMinutesFld
+    | Stage1DurationActiveHoursFld
+    | Stage1DurationActiveMinutesFld
     | Stage1CommentsFld
     | Stage2DateFld
     | Stage2TimeFld

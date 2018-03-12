@@ -174,8 +174,10 @@ type alias Model =
     , stage1Time : Maybe String
     , stage1SummaryModal : ViewEditState
     , s1Mobility : Maybe String
-    , s1DurationLatent : Maybe String
-    , s1DurationActive : Maybe String
+    , s1DurationLatentHours : Maybe String
+    , s1DurationLatentMinutes : Maybe String
+    , s1DurationActiveMinutes : Maybe String
+    , s1DurationActiveHours : Maybe String
     , s1Comments : Maybe String
     , stage2DateTimeModal : DateTimeModal
     , stage2Date : Maybe Date
@@ -342,8 +344,10 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , stage1Time = Nothing
       , stage1SummaryModal = NoViewEditState
       , s1Mobility = Nothing
-      , s1DurationLatent = Nothing
-      , s1DurationActive = Nothing
+      , s1DurationLatentHours = Nothing
+      , s1DurationLatentMinutes = Nothing
+      , s1DurationActiveHours = Nothing
+      , s1DurationActiveMinutes = Nothing
       , s1Comments = Nothing
       , stage2DateTimeModal = NoDateTimeModal
       , stage2Date = Nothing
@@ -1259,18 +1263,32 @@ dialogStage1SummaryEdit cfg =
                     (getErr Stage1MobilityFld errors)
                 ]
             , H.div []
-                [ Form.formField (FldChgString >> FldChgSubMsg Stage1DurationLatentFld)
+                [ Form.formField (FldChgString >> FldChgSubMsg Stage1DurationLatentHoursFld)
+                    "Duration latent (hours)"
+                    "Number of hours"
+                    True
+                    cfg.model.s1DurationLatentHours
+                    (getErr Stage1DurationLatentHoursFld errors)
+                , Form.formField (FldChgString >> FldChgSubMsg Stage1DurationLatentMinutesFld)
                     "Duration latent (minutes)"
                     "Number of minutes"
                     True
-                    cfg.model.s1DurationLatent
-                    (getErr Stage1DurationLatentFld errors)
-                , Form.formField (FldChgString >> FldChgSubMsg Stage1DurationActiveFld)
+                    cfg.model.s1DurationLatentMinutes
+                    (getErr Stage1DurationLatentMinutesFld errors)
+                ]
+            , H.div []
+                [ Form.formField (FldChgString >> FldChgSubMsg Stage1DurationActiveHoursFld)
+                    "Duration active (hours)"
+                    "Number of hours"
+                    True
+                    cfg.model.s1DurationActiveHours
+                    (getErr Stage1DurationActiveHoursFld errors)
+                , Form.formField (FldChgString >> FldChgSubMsg Stage1DurationActiveMinutesFld)
                     "Duration active (minutes)"
                     "Number of minutes"
                     True
-                    cfg.model.s1DurationActive
-                    (getErr Stage1DurationActiveFld errors)
+                    cfg.model.s1DurationActiveMinutes
+                    (getErr Stage1DurationActiveMinutesFld errors)
                 ]
             , Form.formTextareaFieldMin30em (FldChgString >> FldChgSubMsg Stage1CommentsFld)
                 "Comments"
@@ -1305,14 +1323,22 @@ if available.
 dialogStage1SummaryView : DialogSummary -> Html SubMsg
 dialogStage1SummaryView cfg =
     let
-        ( mobility, latent, active, comments, s1Total ) =
+        ( mobility, latentHours, latentMinutes, activeHours, activeMinutes, comments, s1Total ) =
             case cfg.model.laborStage1Record of
                 Just rec ->
                     ( Maybe.withDefault "" rec.mobility
-                    , Maybe.map toString rec.durationLatent
-                        |> Maybe.withDefault ""
-                    , Maybe.map toString rec.durationActive
-                        |> Maybe.withDefault ""
+                    , U.minutesToHours rec.durationLatent
+                        |> Maybe.map toString
+                        |> Maybe.withDefault "0"
+                    , U.minutesToMinutes rec.durationLatent
+                        |> Maybe.map toString
+                        |> Maybe.withDefault "0"
+                    , U.minutesToHours rec.durationActive
+                        |> Maybe.map toString
+                        |> Maybe.withDefault "0"
+                    , U.minutesToMinutes rec.durationActive
+                        |> Maybe.map toString
+                        |> Maybe.withDefault "0"
                     , Maybe.withDefault "" rec.comments
                     , case rec.fullDialation of
                         Just fd ->
@@ -1333,7 +1359,7 @@ dialogStage1SummaryView cfg =
                     )
 
                 Nothing ->
-                    ( "", "", "", "", "" )
+                    ( "", "", "", "", "", "", "" )
     in
     H.div
         [ HA.classList [ ( "isHidden", not cfg.isShown && not cfg.isEditing ) ]
@@ -1362,7 +1388,11 @@ dialogStage1SummaryView cfg =
                 [ H.span [ HA.class "c-text--loud" ]
                     [ H.text "Duration Latent: " ]
                 , H.span [ HA.class "" ]
-                    [ H.text latent ]
+                    [ H.text latentHours ]
+                , H.span [ HA.class "" ]
+                    [ H.text " hours, " ]
+                , H.span [ HA.class "" ]
+                    [ H.text latentMinutes ]
                 , H.span [ HA.class "" ]
                     [ H.text " minutes" ]
                 ]
@@ -1370,7 +1400,11 @@ dialogStage1SummaryView cfg =
                 [ H.span [ HA.class "c-text--loud" ]
                     [ H.text "Duration Active: " ]
                 , H.span [ HA.class "" ]
-                    [ H.text active ]
+                    [ H.text activeHours ]
+                , H.span [ HA.class "" ]
+                    [ H.text " hours, " ]
+                , H.span [ HA.class "" ]
+                    [ H.text activeMinutes ]
                 , H.span [ HA.class "" ]
                     [ H.text " minutes" ]
                 ]
@@ -2976,11 +3010,17 @@ update session msg model =
                         Stage1MobilityFld ->
                             { model | s1Mobility = Just value }
 
-                        Stage1DurationLatentFld ->
-                            { model | s1DurationLatent = Just <| U.filterStringLikeInt value }
+                        Stage1DurationLatentHoursFld ->
+                            { model | s1DurationLatentHours = Just <| U.filterStringLikeInt value }
 
-                        Stage1DurationActiveFld ->
-                            { model | s1DurationActive = Just <| U.filterStringLikeInt value }
+                        Stage1DurationLatentMinutesFld ->
+                            { model | s1DurationLatentMinutes = Just <| U.filterStringLikeInt value }
+
+                        Stage1DurationActiveHoursFld ->
+                            { model | s1DurationActiveHours = Just <| U.filterStringLikeInt value }
+
+                        Stage1DurationActiveMinutesFld ->
+                            { model | s1DurationActiveMinutes = Just <| U.filterStringLikeInt value }
 
                         Stage1CommentsFld ->
                             { model | s1Comments = Just value }
@@ -3480,8 +3520,8 @@ update session msg model =
                             case model.laborStage1Record of
                                 Just rec ->
                                     ( rec.mobility
-                                    , Maybe.map toString rec.durationLatent
-                                    , Maybe.map toString rec.durationActive
+                                    , rec.durationLatent
+                                    , rec.durationActive
                                     , rec.comments
                                     )
 
@@ -3504,8 +3544,10 @@ update session msg model =
                             else
                                 NoViewEditState
                         , s1Mobility = mobility
-                        , s1DurationLatent = latent
-                        , s1DurationActive = active
+                        , s1DurationLatentHours = Maybe.map toString <| U.minutesToHours latent
+                        , s1DurationLatentMinutes = Maybe.map toString <| U.minutesToMinutes latent
+                        , s1DurationActiveHours = Maybe.map toString <| U.minutesToHours active
+                        , s1DurationActiveMinutes = Maybe.map toString <| U.minutesToMinutes active
                         , s1Comments = comments
                       }
                     , Cmd.none
@@ -3554,8 +3596,14 @@ update session msg model =
                                                 newRec =
                                                     { s1Rec
                                                         | mobility = model.s1Mobility
-                                                        , durationLatent = U.maybeStringToMaybeInt model.s1DurationLatent
-                                                        , durationActive = U.maybeStringToMaybeInt model.s1DurationActive
+                                                        , durationLatent =
+                                                            U.maybeHoursMaybeMinutesToMaybeMinutes
+                                                                (U.maybeStringToMaybeInt model.s1DurationLatentHours)
+                                                                (U.maybeStringToMaybeInt model.s1DurationLatentMinutes)
+                                                        , durationActive =
+                                                            U.maybeHoursMaybeMinutesToMaybeMinutes
+                                                                (U.maybeStringToMaybeInt model.s1DurationActiveHours)
+                                                                (U.maybeStringToMaybeInt model.s1DurationActiveMinutes)
                                                         , comments = model.s1Comments
                                                     }
                                             in
@@ -4873,8 +4921,14 @@ deriveLaborStage1RecordNew model =
             in
             LaborStage1RecordNew fullDialation
                 model.s1Mobility
-                (U.maybeStringToMaybeInt model.s1DurationLatent)
-                (U.maybeStringToMaybeInt model.s1DurationActive)
+                (U.maybeHoursMaybeMinutesToMaybeMinutes
+                    (U.maybeStringToMaybeInt model.s1DurationLatentHours)
+                    (U.maybeStringToMaybeInt model.s1DurationLatentMinutes)
+                )
+                (U.maybeHoursMaybeMinutesToMaybeMinutes
+                    (U.maybeStringToMaybeInt model.s1DurationActiveHours)
+                    (U.maybeStringToMaybeInt model.s1DurationActiveMinutes)
+                )
                 model.s1Comments
                 id
                 |> Just
@@ -5076,8 +5130,10 @@ validateStage1 : Model -> List FieldError
 validateStage1 =
     Validate.all
         [ .s1Mobility >> ifInvalid U.validatePopulatedString (Stage1MobilityFld => "Mobility must be provided.")
-        , .s1DurationLatent >> ifInvalid U.validatePopulatedString (Stage1DurationLatentFld => "Duration latent must be provided.")
-        , .s1DurationActive >> ifInvalid U.validatePopulatedString (Stage1DurationActiveFld => "Duration active must be provided.")
+        , .s1DurationLatentHours >> ifInvalid U.validatePopulatedString (Stage1DurationLatentHoursFld => "Duration latent must be provided.")
+        , .s1DurationLatentMinutes >> ifInvalid U.validatePopulatedString (Stage1DurationLatentMinutesFld => "Duration latent must be provided.")
+        , .s1DurationActiveHours >> ifInvalid U.validatePopulatedString (Stage1DurationActiveHoursFld => "Duration active must be provided.")
+        , .s1DurationActiveMinutes >> ifInvalid U.validatePopulatedString (Stage1DurationActiveMinutesFld => "Duration active must be provided.")
         ]
 
 

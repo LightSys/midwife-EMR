@@ -10,11 +10,11 @@ module Util
         , calcEdd
         , dateFormatter
         , datePlusTimeTuple
-        , datesInOrder
         , dateTimeHMFormatter
         , dateToDateMonString
         , dateToStringValue
         , dateToTimeString
+        , datesInOrder
         , deriveDateFromMaybeDateMaybeString
         , diff2DatesString
         , diff2MaybeDatesString
@@ -33,6 +33,7 @@ module Util
         , maybeDateTimeValue
         , maybeDateToTimeString
         , maybeDateToValue
+        , maybeHoursMaybeMinutesToMaybeMinutes
         , maybeIntToMaybeBool
         , maybeIntToNegOne
         , maybeOr
@@ -40,6 +41,8 @@ module Util
         , maybeStringToIntValue
         , maybeStringToMaybeFloat
         , maybeStringToMaybeInt
+        , minutesToHours
+        , minutesToMinutes
         , monthToInt
         , nbsp
         , pipeToComma
@@ -743,6 +746,53 @@ diff2DatesString d1 d2 =
 datesInOrder : Date -> Date -> Bool
 datesInOrder d1 d2 =
     DEComp.is DEComp.SameOrBefore d1 d2
+
+
+{-| Private.
+-}
+minutesToHoursMinutes : Maybe Int -> Maybe ( Int, Int )
+minutesToHoursMinutes minutes =
+    case minutes of
+        Just m ->
+            Just ( m // 60, rem m 60 )
+
+        Nothing ->
+            Nothing
+
+
+minutesToHours : Maybe Int -> Maybe Int
+minutesToHours minutes =
+    case minutesToHoursMinutes minutes of
+        Just ( h, _ ) ->
+            Just h
+
+        Nothing ->
+            Nothing
+
+
+minutesToMinutes : Maybe Int -> Maybe Int
+minutesToMinutes minutes =
+    case minutesToHoursMinutes minutes of
+        Just ( _, m ) ->
+            Just m
+
+        Nothing ->
+            Nothing
+
+maybeHoursMaybeMinutesToMaybeMinutes : Maybe Int -> Maybe Int -> Maybe Int
+maybeHoursMaybeMinutesToMaybeMinutes hours minutes =
+    case ( hours, minutes ) of
+        ( Just h, Just m ) ->
+            Just <| (h * 60) + m
+
+        ( Just h, Nothing ) ->
+            Just <| h * 60
+
+        ( Nothing, Just m ) ->
+            Just m
+
+        ( Nothing, Nothing ) ->
+            Nothing
 
 
 {-| Calculate the estimated due date based upon the
