@@ -621,6 +621,9 @@ CREATE TABLE IF NOT EXISTS `laborStage1` (
 );
 SHOW WARNINGS;
 
+-- Note that the cordWrap field in no longer being
+-- used on the client; instead there is a "None"
+-- option used in the cordWrapType field.
 CREATE TABLE IF NOT EXISTS `laborStage2` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   birthDatetime DATETIME NULL,

@@ -187,7 +187,6 @@ type alias Model =
     , s2BirthPosition : Maybe String
     , s2DurationPushing : Maybe String
     , s2BirthPresentation : Maybe String
-    , s2CordWrap : Maybe Bool
     , s2CordWrapType : Maybe String
     , s2DeliveryType : Maybe String
     , s2ShoulderDystocia : Maybe Bool
@@ -357,7 +356,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , s2BirthPosition = Nothing
       , s2DurationPushing = Nothing
       , s2BirthPresentation = Nothing
-      , s2CordWrap = Nothing
       , s2CordWrapType = Nothing
       , s2DeliveryType = Nothing
       , s2ShoulderDystocia = Nothing
@@ -1507,13 +1505,13 @@ dialogStage2SummaryEdit cfg =
                     , "LOP"
                     ]
                     (getErr Stage2BirthPresentationFld errors)
-                , Form.checkbox "Cord was wrapped" (FldChgBool >> FldChgSubMsg Stage2CordWrapFld) cfg.model.s2CordWrap
                 , Form.radioFieldsetOther "Cord wrap type"
                     "cordwraptype"
                     cfg.model.s2CordWrapType
                     (FldChgString >> FldChgSubMsg Stage2CordWrapTypeFld)
                     False
-                    [ "Nuchal"
+                    [ "None"
+                    , "Nuchal"
                     , "Body"
                     , "Cut on perineum"
                     ]
@@ -1609,7 +1607,7 @@ dialogStage2SummaryEdit cfg =
 dialogStage2SummaryView : DialogSummary -> Html SubMsg
 dialogStage2SummaryView cfg =
     let
-        ( birthType, birthPosition, durationPushing, birthPresentation, cordWrapAndType, deliveryType ) =
+        ( birthType, birthPosition, durationPushing, birthPresentation, cordWraptype, deliveryType ) =
             case cfg.model.laborStage2Record of
                 Just rec ->
                     ( Maybe.withDefault "" rec.birthType
@@ -1617,16 +1615,7 @@ dialogStage2SummaryView cfg =
                     , Maybe.map toString rec.durationPushing
                         |> Maybe.withDefault ""
                     , Maybe.withDefault "" rec.birthPresentation
-                    , Maybe.map2
-                        (\c t ->
-                            if c then
-                                "Yes, " ++ t
-                            else
-                                "No"
-                        )
-                        rec.cordWrap
-                        rec.cordWrapType
-                        |> Maybe.withDefault "No"
+                    , Maybe.withDefault "" rec.cordWrapType
                     , Maybe.withDefault "" rec.deliveryType
                     )
 
@@ -1757,7 +1746,7 @@ dialogStage2SummaryView cfg =
                     [ H.span [ HA.class "c-text--loud" ]
                         [ H.text "Cord wrap: " ]
                     , H.span [ HA.class "" ]
-                        [ H.text cordWrapAndType ]
+                        [ H.text cordWraptype ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
@@ -3201,16 +3190,6 @@ update session msg model =
 
                 FldChgBool value ->
                     ( case fld of
-                        Stage2CordWrapFld ->
-                            -- Clear the cord wrap type if this is unchecked.
-                            if value == False then
-                                { model
-                                    | s2CordWrap = Just value
-                                    , s2CordWrapType = Nothing
-                                }
-                            else
-                                { model | s2CordWrap = Just value }
-
                         Stage2ShoulderDystociaFld ->
                             { model | s2ShoulderDystocia = Just value }
 
@@ -3862,7 +3841,6 @@ update session msg model =
                                         , s2BirthPosition = U.maybeOr rec.birthPosition model.s2BirthPosition
                                         , s2DurationPushing = U.maybeOr (Maybe.map toString rec.durationPushing) model.s2DurationPushing
                                         , s2BirthPresentation = U.maybeOr rec.birthPresentation model.s2BirthPresentation
-                                        , s2CordWrap = U.maybeOr rec.cordWrap model.s2CordWrap
                                         , s2CordWrapType = U.maybeOr rec.cordWrapType model.s2CordWrapType
                                         , s2DeliveryType = U.maybeOr rec.deliveryType model.s2DeliveryType
                                         , s2ShoulderDystocia = U.maybeOr rec.shoulderDystocia model.s2ShoulderDystocia
@@ -3940,7 +3918,6 @@ update session msg model =
                                                         , birthPosition = model.s2BirthPosition
                                                         , durationPushing = U.maybeStringToMaybeInt model.s2DurationPushing
                                                         , birthPresentation = model.s2BirthPresentation
-                                                        , cordWrap = model.s2CordWrap
                                                         , cordWrapType = model.s2CordWrapType
                                                         , deliveryType = model.s2DeliveryType
                                                         , shoulderDystocia = model.s2ShoulderDystocia
@@ -4960,7 +4937,6 @@ deriveLaborStage2RecordNew model =
                 model.s2BirthPosition
                 (U.maybeStringToMaybeInt model.s2DurationPushing)
                 model.s2BirthPresentation
-                model.s2CordWrap
                 model.s2CordWrapType
                 model.s2DeliveryType
                 model.s2ShoulderDystocia
@@ -5160,14 +5136,8 @@ validateStage2 =
         , .s2BirthPosition >> ifInvalid U.validatePopulatedString (Stage2BirthPositionFld => "Birth position must be provided.")
         , .s2DurationPushing >> ifInvalid U.validateInt (Stage2DurationPushingFld => "Duration pushing must be provided.")
         , .s2BirthPresentation >> ifInvalid U.validatePopulatedString (Stage2BirthPresentationFld => "Birth presentation must be provided.")
-        , \mdl ->
-            if mdl.s2CordWrapType /= Nothing && (mdl.s2CordWrap == Nothing || mdl.s2CordWrap == Just False) then
-                [ Stage2CordWrapTypeFld => "Cord wrap type cannot be specified if cord wrap is not checked." ]
-            else if mdl.s2CordWrap == Just True && String.length (Maybe.withDefault "" mdl.s2CordWrapType) == 0 then
-                [ Stage2CordWrapTypeFld => "Cord wrap cannot be checked without also specifying cord wrap type." ]
-            else
-                []
-        , .s2DeliveryType >> ifInvalid U.validatePopulatedString (Stage2DeliveryTypeFld => "Delivery type must be provided.")
+        , .s2CordWrapType >> ifInvalid U.validatePopulatedString (Stage2CordWrapTypeFld => "Cord wrap type must be provided.")
+       , .s2DeliveryType >> ifInvalid U.validatePopulatedString (Stage2DeliveryTypeFld => "Delivery type must be provided.")
         , \mdl ->
             case U.maybeStringToMaybeInt mdl.s2ShoulderDystociaMinutes of
                 Just m ->
