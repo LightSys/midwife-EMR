@@ -1473,6 +1473,18 @@ dialogStage2SummaryEdit cfg =
                     , "Twin"
                     ]
                     (getErr Stage2BirthTypeFld errors)
+                , Form.radioFieldsetOther "Delivery type"
+                    "deliverytype"
+                    cfg.model.s2DeliveryType
+                    (FldChgString >> FldChgSubMsg Stage2DeliveryTypeFld)
+                    False
+                    [ "NSVD"
+                    , "Interventive vaginal delivery"
+                    , "Vacuum"
+                    , "Forceps"
+                    , "CS"
+                    ]
+                    (getErr Stage2DeliveryTypeFld errors)
                 , Form.radioFieldsetOther "Position for birth"
                     "position"
                     cfg.model.s2BirthPosition
@@ -1516,18 +1528,6 @@ dialogStage2SummaryEdit cfg =
                     , "Cut on perineum"
                     ]
                     (getErr Stage2CordWrapTypeFld errors)
-                , Form.radioFieldsetOther "Delivery type"
-                    "deliverytype"
-                    cfg.model.s2DeliveryType
-                    (FldChgString >> FldChgSubMsg Stage2DeliveryTypeFld)
-                    False
-                    [ "NSVD"
-                    , "Interventive vaginal delivery"
-                    , "Vacuum"
-                    , "Forceps"
-                    , "CS"
-                    ]
-                    (getErr Stage2DeliveryTypeFld errors)
                 , Form.checkbox "Shoulder Dystocia" (FldChgBool >> FldChgSubMsg Stage2ShoulderDystociaFld) cfg.model.s2ShoulderDystocia
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg Stage2ShoulderDystociaMinutesFld)
