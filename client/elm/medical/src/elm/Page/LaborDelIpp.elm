@@ -3280,14 +3280,7 @@ update session msg model =
                             { model | bbComments = Just value }
 
                         ApgarOtherMinuteFld ->
-                            -- We reject the standard apgar minutes of 1, 5, or 10 because
-                            -- they are handled in the standard apgar fields.
-                            { model
-                                | pendingApgarMinute =
-                                    U.filterStringLikeInt value
-                                        |> U.filterStringNotInList [ "1", "5", "10" ]
-                                        |> Just
-                            }
+                            { model | pendingApgarMinute = Just value }
 
                         ApgarOtherScoreFld ->
                             { model | pendingApgarScore = Just <| U.filterStringLikeInt value }
