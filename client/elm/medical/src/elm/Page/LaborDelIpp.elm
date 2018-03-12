@@ -2170,6 +2170,10 @@ dialogMembraneSummary cfg =
             dialogMembraneSummaryView cfg
 
 
+{-| Note that rupture and amniotic comment fields were not desired by the
+client, but the fields are only removed from the views, not the rest of
+the system.
+-}
 dialogMembraneSummaryView : DialogSummary -> Html SubMsg
 dialogMembraneSummaryView cfg =
     let
@@ -2210,9 +2214,7 @@ dialogMembraneSummaryView cfg =
                         ]
                         [ viewField "Rupture Date and time" <| dateString rec.ruptureDatetime
                         , viewField "Rupture" <| Data.Membrane.maybeRuptureToString rec.rupture
-                        , viewField "Rupture comment" <| Maybe.withDefault "" rec.ruptureComment
-                        , viewField "Amniotic" <| Data.Membrane.maybeAmnioticToString rec.amniotic
-                        , viewField "Amniotic comment" <| Maybe.withDefault "" rec.amnioticComment
+                        , viewField "Fluid at rupture" <| Data.Membrane.maybeAmnioticToString rec.amniotic
                         , viewField "Comments" <| Maybe.withDefault "" rec.comments
                         ]
                     , H.div [ HA.class "spacedButtons" ]
@@ -2232,6 +2234,10 @@ dialogMembraneSummaryView cfg =
                     ]
                 ]
 
+{-| Note that rupture and amniotic comment fields were not desired by the
+client, but the fields are only removed from the views, not the rest of
+the system.
+-}
 dialogMembraneSummaryEdit : DialogSummary -> Html SubMsg
 dialogMembraneSummaryEdit cfg =
     let
@@ -2308,15 +2314,7 @@ dialogMembraneSummaryEdit cfg =
                     , "Other"
                     ]
                     (getErr MembraneRuptureFld errors)
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgString >> FldChgSubMsg MembraneRuptureCommentFld)
-                        "Rupture Comments"
-                        ""
-                        True
-                        cfg.model.membraneRuptureComment
-                        (getErr MembraneRuptureCommentFld errors)
-                    ]
-                , Form.radioFieldset "Amniotic"
+                , Form.radioFieldset "Fluid at rupture"
                     "amniotic"
                     cfg.model.membraneAmniotic
                     (FldChgString >> FldChgSubMsg MembraneAmnioticFld)
@@ -2328,14 +2326,6 @@ dialogMembraneSummaryEdit cfg =
                     , "Other"
                     ]
                     (getErr MembraneAmnioticFld errors)
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgString >> FldChgSubMsg MembraneAmnioticCommentFld)
-                        "Amniotic Comments"
-                        ""
-                        True
-                        cfg.model.membraneAmnioticComment
-                        (getErr MembraneAmnioticCommentFld errors)
-                    ]
                 , Form.formTextareaField (FldChgString >> FldChgSubMsg MembraneCommentsFld)
                     "Comments"
                     ""
