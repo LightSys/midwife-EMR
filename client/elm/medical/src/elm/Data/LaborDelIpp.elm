@@ -98,6 +98,7 @@ type Field
     | Stage2BirthPositionFld
     | Stage2DurationPushingFld
     | Stage2BirthPresentationFld
+    | Stage2TerminalMecFld
     | Stage2CordWrapTypeFld
     | Stage2DeliveryTypeFld
     | Stage2ShoulderDystociaFld

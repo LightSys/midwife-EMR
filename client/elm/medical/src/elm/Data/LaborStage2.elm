@@ -40,6 +40,7 @@ type alias LaborStage2Record =
     , birthPosition : Maybe String
     , durationPushing : Maybe Int
     , birthPresentation : Maybe String
+    , terminalMec : Maybe Bool
     , cordWrapType : Maybe String
     , deliveryType : Maybe String
     , shoulderDystocia : Maybe Bool
@@ -79,6 +80,7 @@ type alias LaborStage2RecordNew =
     , birthPosition : Maybe String
     , durationPushing : Maybe Int
     , birthPresentation : Maybe String
+    , terminalMec : Maybe Bool
     , cordWrapType : Maybe String
     , deliveryType : Maybe String
     , shoulderDystocia : Maybe Bool
@@ -104,6 +106,7 @@ laborStage2Record =
         |> JDP.required "birthPosition" (JD.maybe JD.string)
         |> JDP.required "durationPushing" (JD.maybe JD.int)
         |> JDP.required "birthPresentation" (JD.maybe JD.string)
+        |> JDP.required "terminalMec" U.maybeIntToMaybeBool
         |> JDP.required "cordWrapType" (JD.maybe JD.string)
         |> JDP.required "deliveryType" (JD.maybe JD.string)
         |> JDP.required "shoulderDystocia" U.maybeIntToMaybeBool
@@ -131,6 +134,7 @@ laborStage2RecordToValue rec =
                 , ( "birthPosition", (JEE.maybe JE.string rec.birthPosition) )
                 , ( "durationPushing", (JEE.maybe JE.int rec.durationPushing) )
                 , ( "birthPresentation", (JEE.maybe JE.string rec.birthPresentation) )
+                , ( "terminalMec", (U.maybeBoolToMaybeInt rec.terminalMec) )
                 , ( "cordWrapType", (JEE.maybe JE.string rec.cordWrapType) )
                 , ( "deliveryType", (JEE.maybe JE.string rec.deliveryType) )
                 , ( "shoulderDystocia", (U.maybeBoolToMaybeInt rec.shoulderDystocia) )
@@ -160,6 +164,7 @@ laborStage2RecordNewToValue rec =
                 , ( "birthPosition", (JEE.maybe JE.string rec.birthPosition) )
                 , ( "durationPushing", (JEE.maybe JE.int rec.durationPushing) )
                 , ( "birthPresentation", (JEE.maybe JE.string rec.birthPresentation) )
+                , ( "terminalMec", (U.maybeBoolToMaybeInt rec.terminalMec) )
                 , ( "cordWrapType", (JEE.maybe JE.string rec.cordWrapType) )
                 , ( "deliveryType", (JEE.maybe JE.string rec.deliveryType) )
                 , ( "shoulderDystocia", (U.maybeBoolToMaybeInt rec.shoulderDystocia) )
@@ -186,6 +191,7 @@ laborStage2RecordNewToLaborStage2Record (LaborStage2Id id) ls2new =
         ls2new.birthPosition
         ls2new.durationPushing
         ls2new.birthPresentation
+        ls2new.terminalMec
         ls2new.cordWrapType
         ls2new.deliveryType
         ls2new.shoulderDystocia

@@ -187,6 +187,7 @@ type alias Model =
     , s2BirthPosition : Maybe String
     , s2DurationPushing : Maybe String
     , s2BirthPresentation : Maybe String
+    , s2TerminalMec : Maybe Bool
     , s2CordWrapType : Maybe String
     , s2DeliveryType : Maybe String
     , s2ShoulderDystocia : Maybe Bool
@@ -356,6 +357,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , s2BirthPosition = Nothing
       , s2DurationPushing = Nothing
       , s2BirthPresentation = Nothing
+      , s2TerminalMec = Nothing
       , s2CordWrapType = Nothing
       , s2DeliveryType = Nothing
       , s2ShoulderDystocia = Nothing
@@ -1567,6 +1569,7 @@ dialogStage2SummaryEdit cfg =
                         cfg.model.s2BirthEBL
                         (getErr Stage2BirthEBLFld errors)
                     ]
+                , Form.checkbox "Terminal Mec" (FldChgBool >> FldChgSubMsg Stage2TerminalMecFld) cfg.model.s2TerminalMec
                 , Form.radioFieldset "Fluid at birth"
                     "meconium"
                     cfg.model.s2Meconium
@@ -1609,7 +1612,7 @@ dialogStage2SummaryEdit cfg =
 dialogStage2SummaryView : DialogSummary -> Html SubMsg
 dialogStage2SummaryView cfg =
     let
-        ( birthType, birthPosition, durationPushing, birthPresentation, cordWraptype, deliveryType ) =
+        ( birthType, birthPosition, durationPushing, birthPresentation, terminalMec, cordWraptype, deliveryType ) =
             case cfg.model.laborStage2Record of
                 Just rec ->
                     ( Maybe.withDefault "" rec.birthType
@@ -1617,12 +1620,21 @@ dialogStage2SummaryView cfg =
                     , Maybe.map toString rec.durationPushing
                         |> Maybe.withDefault ""
                     , Maybe.withDefault "" rec.birthPresentation
+                    , Maybe.map
+                        (\tm ->
+                            if tm then
+                                "Yes"
+                            else
+                                "No"
+                        )
+                        rec.terminalMec
+                            |> Maybe.withDefault "No"
                     , Maybe.withDefault "" rec.cordWrapType
                     , Maybe.withDefault "" rec.deliveryType
                     )
 
                 Nothing ->
-                    ( "", "", "", "", "", "" )
+                    ( "", "", "", "", "", "", "" )
 
         ( shoulderDystocia, laceration, episiotomy, repair, degree, repairedBy, ebl, meconium, comments ) =
             case cfg.model.laborStage2Record of
@@ -1791,6 +1803,12 @@ dialogStage2SummaryView cfg =
                         [ H.text "Est blood loss at birth: " ]
                     , H.span [ HA.class "" ]
                         [ H.text ebl ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Terminal Mec: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text terminalMec ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
@@ -3195,6 +3213,9 @@ update session msg model =
                         Stage2ShoulderDystociaFld ->
                             { model | s2ShoulderDystocia = Just value }
 
+                        Stage2TerminalMecFld ->
+                            { model | s2TerminalMec = Just value }
+
                         Stage2LacerationFld ->
                             -- Clear the degree field if this and laceration are unchecked.
                             if value == False then
@@ -3843,6 +3864,7 @@ update session msg model =
                                         , s2BirthPosition = U.maybeOr rec.birthPosition model.s2BirthPosition
                                         , s2DurationPushing = U.maybeOr (Maybe.map toString rec.durationPushing) model.s2DurationPushing
                                         , s2BirthPresentation = U.maybeOr rec.birthPresentation model.s2BirthPresentation
+                                        , s2TerminalMec = U.maybeOr rec.terminalMec model.s2TerminalMec
                                         , s2CordWrapType = U.maybeOr rec.cordWrapType model.s2CordWrapType
                                         , s2DeliveryType = U.maybeOr rec.deliveryType model.s2DeliveryType
                                         , s2ShoulderDystocia = U.maybeOr rec.shoulderDystocia model.s2ShoulderDystocia
@@ -3920,6 +3942,7 @@ update session msg model =
                                                         , birthPosition = model.s2BirthPosition
                                                         , durationPushing = U.maybeStringToMaybeInt model.s2DurationPushing
                                                         , birthPresentation = model.s2BirthPresentation
+                                                        , terminalMec = model.s2TerminalMec
                                                         , cordWrapType = model.s2CordWrapType
                                                         , deliveryType = model.s2DeliveryType
                                                         , shoulderDystocia = model.s2ShoulderDystocia
@@ -4939,6 +4962,7 @@ deriveLaborStage2RecordNew model =
                 model.s2BirthPosition
                 (U.maybeStringToMaybeInt model.s2DurationPushing)
                 model.s2BirthPresentation
+                model.s2TerminalMec
                 model.s2CordWrapType
                 model.s2DeliveryType
                 model.s2ShoulderDystocia

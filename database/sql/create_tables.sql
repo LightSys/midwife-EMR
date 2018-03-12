@@ -631,7 +631,7 @@ CREATE TABLE IF NOT EXISTS `laborStage2` (
   birthPosition VARCHAR(100) NULL,
   durationPushing INT NULL,
   birthPresentation VARCHAR(100) NULL,
-  cordWrap BOOLEAN NULL,
+  terminalMec BOOLEAN NULL,
   cordWrapType VARCHAR(50) NULL,
   deliveryType VARCHAR(100) NULL,
   shoulderDystocia BOOLEAN NULL,
