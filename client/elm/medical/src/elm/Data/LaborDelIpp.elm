@@ -127,8 +127,8 @@ type Field
     | Stage3PlacentaInsertionFld
     | Stage3PlacentaNumVesselsFld
     | Stage3SchultzDuncanFld
-    | Stage3PlacentaMembranesCompleteFld
-    | Stage3PlacentaOtherFld
+    | Stage3CotyledonsFld
+    | Stage3MembranesFld
     | Stage3CommentsFld
     | EarlyLaborDateFld
     | EarlyLaborTimeFld

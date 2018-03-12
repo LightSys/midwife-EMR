@@ -218,8 +218,8 @@ type alias Model =
     , s3PlacentaInsertion : Maybe String
     , s3PlacentaNumVessels : Maybe String
     , s3SchultzDuncan : Maybe String
-    , s3PlacentaMembranesComplete : Maybe Bool
-    , s3PlacentaOther : Maybe String
+    , s3Cotyledons : Maybe String
+    , s3Membranes : Maybe String
     , s3Comments : Maybe String
     , earlyLaborDateTimeModal : DateTimeModal
     , earlyLaborDate : Maybe Date
@@ -388,8 +388,8 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , s3PlacentaInsertion = Nothing
       , s3PlacentaNumVessels = Nothing
       , s3SchultzDuncan = Nothing
-      , s3PlacentaMembranesComplete = Nothing
-      , s3PlacentaOther = Nothing
+      , s3Cotyledons = Nothing
+      , s3Membranes = Nothing
       , s3Comments = Nothing
       , earlyLaborDateTimeModal = NoDateTimeModal
       , earlyLaborDate = Nothing
@@ -1903,7 +1903,7 @@ dialogStage3SummaryView cfg =
                 Nothing ->
                     ( "", "", "", "", "", "", "", "" )
 
-        ( shape, insertion, numVessels, numVesselsAlert, schDun, complete, other, comments ) =
+        ( shape, insertion, numVessels, numVesselsAlert, schDun, cotyledons, membranes, comments ) =
             case cfg.model.laborStage3Record of
                 Just rec ->
                     ( Maybe.withDefault "" rec.placentaShape
@@ -1918,8 +1918,8 @@ dialogStage3SummaryView cfg =
                             False
                     , Maybe.map schultzDuncan2String rec.schultzDuncan
                         |> Maybe.withDefault ""
-                    , yesNoBool rec.placentaMembranesComplete
-                    , Maybe.withDefault "" rec.placentaOther
+                    , Maybe.withDefault "" rec.cotyledons
+                    , Maybe.withDefault "" rec.membranes
                     , Maybe.withDefault "" rec.comments
                     )
 
@@ -2037,15 +2037,15 @@ dialogStage3SummaryView cfg =
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Membranes complete: " ]
+                        [ H.text "Cotyeledons: " ]
                     , H.span [ HA.class "" ]
-                        [ H.text complete ]
+                        [ H.text cotyledons ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Placenta other: " ]
+                        [ H.text "Membranes: " ]
                     , H.span [ HA.class "" ]
-                        [ H.text other ]
+                        [ H.text membranes ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
@@ -2192,22 +2192,24 @@ dialogStage3SummaryEdit cfg =
                     , "Duncan"
                     ]
                     (getErr Stage3SchultzDuncanFld errors)
-                , H.div [ HA.class "" ]
-                    [ H.span
-                        [ HA.class "c-text--loud" ]
-                        [ H.text "Placenta Membrane" ]
-                    , Form.checkbox "Is Complete"
-                        (FldChgBool >> FldChgSubMsg Stage3PlacentaMembranesCompleteFld)
-                        cfg.model.s3PlacentaMembranesComplete
+                , Form.radioFieldset "Cotyledons"
+                    "cotyledons"
+                    cfg.model.s3Cotyledons
+                    (FldChgString >> FldChgSubMsg Stage3CotyledonsFld)
+                    False
+                    [ "Cotyledons appear complete"
+                    , "Cotyledons possibly incomplete"
                     ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaOtherFld)
-                        "Inspection notes"
-                        "notes"
-                        True
-                        cfg.model.s3PlacentaOther
-                        (getErr Stage3PlacentaOtherFld errors)
+                    (getErr Stage3CotyledonsFld errors)
+                , Form.radioFieldset "Membranes"
+                    "membranes"
+                    cfg.model.s3Membranes
+                    (FldChgString >> FldChgSubMsg Stage3MembranesFld)
+                    False
+                    [ "Membranes appear complete"
+                    , "Membranes possibly incomplete"
                     ]
+                    (getErr Stage3MembranesFld errors)
                 , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage3CommentsFld)
                     "Comments"
                     ""
@@ -3155,8 +3157,11 @@ update session msg model =
                             -- TODO: need validity check here?
                             { model | s3SchultzDuncan = Just value }
 
-                        Stage3PlacentaOtherFld ->
-                            { model | s3PlacentaOther = Just value }
+                        Stage3CotyledonsFld ->
+                            { model | s3Cotyledons = Just value }
+
+                        Stage3MembranesFld ->
+                            { model | s3Membranes = Just value }
 
                         Stage3CommentsFld ->
                             { model | s3Comments = Just value }
@@ -3298,9 +3303,6 @@ update session msg model =
 
                         Stage3PlacentaDeliveryManualFld ->
                             { model | s3PlacentaDeliveryManual = Just value }
-
-                        Stage3PlacentaMembranesCompleteFld ->
-                            { model | s3PlacentaMembranesComplete = Just value }
 
                         BabyBulbFld ->
                             { model | bbBulb = Just value }
@@ -4233,8 +4235,8 @@ update session msg model =
                                         , s3PlacentaInsertion = U.maybeOr rec.placentaInsertion model.s3PlacentaInsertion
                                         , s3PlacentaNumVessels = U.maybeOr (Maybe.map toString rec.placentaNumVessels) model.s3PlacentaNumVessels
                                         , s3SchultzDuncan = U.maybeOr (Maybe.map schultzDuncan2String rec.schultzDuncan) model.s3SchultzDuncan
-                                        , s3PlacentaMembranesComplete = U.maybeOr rec.placentaMembranesComplete model.s3PlacentaMembranesComplete
-                                        , s3PlacentaOther = U.maybeOr rec.placentaOther model.s3PlacentaOther
+                                        , s3Cotyledons = U.maybeOr rec.cotyledons model.s3Cotyledons
+                                        , s3Membranes = U.maybeOr rec.membranes model.s3Membranes
                                         , s3Comments = U.maybeOr rec.comments model.s3Comments
                                     }
 
@@ -4311,8 +4313,8 @@ update session msg model =
                                                         , placentaInsertion = model.s3PlacentaInsertion
                                                         , placentaNumVessels = U.maybeStringToMaybeInt model.s3PlacentaNumVessels
                                                         , schultzDuncan = string2SchultzDuncan (Maybe.withDefault "" model.s3SchultzDuncan)
-                                                        , placentaMembranesComplete = model.s3PlacentaMembranesComplete
-                                                        , placentaOther = model.s3PlacentaOther
+                                                        , cotyledons = model.s3Cotyledons
+                                                        , membranes = model.s3Membranes
                                                         , comments = model.s3Comments
                                                     }
                                             in
@@ -5120,8 +5122,8 @@ deriveLaborStage3RecordNew model =
                 model.s3PlacentaInsertion
                 (U.maybeStringToMaybeInt model.s3PlacentaNumVessels)
                 (string2SchultzDuncan (Maybe.withDefault "" model.s3SchultzDuncan))
-                model.s3PlacentaMembranesComplete
-                model.s3PlacentaOther
+                model.s3Cotyledons
+                model.s3Membranes
                 model.s3Comments
                 id
                 |> Just
@@ -5256,6 +5258,8 @@ validateStage3 =
         , .s3PlacentaInsertion >> ifInvalid U.validatePopulatedString (Stage3PlacentaInsertionFld => "Placenta insertion must be provided.")
         , .s3PlacentaNumVessels >> ifInvalid U.validateInt (Stage3PlacentaNumVesselsFld => "Number of vessels must be provided.")
         , .s3SchultzDuncan >> ifInvalid U.validatePopulatedString (Stage3SchultzDuncanFld => "Schultz or Duncan presentation must be provided.")
+        , .s3Cotyledons >> ifInvalid U.validatePopulatedString (Stage3CotyledonsFld => "Cotyledons must be specified.")
+        , .s3Membranes >> ifInvalid U.validatePopulatedString (Stage3MembranesFld => "Membranes must be specified.")
         ]
 
 
