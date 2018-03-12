@@ -2475,6 +2475,32 @@ dialogBabySummaryView cfg =
                 Nothing ->
                     ( "", "", "", "", "", "", "" )
 
+        yesNoBool bool =
+            case bool of
+                True ->
+                    "Yes"
+
+                _ ->
+                    "No"
+
+        ( bulb, machine, freeflow, chestComp, ppv ) =
+            case cfg.model.babyRecord of
+                Just rec ->
+                    ( Maybe.map yesNoBool rec.bulb
+                        |> Maybe.withDefault "No"
+                    , Maybe.map yesNoBool rec.machine
+                        |> Maybe.withDefault "No"
+                    , Maybe.map yesNoBool rec.freeFlowO2
+                        |> Maybe.withDefault "No"
+                    , Maybe.map yesNoBool rec.chestCompressions
+                        |> Maybe.withDefault "No"
+                    , Maybe.map yesNoBool rec.ppv
+                        |> Maybe.withDefault "No"
+                    )
+
+                Nothing ->
+                    ( "", "", "", "", "" )
+
         apgarsList =
             getScoresAsList cfg.model.apgarScores
     in
@@ -2527,6 +2553,36 @@ dialogBabySummaryView cfg =
                         [ H.text "BFed established: " ]
                     , H.span [ HA.class "" ]
                         [ H.text bFed ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Bulb: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text bulb ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Machine: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text machine ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Free flow O2: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text freeflow ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Chest compressions: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text chestComp ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "PPV: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text ppv ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
@@ -2808,11 +2864,16 @@ dialogBabySummaryEdit cfg =
                                 ]
                             ]
                         ]
-                , Form.checkbox "Bulb" (FldChgBool >> FldChgSubMsg BabyBulbFld) cfg.model.bbBulb
-                , Form.checkbox "Machine" (FldChgBool >> FldChgSubMsg BabyMachineFld) cfg.model.bbMachine
-                , Form.checkbox "Free Flow O2" (FldChgBool >> FldChgSubMsg BabyFreeFlowO2Fld) cfg.model.bbFreeFlowO2
-                , Form.checkbox "Chest Compressions" (FldChgBool >> FldChgSubMsg BabyChestCompressionsFld) cfg.model.bbChestCompressions
-                , Form.checkbox "PPV" (FldChgBool >> FldChgSubMsg BabyPpvFld) cfg.model.bbPpv
+                , H.label [ HA.class "c-label o-form-element mw-form-field" ]
+                    [ H.span
+                        [ HA.class "c-text--loud" ]
+                        [ H.text "Resuscitation" ]
+                    , Form.checkbox "Bulb" (FldChgBool >> FldChgSubMsg BabyBulbFld) cfg.model.bbBulb
+                    , Form.checkbox "Machine" (FldChgBool >> FldChgSubMsg BabyMachineFld) cfg.model.bbMachine
+                    , Form.checkbox "Free Flow O2" (FldChgBool >> FldChgSubMsg BabyFreeFlowO2Fld) cfg.model.bbFreeFlowO2
+                    , Form.checkbox "Chest Compressions" (FldChgBool >> FldChgSubMsg BabyChestCompressionsFld) cfg.model.bbChestCompressions
+                    , Form.checkbox "PPV" (FldChgBool >> FldChgSubMsg BabyPpvFld) cfg.model.bbPpv
+                    ]
                 , Form.formTextareaField (FldChgString >> FldChgSubMsg BabyCommentsFld)
                     "Comments"
                     ""
