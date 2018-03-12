@@ -113,12 +113,12 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
                                 )
                             else
                                 -- There was a discharge date.
-                                if rec.falseLabor then
+                                if rec.earlyLabor then
                                     -- The labor is closed and has been labeled
-                                    -- a false, i.e. early labor.
+                                    -- an early labor.
                                     ( AdmissionStateNone, ( store, Cmd.none ) )
                                 else
-                                    -- Patient discharged, not a false/early labor.
+                                    -- Patient discharged, not a early labor.
                                     ( AdmissionStateView (LaborId rec.id)
                                     , ( store, Cmd.none )
                                     )
@@ -249,14 +249,14 @@ view size session model =
                 AdmissionStateView laborId ->
                     [ case laborRec of
                         Just rec ->
-                            if rec.falseLabor && isCurrentNewest then
+                            if rec.earlyLabor && isCurrentNewest then
                                 -- The most recent labor record has already been
-                                -- flagged as false/early and it is the one being selected.
+                                -- flagged as early and it is the one being selected.
                                 -- We offer the option to start a new labor record.
                                 viewAdmitButton
                             else
                                 -- The current labor record is not already flagged
-                                -- as a false/early labor, though there may be an earlier
+                                -- as a early labor, though there may be an earlier
                                 -- labor record that is, but that is beside the point.
                                 H.text ""
 
@@ -286,8 +286,8 @@ getErr fld errors =
 
 
 {-| Show current admitting labor record and any historical
-"false" labor records (also more properly known as early labors).
-Allow user to click on a historical record to view it, etc.
+early labor records. Allow user to click on a historical
+record to view it, etc.
 -}
 viewLaborRecords : Model -> Html AdmittingSubMsg
 viewLaborRecords model =
@@ -360,7 +360,7 @@ viewAdmittingData model =
                     , rec.startLaborDate |> U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep
                     , rec.pos
                     , toString rec.fh
-                    , toString rec.fht
+                    , rec.fht
                     , toString rec.systolic
                     , toString rec.diastolic
                     , toString rec.cr
@@ -374,7 +374,7 @@ viewAdmittingData model =
                 Just rec ->
                     ( toString rec.temp
                     , Maybe.withDefault "" rec.comments
-                    , rec.falseLabor
+                    , rec.earlyLabor
                     )
 
                 Nothing ->
@@ -775,9 +775,9 @@ update session msg model =
                         newOuterMsg =
                             case getCurrentLaborRec model of
                                 Just rec ->
-                                    if rec.falseLabor then
+                                    if rec.earlyLabor then
                                         -- Create another record since the existing record is a
-                                        -- false/early labor and we are not changing it anymore.
+                                        -- early labor and we are not changing it anymore.
                                         case deriveLaborRecordNew model of
                                             Just laborRecNew ->
                                                 ProcessTypeMsg
@@ -795,7 +795,7 @@ update session msg model =
                                     else
                                         -- Saving an existing record; note that we do not handle
                                         -- the fields that do not make sense on this page such as
-                                        -- falseLabor and dischargeDate.
+                                        -- earlyLabor and dischargeDate.
                                         let
                                             laborRec =
                                                 { rec
@@ -813,9 +813,7 @@ update session msg model =
                                                     , fh =
                                                         U.maybeStringToMaybeInt model.fh
                                                             |> Maybe.withDefault 0
-                                                    , fht =
-                                                        U.maybeStringToMaybeInt model.fht
-                                                            |> Maybe.withDefault 0
+                                                    , fht = Maybe.withDefault "" model.fht
                                                     , systolic =
                                                         U.maybeStringToMaybeInt model.systolic
                                                             |> Maybe.withDefault 0
@@ -929,7 +927,7 @@ update session msg model =
                         , laborTime = Just <| U.dateToTimeString rec.startLaborDate
                         , pos = Just rec.pos
                         , fh = Just (toString rec.fh)
-                        , fht = Just (toString rec.fht)
+                        , fht = Just rec.fht
                         , systolic = Just (toString rec.systolic)
                         , diastolic = Just (toString rec.diastolic)
                         , cr = Just (toString rec.cr)
@@ -1041,7 +1039,7 @@ deriveLaborRecordNew model =
           , model.pos
           , (U.maybeStringToMaybeInt model.fh)
           )
-        , ( (U.maybeStringToMaybeInt model.fht)
+        , ( model.fht
           , (U.maybeStringToMaybeInt model.systolic)
           , (U.maybeStringToMaybeInt model.diastolic)
           , (U.maybeStringToMaybeInt model.cr)
@@ -1093,7 +1091,7 @@ validateAdmittance =
         , .laborTime >> ifInvalid U.validateTime (LaborTimeFld => "Start of labor time must be provided, ex: hh:mm.")
         , .pos >> ifInvalid U.validatePopulatedString (PosFld => "POS must be provided.")
         , .fh >> ifInvalid U.validateInt (FhFld => "FH must be provided.")
-        , .fht >> ifInvalid U.validateInt (FhtFld => "FHT must be provided.")
+        , .fht >> ifInvalid U.validatePopulatedString (FhtFld => "FHT must be provided.")
         , .systolic >> ifInvalid U.validateInt (SystolicFld => "Systolic must be provided.")
         , .diastolic >> ifInvalid U.validateInt (DiastolicFld => "Diastolic must be provided.")
         , .cr >> ifInvalid U.validateInt (CrFld => "CR must be provided.")

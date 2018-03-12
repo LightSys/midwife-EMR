@@ -1735,7 +1735,7 @@ setRoute maybeRoute model =
                                 Dict.values recs
                                     |> LE.maximumBy
                                         (\lr ->
-                                            if lr.falseLabor then
+                                            if lr.earlyLabor then
                                                 -1
                                             else
                                                 Date.toTime lr.admittanceDate
@@ -1743,7 +1743,7 @@ setRoute maybeRoute model =
                         in
                             case laborRec of
                                 Just rec ->
-                                    if not rec.falseLabor then
+                                    if not rec.earlyLabor then
                                         PageBirthCert.init pid rec model.session model.processStore
                                             |> (\( store, cmd ) -> transition store cmd)
                                     else
@@ -1773,7 +1773,7 @@ setRoute maybeRoute model =
                                     Dict.values recs
                                         |> LE.maximumBy
                                             (\lr ->
-                                                if lr.falseLabor then
+                                                if lr.earlyLabor then
                                                     -1
                                                 else
                                                     Date.toTime lr.admittanceDate
@@ -1781,7 +1781,7 @@ setRoute maybeRoute model =
                             in
                                 case laborRec of
                                     Just rec ->
-                                        if not rec.falseLabor then
+                                        if not rec.earlyLabor then
                                             PageContPP.init pregId rec model.session model.processStore
                                                 |> (\( store, cmd ) -> transition store cmd)
                                         else
@@ -1831,7 +1831,7 @@ setRoute maybeRoute model =
                                     Dict.values recs
                                         |> LE.maximumBy
                                             (\lr ->
-                                                if lr.falseLabor then
+                                                if lr.earlyLabor then
                                                     -1
                                                 else
                                                     Date.toTime lr.admittanceDate
@@ -1839,7 +1839,7 @@ setRoute maybeRoute model =
                             in
                                 case laborRec of
                                     Just rec ->
-                                        if not rec.falseLabor then
+                                        if not rec.earlyLabor then
                                             PagePostpartum.init pregId rec model.session model.processStore
                                                 |> (\( store, cmd ) -> transition store cmd)
                                         else

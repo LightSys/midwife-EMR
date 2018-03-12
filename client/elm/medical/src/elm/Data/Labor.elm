@@ -11,8 +11,6 @@ module Data.Labor
         , laborRecordToValue
         )
 
--- LOCAL IMPORTS --
-
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Json.Decode as JD
@@ -28,18 +26,15 @@ type LaborId
     = LaborId Int
 
 
-{-| Note that false labor is also known as
-early labor.
--}
 type alias LaborRecord =
     { id : Int
     , admittanceDate : Date
     , startLaborDate : Date
     , dischargeDate : Maybe Date
-    , falseLabor : Bool
+    , earlyLabor : Bool
     , pos : String
     , fh : Int
-    , fht : Int
+    , fht : String
     , systolic : Int
     , diastolic : Int
     , cr : Int
@@ -50,14 +45,14 @@ type alias LaborRecord =
 
 
 {-| For creating new records hence the lack of certain fields
-such as id, dischargeDate, and falseLabor.
+such as id, dischargeDate, and earlyLabor.
 -}
 type alias LaborRecordNew =
     { admittanceDate : Date
     , startLaborDate : Date
     , pos : String
     , fh : Int
-    , fht : Int
+    , fht : String
     , systolic : Int
     , diastolic : Int
     , cr : Int
@@ -76,10 +71,10 @@ laborRecord =
         |> JDP.required "admittanceDate" JDE.date
         |> JDP.required "startLaborDate" JDE.date
         |> JDP.optional "dischargeDate" (JD.maybe JDE.date) Nothing
-        |> JDP.required "falseLabor" (JD.map (\f -> f == 1) JD.int)
+        |> JDP.required "earlyLabor" (JD.map (\f -> f == 1) JD.int)
         |> JDP.required "pos" JD.string
         |> JDP.required "fh" JD.int
-        |> JDP.required "fht" JD.int
+        |> JDP.required "fht" JD.string
         |> JDP.required "systolic" JD.int
         |> JDP.required "diastolic" JD.int
         |> JDP.required "cr" JD.int
@@ -101,7 +96,7 @@ laborRecordNewToValue rec =
                 , ( "startLaborDate", U.dateToStringValue rec.startLaborDate )
                 , ( "pos", JE.string rec.pos )
                 , ( "fh", JE.int rec.fh )
-                , ( "fht", JE.int rec.fht )
+                , ( "fht", JE.string rec.fht )
                 , ( "systolic", JE.int rec.systolic )
                 , ( "diastolic", JE.int rec.diastolic )
                 , ( "cr", JE.int rec.cr )
@@ -126,10 +121,10 @@ laborRecordToValue rec =
                 , ( "admittanceDate", U.dateToStringValue rec.admittanceDate )
                 , ( "startLaborDate", U.dateToStringValue rec.startLaborDate )
                 , ( "dischargeDate", U.maybeDateToValue rec.dischargeDate )
-                , ( "falseLabor", U.boolToInt rec.falseLabor |> JE.int )
+                , ( "earlyLabor", U.boolToInt rec.earlyLabor |> JE.int )
                 , ( "pos", JE.string rec.pos )
                 , ( "fh", JE.int rec.fh )
-                , ( "fht", JE.int rec.fht )
+                , ( "fht", JE.string rec.fht )
                 , ( "systolic", JE.int rec.systolic )
                 , ( "diastolic", JE.int rec.diastolic )
                 , ( "cr", JE.int rec.cr )

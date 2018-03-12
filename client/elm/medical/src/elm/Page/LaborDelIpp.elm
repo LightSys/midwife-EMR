@@ -219,9 +219,9 @@ type alias Model =
     , s3PlacentaMembranesComplete : Maybe Bool
     , s3PlacentaOther : Maybe String
     , s3Comments : Maybe String
-    , falseLaborDateTimeModal : DateTimeModal
-    , falseLaborDate : Maybe Date
-    , falseLaborTime : Maybe String
+    , earlyLaborDateTimeModal : DateTimeModal
+    , earlyLaborDate : Maybe Date
+    , earlyLaborTime : Maybe String
     , membraneSummaryModal : ViewEditState
     , membraneRuptureDate : Maybe Date
     , membraneRuptureTime : Maybe String
@@ -387,9 +387,9 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , s3PlacentaMembranesComplete = Nothing
       , s3PlacentaOther = Nothing
       , s3Comments = Nothing
-      , falseLaborDateTimeModal = NoDateTimeModal
-      , falseLaborDate = Nothing
-      , falseLaborTime = Nothing
+      , earlyLaborDateTimeModal = NoDateTimeModal
+      , earlyLaborDate = Nothing
+      , earlyLaborTime = Nothing
       , membraneSummaryModal = NoViewEditState
       , membraneRuptureDate = Nothing
       , membraneRuptureTime = Nothing
@@ -794,17 +794,17 @@ isBabySummaryDone model =
             False
 
 
-{-| View the buttons used to set false labor, stage 1, 2, and 3 date/time
+{-| View the buttons used to set early labor, stage 1, 2, and 3 date/time
 and related fields, the membranes fields, and the initial baby record.
 Do not show all options, but only what makes sense for this progression
 of the labor.
 
 Logic:
 
-  - hide false labor if labor stage 1 exists and has fullDialation set
+  - hide early labor if labor stage 1 exists and has fullDialation set
     or if membrane exists.
-  - hide membrane if labor record has falseLabor set to True.
-  - hide stage 1 if labor record has falseLabor set to True.
+  - hide membrane if labor record has earlyLabor set to True.
+  - hide stage 1 if labor record has earlyLabor set to True.
   - hide stage 2 if stage 1 is hidden or labor stage 1 does not exist
     or does not have fullDialation set.
   - hide stage 3 if stage 2 is hidden or labor stage 2 does not exist
@@ -831,7 +831,7 @@ viewStagesMembranesBaby model =
                 ( Just recs, Just lid ) ->
                     case Dict.get (getLaborId lid) recs of
                         Just rec ->
-                            ( rec.falseLabor, rec.falseLabor )
+                            ( rec.earlyLabor, rec.earlyLabor )
 
                         Nothing ->
                             ( False, False )
@@ -884,7 +884,7 @@ viewStagesMembranesBaby model =
                                 ( Just recs, Just lid ) ->
                                     case Dict.get (getLaborId lid) recs of
                                         Just rec ->
-                                            case ( rec.falseLabor, rec.dischargeDate ) of
+                                            case ( rec.earlyLabor, rec.dischargeDate ) of
                                                 ( True, Just d ) ->
                                                     U.dateTimeHMFormatter
                                                         U.MDYDateFmt
@@ -902,27 +902,27 @@ viewStagesMembranesBaby model =
                                     "Click to set"
                         ]
                     , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.falseLaborDateTimeModal == EarlyLaborDateTimeModal)
+                        Form.dateTimeModal (model.earlyLaborDateTimeModal == EarlyLaborDateTimeModal)
                             "Early Labor Date/Time"
                             (FldChgString >> FldChgSubMsg EarlyLaborDateFld)
                             (FldChgString >> FldChgSubMsg EarlyLaborTimeFld)
                             (HandleEarlyLaborDateTimeModal CloseNoSaveDialog)
                             (HandleEarlyLaborDateTimeModal CloseSaveDialog)
-                            ClearFalseLaborDateTime
-                            model.falseLaborDate
-                            model.falseLaborTime
+                            ClearEarlyLaborDateTime
+                            model.earlyLaborDate
+                            model.earlyLaborTime
                       else
-                        Form.dateTimePickerModal (model.falseLaborDateTimeModal == EarlyLaborDateTimeModal)
+                        Form.dateTimePickerModal (model.earlyLaborDateTimeModal == EarlyLaborDateTimeModal)
                             "Early Labor Date/Time"
                             OpenDatePickerSubMsg
                             (FldChgString >> FldChgSubMsg EarlyLaborDateFld)
                             (FldChgString >> FldChgSubMsg EarlyLaborTimeFld)
                             (HandleEarlyLaborDateTimeModal CloseNoSaveDialog)
                             (HandleEarlyLaborDateTimeModal CloseSaveDialog)
-                            ClearFalseLaborDateTime
-                            FalseLaborDateField
-                            model.falseLaborDate
-                            model.falseLaborTime
+                            ClearEarlyLaborDateTime
+                            EarlyLaborDateField
+                            model.earlyLaborDate
+                            model.earlyLaborTime
                     ]
                 ]
             ]
@@ -2905,8 +2905,8 @@ update session msg model =
                         BabyBFedEstablishedDateField ->
                             ( { model | bbBFedEstablishedDate = Just date }, Cmd.none, Cmd.none )
 
-                        FalseLaborDateField ->
-                            ( { model | falseLaborDate = Just date }, Cmd.none, Cmd.none )
+                        EarlyLaborDateField ->
+                            ( { model | earlyLaborDate = Just date }, Cmd.none, Cmd.none )
 
                         LaborDelIppLaborDateField ->
                             ( { model | laborDate = Just date }, Cmd.none, Cmd.none )
@@ -3089,10 +3089,10 @@ update session msg model =
                             { model | s3Comments = Just value }
 
                         EarlyLaborDateFld ->
-                            { model | falseLaborDate = Date.fromString value |> Result.toMaybe }
+                            { model | earlyLaborDate = Date.fromString value |> Result.toMaybe }
 
                         EarlyLaborTimeFld ->
-                            { model | falseLaborTime = Just <| U.filterStringLikeTime value }
+                            { model | earlyLaborTime = Just <| U.filterStringLikeTime value }
 
                         MembraneRuptureDateFld ->
                             { model | membraneRuptureDate = Date.fromString value |> Result.toMaybe }
@@ -4222,39 +4222,39 @@ update session msg model =
 
         HandleEarlyLaborDateTimeModal dialogState ->
             -- The user has just opened the modal to set the date/time for a
-            -- false labor. We default to the current date/time for convenience if
+            -- early labor. We default to the current date/time for convenience if
             -- this is an open event, but only if the date/time has not already
             -- been previously selected.
             case dialogState of
                 OpenDialog ->
-                    ( case ( model.falseLaborDate, model.falseLaborTime ) of
+                    ( case ( model.earlyLaborDate, model.earlyLaborTime ) of
                         ( Nothing, Nothing ) ->
                             -- If not yet set, the set the date/time to
                             -- current as a convenience to user.
                             { model
-                                | falseLaborDateTimeModal = EarlyLaborDateTimeModal
-                                , falseLaborDate = Just <| Date.fromTime model.currTime
-                                , falseLaborTime = Just <| U.timeToTimeString model.currTime
+                                | earlyLaborDateTimeModal = EarlyLaborDateTimeModal
+                                , earlyLaborDate = Just <| Date.fromTime model.currTime
+                                , earlyLaborTime = Just <| U.timeToTimeString model.currTime
                             }
 
                         ( _, _ ) ->
-                            { model | falseLaborDateTimeModal = EarlyLaborDateTimeModal }
+                            { model | earlyLaborDateTimeModal = EarlyLaborDateTimeModal }
                     , Cmd.none
                     , Cmd.none
                     )
 
                 CloseNoSaveDialog ->
-                    ( { model | falseLaborDateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
+                    ( { model | earlyLaborDateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
 
                 EditDialog ->
-                    -- This dialog option is not used for false labor date time.
+                    -- This dialog option is not used for early labor date time.
                     ( model, Cmd.none, Cmd.none )
 
                 CloseSaveDialog ->
                     -- Close and send LaborRecord to server as an update.
-                    case ( model.falseLaborDate, model.falseLaborTime, model.currLaborId, model.laborRecords ) of
+                    case ( model.earlyLaborDate, model.earlyLaborTime, model.currLaborId, model.laborRecords ) of
                         ( Just d, Just t, Just laborId, Just recs ) ->
-                            -- Setting date/time and setting the labor as a false labor.
+                            -- Setting date/time and setting the labor as a early labor.
                             case Dict.get (getLaborId laborId) recs of
                                 Just laborRecord ->
                                     case U.stringToTimeTuple t of
@@ -4263,7 +4263,7 @@ update session msg model =
                                                 newLaborRec =
                                                     { laborRecord
                                                         | dischargeDate = Just (U.datePlusTimeTuple d ( h, m ))
-                                                        , falseLabor = True
+                                                        , earlyLabor = True
                                                     }
 
                                                 outerMsg =
@@ -4278,7 +4278,7 @@ update session msg model =
                                                         (laborRecordToValue newLaborRec)
                                             in
                                             ( { model
-                                                | falseLaborDateTimeModal = NoDateTimeModal
+                                                | earlyLaborDateTimeModal = NoDateTimeModal
                                               }
                                             , Cmd.none
                                             , Task.perform (always outerMsg) (Task.succeed True)
@@ -4291,16 +4291,16 @@ update session msg model =
                                 Nothing ->
                                     -- Shouldn't get here because there has to be a labor record.
                                     ( { model
-                                        | falseLaborDateTimeModal = NoDateTimeModal
-                                        , falseLaborDate = Nothing
-                                        , falseLaborTime = Nothing
+                                        | earlyLaborDateTimeModal = NoDateTimeModal
+                                        , earlyLaborDate = Nothing
+                                        , earlyLaborTime = Nothing
                                       }
                                     , Cmd.none
                                     , Cmd.none
                                     )
 
                         ( _, _, Just laborId, Just recs ) ->
-                            -- Clearing the date/time therefore undoing the false labor
+                            -- Clearing the date/time therefore undoing the early labor
                             -- and updating the server accordingly.
                             case Dict.get (getLaborId laborId) recs of
                                 Just laborRecord ->
@@ -4308,7 +4308,7 @@ update session msg model =
                                         newLaborRec =
                                             { laborRecord
                                                 | dischargeDate = Nothing
-                                                , falseLabor = False
+                                                , earlyLabor = False
                                             }
 
                                         outerMsg =
@@ -4323,7 +4323,7 @@ update session msg model =
                                                 (laborRecordToValue newLaborRec)
                                     in
                                     ( { model
-                                        | falseLaborDateTimeModal = NoDateTimeModal
+                                        | earlyLaborDateTimeModal = NoDateTimeModal
                                       }
                                     , Cmd.none
                                     , Task.perform (always outerMsg) (Task.succeed True)
@@ -4737,10 +4737,10 @@ update session msg model =
             , Cmd.none
             )
 
-        ClearFalseLaborDateTime ->
+        ClearEarlyLaborDateTime ->
             ( { model
-                | falseLaborDate = Nothing
-                , falseLaborTime = Nothing
+                | earlyLaborDate = Nothing
+                , earlyLaborTime = Nothing
               }
             , Cmd.none
             , Cmd.none

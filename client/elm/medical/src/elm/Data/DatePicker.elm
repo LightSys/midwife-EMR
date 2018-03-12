@@ -30,7 +30,7 @@ type DateField
     | LaborDelIppStage1DateField
     | LaborDelIppStage2DateField
     | LaborDelIppStage3DateField
-    | FalseLaborDateField
+    | EarlyLaborDateField
     | MembraneRuptureDateField
     | BabyBFedEstablishedDateField
     | BabyNbsDateField
@@ -91,8 +91,8 @@ stringToDateField str =
         "dischargeDateId" ->
             DischargeDateField
 
-        "falseLaborDateId" ->
-            FalseLaborDateField
+        "earlyLaborDateId" ->
+            EarlyLaborDateField
 
         "laborDateId" ->
             LaborDelIppLaborDateField
@@ -199,8 +199,8 @@ dateFieldToString df =
         DischargeDateField ->
             "dischargeDateId"
 
-        FalseLaborDateField ->
-            "falseLaborDateId"
+        EarlyLaborDateField ->
+            "earlyLaborDateId"
 
         LaborDelIppLaborDateField ->
             "laborDateId"
