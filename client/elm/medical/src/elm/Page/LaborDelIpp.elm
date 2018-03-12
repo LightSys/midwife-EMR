@@ -869,6 +869,20 @@ viewStagesMembranesBaby model =
 
         hideMembranes =
             model.babyRecord == Nothing
+
+        -- Raise an alert if placenta number of vessels is set to 2.
+        placentaNumVesselsAlert =
+            case model.laborStage3Record of
+                Just ls3Rec ->
+                    case ls3Rec.placentaNumVessels of
+                        Just num ->
+                            num == 2
+
+                        Nothing ->
+                            False
+
+                Nothing ->
+                    False
     in
     H.div [ HA.class "stage-wrapper" ]
         [ H.div
@@ -1138,9 +1152,16 @@ viewStagesMembranesBaby model =
                 [ H.button
                     [ HA.class "c-button c-button--ghost-brand u-small"
                     , HE.onClick <| HandleStage3SummaryModal OpenDialog
+                    , if placentaNumVesselsAlert then
+                        HA.style [ ( "background-color", "red" ) ]
+                      else
+                        HA.style [ ]
                     ]
-                    [ if isStage3SummaryDone model then
+                    [ if isStage3SummaryDone model && not placentaNumVesselsAlert then
                         H.i [ HA.class "fa fa-check" ]
+                            [ H.text "" ]
+                      else if placentaNumVesselsAlert then
+                        H.i [ HA.class "fa fa-exclamation" ]
                             [ H.text "" ]
                       else
                         H.span [] [ H.text "" ]
@@ -1882,13 +1903,19 @@ dialogStage3SummaryView cfg =
                 Nothing ->
                     ( "", "", "", "", "", "", "", "" )
 
-        ( shape, insertion, numVessels, schDun, complete, other, comments ) =
+        ( shape, insertion, numVessels, numVesselsAlert, schDun, complete, other, comments ) =
             case cfg.model.laborStage3Record of
                 Just rec ->
                     ( Maybe.withDefault "" rec.placentaShape
                     , Maybe.withDefault "" rec.placentaInsertion
                     , Maybe.map toString rec.placentaNumVessels
                         |> Maybe.withDefault ""
+                    , case rec.placentaNumVessels of
+                        Just num ->
+                            num == 2
+
+                        Nothing ->
+                            False
                     , Maybe.map schultzDuncan2String rec.schultzDuncan
                         |> Maybe.withDefault ""
                     , yesNoBool rec.placentaMembranesComplete
@@ -1897,7 +1924,7 @@ dialogStage3SummaryView cfg =
                     )
 
                 Nothing ->
-                    ( "", "", "", "", "", "", "" )
+                    ( "", "", "", False, "", "", "", "" )
 
         treatment =
             [ txBL1, txBL2, txBL3 ]
@@ -1990,7 +2017,13 @@ dialogStage3SummaryView cfg =
                     , H.span [ HA.class "" ]
                         [ H.text insertion ]
                     ]
-                , H.div [ HA.class "mw-form-field-2x" ]
+                , H.div
+                    [ HA.class "mw-form-field-2x"
+                    , if numVesselsAlert then
+                        HA.style [ ( "border", "1px dotted red" ) ]
+                      else
+                        HA.style []
+                    ]
                     [ H.span [ HA.class "c-text--loud" ]
                         [ H.text "Placenta num vessels: " ]
                     , H.span [ HA.class "" ]
@@ -2141,14 +2174,15 @@ dialogStage3SummaryEdit cfg =
                     , "Marginal"
                     ]
                     (getErr Stage3PlacentaInsertionFld errors)
-                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
-                    [ Form.formField (FldChgString >> FldChgSubMsg Stage3PlacentaNumVesselsFld)
-                        "Number vessels"
-                        "a number"
-                        True
-                        cfg.model.s3PlacentaNumVessels
-                        (getErr Stage3PlacentaNumVesselsFld errors)
+                , Form.radioFieldset "Placenta Number Vessels"
+                    "numberVessels"
+                    cfg.model.s3PlacentaNumVessels
+                    (FldChgString >> FldChgSubMsg Stage3PlacentaNumVesselsFld)
+                    False
+                    [ "2"
+                    , "3"
                     ]
+                    (getErr Stage3PlacentaNumVesselsFld errors)
                 , Form.radioFieldset "Schultz/Duncan"
                     "schultzDuncan"
                     cfg.model.s3SchultzDuncan
