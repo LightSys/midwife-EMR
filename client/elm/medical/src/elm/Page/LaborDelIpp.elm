@@ -951,7 +951,7 @@ viewStagesMembranesBaby model =
             , HA.classList [ ( "isHidden", hideS1 ) ]
             ]
             [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 1" ]
+                [ H.text "Stage 1 Ended" ]
             , H.div []
                 [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                     [ H.button
@@ -976,7 +976,7 @@ viewStagesMembranesBaby model =
                         ]
                     , if model.browserSupportsDate then
                         Form.dateTimeModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                            "Stage 1 Date/Time"
+                            "Stage 1 Completed Date/Time"
                             (FldChgString >> FldChgSubMsg Stage1DateFld)
                             (FldChgString >> FldChgSubMsg Stage1TimeFld)
                             (HandleStage1DateTimeModal CloseNoSaveDialog)
@@ -986,7 +986,7 @@ viewStagesMembranesBaby model =
                             model.stage1Time
                       else
                         Form.dateTimePickerModal (model.stage1DateTimeModal == Stage1DateTimeModal)
-                            "Stage 1 Date/Time"
+                            "Stage 1 Completed Date/Time"
                             OpenDatePickerSubMsg
                             (FldChgString >> FldChgSubMsg Stage1DateFld)
                             (FldChgString >> FldChgSubMsg Stage1TimeFld)
@@ -1017,7 +1017,7 @@ viewStagesMembranesBaby model =
             , HA.classList [ ( "isHidden", hideS2 ) ]
             ]
             [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 2" ]
+                [ H.text "Stage 2 Ended" ]
             , H.div []
                 [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                     [ H.button
@@ -1042,7 +1042,7 @@ viewStagesMembranesBaby model =
                         ]
                     , if model.browserSupportsDate then
                         Form.dateTimeModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                            "Stage 2 Date/Time"
+                            "Stage 2 Completed Date/Time"
                             (FldChgString >> FldChgSubMsg Stage2DateFld)
                             (FldChgString >> FldChgSubMsg Stage2TimeFld)
                             (HandleStage2DateTimeModal CloseNoSaveDialog)
@@ -1052,7 +1052,7 @@ viewStagesMembranesBaby model =
                             model.stage2Time
                       else
                         Form.dateTimePickerModal (model.stage2DateTimeModal == Stage2DateTimeModal)
-                            "Stage 2 Date/Time"
+                            "Stage 2 Completed Date/Time"
                             OpenDatePickerSubMsg
                             (FldChgString >> FldChgSubMsg Stage2DateFld)
                             (FldChgString >> FldChgSubMsg Stage2TimeFld)
@@ -1083,7 +1083,7 @@ viewStagesMembranesBaby model =
             , HA.classList [ ( "isHidden", hideS3 ) ]
             ]
             [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Stage 3" ]
+                [ H.text "Stage 3 Ended" ]
             , H.div []
                 [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
                     [ H.button
@@ -1108,7 +1108,7 @@ viewStagesMembranesBaby model =
                         ]
                     , if model.browserSupportsDate then
                         Form.dateTimeModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                            "Stage 3 Date/Time"
+                            "Stage 3 Completed Date/Time"
                             (FldChgString >> FldChgSubMsg Stage3DateFld)
                             (FldChgString >> FldChgSubMsg Stage3TimeFld)
                             (HandleStage3DateTimeModal CloseNoSaveDialog)
@@ -1118,7 +1118,7 @@ viewStagesMembranesBaby model =
                             model.stage3Time
                       else
                         Form.dateTimePickerModal (model.stage3DateTimeModal == Stage3DateTimeModal)
-                            "Stage 3 Date/Time"
+                            "Stage 3 Completed Date/Time"
                             OpenDatePickerSubMsg
                             (FldChgString >> FldChgSubMsg Stage3DateFld)
                             (FldChgString >> FldChgSubMsg Stage3TimeFld)
