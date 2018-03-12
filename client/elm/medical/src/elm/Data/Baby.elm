@@ -17,11 +17,11 @@ module Data.Baby
         , getScoresAsList
         , getScoreAsStringByMinute
         , isBabyRecordFullyComplete
-        , MaleFemale(..)
-        , maleFemaleToFullString
-        , maleFemaleToString
-        , maybeMaleFemaleToString
-        , stringToMaleFemale
+        , Sex(..)
+        , sexToFullString
+        , sexToString
+        , maybeSexToString
+        , stringToSex
         )
 
 import Date exposing (Date)
@@ -57,18 +57,19 @@ getBabyId (BabyId id) =
     id
 
 
-type MaleFemale
+type Sex
     = Male
     | Female
+    | Ambiguous
 
 
-maleFemale : JD.Decoder String -> JD.Decoder MaleFemale
-maleFemale =
-    JD.map stringToMaleFemale
+sex : JD.Decoder String -> JD.Decoder Sex
+sex =
+    JD.map stringToSex
 
 
-stringToMaleFemale : String -> MaleFemale
-stringToMaleFemale str =
+stringToSex : String -> Sex
+stringToSex str =
     case String.toUpper str of
         "M" ->
             Male
@@ -82,29 +83,35 @@ stringToMaleFemale str =
         "FEMALE" ->
             Female
 
+        "A" ->
+            Ambiguous
+
+        "AMBIGUOUS" ->
+            Ambiguous
+
         _ ->
             let
                 _ =
-                    Debug.log "Data.Baby.stringToMaleFemale" "Error: unknown str of '" ++ str ++ "' encountered."
+                    Debug.log "Data.Baby.stringToSex" <| "Error: unknown str of '" ++ str ++ "' encountered."
             in
                 Female
 
 
-maybeMaleFemaleToString : Bool -> Maybe MaleFemale -> String
-maybeMaleFemaleToString fullString maleFemale =
-    case maleFemale of
+maybeSexToString : Bool -> Maybe Sex -> String
+maybeSexToString fullString sex =
+    case sex of
         Just mf ->
             if fullString then
-                maleFemaleToFullString mf
+                sexToFullString mf
             else
-                maleFemaleToString mf
+                sexToString mf
 
         Nothing ->
             ""
 
 
-maleFemaleToFullString : MaleFemale -> String
-maleFemaleToFullString mf =
+sexToFullString : Sex -> String
+sexToFullString mf =
     case mf of
         Male ->
             "Male"
@@ -112,15 +119,21 @@ maleFemaleToFullString mf =
         Female ->
             "Female"
 
+        Ambiguous ->
+            "Ambiguous"
 
-maleFemaleToString : MaleFemale -> String
-maleFemaleToString mf =
+
+sexToString : Sex -> String
+sexToString mf =
     case mf of
         Male ->
             "M"
 
         Female ->
             "F"
+
+        Ambiguous ->
+            "A"
 
 
 type alias BabyRecord =
@@ -129,7 +142,7 @@ type alias BabyRecord =
     , lastname : Maybe String
     , firstname : Maybe String
     , middlename : Maybe String
-    , sex : MaleFemale
+    , sex : Sex
     , birthWeight : Maybe Int
     , bFedEstablished : Maybe Date
     , bulb : Maybe Bool
@@ -148,7 +161,7 @@ type alias BabyRecordNew =
     , lastname : Maybe String
     , firstname : Maybe String
     , middlename : Maybe String
-    , sex : MaleFemale
+    , sex : Sex
     , birthWeight : Maybe Int
     , bFedEstablished : Maybe Date
     , bulb : Maybe Bool
@@ -206,7 +219,7 @@ babyRecordNewToValue rec =
                 , ( "lastname", (JEE.maybe JE.string rec.lastname) )
                 , ( "firstname", (JEE.maybe JE.string rec.firstname) )
                 , ( "middlename", (JEE.maybe JE.string rec.middlename) )
-                , ( "sex", (maleFemaleToString rec.sex |> JE.string) )
+                , ( "sex", (sexToString rec.sex |> JE.string) )
                 , ( "birthWeight", (JEE.maybe JE.int rec.birthWeight) )
                 , ( "bFedEstablished", (JEE.maybe U.dateToStringValue rec.bFedEstablished) )
                 , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
@@ -233,7 +246,7 @@ babyRecordToValue rec =
                 , ( "lastname", (JEE.maybe JE.string rec.lastname) )
                 , ( "firstname", (JEE.maybe JE.string rec.firstname) )
                 , ( "middlename", (JEE.maybe JE.string rec.middlename) )
-                , ( "sex", (maleFemaleToString rec.sex |> JE.string) )
+                , ( "sex", (sexToString rec.sex |> JE.string) )
                 , ( "birthWeight", (JEE.maybe JE.int rec.birthWeight) )
                 , ( "bFedEstablished", (JEE.maybe U.dateToStringValue rec.bFedEstablished) )
                 , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
@@ -264,7 +277,7 @@ babyRecord =
         |> JDP.required "lastname" (JD.maybe JD.string)
         |> JDP.required "firstname" (JD.maybe JD.string)
         |> JDP.required "middlename" (JD.maybe JD.string)
-        |> JDP.required "sex" (JD.string |> maleFemale)
+        |> JDP.required "sex" (JD.string |> sex)
         |> JDP.required "birthWeight" (JD.maybe JD.int)
         |> JDP.required "bFedEstablished" (JD.maybe JDE.date)
         |> JDP.required "bulb" U.maybeIntToMaybeBool

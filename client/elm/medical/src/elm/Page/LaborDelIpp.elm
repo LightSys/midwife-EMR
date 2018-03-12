@@ -17,7 +17,7 @@ import Data.Baby
         , BabyId(..)
         , BabyRecord
         , BabyRecordNew
-        , MaleFemale(..)
+        , Sex(..)
         , apgarRecordListToApgarScoreDict
         , apgarScoreDictToApgarRecordList
         , babyRecordNewToValue
@@ -26,10 +26,10 @@ import Data.Baby
         , getScoreAsStringByMinute
         , getScoresAsList
         , isBabyRecordFullyComplete
-        , maleFemaleToFullString
-        , maleFemaleToString
-        , maybeMaleFemaleToString
-        , stringToMaleFemale
+        , sexToFullString
+        , sexToString
+        , maybeSexToString
+        , stringToSex
         )
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
@@ -2464,7 +2464,7 @@ dialogBabySummaryView cfg =
                     ( Maybe.withDefault "" rec.lastname
                     , Maybe.withDefault "" rec.firstname
                     , Maybe.withDefault "" rec.middlename
-                    , maleFemaleToFullString rec.sex
+                    , sexToFullString rec.sex
                     , Maybe.withDefault 0 rec.birthWeight
                         |> toString
                         |> flip String.append " g"
@@ -2777,6 +2777,7 @@ dialogBabySummaryEdit cfg =
                     False
                     [ "Male"
                     , "Female"
+                    , "Ambiguous"
                     ]
                     (getErr BabySexFld errors)
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
@@ -3264,7 +3265,7 @@ update session msg model =
                             { model | bbMiddlename = Just value }
 
                         BabySexFld ->
-                            { model | bbSex = Just <| U.filterStringInList [ "Male", "Female" ] value }
+                            { model | bbSex = Just <| U.filterStringInList [ "Male", "Female", "Ambiguous" ] value }
 
                         BabyBirthWeightFld ->
                             { model | bbBirthWeight = Just <| U.filterStringLikeInt value }
@@ -4693,7 +4694,7 @@ update session msg model =
                                         | bbLastname = U.maybeOr rec.lastname model.bbLastname
                                         , bbFirstname = U.maybeOr rec.firstname model.bbFirstname
                                         , bbMiddlename = U.maybeOr rec.middlename model.bbMiddlename
-                                        , bbSex = U.maybeOr (Just (maleFemaleToFullString rec.sex)) model.bbSex
+                                        , bbSex = U.maybeOr (Just (sexToFullString rec.sex)) model.bbSex
                                         , bbBirthWeight = U.maybeOr (Maybe.map toString rec.birthWeight) model.bbBirthWeight
                                         , bbBFedEstablishedDate = rec.bFedEstablished
                                         , bbBFedEstablishedTime =
@@ -4782,7 +4783,7 @@ update session msg model =
                                                         | lastname = model.bbLastname
                                                         , firstname = model.bbFirstname
                                                         , middlename = model.bbMiddlename
-                                                        , sex = stringToMaleFemale sex
+                                                        , sex = stringToSex sex
                                                         , birthWeight = U.maybeStringToMaybeInt model.bbBirthWeight
                                                         , bFedEstablished = U.maybeDateTimeValue bfedDatetime
                                                         , bulb = model.bbBulb
@@ -5133,7 +5134,7 @@ deriveBabyRecordNew model =
                 model.bbLastname
                 model.bbFirstname
                 model.bbMiddlename
-                (stringToMaleFemale sexStr)
+                (stringToSex sexStr)
                 (U.maybeStringToMaybeInt model.bbBirthWeight)
                 bFedDatetime
                 model.bbBulb
@@ -5330,7 +5331,7 @@ able to be provided until later.
 validateBaby : Model -> List FieldError
 validateBaby =
     Validate.all
-        [ .bbSex >> ifInvalid (U.validatePopulatedStringInList [ "Male", "Female" ]) (BabySexFld => "Sex must be provided.")
+        [ .bbSex >> ifInvalid (U.validatePopulatedStringInList [ "Male", "Female", "Ambiguous" ]) (BabySexFld => "Sex must be provided.")
         ]
 
 

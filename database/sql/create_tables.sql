@@ -690,7 +690,7 @@ CREATE TABLE IF NOT EXISTS `baby` (
   lastname VARCHAR(50) NULL,
   firstname VARCHAR(50) NULL,
   middlename VARCHAR(50) NULL,
-  sex ENUM('M', 'F') NOT NULL,
+  sex ENUM('M', 'F', 'A') NOT NULL,
   birthWeight INT NULL,
   bFedEstablished DATETIME NULL,
   bulb BOOLEAN NULL,

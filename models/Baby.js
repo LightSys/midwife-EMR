@@ -22,7 +22,7 @@ CREATE TABLE `baby` (
   `lastname` varchar(50) DEFAULT NULL,
   `firstname` varchar(50) DEFAULT NULL,
   `middlename` varchar(50) DEFAULT NULL,
-  `sex` enum('M','F') NOT NULL,
+  `sex` enum('M','F','A') NOT NULL,
   `birthWeight` int(11) DEFAULT NULL,
   `bFedEstablished` datetime DEFAULT NULL,
   `bulb` tinyint(1) DEFAULT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE `baby` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `baby_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `baby_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=latin1
 */
 
 Baby = Bookshelf.Model.extend({
