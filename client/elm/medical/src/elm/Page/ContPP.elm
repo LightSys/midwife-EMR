@@ -376,6 +376,9 @@ type alias Model =
     , dischargePlacentaGone : Maybe Bool
     , dischargePrayer : Maybe Bool
     , dischargeBible : Maybe Bool
+    , dischargeTransferBaby : Maybe Bool
+    , dischargeTransferMother : Maybe Bool
+    , dischargeTransferComment : Maybe String
     , dischargeInitials : Maybe String
     }
 
@@ -705,6 +708,9 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicati
       , dischargePlacentaGone = Nothing
       , dischargePrayer = Nothing
       , dischargeBible = Nothing
+      , dischargeTransferBaby = Nothing
+      , dischargeTransferMother = Nothing
+      , dischargeTransferComment = Nothing
       , dischargeInitials = Nothing
       }
     , newStore5
@@ -1325,6 +1331,9 @@ update session msg model =
                         DischargeNbsFld ->
                             { model | dischargeNbs = Just value }
 
+                        DischargeTransferCommentFld ->
+                            { model | dischargeTransferComment = Just value }
+
                         DischargeInitialsFld ->
                             { model | dischargeInitials = Just value }
 
@@ -1463,6 +1472,12 @@ update session msg model =
 
                         DischargeBibleFld ->
                             { model | dischargeBible = Just value }
+
+                        DischargeTransferBabyFld ->
+                            { model | dischargeTransferBaby = Just value }
+
+                        DischargeTransferMotherFld ->
+                            { model | dischargeTransferMother = Just value }
 
                         _ ->
                             model
@@ -2766,6 +2781,9 @@ update session msg model =
                                         , dischargePlacentaGone = rec.placentaGone
                                         , dischargePrayer = rec.prayer
                                         , dischargeBible = rec.bible
+                                        , dischargeTransferBaby = rec.transferBaby
+                                        , dischargeTransferMother = rec.transferMother
+                                        , dischargeTransferComment = rec.transferComment
                                         , dischargeInitials = rec.initials
                                     }
 
@@ -2869,6 +2887,9 @@ update session msg model =
                                                         , placentaGone = model.dischargePlacentaGone
                                                         , prayer = model.dischargePrayer
                                                         , bible = model.dischargeBible
+                                                        , transferBaby = model.dischargeTransferBaby
+                                                        , transferMother = model.dischargeTransferMother
+                                                        , transferComment = model.dischargeTransferComment
                                                         , initials = model.dischargeInitials
                                                     }
                                             in
@@ -3596,6 +3617,9 @@ deriveDischargeRecordNew model =
                     model.dischargePlacentaGone
                     model.dischargePrayer
                     model.dischargeBible
+                    model.dischargeTransferBaby
+                    model.dischargeTransferMother
+                    model.dischargeTransferComment
                     model.dischargeInitials
                     labor_id
 
@@ -4372,6 +4396,22 @@ dialogDischargeEdit cfg =
                             cfg.model.dischargeBabyCR
                             (getErr DischargeBabyCRFld errors)
                         ]
+                    , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
+                        [ Form.checkboxPlainWide "Transfer Baby"
+                            (FldChgBool >> FldChgSubMsg DischargeTransferBabyFld)
+                            cfg.model.dischargeTransferBaby
+                        , H.text (getErr DischargeTransferBabyFld errors)
+                        , Form.checkboxPlainWide "Transfer Mother"
+                            (FldChgBool >> FldChgSubMsg DischargeTransferMotherFld)
+                            cfg.model.dischargeTransferMother
+                        , H.text (getErr DischargeTransferMotherFld errors)
+                        , Form.formField (FldChgString >> FldChgSubMsg DischargeTransferCommentFld)
+                            "Transfer Comment"
+                            ""
+                            True
+                            cfg.model.dischargeTransferComment
+                            (getErr DischargeTransferCommentFld errors)
+                        ]
                     , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                         [ Form.formField (FldChgString >> FldChgSubMsg DischargeInitialsFld)
                             "Initials"
@@ -4529,6 +4569,9 @@ dialogDischargeView cfg =
                             , viewField "Baby temp" <| maybeWithDefault toString rec.babyTemp
                             , viewField "Baby HR" <| maybeWithDefault toString rec.babyCR
                             , viewField "Discharge Date/time" <| dateString rec.dateTime
+                            , viewField "Transfer Baby" <| yesNoBool rec.transferBaby
+                            , viewField "Transfer Mother" <| yesNoBool rec.transferMother
+                            , viewField "Transfer comment" <| Maybe.withDefault "" rec.transferComment
                             , viewField "Initials" <| Maybe.withDefault "" rec.initials
                             ]
                         ]

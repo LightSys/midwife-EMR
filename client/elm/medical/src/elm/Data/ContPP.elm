@@ -170,4 +170,7 @@ type Field
     | DischargePlacentaGoneFld
     | DischargePrayerFld
     | DischargeBibleFld
+    | DischargeTransferBabyFld
+    | DischargeTransferMotherFld
+    | DischargeTransferCommentFld
     | DischargeInitialsFld

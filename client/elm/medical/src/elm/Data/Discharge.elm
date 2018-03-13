@@ -97,6 +97,9 @@ type alias DischargeRecord =
     , placentaGone : Maybe Bool
     , prayer : Maybe Bool
     , bible : Maybe Bool
+    , transferBaby : Maybe Bool
+    , transferMother : Maybe Bool
+    , transferComment : Maybe String
     , initials : Maybe String
     , labor_id : Int
     }
@@ -127,6 +130,9 @@ type alias DischargeRecordNew =
     , placentaGone : Maybe Bool
     , prayer : Maybe Bool
     , bible : Maybe Bool
+    , transferBaby : Maybe Bool
+    , transferMother : Maybe Bool
+    , transferComment : Maybe String
     , initials : Maybe String
     , labor_id : Int
     }
@@ -160,6 +166,9 @@ dischargeRecord =
         |> JDP.required "placentaGone" U.maybeIntToMaybeBool
         |> JDP.required "prayer" U.maybeIntToMaybeBool
         |> JDP.required "bible" U.maybeIntToMaybeBool
+        |> JDP.required "transferBaby" U.maybeIntToMaybeBool
+        |> JDP.required "transferBaby" U.maybeIntToMaybeBool
+        |> JDP.required "transferComment" (JD.maybe JD.string)
         |> JDP.required "initials" (JD.maybe JD.string)
         |> JDP.required "labor_id" JD.int
 
@@ -195,6 +204,9 @@ dischargeRecordToValue rec =
                 , ( "placentaGone", U.maybeBoolToMaybeInt rec.placentaGone )
                 , ( "prayer", U.maybeBoolToMaybeInt rec.prayer )
                 , ( "bible", U.maybeBoolToMaybeInt rec.bible )
+                , ( "transferBaby", U.maybeBoolToMaybeInt rec.transferBaby )
+                , ( "transferMother", U.maybeBoolToMaybeInt rec.transferMother )
+                , ( "transferComment", JEE.maybe JE.string rec.transferComment )
                 , ( "initials", JEE.maybe JE.string rec.initials )
                 , ( "labor_id", JE.int rec.labor_id )
                 ]
@@ -232,6 +244,9 @@ dischargeRecordNewToValue rec =
                 , ( "placentaGone", U.maybeBoolToMaybeInt rec.placentaGone )
                 , ( "prayer", U.maybeBoolToMaybeInt rec.prayer )
                 , ( "bible", U.maybeBoolToMaybeInt rec.bible )
+                , ( "transferBaby", U.maybeBoolToMaybeInt rec.transferBaby )
+                , ( "transferMother", U.maybeBoolToMaybeInt rec.transferMother )
+                , ( "transferComment", JEE.maybe JE.string rec.transferComment )
                 , ( "initials", JEE.maybe JE.string rec.initials )
                 , ( "labor_id", JE.int rec.labor_id )
                 ]
@@ -266,6 +281,9 @@ dischargeRecordNewToDischargeRecord (DischargeId id) newRec =
         newRec.placentaGone
         newRec.prayer
         newRec.bible
+        newRec.transferBaby
+        newRec.transferMother
+        newRec.transferComment
         newRec.initials
         newRec.labor_id
 

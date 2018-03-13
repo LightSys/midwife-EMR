@@ -42,6 +42,9 @@ CREATE TABLE `discharge` (
   `placentaGone` tinyint(1) DEFAULT '0',
   `prayer` tinyint(1) DEFAULT '0',
   `bible` tinyint(1) DEFAULT '0',
+  `transferBaby` tinyint(1) DEFAULT '0',
+  `transferMother` tinyint(1) DEFAULT '0',
+  `transferComment` varchar(500) DEFAULT NULL,
   `initials` varchar(50) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
@@ -52,7 +55,7 @@ CREATE TABLE `discharge` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `discharge_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `discharge_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1
 */
 
 Discharge = Bookshelf.Model.extend({
@@ -63,7 +66,8 @@ Discharge = Bookshelf.Model.extend({
     'birthCertWorksheet', 'birthRecorded', 'chartsComplete', 'logsComplete', 'billPaid',
     'nbs', 'immunizationReferral', 'breastFeedingEstablished', 'newbornBath',
     'fundusFirmBleedingCtld', 'motherAteDrank', 'motherUrinated', 'placentaGone',
-    'prayer', 'bible', 'initials', 'updatedBy', 'updatedAt', 'supervisor', 'labor_id']
+    'prayer', 'bible', 'transferBaby', 'transferMother', 'transferComment',
+    'initials', 'updatedBy', 'updatedAt', 'supervisor', 'labor_id']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
