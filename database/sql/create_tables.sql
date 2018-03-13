@@ -818,7 +818,7 @@ CREATE TABLE IF NOT EXISTS `contPostpartumCheck` (
   motherTemp DECIMAL(4,1) NULL,
   motherFundus VARCHAR(200) NULL,
   motherEBL INT NULL,
-  babyBFed BOOLEAN NULL,
+  babyBFed VARCHAR(200) NULL,
   babyTemp DECIMAL(4,1) NULL,
   babyRR INT NULL,
   babyCR INT NULL,

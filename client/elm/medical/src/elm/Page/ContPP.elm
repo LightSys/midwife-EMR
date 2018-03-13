@@ -339,7 +339,7 @@ type alias Model =
     , cpcMotherTemp : Maybe String
     , cpcMotherFundus : Maybe String
     , cpcMotherEBL : Maybe String
-    , cpcBabyBFed : Maybe Bool
+    , cpcBabyBFed : Maybe String
     , cpcBabyTemp : Maybe String
     , cpcBabyRR : Maybe String
     , cpcBabyCR : Maybe String
@@ -1283,6 +1283,9 @@ update session msg model =
                         CPCBabyTempFld ->
                             { model | cpcBabyTemp = Just <| U.filterStringLikeFloat value }
 
+                        CPCBabyBFedFld ->
+                            { model | cpcBabyBFed = Just value }
+
                         CPCBabyRRFld ->
                             { model | cpcBabyRR = Just <| U.filterStringLikeInt value }
 
@@ -1415,9 +1418,6 @@ update session msg model =
 
                         NBSBabinskiReflexFld ->
                             { model | nbsBabinskiReflex = Just value }
-
-                        CPCBabyBFedFld ->
-                            { model | cpcBabyBFed = Just value }
 
                         DischargePpInstructionsScheduleFld ->
                             { model | dischargePPInstructionsSchedule = Just value }
@@ -5534,7 +5534,7 @@ viewContPostpartumCheck rec =
                 , H.div [ HA.class "c-card contPP-content" ]
                     [ H.div [ HA.class "c-card__item u-small u-color-white accent-bg" ]
                         [ H.text "Baby" ]
-                    , field "Bfed" (yesNoBool rec.babyBFed)
+                    , field "Bfed" <| stringDefault rec.babyBFed
                     , field "Temp" <| toStringDefault rec.babyTemp
                     , field "RR" <| toStringDefault rec.babyRR
                     , field "CR" <| toStringDefault rec.babyCR
@@ -5665,7 +5665,14 @@ dialogContPostpartumCheckEdit cfg =
                         cfg.model.cpcMotherEBL
                         (getErr CPCMotherEBLFld errors)
                     ]
-                , Form.checkbox "Baby BFed" (FldChgBool >> FldChgSubMsg CPCBabyBFedFld) cfg.model.cpcBabyBFed
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.formField (FldChgString >> FldChgSubMsg CPCBabyBFedFld)
+                        "Baby BFed"
+                        ""
+                        True
+                        cfg.model.cpcBabyBFed
+                        (getErr CPCBabyBFedFld errors)
+                    ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg CPCBabyTempFld)
                         "Baby Temperature"

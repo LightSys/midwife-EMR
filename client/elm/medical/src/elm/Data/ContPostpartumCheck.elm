@@ -34,7 +34,7 @@ type alias ContPostpartumCheckRecord =
     , motherTemp : Maybe Float
     , motherFundus : Maybe String
     , motherEBL : Maybe Int
-    , babyBFed : Maybe Bool
+    , babyBFed : Maybe String
     , babyTemp : Maybe Float
     , babyRR : Maybe Int
     , babyCR : Maybe Int
@@ -51,7 +51,7 @@ type alias ContPostpartumCheckRecordNew =
     , motherTemp : Maybe Float
     , motherFundus : Maybe String
     , motherEBL : Maybe Int
-    , babyBFed : Maybe Bool
+    , babyBFed : Maybe String
     , babyTemp : Maybe Float
     , babyRR : Maybe Int
     , babyCR : Maybe Int
@@ -71,7 +71,7 @@ contPostpartumCheckRecord =
         |> JDP.required "motherTemp" (JD.maybe JD.float)
         |> JDP.required "motherFundus" (JD.maybe JD.string)
         |> JDP.required "motherEBL" (JD.maybe JD.int)
-        |> JDP.required "babyBFed" U.maybeIntToMaybeBool
+        |> JDP.required "babyBFed" (JD.maybe JD.string)
         |> JDP.required "babyTemp" (JD.maybe JD.float)
         |> JDP.required "babyRR" (JD.maybe JD.int)
         |> JDP.required "babyCR" (JD.maybe JD.int)
@@ -93,7 +93,7 @@ contPostpartumCheckRecordToValue rec =
                 , ( "motherTemp", JEE.maybe JE.float rec.motherTemp )
                 , ( "motherFundus", JEE.maybe JE.string rec.motherFundus )
                 , ( "motherEBL", JEE.maybe JE.int rec.motherEBL )
-                , ( "babyBFed", U.maybeBoolToMaybeInt rec.babyBFed )
+                , ( "babyBFed", JEE.maybe JE.string rec.babyBFed )
                 , ( "babyTemp", JEE.maybe JE.float rec.babyTemp )
                 , ( "babyRR", JEE.maybe JE.int rec.babyRR )
                 , ( "babyCR", JEE.maybe JE.int rec.babyCR )
@@ -117,7 +117,7 @@ contPostpartumCheckRecordNewToValue rec =
                 , ( "motherTemp", JEE.maybe JE.float rec.motherTemp )
                 , ( "motherFundus", JEE.maybe JE.string rec.motherFundus )
                 , ( "motherEBL", JEE.maybe JE.int rec.motherEBL )
-                , ( "babyBFed", U.maybeBoolToMaybeInt rec.babyBFed )
+                , ( "babyBFed", JEE.maybe JE.string rec.babyBFed )
                 , ( "babyTemp", JEE.maybe JE.float rec.babyTemp )
                 , ( "babyRR", JEE.maybe JE.int rec.babyRR )
                 , ( "babyCR", JEE.maybe JE.int rec.babyCR )

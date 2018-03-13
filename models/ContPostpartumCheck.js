@@ -25,7 +25,7 @@ CREATE TABLE `contPostpartumCheck` (
   `motherTemp` decimal(4,1) DEFAULT NULL,
   `motherFundus` varchar(200) DEFAULT NULL,
   `motherEBL` int(11) DEFAULT NULL,
-  `babyBFed` tinyint(1) DEFAULT NULL,
+  `babyBFed` varchar(200) DEFAULT NULL,
   `babyTemp` decimal(4,1) DEFAULT NULL,
   `babyRR` int(11) DEFAULT NULL,
   `babyCR` int(11) DEFAULT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE `contPostpartumCheck` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `contPostpartumCheck_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `contPostpartumCheck_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=latin1
 */
 
 ContPostpartumCheck = Bookshelf.Model.extend({
