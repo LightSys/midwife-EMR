@@ -634,13 +634,13 @@ update session msg model =
                             { model | pcBabyRR = Just <| U.filterStringLikeInt value }
 
                         PCBabyUrineFld ->
-                            { model | pcBabyUrine = Just <| U.filterStringLikeInt value }
+                            { model | pcBabyUrine = Just value }
 
                         PCBabyStoolFld ->
-                            { model | pcBabyStool = Just <| U.filterStringLikeInt value }
+                            { model | pcBabyStool = Just value }
 
                         PCBabyFeedingDailyFld ->
-                            { model | pcBabyFeedingDaily = Just <| U.filterStringLikeInt value }
+                            { model | pcBabyFeedingDaily = Just value }
 
                         PCMotherTempFld ->
                             { model | pcMotherTemp = Just <| U.filterStringLikeFloat value }
@@ -825,8 +825,8 @@ update session msg model =
                                                     filterSetByString Const.postpartumCheckBabyCord
                                                         rec.babyCord
                                                         model.selectDataRecords
-                                                , pcBabyUrine = Maybe.map toString rec.babyUrine
-                                                , pcBabyStool = Maybe.map toString rec.babyStool
+                                                , pcBabyUrine = rec.babyUrine
+                                                , pcBabyStool = rec.babyStool
                                                 , pcBabySSInfection =
                                                     filterSetByString Const.postpartumCheckBabySSInfection
                                                         rec.babySSInfection
@@ -835,7 +835,7 @@ update session msg model =
                                                     filterSetByString Const.postpartumCheckBabyFeeding
                                                         rec.babyFeeding
                                                         model.selectDataRecords
-                                                , pcBabyFeedingDaily = Maybe.map toString rec.babyFeedingDaily
+                                                , pcBabyFeedingDaily = rec.babyFeedingDaily
                                                 , pcMotherTemp = Maybe.map toString rec.motherTemp
                                                 , pcMotherSystolic = Maybe.map toString rec.motherSystolic
                                                 , pcMotherDiastolic = Maybe.map toString rec.motherDiastolic
@@ -972,15 +972,15 @@ update session msg model =
                                                                         , babyCord =
                                                                             U.maybeOr (getSelectDataAsMaybeString model.pcBabyCord)
                                                                                 check.babyCord
-                                                                        , babyUrine = U.maybeStringToMaybeInt model.pcBabyUrine
-                                                                        , babyStool = U.maybeStringToMaybeInt model.pcBabyStool
+                                                                        , babyUrine = model.pcBabyUrine
+                                                                        , babyStool = model.pcBabyStool
                                                                         , babySSInfection =
                                                                             U.maybeOr (getSelectDataAsMaybeString model.pcBabySSInfection)
                                                                                 check.babySSInfection
                                                                         , babyFeeding =
                                                                             U.maybeOr (getSelectDataAsMaybeString model.pcBabyFeeding)
                                                                                 check.babyFeeding
-                                                                        , babyFeedingDaily = U.maybeStringToMaybeInt model.pcBabyFeedingDaily
+                                                                        , babyFeedingDaily = model.pcBabyFeedingDaily
                                                                         , motherTemp = U.maybeStringToMaybeFloat model.pcMotherTemp
                                                                         , motherSystolic = U.maybeStringToMaybeInt model.pcMotherSystolic
                                                                         , motherDiastolic = U.maybeStringToMaybeInt model.pcMotherDiastolic
@@ -1098,11 +1098,11 @@ derivePostpartumCheckRecordNew model =
                             (getSelectDataAsMaybeString model.pcBabyColor)
                             (getSelectDataAsMaybeString model.pcBabySkin)
                             (getSelectDataAsMaybeString model.pcBabyCord)
-                            (U.maybeStringToMaybeInt model.pcBabyUrine)
-                            (U.maybeStringToMaybeInt model.pcBabyStool)
+                            model.pcBabyUrine
+                            model.pcBabyStool
                             (getSelectDataAsMaybeString model.pcBabySSInfection)
                             (getSelectDataAsMaybeString model.pcBabyFeeding)
-                            (U.maybeStringToMaybeInt model.pcBabyFeedingDaily)
+                            model.pcBabyFeedingDaily
                             (U.maybeStringToMaybeFloat model.pcMotherTemp)
                             (U.maybeStringToMaybeInt model.pcMotherSystolic)
                             (U.maybeStringToMaybeInt model.pcMotherDiastolic)
@@ -1377,11 +1377,11 @@ viewPostpartumCheck cfg rec =
                     , field "Color" <| pipeToComma rec.babyColor
                     , field "Skin" <| pipeToComma rec.babySkin
                     , field "Cord" <| pipeToComma rec.babyCord
-                    , field "Urine" <| toStringDefault rec.babyUrine
-                    , field "Stool" <| toStringDefault rec.babyStool
+                    , field "Urine" <| stringDefault rec.babyUrine
+                    , field "Stool" <| stringDefault rec.babyStool
                     , field "S/S Infection" <| pipeToComma rec.babySSInfection
                     , field "Feeding" <| pipeToComma rec.babyFeeding
-                    , field "Feedings/day" <| toStringDefault rec.babyFeedingDaily
+                    , field "Feedings/day" <| stringDefault rec.babyFeedingDaily
                     , field "NBS" nbs
                     , field "Bcg" bcg
                     ]
@@ -1682,7 +1682,7 @@ viewPostpartumCheckEdit cfg =
                         (getErr PCMotherFamilyPlanningFld errors)
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
-                    [ Form.checkboxPlainWide "Birth cert required"
+                    [ Form.checkboxPlainWide "Birth cert requested"
                         (FldChgBool >> FldChgSubMsg PCBirthCertReqFld)
                         cfg.model.pcBirthCertReq
                     , H.text (getErr PCBirthCertReqFld errors)

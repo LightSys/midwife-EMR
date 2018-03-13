@@ -42,11 +42,11 @@ type alias PostpartumCheckRecord =
     , babyColor : Maybe String
     , babySkin : Maybe String
     , babyCord : Maybe String
-    , babyUrine : Maybe Int
-    , babyStool : Maybe Int
+    , babyUrine : Maybe String
+    , babyStool : Maybe String
     , babySSInfection : Maybe String
     , babyFeeding : Maybe String
-    , babyFeedingDaily : Maybe Int
+    , babyFeedingDaily : Maybe String
     , motherTemp : Maybe Float
     , motherSystolic : Maybe Int
     , motherDiastolic : Maybe Int
@@ -80,11 +80,11 @@ type alias PostpartumCheckRecordNew =
     , babyColor : Maybe String
     , babySkin : Maybe String
     , babyCord : Maybe String
-    , babyUrine : Maybe Int
-    , babyStool : Maybe Int
+    , babyUrine : Maybe String
+    , babyStool : Maybe String
     , babySSInfection : Maybe String
     , babyFeeding : Maybe String
-    , babyFeedingDaily : Maybe Int
+    , babyFeedingDaily : Maybe String
     , motherTemp : Maybe Float
     , motherSystolic : Maybe Int
     , motherDiastolic : Maybe Int
@@ -121,11 +121,11 @@ postpartumCheckRecord =
         |> JDP.required "babyColor" (JD.maybe JD.string)
         |> JDP.required "babySkin" (JD.maybe JD.string)
         |> JDP.required "babyCord" (JD.maybe JD.string)
-        |> JDP.required "babyUrine" (JD.maybe JD.int)
-        |> JDP.required "babyStool" (JD.maybe JD.int)
+        |> JDP.required "babyUrine" (JD.maybe JD.string)
+        |> JDP.required "babyStool" (JD.maybe JD.string)
         |> JDP.required "babySSInfection" (JD.maybe JD.string)
         |> JDP.required "babyFeeding" (JD.maybe JD.string)
-        |> JDP.required "babyFeedingDaily" (JD.maybe JD.int)
+        |> JDP.required "babyFeedingDaily" (JD.maybe JD.string)
         |> JDP.required "motherTemp" (JD.maybe JD.float)
         |> JDP.required "motherSystolic" (JD.maybe JD.int)
         |> JDP.required "motherDiastolic" (JD.maybe JD.int)
@@ -164,11 +164,11 @@ postpartumCheckRecordToValue rec =
                 , ( "babyColor", JEE.maybe JE.string rec.babyColor )
                 , ( "babySkin", JEE.maybe JE.string rec.babySkin )
                 , ( "babyCord", JEE.maybe JE.string rec.babyCord )
-                , ( "babyUrine", JEE.maybe JE.int rec.babyUrine )
-                , ( "babyStool", JEE.maybe JE.int rec.babyStool )
+                , ( "babyUrine", JEE.maybe JE.string rec.babyUrine )
+                , ( "babyStool", JEE.maybe JE.string rec.babyStool )
                 , ( "babySSInfection", JEE.maybe JE.string rec.babySSInfection )
                 , ( "babyFeeding", JEE.maybe JE.string rec.babyFeeding )
-                , ( "babyFeedingDaily", JEE.maybe JE.int rec.babyFeedingDaily )
+                , ( "babyFeedingDaily", JEE.maybe JE.string rec.babyFeedingDaily )
                 , ( "motherTemp", JEE.maybe JE.float rec.motherTemp )
                 , ( "motherSystolic", JEE.maybe JE.int rec.motherSystolic )
                 , ( "motherDiastolic", JEE.maybe JE.int rec.motherDiastolic )
@@ -209,11 +209,11 @@ postpartumCheckRecordNewToValue rec =
                 , ( "babyColor", JEE.maybe JE.string rec.babyColor )
                 , ( "babySkin", JEE.maybe JE.string rec.babySkin )
                 , ( "babyCord", JEE.maybe JE.string rec.babyCord )
-                , ( "babyUrine", JEE.maybe JE.int rec.babyUrine )
-                , ( "babyStool", JEE.maybe JE.int rec.babyStool )
+                , ( "babyUrine", JEE.maybe JE.string rec.babyUrine )
+                , ( "babyStool", JEE.maybe JE.string rec.babyStool )
                 , ( "babySSInfection", JEE.maybe JE.string rec.babySSInfection )
                 , ( "babyFeeding", JEE.maybe JE.string rec.babyFeeding )
-                , ( "babyFeedingDaily", JEE.maybe JE.int rec.babyFeedingDaily )
+                , ( "babyFeedingDaily", JEE.maybe JE.string rec.babyFeedingDaily )
                 , ( "motherTemp", JEE.maybe JE.float rec.motherTemp )
                 , ( "motherSystolic", JEE.maybe JE.int rec.motherSystolic )
                 , ( "motherDiastolic", JEE.maybe JE.int rec.motherDiastolic )

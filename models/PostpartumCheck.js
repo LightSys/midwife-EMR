@@ -27,11 +27,11 @@ CREATE TABLE `postpartumCheck` (
   `babyColor` varchar(500) DEFAULT NULL,
   `babySkin` varchar(500) DEFAULT NULL,
   `babyCord` varchar(500) DEFAULT NULL,
-  `babyUrine` int(11) DEFAULT NULL,
-  `babyStool` int(11) DEFAULT NULL,
+  `babyUrine` varchar(100) DEFAULT NULL,
+  `babyStool` varchar(100) DEFAULT NULL,
   `babySSInfection` varchar(500) DEFAULT NULL,
   `babyFeeding` varchar(500) DEFAULT NULL,
-  `babyFeedingDaily` int(11) DEFAULT NULL,
+  `babyFeedingDaily` varchar(100) DEFAULT NULL,
   `motherTemp` decimal(4,1) DEFAULT NULL,
   `motherSystolic` int(11) DEFAULT NULL,
   `motherDiastolic` int(11) DEFAULT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE `postpartumCheck` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `postpartumCheck_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `postpartumCheck_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1
 */
 
 PostpartumCheck = Bookshelf.Model.extend({
