@@ -36,25 +36,45 @@ type alias NewbornExamRecord =
     , headCir : Maybe Int
     , chestCir : Maybe Int
     , appearance : Maybe String
+    , appearanceComment : Maybe String
     , color : Maybe String
+    , colorComment : Maybe String
     , skin : Maybe String
+    , skinComment : Maybe String
     , head : Maybe String
+    , headComment : Maybe String
     , eyes : Maybe String
+    , eyesComment : Maybe String
     , ears : Maybe String
+    , earsComment : Maybe String
     , nose : Maybe String
+    , noseComment : Maybe String
     , mouth : Maybe String
+    , mouthComment : Maybe String
     , neck : Maybe String
+    , neckComment : Maybe String
     , chest : Maybe String
+    , chestComment : Maybe String
     , lungs : Maybe String
+    , lungsComment : Maybe String
     , heart : Maybe String
+    , heartComment : Maybe String
     , abdomen : Maybe String
+    , abdomenComment : Maybe String
     , hips : Maybe String
+    , hipsComment : Maybe String
     , cord : Maybe String
+    , cordComment : Maybe String
     , femoralPulses : Maybe String
+    , femoralPulsesComment : Maybe String
     , genitalia : Maybe String
+    , genitaliaComment : Maybe String
     , anus : Maybe String
+    , anusComment : Maybe String
     , back : Maybe String
+    , backComment : Maybe String
     , extremities : Maybe String
+    , extremitiesComment : Maybe String
     , estGA : Maybe String
     , moroReflex : Maybe Bool
     , moroReflexComment : Maybe String
@@ -81,25 +101,45 @@ type alias NewbornExamRecordNew =
     , headCir : Maybe Int
     , chestCir : Maybe Int
     , appearance : Maybe String
+    , appearanceComment : Maybe String
     , color : Maybe String
+    , colorComment : Maybe String
     , skin : Maybe String
+    , skinComment : Maybe String
     , head : Maybe String
+    , headComment : Maybe String
     , eyes : Maybe String
+    , eyesComment : Maybe String
     , ears : Maybe String
+    , earsComment : Maybe String
     , nose : Maybe String
+    , noseComment : Maybe String
     , mouth : Maybe String
+    , mouthComment : Maybe String
     , neck : Maybe String
+    , neckComment : Maybe String
     , chest : Maybe String
+    , chestComment : Maybe String
     , lungs : Maybe String
+    , lungsComment : Maybe String
     , heart : Maybe String
+    , heartComment : Maybe String
     , abdomen : Maybe String
+    , abdomenComment : Maybe String
     , hips : Maybe String
+    , hipsComment : Maybe String
     , cord : Maybe String
+    , cordComment : Maybe String
     , femoralPulses : Maybe String
+    , femoralPulsesComment : Maybe String
     , genitalia : Maybe String
+    , genitaliaComment : Maybe String
     , anus : Maybe String
+    , anusComment : Maybe String
     , back : Maybe String
+    , backComment : Maybe String
     , extremities : Maybe String
+    , extremitiesComment : Maybe String
     , estGA : Maybe String
     , moroReflex : Maybe Bool
     , moroReflexComment : Maybe String
@@ -129,25 +169,45 @@ newbornExamRecord =
         |> JDP.required "headCir" (JD.maybe JD.int)
         |> JDP.required "chestCir" (JD.maybe JD.int)
         |> JDP.required "appearance" (JD.maybe JD.string)
+        |> JDP.required "appearanceComment" (JD.maybe JD.string)
         |> JDP.required "color" (JD.maybe JD.string)
+        |> JDP.required "colorComment" (JD.maybe JD.string)
         |> JDP.required "skin" (JD.maybe JD.string)
+        |> JDP.required "skinComment" (JD.maybe JD.string)
         |> JDP.required "head" (JD.maybe JD.string)
+        |> JDP.required "headComment" (JD.maybe JD.string)
         |> JDP.required "eyes" (JD.maybe JD.string)
+        |> JDP.required "eyesComment" (JD.maybe JD.string)
         |> JDP.required "ears" (JD.maybe JD.string)
+        |> JDP.required "earsComment" (JD.maybe JD.string)
         |> JDP.required "nose" (JD.maybe JD.string)
+        |> JDP.required "noseComment" (JD.maybe JD.string)
         |> JDP.required "mouth" (JD.maybe JD.string)
+        |> JDP.required "mouthComment" (JD.maybe JD.string)
         |> JDP.required "neck" (JD.maybe JD.string)
+        |> JDP.required "neckComment" (JD.maybe JD.string)
         |> JDP.required "chest" (JD.maybe JD.string)
+        |> JDP.required "chestComment" (JD.maybe JD.string)
         |> JDP.required "lungs" (JD.maybe JD.string)
+        |> JDP.required "lungsComment" (JD.maybe JD.string)
         |> JDP.required "heart" (JD.maybe JD.string)
+        |> JDP.required "heartComment" (JD.maybe JD.string)
         |> JDP.required "abdomen" (JD.maybe JD.string)
+        |> JDP.required "abdomenComment" (JD.maybe JD.string)
         |> JDP.required "hips" (JD.maybe JD.string)
+        |> JDP.required "hipsComment" (JD.maybe JD.string)
         |> JDP.required "cord" (JD.maybe JD.string)
+        |> JDP.required "cordComment" (JD.maybe JD.string)
         |> JDP.required "femoralPulses" (JD.maybe JD.string)
+        |> JDP.required "femoralPulsesComment" (JD.maybe JD.string)
         |> JDP.required "genitalia" (JD.maybe JD.string)
+        |> JDP.required "genitaliaComment" (JD.maybe JD.string)
         |> JDP.required "anus" (JD.maybe JD.string)
+        |> JDP.required "anusComment" (JD.maybe JD.string)
         |> JDP.required "back" (JD.maybe JD.string)
+        |> JDP.required "backComment" (JD.maybe JD.string)
         |> JDP.required "extremities" (JD.maybe JD.string)
+        |> JDP.required "extremitiesComment" (JD.maybe JD.string)
         |> JDP.required "estGA" (JD.maybe JD.string)
         |> JDP.required "moroReflex" U.maybeIntToMaybeBool
         |> JDP.required "moroReflexComment" (JD.maybe JD.string)
@@ -179,25 +239,45 @@ newbornExamRecordToValue rec =
                 , ( "headCir", JEE.maybe JE.int rec.headCir )
                 , ( "chestCir", JEE.maybe JE.int rec.chestCir )
                 , ( "appearance", JEE.maybe JE.string rec.appearance )
+                , ( "appearanceComment", JEE.maybe JE.string rec.appearanceComment )
                 , ( "color", JEE.maybe JE.string rec.color )
+                , ( "colorComment", JEE.maybe JE.string rec.colorComment )
                 , ( "skin", JEE.maybe JE.string rec.skin )
+                , ( "skinComment", JEE.maybe JE.string rec.skinComment )
                 , ( "head", JEE.maybe JE.string rec.head )
+                , ( "headComment", JEE.maybe JE.string rec.headComment )
                 , ( "eyes", JEE.maybe JE.string rec.eyes )
+                , ( "eyesComment", JEE.maybe JE.string rec.eyesComment )
                 , ( "ears", JEE.maybe JE.string rec.ears )
+                , ( "earsComment", JEE.maybe JE.string rec.earsComment )
                 , ( "nose", JEE.maybe JE.string rec.nose )
+                , ( "noseComment", JEE.maybe JE.string rec.noseComment )
                 , ( "mouth", JEE.maybe JE.string rec.mouth )
+                , ( "mouthComment", JEE.maybe JE.string rec.mouthComment )
                 , ( "neck", JEE.maybe JE.string rec.neck )
+                , ( "neckComment", JEE.maybe JE.string rec.neckComment )
                 , ( "chest", JEE.maybe JE.string rec.chest )
+                , ( "chestComment", JEE.maybe JE.string rec.chestComment )
                 , ( "lungs", JEE.maybe JE.string rec.lungs )
+                , ( "lungsComment", JEE.maybe JE.string rec.lungsComment )
                 , ( "heart", JEE.maybe JE.string rec.heart )
+                , ( "heartComment", JEE.maybe JE.string rec.heartComment )
                 , ( "abdomen", JEE.maybe JE.string rec.abdomen )
+                , ( "abdomenComment", JEE.maybe JE.string rec.abdomenComment )
                 , ( "hips", JEE.maybe JE.string rec.hips )
+                , ( "hipsComment", JEE.maybe JE.string rec.hipsComment )
                 , ( "cord", JEE.maybe JE.string rec.cord )
+                , ( "cordComment", JEE.maybe JE.string rec.cordComment )
                 , ( "femoralPulses", JEE.maybe JE.string rec.femoralPulses )
+                , ( "femoralPulsesComment", JEE.maybe JE.string rec.femoralPulsesComment )
                 , ( "genitalia", JEE.maybe JE.string rec.genitalia )
+                , ( "genitaliaComment", JEE.maybe JE.string rec.genitaliaComment )
                 , ( "anus", JEE.maybe JE.string rec.anus )
+                , ( "anusComment", JEE.maybe JE.string rec.anusComment )
                 , ( "back", JEE.maybe JE.string rec.back )
+                , ( "backComment", JEE.maybe JE.string rec.backComment )
                 , ( "extremities", JEE.maybe JE.string rec.extremities )
+                , ( "extremitiesComment", JEE.maybe JE.string rec.extremitiesComment )
                 , ( "estGA", JEE.maybe JE.string rec.estGA )
                 , ( "moroReflex", U.maybeBoolToMaybeInt rec.moroReflex )
                 , ( "moroReflexComment", JEE.maybe JE.string rec.moroReflexComment )
@@ -231,25 +311,45 @@ newbornExamRecordNewToValue rec =
                 , ( "headCir", JEE.maybe JE.int rec.headCir )
                 , ( "chestCir", JEE.maybe JE.int rec.chestCir )
                 , ( "appearance", JEE.maybe JE.string rec.appearance )
+                , ( "appearanceComment", JEE.maybe JE.string rec.appearanceComment )
                 , ( "color", JEE.maybe JE.string rec.color )
+                , ( "colorComment", JEE.maybe JE.string rec.colorComment )
                 , ( "skin", JEE.maybe JE.string rec.skin )
+                , ( "skinComment", JEE.maybe JE.string rec.skinComment )
                 , ( "head", JEE.maybe JE.string rec.head )
+                , ( "headComment", JEE.maybe JE.string rec.headComment )
                 , ( "eyes", JEE.maybe JE.string rec.eyes )
+                , ( "eyesComment", JEE.maybe JE.string rec.eyesComment )
                 , ( "ears", JEE.maybe JE.string rec.ears )
+                , ( "earsComment", JEE.maybe JE.string rec.earsComment )
                 , ( "nose", JEE.maybe JE.string rec.nose )
+                , ( "noseComment", JEE.maybe JE.string rec.noseComment )
                 , ( "mouth", JEE.maybe JE.string rec.mouth )
+                , ( "mouthComment", JEE.maybe JE.string rec.mouthComment )
                 , ( "neck", JEE.maybe JE.string rec.neck )
+                , ( "neckComment", JEE.maybe JE.string rec.neckComment )
                 , ( "chest", JEE.maybe JE.string rec.chest )
+                , ( "chestComment", JEE.maybe JE.string rec.chestComment )
                 , ( "lungs", JEE.maybe JE.string rec.lungs )
+                , ( "lungsComment", JEE.maybe JE.string rec.lungsComment )
                 , ( "heart", JEE.maybe JE.string rec.heart )
+                , ( "heartComment", JEE.maybe JE.string rec.heartComment )
                 , ( "abdomen", JEE.maybe JE.string rec.abdomen )
+                , ( "abdomenComment", JEE.maybe JE.string rec.abdomenComment )
                 , ( "hips", JEE.maybe JE.string rec.hips )
+                , ( "hipsComment", JEE.maybe JE.string rec.hipsComment )
                 , ( "cord", JEE.maybe JE.string rec.cord )
+                , ( "cordComment", JEE.maybe JE.string rec.cordComment )
                 , ( "femoralPulses", JEE.maybe JE.string rec.femoralPulses )
+                , ( "femoralPulsesComment", JEE.maybe JE.string rec.femoralPulsesComment )
                 , ( "genitalia", JEE.maybe JE.string rec.genitalia )
+                , ( "genitaliaComment", JEE.maybe JE.string rec.genitaliaComment )
                 , ( "anus", JEE.maybe JE.string rec.anus )
+                , ( "anusComment", JEE.maybe JE.string rec.anusComment )
                 , ( "back", JEE.maybe JE.string rec.back )
+                , ( "backComment", JEE.maybe JE.string rec.backComment )
                 , ( "extremities", JEE.maybe JE.string rec.extremities )
+                , ( "extremitiesComment", JEE.maybe JE.string rec.extremitiesComment )
                 , ( "estGA", JEE.maybe JE.string rec.estGA )
                 , ( "moroReflex", U.maybeBoolToMaybeInt rec.moroReflex )
                 , ( "moroReflexComment", JEE.maybe JE.string rec.moroReflexComment )
@@ -280,25 +380,45 @@ newbornExamRecordNewToNewbornExamRecord (NewbornExamId id) newRec =
         newRec.headCir
         newRec.chestCir
         newRec.appearance
+        newRec.appearanceComment
         newRec.color
+        newRec.colorComment
         newRec.skin
+        newRec.skinComment
         newRec.head
+        newRec.headComment
         newRec.eyes
+        newRec.eyesComment
         newRec.ears
+        newRec.earsComment
         newRec.nose
+        newRec.noseComment
         newRec.mouth
+        newRec.mouthComment
         newRec.neck
+        newRec.neckComment
         newRec.chest
+        newRec.chestComment
         newRec.lungs
+        newRec.lungsComment
         newRec.heart
+        newRec.heartComment
         newRec.abdomen
+        newRec.abdomenComment
         newRec.hips
+        newRec.hipsComment
         newRec.cord
+        newRec.cordComment
         newRec.femoralPulses
+        newRec.femoralPulsesComment
         newRec.genitalia
+        newRec.genitaliaComment
         newRec.anus
+        newRec.anusComment
         newRec.back
+        newRec.backComment
         newRec.extremities
+        newRec.extremitiesComment
         newRec.estGA
         newRec.moroReflex
         newRec.moroReflexComment
@@ -341,7 +461,11 @@ isNewbornExamRecordComplete rec =
             || U.validatePopulatedString rec.hips
             || U.validatePopulatedString rec.cord
             || U.validatePopulatedString rec.femoralPulses
-            || U.validatePopulatedString rec.genitalia
+            || (if rec.genitalia == Just "M" || rec.genitalia == Just "F" then
+                    U.validatePopulatedString rec.genitalia
+                else
+                    False
+               )
             || U.validatePopulatedString rec.anus
             || U.validatePopulatedString rec.back
             || U.validatePopulatedString rec.extremities

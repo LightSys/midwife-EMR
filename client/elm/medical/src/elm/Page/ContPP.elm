@@ -279,25 +279,45 @@ type alias Model =
     , nbsHeadCir : Maybe String
     , nbsChestCir : Maybe String
     , nbsAppearance : List SelectDataRecord
+    , nbsAppearanceComment : Maybe String
     , nbsColor : List SelectDataRecord
+    , nbsColorComment : Maybe String
     , nbsSkin : List SelectDataRecord
+    , nbsSkinComment : Maybe String
     , nbsHead : List SelectDataRecord
+    , nbsHeadComment : Maybe String
     , nbsEyes : List SelectDataRecord
+    , nbsEyesComment : Maybe String
     , nbsEars : List SelectDataRecord
+    , nbsEarsComment : Maybe String
     , nbsNose : List SelectDataRecord
+    , nbsNoseComment : Maybe String
     , nbsMouth : List SelectDataRecord
+    , nbsMouthComment : Maybe String
     , nbsNeck : List SelectDataRecord
+    , nbsNeckComment : Maybe String
     , nbsChest : List SelectDataRecord
+    , nbsChestComment : Maybe String
     , nbsLungs : List SelectDataRecord
+    , nbsLungsComment : Maybe String
     , nbsHeart : List SelectDataRecord
+    , nbsHeartComment : Maybe String
     , nbsAbdomen : List SelectDataRecord
+    , nbsAbdomenComment : Maybe String
     , nbsHips : List SelectDataRecord
+    , nbsHipsComment : Maybe String
     , nbsCord : List SelectDataRecord
+    , nbsCordComment : Maybe String
     , nbsFemoralPulses : List SelectDataRecord
+    , nbsFemoralPulsesComment : Maybe String
     , nbsGenitalia : List SelectDataRecord
+    , nbsGenitaliaComment : Maybe String
     , nbsAnus : List SelectDataRecord
+    , nbsAnusComment : Maybe String
     , nbsBack : List SelectDataRecord
+    , nbsBackComment : Maybe String
     , nbsExtremities : List SelectDataRecord
+    , nbsExtremitiesComment : Maybe String
     , nbsEstGA : Maybe String
     , nbsMoroReflex : Maybe Bool
     , nbsMoroReflexComment : Maybe String
@@ -588,25 +608,45 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicati
       , nbsHeadCir = Nothing
       , nbsChestCir = Nothing
       , nbsAppearance = []
+      , nbsAppearanceComment = Nothing
       , nbsColor = []
+      , nbsColorComment = Nothing
       , nbsSkin = []
+      , nbsSkinComment = Nothing
       , nbsHead = []
+      , nbsHeadComment = Nothing
       , nbsEyes = []
+      , nbsEyesComment = Nothing
       , nbsEars = []
+      , nbsEarsComment = Nothing
       , nbsNose = []
+      , nbsNoseComment = Nothing
       , nbsMouth = []
+      , nbsMouthComment = Nothing
       , nbsNeck = []
+      , nbsNeckComment = Nothing
       , nbsChest = []
+      , nbsChestComment = Nothing
       , nbsLungs = []
+      , nbsLungsComment = Nothing
       , nbsHeart = []
+      , nbsHeartComment = Nothing
       , nbsAbdomen = []
+      , nbsAbdomenComment = Nothing
       , nbsHips = []
+      , nbsHipsComment = Nothing
       , nbsCord = []
+      , nbsCordComment = Nothing
       , nbsFemoralPulses = []
+      , nbsFemoralPulsesComment = Nothing
       , nbsGenitalia = []
+      , nbsGenitaliaComment = Nothing
       , nbsAnus = []
+      , nbsAnusComment = Nothing
       , nbsBack = []
+      , nbsBackComment = Nothing
       , nbsExtremities = []
+      , nbsExtremitiesComment = Nothing
       , nbsEstGA = Nothing
       , nbsMoroReflex = Nothing
       , nbsMoroReflexComment = Nothing
@@ -1134,6 +1174,66 @@ update session msg model =
 
                         NBSChestCirFld ->
                             { model | nbsChestCir = Just <| U.filterStringLikeInt value }
+
+                        NBSAppearanceCommentFld ->
+                            { model | nbsAppearanceComment = Just value }
+
+                        NBSColorCommentFld ->
+                            { model | nbsColorComment = Just value }
+
+                        NBSSkinCommentFld ->
+                            { model | nbsSkinComment = Just value }
+
+                        NBSHeadCommentFld ->
+                            { model | nbsHeadComment = Just value }
+
+                        NBSEyesCommentFld ->
+                            { model | nbsEyesComment = Just value }
+
+                        NBSEarsCommentFld ->
+                            { model | nbsEarsComment = Just value }
+
+                        NBSNoseCommentFld ->
+                            { model | nbsNoseComment = Just value }
+
+                        NBSMouthCommentFld ->
+                            { model | nbsMouthComment = Just value }
+
+                        NBSNeckCommentFld ->
+                            { model | nbsNeckComment = Just value }
+
+                        NBSChestCommentFld ->
+                            { model | nbsChestComment = Just value }
+
+                        NBSLungsCommentFld ->
+                            { model | nbsLungsComment = Just value }
+
+                        NBSHeartCommentFld ->
+                            { model | nbsHeartComment = Just value }
+
+                        NBSAbdomenCommentFld ->
+                            { model | nbsAbdomenComment = Just value }
+
+                        NBSHipsCommentFld ->
+                            { model | nbsHipsComment = Just value }
+
+                        NBSCordCommentFld ->
+                            { model | nbsCordComment = Just value }
+
+                        NBSFemoralPulsesCommentFld ->
+                            { model | nbsFemoralPulsesComment = Just value }
+
+                        NBSGenitaliaCommentFld ->
+                            { model | nbsGenitaliaComment = Just value }
+
+                        NBSAnusCommentFld ->
+                            { model | nbsAnusComment = Just value }
+
+                        NBSBackCommentFld ->
+                            { model | nbsBackComment = Just value }
+
+                        NBSExtremitiesCommentFld ->
+                            { model | nbsExtremitiesComment = Just value }
 
                         NBSEstGAFld ->
                             { model | nbsEstGA = Just value }
@@ -1804,87 +1904,109 @@ update session msg model =
                                             filterSetByString Const.newbornExamAppearance
                                                 rec.appearance
                                                 model.selectDataRecords
+                                        , nbsAppearanceComment = U.maybeOr rec.appearanceComment model.nbsAppearanceComment
                                         , nbsColor =
                                             filterSetByString Const.newbornExamColor
                                                 rec.color
                                                 model.selectDataRecords
+                                        , nbsColorComment = U.maybeOr rec.colorComment model.nbsColorComment
                                         , nbsSkin =
                                             filterSetByString Const.newbornExamSkin
                                                 rec.skin
                                                 model.selectDataRecords
+                                        , nbsSkinComment = U.maybeOr rec.skinComment model.nbsSkinComment
                                         , nbsHead =
                                             filterSetByString Const.newbornExamHead
                                                 rec.head
                                                 model.selectDataRecords
+                                        , nbsHeadComment = U.maybeOr rec.headComment model.nbsHeadComment
                                         , nbsEyes =
                                             filterSetByString Const.newbornExamEyes
                                                 rec.eyes
                                                 model.selectDataRecords
+                                        , nbsEyesComment = U.maybeOr rec.eyesComment model.nbsEyesComment
                                         , nbsEars =
                                             filterSetByString Const.newbornExamEars
                                                 rec.ears
                                                 model.selectDataRecords
+                                        , nbsEarsComment = U.maybeOr rec.earsComment model.nbsEarsComment
                                         , nbsNose =
                                             filterSetByString Const.newbornExamNose
                                                 rec.nose
                                                 model.selectDataRecords
+                                        , nbsNoseComment = U.maybeOr rec.noseComment model.nbsNoseComment
                                         , nbsMouth =
                                             filterSetByString Const.newbornExamMouth
                                                 rec.mouth
                                                 model.selectDataRecords
+                                        , nbsMouthComment = U.maybeOr rec.mouthComment model.nbsMouthComment
                                         , nbsNeck =
                                             filterSetByString Const.newbornExamNeck
                                                 rec.neck
                                                 model.selectDataRecords
+                                        , nbsNeckComment = U.maybeOr rec.neckComment model.nbsNeckComment
                                         , nbsChest =
                                             filterSetByString Const.newbornExamChest
                                                 rec.chest
                                                 model.selectDataRecords
+                                        , nbsChestComment = U.maybeOr rec.chestComment model.nbsChestComment
                                         , nbsLungs =
                                             filterSetByString Const.newbornExamLungs
                                                 rec.lungs
                                                 model.selectDataRecords
+                                        , nbsLungsComment = U.maybeOr rec.lungsComment model.nbsLungsComment
                                         , nbsHeart =
                                             filterSetByString Const.newbornExamHeart
                                                 rec.heart
                                                 model.selectDataRecords
+                                        , nbsHeartComment = U.maybeOr rec.heartComment model.nbsHeartComment
                                         , nbsAbdomen =
                                             filterSetByString Const.newbornExamAbdomen
                                                 rec.abdomen
                                                 model.selectDataRecords
+                                        , nbsAbdomenComment = U.maybeOr rec.abdomenComment model.nbsAbdomenComment
                                         , nbsHips =
                                             filterSetByString Const.newbornExamHips
                                                 rec.hips
                                                 model.selectDataRecords
+                                        , nbsHipsComment = U.maybeOr rec.hipsComment model.nbsHipsComment
                                         , nbsCord =
                                             filterSetByString Const.newbornExamCord
                                                 rec.cord
                                                 model.selectDataRecords
+                                        , nbsCordComment = U.maybeOr rec.cordComment model.nbsCordComment
                                         , nbsFemoralPulses =
                                             filterSetByString Const.newbornExamFemoralPulses
                                                 rec.femoralPulses
                                                 model.selectDataRecords
+                                        , nbsFemoralPulsesComment = U.maybeOr rec.femoralPulsesComment model.nbsFemoralPulsesComment
                                         , nbsGenitalia =
                                             filterSetByString
                                                 (if sex == Data.Baby.Male then
                                                     Const.newbornExamGenitaliaMale
-                                                 else
+                                                 else if sex == Data.Baby.Female then
                                                     Const.newbornExamGenitaliaFemale
+                                                 else
+                                                    "This lookup should fail because Ambiguous should not display anything."
                                                 )
                                                 rec.genitalia
                                                 model.selectDataRecords
+                                        , nbsGenitaliaComment = U.maybeOr rec.genitaliaComment model.nbsGenitaliaComment
                                         , nbsAnus =
                                             filterSetByString Const.newbornExamAnus
                                                 rec.anus
                                                 model.selectDataRecords
+                                        , nbsAnusComment = U.maybeOr rec.anusComment model.nbsAnusComment
                                         , nbsBack =
                                             filterSetByString Const.newbornExamBack
                                                 rec.back
                                                 model.selectDataRecords
+                                        , nbsBackComment = U.maybeOr rec.backComment model.nbsBackComment
                                         , nbsExtremities =
                                             filterSetByString Const.newbornExamExtremities
                                                 rec.extremities
                                                 model.selectDataRecords
+                                        , nbsExtremitiesComment = U.maybeOr rec.extremitiesComment model.nbsExtremitiesComment
                                         , nbsEstGA = U.maybeOr rec.estGA model.nbsEstGA
                                         , nbsMoroReflex = U.maybeOr rec.moroReflex model.nbsMoroReflex
                                         , nbsMoroReflexComment = U.maybeOr rec.moroReflexComment model.nbsMoroReflexComment
@@ -2018,63 +2140,83 @@ update session msg model =
                                                         , appearance =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsAppearance)
                                                                 exam.appearance
+                                                        , appearanceComment = U.maybeOr model.nbsAppearanceComment exam.appearance
                                                         , color =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsColor)
                                                                 exam.color
+                                                        , colorComment = U.maybeOr model.nbsColorComment exam.colorComment
                                                         , skin =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsSkin)
                                                                 exam.skin
+                                                        , skinComment = U.maybeOr model.nbsSkinComment exam.skinComment
                                                         , head =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsHead)
                                                                 exam.head
+                                                        , headComment = U.maybeOr model.nbsHeadComment exam.headComment
                                                         , eyes =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsEyes)
                                                                 exam.eyes
+                                                        , eyesComment = U.maybeOr model.nbsEyesComment exam.eyesComment
                                                         , ears =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsEars)
                                                                 exam.ears
+                                                        , earsComment = U.maybeOr model.nbsEarsComment exam.earsComment
                                                         , nose =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsNose)
                                                                 exam.nose
+                                                        , noseComment = U.maybeOr model.nbsNoseComment exam.noseComment
                                                         , mouth =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsMouth)
                                                                 exam.mouth
+                                                        , mouthComment = U.maybeOr model.nbsMouthComment exam.mouthComment
                                                         , neck =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsNeck)
                                                                 exam.neck
+                                                        , neckComment = U.maybeOr model.nbsNeckComment exam.neckComment
                                                         , chest =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsChest)
                                                                 exam.chest
+                                                        , chestComment = U.maybeOr model.nbsChestComment exam.chestComment
                                                         , lungs =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsLungs)
                                                                 exam.lungs
+                                                        , lungsComment = U.maybeOr model.nbsLungsComment exam.lungsComment
                                                         , heart =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsHeart)
                                                                 exam.heart
+                                                        , heartComment = U.maybeOr model.nbsHeartComment exam.heartComment
                                                         , abdomen =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsAbdomen)
                                                                 exam.abdomen
+                                                        , abdomenComment = U.maybeOr model.nbsAbdomenComment exam.abdomenComment
                                                         , hips =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsHips)
                                                                 exam.hips
+                                                        , hipsComment = U.maybeOr model.nbsHipsComment exam.hipsComment
                                                         , cord =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsCord)
                                                                 exam.cord
+                                                        , cordComment = U.maybeOr model.nbsCordComment exam.cordComment
                                                         , femoralPulses =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsFemoralPulses)
                                                                 exam.femoralPulses
+                                                        , femoralPulsesComment = U.maybeOr model.nbsFemoralPulsesComment exam.femoralPulsesComment
                                                         , genitalia =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsGenitalia)
                                                                 exam.genitalia
+                                                        , genitaliaComment = U.maybeOr model.nbsGenitaliaComment exam.genitaliaComment
                                                         , anus =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsAnus)
                                                                 exam.anus
+                                                        , anusComment = U.maybeOr model.nbsAnusComment exam.anusComment
                                                         , back =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsBack)
                                                                 exam.back
+                                                        , backComment = U.maybeOr model.nbsBackComment exam.backComment
                                                         , extremities =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsExtremities)
                                                                 exam.extremities
+                                                        , extremitiesComment = U.maybeOr model.nbsExtremitiesComment exam.extremitiesComment
                                                         , estGA = U.maybeOr exam.estGA model.nbsEstGA
                                                         , moroReflex = U.maybeOr exam.moroReflex model.nbsMoroReflex
                                                         , moroReflexComment = U.maybeOr model.nbsMoroReflexComment exam.moroReflexComment
@@ -3482,25 +3624,45 @@ deriveNewbornExamRecordNew model =
                             (U.maybeStringToMaybeInt model.nbsHeadCir)
                             (U.maybeStringToMaybeInt model.nbsChestCir)
                             (getSelectDataAsMaybeString model.nbsAppearance)
+                            model.nbsAppearanceComment
                             (getSelectDataAsMaybeString model.nbsColor)
+                            model.nbsColorComment
                             (getSelectDataAsMaybeString model.nbsSkin)
+                            model.nbsSkinComment
                             (getSelectDataAsMaybeString model.nbsHead)
+                            model.nbsHeadComment
                             (getSelectDataAsMaybeString model.nbsEyes)
+                            model.nbsEyesComment
                             (getSelectDataAsMaybeString model.nbsEars)
+                            model.nbsEarsComment
                             (getSelectDataAsMaybeString model.nbsNose)
+                            model.nbsNoseComment
                             (getSelectDataAsMaybeString model.nbsMouth)
+                            model.nbsMouthComment
                             (getSelectDataAsMaybeString model.nbsNeck)
+                            model.nbsNeckComment
                             (getSelectDataAsMaybeString model.nbsChest)
+                            model.nbsChestComment
                             (getSelectDataAsMaybeString model.nbsLungs)
+                            model.nbsLungsComment
                             (getSelectDataAsMaybeString model.nbsHeart)
+                            model.nbsHeartComment
                             (getSelectDataAsMaybeString model.nbsAbdomen)
+                            model.nbsAbdomenComment
                             (getSelectDataAsMaybeString model.nbsHips)
+                            model.nbsHipsComment
                             (getSelectDataAsMaybeString model.nbsCord)
+                            model.nbsCordComment
                             (getSelectDataAsMaybeString model.nbsFemoralPulses)
+                            model.nbsFemoralPulsesComment
                             (getSelectDataAsMaybeString model.nbsGenitalia)
+                            model.nbsGenitaliaComment
                             (getSelectDataAsMaybeString model.nbsAnus)
+                            model.nbsAnusComment
                             (getSelectDataAsMaybeString model.nbsBack)
+                            model.nbsBackComment
                             (getSelectDataAsMaybeString model.nbsExtremities)
+                            model.nbsExtremitiesComment
                             model.nbsEstGA
                             model.nbsMoroReflex
                             model.nbsMoroReflexComment
@@ -5575,6 +5737,19 @@ dialogNewbornExamSummaryEdit cfg =
 
         getMsgSD fld modelFld =
             List.map (\sd -> ( FldChgStringList sd.selectKey >> FldChgSubMsg fld, sd )) modelFld
+
+        sdField fld1 val1 lbl1 fld2 val2 lbl2 =
+            H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
+                [ Form.checkboxSelectData (getMsgSD fld1 val1)
+                    lbl1
+                    (getErr fld1 errors)
+                , Form.formField (FldChgString >> FldChgSubMsg fld2)
+                    lbl2
+                    ""
+                    True
+                    val2
+                    (getErr fld2 errors)
+                ]
     in
     H.div
         [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
@@ -5692,106 +5867,126 @@ dialogNewbornExamSummaryEdit cfg =
                         cfg.model.nbsChestCir
                         (getErr NBSChestCirFld errors)
                     ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSAppearanceFld cfg.model.nbsAppearance)
-                        "Appearance"
-                        (getErr NBSAppearanceFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSColorFld cfg.model.nbsColor)
-                        "Color"
-                        (getErr NBSColorFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSSkinFld cfg.model.nbsSkin)
-                        "Skin"
-                        (getErr NBSSkinFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSHeadFld cfg.model.nbsHead)
-                        "Head"
-                        (getErr NBSHeadFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSEyesFld cfg.model.nbsEyes)
-                        "Eyes"
-                        (getErr NBSEyesFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSEarsFld cfg.model.nbsEars)
-                        "Ears"
-                        (getErr NBSEarsFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSNoseFld cfg.model.nbsNose)
-                        "Nose"
-                        (getErr NBSNoseFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSMouthFld cfg.model.nbsMouth)
-                        "Mouth"
-                        (getErr NBSMouthFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSNeckFld cfg.model.nbsNeck)
-                        "Neck"
-                        (getErr NBSNeckFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSChestFld cfg.model.nbsChest)
-                        "Chest"
-                        (getErr NBSChestFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSLungsFld cfg.model.nbsLungs)
-                        "Lungs"
-                        (getErr NBSLungsFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSHeartFld cfg.model.nbsHeart)
-                        "Heart"
-                        (getErr NBSHeartFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSAbdomenFld cfg.model.nbsAbdomen)
-                        "Abdomen"
-                        (getErr NBSAbdomenFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSHipsFld cfg.model.nbsHips)
-                        "Hips"
-                        (getErr NBSHipsFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSCordFld cfg.model.nbsCord)
-                        "Cord"
-                        (getErr NBSCordFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSFemoralPulsesFld cfg.model.nbsFemoralPulses)
-                        "Femoral Pulses"
-                        (getErr NBSFemoralPulsesFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSGenitaliaFld cfg.model.nbsGenitalia)
-                        "Genitalia"
-                        (getErr NBSGenitaliaFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSAnusFld cfg.model.nbsAnus)
-                        "Anus"
-                        (getErr NBSAnusFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSBackFld cfg.model.nbsBack)
-                        "Back"
-                        (getErr NBSBackFld errors)
-                    ]
-                , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
-                    [ Form.checkboxSelectData (getMsgSD NBSExtremitiesFld cfg.model.nbsExtremities)
-                        "Extremities"
-                        (getErr NBSExtremitiesFld errors)
-                    ]
+                , sdField NBSAppearanceFld
+                    cfg.model.nbsAppearance
+                    "Appearance"
+                    NBSAppearanceCommentFld
+                    cfg.model.nbsAppearanceComment
+                    "Note"
+                , sdField NBSColorFld
+                    cfg.model.nbsColor
+                    "Color"
+                    NBSColorCommentFld
+                    cfg.model.nbsColorComment
+                    "Note"
+                , sdField NBSSkinFld
+                    cfg.model.nbsSkin
+                    "Skin"
+                    NBSSkinCommentFld
+                    cfg.model.nbsSkinComment
+                    "Note"
+                , sdField NBSHeadFld
+                    cfg.model.nbsHead
+                    "Head"
+                    NBSHeadCommentFld
+                    cfg.model.nbsHeadComment
+                    "Note"
+                , sdField NBSEyesFld
+                    cfg.model.nbsEyes
+                    "Eyes"
+                    NBSEyesCommentFld
+                    cfg.model.nbsEyesComment
+                    "Note"
+                , sdField NBSEarsFld
+                    cfg.model.nbsEars
+                    "Ears"
+                    NBSEarsCommentFld
+                    cfg.model.nbsEarsComment
+                    "Note"
+                , sdField NBSNoseFld
+                    cfg.model.nbsNose
+                    "Nose"
+                    NBSNoseCommentFld
+                    cfg.model.nbsNoseComment
+                    "Note"
+                , sdField NBSMouthFld
+                    cfg.model.nbsMouth
+                    "Mouth"
+                    NBSMouthCommentFld
+                    cfg.model.nbsMouthComment
+                    "Note"
+                , sdField NBSNeckFld
+                    cfg.model.nbsNeck
+                    "Neck"
+                    NBSNeckCommentFld
+                    cfg.model.nbsNeckComment
+                    "Note"
+                , sdField NBSChestFld
+                    cfg.model.nbsChest
+                    "Chest"
+                    NBSChestCommentFld
+                    cfg.model.nbsChestComment
+                    "Note"
+                , sdField NBSLungsFld
+                    cfg.model.nbsLungs
+                    "Lungs"
+                    NBSLungsCommentFld
+                    cfg.model.nbsLungsComment
+                    "Note"
+                , sdField NBSHeartFld
+                    cfg.model.nbsHeart
+                    "Heart"
+                    NBSHeartCommentFld
+                    cfg.model.nbsHeartComment
+                    "Note"
+                , sdField NBSAbdomenFld
+                    cfg.model.nbsAbdomen
+                    "Abdomen"
+                    NBSAbdomenCommentFld
+                    cfg.model.nbsAbdomenComment
+                    "Note"
+                , sdField NBSHipsFld
+                    cfg.model.nbsHips
+                    "Hips"
+                    NBSHipsCommentFld
+                    cfg.model.nbsHipsComment
+                    "Note"
+                , sdField NBSCordFld
+                    cfg.model.nbsCord
+                    "Cord"
+                    NBSCordCommentFld
+                    cfg.model.nbsCordComment
+                    "Note"
+                , sdField NBSFemoralPulsesFld
+                    cfg.model.nbsFemoralPulses
+                    "Femoral Pulses"
+                    NBSFemoralPulsesCommentFld
+                    cfg.model.nbsFemoralPulsesComment
+                    "Note"
+                , sdField NBSGenitaliaFld
+                    cfg.model.nbsGenitalia
+                    "Genitalia"
+                    NBSGenitaliaCommentFld
+                    cfg.model.nbsGenitaliaComment
+                    "Note"
+                , sdField NBSAnusFld
+                    cfg.model.nbsAnus
+                    "Anus"
+                    NBSAnusCommentFld
+                    cfg.model.nbsAnusComment
+                    "Note"
+                , sdField NBSBackFld
+                    cfg.model.nbsBack
+                    "Back"
+                    NBSBackCommentFld
+                    cfg.model.nbsBackComment
+                    "Note"
+                , sdField NBSExtremitiesFld
+                    cfg.model.nbsExtremities
+                    "Extremities"
+                    NBSExtremitiesCommentFld
+                    cfg.model.nbsExtremitiesComment
+                    "Note"
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg NBSEstGAFld)
                         "Estimated GA"
@@ -5902,13 +6097,28 @@ dialogNewbornExamSummaryView cfg =
                 _ ->
                     "No"
 
-        viewField label value =
-            H.div [ HA.class "mw-form-field-2x" ]
-                [ H.span [ HA.class "c-text--loud" ]
-                    [ H.text <| label ++ ": " ]
-                , H.span [ HA.class "" ]
-                    [ H.text value ]
-                ]
+        viewField label value comment =
+            case comment of
+                Just note ->
+                    H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text <| label ++ ": " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text value ]
+                        , if String.length (String.trim note) > 0 then
+                            H.span [ HA.class "" ]
+                                [ H.text <| " (" ++ note ++ ")" ]
+                          else
+                            H.text ""
+                        ]
+
+                Nothing ->
+                    H.div [ HA.class "mw-form-field-2x" ]
+                        [ H.span [ HA.class "c-text--loud" ]
+                            [ H.text <| label ++ ": " ]
+                        , H.span [ HA.class "" ]
+                            [ H.text value ]
+                        ]
 
         maybeWithDefault func val =
             Maybe.map func val
@@ -5933,46 +6143,46 @@ dialogNewbornExamSummaryView cfg =
                     [ H.div
                         [ HA.class "o-fieldset form-wrapper"
                         ]
-                        [ viewField "Exam Date/time" <| dateString rec.examDatetime
-                        , viewField "Examiners" rec.examiners
-                        , viewField "RR" <| maybeWithDefault toString rec.rr
-                        , viewField "HR" <| maybeWithDefault toString rec.hr
-                        , viewField "Temperature" <| maybeWithDefault toString rec.temperature
-                        , viewField "Length" <| maybeWithDefault toString rec.length
-                        , viewField "Head cir" <| maybeWithDefault toString rec.headCir
-                        , viewField "Chest cir" <| maybeWithDefault toString rec.chestCir
-                        , viewField "Appearance" <| maybeWithDefault U.pipeToComma rec.appearance
-                        , viewField "Color" <| maybeWithDefault U.pipeToComma rec.color
-                        , viewField "Skin" <| maybeWithDefault U.pipeToComma rec.skin
-                        , viewField "Head" <| maybeWithDefault U.pipeToComma rec.head
-                        , viewField "Eyes" <| maybeWithDefault U.pipeToComma rec.eyes
-                        , viewField "Ears" <| maybeWithDefault U.pipeToComma rec.ears
-                        , viewField "Nose" <| maybeWithDefault U.pipeToComma rec.nose
-                        , viewField "Mouth" <| maybeWithDefault U.pipeToComma rec.mouth
-                        , viewField "Neck" <| maybeWithDefault U.pipeToComma rec.neck
-                        , viewField "Chest" <| maybeWithDefault U.pipeToComma rec.chest
-                        , viewField "Lungs" <| maybeWithDefault U.pipeToComma rec.lungs
-                        , viewField "Heart" <| maybeWithDefault U.pipeToComma rec.heart
-                        , viewField "Abdomen" <| maybeWithDefault U.pipeToComma rec.abdomen
-                        , viewField "Hips" <| maybeWithDefault U.pipeToComma rec.hips
-                        , viewField "Cord" <| maybeWithDefault U.pipeToComma rec.cord
-                        , viewField "Femoral pulses" <| maybeWithDefault U.pipeToComma rec.femoralPulses
-                        , viewField "Genitalia" <| maybeWithDefault U.pipeToComma rec.genitalia
-                        , viewField "Anus" <| maybeWithDefault U.pipeToComma rec.anus
-                        , viewField "Back" <| maybeWithDefault U.pipeToComma rec.back
-                        , viewField "Extremities" <| maybeWithDefault U.pipeToComma rec.extremities
-                        , viewField "Est GA" <| Maybe.withDefault "" rec.estGA
-                        , viewField "Moro reflex" <| yesNoBool rec.moroReflex
-                        , viewField "Moro comment" <| Maybe.withDefault "" rec.moroReflexComment
-                        , viewField "Palmar reflex" <| yesNoBool rec.palmarReflex
-                        , viewField "Palmar comment" <| Maybe.withDefault "" rec.palmarReflexComment
-                        , viewField "Stepping reflex" <| yesNoBool rec.steppingReflex
-                        , viewField "Stepping comment" <| Maybe.withDefault "" rec.steppingReflexComment
-                        , viewField "Plantar reflex" <| yesNoBool rec.plantarReflex
-                        , viewField "Plantar comment" <| Maybe.withDefault "" rec.plantarReflexComment
-                        , viewField "Babinski reflex" <| yesNoBool rec.babinskiReflex
-                        , viewField "Babinski comment" <| Maybe.withDefault "" rec.babinskiReflexComment
-                        , viewField "Comments" <| Maybe.withDefault "" rec.comments
+                        [ viewField "Exam Date/time" (dateString rec.examDatetime) Nothing
+                        , viewField "Examiners" rec.examiners Nothing
+                        , viewField "RR" (maybeWithDefault toString rec.rr) Nothing
+                        , viewField "HR" (maybeWithDefault toString rec.hr) Nothing
+                        , viewField "Temperature" (maybeWithDefault toString rec.temperature) Nothing
+                        , viewField "Length" (maybeWithDefault toString rec.length) Nothing
+                        , viewField "Head cir" (maybeWithDefault toString rec.headCir) Nothing
+                        , viewField "Chest cir" (maybeWithDefault toString rec.chestCir) Nothing
+                        , viewField "Appearance" (maybeWithDefault U.pipeToComma rec.appearance) rec.appearanceComment
+                        , viewField "Color" (maybeWithDefault U.pipeToComma rec.color) rec.colorComment
+                        , viewField "Skin" (maybeWithDefault U.pipeToComma rec.skin) rec.skinComment
+                        , viewField "Head" (maybeWithDefault U.pipeToComma rec.head) rec.headComment
+                        , viewField "Eyes" (maybeWithDefault U.pipeToComma rec.eyes) rec.eyesComment
+                        , viewField "Ears" (maybeWithDefault U.pipeToComma rec.ears) rec.earsComment
+                        , viewField "Nose" (maybeWithDefault U.pipeToComma rec.nose) rec.noseComment
+                        , viewField "Mouth" (maybeWithDefault U.pipeToComma rec.mouth) rec.mouthComment
+                        , viewField "Neck" (maybeWithDefault U.pipeToComma rec.neck) rec.neckComment
+                        , viewField "Chest" (maybeWithDefault U.pipeToComma rec.chest) rec.chestComment
+                        , viewField "Lungs" (maybeWithDefault U.pipeToComma rec.lungs) rec.lungsComment
+                        , viewField "Heart" (maybeWithDefault U.pipeToComma rec.heart) rec.heartComment
+                        , viewField "Abdomen" (maybeWithDefault U.pipeToComma rec.abdomen) rec.abdomenComment
+                        , viewField "Hips" (maybeWithDefault U.pipeToComma rec.hips) rec.hipsComment
+                        , viewField "Cord" (maybeWithDefault U.pipeToComma rec.cord) rec.cordComment
+                        , viewField "Femoral pulses" (maybeWithDefault U.pipeToComma rec.femoralPulses) rec.femoralPulsesComment
+                        , viewField "Genitalia" (maybeWithDefault U.pipeToComma rec.genitalia) rec.genitaliaComment
+                        , viewField "Anus" (maybeWithDefault U.pipeToComma rec.anus) rec.anusComment
+                        , viewField "Back" (maybeWithDefault U.pipeToComma rec.back) rec.backComment
+                        , viewField "Extremities" (maybeWithDefault U.pipeToComma rec.extremities) rec.extremitiesComment
+                        , viewField "Est GA" (Maybe.withDefault "" rec.estGA) Nothing
+                        , viewField "Moro reflex" (yesNoBool rec.moroReflex) Nothing
+                        , viewField "Moro comment" (Maybe.withDefault "" rec.moroReflexComment) Nothing
+                        , viewField "Palmar reflex" (yesNoBool rec.palmarReflex) Nothing
+                        , viewField "Palmar comment" (Maybe.withDefault "" rec.palmarReflexComment) Nothing
+                        , viewField "Stepping reflex" (yesNoBool rec.steppingReflex) Nothing
+                        , viewField "Stepping comment" (Maybe.withDefault "" rec.steppingReflexComment) Nothing
+                        , viewField "Plantar reflex" (yesNoBool rec.plantarReflex) Nothing
+                        , viewField "Plantar comment" (Maybe.withDefault "" rec.plantarReflexComment) Nothing
+                        , viewField "Babinski reflex" (yesNoBool rec.babinskiReflex) Nothing
+                        , viewField "Babinski comment" (Maybe.withDefault "" rec.babinskiReflexComment) Nothing
+                        , viewField "Comments" (Maybe.withDefault "" rec.comments) Nothing
                         ]
                     , H.div [ HA.class "spacedButtons" ]
                         [ H.button

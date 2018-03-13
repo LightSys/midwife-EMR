@@ -60,25 +60,45 @@ type Field
     | NBSHeadCirFld
     | NBSChestCirFld
     | NBSAppearanceFld
+    | NBSAppearanceCommentFld
     | NBSColorFld
+    | NBSColorCommentFld
     | NBSSkinFld
+    | NBSSkinCommentFld
     | NBSHeadFld
+    | NBSHeadCommentFld
     | NBSEyesFld
+    | NBSEyesCommentFld
     | NBSEarsFld
+    | NBSEarsCommentFld
     | NBSNoseFld
+    | NBSNoseCommentFld
     | NBSMouthFld
+    | NBSMouthCommentFld
     | NBSNeckFld
+    | NBSNeckCommentFld
     | NBSChestFld
+    | NBSChestCommentFld
     | NBSLungsFld
+    | NBSLungsCommentFld
     | NBSHeartFld
+    | NBSHeartCommentFld
     | NBSAbdomenFld
+    | NBSAbdomenCommentFld
     | NBSHipsFld
+    | NBSHipsCommentFld
     | NBSCordFld
+    | NBSCordCommentFld
     | NBSFemoralPulsesFld
+    | NBSFemoralPulsesCommentFld
     | NBSGenitaliaFld
+    | NBSGenitaliaCommentFld
     | NBSAnusFld
+    | NBSAnusCommentFld
     | NBSBackFld
+    | NBSBackCommentFld
     | NBSExtremitiesFld
+    | NBSExtremitiesCommentFld
     | NBSEstGAFld
     | NBSMoroReflexFld
     | NBSMoroReflexCommentFld
