@@ -5012,6 +5012,11 @@ babyLabEdit mvl name labRec browserSupportsDate babyLabTypeRecords =
         ]
         [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
             [ H.text name ]
+        , if name == "NBS" || name == "ENBS" then
+            H.span [ HA.class "c-text c-text--quiet" ]
+              [ H.text "Cannot be done until 25 hours after birth." ]
+          else
+              H.text ""
         , H.div [ HA.class "form-wrapper u-small" ]
             [ H.div [ HA.class "o-fieldset mw-form-field-2x" ]
                 [ if browserSupportsDate then
