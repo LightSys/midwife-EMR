@@ -2519,19 +2519,19 @@ dialogBabySummaryView cfg =
                 [ HA.class "o-fieldset form-wrapper" ]
                 [ H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Lastname: " ]
+                        [ H.text "Last name: " ]
                     , H.span [ HA.class "" ]
                         [ H.text lastname ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Firstname: " ]
+                        [ H.text "First name: " ]
                     , H.span [ HA.class "" ]
                         [ H.text firstname ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Middlename: " ]
+                        [ H.text "Middle name: " ]
                     , H.span [ HA.class "" ]
                         [ H.text middlename ]
                     ]
@@ -2748,7 +2748,7 @@ dialogBabySummaryEdit cfg =
                 -- required to add this feature.
                 [ H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg BabyLastnameFld)
-                        "Baby Lastname"
+                        "Baby Last name"
                         "Lastname"
                         True
                         cfg.model.bbLastname
@@ -2756,7 +2756,7 @@ dialogBabySummaryEdit cfg =
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg BabyFirstnameFld)
-                        "Baby Firstname"
+                        "Baby First name"
                         "Firstname"
                         True
                         cfg.model.bbFirstname
@@ -2764,7 +2764,7 @@ dialogBabySummaryEdit cfg =
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg BabyMiddlenameFld)
-                        "Baby Middlename"
+                        "Baby Middle name"
                         "Middlename"
                         True
                         cfg.model.bbMiddlename
