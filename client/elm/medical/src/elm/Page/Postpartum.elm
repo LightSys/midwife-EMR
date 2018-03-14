@@ -31,6 +31,7 @@ import Data.BabyVaccinationType
     exposing
         ( BabyVaccinationTypeRecord
         )
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord)
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
 import Data.Labor
@@ -135,6 +136,7 @@ type alias Model =
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
+    , contPostpartumCheckRecords : List ContPostpartumCheckRecord
     , babyRecord : Maybe BabyRecord
     , selectDataRecords : List SelectDataRecord
     , babyLabRecords : List BabyLabRecord
@@ -224,6 +226,9 @@ clearPostpartumCheckModelFields model =
 
 {-| Get records from the server that we don't already have like baby and
 postpartum checks.
+
+Note that ContPostpartumCheck records are retrieved in order to calculate
+total EBL.
 -}
 init : PregnancyId -> LaborRecord -> Session -> ProcessStore -> ( ProcessStore, Cmd Msg )
 init pregId laborRec session store =
@@ -234,6 +239,7 @@ init pregId laborRec session store =
                 [ LaborStage1
                 , LaborStage2
                 , LaborStage3
+                , ContPostpartumCheck
                 , Baby
                 , PostpartumCheck
                 ]
@@ -255,6 +261,7 @@ buildModel :
     -> Maybe LaborStage1Record
     -> Maybe LaborStage2Record
     -> Maybe LaborStage3Record
+    -> List ContPostpartumCheckRecord
     -> Maybe (Dict Int BabyRecord)
     -> List PostpartumCheckRecord
     -> Bool
@@ -264,7 +271,7 @@ buildModel :
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel laborRec stage1Rec stage2Rec stage3Rec babyRecords postpartumCheckRecords browserSupportsDate currTime store pregId patRec pregRec =
+buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords postpartumCheckRecords browserSupportsDate currTime store pregId patRec pregRec =
     let
         -- Get the lookup tables that this page will need.
         ( newStore, getSelectDataCmd ) =
@@ -303,6 +310,7 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec babyRecords postpartumCheckRec
       , laborStage1Record = stage1Rec
       , laborStage2Record = stage2Rec
       , laborStage3Record = stage3Rec
+      , contPostpartumCheckRecords = contPPCheckRecs
       , babyRecord = babyRecord
       , selectDataRecords = []
       , babyLabRecords = []
@@ -454,6 +462,14 @@ refreshModelFromCache dc tables model =
                             case DataCache.get t dc of
                                 Just (BabyVaccinationTypeDataCache recs) ->
                                     { m | babyVaccinationTypeRecords = recs }
+
+                                _ ->
+                                    m
+
+                        ContPostpartumCheck ->
+                            case DataCache.get t dc of
+                                Just (ContPostpartumCheckDataCache recs) ->
+                                    { m | contPostpartumCheckRecords = recs }
 
                                 _ ->
                                     m
@@ -1147,6 +1163,7 @@ view size session model =
                                 model.laborStage1Record
                                 model.laborStage2Record
                                 model.laborStage3Record
+                                model.contPostpartumCheckRecords
                     in
                     PregHeaderView.view patRec
                         pregRec

@@ -559,7 +559,7 @@ update msg noAutoTouchModel =
                 let
                     -- Get the labor stage records from the data cache which the
                     -- init function just requested records from the server for.
-                    ( stage1, stage2, stage3, postpartumCheck ) =
+                    ( stage1, stage2, stage3, contPPChecks, postpartumCheck ) =
                         ( case DCache.get LaborStage1 model.dataCache of
                             Just (LaborStage1DataCache s1) ->
                                 Just s1
@@ -579,6 +579,14 @@ update msg noAutoTouchModel =
                             _ ->
                                 Nothing
 
+                        , case DCache.get ContPostpartumCheck model.dataCache of
+                            Just (ContPostpartumCheckDataCache recs) ->
+                                -- Not a Maybe.
+                                recs
+
+                            _ ->
+                                []
+
                         , case DCache.get PostpartumCheck model.dataCache of
                             Just (PostpartumCheckDataCache recs) ->
                                 -- Not a Maybe.
@@ -594,6 +602,7 @@ update msg noAutoTouchModel =
                             stage1
                             stage2
                             stage3
+                            contPPChecks
                             model.babyRecords
                             postpartumCheck
                             model.browserSupportsDate

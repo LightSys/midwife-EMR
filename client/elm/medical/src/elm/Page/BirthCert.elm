@@ -79,7 +79,6 @@ import Time exposing (Time)
 import Util as U exposing ((=>))
 import Validate exposing (ifBlank, ifInvalid, ifNotInt)
 import Views.Form as Form
-import Views.PregnancyHeader as PregHeaderView
 import Window
 
 

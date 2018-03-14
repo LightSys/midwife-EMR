@@ -209,6 +209,7 @@ view size session model =
                                 Nothing
                                 Nothing
                                 Nothing
+                                []
                     in
                         PregHeaderView.view patRec
                             pregRec

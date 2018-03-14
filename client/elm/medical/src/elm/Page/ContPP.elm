@@ -3724,6 +3724,7 @@ view size session model =
                                 model.laborStage1Record
                                 model.laborStage2Record
                                 model.laborStage3Record
+                                model.contPostpartumCheckRecords
                     in
                     PregHeaderView.view patRec
                         pregRec
