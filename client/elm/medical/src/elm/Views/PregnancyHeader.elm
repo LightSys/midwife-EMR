@@ -45,16 +45,43 @@ view :
     -> Maybe Window.Size
     -> Html PregHeaderContentMsg
 view patRec pregRec ({ laborRecord, laborStage1Record, laborStage2Record, laborStage3Record } as laborInfo) pregHeaderCnt currTime winSize =
+    let
+        -- Para goes up after the baby is born and we show the
+        -- increased para, if applicable, in the Labor and IPP
+        -- patient header views. The Prenatal view always shows
+        -- the para during prenatal.
+        raisePara =
+            case laborStage2Record of
+                Just ls2Rec ->
+                    case ls2Rec.birthDatetime of
+                        Just bday ->
+                            True
+
+                        Nothing ->
+                            False
+
+                Nothing ->
+                    False
+    in
     case pregHeaderCnt of
         PrenatalContent ->
             viewPrenatal patRec pregRec laborRecord pregHeaderCnt currTime winSize
 
         LaborContent ->
-            viewLabor patRec pregRec laborRecord pregHeaderCnt currTime winSize
+            viewLabor patRec pregRec laborRecord pregHeaderCnt currTime winSize raisePara
 
         IPPContent ->
-            viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize
+            viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize raisePara
 
+
+useLargerFont : Maybe Window.Size -> Bool
+useLargerFont winSize =
+    case winSize of
+        Just size ->
+            size.width >= Const.breakpointLarge
+
+        Nothing ->
+            False
 
 viewLabor :
     PatientRecord
@@ -63,8 +90,9 @@ viewLabor :
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
+    -> Bool
     -> Html PregHeaderContentMsg
-viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize raisePara =
     let
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
@@ -87,7 +115,10 @@ viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
                 ( _, _ ) ->
                     Nothing
     in
-        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
+        H.div
+            [ HA.class "c-card c-card--accordion pregnancy-header-wrapper"
+            , HA.classList [ ( "u-large", useLargerFont winSize ) ]
+            ]
             [ H.input
                 [ HA.type_ "checkbox"
                 , HA.checked True
@@ -101,7 +132,7 @@ viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
                 , prenatalLaborIppButton pregHeaderCnt
                 ]
             , H.div [ HA.class "c-card__item pregnancy-header" ]
-                [ headerColumnOne patRec pregRec currTime partnerName
+                [ headerColumnOne patRec pregRec currTime partnerName raisePara
                 , laborColumnTwo laborRec
                 , laborColumnThree laborRec
                 ]
@@ -115,8 +146,9 @@ viewIPP :
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
+    -> Bool
     -> Html PregHeaderContentMsg
-viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
+viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize raisePara =
     let
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
@@ -129,7 +161,10 @@ viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
                 ( _, _ ) ->
                     Nothing
     in
-        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
+        H.div
+            [ HA.class "c-card c-card--accordion pregnancy-header-wrapper"
+            , HA.classList [ ( "u-large", useLargerFont winSize ) ]
+            ]
             [ H.input
                 [ HA.type_ "checkbox"
                 , HA.checked True
@@ -143,7 +178,7 @@ viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
                 , prenatalLaborIppButton pregHeaderCnt
                 ]
             , H.div [ HA.class "c-card__item pregnancy-header" ]
-                [ headerColumnOne patRec pregRec currTime partnerName
+                [ headerColumnOne patRec pregRec currTime partnerName raisePara
                 , ippColumnTwo laborInfo
                 , ippColumnThree laborInfo
                 , ippColumnFour laborInfo
@@ -164,7 +199,10 @@ viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize =
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
     in
-        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
+        H.div
+            [ HA.class "c-card c-card--accordion pregnancy-header-wrapper"
+            , HA.classList [ ( "u-large", useLargerFont winSize ) ]
+            ]
             [ H.input
                 [ HA.type_ "checkbox"
                 , HA.checked True
@@ -178,7 +216,7 @@ viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize =
                 , prenatalLaborIppButton pregHeaderCnt
                 ]
             , H.div [ HA.class "c-card__item pregnancy-header" ]
-                [ headerColumnOne patRec pregRec currTime Nothing
+                [ headerColumnOne patRec pregRec currTime Nothing False
                 , prenatalColumnTwo patRec pregRec currTime
                 , prenatalColumnThree patRec pregRec currTime
                 ]
@@ -256,8 +294,8 @@ prenatalLaborIppButton phc =
         ]
 
 
-headerColumnOne : PatientRecord -> PregnancyRecord -> Time -> Maybe String -> Html msg
-headerColumnOne patRec pregRec currTime partnerName =
+headerColumnOne : PatientRecord -> PregnancyRecord -> Time -> Maybe String -> Bool -> Html msg
+headerColumnOne patRec pregRec currTime partnerName raisePara =
     let
         age =
             case patRec.dob of
@@ -279,6 +317,17 @@ headerColumnOne patRec pregRec currTime partnerName =
 
                 Nothing ->
                     Just ""
+
+        para =
+            case pregRec.para of
+                Just para ->
+                    if raisePara then
+                        Just <| toString <| para + 1
+                    else
+                        Maybe.map toString pregRec.para
+
+                Nothing ->
+                    Nothing
     in
         H.div [ HA.class "pregnancy-header-col" ]
             [ H.div [ HA.class "pregnancy-header-fldval" ]
@@ -286,7 +335,7 @@ headerColumnOne patRec pregRec currTime partnerName =
                 , fieldValue <| Maybe.map toString pregRec.gravida
                 , H.span [] [ H.text " " ]
                 , fieldLabel "P" "1.5em"
-                , fieldValue <| Maybe.map toString pregRec.para
+                , fieldValue para
                 , H.span [] [ H.text " " ]
                 , fieldLabel "A" "1.5em"
                 , fieldValue <| Maybe.map toString pregRec.abortions
