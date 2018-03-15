@@ -214,9 +214,9 @@ var doFirstPage = function(doc, data, opts) {
   writeField(fldPos.topOfForm.city[0], fldPos.topOfForm.city[1], tmp);
 
   // 1. Name
-  writeFIELD(fldPos.name.first[0], fldPos.name.first[1], data.baby.lastname);
-  writeFIELD(fldPos.name.middle[0], fldPos.name.middle[1], data.baby.firstname);
-  writeFIELD(fldPos.name.last[0], fldPos.name.last[1], data.baby.middlename);
+  writeFIELD(fldPos.name.first[0], fldPos.name.first[1], data.baby.firstname);
+  writeFIELD(fldPos.name.middle[0], fldPos.name.middle[1], data.baby.middlename);
+  writeFIELD(fldPos.name.last[0], fldPos.name.last[1], data.baby.lastname);
 
   // 2. Sex
   if (data.baby.sex === 'F') {
@@ -321,7 +321,7 @@ var doFirstPage = function(doc, data, opts) {
     writeField(fldPos.marriage.place.country[0], fldPos.marriage.place.country[1], data.bc.countryOfMarriage);
   } else {
     writeFIELD(fldPos.marriage.date.month[0], fldPos.marriage.date.month[1], 'Not Married');
-    writeFIELD(fldPos.marriage.date.place[0], fldPos.marriage.date.place[1], 'Not Married');
+    writeFIELD(fldPos.marriage.place.city[0], fldPos.marriage.place.city[1], 'Not Married');
   }
 
   // 21.a Attendant

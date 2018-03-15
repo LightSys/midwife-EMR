@@ -728,9 +728,7 @@ update session msg model =
                                                         , fatherCountry =
                                                             U.maybeOr model.bcFatherCountry
                                                                 bcRec.fatherCountry
-                                                        , dateOfMarriage =
-                                                            U.maybeOr model.bcDateOfMarriage
-                                                                bcRec.dateOfMarriage
+                                                        , dateOfMarriage = model.bcDateOfMarriage
                                                         , cityOfMarriage =
                                                             U.maybeOr model.bcCityOfMarriage
                                                                 bcRec.cityOfMarriage
@@ -1449,12 +1447,12 @@ editBirthCertificate cfg =
                 , fieldset BCInformantAddressFld "Informant address" cfg.model.bcInformantAddress
                 , fieldset BCPreparedByFullnameFld "Prepared by full name" cfg.model.bcPreparedByFullname
                 , fieldset BCPreparedByTitleFld "Prepared by title" cfg.model.bcPreparedByTitle
-                , fieldset BCCommTaxNumberFld "Comm tax number" cfg.model.bcCommTaxNumber
+                , fieldset BCCommTaxNumberFld "Partner's comm tax number" cfg.model.bcCommTaxNumber
                 , if cfg.model.browserSupportsDate then
                     H.div [ HA.class "c-card mw-form-field-2x" ]
                         [ H.div [ HA.class "c-card__item" ]
                             [ H.div [ HA.class "c-text--loud" ]
-                                [ H.text "Date of comm tax" ]
+                                [ H.text "Date of partner's comm tax" ]
                             ]
                         , H.div [ HA.class "c-card__body dateTimeModalBody" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
@@ -1472,7 +1470,7 @@ editBirthCertificate cfg =
                     H.div [ HA.class "c-card mw-form-field-2x" ]
                         [ H.div [ HA.class "c-card__item" ]
                             [ H.div [ HA.class "c-text--loud" ]
-                                [ H.text "Date of Comm tax" ]
+                                [ H.text "Date of partner's comm tax" ]
                             ]
                         , H.div [ HA.class "c-card__body" ]
                             [ H.div [ HA.class "o-fieldset form-wrapper" ]
@@ -1486,7 +1484,7 @@ editBirthCertificate cfg =
                                 ]
                             ]
                         ]
-                , fieldset BCCommTaxPlaceFld "Comm tax place" cfg.model.bcCommTaxPlace
+                , fieldset BCCommTaxPlaceFld "Partner's comm tax place" cfg.model.bcCommTaxPlace
                 , Form.formTextareaField (FldChgString >> FldChgSubMsg BCCommentsFld)
                     "Comments"
                     ""
