@@ -1460,6 +1460,14 @@ updateMessage incoming model =
                                             in
                                                 { mdl | dataCache = dc }
 
+                                        TableRecordKeyValue recs ->
+                                            let
+                                                kvCache =
+                                                    List.map (\rec -> ( rec.kvKey, rec )) recs
+                                                        |> Dict.fromList
+                                            in
+                                            { mdl | dataCache = DCache.put (KeyValueDataCache kvCache) mdl.dataCache }
+
                                         TableRecordLabor recs ->
                                             let
                                                 dictList =

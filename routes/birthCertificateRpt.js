@@ -14,6 +14,7 @@ var _ = require('underscore')
   , fs = require('fs')
   , os = require('os')
   , path = require('path')
+  , util = require('../util')
   , Baby = require('../models').Baby
   , BirthCertificate = require('../models').BirthCertificate
   , Labor = require('../models').Labor
@@ -150,6 +151,34 @@ var fldPos =
       , commTaxDate: [12.5, 7.2]
       , commTaxPlace: [1.0, 7.7]
       }
+  , receivedBy:
+    { name: [2.5, 26.9]
+    , title: [2.5, 27.5]
+    }
+  , delayedRegistration:
+    { name: [2.0, 12.7]
+    , address: [5.5, 13.3]
+    , birthCheckbox: [2.35, 15.9]
+    , babyName: [5.2, 16.0]
+    , clinicName: [14.0, 16.0]
+    , babyBDay: [9.2, 16.5]
+    , attendantName: [8.2, 17.2]
+    , attendantAddress: [2.6, 17.75]
+    , citizenOf: [7.5, 18.5]
+    , marriedCheckbox: [7.2, 19.25]
+    , marriedDate: [9.8, 19.3]
+    , marriedPlace: [8.2, 19.7]
+    , acknowledgedCheckbox: [7.2, 20.4]
+    , fatherName: [12.0, 20.9]
+    , reason1: [11.7, 21.7]
+    , reason2: [2.3, 22.2]
+    , iam: [12.0, 23.7]
+    , affiateSignature: [11.0, 27.6]
+    , notaryPlace: [1.0, 29.8]
+    , affiateCommTaxNumber: [0.5, 30.3]
+    , affiateCommTaxDate: [5.5, 30.3]
+    , affiateCommTaxPlace: [11.0, 30.3]
+    }
   };
 
 // --------------------------------------------------------
@@ -362,6 +391,10 @@ var doFirstPage = function(doc, data, opts) {
   writeFIELD(fldPos.preparedBy.fullname[0], fldPos.preparedBy.fullname[1], data.bc.preparedByFullname);
   writeField(fldPos.preparedBy.title[0], fldPos.preparedBy.title[1], data.bc.preparedByTitle);
   writeField(fldPos.preparedBy.date[0], fldPos.preparedBy.date[1], moment().format('DD-MMM-YYYY'));
+
+  // 24. Received by
+  writeFIELD(fldPos.receivedBy.name[0], fldPos.receivedBy.name[1], data.bc.receivedByName);
+  writeField(fldPos.receivedBy.title[0], fldPos.receivedBy.title[1], data.bc.receivedByTitle);
 };
 
 /* --------------------------------------------------------
@@ -382,6 +415,7 @@ var doSecondPage = function(doc, data, opts) {
   var top = opts.margins.top
     , left = opts.margins.left
     , tmp
+    , tmp2
     , writeField = makeWriteFieldFunc(doc, top, left)
     , writeFIELD = makeWriteFieldFunc(doc, top, left, true)
     ;
@@ -389,48 +423,137 @@ var doSecondPage = function(doc, data, opts) {
   doc
     .fontSize(mediumFont);
 
-  // Admission of paternity
-  // I/We,
-  writeFIELD(fldPos.paternity.firstParent[0], fldPos.paternity.firstParent[1],
-      data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
-  // and
-  writeFIELD(fldPos.paternity.secondParent[0], fldPos.paternity.secondParent[1],
-      data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
-  // of legal age, am/are the natural mother and/or father of
-  writeFIELD(fldPos.paternity.child[0], fldPos.paternity.child[1],
-      data.baby.firstname + ' ' + data.baby.middlename + ' ' + data.baby.lastname);
-  // who was born on
-  writeFIELD(fldPos.paternity.date[0], fldPos.paternity.date[1], moment(data.ls2.birthDatetime).format('MMMM D, YYYY'));
+  // --------------------------------------------------------
+  // Optional Admission of paternity
+  // --------------------------------------------------------
+  if (opts.printPaternity) {
 
-  // at
-  doc
-    .fontSize(smallFont);
-  tmp = cfg.getKeyValue('birthCertInstitution')? cfg.getKeyValue('birthCertInstitution'): '';
-  writeField(fldPos.paternity.place[0], fldPos.paternity.place[1], tmp);
+    // I/We,
+    writeFIELD(fldPos.paternity.firstParent[0], fldPos.paternity.firstParent[1],
+        data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
+    // and
+    writeFIELD(fldPos.paternity.secondParent[0], fldPos.paternity.secondParent[1],
+        data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
+    // of legal age, am/are the natural mother and/or father of
+    writeFIELD(fldPos.paternity.child[0], fldPos.paternity.child[1],
+        data.baby.firstname + ' ' + data.baby.middlename + ' ' + data.baby.lastname);
+    // who was born on
+    writeFIELD(fldPos.paternity.date[0], fldPos.paternity.date[1], moment(data.ls2.birthDatetime).format('MMMM D, YYYY'));
 
-  // I am/We are executing the affidavit to attest to the ...
-  doc
-    .fontSize(mediumFont);
-  writeFIELD(fldPos.paternity.fatherName[0], fldPos.paternity.fatherName[1],
-      data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
-  writeFIELD(fldPos.paternity.motherName[0], fldPos.paternity.motherName[1],
-      data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
+    // at
+    doc
+      .fontSize(smallFont);
+    tmp = cfg.getKeyValue('birthCertInstitution')? cfg.getKeyValue('birthCertInstitution'): '';
+    writeField(fldPos.paternity.place[0], fldPos.paternity.place[1], tmp);
 
-  // SUBSCRIBED AND SWORN
-  // NOTE: the date fields are left blank.
+    // I am/We are executing the affidavit to attest to the ...
+    doc
+      .fontSize(mediumFont);
+    writeFIELD(fldPos.paternity.fatherName[0], fldPos.paternity.fatherName[1],
+        data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
+    writeFIELD(fldPos.paternity.motherName[0], fldPos.paternity.motherName[1],
+        data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
 
-  // by
-  writeField(fldPos.paternity.fatherName2[0], fldPos.paternity.fatherName2[1],
-      data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
-  // and
-  writeField(fldPos.paternity.motherName2[0], fldPos.paternity.motherName2[1],
-      data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
-  // who exhinited to me (his/her) Community Tax Cert No.
-  writeField(fldPos.paternity.commTaxNumber[0], fldPos.paternity.commTaxNumber[1], data.bc.commTaxNumber);
-  // issued on
-  writeField(fldPos.paternity.commTaxDate[0], fldPos.paternity.commTaxDate[1], moment(data.bc.commTaxDate).format('DD-MMM-YYYY'));
-  // at
-  writeField(fldPos.paternity.commTaxPlace[0], fldPos.paternity.commTaxPlace[1], data.bc.commTaxPlace);
+    // SUBSCRIBED AND SWORN
+    // NOTE: the date fields are left blank.
+
+    // by
+    writeField(fldPos.paternity.fatherName2[0], fldPos.paternity.fatherName2[1],
+        data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
+    // and
+    writeField(fldPos.paternity.motherName2[0], fldPos.paternity.motherName2[1],
+        data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
+    // who exhinited to me (his/her) Community Tax Cert No.
+    writeField(fldPos.paternity.commTaxNumber[0], fldPos.paternity.commTaxNumber[1], data.bc.commTaxNumber);
+    // issued on
+    writeField(fldPos.paternity.commTaxDate[0], fldPos.paternity.commTaxDate[1], moment(data.bc.commTaxDate).format('DD-MMM-YYYY'));
+    // at
+    writeField(fldPos.paternity.commTaxPlace[0], fldPos.paternity.commTaxPlace[1], data.bc.commTaxPlace);
+
+  }
+
+  // --------------------------------------------------------
+  // Optional Affidavit for delayed registration of birth
+  // --------------------------------------------------------
+  if (opts.printRegistration) {
+    // I
+    writeFIELD(fldPos.delayedRegistration.name[0], fldPos.delayedRegistration.name[1], data.bc.affiateName);
+    // of legal age, with residence and postal address at
+    writeField(fldPos.delayedRegistration.address[0], fldPos.delayedRegistration.address[1], data.bc.affiateAddress);
+
+    // 1. That I am the applicator for the delayed registration of:
+    writeFIELD(fldPos.delayedRegistration.birthCheckbox[0], fldPos.delayedRegistration.birthCheckbox[1], "X");
+    // the birth of
+    writeFIELD(fldPos.delayedRegistration.babyName[0], fldPos.delayedRegistration.babyName[1], data.baby.firstname + " " + data.baby.middlename + " " + data.baby.lastname);
+    // who was born in
+    doc
+      .font(FONTS.Helvetica)
+      .fontSize(smallFont);
+    tmp = cfg.getKeyValue('birthCertInstitution')? cfg.getKeyValue('birthCertInstitution'): '';
+    writeField(fldPos.delayedRegistration.clinicName[0], fldPos.delayedRegistration.clinicName[1], tmp);
+    // on
+    doc
+      .font(FONTS.Helvetica)
+      .fontSize(mediumFont);
+    writeField(fldPos.delayedRegistration.babyBDay[0], fldPos.delayedRegistration.babyBDay[1], moment(data.ls2.birthDatetime).format('DD-MMM-YYYY'));
+    // 2. That I/he/she was attended at birth by
+    writeFIELD(fldPos.delayedRegistration.attendantName[0], fldPos.delayedRegistration.attendantName[1], data.bc.attendantFullname);
+    // who resides at
+    writeField(fldPos.delayedRegistration.attendantAddress[0], fldPos.delayedRegistration.attendantAddress[1],
+        data.bc.attendantAddr1 + " " + data.bc.attendantAddr2);
+    // 3. That I am/he/she is a citizen of
+    writeField(fldPos.delayedRegistration.citizenOf[0], fldPos.delayedRegistration.citizenOf[1], data.bc.affiateCitizenshipCountry);
+    // 4. That my/his/her parents were
+    if (data.bc.dateOfMarriage && _.isDate(data.bc.dateOfMarriage)) {
+      writeFIELD(fldPos.delayedRegistration.marriedCheckbox[0], fldPos.delayedRegistration.marriedCheckbox[1], 'X');
+      // married on
+      writeField(fldPos.delayedRegistration.marriedDate[0], fldPos.delayedRegistration.marriageDate[1],
+          moment(data.bc.dateOfMarriage).format('MMMM D, YYYY'));
+      // at
+      writeField(fldPos.delayedRegistration.marriedPlace[0], fldPos.delayedRegistration.marriedPlace[1],
+          data.bc.cityOfMarriage + " " + data.bc.provinceOfMarriage + " " + data.bc.countryOfMarriage);
+    } else {
+      writeFIELD(fldPos.delayedRegistration.acknowledgedCheckbox[0], fldPos.delayedRegistration.acknowledgedCheckbox[1], 'X');
+      // not married but I/he/she was acknowledged/not acknowledged by my/his/her father whose name is
+      writeFIELD(fldPos.delayedRegistration.fatherName[0], fldPos.delayedRegistration.fatherName[1],
+          data.bc.fatherFirstname + " " + data.bc.fatherMiddlename + " " + data.bc.fatherLastname);
+    }
+
+    // 5. That the reason for the delay in registering my/his/her birth was
+    // First line can hold 180 points of data and the remainder goes on the second line.
+    tmp = util.splitStringOnWordAtPerc(data.bc.affiateReason, ((180 * 100)/doc.widthOfString(data.bc.affiateReason)));
+    writeField(fldPos.delayedRegistration.reason1[0], fldPos.delayedRegistration.reason1[1], tmp[0]);
+    writeField(fldPos.delayedRegistration.reason2[0], fldPos.delayedRegistration.reason2[1], tmp[1]);
+
+    // 6. That I am the
+    writeField(fldPos.delayedRegistration.iam[0], fldPos.delayedRegistration.iam[1], data.bc.affiateIAm);
+
+    // Signature over printed name of Affiant
+    writeFIELD(fldPos.delayedRegistration.affiateSignature[0], fldPos.delayedRegistration.affiateSignature[1], data.bc.affiateName);
+
+    // Notary stuff
+    // at
+    tmp = cfg.getKeyValue('birthCertCity')? cfg.getKeyValue('birthCertCity'): '';
+    tmp2 = cfg.getKeyValue('birthCertProvince')? cfg.getKeyValue('birthCertProvince'): '';
+    if (tmp.length > 0) {
+      writeField(fldPos.delayedRegistration.notaryPlace[0], fldPos.delayedRegistration.notaryPlace[1], tmp);
+    }
+    if (tmp2.length > 0) {
+      // Need to place it after where city was written.
+      writeField(fldPos.delayedRegistration.notaryPlace[0] + doc.widthOfString(tmp) + 10,
+          fldPos.delayedRegistration.notaryPlace[1], tmp2);
+    }
+
+    // affiant who exhibited to me his Community Tax Cert.
+    writeField(fldPos.delayedRegistration.affiateCommTaxNumber[0], fldPos.delayedRegistration.affiateCommTaxNumber[1],
+        data.bc.affiateCommTaxNumber);
+    // issued on
+    writeField(fldPos.delayedRegistration.affiateCommTaxDate[0], fldPos.delayedRegistration.affiateCommTaxDate[1],
+        moment(data.bc.affiateCommTaxDate).format('MMMM D, YYYY'));
+    // at
+    writeField(fldPos.delayedRegistration.affiateCommTaxPlace[0], fldPos.delayedRegistration.affiateCommTaxPlace[1],
+        data.bc.affiateCommTaxPlace);
+  }
 };
 
 var doPages = function(doc, data, opts) {
@@ -438,20 +561,17 @@ var doPages = function(doc, data, opts) {
   doFirstPage(doc, data, opts);
 
   // --------------------------------------------------------
-  // We only print the second page if we have the data.
+  // We only print the second page if paternity or registration
+  // requested by the user.
   // --------------------------------------------------------
-  if (! data.bc.commTaxNumber ||
-      ! data.bc.commTaxPlace ||
-      ! data.bc.commTaxDate ||
-      ! _.isDate(data.bc.commTaxDate)) {
-    return;
+  if (opts.printPaternity || opts.printRegistration) {
+    // Second page set with page two margins.
+    opts.margins = opts.margins2;
+    delete opts.margins2;
+    doc.addPage(opts);
+    doSecondPage(doc, data, opts);
   }
 
-  // Second page set with page two margins.
-  opts.margins = opts.margins2;
-  delete opts.margins2;
-  doc.addPage(opts);
-  doSecondPage(doc, data, opts);
 };
 
 /* --------------------------------------------------------
@@ -523,6 +643,37 @@ var getData = function(babyId) {
         data.ls2 = ls2[0];
       })
       .then(function() {
+        // --------------------------------------------------------
+        // Convert null/undefined into empty strings for string fields.
+        // --------------------------------------------------------
+        // Baby
+        fixNullUndefined(data.baby, ['firstname', 'middlename', 'lastname']);
+
+        // Birth certificate
+        fixNullUndefined(data.bc,
+          [ 'birthOrder', 'motherMaidenLastname', 'motherMiddlename',
+            'motherFirstname', 'motherCitizenship', 'motherAddress', 'motherCity',
+            'motherProvince', 'motherCountry', 'fatherLastname', 'fatherMiddlename',
+            'fatherFirstname', 'fatherCitizenship', 'fatherReligion',
+            'fatherOccupation', 'fatherAddress', 'fatherCity', 'fatherProvince',
+            'fatherCountry', 'cityOfMarriage', 'provinceOfMarriage',
+            'countryOfMarriage', 'attendantOther', 'attendantFullname',
+            'attendantTitle', 'attendantAddr1', 'attendantAddr2', 'informantFullname',
+            'informantRelationToChild', 'informantAddress', 'preparedByFullname',
+            'preparedByTitle', 'commTaxNumber', 'commTaxPlace', 'receivedByName',
+            'receivedByTitle', 'affiateName', 'affiateAddress',
+            'affiateCitizenshipCountry', 'affiateReason', 'affiateIAm',
+            'affiateCommTaxNumber', 'affiateCommTaxPlace', 'comments'
+          ]
+        );
+
+        // Pregnancy
+        fixNullUndefined(data.preg, ['religion', 'work', 'lastname']);
+
+        // Labor stage 2
+        fixNullUndefined(data.ls2, ['birthType']);
+      })
+      .then(function() {
         resolve(data);
       })
       .caught(function(err) {
@@ -536,6 +687,25 @@ var getData = function(babyId) {
 };
 
 /* --------------------------------------------------------
+ * fixNullUndefined()
+ *
+ * Modifies the object passed according to the list of fields
+ * passed and sets the field in the object to an empty string
+ * if the field evaluates to null or undefined.
+ *
+ * param       obj
+ * param       array of fields
+ * return      undefined
+ * -------------------------------------------------------- */
+var fixNullUndefined = function(obj, flds) {
+  _.each(flds, function(fld) {
+    if (_.has(obj, fld) && (_.isNull(obj[fld]) || _.isUndefined(obj[fld]))) {
+      obj[fld] = '';
+    }
+  });
+};
+
+/* --------------------------------------------------------
  * doReport()
  *
  * Create the birth certificate for the baby.
@@ -545,10 +715,12 @@ var getData = function(babyId) {
  * param      left1
  * param      top2
  * param      left2
+ * param      printPaternity
+ * param      printRegistration
  * param      writable
  * return     undefined
  * -------------------------------------------------------- */
-var doReport = function doReport(babyId, top1, left1, top2, left2, writable) {
+var doReport = function doReport(babyId, top1, left1, top2, left2, printPaternity, printRegistration, writable) {
   var options = {
         bufferPages: true      // Allow writing to prior pages if desired.
         , layout: 'portrait'
@@ -598,6 +770,13 @@ var doReport = function doReport(babyId, top1, left1, top2, left2, writable) {
   opts.margins2 = options.margins2;
   opts.pageWidth = doc.page.width;
   opts.pageHeight = doc.page.height;
+  opts.size = options.size;
+  opts.layout = options.layout;
+  opts.info = options.info;
+
+  // Optional sections of the birth certificate.
+  opts.printPaternity = printPaternity;
+  opts.printRegistration = printRegistration;
 
   currentPage = 0;   // Tracking what page we are printing to now, zero based.
 
@@ -621,14 +800,13 @@ var run = function run(req, res) {
     , left1 = req.params.left1
     , top2 = req.params.top2
     , left2 = req.params.left2
+    , printPaternity = req.params.paternity? req.params.paternity === 'Y': false
+    , printRegistration = req.params.registration? req.params.registration === 'Y': false
     , filePath = path.join(cfg.site.tmpDir, 'rpt-' + (Math.random() * 9999999999) + '.pdf')
     , writable = fs.createWriteStream(filePath)
     , success = false
     , fieldsReady = true
     ;
-
-  logInfo('birthCertificate for babyId: ' + babyId + ', top1: ' + top1 +
-      ', left1: ' + left1 + ', top2: ' + top2 + ', left2: ' + left2);
 
   // --------------------------------------------------------
   // When the report is fully built, write it back to the caller.
@@ -647,7 +825,7 @@ var run = function run(req, res) {
     });
   });
 
-  doReport(babyId, top1, left1, top2, left2, writable);
+  doReport(babyId, top1, left1, top2, left2, printPaternity, printRegistration, writable);
 };
 
 

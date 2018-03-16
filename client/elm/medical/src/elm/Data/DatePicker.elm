@@ -51,6 +51,7 @@ type DateField
     | PostpartumCheckScheduledField
     | BirthCertDateOfCommTaxField
     | BirthCertDateOfMarriageField
+    | BirthCertDateOfAffiateCommTaxField
 
 
 dynamicRegex : Regex
@@ -84,6 +85,9 @@ stringToDateField str =
 
         "birthCertificateDateOfMarriageId" ->
             BirthCertDateOfMarriageField
+
+        "birthCertificateDateOfAffiateCommTaxId" ->
+            BirthCertDateOfAffiateCommTaxField
 
         "contPostpartumCheckId" ->
             ContPostpartumCheckDateField
@@ -192,6 +196,9 @@ dateFieldToString df =
 
         BirthCertDateOfMarriageField ->
             "birthCertificateDateOfMarriageId"
+
+        BirthCertDateOfAffiateCommTaxField ->
+            "birthCertificateDateOfAffiateCommTaxId"
 
         ContPostpartumCheckDateField ->
             "contPostpartumCheckId"

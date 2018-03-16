@@ -14,6 +14,7 @@ import Data.BabyVaccinationType exposing (BabyVaccinationTypeRecord, babyVaccina
 import Data.BirthCertificate exposing (BirthCertificateRecord, birthCertificateRecord)
 import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord, contPostpartumCheckRecord)
 import Data.Discharge exposing (DischargeRecord, dischargeRecord)
+import Data.KeyValue exposing (KeyValueRecord, keyValueRecord)
 import Data.Labor exposing (LaborRecord, laborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record, laborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record, laborStage2Record)
@@ -42,6 +43,7 @@ type TableRecord
     | TableRecordBirthCertificate (List BirthCertificateRecord)
     | TableRecordContPostpartumCheck (List ContPostpartumCheckRecord)
     | TableRecordDischarge (List DischargeRecord)
+    | TableRecordKeyValue (List KeyValueRecord)
     | TableRecordLabor (List LaborRecord)
     | TableRecordLaborStage1 (List LaborStage1Record)
     | TableRecordLaborStage2 (List LaborStage2Record)
@@ -88,6 +90,9 @@ tableRecord table =
 
         Discharge ->
             JD.map TableRecordDischarge (JD.list dischargeRecord)
+
+        KeyValue ->
+            JD.map TableRecordKeyValue (JD.list keyValueRecord)
 
         Labor ->
             JD.map TableRecordLabor (JD.list laborRecord)

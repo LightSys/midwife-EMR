@@ -306,7 +306,7 @@ cfg.path.apiCheckInOut = '/api/data/checkinout';
 cfg.path.invoiceWorksheet = '/invoiceWorksheet';
 
 // Birth certificate printing
-cfg.path.birthCertificatePrinting = '/printBirthCertificate/:babyId/:top1/:left1/:top2/:left2';
+cfg.path.birthCertificatePrinting = '/printBirthCertificate/:babyId/:top1/:left1/:top2/:left2/:paternity/:registration';
 
 // --------------------------------------------------------
 // JumpTo Settings.

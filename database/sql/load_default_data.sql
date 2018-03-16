@@ -660,7 +660,14 @@ VALUES
   ('birthCertProvince', 'YourProvince', 'Used in the birth certificate form, field #4.', 'text', '', 0),
   ('birthCertCity', 'YourCity', 'Used in the birth certificate form, field #4.', 'text', '', 0),
   ('birthCertProvinceTop', 'YourProvince', 'Used at the TOP of the birth certificate form in the Province field.', 'text', '', 0),
-  ('birthCertCityTop', 'YourCity', 'Used at the TOP of the birth certificate form in the City/Municipality field.', 'text', '', 0)
+  ('birthCertCityTop', 'YourCity', 'Used at the TOP of the birth certificate form in the City/Municipality field.', 'text', '', 0),
+  ('birthCertDefaultCitizenship', 'TheDefaultCitizenship', 'Birth certificate form, fields: 8, 15.', 'text', '', 0),
+  ('birthCertDefaultCountry', 'TheDefaultCountry', 'Birth certificate form, fields: 13, 19, 20b.', 'text', '', 0),
+  ('birthCertDefaultAttendantTitle', 'TheDefaultAttendantTitle', 'Birth certificate form, field: 21a.', 'text', '', 0),
+  ('birthCertDefaultAttendantAddr1', 'TheDefaultAttendantAddr1', 'Birth certificate form, field: 21b, line 1', 'text', '', 0),
+  ('birthCertDefaultAttendantAddr2', 'TheDefaultAttendantAddr2', 'Birth certificate form, field: 21b, line 2', 'text', '', 0),
+  ('birthCertDefaultReceivedByName', 'TheDefaultReceivedByName', 'Birth certificate form, field: 24.', 'text', '', 0),
+  ('birthCertDefaultReceivedByTitle', 'TheDefaultReceivedByTitle', 'Birth certificate form, field: 24.', 'text', '', 0)
 ;
 
 SELECT 'babyMedicationType' AS 'Loading' FROM DUAL;

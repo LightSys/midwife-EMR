@@ -70,8 +70,20 @@ type Field
     | BCCommTaxNumberFld
     | BCCommTaxDateFld
     | BCCommTaxPlaceFld
+    | BCReceivedByNameFld
+    | BCReceivedByTitleFld
+    | BCAffiateNameFld
+    | BCAffiateAddressFld
+    | BCAffiateCitizenshipCountryFld
+    | BCAffiateReasonFld
+    | BCAffiateIAmFld
+    | BCAffiateCommTaxNumberFld
+    | BCAffiateCommTaxDateFld
+    | BCAffiateCommTaxPlace
     | BCCommentsFld
     | PrintingPage1TopFld
     | PrintingPage1LeftFld
     | PrintingPage2TopFld
     | PrintingPage2LeftFld
+    | PrintingPaternityFld
+    | PrintingDelayedRegistrationFld

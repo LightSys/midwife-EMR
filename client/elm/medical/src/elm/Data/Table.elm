@@ -23,6 +23,7 @@ type Table
     | BirthCertificate
     | ContPostpartumCheck
     | Discharge
+    | KeyValue
     | Labor
     | LaborStage1
     | LaborStage2
@@ -81,6 +82,9 @@ tableToString tbl =
 
         Discharge ->
             "discharge"
+
+        KeyValue ->
+            "keyValue"
 
         Labor ->
             "labor"
@@ -151,6 +155,9 @@ stringToTable tbl =
 
         "discharge" ->
             Discharge
+
+        "keyValue" ->
+            KeyValue
 
         "labor" ->
             Labor

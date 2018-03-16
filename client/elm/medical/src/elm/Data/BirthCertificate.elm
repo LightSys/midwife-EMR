@@ -67,6 +67,16 @@ type alias BirthCertificateRecord =
     , commTaxNumber : Maybe String
     , commTaxDate : Maybe Date
     , commTaxPlace : Maybe String
+    , receivedByName : Maybe String
+    , receivedByTitle : Maybe String
+    , affiateName : Maybe String
+    , affiateAddress : Maybe String
+    , affiateCitizenshipCountry : Maybe String
+    , affiateReason : Maybe String
+    , affiateIAm : Maybe String
+    , affiateCommTaxNumber : Maybe String
+    , affiateCommTaxDate : Maybe Date
+    , affiateCommTaxPlace : Maybe String
     , comments : Maybe String
     , baby_id : Int
     }
@@ -114,6 +124,16 @@ type alias BirthCertificateRecordNew =
     , commTaxNumber : Maybe String
     , commTaxDate : Maybe Date
     , commTaxPlace : Maybe String
+    , receivedByName : Maybe String
+    , receivedByTitle : Maybe String
+    , affiateName : Maybe String
+    , affiateAddress : Maybe String
+    , affiateCitizenshipCountry : Maybe String
+    , affiateReason : Maybe String
+    , affiateIAm : Maybe String
+    , affiateCommTaxNumber : Maybe String
+    , affiateCommTaxDate : Maybe Date
+    , affiateCommTaxPlace : Maybe String
     , comments : Maybe String
     , baby_id : Int
     }
@@ -164,6 +184,16 @@ birthCertificateRecord =
         |> JDP.required "commTaxNumber" (JD.maybe JD.string)
         |> JDP.required "commTaxDate" (JD.maybe JDE.date)
         |> JDP.required "commTaxPlace" (JD.maybe JD.string)
+        |> JDP.required "receivedByName" (JD.maybe JD.string)
+        |> JDP.required "receivedByTitle" (JD.maybe JD.string)
+        |> JDP.required "affiateName" (JD.maybe JD.string)
+        |> JDP.required "affiateAddress" (JD.maybe JD.string)
+        |> JDP.required "affiateCitizenshipCountry" (JD.maybe JD.string)
+        |> JDP.required "affiateReason" (JD.maybe JD.string)
+        |> JDP.required "affiateIAm" (JD.maybe JD.string)
+        |> JDP.required "affiateCommTaxNumber" (JD.maybe JD.string)
+        |> JDP.required "affiateCommTaxDate" (JD.maybe JDE.date)
+        |> JDP.required "affiateCommTaxPlace" (JD.maybe JD.string)
         |> JDP.required "comments" (JD.maybe JD.string)
         |> JDP.required "baby_id" JD.int
 
@@ -215,6 +245,16 @@ birthCertificateRecordNewToValue rec =
                 , ( "commTaxNumber", JEE.maybe JE.string rec.commTaxNumber )
                 , ( "commTaxDate", JEE.maybe U.dateToStringValue rec.commTaxDate )
                 , ( "commTaxPlace", JEE.maybe JE.string rec.commTaxPlace )
+                , ( "receivedByName", JEE.maybe JE.string rec.receivedByName )
+                , ( "receivedByTitle", JEE.maybe JE.string rec.receivedByTitle )
+                , ( "affiateName", JEE.maybe JE.string rec.affiateName )
+                , ( "affiateAddress", JEE.maybe JE.string rec.affiateAddress )
+                , ( "affiateCitizenshipCountry", JEE.maybe JE.string rec.affiateCitizenshipCountry )
+                , ( "affiateReason", JEE.maybe JE.string rec.affiateReason )
+                , ( "affiateIAm", JEE.maybe JE.string rec.affiateIAm )
+                , ( "affiateCommTaxNumber", JEE.maybe JE.string rec.affiateCommTaxNumber )
+                , ( "affiateCommTaxDate", JEE.maybe U.dateToStringValue rec.affiateCommTaxDate )
+                , ( "affiateCommTaxPlace", JEE.maybe JE.string rec.affiateCommTaxPlace )
                 , ( "comments", JEE.maybe JE.string rec.comments )
                 , ( "baby_id", JE.int rec.baby_id )
                 ]
@@ -270,6 +310,15 @@ birthCertificateRecordToValue rec =
                 , ( "commTaxNumber", JEE.maybe JE.string rec.commTaxNumber )
                 , ( "commTaxDate", JEE.maybe U.dateToStringValue rec.commTaxDate )
                 , ( "commTaxPlace", JEE.maybe JE.string rec.commTaxPlace )
+                , ( "receivedByName", JEE.maybe JE.string rec.receivedByName )
+                , ( "receivedByTitle", JEE.maybe JE.string rec.receivedByTitle )
+                , ( "affiateAddress", JEE.maybe JE.string rec.affiateAddress )
+                , ( "affiateCitizenshipCountry", JEE.maybe JE.string rec.affiateCitizenshipCountry )
+                , ( "affiateReason", JEE.maybe JE.string rec.affiateReason )
+                , ( "affiateIAm", JEE.maybe JE.string rec.affiateIAm )
+                , ( "affiateCommTaxNumber", JEE.maybe JE.string rec.affiateCommTaxNumber )
+                , ( "affiateCommTaxDate", JEE.maybe U.dateToStringValue rec.affiateCommTaxDate )
+                , ( "affiateCommTaxPlace", JEE.maybe JE.string rec.affiateCommTaxPlace )
                 , ( "comments", JEE.maybe JE.string rec.comments )
                 , ( "baby_id", JE.int rec.baby_id )
                 ]
@@ -321,5 +370,15 @@ birthCertificateRecordNewToBirthCertificateRecord (BirthCertificateId id) newRec
         newRec.commTaxNumber
         newRec.commTaxDate
         newRec.commTaxPlace
+        newRec.receivedByName
+        newRec.receivedByTitle
+        newRec.affiateName
+        newRec.affiateAddress
+        newRec.affiateCitizenshipCountry
+        newRec.affiateReason
+        newRec.affiateIAm
+        newRec.affiateCommTaxNumber
+        newRec.affiateCommTaxDate
+        newRec.affiateCommTaxPlace
         newRec.comments
         newRec.baby_id

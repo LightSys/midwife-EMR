@@ -27,6 +27,7 @@ import Data.BirthCertificate
         )
 import Data.DataCache as DataCache exposing (DataCache(..))
 import Data.DatePicker exposing (DateField(..), DateFieldMessage(..), dateFieldToString)
+import Data.KeyValue exposing (KeyValueRecord)
 import Data.Labor
     exposing
         ( LaborId(..)
@@ -103,6 +104,7 @@ type alias Model =
     , laborStage2Record : Maybe LaborStage2Record
     , babyRecord : Maybe BabyRecord
     , selectDataRecords : List SelectDataRecord
+    , keyValueRecords : Dict String KeyValueRecord
     , birthCertificateRecord : Maybe BirthCertificateRecord
     , birthCertificateViewEditState : ViewEditState
     , bcBirthOrder : Maybe String
@@ -146,11 +148,23 @@ type alias Model =
     , bcCommTaxNumber : Maybe String
     , bcCommTaxDate : Maybe Date
     , bcCommTaxPlace : Maybe String
+    , bcReceivedByName : Maybe String
+    , bcReceivedByTitle : Maybe String
+    , bcAffiateName : Maybe String
+    , bcAffiateAddress : Maybe String
+    , bcAffiateCitizenshipCountry : Maybe String
+    , bcAffiateReason : Maybe String
+    , bcAffiateIAm : Maybe String
+    , bcAffiateCommTaxNumber : Maybe String
+    , bcAffiateCommTaxDate : Maybe Date
+    , bcAffiateCommTaxPlace : Maybe String
     , bcComments : Maybe String
     , printingPage1Top : Maybe String
     , printingPage1Left : Maybe String
     , printingPage2Top : Maybe String
     , printingPage2Left : Maybe String
+    , printingPaternity : Maybe Bool
+    , printingDelayedRegistration : Maybe Bool
     }
 
 
@@ -204,6 +218,10 @@ buildModel laborRec stage2Rec babyRecords browserSupportsDate currTime store pre
 
                 Nothing ->
                     store => logConsole "Baby record not available in BirthCert.buildModel."
+
+        -- Get the keyValue lookup table that this page will need.
+        ( newStore2, getKeyValueCmd ) =
+            getTableData newStore KeyValue Nothing []
     in
     ( { browserSupportsDate = browserSupportsDate
       , currTime = currTime
@@ -217,6 +235,7 @@ buildModel laborRec stage2Rec babyRecords browserSupportsDate currTime store pre
       , laborStage2Record = stage2Rec
       , babyRecord = babyRecord
       , selectDataRecords = []
+      , keyValueRecords = Dict.empty
       , birthCertificateRecord = Nothing
       , birthCertificateViewEditState = BirthCertificateEditState
       , bcBirthOrder = Nothing
@@ -260,15 +279,30 @@ buildModel laborRec stage2Rec babyRecords browserSupportsDate currTime store pre
       , bcCommTaxNumber = Nothing
       , bcCommTaxDate = Nothing
       , bcCommTaxPlace = Nothing
+      , bcReceivedByName = Nothing
+      , bcReceivedByTitle = Nothing
+      , bcAffiateName = Nothing
+      , bcAffiateAddress = Nothing
+      , bcAffiateCitizenshipCountry = Nothing
+      , bcAffiateReason = Nothing
+      , bcAffiateIAm = Nothing
+      , bcAffiateCommTaxNumber = Nothing
+      , bcAffiateCommTaxDate = Nothing
+      , bcAffiateCommTaxPlace = Nothing
       , bcComments = Nothing
       , printingPage1Top = Just "0"
       , printingPage1Left = Just "0"
       , printingPage2Top = Just "0"
       , printingPage2Left = Just "0"
+      , printingPaternity = Nothing
+      , printingDelayedRegistration = Nothing
       }
         |> populateModelBirthCertificateFields
-    , newStore
-    , Cmd.batch [ getBirthCertificateCmd ]
+    , newStore2
+    , Cmd.batch
+        [ getBirthCertificateCmd
+        , getKeyValueCmd
+        ]
     )
 
 
@@ -351,6 +385,14 @@ refreshModelFromCache dc tables model =
                                 _ ->
                                     m
 
+                        KeyValue ->
+                            case DataCache.get t dc of
+                                Just (KeyValueDataCache recs) ->
+                                    { m | keyValueRecords = recs }
+
+                                _ ->
+                                    m
+
                         Labor ->
                             case DataCache.get t dc of
                                 Just (LaborDataCache recs) ->
@@ -422,6 +464,14 @@ update session msg model =
                                                                             BirthCertificateViewState
                                                                     }
                                                                )
+                                                    else if tbl == KeyValue then
+                                                        populateModelBirthCertificateFields mdl
+                                                            |> (\mdl ->
+                                                                    { mdl
+                                                                        | birthCertificateViewEditState =
+                                                                            BirthCertificateViewState
+                                                                    }
+                                                               )
                                                     else
                                                         mdl
                                                 )
@@ -448,6 +498,9 @@ update session msg model =
 
                         BirthCertDateOfCommTaxField ->
                             ( { model | bcCommTaxDate = Just date }, Cmd.none, Cmd.none )
+
+                        BirthCertDateOfAffiateCommTaxField ->
+                            ( { model | bcAffiateCommTaxDate = Just date }, Cmd.none, Cmd.none )
 
                         UnknownDateField str ->
                             ( model, Cmd.none, logConsole str )
@@ -594,6 +647,36 @@ update session msg model =
                         BCCommTaxPlaceFld ->
                             { model | bcCommTaxPlace = Just value }
 
+                        BCReceivedByNameFld ->
+                            { model | bcReceivedByName = Just value }
+
+                        BCReceivedByTitleFld ->
+                            { model | bcReceivedByTitle = Just value }
+
+                        BCAffiateNameFld ->
+                            { model | bcAffiateName = Just value }
+
+                        BCAffiateAddressFld ->
+                            { model | bcAffiateAddress = Just value }
+
+                        BCAffiateCitizenshipCountryFld ->
+                            { model | bcAffiateCitizenshipCountry = Just value }
+
+                        BCAffiateReasonFld ->
+                            { model | bcAffiateReason = Just value }
+
+                        BCAffiateIAmFld ->
+                            { model | bcAffiateIAm = Just value }
+
+                        BCAffiateCommTaxNumberFld ->
+                            { model | bcAffiateCommTaxNumber = Just value }
+
+                        BCAffiateCommTaxDateFld ->
+                            { model | bcAffiateCommTaxDate = Date.fromString value |> Result.toMaybe }
+
+                        BCAffiateCommTaxPlace ->
+                            { model | bcAffiateCommTaxPlace = Just value }
+
                         BCCommentsFld ->
                             { model | bcComments = Just value }
 
@@ -608,6 +691,14 @@ update session msg model =
 
                         PrintingPage2LeftFld ->
                             { model | printingPage2Left = Just <| U.filterStringLikeIntOrNegInt value }
+
+                        _ ->
+                            let
+                                _ =
+                                    Debug.log "BirthCert.update FldChgSubMsg"
+                                        "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
+                            in
+                            model
                     , Cmd.none
                     , Cmd.none
                     )
@@ -619,7 +710,20 @@ update session msg model =
                     )
 
                 FldChgBool value ->
-                    ( model
+                    ( case fld of
+                        PrintingPaternityFld ->
+                            { model | printingPaternity = Just value }
+
+                        PrintingDelayedRegistrationFld ->
+                            { model | printingDelayedRegistration = Just value }
+
+                        _ ->
+                            let
+                                _ =
+                                    Debug.log "BirthCert.update FldChgSubMsg"
+                                        "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
+                            in
+                            model
                     , Cmd.none
                     , Cmd.none
                     )
@@ -780,6 +884,36 @@ update session msg model =
                                                         , commTaxPlace =
                                                             U.maybeOr model.bcCommTaxPlace
                                                                 bcRec.commTaxPlace
+                                                        , receivedByName =
+                                                            U.maybeOr model.bcReceivedByName
+                                                                bcRec.receivedByName
+                                                        , receivedByTitle =
+                                                            U.maybeOr model.bcReceivedByTitle
+                                                                bcRec.receivedByTitle
+                                                        , affiateName =
+                                                            U.maybeOr model.bcAffiateName
+                                                                bcRec.affiateName
+                                                        , affiateAddress =
+                                                            U.maybeOr model.bcAffiateAddress
+                                                                bcRec.affiateAddress
+                                                        , affiateCitizenshipCountry =
+                                                            U.maybeOr model.bcAffiateCitizenshipCountry
+                                                                bcRec.affiateCitizenshipCountry
+                                                        , affiateReason =
+                                                            U.maybeOr model.bcAffiateReason
+                                                                bcRec.affiateReason
+                                                        , affiateIAm =
+                                                            U.maybeOr model.bcAffiateIAm
+                                                                bcRec.affiateIAm
+                                                        , affiateCommTaxNumber =
+                                                            U.maybeOr model.bcAffiateCommTaxNumber
+                                                                bcRec.affiateCommTaxNumber
+                                                        , affiateCommTaxDate =
+                                                            U.maybeOr model.bcAffiateCommTaxDate
+                                                                bcRec.affiateCommTaxDate
+                                                        , affiateCommTaxPlace =
+                                                            U.maybeOr model.bcAffiateCommTaxPlace
+                                                                bcRec.affiateCommTaxPlace
                                                         , comments =
                                                             U.maybeOr model.bcComments
                                                                 bcRec.comments
@@ -889,18 +1023,78 @@ populateModelBirthCertificateFields model =
                 , bcCommTaxNumber = bcRec.commTaxNumber
                 , bcCommTaxDate = bcRec.commTaxDate
                 , bcCommTaxPlace = bcRec.commTaxPlace
+                , bcReceivedByName = bcRec.receivedByName
+                , bcReceivedByTitle = bcRec.receivedByTitle
+                , bcAffiateName = bcRec.affiateName
+                , bcAffiateAddress = bcRec.affiateAddress
+                , bcAffiateCitizenshipCountry = bcRec.affiateCitizenshipCountry
+                , bcAffiateReason = bcRec.affiateReason
+                , bcAffiateIAm = bcRec.affiateIAm
+                , bcAffiateCommTaxNumber = bcRec.affiateCommTaxNumber
+                , bcAffiateCommTaxDate = bcRec.affiateCommTaxDate
+                , bcAffiateCommTaxPlace = bcRec.affiateCommTaxPlace
                 , bcComments = bcRec.comments
             }
 
         Nothing ->
+            let
+                defaultCitizenship =
+                    Data.KeyValue.getKeyValueValueByKey
+                        "birthCertDefaultCitizenship"
+                        model.keyValueRecords
+
+                defaultCountry =
+                    Data.KeyValue.getKeyValueValueByKey
+                        "birthCertDefaultCountry"
+                        model.keyValueRecords
+
+                defaultAttendantTitle =
+                    Data.KeyValue.getKeyValueValueByKey
+                        "birthCertDefaultAttendantTitle"
+                        model.keyValueRecords
+
+                defaultAttendantAddr1 =
+                    Data.KeyValue.getKeyValueValueByKey
+                        "birthCertDefaultAttendantAddr1"
+                        model.keyValueRecords
+
+                defaultAttendantAddr2 =
+                    Data.KeyValue.getKeyValueValueByKey
+                        "birthCertDefaultAttendantAddr2"
+                        model.keyValueRecords
+
+                defaultReceivedByName =
+                    Data.KeyValue.getKeyValueValueByKey
+                        "birthCertDefaultReceivedByName"
+                        model.keyValueRecords
+
+                defaultReceivedByTitle =
+                    Data.KeyValue.getKeyValueValueByKey
+                        "birthCertDefaultReceivedByTitle"
+                        model.keyValueRecords
+            in
             case model.pregnancyRecord of
                 Just pregRec ->
                     { model
                         | bcMotherMaidenLastname = pregRec.maidenname
                         , bcMotherFirstname = Just pregRec.firstname
+                        , bcMotherCitizenship = defaultCitizenship
                         , bcMotherCity = pregRec.city
                         , bcMotherProvince = pregRec.state
-                        , bcMotherCountry = pregRec.country
+                        , bcMotherCountry = defaultCountry
+                        , bcFatherCitizenship = defaultCitizenship
+                        , bcFatherCountry = defaultCountry
+                        , bcCountryOfMarriage = defaultCountry
+
+                        -- Note: cannot pull from keyValue for attendant type
+                        -- because of the specific radio options allowed in
+                        -- the view and the database.
+                        , bcAttendantType = Just "Midwife"
+                        , bcAttendantTitle = defaultAttendantTitle
+                        , bcAttendantAddr1 = defaultAttendantAddr1
+                        , bcAttendantAddr2 = defaultAttendantAddr2
+                        , bcReceivedByName = defaultReceivedByName
+                        , bcReceivedByTitle = defaultReceivedByTitle
                     }
 
                 Nothing ->
@@ -963,6 +1157,16 @@ deriveBirthCertificateRecordNew model =
                             model.bcCommTaxNumber
                             model.bcCommTaxDate
                             model.bcCommTaxPlace
+                            model.bcReceivedByName
+                            model.bcReceivedByTitle
+                            model.bcAffiateName
+                            model.bcAffiateAddress
+                            model.bcAffiateCitizenshipCountry
+                            model.bcAffiateReason
+                            model.bcAffiateIAm
+                            model.bcAffiateCommTaxNumber
+                            model.bcAffiateCommTaxDate
+                            model.bcAffiateCommTaxPlace
                             model.bcComments
                             baby.id
 
@@ -1223,6 +1427,16 @@ viewBirthCertificate cfg =
                         , viewField "Comm tax number" <| Maybe.withDefault "" rec.commTaxNumber
                         , viewField "Comm tax date" <| displayDate rec.commTaxDate
                         , viewField "Comm tax place" <| Maybe.withDefault "" rec.commTaxPlace
+                        , viewField "Received by full name" <| Maybe.withDefault "" rec.receivedByName
+                        , viewField "Received by title" <| Maybe.withDefault "" rec.receivedByTitle
+                        , viewField "Affiate full name" <| Maybe.withDefault "" rec.affiateName
+                        , viewField "Affiate address" <| Maybe.withDefault "" rec.affiateAddress
+                        , viewField "Affiate country of citizenship" <| Maybe.withDefault "" rec.affiateCitizenshipCountry
+                        , viewField "Affiate reason" <| Maybe.withDefault "" rec.affiateReason
+                        , viewField "Affiate I am" <| Maybe.withDefault "" rec.affiateIAm
+                        , viewField "Affiate comm tax number" <| Maybe.withDefault "" rec.affiateCommTaxNumber
+                        , viewField "Affiate comm tax date" <| displayDate rec.affiateCommTaxDate
+                        , viewField "Affiate comm tax place" <| Maybe.withDefault "" rec.affiateCommTaxPlace
                         , viewField "Comments" <| Maybe.withDefault "" rec.comments
                         ]
                     , H.div
@@ -1296,6 +1510,17 @@ viewBirthCertificate cfg =
                                 cfg.model.printingPage2Left
                                 (getErr PrintingPage2LeftFld [])
                             ]
+                        , H.div [ HA.class "mw-form-field-wide" ]
+                            [ H.span
+                                [ HA.class "c-text--loud" ]
+                                [ H.text "Print these sections?" ]
+                            , Form.checkboxWide "Paternity"
+                                (FldChgBool >> FldChgSubMsg PrintingPaternityFld)
+                                cfg.model.printingPaternity
+                            , Form.checkboxWide "Delayed Registration"
+                                (FldChgBool >> FldChgSubMsg PrintingDelayedRegistrationFld)
+                                cfg.model.printingDelayedRegistration
+                            ]
                         ]
                     , H.div
                         [ HA.class "spacedButtons"
@@ -1315,6 +1540,8 @@ viewBirthCertificate cfg =
                                     (Maybe.withDefault "0" cfg.model.printingPage1Left)
                                     (Maybe.withDefault "0" cfg.model.printingPage2Top)
                                     (Maybe.withDefault "0" cfg.model.printingPage2Left)
+                                    cfg.model.printingPaternity
+                                    cfg.model.printingDelayedRegistration
                             , HA.target "_blank"
                             ]
                             [ H.text "Print" ]
@@ -1323,18 +1550,28 @@ viewBirthCertificate cfg =
                 ]
 
 
-printBirthCertificate : String -> String -> String -> String -> String -> String
-printBirthCertificate babyId top1 left1 top2 left2 =
+printBirthCertificate : String -> String -> String -> String -> String -> Maybe Bool -> Maybe Bool -> String
+printBirthCertificate babyId top1 left1 top2 left2 paternity delayed =
+    let
+        yesNoBool value =
+            case value of
+                Just val ->
+                    if val then
+                        "Y"
+                    else
+                        "N"
+
+                Nothing ->
+                    "N"
+
+        pat =
+            yesNoBool paternity
+
+        delReg = yesNoBool delayed
+    in
     "/printBirthCertificate/"
-        ++ babyId
-        ++ "/"
-        ++ top1
-        ++ "/"
-        ++ left1
-        ++ "/"
-        ++ top2
-        ++ "/"
-        ++ left2
+        ++ String.join "/"
+            [ babyId, top1, left1, top2, left2, pat, delReg ]
 
 
 editBirthCertificate : ViewEditConfig -> Html SubMsg
@@ -1485,6 +1722,51 @@ editBirthCertificate cfg =
                             ]
                         ]
                 , fieldset BCCommTaxPlaceFld "Partner's comm tax place" cfg.model.bcCommTaxPlace
+                , fieldset BCReceivedByNameFld "Received by full name" cfg.model.bcReceivedByName
+                , fieldset BCReceivedByTitleFld "Received by title" cfg.model.bcReceivedByTitle
+                , fieldset BCAffiateNameFld "Affiate full name" cfg.model.bcAffiateName
+                , fieldset BCAffiateAddressFld "Affiate address" cfg.model.bcAffiateAddress
+                , fieldset BCAffiateCitizenshipCountryFld "Affiate's country of citizenship" cfg.model.bcAffiateCitizenshipCountry
+                , fieldset BCAffiateReasonFld "Reason for delay" cfg.model.bcAffiateReason
+                , fieldset BCAffiateIAmFld "Affiate I am" cfg.model.bcAffiateIAm
+                , fieldset BCAffiateCommTaxNumberFld "Affiate comm tax number" cfg.model.bcAffiateCommTaxNumber
+                , if cfg.model.browserSupportsDate then
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Date of affiate's comm tax" ]
+                            ]
+                        , H.div [ HA.class "c-card__body dateTimeModalBody" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDate (FldChgString >> FldChgSubMsg BCAffiateCommTaxDateFld)
+                                    ""
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bcAffiateCommTaxDate
+                                    (getErr BCAffiateCommTaxDateFld errors)
+                                ]
+                            ]
+                        ]
+                  else
+                    -- Browser does not support date.
+                    H.div [ HA.class "c-card mw-form-field-2x" ]
+                        [ H.div [ HA.class "c-card__item" ]
+                            [ H.div [ HA.class "c-text--loud" ]
+                                [ H.text "Date of affiate's comm tax" ]
+                            ]
+                        , H.div [ HA.class "c-card__body" ]
+                            [ H.div [ HA.class "o-fieldset form-wrapper" ]
+                                [ Form.formFieldDatePicker OpenDatePickerSubMsg
+                                    BirthCertDateOfAffiateCommTaxField
+                                    ""
+                                    "e.g. 08/14/2017"
+                                    False
+                                    cfg.model.bcAffiateCommTaxDate
+                                    (getErr BCAffiateCommTaxDateFld errors)
+                                ]
+                            ]
+                        ]
+                , fieldset BCAffiateCommTaxPlace "Affiate comm tax place" cfg.model.bcAffiateCommTaxPlace
                 , Form.formTextareaField (FldChgString >> FldChgSubMsg BCCommentsFld)
                     "Comments"
                     ""

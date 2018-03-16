@@ -59,6 +59,16 @@ CREATE TABLE `birthCertificate` (
   `commTaxNumber` varchar(50) DEFAULT NULL,
   `commTaxDate` date DEFAULT NULL,
   `commTaxPlace` varchar(50) DEFAULT NULL,
+  `receivedByName` varchar(100) DEFAULT NULL,
+  `receivedByTitle` varchar(100) DEFAULT NULL,
+  `affiateName` varchar(100) DEFAULT NULL,
+  `affiateAddress` varchar(100) DEFAULT NULL,
+  `affiateCitizenshipCountry` varchar(100) DEFAULT NULL,
+  `affiateReason` varchar(100) DEFAULT NULL,
+  `affiateIAm` varchar(100) DEFAULT NULL,
+  `affiateCommTaxNumber` varchar(100) DEFAULT NULL,
+  `affiateCommTaxDate` varchar(100) DEFAULT NULL,
+  `affiateCommTaxPlace` varchar(100) DEFAULT NULL,
   `comments` varchar(300) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
@@ -69,7 +79,7 @@ CREATE TABLE `birthCertificate` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `birthCertificate_ibfk_1` FOREIGN KEY (`baby_id`) REFERENCES `baby` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `birthCertificate_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
  */
 
 BirthCertificate = Bookshelf.Model.extend({
@@ -86,8 +96,11 @@ BirthCertificate = Bookshelf.Model.extend({
     'countryOfMarriage', 'attendantType', 'attendantOther', 'attendantFullname',
     'attendantTitle', 'attendantAddr1', 'attendantAddr2', 'informantFullname',
     'informantRelationToChild', 'informantAddress', 'preparedByFullname',
-    'preparedByTitle', 'commTaxNumber', 'commTaxDate', 'commTaxPlace', 'comments',
-    'updatedBy', 'updatedAt', 'supervisor', 'baby_id']
+    'preparedByTitle', 'commTaxNumber', 'commTaxDate', 'commTaxPlace',
+    'receivedByName', 'receivedByTitle', 'affiateName', 'affiateAddress',
+    'affiateCitizenshipCountry', 'affiateReason', 'affiateIAm',
+    'affiateCommTaxNumber', 'affiateCommTaxDate', 'affiateCommTaxPlace',
+    'comments', 'updatedBy', 'updatedAt', 'supervisor', 'baby_id']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
