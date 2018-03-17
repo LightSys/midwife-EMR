@@ -1220,9 +1220,11 @@ type alias ViewEditStageConfig =
     , editMsg : SubMsg
     }
 
+{-| TODO: This is hard-coded for now to the NBS lab; need to handle better.
+-}
 nbsReportString : List BabyLabTypeRecord -> List BabyLabRecord -> String
 nbsReportString babyLabTypeRecs babyLabRecs =
-    case Data.BabyLabType.getByName "Newborn Screening" babyLabTypeRecs of
+    case Data.BabyLabType.getByName "NBS" babyLabTypeRecs of
         Just babyLabType ->
             case LE.find (\r -> r.babyLabType == babyLabType.id) babyLabRecs of
                 Just babyLab ->
