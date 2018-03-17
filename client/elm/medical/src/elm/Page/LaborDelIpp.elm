@@ -26,9 +26,9 @@ import Data.Baby
         , getScoreAsStringByMinute
         , getScoresAsList
         , isBabyRecordFullyComplete
+        , maybeSexToString
         , sexToFullString
         , sexToString
-        , maybeSexToString
         , stringToSex
         )
 import Data.DataCache as DataCache exposing (DataCache(..))
@@ -78,9 +78,9 @@ import Data.LaborStage3
         )
 import Data.Membrane
     exposing
-        ( isMembraneRecordComplete
-        , MembraneRecord
+        ( MembraneRecord
         , MembraneRecordNew
+        , isMembraneRecordComplete
         , membraneRecordNewToValue
         , membraneRecordToValue
         )
@@ -433,6 +433,7 @@ fully loaded.
 
 Note that the apgar table does not use this because the apgar records are handled
 in a customized manner on the client and server as part of the baby records.
+
 -}
 getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
 getTableData store table key relatedTbls =
@@ -816,6 +817,7 @@ Logic:
     or does not have birthDatetime set.
   - hide baby if stage 2 is hidden or if labor stage 2 does not exist
     or does not have the birthDatetime set.
+
 -}
 viewStagesMembranesBaby : Model -> Html SubMsg
 viewStagesMembranesBaby model =
@@ -1156,7 +1158,7 @@ viewStagesMembranesBaby model =
                     , if placentaNumVesselsAlert then
                         HA.style [ ( "background-color", "red" ) ]
                       else
-                        HA.style [ ]
+                        HA.style []
                     ]
                     [ if isStage3SummaryDone model && not placentaNumVesselsAlert then
                         H.i [ HA.class "fa fa-check" ]
@@ -1243,21 +1245,49 @@ dialogStage1SummaryEdit cfg =
                                                 |> Time.inMinutes
                                                 |> round
                                                 |> abs
-                                                |> toString
-                                                |> (\m -> "(" ++ m ++ " minutes)")
                                             )
 
                                         Nothing ->
-                                            ( "", "" )
+                                            ( "", 0 )
 
                                 Nothing ->
-                                    ( "", "" )
+                                    ( "", 0 )
 
                         Nothing ->
-                            ( "", "" )
+                            ( "", 0 )
 
                 Nothing ->
-                    ( "", "" )
+                    ( "", 0 )
+
+        -- Calculate the amount of time unaccounted for as the user types so that it
+        -- can be displayed to the user real time.
+        getMinutes str =
+            U.maybeStringToMaybeInt str
+                |> Maybe.withDefault 0
+
+        pendingTotalMinutes =
+            (getMinutes cfg.model.s1DurationLatentHours |> (*) 60)
+                + getMinutes cfg.model.s1DurationLatentMinutes
+                + (getMinutes cfg.model.s1DurationActiveHours |> (*) 60)
+                + getMinutes cfg.model.s1DurationActiveMinutes
+
+        unaccountedForHours =
+            (-) s1Minutes pendingTotalMinutes // 60
+
+        unaccountedForMinutes =
+            rem ((-) s1Minutes pendingTotalMinutes) 60
+
+        warningMsg =
+            case (-) s1Minutes pendingTotalMinutes /= 0 of
+                True ->
+                    " Duration to account for: "
+                        ++ toString unaccountedForHours
+                        ++ " hours, "
+                        ++ toString unaccountedForMinutes
+                        ++ " minutes"
+
+                False ->
+                    ""
     in
     H.div
         [ HA.classList [ ( "isHidden", not cfg.isShown && cfg.isEditing ) ]
@@ -1269,8 +1299,14 @@ dialogStage1SummaryEdit cfg =
         ]
         [ H.h3 [ HA.class "c-text--brand mw-header-3" ]
             [ H.text "Stage 1 Summary - Edit" ]
-        , H.div [ HA.class "c-text--quiet" ]
-            [ H.text <| "Stage 1 total: " ++ s1Total ++ " " ++ s1Minutes ]
+        , H.div [ HA.style [ ( "padding", "0.5em 0" ) ] ]
+            [ if String.length warningMsg > 0 then
+                H.span [ HA.class "u-high c-alert c-alert-warning" ]
+                    [ H.text warningMsg ]
+              else
+                H.span [ HA.class "c-text--quiet" ]
+                    [ H.text <| "Stage 1 total: " ++ s1Total ]
+            ]
         , H.div [ HA.class "form-wrapper u-small" ]
             [ H.div []
                 [ Form.radioFieldsetWide "Mobility"
@@ -1652,7 +1688,7 @@ dialogStage2SummaryView cfg =
                                 "No"
                         )
                         rec.terminalMec
-                            |> Maybe.withDefault "No"
+                        |> Maybe.withDefault "No"
                     , Maybe.withDefault "" rec.cordWrapType
                     , Maybe.withDefault "" rec.deliveryType
                     )
@@ -2240,7 +2276,10 @@ dialogStage3SummaryEdit cfg =
             ]
         ]
 
+
+
 -- Modal for Membrane Summary --
+
 
 dialogMembraneSummary : DialogSummary -> Html SubMsg
 dialogMembraneSummary cfg =
@@ -2315,6 +2354,7 @@ dialogMembraneSummaryView cfg =
                         ]
                     ]
                 ]
+
 
 {-| Note that rupture and amniotic comment fields were not desired by the
 client, but the fields are only removed from the views, not the rest of
@@ -3479,7 +3519,7 @@ update session msg model =
                     , Cmd.batch
                         [ if model.stage1DateTimeModal == NoDateTimeModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
-                        else
+                          else
                             -- User likely clicked outside of modal, so do nothing.
                             Cmd.none
                         , Task.perform SetDialogActive <| Task.succeed True
@@ -3521,7 +3561,7 @@ update session msg model =
                                                                     sanityCheckStageDateTimes ls2Rec.birthDatetime
                                                                         model.stage1Date
                                                                         model.stage1Time
-                                                                            |> not
+                                                                        |> not
 
                                                                 Nothing ->
                                                                     True
@@ -3790,15 +3830,13 @@ update session msg model =
                                             (U.maybeDateToTimeString ls2Rec.birthDatetime)
                             }
 
-
-
                         ( _, _, _ ) ->
                             { model | stage2DateTimeModal = Stage2DateTimeModal }
                     , Cmd.none
                     , Cmd.batch
                         [ if model.stage2DateTimeModal == NoDateTimeModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
-                        else
+                          else
                             -- User likely clicked outside of modal, so do nothing.
                             Cmd.none
                         , Task.perform SetDialogActive <| Task.succeed True
@@ -3857,7 +3895,7 @@ update session msg model =
                                                                     sanityCheckStageDateTimes ls3Rec.placentaDatetime
                                                                         model.stage2Date
                                                                         model.stage2Time
-                                                                            |> not
+                                                                        |> not
 
                                                                 Nothing ->
                                                                     True
@@ -4144,7 +4182,7 @@ update session msg model =
                     , Cmd.batch
                         [ if model.stage3DateTimeModal == NoDateTimeModal then
                             Route.addDialogUrl Route.LaborDelIppRoute
-                        else
+                          else
                             -- User likely clicked outside of modal, so do nothing.
                             Cmd.none
                         , Task.perform SetDialogActive <| Task.succeed True
@@ -5127,7 +5165,6 @@ deriveBabyRecordNew model =
 
                         ( _, _ ) ->
                             Nothing
-
             in
             BabyRecordNew 1
                 model.bbLastname
@@ -5260,7 +5297,7 @@ validateStage2 =
         , .s2DurationPushing >> ifInvalid U.validateInt (Stage2DurationPushingFld => "Duration pushing must be provided.")
         , .s2BirthPresentation >> ifInvalid U.validatePopulatedString (Stage2BirthPresentationFld => "Birth presentation must be provided.")
         , .s2CordWrapType >> ifInvalid U.validatePopulatedString (Stage2CordWrapTypeFld => "Cord wrap type must be provided.")
-       , .s2DeliveryType >> ifInvalid U.validatePopulatedString (Stage2DeliveryTypeFld => "Delivery type must be provided.")
+        , .s2DeliveryType >> ifInvalid U.validatePopulatedString (Stage2DeliveryTypeFld => "Delivery type must be provided.")
         , \mdl ->
             case U.maybeStringToMaybeInt mdl.s2ShoulderDystociaMinutes of
                 Just m ->
