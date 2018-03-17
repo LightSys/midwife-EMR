@@ -1224,16 +1224,19 @@ view size session model =
                     ""
 
         ( motherLast, motherFirst, gravida, para, living ) =
-            case model.pregnancyRecord of
-                Just pregRec ->
+            case ( model.laborStage2Record, model.pregnancyRecord ) of
+                ( Just ls2Rec, Just pregRec ) ->
                     ( pregRec.lastname
                     , pregRec.firstname
                     , incBy 0 pregRec.gravida
-                    , incBy 1 pregRec.para
+                    , if ls2Rec.birthDatetime /= Nothing then
+                        incBy 1 pregRec.para
+                      else
+                        incBy 0 pregRec.para
                     , incBy 1 pregRec.living
                     )
 
-                Nothing ->
+                ( _, _ ) ->
                     ( "", "", "", "", "" )
 
         ( babyLast, babyFirst, babyMiddle ) =
@@ -1567,7 +1570,8 @@ printBirthCertificate babyId top1 left1 top2 left2 paternity delayed =
         pat =
             yesNoBool paternity
 
-        delReg = yesNoBool delayed
+        delReg =
+            yesNoBool delayed
     in
     "/printBirthCertificate/"
         ++ String.join "/"
