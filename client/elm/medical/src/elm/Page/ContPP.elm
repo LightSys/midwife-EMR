@@ -3981,16 +3981,10 @@ isBabyMedVacLabDone model =
                 True
                 model.babyVaccinationTypeRecords
 
+        -- The ENBS is optional so we only check that at least one lab was done.
+        -- TODO: need a better way to do this.
         labsDone =
-            List.foldl
-                (\mt bool ->
-                    bool
-                        && LE.count (\m -> m.babyLabType == mt.id)
-                            model.babyLabRecords
-                        > 0
-                )
-                True
-                model.babyLabTypeRecords
+            List.length model.babyLabRecords > 0
     in
     medsDone && vacsDone && labsDone
 
