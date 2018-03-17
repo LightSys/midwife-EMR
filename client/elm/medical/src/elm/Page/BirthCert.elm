@@ -1815,7 +1815,6 @@ validateBirthCertificate =
         , .bcMotherNumChildrenBornAliveNowDead >> ifInvalid U.validateInt (BCMotherNumChildrenBornAliveNowDeadFld => "* required")
         , .bcMotherAddress >> ifInvalid U.validatePopulatedString (BCMotherAddressFld => "* required")
         , .bcMotherCity >> ifInvalid U.validatePopulatedString (BCMotherCityFld => "* required")
-        , .bcMotherProvince >> ifInvalid U.validatePopulatedString (BCMotherProvinceFld => "* required")
         , .bcMotherCountry >> ifInvalid U.validatePopulatedString (BCMotherCountryFld => "* required")
         , .bcAttendantType >> ifInvalid U.validatePopulatedString (BCAttendantTypeFld => "* required")
         , \mdl ->

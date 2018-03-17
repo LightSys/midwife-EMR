@@ -6270,7 +6270,7 @@ validateNewbornExam : Model -> List FieldError
 validateNewbornExam =
     Validate.all
         [ .nbsDate >> ifInvalid U.validateDate (NBSDateFld => "Date of exam must be provided.")
-        , .nbsTime >> ifInvalid U.validateTime (NBSTimeFld => "Exam time must be provided, ex: hh:mm.")
+        , .nbsTime >> ifInvalid U.validateTime (NBSTimeFld => "Exam time must be provided, ex: hhmm.")
         , .nbsExaminers >> ifInvalid U.validatePopulatedString (NBSExaminersFld => "Examiners must be provided.")
         ]
 

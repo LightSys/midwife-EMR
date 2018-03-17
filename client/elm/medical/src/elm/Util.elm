@@ -49,7 +49,6 @@ module Util
         , removeTimeFromDate
         , sortDate
         , stringToIntBetween
-        , stringToTimeString
         , stringToTimeTuple
         , timeToTimeString
         , validateBool
@@ -76,9 +75,6 @@ import Html.Attributes as HA
 import Json.Decode as JD
 import Json.Encode as JE
 import Time exposing (Time)
-
-
--- LOCAL IMPORTS --
 
 
 (=>) : a -> b -> ( a, b )
@@ -490,17 +486,22 @@ dateToStringValue date =
 timeToTimeString : Time -> String
 timeToTimeString t =
     Date.fromTime t
-        |> DEF.format DECC.config "%H:%M"
+        |> DEF.format DECC.config "%H%M"
 
 
 {-| Returns True if the String is Nothing or does
-not fit the hh:mm pattern.
+not fit the hhmm pattern.
 -}
 validateTime : Maybe String -> Bool
 validateTime time =
     case time of
         Just t ->
-            String.length (stringToTimeString t) == 0
+            case stringToTimeTuple t of
+                Just ( _, _ ) ->
+                    False
+
+                Nothing ->
+                    True
 
         Nothing ->
             True
@@ -537,63 +538,37 @@ validateDate date =
             True
 
 
-{-| Return a String in the pattern hh:mm based on the String
-passed, or an empty String if the input does not conform.
--}
-stringToTimeString : String -> String
-stringToTimeString t =
-    filterStringLikeTime t
-        |> String.split ":"
-        |> (\list ->
-                let
-                    h =
-                        List.head list
-                            |> (\s -> stringToIntBetween s -1 24)
-
-                    m =
-                        List.reverse list
-                            |> List.head
-                            |> (\s -> stringToIntBetween s -1 60)
-                in
-                case ( h, m ) of
-                    ( Just hour, Just minute ) ->
-                        (toString hour |> String.padLeft 2 '0')
-                            ++ ":"
-                            ++ (toString minute |> String.padLeft 2 '0')
-
-                    ( _, _ ) ->
-                        ""
-           )
-
-
 stringToTimeTuple : String -> Maybe ( Int, Int )
 stringToTimeTuple t =
-    filterStringLikeTime t
-        |> String.split ":"
-        |> (\list ->
-                let
-                    isValid =
-                        List.length list == 2
+    let
+        hours =
+            filterStringLikeInt t
+                |> String.toList
+                |> List.take 2
+                |> String.fromList
+                |> String.toInt
+                |> Result.toMaybe
 
-                    h =
-                        List.head list
-                            |> (\s -> stringToIntBetween s -1 24)
+        minutes =
+            filterStringLikeInt t
+                |> String.toList
+                |> List.drop 2
+                |> String.fromList
+                |> String.toInt
+                |> Result.toMaybe
+    in
+    case ( String.length t, hours, minutes ) of
+        ( 4, Just h, Just m ) ->
+            if h > -1 && h < 24 && m > -1 && m < 60 then
+                Just ( h, m )
+            else
+                Nothing
 
-                    m =
-                        List.reverse list
-                            |> List.head
-                            |> (\s -> stringToIntBetween s -1 60)
-                in
-                case ( isValid, h, m ) of
-                    ( True, Just hour, Just minute ) ->
-                        Just ( hour, minute )
-
-                    ( _, _, _ ) ->
-                        Nothing
-           )
+        _ ->
+            Nothing
 
 
-{-| We allow characters 0-9 and ":" that make up the hh:mm
+{-| We allow four characters 0-9 that make up the hhmm
 pattern. We do not actually enforce the pattern, i.e. what is
 an valid time or not, just the characters and the length of
 the string. Most validation will need to take place at submission.
@@ -604,8 +579,8 @@ filterStringLikeTime str =
         -- Get the string to at most 5 characters that could be acceptable.
         filtered =
             String.toList str
-                |> List.take 5
-                |> List.filter (\d -> Char.isDigit d || d == ':')
+                |> List.take 4
+                |> List.filter (\d -> Char.isDigit d)
                 |> String.fromList
     in
     filtered
@@ -638,7 +613,7 @@ dateTimeHMFormatter f s d =
 
 dateToTimeString : Date -> String
 dateToTimeString d =
-    DEF.format DECC.config "%H:%M" d
+    DEF.format DECC.config "%H%M" d
 
 
 maybeDateToTimeString : Maybe Date -> Maybe String
@@ -778,6 +753,7 @@ minutesToMinutes minutes =
 
         Nothing ->
             Nothing
+
 
 maybeHoursMaybeMinutesToMaybeMinutes : Maybe Int -> Maybe Int -> Maybe Int
 maybeHoursMaybeMinutesToMaybeMinutes hours minutes =

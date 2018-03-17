@@ -1087,9 +1087,9 @@ validateAdmittance : Model -> List FieldError
 validateAdmittance =
     Validate.all
         [ .admittanceDate >> ifInvalid U.validateDate (AdmittanceDateFld => "Date of admittance must be provided.")
-        , .admittanceTime >> ifInvalid U.validateTime (AdmittanceTimeFld => "Admitting time must be provided, ex: hh:mm.")
+        , .admittanceTime >> ifInvalid U.validateTime (AdmittanceTimeFld => "Admitting time must be provided, ex: hhmm.")
         , .laborDate >> ifInvalid U.validateDate (LaborDateFld => "Date of the start of labor must be provided.")
-        , .laborTime >> ifInvalid U.validateTime (LaborTimeFld => "Start of labor time must be provided, ex: hh:mm.")
+        , .laborTime >> ifInvalid U.validateTime (LaborTimeFld => "Start of labor time must be provided, ex: hhmm.")
         , .pos >> ifInvalid U.validatePopulatedString (PosFld => "POS must be provided.")
         , .fh >> ifInvalid U.validateInt (FhFld => "FH must be provided.")
         , .fht >> ifInvalid U.validatePopulatedString (FhtFld => "FHT must be provided.")

@@ -4601,6 +4601,9 @@ update session msg model =
                     case validateMembrane model of
                         [] ->
                             let
+                                _ =
+                                    Debug.log "membraneRuptureTime" model.membraneRuptureTime
+
                                 ruptureDatetime =
                                     U.maybeDateMaybeTimeToMaybeDateTime model.membraneRuptureDate
                                         model.membraneRuptureTime
@@ -5200,9 +5203,9 @@ validateAdmittance : Model -> List FieldError
 validateAdmittance =
     Validate.all
         [ .admittanceDate >> ifInvalid U.validateDate (AdmittanceDateFld => "Date of admittance must be provided.")
-        , .admittanceTime >> ifInvalid U.validateTime (AdmittanceTimeFld => "Admitting time must be provided, ex: hh:mm.")
+        , .admittanceTime >> ifInvalid U.validateTime (AdmittanceTimeFld => "Admitting time must be provided, ex: hhmm.")
         , .laborDate >> ifInvalid U.validateDate (LaborDateFld => "Date of the start of labor must be provided.")
-        , .laborTime >> ifInvalid U.validateTime (LaborTimeFld => "Start of labor time must be provided, ex: hh:mm.")
+        , .laborTime >> ifInvalid U.validateTime (LaborTimeFld => "Start of labor time must be provided, ex: hhmm.")
         , .pos >> ifInvalid U.validatePopulatedString (PosFld => "POS must be provided.")
         , .fh >> ifInvalid U.validateInt (FhFld => "FH must be provided.")
         , .fht >> ifInvalid U.validateInt (FhtFld => "FHT must be provided.")
@@ -5216,7 +5219,7 @@ validateAdmittance =
 validateStage1New : Model -> List FieldError
 validateStage1New =
     Validate.all
-        [ .stage1Time >> ifInvalid U.validateJustTime (Stage1TimeFld => "Time must be provided in hh:mm format.")
+        [ .stage1Time >> ifInvalid U.validateJustTime (Stage1TimeFld => "Time must be provided in hhmm format.")
         ]
 
 
@@ -5236,14 +5239,14 @@ validateStage1 =
 validateStage2New : Model -> List FieldError
 validateStage2New =
     Validate.all
-        [ .stage2Time >> ifInvalid U.validateJustTime (Stage2TimeFld => "Time must be provided in hh:mm format.")
+        [ .stage2Time >> ifInvalid U.validateJustTime (Stage2TimeFld => "Time must be provided in hhmm format.")
         ]
 
 
 validateStage3New : Model -> List FieldError
 validateStage3New =
     Validate.all
-        [ .stage3Time >> ifInvalid U.validateJustTime (Stage3TimeFld => "Time must be provided in hh:mm format.")
+        [ .stage3Time >> ifInvalid U.validateJustTime (Stage3TimeFld => "Time must be provided in hhmm format.")
         ]
 
 
