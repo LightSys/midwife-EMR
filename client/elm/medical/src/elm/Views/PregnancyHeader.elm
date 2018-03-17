@@ -559,7 +559,7 @@ laborColumnTwo laborRec =
                     , U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep lr.startLaborDate
                     , lr.pos
                     , toString lr.fh
-                    , toString lr.fht
+                    , lr.fht
                     )
 
                 Nothing ->
