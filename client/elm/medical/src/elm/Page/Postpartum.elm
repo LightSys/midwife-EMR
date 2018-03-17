@@ -1416,7 +1416,7 @@ viewPostpartumCheck cfg rec =
                     , field "Stool" <| pipeToComma rec.motherStool
                     , field "SSInfection" <| pipeToComma rec.motherSSInfection
                     , field "Family Planning" <| pipeToComma rec.motherFamilyPlanning
-                    , field "Birth Cert Req" <| yesNoBool rec.birthCertReq
+                    , field "Birth Cert Reg" <| yesNoBool rec.birthCertReq
                     , field "Hgb Requested" <| yesNoBool rec.hgbRequested
                     , field "Hgb Test Date" <| stringDefault <| Maybe.map dateAsString rec.hgbTestDate
                     , field "Hgb Result" <| stringDefault rec.hgbTestResult
@@ -1699,7 +1699,7 @@ viewPostpartumCheckEdit cfg =
                         (getErr PCMotherFamilyPlanningFld errors)
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field-2x" ]
-                    [ Form.checkboxPlainWide "Birth cert requested"
+                    [ Form.checkboxPlainWide "Birth cert registered"
                         (FldChgBool >> FldChgSubMsg PCBirthCertReqFld)
                         cfg.model.pcBirthCertReq
                     , H.text (getErr PCBirthCertReqFld errors)
