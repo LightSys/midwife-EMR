@@ -1591,18 +1591,20 @@ dialogStage2SummaryEdit cfg =
                         cfg.model.s2BirthEBL
                         (getErr Stage2BirthEBLFld errors)
                     ]
-                , Form.checkbox "Terminal Mec" (FldChgBool >> FldChgSubMsg Stage2TerminalMecFld) cfg.model.s2TerminalMec
-                , Form.radioFieldset "Fluid at birth"
-                    "meconium"
-                    cfg.model.s2Meconium
-                    (FldChgString >> FldChgSubMsg Stage2MeconiumFld)
-                    False
-                    [ "None"
-                    , "Lt"
-                    , "Mod"
-                    , "Thick"
+                , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
+                    [ Form.radioFieldset "Fluid at birth"
+                        "meconium"
+                        cfg.model.s2Meconium
+                        (FldChgString >> FldChgSubMsg Stage2MeconiumFld)
+                        False
+                        [ "None"
+                        , "Lt"
+                        , "Mod"
+                        , "Thick"
+                        ]
+                        (getErr Stage2MeconiumFld errors)
+                    , Form.checkbox "Terminal Mec" (FldChgBool >> FldChgSubMsg Stage2TerminalMecFld) cfg.model.s2TerminalMec
                     ]
-                    (getErr Stage2MeconiumFld errors)
                 , Form.formTextareaField (FldChgString >> FldChgSubMsg Stage2CommentsFld)
                     "Comments"
                     "Meds, IV, Complications, Notes, etc."
@@ -1828,15 +1830,15 @@ dialogStage2SummaryView cfg =
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
-                        [ H.text "Terminal Mec: " ]
-                    , H.span [ HA.class "" ]
-                        [ H.text terminalMec ]
-                    ]
-                , H.div [ HA.class "mw-form-field-2x" ]
-                    [ H.span [ HA.class "c-text--loud" ]
                         [ H.text "Fluid at birth: " ]
                     , H.span [ HA.class "" ]
                         [ H.text meconium ]
+                    ]
+                , H.div [ HA.class "mw-form-field-2x" ]
+                    [ H.span [ HA.class "c-text--loud" ]
+                        [ H.text "Terminal Mec: " ]
+                    , H.span [ HA.class "" ]
+                        [ H.text terminalMec ]
                     ]
                 , H.div [ HA.class "mw-form-field-2x" ]
                     [ H.span [ HA.class "c-text--loud" ]
