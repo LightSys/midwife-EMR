@@ -4189,7 +4189,7 @@ dialogDischargeEdit cfg =
                         cfg.model.dischargeNbs
                         (FldChgString >> FldChgSubMsg DischargeNbsFld)
                         False
-                        [ "Scheduled"
+                        [ "Done"
                         , "Waived"
                         ]
                         (getErr DischargeNbsFld errors)
@@ -4523,7 +4523,7 @@ dialogDischargeView cfg =
                             , viewField "Birth recorded in birth book" <| yesNoBool rec.birthRecorded
                             , viewField "Charting complete" <| yesNoBool rec.chartsComplete
                             , viewField "All logbooks done" <| yesNoBool rec.logsComplete
-                            , viewField "NBS (waived, scheduled)" <| Maybe.withDefault "" <| Data.Discharge.maybeNBSToMaybeString rec.nbs
+                            , viewField "NBS (done, waived)" <| Maybe.withDefault "" <| Data.Discharge.maybeNBSToMaybeString rec.nbs
                             , viewField "Supplies bill paid" <| yesNoBool rec.billPaid
                             ]
                         ]

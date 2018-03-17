@@ -32,7 +32,7 @@ CREATE TABLE `discharge` (
   `chartsComplete` tinyint(1) DEFAULT '0',
   `logsComplete` tinyint(1) DEFAULT '0',
   `billPaid` tinyint(1) DEFAULT '0',
-  `nbs` enum('Waived','Scheduled') DEFAULT NULL,
+  `nbs` enum('Done','Waived') DEFAULT NULL,
   `immunizationReferral` tinyint(1) DEFAULT '0',
   `breastFeedingEstablished` tinyint(1) DEFAULT '0',
   `newbornBath` tinyint(1) DEFAULT '0',

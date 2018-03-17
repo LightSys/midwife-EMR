@@ -29,8 +29,8 @@ type DischargeId
 
 
 type NBS
-    = WaivedNBS
-    | ScheduledNBS
+    = DoneNBS
+    | WaivedNBS
 
 
 maybeNBSToMaybeString : Maybe NBS -> Maybe String
@@ -44,8 +44,8 @@ nbsToString nbs =
         WaivedNBS ->
             "Waived"
 
-        ScheduledNBS ->
-            "Scheduled"
+        DoneNBS ->
+            "Done"
 
 
 stringToNBS : String -> Maybe NBS
@@ -54,8 +54,8 @@ stringToNBS str =
         "Waived" ->
             Just WaivedNBS
 
-        "Scheduled" ->
-            Just ScheduledNBS
+        "Done" ->
+            Just DoneNBS
 
         _ ->
             Nothing

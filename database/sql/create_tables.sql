@@ -969,7 +969,7 @@ CREATE TABLE IF NOT EXISTS `discharge` (
   chartsComplete BOOLEAN NULL DEFAULT 0,
   logsComplete BOOLEAN NULL DEFAULT 0,
   billPaid BOOLEAN NULL DEFAULT 0,
-  nbs ENUM('Waived', 'Scheduled') NULL,
+  nbs ENUM('Done', 'Waived') NULL,
   immunizationReferral BOOLEAN NULL DEFAULT 0,
   breastFeedingEstablished BOOLEAN NULL DEFAULT 0,
   newbornBath BOOLEAN NULL DEFAULT 0,
