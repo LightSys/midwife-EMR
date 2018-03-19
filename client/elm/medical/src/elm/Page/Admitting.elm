@@ -887,9 +887,6 @@ update session msg model =
         AdmitForLaborSaved laborRecNew lid ->
             -- The server returned the result of our request to add a new labor record.
             let
-                _ =
-                    Debug.log "AdmitForLaborSaved" <| (toString laborRecNew) ++ ", with new ID of: " ++ (toString lid)
-
                 newLaborRec =
                     case lid of
                         Just id ->

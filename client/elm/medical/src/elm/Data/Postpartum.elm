@@ -32,6 +32,7 @@ type SubMsg
       -- input date type and require the use of jQueryUI datepicker.
     | OpenDatePickerSubMsg String
     | DateFieldSubMsg DateFieldMessage
+    | CloseAllDialogs
 
 
 type Field

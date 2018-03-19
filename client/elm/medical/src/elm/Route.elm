@@ -26,6 +26,7 @@ type Route
     | PostpartumRoute
     | PostpartumDialogRoute
     | BirthCertificateRoute
+    | BirthCertificateDialogRoute
 
 
 admittingRouteString : String
@@ -66,6 +67,7 @@ route =
         , Url.map PostpartumDialogRoute (s postpartumRouteString </> s dialogRouteString)
         , Url.map PostpartumRoute (s postpartumRouteString)
         , Url.map BirthCertificateRoute (s birthCertificateRouteString)
+        , Url.map BirthCertificateDialogRoute (s birthCertificateRouteString </> s dialogRouteString)
         ]
 
 
@@ -83,6 +85,9 @@ routeToString page =
 
                 BirthCertificateRoute ->
                     [ birthCertificateRouteString ]
+
+                BirthCertificateDialogRoute ->
+                    [ birthCertificateRouteString, dialogRouteString ]
 
                 ContPPRoute ->
                     [ contPPRouteString ]

@@ -2,6 +2,7 @@ module Page.ContPP
     exposing
         ( Model
         , buildModel
+        , closeAllDialogs
         , getTableData
         , init
         , update
@@ -380,6 +381,20 @@ type alias Model =
     , dischargeTransferMother : Maybe Bool
     , dischargeTransferComment : Maybe String
     , dischargeInitials : Maybe String
+    }
+
+
+{-| Updates the model to close all dialogs. Called by Medical.update in
+the SetRoute message. This allows the back button to close a dialog.
+-}
+closeAllDialogs : Model -> Model
+closeAllDialogs model =
+    { model
+        | newbornExamViewEditState = NoViewEditState
+        , contPostpartumCheckViewEditState = NoViewEditState
+        , babyMedVacLabViewEditState = NoViewEditState
+        , motherMedicationViewEditState = NoViewEditState
+        , dischargeViewEditState = NoViewEditState
     }
 
 
@@ -950,6 +965,11 @@ update session msg model =
                     Debug.log "PageNoop" "was called."
             in
             ( model, Cmd.none, Cmd.none )
+
+        CloseAllDialogs ->
+            -- Close all of the open dialogs that we have. This may be called
+            -- when the user uses the back button to back out of a dialog.
+            ( closeAllDialogs model, Cmd.none, Cmd.none )
 
         DataCache dc tbls ->
             -- If the dataCache and tables are something, this is the top-level
@@ -5052,9 +5072,9 @@ babyLabEdit mvl name labRec browserSupportsDate babyLabTypeRecords =
             [ H.text name ]
         , if name == "NBS" || name == "ENBS" then
             H.span [ HA.class "c-text c-text--quiet" ]
-              [ H.text "Cannot be done until 25 hours after birth." ]
+                [ H.text "Cannot be done until 25 hours after birth." ]
           else
-              H.text ""
+            H.text ""
         , H.div [ HA.class "form-wrapper u-small" ]
             [ H.div [ HA.class "o-fieldset mw-form-field-2x" ]
                 [ if browserSupportsDate then

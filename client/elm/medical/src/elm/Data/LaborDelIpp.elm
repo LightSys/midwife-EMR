@@ -62,6 +62,7 @@ type SubMsg
     | LaborDetailsLoaded
       -- Our current labor record.
     | ViewLaborRecord LaborId
+    | CloseAllDialogs
 
 
 type AddOtherApgar

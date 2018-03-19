@@ -1,9 +1,10 @@
 module Page.BirthCert
     exposing
-        ( Model
-        , buildModel
+        ( buildModel
+        , closeAllDialogs
         , getTableData
         , init
+        , Model
         , update
         , view
         )
@@ -165,6 +166,16 @@ type alias Model =
     , printingPage2Left : Maybe String
     , printingPaternity : Maybe Bool
     , printingDelayedRegistration : Maybe Bool
+    }
+
+
+{-| Updates the model to close all dialogs. Called by Medical.update in
+the SetRoute message. This allows the back button to close a dialog.
+-}
+closeAllDialogs : Model -> Model
+closeAllDialogs model =
+    { model
+        | birthCertificateViewEditState = BirthCertificateViewState
     }
 
 
@@ -438,6 +449,11 @@ refreshModelFromCache dc tables model =
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
 update session msg model =
     case msg of
+        CloseAllDialogs ->
+            -- Close all of the open dialogs that we have. This may be called
+            -- when the user uses the back button to back out of a dialog.
+            ( closeAllDialogs model, Cmd.none, Cmd.none )
+
         DataCache dc tbls ->
             let
                 newModel =
@@ -743,13 +759,19 @@ update session msg model =
                 EditDialog ->
                     ( { model | birthCertificateViewEditState = BirthCertificateEditState }
                     , Cmd.none
-                    , Cmd.none
+                    , if model.birthCertificateViewEditState == BirthCertificateViewState then
+                        Cmd.batch
+                            [ Route.addDialogUrl Route.BirthCertificateRoute
+                            , Task.perform SetDialogActive <| Task.succeed True
+                            ]
+                      else
+                        Cmd.none
                     )
 
                 CloseNoSaveDialog ->
                     ( { model | birthCertificateViewEditState = BirthCertificateViewState }
                     , Cmd.none
-                    , Cmd.none
+                    , Route.back
                     )
 
                 CloseSaveDialog ->
@@ -956,6 +978,7 @@ update session msg model =
                             , Cmd.none
                             , Cmd.batch
                                 [ Task.perform (always outerMsg) (Task.succeed True)
+                                , Route.back
                                 ]
                             )
 

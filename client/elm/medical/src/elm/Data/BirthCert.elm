@@ -26,6 +26,7 @@ type SubMsg
     | DateFieldSubMsg DateFieldMessage
     | FldChgSubMsg Field FldChgValue
     | HandleBirthCertificateModal Dialog
+    | CloseAllDialogs
 
 
 type Field

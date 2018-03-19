@@ -1,6 +1,7 @@
 module Page.LaborDelIpp
     exposing
-        ( Model
+        ( closeAllDialogs
+        , Model
         , buildModel
         , getTableData
         , init
@@ -232,7 +233,6 @@ type alias Model =
     , membraneAmniotic : Maybe String
     , membraneAmnioticComment : Maybe String
     , membraneComments : Maybe String
-    , membranesSummaryModal : ViewEditState
     , babySummaryModal : ViewEditState
     , bbBirthNbr : Maybe String
     , bbLastname : Maybe String
@@ -252,6 +252,23 @@ type alias Model =
     , pendingApgarWizard : AddOtherApgar
     , pendingApgarMinute : Maybe String
     , pendingApgarScore : Maybe String
+    }
+
+
+{-| Updates the model to close all dialogs. Called by Medical.update in
+the SetRoute message. This allows the back button to close a dialog.
+-}
+closeAllDialogs : Model -> Model
+closeAllDialogs model =
+    { model
+        | stage1SummaryModal = NoViewEditState
+        , stage1DateTimeModal = NoDateTimeModal
+        , stage2SummaryModal = NoViewEditState
+        , stage2DateTimeModal = NoDateTimeModal
+        , stage3SummaryModal = NoViewEditState
+        , stage3DateTimeModal = NoDateTimeModal
+        , membraneSummaryModal = NoViewEditState
+        , babySummaryModal = NoViewEditState
     }
 
 
@@ -402,7 +419,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , membraneAmniotic = Nothing
       , membraneAmnioticComment = Nothing
       , membraneComments = Nothing
-      , membranesSummaryModal = NoViewEditState
       , babySummaryModal = NoViewEditState
       , bbBirthNbr = Nothing
       , bbLastname = Nothing
@@ -2959,9 +2975,6 @@ unexpectedly.
 refreshModelFromCache : Dict String DataCache -> List Table -> Model -> Model
 refreshModelFromCache dc tables model =
     let
-        _ =
-            Debug.log "refreshModelFromCache" <| toString tables
-
         newModel =
             List.foldl
                 (\t m ->
@@ -3036,6 +3049,11 @@ update session msg model =
                     Debug.log "PageNoop" "was called."
             in
             ( model, Cmd.none, Cmd.none )
+
+        CloseAllDialogs ->
+            -- Close all of the open dialogs that we have. This may be called
+            -- when the user uses the back button to back out of a dialog.
+            ( closeAllDialogs model, Cmd.none, Cmd.none )
 
         DataCache dc tbls ->
             -- If the dataCache and tables are something, this is the top-level

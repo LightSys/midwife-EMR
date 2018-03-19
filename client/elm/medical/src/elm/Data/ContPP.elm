@@ -34,6 +34,7 @@ type SubMsg
     | OpenDatePickerSubMsg String
     | DateFieldSubMsg DateFieldMessage
     | FldChgSubMsg Field FldChgValue
+    | CloseAllDialogs
 
 
 {-| The Int parameter refers to the respective

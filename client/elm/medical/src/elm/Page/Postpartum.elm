@@ -1,9 +1,10 @@
 module Page.Postpartum
     exposing
-        ( Model
-        , buildModel
+        ( buildModel
+        , closeAllDialogs
         , getTableData
         , init
+        , Model
         , update
         , view
         )
@@ -182,6 +183,15 @@ type alias Model =
     }
 
 
+{-| Updates the model to close all dialogs. Called by Medical.update in
+the SetRoute message. This allows the back button to close a dialog.
+-}
+closeAllDialogs : Model -> Model
+closeAllDialogs model =
+    { model
+        | postpartumCheckViewEditState = NoViewEditState
+    }
+
 {-| Clear the continued postpartum check fields in the model.
 -}
 clearPostpartumCheckModelFields : Model -> Model
@@ -229,6 +239,7 @@ postpartum checks.
 
 Note that ContPostpartumCheck records are retrieved in order to calculate
 total EBL.
+
 -}
 init : PregnancyId -> LaborRecord -> Session -> ProcessStore -> ( ProcessStore, Cmd Msg )
 init pregId laborRec session store =
@@ -549,6 +560,11 @@ update session msg model =
                     Debug.log "PageNoop" "was called."
             in
             ( model, Cmd.none, Cmd.none )
+
+        CloseAllDialogs ->
+            -- Close all of the open dialogs that we have. This may be called
+            -- when the user uses the back button to back out of a dialog.
+            ( closeAllDialogs model, Cmd.none, Cmd.none )
 
         DataCache dc tbls ->
             -- If the dataCache and tables are something, this is the top-level
@@ -1220,6 +1236,7 @@ type alias ViewEditStageConfig =
     , editMsg : SubMsg
     }
 
+
 {-| TODO: This is hard-coded for now to the NBS lab; need to handle better.
 -}
 nbsReportString : List BabyLabTypeRecord -> List BabyLabRecord -> String
@@ -1228,7 +1245,7 @@ nbsReportString babyLabTypeRecs babyLabRecs =
         Just babyLabType ->
             case LE.find (\r -> r.babyLabType == babyLabType.id) babyLabRecs of
                 Just babyLab ->
-                    (U.dateToDateMonString babyLab.dateTime "-")
+                    U.dateToDateMonString babyLab.dateTime "-"
                         ++ " "
                         ++ babyLabType.fld1Name
                         ++ ": "
@@ -1237,18 +1254,20 @@ nbsReportString babyLabTypeRecs babyLabRecs =
                                 ", " ++ Maybe.withDefault "" babyLab.fld2Value
                             else
                                 ""
-                            )
+                           )
                         ++ (if U.maybeStringLength babyLab.initials > 0 then
                                 ", " ++ Maybe.withDefault "" babyLab.initials
                             else
                                 ""
-                            )
+                           )
 
                 Nothing ->
                     ""
 
         Nothing ->
             ""
+
+
 bcgReportString : List BabyVaccinationTypeRecord -> List BabyVaccinationRecord -> String
 bcgReportString babyVacTypeRecs babyVacRecs =
     case Data.BabyVaccinationType.getByName "BCG" babyVacTypeRecs of
@@ -1264,18 +1283,19 @@ bcgReportString babyVacTypeRecs babyVacRecs =
                                 ", " ++ Maybe.withDefault " " babyVaccination.comments
                             else
                                 ""
-                            )
+                           )
                         ++ (if U.maybeStringLength babyVaccination.initials > 0 then
                                 ", " ++ Maybe.withDefault " " babyVaccination.initials
                             else
                                 ""
-                            )
+                           )
 
                 Nothing ->
                     ""
 
         Nothing ->
             ""
+
 
 viewPostpartumChecks : ViewEditStageConfig -> Html SubMsg
 viewPostpartumChecks cfg =

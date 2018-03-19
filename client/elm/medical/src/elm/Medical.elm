@@ -1,17 +1,5 @@
 module Medical exposing (..)
 
-import Date exposing (Date)
-import Dict exposing (Dict)
-import Html as H exposing (Html)
-import Json.Decode as JD
-import Json.Decode.Pipeline as Pipeline exposing (decode, optional, required)
-import Json.Encode as JE
-import List.Extra as LE
-import Navigation exposing (Location)
-import Task exposing (Task)
-import Window
-
-
 -- LOCAL IMPORTS --
 
 import Data.Admitting exposing (AdmittingSubMsg(..))
@@ -22,46 +10,56 @@ import Data.BabyVaccination exposing (BabyVaccinationId(..), babyVaccinationReco
 import Data.BirthCert exposing (SubMsg(..))
 import Data.BirthCertificate
     exposing
-        ( birthCertificateRecordNewToBirthCertificateRecord
-        , BirthCertificateId(..)
+        ( BirthCertificateId(..)
+        , birthCertificateRecordNewToBirthCertificateRecord
         )
 import Data.ContPP exposing (SubMsg(..))
-import Data.ContPostpartumCheck exposing (contPostpartumCheckRecordNewToContPostpartumCheckRecord, ContPostpartumCheckId(..))
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckId(..), contPostpartumCheckRecordNewToContPostpartumCheckRecord)
 import Data.DataCache as DCache exposing (DataCache(..))
 import Data.DatePicker as DDP exposing (DateField(..), DateFieldMessage(..))
 import Data.Discharge exposing (DischargeId(..), dischargeRecordNewToDischargeRecord)
-import Data.Labor as Labor exposing (laborRecordNewToLaborRecord, LaborId(..), LaborRecord)
+import Data.Labor as Labor exposing (LaborId(..), LaborRecord, laborRecordNewToLaborRecord)
 import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
+import Data.Membrane exposing (MembraneId(..), membraneRecordNewToMembraneRecord)
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.MotherMedication exposing (MotherMedicationId(..), motherMedicationRecordNewToMotherMedicationRecord)
-import Data.Membrane exposing (membraneRecordNewToMembraneRecord, MembraneId(..))
 import Data.NewbornExam exposing (NewbornExamId(..), newbornExamRecordNewToNewbornExamRecord)
 import Data.Postpartum exposing (SubMsg(..))
-import Data.PostpartumCheck exposing (postpartumCheckRecordNewToPostpartumCheckRecord, PostpartumCheckId(..))
-import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId(..))
+import Data.PostpartumCheck exposing (PostpartumCheckId(..), postpartumCheckRecordNewToPostpartumCheckRecord)
+import Data.Pregnancy as Pregnancy exposing (PregnancyId(..), getPregId)
 import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
 import Data.Table exposing (Table(..))
 import Data.TableRecord exposing (TableRecord(..))
 import Data.Toast exposing (ToastRecord, ToastType(..))
+import Date exposing (Date)
+import Dict exposing (Dict)
+import Html as H exposing (Html)
+import Json.Decode as JD
+import Json.Decode.Pipeline as Pipeline exposing (decode, optional, required)
+import Json.Encode as JE
+import List.Extra as LE
 import Model exposing (Model, Page(..), PageState(..))
-import Msg exposing (logConsole, Msg(..), ProcessType(..))
-import Page.Errored as Errored exposing (PageLoadError, view)
+import Msg exposing (Msg(..), ProcessType(..), logConsole)
+import Navigation exposing (Location)
 import Page.Admitting as PageAdmitting
 import Page.BirthCert as PageBirthCert
 import Page.ContPP as PageContPP
+import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
-import Page.Postpartum as PagePostpartum
 import Page.NotFound as NotFound exposing (view)
+import Page.Postpartum as PagePostpartum
 import Ports
-import Route exposing (fromLocation, Route(..))
 import Processing
-import Views.Page as ViewsPage exposing (ActivePage)
+import Route exposing (Route(..), fromLocation)
+import Task exposing (Task)
 import Time exposing (Time)
 import Util as U exposing ((=>))
+import Views.Page as ViewsPage exposing (ActivePage)
+import Window
 
 
 type alias Flags =
@@ -107,9 +105,9 @@ init flags location =
                     pregId
                     flagsDecoded.currTime
     in
-        ( newModel
-        , Cmd.batch [ newCmd, Task.perform (\s -> WindowResize (Just s)) Window.size ]
-        )
+    ( newModel
+    , Cmd.batch [ newCmd, Task.perform (\s -> WindowResize (Just s)) Window.size ]
+    )
 
 
 
@@ -132,42 +130,42 @@ viewPage model isLoading page =
         frame =
             ViewsPage.frame model.window isLoading model.currPregId model.session.user model.toast
     in
-        case page of
-            Blank ->
-                H.text "Blank page"
+    case page of
+        Blank ->
+            H.text "Blank page"
 
-            NotFound ->
-                NotFound.view model.session
-                    |> frame ViewsPage.Other
+        NotFound ->
+            NotFound.view model.session
+                |> frame ViewsPage.Other
 
-            Admitting subModel ->
-                PageAdmitting.view model.window model.session subModel
-                    |> frame ViewsPage.Admitting
-                    |> H.map AdmittingMsg
+        Admitting subModel ->
+            PageAdmitting.view model.window model.session subModel
+                |> frame ViewsPage.Admitting
+                |> H.map AdmittingMsg
 
-            BirthCert subModel ->
-                PageBirthCert.view model.window model.session subModel
-                    |> frame ViewsPage.BirthCert
-                    |> H.map BirthCertMsg
+        BirthCert subModel ->
+            PageBirthCert.view model.window model.session subModel
+                |> frame ViewsPage.BirthCert
+                |> H.map BirthCertMsg
 
-            ContPP subModel ->
-                PageContPP.view model.window model.session subModel
-                    |> frame ViewsPage.ContPP
-                    |> H.map ContPPMsg
+        ContPP subModel ->
+            PageContPP.view model.window model.session subModel
+                |> frame ViewsPage.ContPP
+                |> H.map ContPPMsg
 
-            LaborDelIpp subModel ->
-                PageLaborDelIpp.view model.window model.session subModel
-                    |> frame ViewsPage.LaborDelIpp
-                    |> H.map LaborDelIppMsg
+        LaborDelIpp subModel ->
+            PageLaborDelIpp.view model.window model.session subModel
+                |> frame ViewsPage.LaborDelIpp
+                |> H.map LaborDelIppMsg
 
-            Postpartum subModel ->
-                PagePostpartum.view model.window model.session subModel
-                    |> frame ViewsPage.Postpartum
-                    |> H.map PostpartumMsg
+        Postpartum subModel ->
+            PagePostpartum.view model.window model.session subModel
+                |> frame ViewsPage.Postpartum
+                |> H.map PostpartumMsg
 
-            Errored subModel ->
-                Errored.view model.session subModel
-                    |> frame ViewsPage.Other
+        Errored subModel ->
+            Errored.view model.session subModel
+                |> frame ViewsPage.Other
 
 
 getPage : PageState -> Page
@@ -203,554 +201,582 @@ update msg noAutoTouchModel =
                 ( newModel, innerCmd, outerCmd ) =
                     subUpdate subMsg subModel
             in
-                ( { theModel | pageState = Loaded (page newModel) }, Cmd.batch [ outerCmd, Cmd.map routingMsg innerCmd ] )
+            ( { theModel | pageState = Loaded (page newModel) }, Cmd.batch [ outerCmd, Cmd.map routingMsg innerCmd ] )
     in
-        case ( msg, page ) of
-            ( Noop, _ ) ->
-                model => Cmd.none
+    case ( msg, page ) of
+        ( Noop, _ ) ->
+            model => Cmd.none
 
-            ( Tick time, page ) ->
-                -- 1. Keep the current time in the Model.
-                -- 2. Reduce the secondsLeft of the active toast if there is one.
-                -- 3. "Touch" the server in order to keep the user's session
-                --    active if necessary.
-                -- 4. Finally, send the time down to the pages that are interested.
-                let
-                    newToast =
-                        case noAutoTouchModel.toast of
-                            Just t ->
-                                if t.secondsLeft - 1 <= 0 then
-                                    Nothing
-                                else
-                                    Just { t | secondsLeft = t.secondsLeft - 1 }
-
-                            Nothing ->
+        ( Tick time, page ) ->
+            -- 1. Keep the current time in the Model.
+            -- 2. Reduce the secondsLeft of the active toast if there is one.
+            -- 3. "Touch" the server in order to keep the user's session
+            --    active if necessary.
+            -- 4. Finally, send the time down to the pages that are interested.
+            let
+                newToast =
+                    case noAutoTouchModel.toast of
+                        Just t ->
+                            if t.secondsLeft - 1 <= 0 then
                                 Nothing
+                            else
+                                Just { t | secondsLeft = t.secondsLeft - 1 }
 
-                    ( newSession, newCmd ) =
-                        doTouch noAutoTouchModel.session noAutoTouchModel.currTime
+                        Nothing ->
+                            Nothing
 
-                    newModel =
-                        { noAutoTouchModel
-                            | currTime = time
-                            , toast = newToast
-                            , session = newSession
-                        }
+                ( newSession, newCmd ) =
+                    doTouch noAutoTouchModel.session noAutoTouchModel.currTime
 
-                    -- We send the time to all of the pages that are interested here.
-                    ( newModel2, newCmd2 ) =
-                        case page of
-                            LaborDelIpp subModel ->
-                                updateForPage LaborDelIpp
-                                    LaborDelIppMsg
-                                    newModel
-                                    (PageLaborDelIpp.update newModel.session)
-                                    (TickSubMsg time)
-                                    subModel
-
-                            Admitting subModel ->
-                                updateForPage Admitting
-                                    AdmittingMsg
-                                    newModel
-                                    (PageAdmitting.update newModel.session)
-                                    (AdmittingTickSubMsg time)
-                                    subModel
-
-                            _ ->
-                                newModel => Cmd.none
-                in
-                    newModel2 => Cmd.batch [ newCmd, newCmd2 ]
-
-            ( LogConsole msg, _ ) ->
-                -- Write a message out to the console.
-                let
-                    _ =
-                        Debug.log "LogConsole" msg
-                in
-                    model => Cmd.none
-
-            ( Toast msgs seconds toastType, _ ) ->
-                -- Publish a toast for the user to see.
-                { model | toast = Just <| ToastRecord msgs seconds toastType } => Cmd.none
-
-            ( WindowResize size, _ ) ->
-                -- Keep the current window size in the Model.
-                { model | window = size } => Cmd.none
-
-            ( SetDialogActive bool, _ ) ->
-                -- This allows the top-level to know whether one of the pages has a dialog
-                -- open, which changes the route in order that the browser back button only
-                -- closes the dialog instead of truly going back a page. By knowing whether
-                -- a setRoute request is due to a dialog being open or not allows us to
-                -- decide whether we need to request all of the data for the page or not.
-                -- This in turn makes the user experience more seamless.
-                { model | dialogActive = bool } => Cmd.none
-
-            ( Message incoming, _ ) ->
-                -- All messages from the server come through here first.
-                -- We record the time of the last contact with the server in order
-                -- to better maintain a session with the server. See
-                -- Data/Session.elm for details. We use noAutoTouchModel
-                -- because this is not a client touch, but a server touch.
-                updateMessage incoming
+                newModel =
                     { noAutoTouchModel
-                        | session = serverTouch noAutoTouchModel.session noAutoTouchModel.currTime
+                        | currTime = time
+                        , toast = newToast
+                        , session = newSession
                     }
 
-            ( ProcessTypeMsg processType msgType jeVal, _ ) ->
-                -- Send a message to the server and store the required information
-                -- in the model for processing the server response.
-                -- NOTE: currently data queries do not come through here.
-                -- TODO: For data queries, check if the data requirement can be
-                -- satisfied by what the top-level model already has and supply it
-                -- to the caller if available.
-                -- TODO: if a request is made to the server for a data query, set up
-                -- a notify subscription with the server to keep up to date on that
-                -- information. Might want to do this when the data is returned
-                -- from the server instead of here.
-                let
-                    ( processId, processStore ) =
-                        Processing.add processType Nothing model.processStore
+                -- We send the time to all of the pages that are interested here.
+                ( newModel2, newCmd2 ) =
+                    case page of
+                        LaborDelIpp subModel ->
+                            updateForPage LaborDelIpp
+                                LaborDelIppMsg
+                                newModel
+                                (PageLaborDelIpp.update newModel.session)
+                                (TickSubMsg time)
+                                subModel
 
-                    _ =
-                        Debug.log "wrapPayload" <| toString <| wrapPayload processId msgType jeVal
-                in
-                    ( { model | processStore = processStore }
-                    , Ports.outgoing <| wrapPayload processId msgType jeVal
+                        Admitting subModel ->
+                            updateForPage Admitting
+                                AdmittingMsg
+                                newModel
+                                (PageAdmitting.update newModel.session)
+                                (AdmittingTickSubMsg time)
+                                subModel
+
+                        _ ->
+                            newModel => Cmd.none
+            in
+            newModel2 => Cmd.batch [ newCmd, newCmd2 ]
+
+        ( LogConsole msg, _ ) ->
+            -- Write a message out to the console.
+            let
+                _ =
+                    Debug.log "LogConsole" msg
+            in
+            model => Cmd.none
+
+        ( Toast msgs seconds toastType, _ ) ->
+            -- Publish a toast for the user to see.
+            { model | toast = Just <| ToastRecord msgs seconds toastType } => Cmd.none
+
+        ( WindowResize size, _ ) ->
+            -- Keep the current window size in the Model.
+            { model | window = size } => Cmd.none
+
+        ( SetDialogActive bool, _ ) ->
+            -- This allows the top-level to know whether one of the pages has a dialog
+            -- open, which changes the route in order that the browser back button only
+            -- closes the dialog instead of truly going back a page. By knowing whether
+            -- a setRoute request is due to a dialog being open or not allows us to
+            -- decide whether we need to request all of the data for the page or not.
+            -- This in turn makes the user experience more seamless.
+            { model | dialogActive = bool } => Cmd.none
+
+        ( Message incoming, _ ) ->
+            -- All messages from the server come through here first.
+            -- We record the time of the last contact with the server in order
+            -- to better maintain a session with the server. See
+            -- Data/Session.elm for details. We use noAutoTouchModel
+            -- because this is not a client touch, but a server touch.
+            updateMessage incoming
+                { noAutoTouchModel
+                    | session = serverTouch noAutoTouchModel.session noAutoTouchModel.currTime
+                }
+
+        ( ProcessTypeMsg processType msgType jeVal, _ ) ->
+            -- Send a message to the server and store the required information
+            -- in the model for processing the server response.
+            -- NOTE: currently data queries do not come through here.
+            -- TODO: For data queries, check if the data requirement can be
+            -- satisfied by what the top-level model already has and supply it
+            -- to the caller if available.
+            -- TODO: if a request is made to the server for a data query, set up
+            -- a notify subscription with the server to keep up to date on that
+            -- information. Might want to do this when the data is returned
+            -- from the server instead of here.
+            let
+                ( processId, processStore ) =
+                    Processing.add processType Nothing model.processStore
+            in
+            ( { model | processStore = processStore }
+            , Ports.outgoing <| wrapPayload processId msgType jeVal
+            )
+
+        ( AdmittingLoaded pregId, _ ) ->
+            let
+                ( subModel, newStore, newCmd ) =
+                    PageAdmitting.buildModel model.browserSupportsDate
+                        model.currTime
+                        model.processStore
+                        pregId
+                        model.patientRecord
+                        model.pregnancyRecord
+                        model.laborRecords
+            in
+            { model
+                | pageState = Loaded (Admitting subModel)
+                , processStore = newStore
+            }
+                => newCmd
+
+        ( BirthCertLoaded pregId laborRec, _ ) ->
+            -- This page has enough of what it needs from the server in order
+            -- to display the page. The newCmd returned from
+            -- PageBirthCert.buildModel may request more data from the server.
+            let
+                -- Get the labor stage 2 record from the data cache which the
+                -- init function just requested records from the server for.
+                stage2 =
+                    case DCache.get LaborStage2 model.dataCache of
+                        Just (LaborStage2DataCache s2) ->
+                            Just s2
+
+                        _ ->
+                            Nothing
+
+                ( subModel, newStore, newCmd ) =
+                    PageBirthCert.buildModel laborRec
+                        stage2
+                        model.babyRecords
+                        model.browserSupportsDate
+                        model.currTime
+                        model.processStore
+                        pregId
+                        model.patientRecord
+                        model.pregnancyRecord
+            in
+            { model
+                | pageState = Loaded (BirthCert subModel)
+                , processStore = newStore
+            }
+                => newCmd
+
+        ( BirthCertMsg subMsg, BirthCert subModel ) ->
+            -- All BirthCert page sub messages are routed here.
+            let
+                -- If the subMsg is DataCache, revise the subMsg by adding
+                -- the current dataCache to it.
+                newSubMsg =
+                    case subMsg of
+                        Data.BirthCert.DataCache _ tbl ->
+                            Data.BirthCert.DataCache (Just model.dataCache) tbl
+
+                        _ ->
+                            subMsg
+            in
+            updateForPage BirthCert
+                BirthCertMsg
+                model
+                (PageBirthCert.update model.session)
+                newSubMsg
+                subModel
+
+        ( BirthCertSelectQuery tbl key relatedTables, BirthCert subModel ) ->
+            -- Request by the sub page to retrieve additional data from the
+            -- server after the page's initialization and load is already
+            -- complete.
+            let
+                ( store, newCmd ) =
+                    PageBirthCert.getTableData model.processStore tbl key relatedTables
+            in
+            { model | processStore = store } => newCmd
+
+        ( ContPPLoaded pregId laborRec, _ ) ->
+            -- This page has enough of what it needs from the server in order
+            -- to display the page. The newCmd returned from
+            -- PageContPP.buildModel may request more data from the server.
+            let
+                -- Get the labor stage records from the data cache which the
+                -- init function just requested records from the server for.
+                ( stage1, stage2, stage3, contPPCheck, motherMedication, discharge ) =
+                    ( case DCache.get LaborStage1 model.dataCache of
+                        Just (LaborStage1DataCache s1) ->
+                            Just s1
+
+                        _ ->
+                            Nothing
+                    , case DCache.get LaborStage2 model.dataCache of
+                        Just (LaborStage2DataCache s2) ->
+                            Just s2
+
+                        _ ->
+                            Nothing
+                    , case DCache.get LaborStage3 model.dataCache of
+                        Just (LaborStage3DataCache s3) ->
+                            Just s3
+
+                        _ ->
+                            Nothing
+                    , case DCache.get ContPostpartumCheck model.dataCache of
+                        Just (ContPostpartumCheckDataCache recs) ->
+                            -- Not a Maybe.
+                            recs
+
+                        _ ->
+                            []
+                    , case DCache.get MotherMedication model.dataCache of
+                        Just (MotherMedicationDataCache recs) ->
+                            recs
+
+                        _ ->
+                            []
+                    , case DCache.get Discharge model.dataCache of
+                        Just (DischargeDataCache rec) ->
+                            Just rec
+
+                        _ ->
+                            Nothing
                     )
 
-            ( AdmittingLoaded pregId, _ ) ->
-                let
-                    ( subModel, newStore, newCmd ) =
-                        PageAdmitting.buildModel model.browserSupportsDate
-                            model.currTime
-                            model.processStore
-                            pregId
-                            model.patientRecord
-                            model.pregnancyRecord
-                            model.laborRecords
-                in
-                    { model
-                        | pageState = Loaded (Admitting subModel)
-                        , processStore = newStore
-                    }
-                        => newCmd
+                ( subModel, newStore, newCmd ) =
+                    PageContPP.buildModel laborRec
+                        stage1
+                        stage2
+                        stage3
+                        contPPCheck
+                        motherMedication
+                        discharge
+                        model.babyRecords
+                        model.browserSupportsDate
+                        model.currTime
+                        model.processStore
+                        pregId
+                        model.patientRecord
+                        model.pregnancyRecord
+            in
+            { model
+                | pageState = Loaded (ContPP subModel)
+                , processStore = newStore
+            }
+                => newCmd
 
-            ( BirthCertLoaded pregId laborRec, _ ) ->
-                -- This page has enough of what it needs from the server in order
-                -- to display the page. The newCmd returned from
-                -- PageBirthCert.buildModel may request more data from the server.
-                let
-                    -- Get the labor stage 2 record from the data cache which the
-                    -- init function just requested records from the server for.
-                    stage2 =
-                        case DCache.get LaborStage2 model.dataCache of
-                            Just (LaborStage2DataCache s2) ->
-                                Just s2
+        ( ContPPMsg subMsg, ContPP subModel ) ->
+            -- All ContPP page sub messages are routed here.
+            let
+                -- If the subMsg is DataCache, revise the subMsg by adding
+                -- the current dataCache to it.
+                newSubMsg =
+                    case subMsg of
+                        Data.ContPP.DataCache _ tbl ->
+                            Data.ContPP.DataCache (Just model.dataCache) tbl
 
-                            _ ->
-                                Nothing
+                        _ ->
+                            subMsg
+            in
+            updateForPage ContPP
+                ContPPMsg
+                model
+                (PageContPP.update model.session)
+                newSubMsg
+                subModel
 
-                    ( subModel, newStore, newCmd ) =
-                        PageBirthCert.buildModel laborRec
-                            stage2
-                            model.babyRecords
-                            model.browserSupportsDate
-                            model.currTime
-                            model.processStore
-                            pregId
-                            model.patientRecord
-                            model.pregnancyRecord
-                in
-                    { model
-                        | pageState = Loaded (BirthCert subModel)
-                        , processStore = newStore
-                    }
-                        => newCmd
+        ( ContPPSelectQuery tbl key relatedTables, ContPP subModel ) ->
+            -- Request by the sub page to retrieve additional data from the
+            -- server after the page's initialization and load is already
+            -- complete.
+            let
+                ( store, newCmd ) =
+                    PageContPP.getTableData model.processStore tbl key relatedTables
+            in
+            { model | processStore = store } => newCmd
 
-            ( BirthCertMsg subMsg, BirthCert subModel ) ->
-                -- All BirthCert page sub messages are routed here.
-                let
-                    -- If the subMsg is DataCache, revise the subMsg by adding
-                    -- the current dataCache to it.
-                    newSubMsg =
-                        case subMsg of
-                            Data.BirthCert.DataCache _ tbl ->
-                                Data.BirthCert.DataCache (Just model.dataCache) tbl
+        ( LaborDelIppLoaded pregId, _ ) ->
+            -- This page has enough of what it needs from the server in order
+            -- to display the page. The newCmd returned from
+            -- PageLaborDelIpp.buildModel may request more data from the server.
+            let
+                ( subModel, newStore, newCmd ) =
+                    PageLaborDelIpp.buildModel model.browserSupportsDate
+                        model.currTime
+                        model.processStore
+                        pregId
+                        model.patientRecord
+                        model.pregnancyRecord
+                        model.laborRecords
+            in
+            { model
+                | pageState = Loaded (LaborDelIpp subModel)
+                , processStore = newStore
+            }
+                => newCmd
 
-                            _ ->
-                                subMsg
-                in
-                    updateForPage BirthCert
-                        BirthCertMsg
-                        model
-                        (PageBirthCert.update model.session)
-                        newSubMsg
-                        subModel
+        ( LaborDelIppMsg subMsg, LaborDelIpp subModel ) ->
+            -- All LaborDelIpp page sub messages are routed here.
+            let
+                -- If the subMsg is DataCache, revise the subMsg by adding
+                -- the current dataCache to it.
+                newSubMsg =
+                    case subMsg of
+                        Data.LaborDelIpp.DataCache _ tbl ->
+                            Data.LaborDelIpp.DataCache (Just model.dataCache) tbl
 
-            ( BirthCertSelectQuery tbl key relatedTables, BirthCert subModel ) ->
-                -- Request by the sub page to retrieve additional data from the
-                -- server after the page's initialization and load is already
-                -- complete.
-                let
-                    ( store, newCmd ) =
-                        PageBirthCert.getTableData model.processStore tbl key relatedTables
-                in
-                    { model | processStore = store } => newCmd
+                        _ ->
+                            subMsg
+            in
+            updateForPage LaborDelIpp
+                LaborDelIppMsg
+                model
+                (PageLaborDelIpp.update model.session)
+                newSubMsg
+                subModel
 
-            ( ContPPLoaded pregId laborRec, _ ) ->
-                -- This page has enough of what it needs from the server in order
-                -- to display the page. The newCmd returned from
-                -- PageContPP.buildModel may request more data from the server.
-                let
-                    -- Get the labor stage records from the data cache which the
-                    -- init function just requested records from the server for.
-                    ( stage1, stage2, stage3, contPPCheck, motherMedication, discharge ) =
-                        ( case DCache.get LaborStage1 model.dataCache of
-                            Just (LaborStage1DataCache s1) ->
-                                Just s1
+        ( LaborDelIppSelectQuery tbl key relatedTables, LaborDelIpp subModel ) ->
+            -- Request by the sub page to retrieve additional data from the
+            -- server after the page's initialization and load is already
+            -- complete.
+            let
+                ( store, newCmd ) =
+                    PageLaborDelIpp.getTableData model.processStore tbl key relatedTables
+            in
+            { model | processStore = store } => newCmd
 
-                            _ ->
-                                Nothing
+        ( PostpartumLoaded pregId laborRec, _ ) ->
+            -- This page has enough of what it needs from the server in order
+            -- to display the page. The newCmd returned from
+            -- PagePostpartum.buildModel may request more data from the server.
+            let
+                -- Get the labor stage records from the data cache which the
+                -- init function just requested records from the server for.
+                ( stage1, stage2, stage3, contPPChecks, postpartumCheck ) =
+                    ( case DCache.get LaborStage1 model.dataCache of
+                        Just (LaborStage1DataCache s1) ->
+                            Just s1
 
-                        , case DCache.get LaborStage2 model.dataCache of
-                            Just (LaborStage2DataCache s2) ->
-                                Just s2
+                        _ ->
+                            Nothing
+                    , case DCache.get LaborStage2 model.dataCache of
+                        Just (LaborStage2DataCache s2) ->
+                            Just s2
 
-                            _ ->
-                                Nothing
+                        _ ->
+                            Nothing
+                    , case DCache.get LaborStage3 model.dataCache of
+                        Just (LaborStage3DataCache s3) ->
+                            Just s3
 
-                        , case DCache.get LaborStage3 model.dataCache of
-                            Just (LaborStage3DataCache s3) ->
-                                Just s3
+                        _ ->
+                            Nothing
+                    , case DCache.get ContPostpartumCheck model.dataCache of
+                        Just (ContPostpartumCheckDataCache recs) ->
+                            -- Not a Maybe.
+                            recs
 
-                            _ ->
-                                Nothing
+                        _ ->
+                            []
+                    , case DCache.get PostpartumCheck model.dataCache of
+                        Just (PostpartumCheckDataCache recs) ->
+                            -- Not a Maybe.
+                            recs
 
-                        , case DCache.get ContPostpartumCheck model.dataCache of
-                            Just (ContPostpartumCheckDataCache recs) ->
-                                -- Not a Maybe.
-                                recs
+                        _ ->
+                            []
+                    )
 
-                            _ ->
-                                []
+                ( subModel, newStore, newCmd ) =
+                    PagePostpartum.buildModel laborRec
+                        stage1
+                        stage2
+                        stage3
+                        contPPChecks
+                        model.babyRecords
+                        postpartumCheck
+                        model.browserSupportsDate
+                        model.currTime
+                        model.processStore
+                        pregId
+                        model.patientRecord
+                        model.pregnancyRecord
+            in
+            { model
+                | pageState = Loaded (Postpartum subModel)
+                , processStore = newStore
+            }
+                => newCmd
 
-                        , case DCache.get MotherMedication model.dataCache of
-                            Just (MotherMedicationDataCache recs) ->
-                                recs
+        ( PostpartumMsg subMsg, Postpartum subModel ) ->
+            -- All Postpartum page sub messages are routed here.
+            let
+                -- If the subMsg is DataCache, revise the subMsg by adding
+                -- the current dataCache to it.
+                newSubMsg =
+                    case subMsg of
+                        Data.Postpartum.DataCache _ tbl ->
+                            Data.Postpartum.DataCache (Just model.dataCache) tbl
 
-                            _ ->
-                                []
+                        _ ->
+                            subMsg
+            in
+            updateForPage Postpartum
+                PostpartumMsg
+                model
+                (PagePostpartum.update model.session)
+                newSubMsg
+                subModel
 
-                        , case DCache.get Discharge model.dataCache of
-                            Just (DischargeDataCache rec) ->
-                                Just rec
+        ( PostpartumSelectQuery tbl key relatedTables, Postpartum subModel ) ->
+            -- Request by the sub page to retrieve additional data from the
+            -- server after the page's initialization and load is already
+            -- complete.
+            let
+                ( store, newCmd ) =
+                    PagePostpartum.getTableData model.processStore tbl key relatedTables
+            in
+            { model | processStore = store } => newCmd
 
-                            _ ->
-                                Nothing
-                        )
+        ( AdmittingMsg subMsg, Admitting subModel ) ->
+            -- All Admitting page sub messages are routed here.
+            let
+                -- If the subMsg is DataCache, revise the subMsg by adding
+                -- the current dataCache to it.
+                newSubMsg =
+                    case subMsg of
+                        Data.Admitting.DataCache _ tbl ->
+                            Data.Admitting.DataCache (Just model.dataCache) tbl
 
-                    ( subModel, newStore, newCmd ) =
-                        PageContPP.buildModel laborRec
-                            stage1
-                            stage2
-                            stage3
-                            contPPCheck
-                            motherMedication
-                            discharge
-                            model.babyRecords
-                            model.browserSupportsDate
-                            model.currTime
-                            model.processStore
-                            pregId
-                            model.patientRecord
-                            model.pregnancyRecord
-                in
-                    { model
-                        | pageState = Loaded (ContPP subModel)
-                        , processStore = newStore
-                    }
-                        => newCmd
+                        _ ->
+                            subMsg
+            in
+            updateForPage Admitting
+                AdmittingMsg
+                model
+                (PageAdmitting.update model.session)
+                newSubMsg
+                subModel
 
-            ( ContPPMsg subMsg, ContPP subModel ) ->
-                -- All ContPP page sub messages are routed here.
-                let
-                    -- If the subMsg is DataCache, revise the subMsg by adding
-                    -- the current dataCache to it.
-                    newSubMsg =
-                        case subMsg of
-                            Data.ContPP.DataCache _ tbl ->
-                                Data.ContPP.DataCache (Just model.dataCache) tbl
-
-                            _ ->
-                                subMsg
-                in
-                    updateForPage ContPP
-                        ContPPMsg
-                        model
-                        (PageContPP.update model.session)
-                        newSubMsg
-                        subModel
-
-            ( ContPPSelectQuery tbl key relatedTables, ContPP subModel ) ->
-                -- Request by the sub page to retrieve additional data from the
-                -- server after the page's initialization and load is already
-                -- complete.
-                let
-                    ( store, newCmd ) =
-                        PageContPP.getTableData model.processStore tbl key relatedTables
-                in
-                    { model | processStore = store } => newCmd
-
-            ( LaborDelIppLoaded pregId, _ ) ->
-                -- This page has enough of what it needs from the server in order
-                -- to display the page. The newCmd returned from
-                -- PageLaborDelIpp.buildModel may request more data from the server.
-                let
-                    ( subModel, newStore, newCmd ) =
-                        PageLaborDelIpp.buildModel model.browserSupportsDate
-                            model.currTime
-                            model.processStore
-                            pregId
-                            model.patientRecord
-                            model.pregnancyRecord
-                            model.laborRecords
-                in
-                    { model
-                        | pageState = Loaded (LaborDelIpp subModel)
-                        , processStore = newStore
-                    }
-                        => newCmd
-
-            ( LaborDelIppMsg subMsg, LaborDelIpp subModel ) ->
-                -- All LaborDelIpp page sub messages are routed here.
-                let
-                    -- If the subMsg is DataCache, revise the subMsg by adding
-                    -- the current dataCache to it.
-                    newSubMsg =
-                        case subMsg of
-                            Data.LaborDelIpp.DataCache _ tbl ->
-                                Data.LaborDelIpp.DataCache (Just model.dataCache) tbl
-
-                            _ ->
-                                subMsg
-                in
-                    updateForPage LaborDelIpp
-                        LaborDelIppMsg
-                        model
-                        (PageLaborDelIpp.update model.session)
-                        newSubMsg
-                        subModel
-
-            ( LaborDelIppSelectQuery tbl key relatedTables, LaborDelIpp subModel ) ->
-                -- Request by the sub page to retrieve additional data from the
-                -- server after the page's initialization and load is already
-                -- complete.
-                let
-                    ( store, newCmd ) =
-                        PageLaborDelIpp.getTableData model.processStore tbl key relatedTables
-                in
-                    { model | processStore = store } => newCmd
-
-            ( PostpartumLoaded pregId laborRec, _ ) ->
-                -- This page has enough of what it needs from the server in order
-                -- to display the page. The newCmd returned from
-                -- PagePostpartum.buildModel may request more data from the server.
-                let
-                    -- Get the labor stage records from the data cache which the
-                    -- init function just requested records from the server for.
-                    ( stage1, stage2, stage3, contPPChecks, postpartumCheck ) =
-                        ( case DCache.get LaborStage1 model.dataCache of
-                            Just (LaborStage1DataCache s1) ->
-                                Just s1
-
-                            _ ->
-                                Nothing
-                        , case DCache.get LaborStage2 model.dataCache of
-                            Just (LaborStage2DataCache s2) ->
-                                Just s2
-
-                            _ ->
-                                Nothing
-                        , case DCache.get LaborStage3 model.dataCache of
-                            Just (LaborStage3DataCache s3) ->
-                                Just s3
-
-                            _ ->
-                                Nothing
-
-                        , case DCache.get ContPostpartumCheck model.dataCache of
-                            Just (ContPostpartumCheckDataCache recs) ->
-                                -- Not a Maybe.
-                                recs
-
-                            _ ->
-                                []
-
-                        , case DCache.get PostpartumCheck model.dataCache of
-                            Just (PostpartumCheckDataCache recs) ->
-                                -- Not a Maybe.
-                                recs
-
-                            _ ->
-                                []
-
-                        )
-
-                    ( subModel, newStore, newCmd ) =
-                        PagePostpartum.buildModel laborRec
-                            stage1
-                            stage2
-                            stage3
-                            contPPChecks
-                            model.babyRecords
-                            postpartumCheck
-                            model.browserSupportsDate
-                            model.currTime
-                            model.processStore
-                            pregId
-                            model.patientRecord
-                            model.pregnancyRecord
-                in
-                    { model
-                        | pageState = Loaded (Postpartum subModel)
-                        , processStore = newStore
-                    }
-                        => newCmd
-
-            ( PostpartumMsg subMsg, Postpartum subModel ) ->
-                -- All Postpartum page sub messages are routed here.
-                let
-                    -- If the subMsg is DataCache, revise the subMsg by adding
-                    -- the current dataCache to it.
-                    newSubMsg =
-                        case subMsg of
-                            Data.Postpartum.DataCache _ tbl ->
-                                Data.Postpartum.DataCache (Just model.dataCache) tbl
-
-                            _ ->
-                                subMsg
-                in
-                    updateForPage Postpartum
-                        PostpartumMsg
-                        model
-                        (PagePostpartum.update model.session)
-                        newSubMsg
-                        subModel
-
-            ( PostpartumSelectQuery tbl key relatedTables, Postpartum subModel ) ->
-                -- Request by the sub page to retrieve additional data from the
-                -- server after the page's initialization and load is already
-                -- complete.
-                let
-                    ( store, newCmd ) =
-                        PagePostpartum.getTableData model.processStore tbl key relatedTables
-                in
-                    { model | processStore = store } => newCmd
-
-            ( AdmittingMsg subMsg, Admitting subModel ) ->
-                -- All Admitting page sub messages are routed here.
-                let
-                    -- If the subMsg is DataCache, revise the subMsg by adding
-                    -- the current dataCache to it.
-                    newSubMsg =
-                        case subMsg of
-                            Data.Admitting.DataCache _ tbl ->
-                                Data.Admitting.DataCache (Just model.dataCache) tbl
-
-                            _ ->
-                                subMsg
-                in
-                    updateForPage Admitting
-                        AdmittingMsg
-                        model
-                        (PageAdmitting.update model.session)
-                        newSubMsg
-                        subModel
-
-            ( SetRoute route, _ ) ->
-                -- Handle route changes.
-                let
-                    _ =
-                        Debug.log "update SetRoute" <| toString route
-                in
+        ( SetRoute route, page ) ->
+            -- Handle route changes.
+            let
+                ( newModel, newCmd ) =
                     setRoute route model
+            in
+            -- If we are returning from an open dialog, inform the page to
+            -- close all dialogs.
+            if model.dialogActive && not newModel.dialogActive then
+                case page of
+                    BirthCert subModel ->
+                        updateForPage BirthCert
+                            BirthCertMsg
+                            newModel
+                            (PageBirthCert.update model.session)
+                            Data.BirthCert.CloseAllDialogs
+                            subModel
 
-            ( OpenDatePicker id, _ ) ->
-                -- For browsers without native date support in the input element,
-                -- open a jQueryUI datepicker for the user.
-                model => Ports.openDatePicker (JE.string id)
+                    ContPP subModel ->
+                        updateForPage ContPP
+                            ContPPMsg
+                            newModel
+                            (PageContPP.update model.session)
+                            Data.ContPP.CloseAllDialogs
+                            subModel
 
-            ( IncomingDatePicker dateFieldMsg, Admitting subModel ) ->
-                -- For browsers without native date support in the input element,
-                -- receive the user's date selection from the jQueryUI datepicker.
-                updateForPage Admitting
-                    AdmittingMsg
-                    model
-                    (PageAdmitting.update model.session)
-                    (Data.Admitting.DateFieldSubMsg dateFieldMsg)
-                    subModel
+                    LaborDelIpp subModel ->
+                        updateForPage LaborDelIpp
+                            LaborDelIppMsg
+                            newModel
+                            (PageLaborDelIpp.update model.session)
+                            Data.LaborDelIpp.CloseAllDialogs
+                            subModel
 
-            ( IncomingDatePicker dateFieldMsg, BirthCert subModel ) ->
-                -- For browsers without native date support in the input element,
-                -- receive the user's date selection from the jQueryUI datepicker.
-                updateForPage BirthCert
-                    BirthCertMsg
-                    model
-                    (PageBirthCert.update model.session)
-                    (Data.BirthCert.DateFieldSubMsg dateFieldMsg)
-                    subModel
+                    Postpartum subModel ->
+                        updateForPage Postpartum
+                            PostpartumMsg
+                            newModel
+                            (PagePostpartum.update model.session)
+                            Data.Postpartum.CloseAllDialogs
+                            subModel
 
-            ( IncomingDatePicker dateFieldMsg, LaborDelIpp subModel ) ->
-                -- For browsers without native date support in the input element,
-                -- receive the user's date selection from the jQueryUI datepicker.
-                updateForPage LaborDelIpp
-                    LaborDelIppMsg
-                    model
-                    (PageLaborDelIpp.update model.session)
-                    (Data.LaborDelIpp.DateFieldSubMsg dateFieldMsg)
-                    subModel
+                    _ ->
+                        newModel => newCmd
+            else
+                newModel => newCmd
 
-            ( IncomingDatePicker dateFieldMsg, ContPP subModel ) ->
-                -- For browsers without native date support in the input element,
-                -- receive the user's date selection from the jQueryUI datepicker.
-                updateForPage ContPP
-                    ContPPMsg
-                    model
-                    (PageContPP.update model.session)
-                    (Data.ContPP.DateFieldSubMsg dateFieldMsg)
-                    subModel
+        ( OpenDatePicker id, _ ) ->
+            -- For browsers without native date support in the input element,
+            -- open a jQueryUI datepicker for the user.
+            model => Ports.openDatePicker (JE.string id)
 
-            ( IncomingDatePicker dateFieldMsg, Postpartum subModel ) ->
-                -- For browsers without native date support in the input element,
-                -- receive the user's date selection from the jQueryUI datepicker.
-                updateForPage Postpartum
-                    PostpartumMsg
-                    model
-                    (PagePostpartum.update model.session)
-                    (Data.Postpartum.DateFieldSubMsg dateFieldMsg)
-                    subModel
+        ( IncomingDatePicker dateFieldMsg, Admitting subModel ) ->
+            -- For browsers without native date support in the input element,
+            -- receive the user's date selection from the jQueryUI datepicker.
+            updateForPage Admitting
+                AdmittingMsg
+                model
+                (PageAdmitting.update model.session)
+                (Data.Admitting.DateFieldSubMsg dateFieldMsg)
+                subModel
 
-            ( AddLabor, LaborDelIpp subModel ) ->
-                -- TODO: Is this being used?
-                let
-                    _ =
-                        Debug.log "Medical.update ( AddLabor, LaborDelIpp subModel )" "Yes, this is being called but it does nothing yet."
-                in
-                    model => Cmd.none
+        ( IncomingDatePicker dateFieldMsg, BirthCert subModel ) ->
+            -- For browsers without native date support in the input element,
+            -- receive the user's date selection from the jQueryUI datepicker.
+            updateForPage BirthCert
+                BirthCertMsg
+                model
+                (PageBirthCert.update model.session)
+                (Data.BirthCert.DateFieldSubMsg dateFieldMsg)
+                subModel
 
-            ( theMsg, thePage ) ->
-                -- We should never get here.
-                -- TODO: properly raise an error here.
-                let
-                    message =
-                        "Unhandled msg of "
-                            ++ (toString theMsg)
-                            ++ " and page of "
-                            ++ (toString thePage)
-                            ++ " in Medical.update."
-                in
-                    model => (logConsole message)
+        ( IncomingDatePicker dateFieldMsg, LaborDelIpp subModel ) ->
+            -- For browsers without native date support in the input element,
+            -- receive the user's date selection from the jQueryUI datepicker.
+            updateForPage LaborDelIpp
+                LaborDelIppMsg
+                model
+                (PageLaborDelIpp.update model.session)
+                (Data.LaborDelIpp.DateFieldSubMsg dateFieldMsg)
+                subModel
+
+        ( IncomingDatePicker dateFieldMsg, ContPP subModel ) ->
+            -- For browsers without native date support in the input element,
+            -- receive the user's date selection from the jQueryUI datepicker.
+            updateForPage ContPP
+                ContPPMsg
+                model
+                (PageContPP.update model.session)
+                (Data.ContPP.DateFieldSubMsg dateFieldMsg)
+                subModel
+
+        ( IncomingDatePicker dateFieldMsg, Postpartum subModel ) ->
+            -- For browsers without native date support in the input element,
+            -- receive the user's date selection from the jQueryUI datepicker.
+            updateForPage Postpartum
+                PostpartumMsg
+                model
+                (PagePostpartum.update model.session)
+                (Data.Postpartum.DateFieldSubMsg dateFieldMsg)
+                subModel
+
+        ( AddLabor, LaborDelIpp subModel ) ->
+            -- TODO: Is this being used?
+            let
+                _ =
+                    Debug.log "Medical.update ( AddLabor, LaborDelIpp subModel )" "Yes, this is being called but it does nothing yet."
+            in
+            model => Cmd.none
+
+        ( theMsg, thePage ) ->
+            -- We should never get here.
+            -- TODO: properly raise an error here.
+            let
+                message =
+                    "Unhandled msg of "
+                        ++ toString theMsg
+                        ++ " and page of "
+                        ++ toString thePage
+                        ++ " in Medical.update."
+            in
+            model => logConsole message
 
 
 {-| Handle all Msg.Message variations.
@@ -791,9 +817,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Baby ])
                                     in
-                                        ( { model | dataCache = DCache.put (BabyDataCache babyRec) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (BabyDataCache babyRec) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddBabyLabType (ContPPMsg (Data.ContPP.DataCache _ _)) babyLabRecordNew) ->
                                     -- Note: this is BabyLabRecord, not BabyLabTypeRecord.
@@ -809,14 +835,14 @@ updateMessage incoming model =
                                                     DCache.put (BabyLabDataCache (babyLabRec :: recs)) model.dataCache
 
                                                 _ ->
-                                                    DCache.put (BabyLabDataCache ([ babyLabRec ])) model.dataCache
+                                                    DCache.put (BabyLabDataCache [ babyLabRec ]) model.dataCache
 
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyLab ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddBabyMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyMedicationRecordNew) ->
                                     -- Note: this is BabyMedicationRecord, not BabyMedicationTypeRecord.
@@ -832,14 +858,14 @@ updateMessage incoming model =
                                                     DCache.put (BabyMedicationDataCache (babyMedicationRec :: recs)) model.dataCache
 
                                                 _ ->
-                                                    DCache.put (BabyMedicationDataCache ([ babyMedicationRec ])) model.dataCache
+                                                    DCache.put (BabyMedicationDataCache [ babyMedicationRec ]) model.dataCache
 
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyMedication ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddBabyVaccinationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyVaccinationRecordNew) ->
                                     -- Note: this is BabyVaccinationRecord, not BabyVaccinationTypeRecord.
@@ -855,14 +881,14 @@ updateMessage incoming model =
                                                     DCache.put (BabyVaccinationDataCache (babyVaccinationRec :: recs)) model.dataCache
 
                                                 _ ->
-                                                    DCache.put (BabyVaccinationDataCache ([ babyVaccinationRec ])) model.dataCache
+                                                    DCache.put (BabyVaccinationDataCache [ babyVaccinationRec ]) model.dataCache
 
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyVaccination ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddBirthCertificateType (BirthCertMsg (Data.BirthCert.DataCache _ _)) birthCertificateRecordNew) ->
                                     let
@@ -874,9 +900,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.BirthCert.DataCache (Just model.dataCache) (Just [ BirthCertificate ])
                                     in
-                                        ( { model | dataCache = DCache.put (BirthCertificateDataCache birthCertificateRec) model.dataCache }
-                                        , Task.perform BirthCertMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (BirthCertificateDataCache birthCertificateRec) model.dataCache }
+                                    , Task.perform BirthCertMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddContPostpartumCheckType (ContPPMsg (Data.ContPP.DataCache _ _)) contPostpartumCheckRecordNew) ->
                                     let
@@ -894,14 +920,14 @@ updateMessage incoming model =
                                                     DCache.put (ContPostpartumCheckDataCache (contPostpartumCheckRec :: recs)) model.dataCache
 
                                                 _ ->
-                                                    DCache.put (ContPostpartumCheckDataCache ([contPostpartumCheckRec])) model.dataCache
+                                                    DCache.put (ContPostpartumCheckDataCache [ contPostpartumCheckRec ]) model.dataCache
 
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ ContPostpartumCheck ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddDischargeType (ContPPMsg (Data.ContPP.DataCache _ _)) dischargeRecordNew) ->
                                     let
@@ -913,9 +939,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ Discharge ])
                                     in
-                                        ( { model | dataCache = DCache.put (DischargeDataCache dischargeRec) model.dataCache }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (DischargeDataCache dischargeRec) model.dataCache }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddLaborType (AdmittingMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
                                     let
@@ -929,9 +955,9 @@ updateMessage incoming model =
                                         subMsg =
                                             AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
                                     in
-                                        ( { model | laborRecords = laborRecs }
-                                        , Task.perform AdmittingMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | laborRecords = laborRecs }
+                                    , Task.perform AdmittingMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddLaborStage1Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage1RecordNew) ->
                                     let
@@ -943,9 +969,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage1 ])
                                     in
-                                        ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Rec) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Rec) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddLaborStage2Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage2RecordNew) ->
                                     let
@@ -957,9 +983,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage2 ])
                                     in
-                                        ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Rec) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Rec) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddLaborStage3Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage3RecordNew) ->
                                     let
@@ -971,9 +997,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage3 ])
                                     in
-                                        ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Rec) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Rec) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddMembraneType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membraneRecordNew) ->
                                     let
@@ -985,9 +1011,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Membrane ])
                                     in
-                                        ( { model | dataCache = DCache.put (MembraneDataCache membraneRec) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (MembraneDataCache membraneRec) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddMotherMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) motherMedicationRecordNew) ->
                                     -- Note: this is MotherMedicationRecord, not MotherMedicationTypeRecord.
@@ -1003,14 +1029,14 @@ updateMessage incoming model =
                                                     DCache.put (MotherMedicationDataCache (motherMedicationRec :: recs)) model.dataCache
 
                                                 _ ->
-                                                    DCache.put (MotherMedicationDataCache ([ motherMedicationRec ])) model.dataCache
+                                                    DCache.put (MotherMedicationDataCache [ motherMedicationRec ]) model.dataCache
 
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ MotherMedication ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddNewbornExamType (ContPPMsg (Data.ContPP.DataCache _ _)) newbornExamRecordNew) ->
                                     let
@@ -1022,9 +1048,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ NewbornExam ])
                                     in
-                                        ( { model | dataCache = DCache.put (NewbornExamDataCache newbornExamRec) model.dataCache }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (NewbornExamDataCache newbornExamRec) model.dataCache }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (AddPostpartumCheckType (PostpartumMsg (Data.Postpartum.DataCache _ _)) postpartumCheckRecordNew) ->
                                     let
@@ -1042,21 +1068,21 @@ updateMessage incoming model =
                                                     DCache.put (PostpartumCheckDataCache (postpartumCheckRec :: recs)) model.dataCache
 
                                                 _ ->
-                                                    DCache.put (PostpartumCheckDataCache ([postpartumCheckRec])) model.dataCache
+                                                    DCache.put (PostpartumCheckDataCache [ postpartumCheckRec ]) model.dataCache
 
                                         subMsg =
                                             Data.Postpartum.DataCache (Just model.dataCache) (Just [ PostpartumCheck ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform PostpartumMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform PostpartumMsg (Task.succeed subMsg)
+                                    )
 
                                 _ ->
                                     let
                                         msgText =
                                             "OOPS, unhandled processType in Medical.updateMessage in the DataAddMessage branch."
                                     in
-                                        ( model, logConsole msgText )
+                                    ( model, logConsole msgText )
 
                         False ->
                             -- This could be due to a session timeout, among other issues.
@@ -1071,7 +1097,7 @@ updateMessage incoming model =
                                 _ ->
                                     ( model, logConsole <| toString dataAddMsg.response )
             in
-                { newModel | processStore = processStore } => newCmd
+            { newModel | processStore = processStore } => newCmd
 
         DataChgMessage dataChgMsg ->
             -- Results of attempting to update a record on the server.
@@ -1096,9 +1122,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Baby ])
                                     in
-                                        ( { model | dataCache = DCache.put (BabyDataCache babyRecord) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (BabyDataCache babyRecord) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateBabyLabType (ContPPMsg (Data.ContPP.DataCache _ _)) babyLabRecord) ->
                                     let
@@ -1120,9 +1146,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyLab ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateBabyMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyMedicationRecord) ->
                                     let
@@ -1144,9 +1170,9 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyMedication ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateBabyVaccinationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyVaccinationRecord) ->
                                     let
@@ -1168,18 +1194,18 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ BabyVaccination ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateBirthCertificateType (BirthCertMsg (Data.BirthCert.DataCache _ _)) birthCertificateRecord) ->
                                     let
                                         subMsg =
                                             Data.BirthCert.DataCache (Just model.dataCache) (Just [ BirthCertificate ])
                                     in
-                                        ( { model | dataCache = DCache.put (BirthCertificateDataCache birthCertificateRecord) model.dataCache }
-                                        , Task.perform BirthCertMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (BirthCertificateDataCache birthCertificateRecord) model.dataCache }
+                                    , Task.perform BirthCertMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateContPostpartumCheckType (ContPPMsg (Data.ContPP.DataCache _ _)) contPostpartumCheckRecord) ->
                                     let
@@ -1201,18 +1227,18 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ ContPostpartumCheck ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateDischargeType (ContPPMsg (Data.ContPP.DataCache _ _)) dischargeRecord) ->
                                     let
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ Discharge ])
                                     in
-                                        ( { model | dataCache = DCache.put (DischargeDataCache dischargeRecord) model.dataCache }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (DischargeDataCache dischargeRecord) model.dataCache }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateLaborType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborRecord) ->
                                     -- TODO: why only updating the data cache here and not the top-level laborRecord?
@@ -1224,12 +1250,12 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
-                                        ( { model
-                                            | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
-                                            , laborRecords = Just laborRecs
-                                          }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model
+                                        | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
+                                        , laborRecords = Just laborRecs
+                                      }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateLaborType (AdmittingMsg (Data.Admitting.DataCache _ _)) laborRecord) ->
                                     let
@@ -1239,48 +1265,48 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.Admitting.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
-                                        ( { model
-                                            | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
-                                            , laborRecords = Just laborRecs
-                                          }
-                                        , Task.perform AdmittingMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model
+                                        | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
+                                        , laborRecords = Just laborRecs
+                                      }
+                                    , Task.perform AdmittingMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateLaborStage1Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage1Record) ->
                                     let
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage1 ])
                                     in
-                                        ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Record) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (LaborStage1DataCache laborStage1Record) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateLaborStage2Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage2Record) ->
                                     let
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage2 ])
                                     in
-                                        ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Record) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (LaborStage2DataCache laborStage2Record) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateLaborStage3Type (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborStage3Record) ->
                                     let
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ LaborStage3 ])
                                     in
-                                        ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Record) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (LaborStage3DataCache laborStage3Record) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateMembraneType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) membraneRecord) ->
                                     let
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Membrane ])
                                     in
-                                        ( { model | dataCache = DCache.put (MembraneDataCache membraneRecord) model.dataCache }
-                                        , Task.perform LaborDelIppMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (MembraneDataCache membraneRecord) model.dataCache }
+                                    , Task.perform LaborDelIppMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateMotherMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) motherMedicationRecord) ->
                                     let
@@ -1302,18 +1328,18 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ MotherMedication ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdateNewbornExamType (ContPPMsg (Data.ContPP.DataCache _ _)) newbornExamRecord) ->
                                     let
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ NewbornExam ])
                                     in
-                                        ( { model | dataCache = DCache.put (NewbornExamDataCache newbornExamRecord) model.dataCache }
-                                        , Task.perform ContPPMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = DCache.put (NewbornExamDataCache newbornExamRecord) model.dataCache }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
 
                                 Just (UpdatePostpartumCheckType (PostpartumMsg (Data.Postpartum.DataCache _ _)) postpartumCheckRecord) ->
                                     let
@@ -1335,17 +1361,17 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.Postpartum.DataCache (Just model.dataCache) (Just [ PostpartumCheck ])
                                     in
-                                        ( { model | dataCache = dc }
-                                        , Task.perform PostpartumMsg (Task.succeed subMsg)
-                                        )
+                                    ( { model | dataCache = dc }
+                                    , Task.perform PostpartumMsg (Task.succeed subMsg)
+                                    )
 
                                 _ ->
                                     let
                                         msgText =
                                             "OOPS, unhandled processType in Medical.updateMessage in the DataChgMessage branch: "
-                                                ++ (toString processType)
+                                                ++ toString processType
                                     in
-                                        ( model, logConsole msgText )
+                                    ( model, logConsole msgText )
 
                         False ->
                             -- This could be due to a session timeout, among other issues.
@@ -1360,7 +1386,7 @@ updateMessage incoming model =
                                 _ ->
                                     ( model, logConsole <| toString dataChgMsg.response )
             in
-                { newModel | processStore = processStore } => newCmd
+            { newModel | processStore = processStore } => newCmd
 
         DataSelectMessage dataMsg ->
             -- Results of requests for data from the server.
@@ -1395,10 +1421,10 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl
-                                                    | babyRecords = Just <| Dict.fromList dictList
-                                                    , dataCache = dc
-                                                }
+                                            { mdl
+                                                | babyRecords = Just <| Dict.fromList dictList
+                                                , dataCache = dc
+                                            }
 
                                         TableRecordBabyLab recs ->
                                             { mdl | dataCache = DCache.put (BabyLabDataCache recs) mdl.dataCache }
@@ -1433,17 +1459,16 @@ updateMessage incoming model =
 
                                                         Nothing ->
                                                             mdl.dataCache
-
                                             in
-                                                { mdl | dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordContPostpartumCheck recs ->
                                             let
                                                 dc =
                                                     DCache.put (ContPostpartumCheckDataCache recs) mdl.dataCache
                                             in
-                                                -- Only adding contPostpartumCheck records into data cache.
-                                                { mdl | dataCache = dc }
+                                            -- Only adding contPostpartumCheck records into data cache.
+                                            { mdl | dataCache = dc }
 
                                         TableRecordDischarge recs ->
                                             -- There should ever be only one discharge record
@@ -1458,7 +1483,7 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl | dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordKeyValue recs ->
                                             let
@@ -1473,7 +1498,7 @@ updateMessage incoming model =
                                                 dictList =
                                                     List.map (\rec -> ( rec.id, rec )) recs
                                             in
-                                                { mdl | laborRecords = Just <| Dict.fromList dictList }
+                                            { mdl | laborRecords = Just <| Dict.fromList dictList }
 
                                         TableRecordLaborStage1 recs ->
                                             -- There should ever be only one stage 1 record
@@ -1488,7 +1513,7 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl | dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordLaborStage2 recs ->
                                             -- There should ever be only one stage 2 record
@@ -1503,7 +1528,7 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl | dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordLaborStage3 recs ->
                                             -- There should ever be only one stage 3 record
@@ -1518,7 +1543,7 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl | dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordMembrane recs ->
                                             let
@@ -1529,9 +1554,8 @@ updateMessage incoming model =
 
                                                         Nothing ->
                                                             mdl.dataCache
-
                                             in
-                                                { mdl | dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordMotherMedication recs ->
                                             { mdl | dataCache = DCache.put (MotherMedicationDataCache recs) mdl.dataCache }
@@ -1550,9 +1574,8 @@ updateMessage incoming model =
 
                                                         Nothing ->
                                                             mdl.dataCache
-
                                             in
-                                                { mdl | dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordPatient recs ->
                                             -- We only ever want one patient in our store at a time.
@@ -1570,15 +1593,15 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl | patientRecord = rec, dataCache = dc }
+                                            { mdl | patientRecord = rec, dataCache = dc }
 
                                         TableRecordPostpartumCheck recs ->
                                             let
                                                 dc =
                                                     DCache.put (PostpartumCheckDataCache recs) mdl.dataCache
                                             in
-                                                -- Only adding contPostpartumCheck records into data cache.
-                                                { mdl | dataCache = dc }
+                                            -- Only adding contPostpartumCheck records into data cache.
+                                            { mdl | dataCache = dc }
 
                                         TableRecordPregnancy recs ->
                                             -- We only ever want one pregnancy in our store at a time.
@@ -1596,15 +1619,14 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                                { mdl | pregnancyRecord = rec, dataCache = dc }
+                                            { mdl | pregnancyRecord = rec, dataCache = dc }
 
                                         TableRecordSelectData recs ->
                                             let
                                                 dc =
                                                     DCache.put (SelectDataDataCache recs) mdl.dataCache
                                             in
-                                                { mdl | selectDataRecords = recs, dataCache = dc }
-
+                                            { mdl | selectDataRecords = recs, dataCache = dc }
                                 )
                                 model
                                 dataMsg.response.data
@@ -1613,107 +1635,107 @@ updateMessage incoming model =
                             -- TODO: handle failure better here.
                             model
             in
-                let
-                    newModel2 =
-                        { newModel | processStore = processStore }
-                in
-                    case processType of
-                        -- Send the message retrieved from the processing store.
-                        Just (AddBabyType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+            let
+                newModel2 =
+                    { newModel | processStore = processStore }
+            in
+            case processType of
+                -- Send the message retrieved from the processing store.
+                Just (AddBabyType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddBabyLabType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddBabyLabType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddBabyMedicationType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddBabyMedicationType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddBabyVaccinationType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddBabyVaccinationType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddBirthCertificateType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddBirthCertificateType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddContPostpartumCheckType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddContPostpartumCheckType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddDischargeType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddDischargeType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddMotherMedicationType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddMotherMedicationType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddPostpartumCheckType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddPostpartumCheckType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateContPostpartumCheckType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateContPostpartumCheckType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateBabyType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateBabyType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateBabyLabType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateBabyLabType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateBabyMedicationType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateBabyMedicationType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateBabyVaccinationType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateBabyVaccinationType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateBirthCertificateType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateBirthCertificateType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateDischargeType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateDischargeType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddLaborType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddLaborType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateLaborType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateLaborType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddLaborStage1Type msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddLaborStage1Type msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateLaborStage1Type msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateLaborStage1Type msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddLaborStage2Type msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddLaborStage2Type msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateLaborStage2Type msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateLaborStage2Type msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddLaborStage3Type msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddLaborStage3Type msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateLaborStage3Type msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateLaborStage3Type msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddMembraneType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddMembraneType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateMembraneType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateMembraneType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateMotherMedicationType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateMotherMedicationType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (AddNewbornExamType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (AddNewbornExamType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdateNewbornExamType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdateNewbornExamType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (UpdatePostpartumCheckType msg _) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (UpdatePostpartumCheckType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Just (SelectQueryType msg selectQuery) ->
-                            newModel2 => Task.perform (always msg) (Task.succeed True)
+                Just (SelectQueryType msg selectQuery) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
 
-                        Nothing ->
-                            newModel2 => Cmd.none
+                Nothing ->
+                    newModel2 => Cmd.none
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -1729,20 +1751,25 @@ setRoute maybeRoute model =
         errored =
             pageErrored model
     in
-        case maybeRoute of
-            Nothing ->
-                { model | pageState = Loaded NotFound } => Cmd.none
+    case maybeRoute of
+        Nothing ->
+            { model | pageState = Loaded NotFound } => Cmd.none
 
-            Just (Route.AdmittingRoute) ->
-                case model.currPregId of
-                    Just pid ->
-                        PageAdmitting.init pid model.session model.processStore
-                            |> (\( store, cmd ) -> transition store cmd)
+        Just Route.AdmittingRoute ->
+            case model.currPregId of
+                Just pid ->
+                    PageAdmitting.init pid model.session model.processStore
+                        |> (\( store, cmd ) -> transition store cmd)
 
-                    Nothing ->
-                        { model | pageState = Loaded NotFound } => Cmd.none
+                Nothing ->
+                    { model | pageState = Loaded NotFound } => Cmd.none
 
-            Just (Route.BirthCertificateRoute) ->
+        Just Route.BirthCertificateRoute ->
+            if model.dialogActive then
+                -- We are coming back from an open dialog, so no need to
+                -- retrieve data from the server all over again.
+                { model | dialogActive = False } => Cmd.none
+            else
                 case ( model.currPregId, model.laborRecords ) of
                     ( Just pid, Just recs ) ->
                         let
@@ -1758,122 +1785,124 @@ setRoute maybeRoute model =
                                                 Date.toTime lr.admittanceDate
                                         )
                         in
-                            case laborRec of
-                                Just rec ->
-                                    if not rec.earlyLabor then
-                                        PageBirthCert.init pid rec model.session model.processStore
-                                            |> (\( store, cmd ) -> transition store cmd)
-                                    else
-                                        -- We don't go there if we are not ready.
-                                        model => Cmd.none
-
-                                Nothing ->
+                        case laborRec of
+                            Just rec ->
+                                if not rec.earlyLabor then
+                                    PageBirthCert.init pid rec model.session model.processStore
+                                        |> (\( store, cmd ) -> transition store cmd)
+                                else
                                     -- We don't go there if we are not ready.
                                     model => Cmd.none
+
+                            Nothing ->
+                                -- We don't go there if we are not ready.
+                                model => Cmd.none
 
                     ( _, _ ) ->
                         -- We don't go there if we are not ready.
                         model => Cmd.none
 
-            Just (Route.ContPPRoute) ->
-                if model.dialogActive then
-                    -- We are coming back from an open dialog, so no need to
-                    -- retrieve data from the server all over again.
-                    { model | dialogActive = False } => Cmd.none
-                else
-                    case ( model.currPregId, model.laborRecords ) of
-                        ( Just pregId, Just recs ) ->
-                            let
-                                -- Get the most recent labor record which we assume is
-                                -- the current one to use.
-                                laborRec =
-                                    Dict.values recs
-                                        |> LE.maximumBy
-                                            (\lr ->
-                                                if lr.earlyLabor then
-                                                    -1
-                                                else
-                                                    Date.toTime lr.admittanceDate
-                                            )
-                            in
-                                case laborRec of
-                                    Just rec ->
-                                        if not rec.earlyLabor then
-                                            PageContPP.init pregId rec model.session model.processStore
-                                                |> (\( store, cmd ) -> transition store cmd)
-                                        else
-                                            -- We don't go there if we are not ready.
-                                            model => Cmd.none
+        Just Route.BirthCertificateDialogRoute ->
+            model => Cmd.none
 
-                                    Nothing ->
-                                        -- We don't go there if we are not ready.
-                                        model => Cmd.none
+        Just Route.ContPPRoute ->
+            if model.dialogActive then
+                -- We are coming back from an open dialog, so no need to
+                -- retrieve data from the server all over again.
+                { model | dialogActive = False } => Cmd.none
+            else
+                case ( model.currPregId, model.laborRecords ) of
+                    ( Just pregId, Just recs ) ->
+                        let
+                            -- Get the most recent labor record which we assume is
+                            -- the current one to use.
+                            laborRec =
+                                Dict.values recs
+                                    |> LE.maximumBy
+                                        (\lr ->
+                                            if lr.earlyLabor then
+                                                -1
+                                            else
+                                                Date.toTime lr.admittanceDate
+                                        )
+                        in
+                        case laborRec of
+                            Just rec ->
+                                if not rec.earlyLabor then
+                                    PageContPP.init pregId rec model.session model.processStore
+                                        |> (\( store, cmd ) -> transition store cmd)
+                                else
+                                    -- We don't go there if we are not ready.
+                                    model => Cmd.none
 
-                        ( _, _ ) ->
-                            -- We don't go there if we are not ready.
-                            model => Cmd.none
+                            Nothing ->
+                                -- We don't go there if we are not ready.
+                                model => Cmd.none
 
-            Just (Route.ContPPDialogRoute) ->
-                model => Cmd.none
+                    ( _, _ ) ->
+                        -- We don't go there if we are not ready.
+                        model => Cmd.none
 
-            Just (Route.LaborDelIppRoute) ->
-                case model.currPregId of
-                    Just pid ->
-                        if model.dialogActive then
-                            -- We are coming back from an open dialog, so no need to
-                            -- retrieve data from the server all over again.
-                            { model | dialogActive = False } => Cmd.none
-                        else
-                            PageLaborDelIpp.init pid model.session model.processStore
-                                |> (\( store, cmd ) -> transition store cmd)
+        Just Route.ContPPDialogRoute ->
+            model => Cmd.none
 
-                    Nothing ->
-                        { model | pageState = Loaded NotFound } => Cmd.none
+        Just Route.LaborDelIppRoute ->
+            case model.currPregId of
+                Just pid ->
+                    if model.dialogActive then
+                        -- We are coming back from an open dialog, so no need to
+                        -- retrieve data from the server all over again.
+                        { model | dialogActive = False } => Cmd.none
+                    else
+                        PageLaborDelIpp.init pid model.session model.processStore
+                            |> (\( store, cmd ) -> transition store cmd)
 
-            Just (Route.LaborDelIppDialogRoute) ->
-                model => Cmd.none
+                Nothing ->
+                    { model | pageState = Loaded NotFound } => Cmd.none
 
-            Just (Route.PostpartumRoute) ->
-                if model.dialogActive then
-                    -- We are coming back from an open dialog, so no need to
-                    -- retrieve data from the server all over again.
-                    { model | dialogActive = False } => Cmd.none
-                else
-                    case ( model.currPregId, model.laborRecords ) of
-                        ( Just pregId, Just recs ) ->
-                            let
-                                -- Get the most recent labor record which we assume is
-                                -- the current one to use.
-                                laborRec =
-                                    Dict.values recs
-                                        |> LE.maximumBy
-                                            (\lr ->
-                                                if lr.earlyLabor then
-                                                    -1
-                                                else
-                                                    Date.toTime lr.admittanceDate
-                                            )
-                            in
-                                case laborRec of
-                                    Just rec ->
-                                        if not rec.earlyLabor then
-                                            PagePostpartum.init pregId rec model.session model.processStore
-                                                |> (\( store, cmd ) -> transition store cmd)
-                                        else
-                                            -- We don't go there if we are not ready.
-                                            model => Cmd.none
+        Just Route.LaborDelIppDialogRoute ->
+            model => Cmd.none
 
-                                    Nothing ->
-                                        -- We don't go there if we are not ready.
-                                        model => Cmd.none
+        Just Route.PostpartumRoute ->
+            if model.dialogActive then
+                -- We are coming back from an open dialog, so no need to
+                -- retrieve data from the server all over again.
+                { model | dialogActive = False } => Cmd.none
+            else
+                case ( model.currPregId, model.laborRecords ) of
+                    ( Just pregId, Just recs ) ->
+                        let
+                            -- Get the most recent labor record which we assume is
+                            -- the current one to use.
+                            laborRec =
+                                Dict.values recs
+                                    |> LE.maximumBy
+                                        (\lr ->
+                                            if lr.earlyLabor then
+                                                -1
+                                            else
+                                                Date.toTime lr.admittanceDate
+                                        )
+                        in
+                        case laborRec of
+                            Just rec ->
+                                if not rec.earlyLabor then
+                                    PagePostpartum.init pregId rec model.session model.processStore
+                                        |> (\( store, cmd ) -> transition store cmd)
+                                else
+                                    -- We don't go there if we are not ready.
+                                    model => Cmd.none
 
-                        ( _, _ ) ->
-                            -- We don't go there if we are not ready.
-                            model => Cmd.none
+                            Nothing ->
+                                -- We don't go there if we are not ready.
+                                model => Cmd.none
 
-            Just (Route.PostpartumDialogRoute) ->
-                model => Cmd.none
+                    ( _, _ ) ->
+                        -- We don't go there if we are not ready.
+                        model => Cmd.none
 
+        Just Route.PostpartumDialogRoute ->
+            model => Cmd.none
 
 
 pageErrored : Model -> ActivePage -> String -> ( Model, Cmd msg )
@@ -1882,7 +1911,7 @@ pageErrored model activePage errorMessage =
         error =
             Errored.pageLoadError activePage errorMessage
     in
-        { model | pageState = Loaded (Errored error) } => Cmd.none
+    { model | pageState = Loaded (Errored error) } => Cmd.none
 
 
 
