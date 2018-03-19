@@ -971,6 +971,10 @@ update session msg model =
             -- when the user uses the back button to back out of a dialog.
             ( closeAllDialogs model, Cmd.none, Cmd.none )
 
+        ContPPTick time ->
+            -- Keep the current time in the Model.
+            ( { model | currTime = time }, Cmd.none, Cmd.none )
+
         DataCache dc tbls ->
             -- If the dataCache and tables are something, this is the top-level
             -- intentionally sending it's dataCache to us as a read-only update

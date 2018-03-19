@@ -449,6 +449,10 @@ refreshModelFromCache dc tables model =
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
 update session msg model =
     case msg of
+        BirthCertTick time ->
+            -- Keep the current time in the Model.
+            ( { model | currTime = time }, Cmd.none, Cmd.none )
+
         CloseAllDialogs ->
             -- Close all of the open dialogs that we have. This may be called
             -- when the user uses the back button to back out of a dialog.

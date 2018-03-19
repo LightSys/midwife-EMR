@@ -10,6 +10,7 @@ import Data.DatePicker exposing (DateFieldMessage)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 import Data.Table exposing (Table)
 import Dict exposing (Dict)
+import Time exposing (Time)
 
 
 type SubMsg
@@ -27,6 +28,7 @@ type SubMsg
     | FldChgSubMsg Field FldChgValue
     | HandleBirthCertificateModal Dialog
     | CloseAllDialogs
+    | BirthCertTick Time
 
 
 type Field

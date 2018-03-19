@@ -1091,6 +1091,10 @@ update session msg model =
         OpenDatePickerSubMsg id ->
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
 
+        PostpartumTick time ->
+            -- Keep the current time in the Model.
+            ( { model | currTime = time }, Cmd.none, Cmd.none )
+
         RotatePregHeaderContent pregHeaderMsg ->
             case pregHeaderMsg of
                 PregHeaderData.RotatePregHeaderContentMsg ->

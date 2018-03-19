@@ -12,6 +12,7 @@ import Data.DatePicker exposing (DateFieldMessage)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 import Data.Table exposing (Table)
 import Dict exposing (Dict)
+import Time exposing (Time)
 
 
 type SubMsg
@@ -35,6 +36,7 @@ type SubMsg
     | DateFieldSubMsg DateFieldMessage
     | FldChgSubMsg Field FldChgValue
     | CloseAllDialogs
+    | ContPPTick Time
 
 
 {-| The Int parameter refers to the respective

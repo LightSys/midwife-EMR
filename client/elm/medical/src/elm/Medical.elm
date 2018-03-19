@@ -238,6 +238,30 @@ update msg noAutoTouchModel =
                 -- We send the time to all of the pages that are interested here.
                 ( newModel2, newCmd2 ) =
                     case page of
+                        Admitting subModel ->
+                            updateForPage Admitting
+                                AdmittingMsg
+                                newModel
+                                (PageAdmitting.update newModel.session)
+                                (AdmittingTickSubMsg time)
+                                subModel
+
+                        BirthCert subModel ->
+                            updateForPage BirthCert
+                                BirthCertMsg
+                                newModel
+                                (PageBirthCert.update newModel.session)
+                                (BirthCertTick time)
+                                subModel
+
+                        ContPP subModel ->
+                            updateForPage ContPP
+                                ContPPMsg
+                                newModel
+                                (PageContPP.update newModel.session)
+                                (ContPPTick time)
+                                subModel
+
                         LaborDelIpp subModel ->
                             updateForPage LaborDelIpp
                                 LaborDelIppMsg
@@ -246,12 +270,12 @@ update msg noAutoTouchModel =
                                 (TickSubMsg time)
                                 subModel
 
-                        Admitting subModel ->
-                            updateForPage Admitting
-                                AdmittingMsg
+                        Postpartum subModel ->
+                            updateForPage Postpartum
+                                PostpartumMsg
                                 newModel
-                                (PageAdmitting.update newModel.session)
-                                (AdmittingTickSubMsg time)
+                                (PagePostpartum.update newModel.session)
+                                (PostpartumTick time)
                                 subModel
 
                         _ ->
