@@ -35,7 +35,9 @@ type Table
     | Patient
     | PostpartumCheck
     | Pregnancy
+    | Role
     | SelectData
+    | User
 
 
 
@@ -119,8 +121,14 @@ tableToString tbl =
         Pregnancy ->
             "pregnancy"
 
+        Role ->
+            "role"
+
         SelectData ->
             "selectData"
+
+        User ->
+            "user"
 
 
 stringToTable : String -> Table
@@ -192,8 +200,14 @@ stringToTable tbl =
         "pregnancy" ->
             Pregnancy
 
+        "role" ->
+            Role
+
         "selectData" ->
             SelectData
+
+        "user" ->
+            User
 
         _ ->
             Unknown

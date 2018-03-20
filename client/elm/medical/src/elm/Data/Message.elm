@@ -1,22 +1,20 @@
 module Data.Message
     exposing
-        ( decodeIncoming
-        , IncomingMessage(..)
+        ( IncomingMessage(..)
         , MsgType(..)
+        , decodeIncoming
         , wrapPayload
         )
-
-import Json.Decode as JD
-import Json.Decode.Pipeline as JDP
-import Json.Encode as JE
-
 
 -- LOCAL IMPORTS --
 
 import Data.Processing exposing (ProcessId(..))
 import Data.SiteMessage exposing (SiteKeyValue(..), SiteMsg, siteMsg)
-import Data.Table exposing (decodeTable, Table(..))
+import Data.Table exposing (Table(..), decodeTable)
 import Data.TableRecord as DTR exposing (TableRecord(..), tableRecord)
+import Json.Decode as JD
+import Json.Decode.Pipeline as JDP
+import Json.Encode as JE
 
 
 type MsgType
@@ -58,6 +56,7 @@ msgTypeToString mt =
 
         AdhocTouchType ->
             "ADHOC_TOUCH_SESSION"
+
 
 {-| Wrap a JSON Value in an outer message wrapper
 along with the process id and message type associated
@@ -198,6 +197,82 @@ dataChgMsg =
         |> JDP.required "response" dataChgMsgResponse
 
 
+
+-- Data Notification Messages --
+
+
+type NotificationType
+    = AddNotificationType
+    | ChgNotificationType
+    | DelNotificationType
+    | UnknownNotificationType
+
+
+type alias DataNotificationMsg =
+    { namespace : String
+    , msgType : String
+    , payload : DataNotificationPayload
+    }
+
+
+type alias DataNotificationPayload =
+    { table : Table
+    , id : Int
+    , notificationType : NotificationType
+    , foreignKeys : List ForeignKeys
+    }
+
+
+type alias ForeignKeys =
+    { table : Table
+    , id : Int
+    }
+
+
+dataNotificationMsg : JD.Decoder DataNotificationMsg
+dataNotificationMsg =
+    JDP.decode DataNotificationMsg
+        |> JDP.required "namespace" JD.string
+        |> JDP.required "msgType" JD.string
+        |> JDP.required "payload" dataNotificationPayload
+
+
+dataNotificationPayload : JD.Decoder DataNotificationPayload
+dataNotificationPayload =
+    JDP.decode DataNotificationPayload
+        |> JDP.required "table" decodeTable
+        |> JDP.required "id" JD.int
+        |> JDP.required "notificationType" (JD.string |> JD.map stringToNotificationType)
+        |> JDP.required "foreignKeys" (JD.list foreignKeys)
+
+
+foreignKeys : JD.Decoder ForeignKeys
+foreignKeys =
+    JDP.decode ForeignKeys
+        |> JDP.required "table" decodeTable
+        |> JDP.required "id" JD.int
+
+
+stringToNotificationType : String -> NotificationType
+stringToNotificationType str =
+    case str of
+        "DATA_ADD" ->
+            AddNotificationType
+
+        "DATA_CHANGE" ->
+            ChgNotificationType
+
+        "DATA_DELETE" ->
+            DelNotificationType
+
+        _ ->
+            let
+                _ =
+                    Debug.log "Message.stringToNotificationType UnknownNotificationType" str
+            in
+            UnknownNotificationType
+
+
 {-| The optional id allows an errorCode returned
 from the server to propogate to be properly handled
 downstream in the update.
@@ -222,6 +297,7 @@ type IncomingMessage
     | DataSelectMessage DataSelectMsg
     | DataAddMessage DataAddMsg
     | DataChgMessage DataChgMsg
+    | DataNotificationMessage DataNotificationMsg
 
 
 decodeIncoming : JE.Value -> IncomingMessage
@@ -235,7 +311,7 @@ decodeIncoming payload =
                 _ =
                     Debug.log "decodeIncoming decoding error" message
             in
-                UnknownMessage message
+            UnknownMessage message
 
 
 {-| Parse incoming messages.
@@ -275,6 +351,9 @@ msgTypeHelper msgType =
 
         "CHG" ->
             JD.map DataChgMessage dataChgMsg
+
+        "ADD_CHG_DELETE" ->
+            JD.map DataNotificationMessage dataNotificationMsg
 
         _ ->
             JD.map DataSelectMessage dataMsg

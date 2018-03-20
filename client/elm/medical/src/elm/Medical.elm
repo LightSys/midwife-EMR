@@ -1412,6 +1412,10 @@ updateMessage incoming model =
             in
             { newModel | processStore = processStore } => newCmd
 
+        DataNotificationMessage dataNotificationMsg ->
+            -- The payload field has what we want.
+            model => Cmd.none
+
         DataSelectMessage dataMsg ->
             -- Results of requests for data from the server.
             let
