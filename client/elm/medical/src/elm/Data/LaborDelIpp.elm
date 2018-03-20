@@ -57,7 +57,7 @@ type SubMsg
     | ClearStage3DateTime
     | ClearEarlyLaborDateTime
       -- We are supplied date/time so we can prefill date/time fields.
-    | TickSubMsg Time
+    | LaborDelIppTick Time
       -- Our labor records have been loaded from the server.
     | LaborDetailsLoaded
       -- Our current labor record.

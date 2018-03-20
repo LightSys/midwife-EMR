@@ -243,7 +243,7 @@ update msg noAutoTouchModel =
                                 AdmittingMsg
                                 newModel
                                 (PageAdmitting.update newModel.session)
-                                (AdmittingTickSubMsg time)
+                                (AdmittingTick time)
                                 subModel
 
                         BirthCert subModel ->
@@ -267,7 +267,7 @@ update msg noAutoTouchModel =
                                 LaborDelIppMsg
                                 newModel
                                 (PageLaborDelIpp.update newModel.session)
-                                (TickSubMsg time)
+                                (LaborDelIppTick time)
                                 subModel
 
                         Postpartum subModel ->

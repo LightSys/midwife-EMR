@@ -655,7 +655,7 @@ update session msg model =
         AdmittingPageNoop ->
             ( model, Cmd.none, Cmd.none )
 
-        AdmittingTickSubMsg time ->
+        AdmittingTick time ->
             ( { model | currTime = time }, Cmd.none, Cmd.none )
 
         DataCache dc tbls ->

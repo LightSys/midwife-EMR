@@ -3078,7 +3078,7 @@ update session msg model =
             , Cmd.none
             )
 
-        TickSubMsg time ->
+        LaborDelIppTick time ->
             -- Keep the current time in the Model.
             ( { model | currTime = time }, Cmd.none, Cmd.none )
 

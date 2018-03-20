@@ -21,7 +21,7 @@ import Data.Table exposing (Table)
 type AdmittingSubMsg
     = AdmittingPageNoop
       -- Date/time from the top-level so we can prefill date/time fields.
-    | AdmittingTickSubMsg Time
+    | AdmittingTick Time
       -- Current view of pregnancy header.
     | RotatePregHeaderContent PregHeaderContentMsg
       -- Our data cache.
