@@ -51,7 +51,7 @@ type DataCache
     | ContPostpartumCheckDataCache (List ContPostpartumCheckRecord)
     | DischargeDataCache DischargeRecord
     | KeyValueDataCache (Dict String KeyValueRecord)
-    | LaborDataCache (Dict Int LaborRecord)
+    | LaborDataCache LaborRecord
     | LaborStage1DataCache LaborStage1Record
     | LaborStage2DataCache LaborStage2Record
     | LaborStage3DataCache LaborStage3Record

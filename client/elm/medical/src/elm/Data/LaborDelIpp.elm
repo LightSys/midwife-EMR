@@ -46,7 +46,6 @@ type SubMsg
     | HandleStage2SummaryModal Dialog
     | HandleStage3DateTimeModal Dialog
     | HandleStage3SummaryModal Dialog
-    | HandleEarlyLaborDateTimeModal Dialog
     | HandleMembraneSummaryModal Dialog
     | HandleBabySummaryModal Dialog
     | AddApgarWizard AddOtherApgar
@@ -131,8 +130,6 @@ type Field
     | Stage3CotyledonsFld
     | Stage3MembranesFld
     | Stage3CommentsFld
-    | EarlyLaborDateFld
-    | EarlyLaborTimeFld
     | BabyLastnameFld
     | BabyFirstnameFld
     | BabyMiddlenameFld

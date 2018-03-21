@@ -228,6 +228,7 @@ ALTER TABLE laborLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE laborLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE laborLog DROP PRIMARY KEY;
 ALTER TABLE laborLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE laborLog DROP KEY pregnancy_id;
 --
 -- Creating laborStage1Log
 SELECT 'laborStage1Log' AS Creating FROM DUAL;

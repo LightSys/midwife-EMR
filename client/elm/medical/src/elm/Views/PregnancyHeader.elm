@@ -86,26 +86,16 @@ useLargerFont winSize =
 viewLabor :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (Dict Int LaborRecord)
+    -> Maybe LaborRecord
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
     -> Bool
     -> Html PregHeaderContentMsg
-viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize raisePara =
+viewLabor patRec pregRec laborRec pregHeaderCnt currTime winSize raisePara =
     let
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
-
-        -- TODO: figure out better way to determine record in use.
-        laborRec =
-            case laborRecs of
-                Just recs ->
-                    List.reverse (Dict.values recs)
-                        |> List.head
-
-                Nothing ->
-                    Nothing
 
         partnerName =
             case ( pregRec.partnerFirstname, pregRec.partnerLastname ) of
@@ -226,12 +216,12 @@ viewIPP patRec pregRec ({ laborStage2Record, contPostpartumCheckRecords } as lab
 viewPrenatal :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (Dict Int LaborRecord)
+    -> Maybe LaborRecord
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
     -> Html PregHeaderContentMsg
-viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+viewPrenatal patRec pregRec laborRec pregHeaderCnt currTime winSize =
     let
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
@@ -493,16 +483,11 @@ ippColumnThree : LaborInfo -> Html msg
 ippColumnThree laborInfo =
     let
         laborStart =
-            case ( laborInfo.laborRecord, laborInfo.laborStage1Record ) of
-                ( Just recs, Just s1Rec ) ->
-                    case Dict.get s1Rec.labor_id recs of
-                        Just laborRec ->
-                            Just laborRec.startLaborDate
+            case laborInfo.laborRecord of
+                Just rec ->
+                    Just rec.startLaborDate
 
-                        Nothing ->
-                            Nothing
-
-                ( _, _ ) ->
+                Nothing ->
                     Nothing
 
         ( stg1, stg2, stg3 ) =

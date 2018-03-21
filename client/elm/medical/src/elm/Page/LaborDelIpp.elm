@@ -151,7 +151,7 @@ type alias Model =
     , pendingSelectQuery : Dict String Table
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
-    , laborRecords : Maybe (Dict Int LaborRecord)
+    , laborRecord : Maybe LaborRecord
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
@@ -282,9 +282,9 @@ buildModel :
     -> PregnancyId
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
-    -> Maybe (Dict Int LaborRecord)
+    -> Maybe LaborRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
+buildModel browserSupportsDate currTime store pregId patrec pregRec laborRec =
     let
         -- Sort by the admittanceDate, descending.
         admitSort a b =
@@ -293,39 +293,23 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
         -- Determine state of the labor by labor records, if any, and
         -- request additional records from the server if needed.
         ( laborId, ( newStore, newOuterMsg ) ) =
-            case laborRecs of
-                Just recs ->
-                    -- Get the most recent labor record.
-                    case
-                        List.sortWith admitSort (Dict.values recs)
-                            |> List.head
-                    of
-                        Just rec ->
-                            ( Just <| LaborId rec.id
-                            , getTableData store
-                                Labor
-                                (Just rec.id)
-                                [ LaborStage1, LaborStage2, LaborStage3, Baby, Membrane ]
-                            )
-
-                        Nothing ->
-                            -- Since no labor is selected, we cannot be on this page.
-                            ( Nothing
-                            , ( store
-                              , Just Route.AdmittingRoute
-                                    |> Task.succeed
-                                    |> Task.perform SetRoute
-                              )
-                            )
+            case laborRec of
+                Just rec ->
+                    ( Just <| LaborId rec.id
+                    , getTableData store
+                        Labor
+                        (Just rec.id)
+                        [ LaborStage1, LaborStage2, LaborStage3, Baby, Membrane ]
+                    )
 
                 Nothing ->
                     -- Since no labor is selected, we cannot be on this page.
                     ( Nothing
                     , ( store
-                      , Just Route.AdmittingRoute
+                        , Just Route.AdmittingRoute
                             |> Task.succeed
                             |> Task.perform SetRoute
-                      )
+                        )
                     )
     in
     ( { browserSupportsDate = browserSupportsDate
@@ -337,7 +321,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRecs =
       , pendingSelectQuery = Dict.empty
       , patientRecord = patrec
       , pregnancyRecord = pregRec
-      , laborRecords = laborRecs
+      , laborRecord = laborRec
       , laborStage1Record = Nothing
       , laborStage2Record = Nothing
       , laborStage3Record = Nothing
@@ -609,7 +593,7 @@ view size session model =
                 ( Just patRec, Just pregRec ) ->
                     let
                         laborInfo =
-                            PregHeaderData.LaborInfo model.laborRecords
+                            PregHeaderData.LaborInfo model.laborRecord
                                 model.laborStage1Record
                                 model.laborStage2Record
                                 model.laborStage3Record
@@ -823,10 +807,6 @@ of the labor.
 
 Logic:
 
-  - hide early labor if labor stage 1 exists and has fullDialation set
-    or if membrane exists.
-  - hide membrane if labor record has earlyLabor set to True.
-  - hide stage 1 if labor record has earlyLabor set to True.
   - hide stage 2 if stage 1 is hidden or labor stage 1 does not exist
     or does not have fullDialation set.
   - hide stage 3 if stage 2 is hidden or labor stage 2 does not exist
@@ -849,29 +829,13 @@ viewStagesMembranesBaby model =
                 ( Nothing, Nothing ) ->
                     False
 
-        ( hideS1, hideMembrane ) =
-            case ( model.laborRecords, model.currLaborId ) of
-                ( Just recs, Just lid ) ->
-                    case Dict.get (getLaborId lid) recs of
-                        Just rec ->
-                            ( rec.earlyLabor, rec.earlyLabor )
-
-                        Nothing ->
-                            ( False, False )
-
-                ( _, _ ) ->
-                    -- Should not get here.
-                    ( False, False )
-
         hideS2 =
-            hideS1
-                || (case model.laborStage1Record of
-                        Just rec ->
-                            rec.fullDialation == Nothing
+            case model.laborStage1Record of
+                Just rec ->
+                    rec.fullDialation == Nothing
 
-                        Nothing ->
-                            True
-                   )
+                Nothing ->
+                    True
 
         hideS3 =
             hideS2
@@ -886,7 +850,7 @@ viewStagesMembranesBaby model =
         hideBaby =
             hideS3
 
-        hideMembranes =
+        hideMembrane =
             model.babyRecord == Nothing
 
         -- Raise an alert if placenta number of vessels is set to 2.
@@ -905,65 +869,6 @@ viewStagesMembranesBaby model =
     in
     H.div [ HA.class "stage-wrapper" ]
         [ H.div
-            [ HA.class "stage-content"
-            , HA.classList [ ( "isHidden", hideFalse ) ]
-            ]
-            [ H.div [ HA.class "c-text--brand c-text--loud" ]
-                [ H.text "Early Labor" ]
-            , H.div []
-                [ H.label [ HA.class "c-field c-field--choice c-field-minPadding" ]
-                    [ H.button
-                        [ HA.class "c-button c-button--ghost-brand u-small"
-                        , HE.onClick <| HandleEarlyLaborDateTimeModal OpenDialog
-                        ]
-                        [ H.text <|
-                            case ( model.laborRecords, model.currLaborId ) of
-                                ( Just recs, Just lid ) ->
-                                    case Dict.get (getLaborId lid) recs of
-                                        Just rec ->
-                                            case ( rec.earlyLabor, rec.dischargeDate ) of
-                                                ( True, Just d ) ->
-                                                    U.dateTimeHMFormatter
-                                                        U.MDYDateFmt
-                                                        U.DashDateSep
-                                                        d
-
-                                                ( _, _ ) ->
-                                                    "Click to set"
-
-                                        Nothing ->
-                                            "Click to set"
-
-                                ( _, _ ) ->
-                                    -- TODO: handle this path better.
-                                    "Click to set"
-                        ]
-                    , if model.browserSupportsDate then
-                        Form.dateTimeModal (model.earlyLaborDateTimeModal == EarlyLaborDateTimeModal)
-                            "Early Labor Date/Time"
-                            (FldChgString >> FldChgSubMsg EarlyLaborDateFld)
-                            (FldChgString >> FldChgSubMsg EarlyLaborTimeFld)
-                            (HandleEarlyLaborDateTimeModal CloseNoSaveDialog)
-                            (HandleEarlyLaborDateTimeModal CloseSaveDialog)
-                            ClearEarlyLaborDateTime
-                            model.earlyLaborDate
-                            model.earlyLaborTime
-                      else
-                        Form.dateTimePickerModal (model.earlyLaborDateTimeModal == EarlyLaborDateTimeModal)
-                            "Early Labor Date/Time"
-                            OpenDatePickerSubMsg
-                            (FldChgString >> FldChgSubMsg EarlyLaborDateFld)
-                            (FldChgString >> FldChgSubMsg EarlyLaborTimeFld)
-                            (HandleEarlyLaborDateTimeModal CloseNoSaveDialog)
-                            (HandleEarlyLaborDateTimeModal CloseSaveDialog)
-                            ClearEarlyLaborDateTime
-                            EarlyLaborDateField
-                            model.earlyLaborDate
-                            model.earlyLaborTime
-                    ]
-                ]
-            ]
-        , H.div
             [ HA.class "stage-content"
             , HA.classList [ ( "isHidden", hideMembrane ) ]
             ]
@@ -985,7 +890,6 @@ viewStagesMembranesBaby model =
             ]
         , H.div
             [ HA.class "stage-content"
-            , HA.classList [ ( "isHidden", hideS1 ) ]
             ]
             [ H.div [ HA.class "c-text--brand c-text--loud" ]
                 [ H.text "Stage 1 Ended" ]
@@ -1251,20 +1155,15 @@ dialogStage1SummaryEdit cfg =
                 Just rec ->
                     case rec.fullDialation of
                         Just fd ->
-                            case cfg.model.laborRecords of
-                                Just lrecs ->
-                                    case Dict.get rec.labor_id lrecs of
-                                        Just laborRec ->
-                                            ( U.diff2DatesString laborRec.startLaborDate fd
-                                            , Date.toTime laborRec.startLaborDate
-                                                - Date.toTime fd
-                                                |> Time.inMinutes
-                                                |> round
-                                                |> abs
-                                            )
-
-                                        Nothing ->
-                                            ( "", 0 )
+                            case cfg.model.laborRecord of
+                                Just laborRec ->
+                                    ( U.diff2DatesString laborRec.startLaborDate fd
+                                    , Date.toTime laborRec.startLaborDate
+                                        - Date.toTime fd
+                                        |> Time.inMinutes
+                                        |> round
+                                        |> abs
+                                    )
 
                                 Nothing ->
                                     ( "", 0 )
@@ -1416,14 +1315,9 @@ dialogStage1SummaryView cfg =
                     , Maybe.withDefault "" rec.comments
                     , case rec.fullDialation of
                         Just fd ->
-                            case cfg.model.laborRecords of
-                                Just lrecs ->
-                                    case Dict.get rec.labor_id lrecs of
-                                        Just laborRec ->
-                                            U.diff2DatesString laborRec.startLaborDate fd
-
-                                        Nothing ->
-                                            ""
+                            case cfg.model.laborRecord of
+                                Just laborRec ->
+                                    U.diff2DatesString laborRec.startLaborDate fd
 
                                 Nothing ->
                                     ""
@@ -2989,8 +2883,8 @@ refreshModelFromCache dc tables model =
 
                         Labor ->
                             case DataCache.get t dc of
-                                Just (LaborDataCache recs) ->
-                                    { m | laborRecords = Just recs }
+                                Just (LaborDataCache rec) ->
+                                    { m | laborRecord = Just rec }
 
                                 _ ->
                                     m
@@ -3288,12 +3182,6 @@ update session msg model =
 
                         Stage3CommentsFld ->
                             { model | s3Comments = Just value }
-
-                        EarlyLaborDateFld ->
-                            { model | earlyLaborDate = Date.fromString value |> Result.toMaybe }
-
-                        EarlyLaborTimeFld ->
-                            { model | earlyLaborTime = Just <| U.filterStringLikeTime value }
 
                         MembraneRuptureDateFld ->
                             { model | membraneRuptureDate = Date.fromString value |> Result.toMaybe }
@@ -4479,123 +4367,6 @@ update session msg model =
                             , Cmd.none
                             , toastError msgs 10
                             )
-
-        HandleEarlyLaborDateTimeModal dialogState ->
-            -- The user has just opened the modal to set the date/time for a
-            -- early labor. We default to the current date/time for convenience if
-            -- this is an open event, but only if the date/time has not already
-            -- been previously selected.
-            case dialogState of
-                OpenDialog ->
-                    ( case ( model.earlyLaborDate, model.earlyLaborTime ) of
-                        ( Nothing, Nothing ) ->
-                            -- If not yet set, the set the date/time to
-                            -- current as a convenience to user.
-                            { model
-                                | earlyLaborDateTimeModal = EarlyLaborDateTimeModal
-                                , earlyLaborDate = Just <| Date.fromTime model.currTime
-                                , earlyLaborTime = Just <| U.timeToTimeString model.currTime
-                            }
-
-                        ( _, _ ) ->
-                            { model | earlyLaborDateTimeModal = EarlyLaborDateTimeModal }
-                    , Cmd.none
-                    , Cmd.none
-                    )
-
-                CloseNoSaveDialog ->
-                    ( { model | earlyLaborDateTimeModal = NoDateTimeModal }, Cmd.none, Cmd.none )
-
-                EditDialog ->
-                    -- This dialog option is not used for early labor date time.
-                    ( model, Cmd.none, Cmd.none )
-
-                CloseSaveDialog ->
-                    -- Close and send LaborRecord to server as an update.
-                    case ( model.earlyLaborDate, model.earlyLaborTime, model.currLaborId, model.laborRecords ) of
-                        ( Just d, Just t, Just laborId, Just recs ) ->
-                            -- Setting date/time and setting the labor as a early labor.
-                            case Dict.get (getLaborId laborId) recs of
-                                Just laborRecord ->
-                                    case U.stringToTimeTuple t of
-                                        Just ( h, m ) ->
-                                            let
-                                                newLaborRec =
-                                                    { laborRecord
-                                                        | dischargeDate = Just (U.datePlusTimeTuple d ( h, m ))
-                                                        , earlyLabor = True
-                                                    }
-
-                                                outerMsg =
-                                                    ProcessTypeMsg
-                                                        (UpdateLaborType
-                                                            (LaborDelIppMsg
-                                                                (DataCache Nothing (Just [ Labor ]))
-                                                            )
-                                                            newLaborRec
-                                                        )
-                                                        ChgMsgType
-                                                        (laborRecordToValue newLaborRec)
-                                            in
-                                            ( { model
-                                                | earlyLaborDateTimeModal = NoDateTimeModal
-                                              }
-                                            , Cmd.none
-                                            , Task.perform (always outerMsg) (Task.succeed True)
-                                            )
-
-                                        Nothing ->
-                                            -- Time in the form is not right, so do nothing.
-                                            ( model, Cmd.none, Cmd.none )
-
-                                Nothing ->
-                                    -- Shouldn't get here because there has to be a labor record.
-                                    ( { model
-                                        | earlyLaborDateTimeModal = NoDateTimeModal
-                                        , earlyLaborDate = Nothing
-                                        , earlyLaborTime = Nothing
-                                      }
-                                    , Cmd.none
-                                    , Cmd.none
-                                    )
-
-                        ( _, _, Just laborId, Just recs ) ->
-                            -- Clearing the date/time therefore undoing the early labor
-                            -- and updating the server accordingly.
-                            case Dict.get (getLaborId laborId) recs of
-                                Just laborRecord ->
-                                    let
-                                        newLaborRec =
-                                            { laborRecord
-                                                | dischargeDate = Nothing
-                                                , earlyLabor = False
-                                            }
-
-                                        outerMsg =
-                                            ProcessTypeMsg
-                                                (UpdateLaborType
-                                                    (LaborDelIppMsg
-                                                        (DataCache Nothing (Just [ Labor ]))
-                                                    )
-                                                    newLaborRec
-                                                )
-                                                ChgMsgType
-                                                (laborRecordToValue newLaborRec)
-                                    in
-                                    ( { model
-                                        | earlyLaborDateTimeModal = NoDateTimeModal
-                                      }
-                                    , Cmd.none
-                                    , Task.perform (always outerMsg) (Task.succeed True)
-                                    )
-
-                                Nothing ->
-                                    -- Shouldn't get here because labor record not found.
-                                    ( model, Cmd.none, Cmd.none )
-
-                        ( _, _, _, _ ) ->
-                            -- Shouldn't get here because there has to be a labor record.
-                            ( model, Cmd.none, Cmd.none )
 
         HandleMembraneSummaryModal dialogState ->
             case dialogState of

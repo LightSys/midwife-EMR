@@ -876,13 +876,8 @@ refreshModelFromCache dc tables model =
 
                         Labor ->
                             case DataCache.get t dc of
-                                Just (LaborDataCache recs) ->
-                                    case Dict.values recs |> List.head of
-                                        Just rec ->
-                                            { m | laborRecord = rec }
-
-                                        Nothing ->
-                                            m
+                                Just (LaborDataCache rec) ->
+                                    { m | laborRecord = rec }
 
                                 _ ->
                                     m
@@ -3744,7 +3739,7 @@ view size session model =
                 ( Just patRec, Just pregRec ) ->
                     let
                         laborInfo =
-                            PregHeaderData.LaborInfo (Just (Dict.singleton model.laborRecord.id model.laborRecord))
+                            PregHeaderData.LaborInfo (Just model.laborRecord)
                                 model.laborStage1Record
                                 model.laborStage2Record
                                 model.laborStage3Record

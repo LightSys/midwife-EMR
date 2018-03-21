@@ -28,7 +28,7 @@ type PregHeaderContent
 
 
 type alias LaborInfo =
-    { laborRecord : Maybe (Dict Int LaborRecord)
+    { laborRecord : Maybe LaborRecord
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record

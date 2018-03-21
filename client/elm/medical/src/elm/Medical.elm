@@ -347,7 +347,7 @@ update msg noAutoTouchModel =
                         pregId
                         model.patientRecord
                         model.pregnancyRecord
-                        model.laborRecords
+                        model.laborRecord
             in
             { model
                 | pageState = Loaded (Admitting subModel)
@@ -528,7 +528,7 @@ update msg noAutoTouchModel =
                         pregId
                         model.patientRecord
                         model.pregnancyRecord
-                        model.laborRecords
+                        model.laborRecord
             in
             { model
                 | pageState = Loaded (LaborDelIpp subModel)
@@ -969,17 +969,16 @@ updateMessage incoming model =
 
                                 Just (AddLaborType (AdmittingMsg (AdmitForLaborSaved lrn _)) laborRecNew) ->
                                     let
-                                        laborRecs =
+                                        laborRec =
                                             laborRecordNewToLaborRecord
                                                 (LaborId dataAddMsg.response.id)
                                                 laborRecNew
-                                                |> (\lr -> Dict.insert dataAddMsg.response.id lr (Maybe.withDefault Dict.empty model.laborRecords))
                                                 |> Just
 
                                         subMsg =
                                             AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
                                     in
-                                    ( { model | laborRecords = laborRecs }
+                                    ( { model | laborRecord = laborRec }
                                     , Task.perform AdmittingMsg (Task.succeed subMsg)
                                     )
 
@@ -1268,30 +1267,24 @@ updateMessage incoming model =
                                     -- TODO: why only updating the data cache here and not the top-level laborRecord?
                                     -- Don't we want to do both? But if we do, which is the master record?
                                     let
-                                        laborRecs =
-                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecords)
-
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
                                     ( { model
-                                        | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
-                                        , laborRecords = Just laborRecs
+                                        | dataCache = DCache.put (LaborDataCache laborRecord) model.dataCache
+                                        , laborRecord = Just laborRecord
                                       }
                                     , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                     )
 
                                 Just (UpdateLaborType (AdmittingMsg (Data.Admitting.DataCache _ _)) laborRecord) ->
                                     let
-                                        laborRecs =
-                                            Dict.insert dataChgMsg.response.id laborRecord (Maybe.withDefault Dict.empty model.laborRecords)
-
                                         subMsg =
                                             Data.Admitting.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
                                     ( { model
-                                        | dataCache = DCache.put (LaborDataCache laborRecs) model.dataCache
-                                        , laborRecords = Just laborRecs
+                                        | dataCache = DCache.put (LaborDataCache laborRecord) model.dataCache
+                                        , laborRecord = Just laborRecord
                                       }
                                     , Task.perform AdmittingMsg (Task.succeed subMsg)
                                     )
@@ -1523,10 +1516,10 @@ updateMessage incoming model =
 
                                         TableRecordLabor recs ->
                                             let
-                                                dictList =
-                                                    List.map (\rec -> ( rec.id, rec )) recs
+                                                laborRec =
+                                                    List.head recs
                                             in
-                                            { mdl | laborRecords = Just <| Dict.fromList dictList }
+                                            { mdl | laborRecord = laborRec }
 
                                         TableRecordLaborStage1 recs ->
                                             -- There should ever be only one stage 1 record
@@ -1798,33 +1791,10 @@ setRoute maybeRoute model =
                 -- retrieve data from the server all over again.
                 { model | dialogActive = False } => Cmd.none
             else
-                case ( model.currPregId, model.laborRecords ) of
-                    ( Just pid, Just recs ) ->
-                        let
-                            -- Get the most recent labor record which we assume is
-                            -- the current one to use.
-                            laborRec =
-                                Dict.values recs
-                                    |> LE.maximumBy
-                                        (\lr ->
-                                            if lr.earlyLabor then
-                                                -1
-                                            else
-                                                Date.toTime lr.admittanceDate
-                                        )
-                        in
-                        case laborRec of
-                            Just rec ->
-                                if not rec.earlyLabor then
-                                    PageBirthCert.init pid rec model.session model.processStore
-                                        |> (\( store, cmd ) -> transition store cmd)
-                                else
-                                    -- We don't go there if we are not ready.
-                                    model => Cmd.none
-
-                            Nothing ->
-                                -- We don't go there if we are not ready.
-                                model => Cmd.none
+                case ( model.currPregId, model.laborRecord ) of
+                    ( Just pid, Just laborRec ) ->
+                        PageBirthCert.init pid laborRec model.session model.processStore
+                            |> (\( store, cmd ) -> transition store cmd)
 
                     ( _, _ ) ->
                         -- We don't go there if we are not ready.
@@ -1839,33 +1809,10 @@ setRoute maybeRoute model =
                 -- retrieve data from the server all over again.
                 { model | dialogActive = False } => Cmd.none
             else
-                case ( model.currPregId, model.laborRecords ) of
-                    ( Just pregId, Just recs ) ->
-                        let
-                            -- Get the most recent labor record which we assume is
-                            -- the current one to use.
-                            laborRec =
-                                Dict.values recs
-                                    |> LE.maximumBy
-                                        (\lr ->
-                                            if lr.earlyLabor then
-                                                -1
-                                            else
-                                                Date.toTime lr.admittanceDate
-                                        )
-                        in
-                        case laborRec of
-                            Just rec ->
-                                if not rec.earlyLabor then
-                                    PageContPP.init pregId rec model.session model.processStore
-                                        |> (\( store, cmd ) -> transition store cmd)
-                                else
-                                    -- We don't go there if we are not ready.
-                                    model => Cmd.none
-
-                            Nothing ->
-                                -- We don't go there if we are not ready.
-                                model => Cmd.none
+                case ( model.currPregId, model.laborRecord ) of
+                    ( Just pregId, Just laborRecord ) ->
+                        PageContPP.init pregId laborRecord model.session model.processStore
+                            |> (\( store, cmd ) -> transition store cmd)
 
                     ( _, _ ) ->
                         -- We don't go there if we are not ready.
@@ -1897,33 +1844,10 @@ setRoute maybeRoute model =
                 -- retrieve data from the server all over again.
                 { model | dialogActive = False } => Cmd.none
             else
-                case ( model.currPregId, model.laborRecords ) of
-                    ( Just pregId, Just recs ) ->
-                        let
-                            -- Get the most recent labor record which we assume is
-                            -- the current one to use.
-                            laborRec =
-                                Dict.values recs
-                                    |> LE.maximumBy
-                                        (\lr ->
-                                            if lr.earlyLabor then
-                                                -1
-                                            else
-                                                Date.toTime lr.admittanceDate
-                                        )
-                        in
-                        case laborRec of
-                            Just rec ->
-                                if not rec.earlyLabor then
-                                    PagePostpartum.init pregId rec model.session model.processStore
-                                        |> (\( store, cmd ) -> transition store cmd)
-                                else
-                                    -- We don't go there if we are not ready.
-                                    model => Cmd.none
-
-                            Nothing ->
-                                -- We don't go there if we are not ready.
-                                model => Cmd.none
+                case ( model.currPregId, model.laborRecord ) of
+                    ( Just pregId, Just laborRecord ) ->
+                        PagePostpartum.init pregId laborRecord model.session model.processStore
+                            |> (\( store, cmd ) -> transition store cmd)
 
                     ( _, _ ) ->
                         -- We don't go there if we are not ready.

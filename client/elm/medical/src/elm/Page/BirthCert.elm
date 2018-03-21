@@ -406,13 +406,8 @@ refreshModelFromCache dc tables model =
 
                         Labor ->
                             case DataCache.get t dc of
-                                Just (LaborDataCache recs) ->
-                                    case Dict.values recs |> List.head of
-                                        Just rec ->
-                                            { m | laborRecord = rec }
-
-                                        Nothing ->
-                                            m
+                                Just (LaborDataCache rec) ->
+                                    { m | laborRecord = rec }
 
                                 _ ->
                                     m

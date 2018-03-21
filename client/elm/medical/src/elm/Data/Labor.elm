@@ -4,7 +4,6 @@ module Data.Labor
         , LaborRecord
         , LaborRecordNew
         , getLaborId
-        , getMostRecentLaborRecord
         , laborRecord
         , laborRecordNewToLaborRecord
         , laborRecordNewToValue
@@ -31,7 +30,6 @@ type alias LaborRecord =
     , admittanceDate : Date
     , startLaborDate : Date
     , dischargeDate : Maybe Date
-    , earlyLabor : Bool
     , pos : String
     , fh : Int
     , fht : String
@@ -45,7 +43,7 @@ type alias LaborRecord =
 
 
 {-| For creating new records hence the lack of certain fields
-such as id, dischargeDate, and earlyLabor.
+such as id and dischargeDate.
 -}
 type alias LaborRecordNew =
     { admittanceDate : Date
@@ -71,7 +69,6 @@ laborRecord =
         |> JDP.required "admittanceDate" JDE.date
         |> JDP.required "startLaborDate" JDE.date
         |> JDP.optional "dischargeDate" (JD.maybe JDE.date) Nothing
-        |> JDP.required "earlyLabor" (JD.map (\f -> f == 1) JD.int)
         |> JDP.required "pos" JD.string
         |> JDP.required "fh" JD.int
         |> JDP.required "fht" JD.string
@@ -121,7 +118,6 @@ laborRecordToValue rec =
                 , ( "admittanceDate", U.dateToStringValue rec.admittanceDate )
                 , ( "startLaborDate", U.dateToStringValue rec.startLaborDate )
                 , ( "dischargeDate", U.maybeDateToValue rec.dischargeDate )
-                , ( "earlyLabor", U.boolToInt rec.earlyLabor |> JE.int )
                 , ( "pos", JE.string rec.pos )
                 , ( "fh", JE.int rec.fh )
                 , ( "fht", JE.string rec.fht )
@@ -147,7 +143,6 @@ laborRecordNewToLaborRecord (LaborId id) lrn =
         lrn.admittanceDate
         lrn.startLaborDate
         Nothing
-        False
         lrn.pos
         lrn.fh
         lrn.fht
@@ -157,14 +152,3 @@ laborRecordNewToLaborRecord (LaborId id) lrn =
         lrn.temp
         lrn.comments
         lrn.pregnancy_id
-
-
-getMostRecentLaborRecord : Dict Int LaborRecord -> Maybe LaborRecord
-getMostRecentLaborRecord recs =
-    let
-        -- Sort by the admittanceDate, descending.
-        admitSort a b =
-            U.sortDate U.DescendingSort a.admittanceDate b.admittanceDate
-    in
-    List.sortWith admitSort (Dict.values recs)
-        |> List.head

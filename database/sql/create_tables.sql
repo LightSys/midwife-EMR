@@ -579,14 +579,11 @@ CREATE TABLE IF NOT EXISTS `pregnote` (
 );
 SHOW WARNINGS;
 
--- Note: false labor is more properly known
--- as an early labor.
 CREATE TABLE IF NOT EXISTS `labor` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   admittanceDate DATETIME NOT NULL,
   startLaborDate DATETIME NOT NULL,
   dischargeDate DATETIME NULL,
-  earlyLabor TINYINT NOT NULL DEFAULT 0,
   pos VARCHAR(10) NULL,
   fh INT NULL,
   fht VARCHAR(50) NULL,
@@ -599,6 +596,7 @@ CREATE TABLE IF NOT EXISTS `labor` (
   updatedAt DATETIME NOT NULL,
   supervisor INT NULL,
   pregnancy_id INT NOT NULL,
+  UNIQUE (pregnancy_id),
   FOREIGN KEY (pregnancy_id) REFERENCES pregnancy (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
   FOREIGN KEY (updatedBy) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
