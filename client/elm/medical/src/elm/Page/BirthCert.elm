@@ -1097,8 +1097,31 @@ populateModelBirthCertificateFields model =
             in
             case model.pregnancyRecord of
                 Just pregRec ->
+                    let
+                        -- Logic for use in the Philippines: if married, the
+                        -- maiden name is pulled from the maidenname field on the
+                        -- pregnancy record. If not married, the maiden name is
+                        -- pulled from the lastname field on the pregnancy record.
+                        motherLastname =
+                            case
+                                ( pregRec.lastname
+                                , pregRec.maidenname
+                                , pregRec.maritalStatus
+                                )
+                            of
+                                ( lastname, Just maidenname, Just status ) ->
+                                    case status of
+                                        "Married" ->
+                                            maidenname
+
+                                        _ ->
+                                            lastname
+
+                                ( lastname, _, _ ) ->
+                                    lastname
+                    in
                     { model
-                        | bcMotherMaidenLastname = pregRec.maidenname
+                        | bcMotherMaidenLastname = Just motherLastname
                         , bcMotherFirstname = Just pregRec.firstname
                         , bcMotherCitizenship = defaultCitizenship
                         , bcMotherCity = pregRec.city
