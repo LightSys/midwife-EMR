@@ -285,7 +285,6 @@
   flex-flow: row wrap;
 }
 .contPP-content {
-  display: flex !important;
   flex-flow: column nowrap;
   flex: 0 0 50%;
   margin-top: 0 !important;
