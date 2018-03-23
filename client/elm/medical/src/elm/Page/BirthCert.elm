@@ -207,7 +207,7 @@ init pregId laborRec session store =
 buildModel :
     LaborRecord
     -> Maybe LaborStage2Record
-    -> Maybe (Dict Int BabyRecord)
+    -> Maybe BabyRecord
     -> Bool
     -> Time
     -> ProcessStore
@@ -215,13 +215,8 @@ buildModel :
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel laborRec stage2Rec babyRecords browserSupportsDate currTime store pregId patRec pregRec =
+buildModel laborRec stage2Rec babyRecord browserSupportsDate currTime store pregId patRec pregRec =
     let
-        -- We are not setup yet for multiple births, therefore we assume that there
-        -- is only one baby.
-        babyRecord =
-            getBabyRecord babyRecords
-
         ( newStore, getBirthCertificateCmd ) =
             case babyRecord of
                 Just baby ->
@@ -347,21 +342,6 @@ getTableData store table key relatedTbls =
             wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
     in
     processStore => Ports.outgoing msg
-
-
-{-| Return the baby record we are using. We acknowledge that this client
-does not handle multiple births and this function assumes that. We take the
-first baby record we have and assume that is the one.
--}
-getBabyRecord : Maybe (Dict Int BabyRecord) -> Maybe BabyRecord
-getBabyRecord recs =
-    case recs of
-        Just r ->
-            Dict.values r |> List.head
-
-        Nothing ->
-            Nothing
-
 
 
 -- UPDATE --

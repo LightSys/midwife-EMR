@@ -548,7 +548,7 @@ buildModel :
     -> List ContPostpartumCheckRecord
     -> List MotherMedicationRecord
     -> Maybe DischargeRecord
-    -> Maybe (Dict Int BabyRecord)
+    -> Maybe BabyRecord
     -> Bool
     -> Time
     -> ProcessStore
@@ -556,7 +556,7 @@ buildModel :
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicationRecords dischargeRec babyRecords browserSupportsDate currTime store pregId patRec pregRec =
+buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicationRecords dischargeRec babyRecord browserSupportsDate currTime store pregId patRec pregRec =
     let
         -- Get the lookup tables that this page will need.
         ( newStore, getSelectDataCmd ) =
@@ -582,11 +582,6 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicati
                 |> Dict.insert (tableToString BabyLab) BabyLab
                 |> Dict.insert (tableToString BabyMedication) BabyMedication
                 |> Dict.insert (tableToString BabyVaccination) BabyVaccination
-
-        -- We are not setup yet for multiple births, therefore we assume that there
-        -- is only one baby.
-        babyRecord =
-            getBabyRecord babyRecords
     in
     ( { browserSupportsDate = browserSupportsDate
       , currTime = currTime
@@ -769,21 +764,6 @@ getTableData store table key relatedTbls =
             wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
     in
     processStore => Ports.outgoing msg
-
-
-{-| Return the baby record we are using. We acknowledge that this client
-does not handle multiple births and this function assumes that. We take the
-first baby record we have and assume that is the one.
--}
-getBabyRecord : Maybe (Dict Int BabyRecord) -> Maybe BabyRecord
-getBabyRecord recs =
-    case recs of
-        Just r ->
-            Dict.values r |> List.head
-
-        Nothing ->
-            Nothing
-
 
 
 -- UPDATE --

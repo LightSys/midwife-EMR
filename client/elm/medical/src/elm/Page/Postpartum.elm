@@ -273,7 +273,7 @@ buildModel :
     -> Maybe LaborStage2Record
     -> Maybe LaborStage3Record
     -> List ContPostpartumCheckRecord
-    -> Maybe (Dict Int BabyRecord)
+    -> Maybe BabyRecord
     -> List PostpartumCheckRecord
     -> Bool
     -> Time
@@ -282,7 +282,7 @@ buildModel :
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords postpartumCheckRecords browserSupportsDate currTime store pregId patRec pregRec =
+buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord postpartumCheckRecords browserSupportsDate currTime store pregId patRec pregRec =
     let
         -- Get the lookup tables that this page will need.
         ( newStore, getSelectDataCmd ) =
@@ -300,12 +300,6 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords po
         pendingSelectQuery =
             Dict.singleton (tableToString BabyLab) BabyLab
                 |> Dict.insert (tableToString BabyVaccination) BabyVaccination
-
-        --|> Dict.insert (tableToString BabyVaccination) BabyVaccination
-        -- We are not setup yet for multiple births, therefore we assume that there
-        -- is only one baby.
-        babyRecord =
-            getBabyRecord babyRecords
     in
     ( { browserSupportsDate = browserSupportsDate
       , currTime = currTime
@@ -372,20 +366,6 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecords po
         , getBabyVaccinationTypeCmd
         ]
     )
-
-
-{-| Return the baby record we are using. We acknowledge that this client
-does not handle multiple births and this function assumes that. We take the
-first baby record we have and assume that is the one.
--}
-getBabyRecord : Maybe (Dict Int BabyRecord) -> Maybe BabyRecord
-getBabyRecord recs =
-    case recs of
-        Just r ->
-            Dict.values r |> List.head
-
-        Nothing ->
-            Nothing
 
 
 {-| Retrieve additional data from the server as may be necessary after the page is

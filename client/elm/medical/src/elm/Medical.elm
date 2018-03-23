@@ -27,9 +27,10 @@ import Data.Membrane exposing (MembraneId(..), membraneRecordNewToMembraneRecord
 import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.MotherMedication exposing (MotherMedicationId(..), motherMedicationRecordNewToMotherMedicationRecord)
 import Data.NewbornExam exposing (NewbornExamId(..), newbornExamRecordNewToNewbornExamRecord)
+import Data.Patient exposing (PatientRecord)
 import Data.Postpartum exposing (SubMsg(..))
 import Data.PostpartumCheck exposing (PostpartumCheckId(..), postpartumCheckRecordNewToPostpartumCheckRecord)
-import Data.Pregnancy as Pregnancy exposing (PregnancyId(..), getPregId)
+import Data.Pregnancy as Pregnancy exposing (PregnancyId(..), PregnancyRecord, getPregId)
 import Data.Processing exposing (ProcessId(..))
 import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
 import Data.Table exposing (Table(..))
@@ -180,6 +181,35 @@ getPage pageState =
 
 
 -- UPDATE --
+
+getPregnancyRecordFromCache : Dict String DataCache -> Maybe PregnancyRecord
+getPregnancyRecordFromCache dc =
+    case DCache.get Pregnancy dc of
+        Just (PregnancyDataCache prec) ->
+            Just prec
+
+        _ ->
+            Nothing
+
+
+getPatientRecordFromCache : Dict String DataCache -> Maybe PatientRecord
+getPatientRecordFromCache dc =
+    case DCache.get Patient dc of
+        Just (PatientDataCache prec) ->
+            Just prec
+
+        _ ->
+            Nothing
+
+
+getLaborRecordFromCache : Dict String DataCache -> Maybe LaborRecord
+getLaborRecordFromCache dc =
+    case DCache.get Labor dc of
+        Just (LaborDataCache lrec) ->
+            Just lrec
+
+        _ ->
+            Nothing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -340,14 +370,23 @@ update msg noAutoTouchModel =
 
         ( AdmittingLoaded pregId, _ ) ->
             let
+                laborRecord =
+                    getLaborRecordFromCache model.dataCache
+
+                patientRecord =
+                    getPatientRecordFromCache model.dataCache
+
+                pregnancyRecord =
+                    getPregnancyRecordFromCache model.dataCache
+
                 ( subModel, newStore, newCmd ) =
                     PageAdmitting.buildModel model.browserSupportsDate
                         model.currTime
                         model.processStore
                         pregId
-                        model.patientRecord
-                        model.pregnancyRecord
-                        model.laborRecord
+                        patientRecord
+                        pregnancyRecord
+                        laborRecord
             in
             { model
                 | pageState = Loaded (Admitting subModel)
@@ -362,6 +401,14 @@ update msg noAutoTouchModel =
             let
                 -- Get the labor stage 2 record from the data cache which the
                 -- init function just requested records from the server for.
+                babyRec =
+                    case DCache.get Baby model.dataCache of
+                        Just (BabyDataCache babyRec) ->
+                            Just babyRec
+
+                        _ ->
+                            Nothing
+
                 stage2 =
                     case DCache.get LaborStage2 model.dataCache of
                         Just (LaborStage2DataCache s2) ->
@@ -370,16 +417,22 @@ update msg noAutoTouchModel =
                         _ ->
                             Nothing
 
+                patientRecord =
+                    getPatientRecordFromCache model.dataCache
+
+                pregnancyRecord =
+                    getPregnancyRecordFromCache model.dataCache
+
                 ( subModel, newStore, newCmd ) =
                     PageBirthCert.buildModel laborRec
                         stage2
-                        model.babyRecords
+                        babyRec
                         model.browserSupportsDate
                         model.currTime
                         model.processStore
                         pregId
-                        model.patientRecord
-                        model.pregnancyRecord
+                        patientRecord
+                        pregnancyRecord
             in
             { model
                 | pageState = Loaded (BirthCert subModel)
@@ -424,25 +477,35 @@ update msg noAutoTouchModel =
             let
                 -- Get the labor stage records from the data cache which the
                 -- init function just requested records from the server for.
-                ( stage1, stage2, stage3, contPPCheck, motherMedication, discharge ) =
-                    ( case DCache.get LaborStage1 model.dataCache of
+                ( babyRec, stage1, stage2, stage3, contPPCheck, motherMedication, discharge ) =
+                    ( case DCache.get Baby model.dataCache of
+                        Just (BabyDataCache baby) ->
+                            Just baby
+
+                        _ ->
+                            Nothing
+
+                    , case DCache.get LaborStage1 model.dataCache of
                         Just (LaborStage1DataCache s1) ->
                             Just s1
 
                         _ ->
                             Nothing
+
                     , case DCache.get LaborStage2 model.dataCache of
                         Just (LaborStage2DataCache s2) ->
                             Just s2
 
                         _ ->
                             Nothing
+
                     , case DCache.get LaborStage3 model.dataCache of
                         Just (LaborStage3DataCache s3) ->
                             Just s3
 
                         _ ->
                             Nothing
+
                     , case DCache.get ContPostpartumCheck model.dataCache of
                         Just (ContPostpartumCheckDataCache recs) ->
                             -- Not a Maybe.
@@ -450,12 +513,14 @@ update msg noAutoTouchModel =
 
                         _ ->
                             []
+
                     , case DCache.get MotherMedication model.dataCache of
                         Just (MotherMedicationDataCache recs) ->
                             recs
 
                         _ ->
                             []
+
                     , case DCache.get Discharge model.dataCache of
                         Just (DischargeDataCache rec) ->
                             Just rec
@@ -463,6 +528,12 @@ update msg noAutoTouchModel =
                         _ ->
                             Nothing
                     )
+
+                patientRecord =
+                    getPatientRecordFromCache model.dataCache
+
+                pregnancyRecord =
+                    getPregnancyRecordFromCache model.dataCache
 
                 ( subModel, newStore, newCmd ) =
                     PageContPP.buildModel laborRec
@@ -472,13 +543,13 @@ update msg noAutoTouchModel =
                         contPPCheck
                         motherMedication
                         discharge
-                        model.babyRecords
+                        babyRec
                         model.browserSupportsDate
                         model.currTime
                         model.processStore
                         pregId
-                        model.patientRecord
-                        model.pregnancyRecord
+                        patientRecord
+                        pregnancyRecord
             in
             { model
                 | pageState = Loaded (ContPP subModel)
@@ -521,14 +592,23 @@ update msg noAutoTouchModel =
             -- to display the page. The newCmd returned from
             -- PageLaborDelIpp.buildModel may request more data from the server.
             let
+                laborRecord =
+                    getLaborRecordFromCache model.dataCache
+
+                patientRecord =
+                    getPatientRecordFromCache model.dataCache
+
+                pregnancyRecord =
+                    getPregnancyRecordFromCache model.dataCache
+
                 ( subModel, newStore, newCmd ) =
                     PageLaborDelIpp.buildModel model.browserSupportsDate
                         model.currTime
                         model.processStore
                         pregId
-                        model.patientRecord
-                        model.pregnancyRecord
-                        model.laborRecord
+                        patientRecord
+                        pregnancyRecord
+                        laborRecord
             in
             { model
                 | pageState = Loaded (LaborDelIpp subModel)
@@ -573,8 +653,15 @@ update msg noAutoTouchModel =
             let
                 -- Get the labor stage records from the data cache which the
                 -- init function just requested records from the server for.
-                ( stage1, stage2, stage3, contPPChecks, postpartumCheck ) =
-                    ( case DCache.get LaborStage1 model.dataCache of
+                ( babyRec, stage1, stage2, stage3, contPPChecks, postpartumCheck ) =
+                    ( case DCache.get Baby model.dataCache of
+                        Just (BabyDataCache baby) ->
+                            Just baby
+
+                        _ ->
+                            Nothing
+
+                    , case DCache.get LaborStage1 model.dataCache of
                         Just (LaborStage1DataCache s1) ->
                             Just s1
 
@@ -608,20 +695,26 @@ update msg noAutoTouchModel =
                             []
                     )
 
+                patientRecord =
+                    getPatientRecordFromCache model.dataCache
+
+                pregnancyRecord =
+                    getPregnancyRecordFromCache model.dataCache
+
                 ( subModel, newStore, newCmd ) =
                     PagePostpartum.buildModel laborRec
                         stage1
                         stage2
                         stage3
                         contPPChecks
-                        model.babyRecords
+                        babyRec
                         postpartumCheck
                         model.browserSupportsDate
                         model.currTime
                         model.processStore
                         pregId
-                        model.patientRecord
-                        model.pregnancyRecord
+                        patientRecord
+                        pregnancyRecord
             in
             { model
                 | pageState = Loaded (Postpartum subModel)
@@ -973,12 +1066,14 @@ updateMessage incoming model =
                                             laborRecordNewToLaborRecord
                                                 (LaborId dataAddMsg.response.id)
                                                 laborRecNew
-                                                |> Just
+
+                                        dc =
+                                            DCache.put (LaborDataCache laborRec) model.dataCache
 
                                         subMsg =
                                             AdmitForLaborSaved lrn (Just <| LaborId dataAddMsg.response.id)
                                     in
-                                    ( { model | laborRecord = laborRec }
+                                    ( { model | dataCache = dc }
                                     , Task.perform AdmittingMsg (Task.succeed subMsg)
                                     )
 
@@ -1264,16 +1359,11 @@ updateMessage incoming model =
                                     )
 
                                 Just (UpdateLaborType (LaborDelIppMsg (Data.LaborDelIpp.DataCache _ _)) laborRecord) ->
-                                    -- TODO: why only updating the data cache here and not the top-level laborRecord?
-                                    -- Don't we want to do both? But if we do, which is the master record?
                                     let
                                         subMsg =
                                             Data.LaborDelIpp.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
-                                    ( { model
-                                        | dataCache = DCache.put (LaborDataCache laborRecord) model.dataCache
-                                        , laborRecord = Just laborRecord
-                                      }
+                                    ( { model | dataCache = DCache.put (LaborDataCache laborRecord) model.dataCache }
                                     , Task.perform LaborDelIppMsg (Task.succeed subMsg)
                                     )
 
@@ -1282,10 +1372,7 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.Admitting.DataCache (Just model.dataCache) (Just [ Labor ])
                                     in
-                                    ( { model
-                                        | dataCache = DCache.put (LaborDataCache laborRecord) model.dataCache
-                                        , laborRecord = Just laborRecord
-                                      }
+                                    ( { model | dataCache = DCache.put (LaborDataCache laborRecord) model.dataCache }
                                     , Task.perform AdmittingMsg (Task.succeed subMsg)
                                     )
 
@@ -1433,7 +1520,8 @@ updateMessage incoming model =
                                                 dictList =
                                                     List.map (\rec -> ( rec.id, rec )) recs
 
-                                                -- DataCache gets one baby record.
+                                                -- DataCache gets one baby record since we
+                                                -- do not yet handle multiple births.
                                                 dc =
                                                     case List.head recs of
                                                         Just r ->
@@ -1443,8 +1531,7 @@ updateMessage incoming model =
                                                             mdl.dataCache
                                             in
                                             { mdl
-                                                | babyRecords = Just <| Dict.fromList dictList
-                                                , dataCache = dc
+                                                | dataCache = dc
                                             }
 
                                         TableRecordBabyLab recs ->
@@ -1516,10 +1603,15 @@ updateMessage incoming model =
 
                                         TableRecordLabor recs ->
                                             let
-                                                laborRec =
-                                                    List.head recs
+                                                dc =
+                                                    case List.head recs of
+                                                        Just r ->
+                                                            DCache.put (LaborDataCache r) mdl.dataCache
+
+                                                        Nothing ->
+                                                            mdl.dataCache
                                             in
-                                            { mdl | laborRecord = laborRec }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordLaborStage1 recs ->
                                             -- There should ever be only one stage 1 record
@@ -1601,8 +1693,6 @@ updateMessage incoming model =
                                         TableRecordPatient recs ->
                                             -- We only ever want one patient in our store at a time.
                                             let
-                                                -- TODO: eventually revise model to depend only on dataCache
-                                                -- instead of separate patientRecord field in top-level model.
                                                 rec =
                                                     List.head recs
 
@@ -1614,7 +1704,7 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                            { mdl | patientRecord = rec, dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordPostpartumCheck recs ->
                                             let
@@ -1627,8 +1717,6 @@ updateMessage incoming model =
                                         TableRecordPregnancy recs ->
                                             -- We only ever want one pregnancy in our store at a time.
                                             let
-                                                -- TODO: eventually revise model to depend only on dataCache
-                                                -- instead of separate pregnancyRecord field in top-level model.
                                                 rec =
                                                     List.head recs
 
@@ -1640,14 +1728,14 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                            { mdl | pregnancyRecord = rec, dataCache = dc }
+                                            { mdl | dataCache = dc }
 
                                         TableRecordSelectData recs ->
                                             let
                                                 dc =
                                                     DCache.put (SelectDataDataCache recs) mdl.dataCache
                                             in
-                                            { mdl | selectDataRecords = recs, dataCache = dc }
+                                            { mdl | dataCache = dc }
                                 )
                                 model
                                 dataMsg.response.data
@@ -1791,8 +1879,8 @@ setRoute maybeRoute model =
                 -- retrieve data from the server all over again.
                 { model | dialogActive = False } => Cmd.none
             else
-                case ( model.currPregId, model.laborRecord ) of
-                    ( Just pid, Just laborRec ) ->
+                case ( model.currPregId, DCache.get Labor model.dataCache ) of
+                    ( Just pid, Just (LaborDataCache laborRec) ) ->
                         PageBirthCert.init pid laborRec model.session model.processStore
                             |> (\( store, cmd ) -> transition store cmd)
 
@@ -1809,8 +1897,8 @@ setRoute maybeRoute model =
                 -- retrieve data from the server all over again.
                 { model | dialogActive = False } => Cmd.none
             else
-                case ( model.currPregId, model.laborRecord ) of
-                    ( Just pregId, Just laborRecord ) ->
+                case ( model.currPregId, DCache.get Labor model.dataCache ) of
+                    ( Just pregId, Just (LaborDataCache laborRecord) ) ->
                         PageContPP.init pregId laborRecord model.session model.processStore
                             |> (\( store, cmd ) -> transition store cmd)
 
@@ -1844,8 +1932,8 @@ setRoute maybeRoute model =
                 -- retrieve data from the server all over again.
                 { model | dialogActive = False } => Cmd.none
             else
-                case ( model.currPregId, model.laborRecord ) of
-                    ( Just pregId, Just laborRecord ) ->
+                case ( model.currPregId, DCache.get Labor model.dataCache ) of
+                    ( Just pregId, Just (LaborDataCache laborRecord) ) ->
                         PagePostpartum.init pregId laborRecord model.session model.processStore
                             |> (\( store, cmd ) -> transition store cmd)
 

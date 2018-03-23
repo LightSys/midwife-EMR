@@ -59,11 +59,6 @@ type alias Model =
     , window : Maybe Window.Size
     , dialogActive : Bool
     , siteMessages : Dict String SiteKeyValue
-    , laborRecord : Maybe LaborRecord
-    , patientRecord : Maybe PatientRecord
-    , pregnancyRecord : Maybe PregnancyRecord
-    , babyRecords : Maybe (Dict Int BabyRecord)
-    , selectDataRecords : List SelectDataRecord
     }
 
 
@@ -84,11 +79,6 @@ initialModel browserSupportsDate pregId time =
         , dialogActive = False
         , dataCache = Dict.empty
         , siteMessages = Dict.empty
-        , laborRecord = Nothing
-        , patientRecord = Nothing
-        , pregnancyRecord = Nothing
-        , babyRecords = Nothing
-        , selectDataRecords = []
         }
 
 
