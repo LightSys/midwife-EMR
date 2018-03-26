@@ -24,7 +24,7 @@ import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLabor
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
 import Data.Membrane exposing (MembraneId(..), membraneRecordNewToMembraneRecord)
-import Data.Message exposing (IncomingMessage(..), MsgType(..), wrapPayload)
+import Data.Message exposing (DataNotificationMsg, IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.MotherMedication exposing (MotherMedicationId(..), motherMedicationRecordNewToMotherMedicationRecord)
 import Data.NewbornExam exposing (NewbornExamId(..), newbornExamRecordNewToNewbornExamRecord)
 import Data.Patient exposing (PatientRecord)
@@ -32,6 +32,7 @@ import Data.Postpartum exposing (SubMsg(..))
 import Data.PostpartumCheck exposing (PostpartumCheckId(..), postpartumCheckRecordNewToPostpartumCheckRecord)
 import Data.Pregnancy as Pregnancy exposing (PregnancyId(..), PregnancyRecord, getPregId)
 import Data.Processing exposing (ProcessId(..))
+import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
 import Data.Table exposing (Table(..))
 import Data.TableRecord exposing (TableRecord(..))
@@ -393,6 +394,16 @@ update msg noAutoTouchModel =
                 , processStore = newStore
             }
                 => newCmd
+
+        ( AdmittingSelectQuery tbl key relatedTables, Admitting subModel ) ->
+            -- Request by the sub page to retrieve additional data from the
+            -- server after the page's initialization and load is already
+            -- complete.
+            let
+                ( store, newCmd ) =
+                    PageAdmitting.getTableData model.processStore tbl key relatedTables
+            in
+            { model | processStore = store } => newCmd
 
         ( BirthCertLoaded pregId laborRec, _ ) ->
             -- This page has enough of what it needs from the server in order
@@ -1494,7 +1505,7 @@ updateMessage incoming model =
 
         DataNotificationMessage dataNotificationMsg ->
             -- The payload field has what we want.
-            model => Cmd.none
+            model => handleDataNotification dataNotificationMsg model
 
         DataSelectMessage dataMsg ->
             -- Results of requests for data from the server.
@@ -1845,6 +1856,196 @@ updateMessage incoming model =
 
                 Nothing ->
                     newModel2 => Cmd.none
+
+
+{-| Generate a Cmd to retrieve needed data from the server based
+upon the DataNotificationMsg sent. Note that for subtables with
+as foreign key matching another table that we track, it will just
+get all of the subtable records rather than handling things differently
+depending upon if the notification was regarding an add, change,
+or delete.
+
+Note that we do not handle lookup tables because they are edge case
+and should rarely change.
+-}
+handleDataNotification : DataNotificationMsg -> Model -> Cmd Msg
+handleDataNotification notification model =
+    case Data.Message.stringToMsgType notification.msgType of
+        Just AddChgDelType ->
+            let
+                getFK table list =
+                    LE.find (\fk -> fk.table == table) list
+
+                -- Generates a Cmd to retrieve and load data for the current page
+                -- if the notification id matches the id of the table that we
+                -- already have and we are on a page that we care about.
+                getMsg table currId notificationId tables =
+                    if currId == notificationId then
+                        ( case model.pageState of
+                            Loaded page ->
+                                case page of
+                                    Admitting _ ->
+                                        AdmittingSelectQuery table (Just currId) tables
+
+                                    ContPP _ ->
+                                        ContPPSelectQuery table (Just currId) tables
+
+                                    LaborDelIpp _ ->
+                                        LaborDelIppSelectQuery table (Just currId) tables
+
+                                    Postpartum _ ->
+                                        PostpartumSelectQuery table (Just currId) tables
+
+                                    BirthCert _ ->
+                                        BirthCertSelectQuery table (Just currId) tables
+
+                                    _ ->
+                                        Noop
+
+                            _ ->
+                                Noop
+                        ) |> (\msg -> Task.perform (always msg) (Task.succeed True))
+                    else
+                        Cmd.none
+            in
+            case notification.payload.table of
+                Baby ->
+                    case DCache.get Baby model.dataCache of
+                        Just (BabyDataCache rec) ->
+                            getMsg Baby rec.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                BabyLab ->
+                    -- Subtable of baby: get all records.
+                    case ( DCache.get Baby model.dataCache, getFK Baby notification.payload.foreignKeys ) of
+                        ( Just (BabyDataCache baby), Just fk ) ->
+                            getMsg Baby baby.id fk.id [ BabyLab ]
+
+                        _ ->
+                            Cmd.none
+
+                BabyMedication ->
+                    -- Subtable of baby: get all records.
+                    case ( DCache.get Baby model.dataCache, getFK Baby notification.payload.foreignKeys ) of
+                        ( Just (BabyDataCache baby), Just fk ) ->
+                            getMsg Baby baby.id fk.id [ BabyMedication ]
+
+                        _ ->
+                            Cmd.none
+
+                BabyVaccination ->
+                    -- Subtable of baby: get all records.
+                    case ( DCache.get Baby model.dataCache, getFK Baby notification.payload.foreignKeys ) of
+                        ( Just (BabyDataCache baby), Just fk ) ->
+                            getMsg Baby baby.id fk.id [ BabyVaccination ]
+
+                        _ ->
+                            Cmd.none
+
+                BirthCertificate ->
+                    case DCache.get BirthCertificate model.dataCache of
+                        Just (BirthCertificateDataCache bc) ->
+                            getMsg BirthCertificate bc.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                ContPostpartumCheck ->
+                    -- Subtable of labor: get all records.
+                    case ( DCache.get Labor model.dataCache, getFK Labor notification.payload.foreignKeys ) of
+                        ( Just (LaborDataCache labor), Just fk ) ->
+                            getMsg Labor labor.id fk.id [ ContPostpartumCheck ]
+
+                        _ ->
+                            Cmd.none
+
+                Discharge ->
+                    -- Subtable of labor but there is only one record allowed.
+                    case DCache.get Discharge model.dataCache of
+                        Just (DischargeDataCache rec) ->
+                            getMsg Discharge rec.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                Labor ->
+                    case DCache.get Labor model.dataCache of
+                        Just (LaborDataCache rec) ->
+                            getMsg Labor rec.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                LaborStage1 ->
+                    -- Subtable of labor but there is only one record allowed.
+                    case DCache.get LaborStage1 model.dataCache of
+                        Just (LaborStage1DataCache rec) ->
+                            getMsg LaborStage1 rec.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                LaborStage2 ->
+                    -- Subtable of labor but there is only one record allowed.
+                    case DCache.get LaborStage2 model.dataCache of
+                        Just (LaborStage2DataCache rec) ->
+                            getMsg LaborStage2 rec.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                LaborStage3 ->
+                    -- Subtable of labor but there is only one record allowed.
+                    case DCache.get LaborStage3 model.dataCache of
+                        Just (LaborStage3DataCache rec) ->
+                            getMsg LaborStage3 rec.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                Membrane ->
+                    -- Subtable of labor but there is only one record allowed.
+                    case DCache.get Membrane model.dataCache of
+                        Just (MembraneDataCache rec) ->
+                            getMsg Membrane rec.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                MotherMedication ->
+                    -- Subtable of labor: get all records.
+                    case ( DCache.get Labor model.dataCache, getFK Labor notification.payload.foreignKeys ) of
+                        ( Just (LaborDataCache labor), Just fk ) ->
+                            getMsg Labor labor.id fk.id [ MotherMedication ]
+
+                        _ ->
+                            Cmd.none
+
+                NewbornExam ->
+                    -- Subtable of baby but there is only one record allowed.
+                    case DCache.get NewbornExam model.dataCache of
+                        Just (NewbornExamDataCache exam) ->
+                            getMsg NewbornExam exam.id notification.payload.id []
+
+                        _ ->
+                            Cmd.none
+
+                PostpartumCheck ->
+                    -- Subtable of labor: get all records.
+                    case ( DCache.get Labor model.dataCache, getFK Labor notification.payload.foreignKeys ) of
+                        ( Just (LaborDataCache labor), Just fk ) ->
+                            getMsg Labor labor.id fk.id [ PostpartumCheck ]
+
+                        _ ->
+                            Cmd.none
+
+                _ ->
+                    Cmd.none
+
+        _ ->
+            Cmd.none
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )

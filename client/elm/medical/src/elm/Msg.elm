@@ -61,6 +61,7 @@ type Msg
     | SetRoute (Maybe Route)
     | AdmittingLoaded PregnancyId
     | AdmittingMsg Admitting.AdmittingSubMsg
+    | AdmittingSelectQuery Table (Maybe Int) (List Table)
     | ContPPLoaded PregnancyId LaborRecord
     | ContPPMsg ContPP.SubMsg
     | ContPPSelectQuery Table (Maybe Int) (List Table)

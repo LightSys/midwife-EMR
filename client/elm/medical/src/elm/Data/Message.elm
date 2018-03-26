@@ -1,8 +1,10 @@
 module Data.Message
     exposing
-        ( IncomingMessage(..)
+        ( DataNotificationMsg
+        , IncomingMessage(..)
         , MsgType(..)
         , decodeIncoming
+        , stringToMsgType
         , wrapPayload
         )
 
@@ -22,6 +24,7 @@ type MsgType
     | DelMsgType
     | SelectMsgType
     | ChgMsgType
+    | AddChgDelType
     | AdhocTouchType
 
 
@@ -54,8 +57,37 @@ msgTypeToString mt =
         ChgMsgType ->
             "CHG"
 
+        AddChgDelType ->
+            "ADD_CHG_DELETE"
+
         AdhocTouchType ->
             "ADHOC_TOUCH_SESSION"
+
+
+stringToMsgType : String -> Maybe MsgType
+stringToMsgType str =
+    case str of
+        "ADD" ->
+            Just AddMsgType
+
+        "DEL" ->
+            Just DelMsgType
+
+        "SELECT" ->
+            Just SelectMsgType
+
+        "CHG" ->
+            Just ChgMsgType
+
+        "ADD_CHG_DELETE" ->
+            Just AddChgDelType
+
+        "ADHOC_TOUCH_SESSION" ->
+            Just AdhocTouchType
+
+        _ ->
+            Nothing
+
 
 
 {-| Wrap a JSON Value in an outer message wrapper

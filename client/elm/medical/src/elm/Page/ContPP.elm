@@ -977,7 +977,10 @@ update session msg model =
                                                             populateBabyVacFields mdl
                                                         else if tbl == BabyLab then
                                                             populateBabyLabFields mdl
-                                                        else if tbl == MotherMedication then
+                                                        else
+                                                            mdl
+                                                    else if model.motherMedicationViewEditState /= NoViewEditState then
+                                                        if tbl == MotherMedication then
                                                             populateMotherMedFields mdl
                                                         else
                                                             mdl

@@ -1,8 +1,9 @@
 module Page.Admitting
     exposing
-        ( Model
-        , buildModel
+        ( buildModel
+        , getTableData
         , init
+        , Model
         , update
         , view
         )
@@ -149,6 +150,38 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRec =
         , newStore
         , newOuterMsg
         )
+
+
+{-| Retrieve additional data from the server as may be necessary after the page is
+fully loaded.
+-}
+getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
+getTableData store table key relatedTbls =
+    let
+        selectQuery =
+            SelectQuery table key relatedTbls
+
+        -- We add the primary table to the list of tables affected so
+        -- that refreshModelFromCache will update our model for the
+        -- primary table as well as the related tables.
+        dataCacheTables =
+            relatedTbls ++ [ table ]
+
+        ( processId, processStore ) =
+            Processing.add
+                (SelectQueryType
+                    (AdmittingMsg
+                        (DataCache Nothing (Just dataCacheTables))
+                    )
+                    selectQuery
+                )
+                Nothing
+                store
+
+        msg =
+            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+    in
+    processStore => Ports.outgoing msg
 
 
 {-| On initialization, the Model will be updated by a call to buildModel once
