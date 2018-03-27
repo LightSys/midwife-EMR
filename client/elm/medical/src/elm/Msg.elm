@@ -53,32 +53,31 @@ import Route exposing (Route)
 
 type Msg
     = Noop
-    | Tick Time
-    | LogConsole String
-    | Toast (List String) Int ToastType
-    | WindowResize (Maybe Window.Size)
-    | SetDialogActive Bool
-    | SetRoute (Maybe Route)
     | AdmittingLoaded PregnancyId
     | AdmittingMsg Admitting.AdmittingSubMsg
     | AdmittingSelectQuery Table (Maybe Int) (List Table)
-    | ContPPLoaded PregnancyId LaborRecord
-    | ContPPMsg ContPP.SubMsg
-    | ContPPSelectQuery Table (Maybe Int) (List Table)
-    | LaborDelIppLoaded PregnancyId
-    | LaborDelIppMsg LaborDelIpp.SubMsg
-    | LaborDelIppSelectQuery Table (Maybe Int) (List Table)
-    | PostpartumLoaded PregnancyId LaborRecord
-    | PostpartumMsg Postpartum.SubMsg
-    | PostpartumSelectQuery Table (Maybe Int) (List Table)
-    | Message IncomingMessage
-    | ProcessTypeMsg ProcessType MsgType JE.Value
-    | OpenDatePicker String
-    | IncomingDatePicker DateFieldMessage
-    | AddLabor
     | BirthCertLoaded PregnancyId LaborRecord
     | BirthCertMsg Data.BirthCert.SubMsg
     | BirthCertSelectQuery Table (Maybe Int) (List Table)
+    | ContPPLoaded PregnancyId LaborRecord
+    | ContPPMsg ContPP.SubMsg
+    | ContPPSelectQuery Table (Maybe Int) (List Table)
+    | IncomingDatePicker DateFieldMessage
+    | LaborDelIppLoaded PregnancyId
+    | LaborDelIppMsg LaborDelIpp.SubMsg
+    | LaborDelIppSelectQuery Table (Maybe Int) (List Table)
+    | LogConsole String
+    | Message IncomingMessage
+    | OpenDatePicker String
+    | PostpartumLoaded PregnancyId LaborRecord
+    | PostpartumMsg Postpartum.SubMsg
+    | PostpartumSelectQuery Table (Maybe Int) (List Table)
+    | ProcessTypeMsg ProcessType MsgType JE.Value
+    | SetDialogActive Bool
+    | SetRoute (Maybe Route)
+    | Tick Time
+    | Toast (List String) Int ToastType
+    | WindowResize (Maybe Window.Size)
 
 
 {-| Initiate a Cmd to send a message to the console. This function

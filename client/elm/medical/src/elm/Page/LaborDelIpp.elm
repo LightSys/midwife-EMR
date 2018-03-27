@@ -3,7 +3,7 @@ module Page.LaborDelIpp
         ( closeAllDialogs
         , Model
         , buildModel
-        , getTableData
+        , getTablesByCacheOrServer
         , init
         , update
         , view
@@ -292,11 +292,11 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRec =
 
         -- Determine state of the labor by labor records, if any, and
         -- request additional records from the server if needed.
-        ( laborId, ( newStore, newOuterMsg ) ) =
+        ( laborId, newOuterMsg ) =
             case laborRec of
                 Just rec ->
                     ( Just <| LaborId rec.id
-                    , getTableData store
+                    , getTables
                         Labor
                         (Just rec.id)
                         [ LaborStage1, LaborStage2, LaborStage3, Baby, Membrane ]
@@ -305,11 +305,9 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRec =
                 Nothing ->
                     -- Since no labor is selected, we cannot be on this page.
                     ( Nothing
-                    , ( store
-                        , Just Route.AdmittingRoute
-                            |> Task.succeed
-                            |> Task.perform SetRoute
-                        )
+                    , Just Route.AdmittingRoute
+                        |> Task.succeed
+                        |> Task.perform SetRoute
                     )
     in
     ( { browserSupportsDate = browserSupportsDate
@@ -423,45 +421,70 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRec =
       , pendingApgarMinute = Nothing
       , pendingApgarScore = Nothing
       }
-    , newStore
+    , store
     , newOuterMsg
     )
 
+{-| Generate an top-level module command to retrieve additional data which checks
+first in the data cache, and secondarily from the server.
+-}
+getTables : Table -> Maybe Int -> List Table -> Cmd Msg
+getTables table key relatedTables =
+    Task.perform
+        (always (LaborDelIppSelectQuery table key relatedTables))
+        (Task.succeed True)
+
 
 {-| Retrieve additional data from the server as may be necessary after the page is
-fully loaded.
+fully loaded, but get the data from the data cache instead of the server, if available.
 
-Note that the apgar table does not use this because the apgar records are handled
-in a customized manner on the client and server as part of the baby records.
-
+This is called by the top-level module which passes it's data cache for our use.
 -}
-getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
-getTableData store table key relatedTbls =
+getTablesByCacheOrServer : ProcessStore -> Table -> Maybe Int -> List Table -> Dict String DataCache -> ( ProcessStore, Cmd Msg )
+getTablesByCacheOrServer store table key relatedTbls dataCache =
     let
-        selectQuery =
-            SelectQuery table key relatedTbls
+        -- Determine if the cache has all of the data that we need.
+        isCached =
+            List.all
+                (\t -> U.isJust <| DataCache.get t dataCache)
+                (table :: relatedTbls)
 
-        -- We add the primary table to the list of tables so that refreshModelFromCache
-        -- will update our model for the primary table too.
-        -- TODO: ContPP needed this, alright here too?
+        -- We add the primary table to the list of tables affected so
+        -- that refreshModelFromCache will update our model for the
+        -- primary table as well as the related tables.
         dataCacheTables =
             relatedTbls ++ [ table ]
 
-        ( processId, processStore ) =
-            Processing.add
-                (SelectQueryType
-                    (LaborDelIppMsg
-                        (DataCache Nothing (Just dataCacheTables))
-                    )
-                    selectQuery
-                )
-                Nothing
-                store
+        ( newStore, newCmd ) =
+            if isCached then
+                let
+                    cachedMsg =
+                        Data.LaborDelIpp.DataCache Nothing (Just dataCacheTables)
+                            |> LaborDelIppMsg
+                in
+                store => Task.perform (always cachedMsg) (Task.succeed True)
+            else
+                let
+                    selectQuery =
+                        SelectQuery table key relatedTbls
 
-        msg =
-            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                    ( processId, processStore ) =
+                        Processing.add
+                            (SelectQueryType
+                                (LaborDelIppMsg
+                                    (DataCache Nothing (Just dataCacheTables))
+                                )
+                                selectQuery
+                            )
+                            Nothing
+                            store
+
+                    jeVal =
+                        wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                in
+                processStore => Ports.outgoing jeVal
     in
-    processStore => Ports.outgoing msg
+    newStore => newCmd
 
 
 {-| On initialization, the Model will be updated by a call to buildModel once

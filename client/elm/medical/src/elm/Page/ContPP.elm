@@ -3,7 +3,7 @@ module Page.ContPP
         ( Model
         , buildModel
         , closeAllDialogs
-        , getTableData
+        , getTablesByCacheOrServer
         , init
         , update
         , view
@@ -531,11 +531,10 @@ init pregId laborRec session store =
         ( processId, processStore ) =
             Processing.add (SelectQueryType (ContPPLoaded pregId laborRec) selectQuery) Nothing store
 
-        msg =
+        jeVal =
             wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
     in
-    processStore
-        => Ports.outgoing msg
+    processStore => Ports.outgoing jeVal
 
 
 {-| Builds the initial model for the page.
@@ -559,20 +558,20 @@ buildModel :
 buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicationRecords dischargeRec babyRecord browserSupportsDate currTime store pregId patRec pregRec =
     let
         -- Get the lookup tables that this page will need.
-        ( newStore, getSelectDataCmd ) =
-            getTableData store SelectData Nothing []
+        getSelectDataCmd =
+            getTables SelectData Nothing []
 
-        ( newStore2, getBabyMedicationTypeCmd ) =
-            getTableData newStore BabyMedicationType Nothing []
+        getBabyMedicationTypeCmd =
+            getTables BabyMedicationType Nothing []
 
-        ( newStore3, getBabyVaccinationTypeCmd ) =
-            getTableData newStore2 BabyVaccinationType Nothing []
+        getBabyVaccinationTypeCmd =
+            getTables BabyVaccinationType Nothing []
 
-        ( newStore4, getBabyLabTypeCmd ) =
-            getTableData newStore3 BabyLabType Nothing []
+        getBabyLabTypeCmd =
+            getTables BabyLabType Nothing []
 
-        ( newStore5, getMotherMedicationTypeCmd ) =
-            getTableData newStore4 MotherMedicationType Nothing []
+        getMotherMedicationTypeCmd =
+            getTables MotherMedicationType Nothing []
 
         -- Populate the pendingSelectQuery field with dependent tables that
         -- we will need if/when they are available.
@@ -723,7 +722,8 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicati
       , dischargeTransferComment = Nothing
       , dischargeInitials = Nothing
       }
-    , newStore5
+      --, newStore5
+    , store
     , Cmd.batch
         [ getSelectDataCmd
         , getBabyMedicationTypeCmd
@@ -734,14 +734,29 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs motherMedicati
     )
 
 
-{-| Retrieve additional data from the server as may be necessary after the page is
-fully loaded.
+{-| Generate an top-level module command to retrieve additional data which checks
+first in the data cache, and secondarily from the server.
 -}
-getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
-getTableData store table key relatedTbls =
+getTables : Table -> Maybe Int -> List Table -> Cmd Msg
+getTables table key relatedTables =
+    Task.perform
+        (always (ContPPSelectQuery table key relatedTables))
+        (Task.succeed True)
+
+
+{-| Retrieve additional data from the server as may be necessary after the page is
+fully loaded, but get the data from the data cache instead of the server, if available.
+
+This is called by the top-level module which passes it's data cache for our use.
+-}
+getTablesByCacheOrServer : ProcessStore -> Table -> Maybe Int -> List Table -> Dict String DataCache -> ( ProcessStore, Cmd Msg )
+getTablesByCacheOrServer store table key relatedTbls dataCache =
     let
-        selectQuery =
-            SelectQuery table key relatedTbls
+        -- Determine if the cache has all of the data that we need.
+        isCached =
+            List.all
+                (\t -> U.isJust <| DataCache.get t dataCache)
+                (table :: relatedTbls)
 
         -- We add the primary table to the list of tables affected so
         -- that refreshModelFromCache will update our model for the
@@ -749,21 +764,37 @@ getTableData store table key relatedTbls =
         dataCacheTables =
             relatedTbls ++ [ table ]
 
-        ( processId, processStore ) =
-            Processing.add
-                (SelectQueryType
-                    (ContPPMsg
-                        (DataCache Nothing (Just dataCacheTables))
-                    )
-                    selectQuery
-                )
-                Nothing
-                store
+        ( newStore, newCmd ) =
+            if isCached then
+                let
+                    cachedMsg =
+                        Data.ContPP.DataCache Nothing (Just dataCacheTables)
+                            |> ContPPMsg
+                in
+                store => Task.perform (always cachedMsg) (Task.succeed True)
+            else
+                let
+                    selectQuery =
+                        SelectQuery table key relatedTbls
 
-        msg =
-            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                    ( processId, processStore ) =
+                        Processing.add
+                            (SelectQueryType
+                                (ContPPMsg
+                                    (DataCache Nothing (Just dataCacheTables))
+                                )
+                                selectQuery
+                            )
+                            Nothing
+                            store
+
+                    jeVal =
+                        wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                in
+                processStore => Ports.outgoing jeVal
     in
-    processStore => Ports.outgoing msg
+    newStore => newCmd
+
 
 
 -- UPDATE --
@@ -1008,14 +1039,7 @@ update session msg model =
                                     || Dict.member (tableToString BabyMedication) newModel.pendingSelectQuery
                                     || Dict.member (tableToString BabyVaccination) newModel.pendingSelectQuery
                             then
-                                ( Task.perform
-                                    (always
-                                        (ContPPSelectQuery Baby
-                                            (Just baby.id)
-                                            [ NewbornExam, BabyLab, BabyMedication, BabyVaccination ]
-                                        )
-                                    )
-                                    (Task.succeed True)
+                                ( getTables Baby (Just baby.id) [ NewbornExam, BabyLab, BabyMedication, BabyVaccination ]
                                 , Dict.remove (tableToString NewbornExam) newModel.pendingSelectQuery
                                     |> Dict.remove (tableToString BabyLab)
                                     |> Dict.remove (tableToString BabyMedication)

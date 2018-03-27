@@ -2,7 +2,7 @@ module Page.BirthCert
     exposing
         ( buildModel
         , closeAllDialogs
-        , getTableData
+        , getTablesByCacheOrServer
         , init
         , Model
         , update
@@ -217,17 +217,17 @@ buildModel :
     -> ( Model, ProcessStore, Cmd Msg )
 buildModel laborRec stage2Rec babyRecord browserSupportsDate currTime store pregId patRec pregRec =
     let
-        ( newStore, getBirthCertificateCmd ) =
+        getBirthCertificateCmd =
             case babyRecord of
                 Just baby ->
-                    getTableData store Baby (Just baby.id) [ BirthCertificate ]
+                    getTables Baby (Just baby.id) [ BirthCertificate ]
 
                 Nothing ->
-                    store => logConsole "Baby record not available in BirthCert.buildModel."
+                    logConsole "Baby record not available in BirthCert.buildModel."
 
         -- Get the keyValue lookup table that this page will need.
-        ( newStore2, getKeyValueCmd ) =
-            getTableData newStore KeyValue Nothing []
+        getKeyValueCmd =
+            getTables KeyValue Nothing []
     in
     ( { browserSupportsDate = browserSupportsDate
       , currTime = currTime
@@ -304,22 +304,36 @@ buildModel laborRec stage2Rec babyRecord browserSupportsDate currTime store preg
       , printingDelayedRegistration = Nothing
       }
         |> populateModelBirthCertificateFields
-    , newStore2
+    , store
     , Cmd.batch
         [ getBirthCertificateCmd
         , getKeyValueCmd
         ]
     )
 
+{-| Generate an top-level module command to retrieve additional data which checks
+first in the data cache, and secondarily from the server.
+-}
+getTables : Table -> Maybe Int -> List Table -> Cmd Msg
+getTables table key relatedTables =
+    Task.perform
+        (always (BirthCertSelectQuery table key relatedTables))
+        (Task.succeed True)
+
 
 {-| Retrieve additional data from the server as may be necessary after the page is
-fully loaded.
+fully loaded, but get the data from the data cache instead of the server, if available.
+
+This is called by the top-level module which passes it's data cache for our use.
 -}
-getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
-getTableData store table key relatedTbls =
+getTablesByCacheOrServer : ProcessStore -> Table -> Maybe Int -> List Table -> Dict String DataCache -> ( ProcessStore, Cmd Msg )
+getTablesByCacheOrServer store table key relatedTbls dataCache =
     let
-        selectQuery =
-            SelectQuery table key relatedTbls
+        -- Determine if the cache has all of the data that we need.
+        isCached =
+            List.all
+                (\t -> U.isJust <| DataCache.get t dataCache)
+                (table :: relatedTbls)
 
         -- We add the primary table to the list of tables affected so
         -- that refreshModelFromCache will update our model for the
@@ -327,21 +341,38 @@ getTableData store table key relatedTbls =
         dataCacheTables =
             relatedTbls ++ [ table ]
 
-        ( processId, processStore ) =
-            Processing.add
-                (SelectQueryType
-                    (BirthCertMsg
-                        (DataCache Nothing (Just dataCacheTables))
-                    )
-                    selectQuery
-                )
-                Nothing
-                store
+        ( newStore, newCmd ) =
+            if isCached then
+                let
+                    cachedMsg =
+                        Data.BirthCert.DataCache Nothing (Just dataCacheTables)
+                            |> BirthCertMsg
+                in
+                store => Task.perform (always cachedMsg) (Task.succeed True)
+            else
+                let
+                    selectQuery =
+                        SelectQuery table key relatedTbls
 
-        msg =
-            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                    ( processId, processStore ) =
+                        Processing.add
+                            (SelectQueryType
+                                (BirthCertMsg
+                                    (DataCache Nothing (Just dataCacheTables))
+                                )
+                                selectQuery
+                            )
+                            Nothing
+                            store
+
+                    jeVal =
+                        wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                in
+                processStore => Ports.outgoing jeVal
     in
-    processStore => Ports.outgoing msg
+    newStore => newCmd
+
+
 
 
 -- UPDATE --

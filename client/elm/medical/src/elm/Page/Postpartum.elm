@@ -2,7 +2,7 @@ module Page.Postpartum
     exposing
         ( buildModel
         , closeAllDialogs
-        , getTableData
+        , getTablesByCacheOrServer
         , init
         , Model
         , update
@@ -285,14 +285,14 @@ buildModel :
 buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord postpartumCheckRecords browserSupportsDate currTime store pregId patRec pregRec =
     let
         -- Get the lookup tables that this page will need.
-        ( newStore, getSelectDataCmd ) =
-            getTableData store SelectData Nothing []
+        getSelectDataCmd =
+            getTables SelectData Nothing []
 
-        ( newStore2, getBabyLabTypeCmd ) =
-            getTableData newStore BabyLabType Nothing []
+        getBabyLabTypeCmd =
+            getTables BabyLabType Nothing []
 
-        ( newStore3, getBabyVaccinationTypeCmd ) =
-            getTableData newStore2 BabyVaccinationType Nothing []
+        getBabyVaccinationTypeCmd =
+            getTables BabyVaccinationType Nothing []
 
         -- Populate the pendingSelectQuery field with dependent tables that
         -- we will need if/when they are available.
@@ -359,7 +359,7 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord pos
       , pcComments = Nothing
       , pcNextScheduledCheck = Nothing
       }
-    , newStore3
+    , store
     , Cmd.batch
         [ getSelectDataCmd
         , getBabyLabTypeCmd
@@ -367,15 +367,29 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord pos
         ]
     )
 
+{-| Generate an top-level module command to retrieve additional data which checks
+first in the data cache, and secondarily from the server.
+-}
+getTables : Table -> Maybe Int -> List Table -> Cmd Msg
+getTables table key relatedTables =
+    Task.perform
+        (always (PostpartumSelectQuery table key relatedTables))
+        (Task.succeed True)
+
 
 {-| Retrieve additional data from the server as may be necessary after the page is
-fully loaded.
+fully loaded, but get the data from the data cache instead of the server, if available.
+
+This is called by the top-level module which passes it's data cache for our use.
 -}
-getTableData : ProcessStore -> Table -> Maybe Int -> List Table -> ( ProcessStore, Cmd Msg )
-getTableData store table key relatedTbls =
+getTablesByCacheOrServer : ProcessStore -> Table -> Maybe Int -> List Table -> Dict String DataCache -> ( ProcessStore, Cmd Msg )
+getTablesByCacheOrServer store table key relatedTbls dataCache =
     let
-        selectQuery =
-            SelectQuery table key relatedTbls
+        -- Determine if the cache has all of the data that we need.
+        isCached =
+            List.all
+                (\t -> U.isJust <| DataCache.get t dataCache)
+                (table :: relatedTbls)
 
         -- We add the primary table to the list of tables affected so
         -- that refreshModelFromCache will update our model for the
@@ -383,22 +397,36 @@ getTableData store table key relatedTbls =
         dataCacheTables =
             relatedTbls ++ [ table ]
 
-        ( processId, processStore ) =
-            Processing.add
-                (SelectQueryType
-                    (PostpartumMsg
-                        (DataCache Nothing (Just dataCacheTables))
-                    )
-                    selectQuery
-                )
-                Nothing
-                store
+        ( newStore, newCmd ) =
+            if isCached then
+                let
+                    cachedMsg =
+                        Data.Postpartum.DataCache Nothing (Just dataCacheTables)
+                            |> PostpartumMsg
+                in
+                store => Task.perform (always cachedMsg) (Task.succeed True)
+            else
+                let
+                    selectQuery =
+                        SelectQuery table key relatedTbls
 
-        msg =
-            wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                    ( processId, processStore ) =
+                        Processing.add
+                            (SelectQueryType
+                                (PostpartumMsg
+                                    (DataCache Nothing (Just dataCacheTables))
+                                )
+                                selectQuery
+                            )
+                            Nothing
+                            store
+
+                    jeVal =
+                        wrapPayload processId SelectMsgType (selectQueryToValue selectQuery)
+                in
+                processStore => Ports.outgoing jeVal
     in
-    processStore => Ports.outgoing msg
-
+    newStore => newCmd
 
 
 -- UPDATE --

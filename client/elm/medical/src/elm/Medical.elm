@@ -183,6 +183,7 @@ getPage pageState =
 
 -- UPDATE --
 
+
 getPregnancyRecordFromCache : Dict String DataCache -> Maybe PregnancyRecord
 getPregnancyRecordFromCache dc =
     case DCache.get Pregnancy dc of
@@ -354,13 +355,6 @@ update msg noAutoTouchModel =
             -- Send a message to the server and store the required information
             -- in the model for processing the server response.
             -- NOTE: currently data queries do not come through here.
-            -- TODO: For data queries, check if the data requirement can be
-            -- satisfied by what the top-level model already has and supply it
-            -- to the caller if available.
-            -- TODO: if a request is made to the server for a data query, set up
-            -- a notify subscription with the server to keep up to date on that
-            -- information. Might want to do this when the data is returned
-            -- from the server instead of here.
             let
                 ( processId, processStore ) =
                     Processing.add processType Nothing model.processStore
@@ -401,7 +395,7 @@ update msg noAutoTouchModel =
             -- complete.
             let
                 ( store, newCmd ) =
-                    PageAdmitting.getTableData model.processStore tbl key relatedTables
+                    PageAdmitting.getTablesByCacheOrServer model.processStore tbl key relatedTables model.dataCache
             in
             { model | processStore = store } => newCmd
 
@@ -477,7 +471,7 @@ update msg noAutoTouchModel =
             -- complete.
             let
                 ( store, newCmd ) =
-                    PageBirthCert.getTableData model.processStore tbl key relatedTables
+                    PageBirthCert.getTablesByCacheOrServer model.processStore tbl key relatedTables model.dataCache
             in
             { model | processStore = store } => newCmd
 
@@ -495,28 +489,24 @@ update msg noAutoTouchModel =
 
                         _ ->
                             Nothing
-
                     , case DCache.get LaborStage1 model.dataCache of
                         Just (LaborStage1DataCache s1) ->
                             Just s1
 
                         _ ->
                             Nothing
-
                     , case DCache.get LaborStage2 model.dataCache of
                         Just (LaborStage2DataCache s2) ->
                             Just s2
 
                         _ ->
                             Nothing
-
                     , case DCache.get LaborStage3 model.dataCache of
                         Just (LaborStage3DataCache s3) ->
                             Just s3
 
                         _ ->
                             Nothing
-
                     , case DCache.get ContPostpartumCheck model.dataCache of
                         Just (ContPostpartumCheckDataCache recs) ->
                             -- Not a Maybe.
@@ -524,14 +514,12 @@ update msg noAutoTouchModel =
 
                         _ ->
                             []
-
                     , case DCache.get MotherMedication model.dataCache of
                         Just (MotherMedicationDataCache recs) ->
                             recs
 
                         _ ->
                             []
-
                     , case DCache.get Discharge model.dataCache of
                         Just (DischargeDataCache rec) ->
                             Just rec
@@ -594,7 +582,7 @@ update msg noAutoTouchModel =
             -- complete.
             let
                 ( store, newCmd ) =
-                    PageContPP.getTableData model.processStore tbl key relatedTables
+                    PageContPP.getTablesByCacheOrServer model.processStore tbl key relatedTables model.dataCache
             in
             { model | processStore = store } => newCmd
 
@@ -653,7 +641,7 @@ update msg noAutoTouchModel =
             -- complete.
             let
                 ( store, newCmd ) =
-                    PageLaborDelIpp.getTableData model.processStore tbl key relatedTables
+                    PageLaborDelIpp.getTablesByCacheOrServer model.processStore tbl key relatedTables model.dataCache
             in
             { model | processStore = store } => newCmd
 
@@ -671,7 +659,6 @@ update msg noAutoTouchModel =
 
                         _ ->
                             Nothing
-
                     , case DCache.get LaborStage1 model.dataCache of
                         Just (LaborStage1DataCache s1) ->
                             Just s1
@@ -759,7 +746,7 @@ update msg noAutoTouchModel =
             -- complete.
             let
                 ( store, newCmd ) =
-                    PagePostpartum.getTableData model.processStore tbl key relatedTables
+                    PagePostpartum.getTablesByCacheOrServer model.processStore tbl key relatedTables model.dataCache
             in
             { model | processStore = store } => newCmd
 
@@ -884,14 +871,6 @@ update msg noAutoTouchModel =
                 (PagePostpartum.update model.session)
                 (Data.Postpartum.DateFieldSubMsg dateFieldMsg)
                 subModel
-
-        ( AddLabor, LaborDelIpp subModel ) ->
-            -- TODO: Is this being used?
-            let
-                _ =
-                    Debug.log "Medical.update ( AddLabor, LaborDelIpp subModel )" "Yes, this is being called but it does nothing yet."
-            in
-            model => Cmd.none
 
         ( theMsg, thePage ) ->
             -- We should never get here.
@@ -1518,8 +1497,6 @@ updateMessage incoming model =
                 -- Store any data sent from the server into the top-level model
                 -- so that pages that need the same data may get it from the top-level
                 -- rather than issuing another data request.
-                -- TODO: work out mechanism for detail pages to request data that the
-                -- top-level model may already have.
                 newModel =
                     case dataMsg.response.success of
                         True ->
@@ -1867,6 +1844,7 @@ or delete.
 
 Note that we do not handle lookup tables because they are edge case
 and should rarely change.
+
 -}
 handleDataNotification : DataNotificationMsg -> Model -> Cmd Msg
 handleDataNotification notification model =
@@ -1881,7 +1859,7 @@ handleDataNotification notification model =
                 -- already have and we are on a page that we care about.
                 getMsg table currId notificationId tables =
                     if currId == notificationId then
-                        ( case model.pageState of
+                        (case model.pageState of
                             Loaded page ->
                                 case page of
                                     Admitting _ ->
@@ -1904,7 +1882,8 @@ handleDataNotification notification model =
 
                             _ ->
                                 Noop
-                        ) |> (\msg -> Task.perform (always msg) (Task.succeed True))
+                        )
+                            |> (\msg -> Task.perform (always msg) (Task.succeed True))
                     else
                         Cmd.none
             in

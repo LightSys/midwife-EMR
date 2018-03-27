@@ -26,6 +26,7 @@ module Util
         , filterStringNotInList
         , formatDohId
         , getGA
+        , isJust
         , maybeBoolToMaybeInt
         , maybeDateMaybeTimeToMaybeDateTime
         , maybeDatePlusTime
@@ -262,6 +263,18 @@ maybeOr ma mb =
 
         Just _ ->
             ma
+
+
+{-| Adapted from elm-community/maybe-extra.
+-}
+isJust : Maybe a -> Bool
+isJust m =
+    case m of
+        Just _ ->
+            True
+
+        Nothing ->
+            False
 
 
 {-| Returns True if the Bool is Nothing.
