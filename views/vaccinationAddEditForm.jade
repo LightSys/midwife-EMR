@@ -12,7 +12,7 @@ block vaccinationAddEditForm
   - var vaccinationDate = '';
   - var vaccinationMonth = '';
   - var vaccinationYear = '';
-  - var administeredInternally = false;
+  - var administeredInternally = true;
   - var vaccinationNote = '';
   - var isUpdate = false;
   - var vaccinationDeletePath;
@@ -52,7 +52,7 @@ block vaccinationAddEditForm
           div.checkbox
             label
               input(type='checkbox', name='administeredInternally', tabindex="4", value=1, checked=administeredInternally==true)
-              = gettext('Administered by MMC?')
+              = gettext('Administered by this clinic')
         div(class='col-md-4')
           label= gettext('Notes')
           textarea(class='form-control input-lg', tabindex="5", spellcheck="off", autocomplete="off", rows=4, name='note')= vaccinationNote
