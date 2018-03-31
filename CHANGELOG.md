@@ -1,5 +1,11 @@
 # Change Log
 
+## 0 9.0
+
+- Labor, Delivery and Postpartum care
+   - Elm client for medical roles for labor, delivery, postpartum
+- Uses Docker for build of Elm medical client.
+
 ## 0.8.2
 
 - Refactored build of Elm admin client to use Docker.
