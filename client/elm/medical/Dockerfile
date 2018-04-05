@@ -20,9 +20,9 @@ FROM node:6.11.3 as build
 
 WORKDIR /opt
 RUN npm install elm@0.18.0 elm-test@0.18.0 \
-    webpack elm-webpack-loader extract-text-webpack-plugin \
-    css-loader style-loader url-loader file-loader \
-    underscore socket.io
+    webpack@3.11.0 elm-webpack-loader@4.5.0 extract-text-webpack-plugin@3.0.2 \
+    css-loader@0.28.11 style-loader@0.20.3 url-loader@1.0.1 file-loader@1.1.11 \
+    underscore@1.8.3 socket.io@2.1.0
 
 ENV PATH /opt/node_modules/.bin:$PATH
 
