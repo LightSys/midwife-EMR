@@ -1,7 +1,6 @@
 module Data.LaborDelIpp
     exposing
         ( AddOtherApgar(..)
-        , Dialog(..)
         , Field(..)
         , SubMsg(..)
         )
@@ -12,7 +11,7 @@ import Time exposing (Time)
 
 -- LOCAL IMPORTS --
 
-import Const exposing (FldChgValue)
+import Const exposing (Dialog(..), FldChgValue)
 import Data.Baby exposing (ApgarScore)
 import Data.DataCache exposing (DataCache)
 import Data.DatePicker exposing (DateFieldMessage)
@@ -47,8 +46,7 @@ type SubMsg
     | HandleStage2SummaryModal Dialog
     | HandleStage3DateTimeModal Dialog
     | HandleStage3SummaryModal Dialog
-    | HandleFalseLaborDateTimeModal Dialog
-    | HandleMembranesSummaryModal Dialog
+    | HandleMembraneSummaryModal Dialog
     | HandleBabySummaryModal Dialog
     | AddApgarWizard AddOtherApgar
     | DeleteApgar Int
@@ -56,13 +54,14 @@ type SubMsg
     | ClearStage1DateTime
     | ClearStage2DateTime
     | ClearStage3DateTime
-    | ClearFalseLaborDateTime
+    | ClearEarlyLaborDateTime
       -- We are supplied date/time so we can prefill date/time fields.
-    | TickSubMsg Time
+    | LaborDelIppTick Time
       -- Our labor records have been loaded from the server.
     | LaborDetailsLoaded
       -- Our current labor record.
     | ViewLaborRecord LaborId
+    | CloseAllDialogs
 
 
 type AddOtherApgar
@@ -70,13 +69,6 @@ type AddOtherApgar
     | MinuteAddOtherApgar
     | ScoreAddOtherApgar
     | FinishedAddOtherApgar
-
-type Dialog
-    = OpenDialog
-    | CloseNoSaveDialog
-    | CloseSaveDialog
-    | EditDialog
-
 
 type Field
     = AdmittanceDateFld
@@ -94,8 +86,10 @@ type Field
     | Stage1DateFld
     | Stage1TimeFld
     | Stage1MobilityFld
-    | Stage1DurationLatentFld
-    | Stage1DurationActiveFld
+    | Stage1DurationLatentHoursFld
+    | Stage1DurationLatentMinutesFld
+    | Stage1DurationActiveHoursFld
+    | Stage1DurationActiveMinutesFld
     | Stage1CommentsFld
     | Stage2DateFld
     | Stage2TimeFld
@@ -104,7 +98,7 @@ type Field
     | Stage2BirthPositionFld
     | Stage2DurationPushingFld
     | Stage2BirthPresentationFld
-    | Stage2CordWrapFld
+    | Stage2TerminalMecFld
     | Stage2CordWrapTypeFld
     | Stage2DeliveryTypeFld
     | Stage2ShoulderDystociaFld
@@ -133,23 +127,9 @@ type Field
     | Stage3PlacentaInsertionFld
     | Stage3PlacentaNumVesselsFld
     | Stage3SchultzDuncanFld
-    | Stage3PlacentaMembranesCompleteFld
-    | Stage3PlacentaOtherFld
+    | Stage3CotyledonsFld
+    | Stage3MembranesFld
     | Stage3CommentsFld
-    | FalseLaborDateFld
-    | FalseLaborTimeFld
-    | MBRuptureDateFld
-    | MBRuptureTimeFld
-    | MBRuptureFld
-    | MBRuptureCommentFld
-    | MBAmnioticFld
-    | MBAmnioticCommentFld
-    | MBBulbFld
-    | MBMachineFld
-    | MBFreeFlowO2Fld
-    | MBChestCompressionsFld
-    | MBPpvFld
-    | MBCommentsFld
     | BabyLastnameFld
     | BabyFirstnameFld
     | BabyMiddlenameFld
@@ -157,12 +137,19 @@ type Field
     | BabyBirthWeightFld
     | BabyBFedEstablishedDateFld
     | BabyBFedEstablishedTimeFld
-    | BabyNbsDateFld
-    | BabyNbsTimeFld
-    | BabyNbsResultFld
-    | BabyBcgDateFld
-    | BabyBcgTimeFld
+    | BabyBulbFld
+    | BabyMachineFld
+    | BabyFreeFlowO2Fld
+    | BabyChestCompressionsFld
+    | BabyPpvFld
     | BabyCommentsFld
     | ApgarStandardFld
     | ApgarOtherMinuteFld
     | ApgarOtherScoreFld
+    | MembraneRuptureDateFld
+    | MembraneRuptureTimeFld
+    | MembraneRuptureFld
+    | MembraneRuptureCommentFld
+    | MembraneAmnioticFld
+    | MembraneAmnioticCommentFld
+    | MembraneCommentsFld

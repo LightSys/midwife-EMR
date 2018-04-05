@@ -367,8 +367,113 @@ editableSelectDataNameToString sdn =
         MaritalStatusSDN ->
             "maritalStatus"
 
+        NewbornExamAbdomenSDN ->
+            "newbornExamAbdomen"
+
+        NewbornExamAnusSDN ->
+            "newbornExamAnus"
+
+        NewbornExamAppearanceSDN ->
+            "newbornExamAppearance"
+
+        NewbornExamBackSDN ->
+            "newbornExamBack"
+
+        NewbornExamChestSDN ->
+            "newbornExamChest"
+
+        NewbornExamColorSDN ->
+            "newbornExamColor"
+
+        NewbornExamCordSDN ->
+            "newbornExamCord"
+
+        NewbornExamEarsSDN ->
+            "newbornExamEars"
+
+        NewbornExamExtremitiesSDN ->
+            "newbornExamExtremities"
+
+        NewbornExamEyesSDN ->
+            "newbornExamEyes"
+
+        NewbornExamFemoralPulsesSDN ->
+            "newbornExamFemoralPulses"
+
+        NewbornExamGenitaliaFemaleSDN ->
+            "newbornExamGenitaliaFemale"
+
+        NewbornExamGenitaliaMaleSDN ->
+            "newbornExamGenitaliaMale"
+
+        NewbornExamHeadSDN ->
+            "newbornExamHead"
+
+        NewbornExamHeartSDN ->
+            "newbornExamHeart"
+
+        NewbornExamHipsSDN ->
+            "newbornExamHips"
+
+        NewbornExamLungsSDN ->
+            "newbornExamLungs"
+
+        NewbornExamMouthSDN ->
+            "newbornExamMouth"
+
+        NewbornExamNeckSDN ->
+            "newbornExamNeck"
+
+        NewbornExamNoseSDN ->
+            "newbornExamNose"
+
+        NewbornExamSkinSDN ->
+            "newbornExamSkin"
+
         PlaceOfBirthSDN ->
             "placeOfBirth"
+
+        PostpartumCheckBabyColorSDN ->
+            "postpartumCheckBabyColor"
+
+        PostpartumCheckBabyCordSDN ->
+            "postpartumCheckBabyCord"
+
+        PostpartumCheckBabyFeedingSDN ->
+            "postpartumCheckBabyFeeding"
+
+        PostpartumCheckBabyLungsSDN ->
+            "postpartumCheckBabyLungs"
+
+        PostpartumCheckBabySkinSDN ->
+            "postpartumCheckBabySkin"
+
+        PostpartumCheckBabySSInfectionSDN ->
+            "postpartumCheckBabySSInfection"
+
+        PostpartumCheckMotherBreastsSDN ->
+            "postpartumCheckMotherBreasts"
+
+        PostpartumCheckMotherFundusSDN ->
+            "postpartumCheckMotherFundus"
+
+        PostpartumCheckMotherLochiaSDN ->
+            "postpartumCheckMotherLochia"
+
+        PostpartumCheckMotherPerineumSDN ->
+            "postpartumCheckMotherPerineum"
+
+        PostpartumCheckMotherSSInfectionSDN ->
+            "postpartumCheckMotherSSInfection"
+
+        PostpartumCheckMotherStoolSDN ->
+            "postpartumCheckMotherStool"
+
+        PostpartumCheckMotherUrineSDN ->
+            "postpartumCheckMotherUrine"
+
+        PostpartumCheckMotherFamilyPlanningSDN ->
+            "postpartumCheckMotherFamilyPlanning"
 
         ReferralsSDN ->
             "referrals"
@@ -395,8 +500,113 @@ editableStringToSelectDataName str =
         "maritalStatus" ->
             Just MaritalStatusSDN
 
+        "newbornExamAbdomen" ->
+            Just NewbornExamAbdomenSDN
+
+        "newbornExamAnus" ->
+            Just NewbornExamAnusSDN
+
+        "newbornExamAppearance" ->
+            Just NewbornExamAppearanceSDN
+
+        "newbornExamBack" ->
+            Just NewbornExamBackSDN
+
+        "newbornExamChest" ->
+            Just NewbornExamChestSDN
+
+        "newbornExamColor" ->
+            Just NewbornExamColorSDN
+
+        "newbornExamCord" ->
+            Just NewbornExamCordSDN
+
+        "newbornExamEars" ->
+            Just NewbornExamEarsSDN
+
+        "newbornExamExtremities" ->
+            Just NewbornExamExtremitiesSDN
+
+        "newbornExamEyes" ->
+            Just NewbornExamEyesSDN
+
+        "newbornExamFemoralPulses" ->
+            Just NewbornExamFemoralPulsesSDN
+
+        "newbornExamGenitaliaFemale" ->
+            Just NewbornExamGenitaliaFemaleSDN
+
+        "newbornExamGenitaliaMale" ->
+            Just NewbornExamGenitaliaMaleSDN
+
+        "newbornExamHead" ->
+            Just NewbornExamHeadSDN
+
+        "newbornExamHeart" ->
+            Just NewbornExamHeartSDN
+
+        "newbornExamHips" ->
+            Just NewbornExamHipsSDN
+
+        "newbornExamLungs" ->
+            Just NewbornExamLungsSDN
+
+        "newbornExamMouth" ->
+            Just NewbornExamMouthSDN
+
+        "newbornExamNeck" ->
+            Just NewbornExamNeckSDN
+
+        "newbornExamNose" ->
+            Just NewbornExamNoseSDN
+
+        "newbornExamSkin" ->
+            Just NewbornExamSkinSDN
+
         "placeOfBirth" ->
             Just PlaceOfBirthSDN
+
+        "postpartumCheckBabyColor" ->
+            Just PostpartumCheckBabyColorSDN
+
+        "postpartumCheckBabyCord" ->
+            Just PostpartumCheckBabyCordSDN
+
+        "postpartumCheckBabyFeeding" ->
+            Just PostpartumCheckBabyFeedingSDN
+
+        "postpartumCheckBabyLungs" ->
+            Just PostpartumCheckBabyLungsSDN
+
+        "postpartumCheckBabySkin" ->
+            Just PostpartumCheckBabySkinSDN
+
+        "postpartumCheckBabySSInfection" ->
+            Just PostpartumCheckBabySSInfectionSDN
+
+        "postpartumCheckMotherBreasts" ->
+            Just PostpartumCheckMotherBreastsSDN
+
+        "postpartumCheckMotherFundus" ->
+            Just PostpartumCheckMotherFundusSDN
+
+        "postpartumCheckMotherLochia" ->
+            Just PostpartumCheckMotherLochiaSDN
+
+        "postpartumCheckMotherPerineum" ->
+            Just PostpartumCheckMotherPerineumSDN
+
+        "postpartumCheckMotherSSInfection" ->
+            Just PostpartumCheckMotherSSInfectionSDN
+
+        "postpartumCheckMotherStool" ->
+            Just PostpartumCheckMotherStoolSDN
+
+        "postpartumCheckMotherUrine" ->
+            Just PostpartumCheckMotherUrineSDN
+
+        "postpartumCheckMotherFamilyPlanning" ->
+            Just PostpartumCheckMotherFamilyPlanningSDN
 
         "referrals" ->
             Just ReferralsSDN

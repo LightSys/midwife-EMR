@@ -17,11 +17,11 @@ module Data.Baby
         , getScoresAsList
         , getScoreAsStringByMinute
         , isBabyRecordFullyComplete
-        , MaleFemale(..)
-        , maleFemaleToFullString
-        , maleFemaleToString
-        , maybeMaleFemaleToString
-        , stringToMaleFemale
+        , Sex(..)
+        , sexToFullString
+        , sexToString
+        , maybeSexToString
+        , stringToSex
         )
 
 import Date exposing (Date)
@@ -57,18 +57,19 @@ getBabyId (BabyId id) =
     id
 
 
-type MaleFemale
+type Sex
     = Male
     | Female
+    | Ambiguous
 
 
-maleFemale : JD.Decoder String -> JD.Decoder MaleFemale
-maleFemale =
-    JD.map stringToMaleFemale
+sex : JD.Decoder String -> JD.Decoder Sex
+sex =
+    JD.map stringToSex
 
 
-stringToMaleFemale : String -> MaleFemale
-stringToMaleFemale str =
+stringToSex : String -> Sex
+stringToSex str =
     case String.toUpper str of
         "M" ->
             Male
@@ -82,29 +83,35 @@ stringToMaleFemale str =
         "FEMALE" ->
             Female
 
+        "A" ->
+            Ambiguous
+
+        "AMBIGUOUS" ->
+            Ambiguous
+
         _ ->
             let
                 _ =
-                    Debug.log "Data.Baby.stringToMaleFemale" "Error: unknown str of '" ++ str ++ "' encountered."
+                    Debug.log "Data.Baby.stringToSex" <| "Error: unknown str of '" ++ str ++ "' encountered."
             in
                 Female
 
 
-maybeMaleFemaleToString : Bool -> Maybe MaleFemale -> String
-maybeMaleFemaleToString fullString maleFemale =
-    case maleFemale of
+maybeSexToString : Bool -> Maybe Sex -> String
+maybeSexToString fullString sex =
+    case sex of
         Just mf ->
             if fullString then
-                maleFemaleToFullString mf
+                sexToFullString mf
             else
-                maleFemaleToString mf
+                sexToString mf
 
         Nothing ->
             ""
 
 
-maleFemaleToFullString : MaleFemale -> String
-maleFemaleToFullString mf =
+sexToFullString : Sex -> String
+sexToFullString mf =
     case mf of
         Male ->
             "Male"
@@ -112,15 +119,21 @@ maleFemaleToFullString mf =
         Female ->
             "Female"
 
+        Ambiguous ->
+            "Ambiguous"
 
-maleFemaleToString : MaleFemale -> String
-maleFemaleToString mf =
+
+sexToString : Sex -> String
+sexToString mf =
     case mf of
         Male ->
             "M"
 
         Female ->
             "F"
+
+        Ambiguous ->
+            "A"
 
 
 type alias BabyRecord =
@@ -129,12 +142,14 @@ type alias BabyRecord =
     , lastname : Maybe String
     , firstname : Maybe String
     , middlename : Maybe String
-    , sex : MaleFemale
+    , sex : Sex
     , birthWeight : Maybe Int
     , bFedEstablished : Maybe Date
-    , nbsDate : Maybe Date
-    , nbsResult : Maybe String
-    , bcgDate : Maybe Date
+    , bulb : Maybe Bool
+    , machine : Maybe Bool
+    , freeFlowO2 : Maybe Bool
+    , chestCompressions : Maybe Bool
+    , ppv : Maybe Bool
     , comments : Maybe String
     , labor_id : Int
     , apgarScores : List ApgarRecord
@@ -146,12 +161,14 @@ type alias BabyRecordNew =
     , lastname : Maybe String
     , firstname : Maybe String
     , middlename : Maybe String
-    , sex : MaleFemale
+    , sex : Sex
     , birthWeight : Maybe Int
     , bFedEstablished : Maybe Date
-    , nbsDate : Maybe Date
-    , nbsResult : Maybe String
-    , bcgDate : Maybe Date
+    , bulb : Maybe Bool
+    , machine : Maybe Bool
+    , freeFlowO2 : Maybe Bool
+    , chestCompressions : Maybe Bool
+    , ppv : Maybe Bool
     , comments : Maybe String
     , labor_id : Int
     , apgarScores : List ApgarRecord
@@ -168,9 +185,11 @@ babyRecordNewToBabyRecord (BabyId id) babyNew =
         babyNew.sex
         babyNew.birthWeight
         babyNew.bFedEstablished
-        babyNew.nbsDate
-        babyNew.nbsResult
-        babyNew.bcgDate
+        babyNew.bulb
+        babyNew.machine
+        babyNew.freeFlowO2
+        babyNew.chestCompressions
+        babyNew.ppv
         babyNew.comments
         babyNew.labor_id
         babyNew.apgarScores
@@ -200,12 +219,14 @@ babyRecordNewToValue rec =
                 , ( "lastname", (JEE.maybe JE.string rec.lastname) )
                 , ( "firstname", (JEE.maybe JE.string rec.firstname) )
                 , ( "middlename", (JEE.maybe JE.string rec.middlename) )
-                , ( "sex", (maleFemaleToString rec.sex |> JE.string) )
+                , ( "sex", (sexToString rec.sex |> JE.string) )
                 , ( "birthWeight", (JEE.maybe JE.int rec.birthWeight) )
                 , ( "bFedEstablished", (JEE.maybe U.dateToStringValue rec.bFedEstablished) )
-                , ( "nbsDate", (JEE.maybe U.dateToStringValue rec.nbsDate) )
-                , ( "nbsResult", (JEE.maybe JE.string rec.nbsResult) )
-                , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
+                , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
+                , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
+                , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
+                , ( "chestCompressions", (U.maybeBoolToMaybeInt rec.chestCompressions) )
+                , ( "ppv", (U.maybeBoolToMaybeInt rec.ppv) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 , ( "apgarScores", (JE.list <| List.map apgarRecordToValue rec.apgarScores) )
@@ -225,12 +246,14 @@ babyRecordToValue rec =
                 , ( "lastname", (JEE.maybe JE.string rec.lastname) )
                 , ( "firstname", (JEE.maybe JE.string rec.firstname) )
                 , ( "middlename", (JEE.maybe JE.string rec.middlename) )
-                , ( "sex", (maleFemaleToString rec.sex |> JE.string) )
+                , ( "sex", (sexToString rec.sex |> JE.string) )
                 , ( "birthWeight", (JEE.maybe JE.int rec.birthWeight) )
                 , ( "bFedEstablished", (JEE.maybe U.dateToStringValue rec.bFedEstablished) )
-                , ( "nbsDate", (JEE.maybe U.dateToStringValue rec.nbsDate) )
-                , ( "nbsResult", (JEE.maybe JE.string rec.nbsResult) )
-                , ( "bcgDate", (JEE.maybe U.dateToStringValue rec.bcgDate) )
+                , ( "bulb", (U.maybeBoolToMaybeInt rec.bulb) )
+                , ( "machine", (U.maybeBoolToMaybeInt rec.machine) )
+                , ( "freeFlowO2", (U.maybeBoolToMaybeInt rec.freeFlowO2) )
+                , ( "chestCompressions", (U.maybeBoolToMaybeInt rec.chestCompressions) )
+                , ( "ppv", (U.maybeBoolToMaybeInt rec.ppv) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 , ( "apgarScores", (JE.list <| List.map apgarRecordToValue rec.apgarScores) )
@@ -254,12 +277,14 @@ babyRecord =
         |> JDP.required "lastname" (JD.maybe JD.string)
         |> JDP.required "firstname" (JD.maybe JD.string)
         |> JDP.required "middlename" (JD.maybe JD.string)
-        |> JDP.required "sex" (JD.string |> maleFemale)
+        |> JDP.required "sex" (JD.string |> sex)
         |> JDP.required "birthWeight" (JD.maybe JD.int)
         |> JDP.required "bFedEstablished" (JD.maybe JDE.date)
-        |> JDP.required "nbsDate" (JD.maybe JDE.date)
-        |> JDP.required "nbsResult" (JD.maybe JD.string)
-        |> JDP.required "bcgDate" (JD.maybe JDE.date)
+        |> JDP.required "bulb" U.maybeIntToMaybeBool
+        |> JDP.required "machine" U.maybeIntToMaybeBool
+        |> JDP.required "freeFlowO2" U.maybeIntToMaybeBool
+        |> JDP.required "chestCompressions" U.maybeIntToMaybeBool
+        |> JDP.required "ppv" U.maybeIntToMaybeBool
         |> JDP.required "comments" (JD.maybe JD.string)
         |> JDP.required "labor_id" JD.int
         |> JDP.required "apgarScores" (JD.list apgarRecord)
@@ -278,8 +303,6 @@ isBabyRecordFullyComplete rec =
             || (U.validatePopulatedString rec.firstname)
             || ((Maybe.withDefault 0 rec.birthWeight) <= 0)
             || (U.validateDate rec.bFedEstablished)
-            || (U.validateDate rec.nbsDate)
-            || (U.validateDate rec.bcgDate)
         )
 
 

@@ -133,12 +133,21 @@ var rx = require('rx')
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , ADHOC_TOUCH_SESSION = 'ADHOC_TOUCH_SESSION'   // Used by the Elm medical client
+  , TABLE_babyMedication = 'babyMedication'
+  , TABLE_babyVaccination = 'babyVaccination'
+  , TABLE_motherMedication = 'motherMedication'
+  , TABLE_birthCertificate = 'birthCertificate'
+  , TABLE_babyLab = 'babyLab'
+  , TABLE_contPostpartumCheck = 'contPostpartumCheck'
+  , TABLE_postpartumCheck = 'postpartumCheck'
+  , TABLE_discharge = 'discharge'
   , TABLE_keyValue = 'keyValue'
   , TABLE_labSuite = 'labSuite'
   , TABLE_labTest = 'labTest'
   , TABLE_labTestValue = 'labTestValue'
   , TABLE_medicationType = 'medicationType'
-  , TABLE_membranesResus = 'membranesResus'
+  , TABLE_membrane = 'membrane'
+  , TABLE_newbornExam = 'newbornExam'
   , TABLE_selectData = 'selectData'
   , TABLE_vaccinationType = 'vaccinationType'
   , TABLE_user = 'user'
@@ -152,6 +161,27 @@ var rx = require('rx')
   , addBaby = require('./routes/comm/labor').addBaby
   , updateBaby = require('./routes/comm/labor').updateBaby
   , delBaby = require('./routes/comm/labor').delBaby
+  , addBabyLab = require('./routes/comm/labor').addBabyLab
+  , updateBabyLab = require('./routes/comm/labor').updateBabyLab
+  , delBabyLab = require('./routes/comm/labor').delBabyLab
+  , addBabyMedication = require('./routes/comm/labor').addBabyMedication
+  , updateBabyMedication = require('./routes/comm/labor').updateBabyMedication
+  , delBabyMedication = require('./routes/comm/labor').delBabyMedication
+  , addBabyVaccination = require('./routes/comm/labor').addBabyVaccination
+  , updateBabyVaccination = require('./routes/comm/labor').updateBabyVaccination
+  , delBabyVaccination = require('./routes/comm/labor').delBabyVaccination
+  , addBirthCertificate = require('./routes/comm/labor').addBirthCertificate
+  , updateBirthCertificate = require('./routes/comm/labor').updateBirthCertificate
+  , delBirthCertificate = require('./routes/comm/labor').delBirthCertificate
+  , addMotherMedication = require('./routes/comm/labor').addMotherMedication
+  , updateMotherMedication = require('./routes/comm/labor').updateMotherMedication
+  , delMotherMedication = require('./routes/comm/labor').delMotherMedication
+  , addContPostpartumCheck = require('./routes/comm/labor').addContPostpartumCheck
+  , updateContPostpartumCheck = require('./routes/comm/labor').updateContPostpartumCheck
+  , delContPostpartumCheck = require('./routes/comm/labor').delContPostpartumCheck
+  , addDischarge = require('./routes/comm/labor').addDischarge
+  , updateDischarge = require('./routes/comm/labor').updateDischarge
+  , delDischarge = require('./routes/comm/labor').delDischarge
   , addLabor = require('./routes/comm/labor').addLabor
   , delLabor = require('./routes/comm/labor').delLabor
   , updateLabor = require('./routes/comm/labor').updateLabor
@@ -176,9 +206,15 @@ var rx = require('rx')
   , addMedicationType = require('./routes/comm/lookupTables').addMedicationType
   , delMedicationType = require('./routes/comm/lookupTables').delMedicationType
   , updateMedicationType = require('./routes/comm/lookupTables').updateMedicationType
-  , addMembranesResus = require('./routes/comm/labor').addMembranesResus
-  , updateMembranesResus = require('./routes/comm/labor').updateMembranesResus
-  , delMembranesResus = require('./routes/comm/labor').delMembranesResus
+  , addMembrane = require('./routes/comm/labor').addMembrane
+  , updateMembrane = require('./routes/comm/labor').updateMembrane
+  , delMembrane = require('./routes/comm/labor').delMembrane
+  , addNewbornExam = require('./routes/comm/labor').addNewbornExam
+  , updateNewbornExam = require('./routes/comm/labor').updateNewbornExam
+  , delNewbornExam = require('./routes/comm/labor').delNewbornExam
+  , addPostpartumCheck = require('./routes/comm/labor').addPostpartumCheck
+  , updatePostpartumCheck = require('./routes/comm/labor').updatePostpartumCheck
+  , delPostpartumCheck = require('./routes/comm/labor').delPostpartumCheck
   , addSelectData = require('./routes/comm/lookupTables').addSelectData
   , delSelectData = require('./routes/comm/lookupTables').delSelectData
   , updateSelectData = require('./routes/comm/lookupTables').updateSelectData
@@ -829,6 +865,48 @@ var getFuncForTableOp = function(table, op) {
         case DEL: func = delBaby; break;
       }
       break;
+    case TABLE_babyMedication:
+      switch (op) {
+        case ADD: func = addBabyMedication; break;
+        case CHG: func = updateBabyMedication; break;
+        case DEL: func = delBabyMedication; break;
+      }
+      break;
+    case TABLE_babyLab:
+      switch (op) {
+        case ADD: func = addBabyLab; break;
+        case CHG: func = updateBabyLab; break;
+        case DEL: func = delBabyLab; break;
+      }
+      break;
+    case TABLE_babyVaccination:
+      switch (op) {
+        case ADD: func = addBabyVaccination; break;
+        case CHG: func = updateBabyVaccination; break;
+        case DEL: func = delBabyVaccination; break;
+      }
+      break;
+    case TABLE_birthCertificate:
+      switch (op) {
+        case ADD: func = addBirthCertificate; break;
+        case CHG: func = updateBirthCertificate; break;
+        case DEL: func = delBirthCertificate; break;
+      }
+      break;
+    case TABLE_contPostpartumCheck:
+      switch (op) {
+        case ADD: func = addContPostpartumCheck; break;
+        case CHG: func = updateContPostpartumCheck; break;
+        case DEL: func = delContPostpartumCheck; break;
+      }
+      break;
+    case TABLE_discharge:
+      switch (op) {
+        case ADD: func = addDischarge; break;
+        case CHG: func = updateDischarge; break;
+        case DEL: func = delDischarge; break;
+      }
+      break;
     case TABLE_keyValue:
       switch (op) {
         // keyValue table can only be updated.
@@ -891,11 +969,32 @@ var getFuncForTableOp = function(table, op) {
         case DEL: func = delMedicationType; break;
       }
       break;
-    case TABLE_membranesResus:
+    case TABLE_membrane:
       switch (op) {
-        case ADD: func = addMembranesResus; break;
-        case CHG: func = updateMembranesResus; break;
-        case DEL: func = delMembranesResus; break;
+        case ADD: func = addMembrane; break;
+        case CHG: func = updateMembrane; break;
+        case DEL: func = delMembrane; break;
+      }
+      break;
+    case TABLE_motherMedication:
+      switch (op) {
+        case ADD: func = addMotherMedication; break;
+        case CHG: func = updateMotherMedication; break;
+        case DEL: func = delMotherMedication; break;
+      }
+      break;
+    case TABLE_newbornExam:
+      switch (op) {
+        case ADD: func = addNewbornExam; break;
+        case CHG: func = updateNewbornExam; break;
+        case DEL: func = delNewbornExam; break;
+      }
+      break;
+    case TABLE_postpartumCheck:
+      switch (op) {
+        case ADD: func = addPostpartumCheck; break;
+        case CHG: func = updatePostpartumCheck; break;
+        case DEL: func = delPostpartumCheck; break;
       }
       break;
     case TABLE_selectData:

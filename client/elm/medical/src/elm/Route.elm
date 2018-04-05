@@ -20,9 +20,13 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 type Route
     = AdmittingRoute
     | ContPPRoute
+    | ContPPDialogRoute
     | LaborDelIppRoute
     | LaborDelIppDialogRoute
     | PostpartumRoute
+    | PostpartumDialogRoute
+    | BirthCertificateRoute
+    | BirthCertificateDialogRoute
 
 
 admittingRouteString : String
@@ -43,6 +47,9 @@ postpartumRouteString : String
 postpartumRouteString =
     "postpartum"
 
+birthCertificateRouteString : String
+birthCertificateRouteString =
+    "birthcertificate"
 
 dialogRouteString : String
 dialogRouteString =
@@ -53,10 +60,14 @@ route : Parser (Route -> a) a
 route =
     oneOf
         [ Url.map AdmittingRoute (s admittingRouteString)
+        , Url.map ContPPDialogRoute (s contPPRouteString </> s dialogRouteString)
         , Url.map ContPPRoute (s contPPRouteString)
         , Url.map LaborDelIppDialogRoute (s laborDelIppRouteString </> s dialogRouteString)
         , Url.map LaborDelIppRoute (s laborDelIppRouteString)
+        , Url.map PostpartumDialogRoute (s postpartumRouteString </> s dialogRouteString)
         , Url.map PostpartumRoute (s postpartumRouteString)
+        , Url.map BirthCertificateRoute (s birthCertificateRouteString)
+        , Url.map BirthCertificateDialogRoute (s birthCertificateRouteString </> s dialogRouteString)
         ]
 
 
@@ -72,8 +83,17 @@ routeToString page =
                 AdmittingRoute ->
                     [ admittingRouteString ]
 
+                BirthCertificateRoute ->
+                    [ birthCertificateRouteString ]
+
+                BirthCertificateDialogRoute ->
+                    [ birthCertificateRouteString, dialogRouteString ]
+
                 ContPPRoute ->
                     [ contPPRouteString ]
+
+                ContPPDialogRoute ->
+                    [ contPPRouteString, dialogRouteString ]
 
                 LaborDelIppRoute ->
                     [ laborDelIppRouteString ]
@@ -83,6 +103,9 @@ routeToString page =
 
                 PostpartumRoute ->
                     [ postpartumRouteString ]
+
+                PostpartumDialogRoute ->
+                    [ postpartumRouteString, dialogRouteString ]
     in
         case List.length pieces of
             0 ->

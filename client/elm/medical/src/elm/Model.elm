@@ -19,10 +19,12 @@ import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy exposing (getPregId, PregnancyRecord, PregnancyId(..))
+import Data.SelectData exposing (SelectDataRecord)
 import Data.Session as Session exposing (Session)
 import Data.SiteMessage exposing (SiteKeyValue(..))
 import Data.Toast exposing (ToastRecord, ToastType)
 import Page.Admitting as PageAdmitting
+import Page.BirthCert as PageBirthCert
 import Page.ContPP as PageContPP
 import Page.Errored as Errored exposing (PageLoadError, view)
 import Page.LaborDelIpp as PageLaborDelIpp
@@ -38,6 +40,7 @@ type Page
     | ContPP PageContPP.Model
     | LaborDelIpp PageLaborDelIpp.Model
     | Postpartum PagePostpartum.Model
+    | BirthCert PageBirthCert.Model
 
 
 type PageState
@@ -56,10 +59,6 @@ type alias Model =
     , window : Maybe Window.Size
     , dialogActive : Bool
     , siteMessages : Dict String SiteKeyValue
-    , laborRecords : Maybe (Dict Int LaborRecord)
-    , patientRecord : Maybe PatientRecord
-    , pregnancyRecord : Maybe PregnancyRecord
-    , babyRecords : Maybe (Dict Int BabyRecord)
     }
 
 
@@ -80,10 +79,6 @@ initialModel browserSupportsDate pregId time =
         , dialogActive = False
         , dataCache = Dict.empty
         , siteMessages = Dict.empty
-        , laborRecords = Nothing
-        , patientRecord = Nothing
-        , pregnancyRecord = Nothing
-        , babyRecords = Nothing
         }
 
 

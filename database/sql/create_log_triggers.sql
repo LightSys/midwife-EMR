@@ -42,6 +42,90 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
+-- Trigger: babyLab_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLab_after_insert;
+CREATE TRIGGER babyLab_after_insert AFTER INSERT ON babyLab
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabLog
+  (id, babyLabType, dateTime, fld1Value, fld2Value, fld3Value, fld4Value, initials, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyLabType, NEW.dateTime, NEW.fld1Value, NEW.fld2Value, NEW.fld3Value, NEW.fld4Value, NEW.initials, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLab_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLab_after_update;
+CREATE TRIGGER babyLab_after_update AFTER UPDATE ON babyLab
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabLog
+  (id, babyLabType, dateTime, fld1Value, fld2Value, fld3Value, fld4Value, initials, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyLabType, NEW.dateTime, NEW.fld1Value, NEW.fld2Value, NEW.fld3Value, NEW.fld4Value, NEW.initials, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLab_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLab_after_delete;
+CREATE TRIGGER babyLab_after_delete AFTER DELETE ON babyLab
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabLog
+  (id, babyLabType, dateTime, fld1Value, fld2Value, fld3Value, fld4Value, initials, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.babyLabType, OLD.dateTime, OLD.fld1Value, OLD.fld2Value, OLD.fld3Value, OLD.fld4Value, OLD.initials, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLabType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLabType_after_insert;
+CREATE TRIGGER babyLabType_after_insert AFTER INSERT ON babyLabType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabTypeLog
+  (id, name, description, fld1Name, fld1Type, fld2Name, fld2Type, fld3Name, fld3Type, fld4Name, fld4Type, active, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.fld1Name, NEW.fld1Type, NEW.fld2Name, NEW.fld2Type, NEW.fld3Name, NEW.fld3Type, NEW.fld4Name, NEW.fld4Type, NEW.active, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLabType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLabType_after_update;
+CREATE TRIGGER babyLabType_after_update AFTER UPDATE ON babyLabType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabTypeLog
+  (id, name, description, fld1Name, fld1Type, fld2Name, fld2Type, fld3Name, fld3Type, fld4Name, fld4Type, active, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.fld1Name, NEW.fld1Type, NEW.fld2Name, NEW.fld2Type, NEW.fld3Name, NEW.fld3Type, NEW.fld4Name, NEW.fld4Type, NEW.active, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyLabType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyLabType_after_delete;
+CREATE TRIGGER babyLabType_after_delete AFTER DELETE ON babyLabType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyLabTypeLog
+  (id, name, description, fld1Name, fld1Type, fld2Name, fld2Type, fld3Name, fld3Type, fld4Name, fld4Type, active, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.fld1Name, OLD.fld1Type, OLD.fld2Name, OLD.fld2Type, OLD.fld3Name, OLD.fld3Type, OLD.fld4Name, OLD.fld4Type, OLD.active, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
 -- Trigger: baby_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$
@@ -50,8 +134,8 @@ CREATE TRIGGER baby_after_insert AFTER INSERT ON baby
 FOR EACH ROW
 BEGIN
   INSERT INTO babyLog
-  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, nbsDate, nbsResult, bcgDate, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (NEW.id, NEW.birthNbr, NEW.lastname, NEW.firstname, NEW.middlename, NEW.sex, NEW.birthWeight, NEW.bFedEstablished, NEW.nbsDate, NEW.nbsResult, NEW.bcgDate, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthNbr, NEW.lastname, NEW.firstname, NEW.middlename, NEW.sex, NEW.birthWeight, NEW.bFedEstablished, NEW.bulb, NEW.machine, NEW.freeFlowO2, NEW.chestCompressions, NEW.ppv, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -64,8 +148,8 @@ CREATE TRIGGER baby_after_update AFTER UPDATE ON baby
 FOR EACH ROW
 BEGIN
   INSERT INTO babyLog
-  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, nbsDate, nbsResult, bcgDate, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (NEW.id, NEW.birthNbr, NEW.lastname, NEW.firstname, NEW.middlename, NEW.sex, NEW.birthWeight, NEW.bFedEstablished, NEW.nbsDate, NEW.nbsResult, NEW.bcgDate, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthNbr, NEW.lastname, NEW.firstname, NEW.middlename, NEW.sex, NEW.birthWeight, NEW.bFedEstablished, NEW.bulb, NEW.machine, NEW.freeFlowO2, NEW.chestCompressions, NEW.ppv, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -78,8 +162,260 @@ CREATE TRIGGER baby_after_delete AFTER DELETE ON baby
 FOR EACH ROW
 BEGIN
   INSERT INTO babyLog
-  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, nbsDate, nbsResult, bcgDate, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (OLD.id, OLD.birthNbr, OLD.lastname, OLD.firstname, OLD.middlename, OLD.sex, OLD.birthWeight, OLD.bFedEstablished, OLD.nbsDate, OLD.nbsResult, OLD.bcgDate, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+  (id, birthNbr, lastname, firstname, middlename, sex, birthWeight, bFedEstablished, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.birthNbr, OLD.lastname, OLD.firstname, OLD.middlename, OLD.sex, OLD.birthWeight, OLD.bFedEstablished, OLD.bulb, OLD.machine, OLD.freeFlowO2, OLD.chestCompressions, OLD.ppv, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedication_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedication_after_insert;
+CREATE TRIGGER babyMedication_after_insert AFTER INSERT ON babyMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationLog
+  (id, babyMedicationType, medicationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyMedicationType, NEW.medicationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedication_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedication_after_update;
+CREATE TRIGGER babyMedication_after_update AFTER UPDATE ON babyMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationLog
+  (id, babyMedicationType, medicationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyMedicationType, NEW.medicationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedication_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedication_after_delete;
+CREATE TRIGGER babyMedication_after_delete AFTER DELETE ON babyMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationLog
+  (id, babyMedicationType, medicationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.babyMedicationType, OLD.medicationDate, OLD.location, OLD.initials, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedicationType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedicationType_after_insert;
+CREATE TRIGGER babyMedicationType_after_insert AFTER INSERT ON babyMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedicationType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedicationType_after_update;
+CREATE TRIGGER babyMedicationType_after_update AFTER UPDATE ON babyMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyMedicationType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyMedicationType_after_delete;
+CREATE TRIGGER babyMedicationType_after_delete AFTER DELETE ON babyMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyMedicationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.useLocation, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccination_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccination_after_insert;
+CREATE TRIGGER babyVaccination_after_insert AFTER INSERT ON babyVaccination
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationLog
+  (id, babyVaccinationType, vaccinationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyVaccinationType, NEW.vaccinationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccination_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccination_after_update;
+CREATE TRIGGER babyVaccination_after_update AFTER UPDATE ON babyVaccination
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationLog
+  (id, babyVaccinationType, vaccinationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.babyVaccinationType, NEW.vaccinationDate, NEW.location, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccination_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccination_after_delete;
+CREATE TRIGGER babyVaccination_after_delete AFTER DELETE ON babyVaccination
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationLog
+  (id, babyVaccinationType, vaccinationDate, location, initials, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.babyVaccinationType, OLD.vaccinationDate, OLD.location, OLD.initials, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccinationType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccinationType_after_insert;
+CREATE TRIGGER babyVaccinationType_after_insert AFTER INSERT ON babyVaccinationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccinationType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccinationType_after_update;
+CREATE TRIGGER babyVaccinationType_after_update AFTER UPDATE ON babyVaccinationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.useLocation, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: babyVaccinationType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS babyVaccinationType_after_delete;
+CREATE TRIGGER babyVaccinationType_after_delete AFTER DELETE ON babyVaccinationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO babyVaccinationTypeLog
+  (id, name, description, useLocation, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.useLocation, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: birthCertificate_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS birthCertificate_after_insert;
+CREATE TRIGGER birthCertificate_after_insert AFTER INSERT ON birthCertificate
+FOR EACH ROW
+BEGIN
+  INSERT INTO birthCertificateLog
+  (id, birthOrder, motherMaidenLastname, motherMiddlename, motherFirstname, motherCitizenship, motherNumChildrenBornAlive, motherNumChildrenLiving, motherNumChildrenBornAliveNowDead, motherAddress, motherCity, motherProvince, motherCountry, fatherLastname, fatherMiddlename, fatherFirstname, fatherCitizenship, fatherReligion, fatherOccupation, fatherAgeAtBirth, fatherAddress, fatherCity, fatherProvince, fatherCountry, dateOfMarriage, cityOfMarriage, provinceOfMarriage, countryOfMarriage, attendantType, attendantOther, attendantFullname, attendantTitle, attendantAddr1, attendantAddr2, informantFullname, informantRelationToChild, informantAddress, preparedByFullname, preparedByTitle, commTaxNumber, commTaxDate, commTaxPlace, receivedByName, receivedByTitle, affiateName, affiateAddress, affiateCitizenshipCountry, affiateReason, affiateIAm, affiateCommTaxNumber, affiateCommTaxDate, affiateCommTaxPlace, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthOrder, NEW.motherMaidenLastname, NEW.motherMiddlename, NEW.motherFirstname, NEW.motherCitizenship, NEW.motherNumChildrenBornAlive, NEW.motherNumChildrenLiving, NEW.motherNumChildrenBornAliveNowDead, NEW.motherAddress, NEW.motherCity, NEW.motherProvince, NEW.motherCountry, NEW.fatherLastname, NEW.fatherMiddlename, NEW.fatherFirstname, NEW.fatherCitizenship, NEW.fatherReligion, NEW.fatherOccupation, NEW.fatherAgeAtBirth, NEW.fatherAddress, NEW.fatherCity, NEW.fatherProvince, NEW.fatherCountry, NEW.dateOfMarriage, NEW.cityOfMarriage, NEW.provinceOfMarriage, NEW.countryOfMarriage, NEW.attendantType, NEW.attendantOther, NEW.attendantFullname, NEW.attendantTitle, NEW.attendantAddr1, NEW.attendantAddr2, NEW.informantFullname, NEW.informantRelationToChild, NEW.informantAddress, NEW.preparedByFullname, NEW.preparedByTitle, NEW.commTaxNumber, NEW.commTaxDate, NEW.commTaxPlace, NEW.receivedByName, NEW.receivedByTitle, NEW.affiateName, NEW.affiateAddress, NEW.affiateCitizenshipCountry, NEW.affiateReason, NEW.affiateIAm, NEW.affiateCommTaxNumber, NEW.affiateCommTaxDate, NEW.affiateCommTaxPlace, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: birthCertificate_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS birthCertificate_after_update;
+CREATE TRIGGER birthCertificate_after_update AFTER UPDATE ON birthCertificate
+FOR EACH ROW
+BEGIN
+  INSERT INTO birthCertificateLog
+  (id, birthOrder, motherMaidenLastname, motherMiddlename, motherFirstname, motherCitizenship, motherNumChildrenBornAlive, motherNumChildrenLiving, motherNumChildrenBornAliveNowDead, motherAddress, motherCity, motherProvince, motherCountry, fatherLastname, fatherMiddlename, fatherFirstname, fatherCitizenship, fatherReligion, fatherOccupation, fatherAgeAtBirth, fatherAddress, fatherCity, fatherProvince, fatherCountry, dateOfMarriage, cityOfMarriage, provinceOfMarriage, countryOfMarriage, attendantType, attendantOther, attendantFullname, attendantTitle, attendantAddr1, attendantAddr2, informantFullname, informantRelationToChild, informantAddress, preparedByFullname, preparedByTitle, commTaxNumber, commTaxDate, commTaxPlace, receivedByName, receivedByTitle, affiateName, affiateAddress, affiateCitizenshipCountry, affiateReason, affiateIAm, affiateCommTaxNumber, affiateCommTaxDate, affiateCommTaxPlace, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthOrder, NEW.motherMaidenLastname, NEW.motherMiddlename, NEW.motherFirstname, NEW.motherCitizenship, NEW.motherNumChildrenBornAlive, NEW.motherNumChildrenLiving, NEW.motherNumChildrenBornAliveNowDead, NEW.motherAddress, NEW.motherCity, NEW.motherProvince, NEW.motherCountry, NEW.fatherLastname, NEW.fatherMiddlename, NEW.fatherFirstname, NEW.fatherCitizenship, NEW.fatherReligion, NEW.fatherOccupation, NEW.fatherAgeAtBirth, NEW.fatherAddress, NEW.fatherCity, NEW.fatherProvince, NEW.fatherCountry, NEW.dateOfMarriage, NEW.cityOfMarriage, NEW.provinceOfMarriage, NEW.countryOfMarriage, NEW.attendantType, NEW.attendantOther, NEW.attendantFullname, NEW.attendantTitle, NEW.attendantAddr1, NEW.attendantAddr2, NEW.informantFullname, NEW.informantRelationToChild, NEW.informantAddress, NEW.preparedByFullname, NEW.preparedByTitle, NEW.commTaxNumber, NEW.commTaxDate, NEW.commTaxPlace, NEW.receivedByName, NEW.receivedByTitle, NEW.affiateName, NEW.affiateAddress, NEW.affiateCitizenshipCountry, NEW.affiateReason, NEW.affiateIAm, NEW.affiateCommTaxNumber, NEW.affiateCommTaxDate, NEW.affiateCommTaxPlace, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: birthCertificate_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS birthCertificate_after_delete;
+CREATE TRIGGER birthCertificate_after_delete AFTER DELETE ON birthCertificate
+FOR EACH ROW
+BEGIN
+  INSERT INTO birthCertificateLog
+  (id, birthOrder, motherMaidenLastname, motherMiddlename, motherFirstname, motherCitizenship, motherNumChildrenBornAlive, motherNumChildrenLiving, motherNumChildrenBornAliveNowDead, motherAddress, motherCity, motherProvince, motherCountry, fatherLastname, fatherMiddlename, fatherFirstname, fatherCitizenship, fatherReligion, fatherOccupation, fatherAgeAtBirth, fatherAddress, fatherCity, fatherProvince, fatherCountry, dateOfMarriage, cityOfMarriage, provinceOfMarriage, countryOfMarriage, attendantType, attendantOther, attendantFullname, attendantTitle, attendantAddr1, attendantAddr2, informantFullname, informantRelationToChild, informantAddress, preparedByFullname, preparedByTitle, commTaxNumber, commTaxDate, commTaxPlace, receivedByName, receivedByTitle, affiateName, affiateAddress, affiateCitizenshipCountry, affiateReason, affiateIAm, affiateCommTaxNumber, affiateCommTaxDate, affiateCommTaxPlace, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.birthOrder, OLD.motherMaidenLastname, OLD.motherMiddlename, OLD.motherFirstname, OLD.motherCitizenship, OLD.motherNumChildrenBornAlive, OLD.motherNumChildrenLiving, OLD.motherNumChildrenBornAliveNowDead, OLD.motherAddress, OLD.motherCity, OLD.motherProvince, OLD.motherCountry, OLD.fatherLastname, OLD.fatherMiddlename, OLD.fatherFirstname, OLD.fatherCitizenship, OLD.fatherReligion, OLD.fatherOccupation, OLD.fatherAgeAtBirth, OLD.fatherAddress, OLD.fatherCity, OLD.fatherProvince, OLD.fatherCountry, OLD.dateOfMarriage, OLD.cityOfMarriage, OLD.provinceOfMarriage, OLD.countryOfMarriage, OLD.attendantType, OLD.attendantOther, OLD.attendantFullname, OLD.attendantTitle, OLD.attendantAddr1, OLD.attendantAddr2, OLD.informantFullname, OLD.informantRelationToChild, OLD.informantAddress, OLD.preparedByFullname, OLD.preparedByTitle, OLD.commTaxNumber, OLD.commTaxDate, OLD.commTaxPlace, OLD.receivedByName, OLD.receivedByTitle, OLD.affiateName, OLD.affiateAddress, OLD.affiateCitizenshipCountry, OLD.affiateReason, OLD.affiateIAm, OLD.affiateCommTaxNumber, OLD.affiateCommTaxDate, OLD.affiateCommTaxPlace, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: contPostpartumCheck_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS contPostpartumCheck_after_insert;
+CREATE TRIGGER contPostpartumCheck_after_insert AFTER INSERT ON contPostpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO contPostpartumCheckLog
+  (id, checkDatetime, motherSystolic, motherDiastolic, motherCR, motherTemp, motherFundus, motherEBL, babyBFed, babyTemp, babyRR, babyCR, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.checkDatetime, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherCR, NEW.motherTemp, NEW.motherFundus, NEW.motherEBL, NEW.babyBFed, NEW.babyTemp, NEW.babyRR, NEW.babyCR, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: contPostpartumCheck_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS contPostpartumCheck_after_update;
+CREATE TRIGGER contPostpartumCheck_after_update AFTER UPDATE ON contPostpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO contPostpartumCheckLog
+  (id, checkDatetime, motherSystolic, motherDiastolic, motherCR, motherTemp, motherFundus, motherEBL, babyBFed, babyTemp, babyRR, babyCR, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.checkDatetime, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherCR, NEW.motherTemp, NEW.motherFundus, NEW.motherEBL, NEW.babyBFed, NEW.babyTemp, NEW.babyRR, NEW.babyCR, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: contPostpartumCheck_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS contPostpartumCheck_after_delete;
+CREATE TRIGGER contPostpartumCheck_after_delete AFTER DELETE ON contPostpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO contPostpartumCheckLog
+  (id, checkDatetime, motherSystolic, motherDiastolic, motherCR, motherTemp, motherFundus, motherEBL, babyBFed, babyTemp, babyRR, babyCR, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.checkDatetime, OLD.motherSystolic, OLD.motherDiastolic, OLD.motherCR, OLD.motherTemp, OLD.motherFundus, OLD.motherEBL, OLD.babyBFed, OLD.babyTemp, OLD.babyRR, OLD.babyCR, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -122,6 +458,48 @@ BEGIN
   INSERT INTO customFieldLog
   (id, customFieldType_id, pregnancy_id, booleanVal, intVal, decimalVal, textVAl, dateTimeVal, op, replacedAt)
   VALUES (OLD.id, OLD.customFieldType_id, OLD.pregnancy_id, OLD.booleanVal, OLD.intVal, OLD.decimalVal, OLD.textVAl, OLD.dateTimeVal, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: discharge_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS discharge_after_insert;
+CREATE TRIGGER discharge_after_insert AFTER INSERT ON discharge
+FOR EACH ROW
+BEGIN
+  INSERT INTO dischargeLog
+  (id, dateTime, motherSystolic, motherDiastolic, motherTemp, motherCR, babyRR, babyTemp, babyCR, ppInstructionsSchedule, birthCertWorksheet, birthRecorded, chartsComplete, logsComplete, billPaid, nbs, immunizationReferral, breastFeedingEstablished, newbornBath, fundusFirmBleedingCtld, motherAteDrank, motherUrinated, placentaGone, prayer, bible, transferBaby, transferMother, transferComment, initials, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.dateTime, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherTemp, NEW.motherCR, NEW.babyRR, NEW.babyTemp, NEW.babyCR, NEW.ppInstructionsSchedule, NEW.birthCertWorksheet, NEW.birthRecorded, NEW.chartsComplete, NEW.logsComplete, NEW.billPaid, NEW.nbs, NEW.immunizationReferral, NEW.breastFeedingEstablished, NEW.newbornBath, NEW.fundusFirmBleedingCtld, NEW.motherAteDrank, NEW.motherUrinated, NEW.placentaGone, NEW.prayer, NEW.bible, NEW.transferBaby, NEW.transferMother, NEW.transferComment, NEW.initials, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: discharge_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS discharge_after_update;
+CREATE TRIGGER discharge_after_update AFTER UPDATE ON discharge
+FOR EACH ROW
+BEGIN
+  INSERT INTO dischargeLog
+  (id, dateTime, motherSystolic, motherDiastolic, motherTemp, motherCR, babyRR, babyTemp, babyCR, ppInstructionsSchedule, birthCertWorksheet, birthRecorded, chartsComplete, logsComplete, billPaid, nbs, immunizationReferral, breastFeedingEstablished, newbornBath, fundusFirmBleedingCtld, motherAteDrank, motherUrinated, placentaGone, prayer, bible, transferBaby, transferMother, transferComment, initials, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.dateTime, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherTemp, NEW.motherCR, NEW.babyRR, NEW.babyTemp, NEW.babyCR, NEW.ppInstructionsSchedule, NEW.birthCertWorksheet, NEW.birthRecorded, NEW.chartsComplete, NEW.logsComplete, NEW.billPaid, NEW.nbs, NEW.immunizationReferral, NEW.breastFeedingEstablished, NEW.newbornBath, NEW.fundusFirmBleedingCtld, NEW.motherAteDrank, NEW.motherUrinated, NEW.placentaGone, NEW.prayer, NEW.bible, NEW.transferBaby, NEW.transferMother, NEW.transferComment, NEW.initials, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: discharge_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS discharge_after_delete;
+CREATE TRIGGER discharge_after_delete AFTER DELETE ON discharge
+FOR EACH ROW
+BEGIN
+  INSERT INTO dischargeLog
+  (id, dateTime, motherSystolic, motherDiastolic, motherTemp, motherCR, babyRR, babyTemp, babyCR, ppInstructionsSchedule, birthCertWorksheet, birthRecorded, chartsComplete, logsComplete, billPaid, nbs, immunizationReferral, breastFeedingEstablished, newbornBath, fundusFirmBleedingCtld, motherAteDrank, motherUrinated, placentaGone, prayer, bible, transferBaby, transferMother, transferComment, initials, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.dateTime, OLD.motherSystolic, OLD.motherDiastolic, OLD.motherTemp, OLD.motherCR, OLD.babyRR, OLD.babyTemp, OLD.babyCR, OLD.ppInstructionsSchedule, OLD.birthCertWorksheet, OLD.birthRecorded, OLD.chartsComplete, OLD.logsComplete, OLD.billPaid, OLD.nbs, OLD.immunizationReferral, OLD.breastFeedingEstablished, OLD.newbornBath, OLD.fundusFirmBleedingCtld, OLD.motherAteDrank, OLD.motherUrinated, OLD.placentaGone, OLD.prayer, OLD.bible, OLD.transferBaby, OLD.transferMother, OLD.transferComment, OLD.initials, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -386,8 +764,8 @@ CREATE TRIGGER labor_after_insert AFTER INSERT ON labor
 FOR EACH ROW
 BEGIN
   INSERT INTO laborLog
-  (id, admittanceDate, startLaborDate, dischargeDate, falseLabor, pos, fh, fht, systolic, diastolic, cr, temp, comments, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (NEW.id, NEW.admittanceDate, NEW.startLaborDate, NEW.dischargeDate, NEW.falseLabor, NEW.pos, NEW.fh, NEW.fht, NEW.systolic, NEW.diastolic, NEW.cr, NEW.temp, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
+  (id, admittanceDate, startLaborDate, dischargeDate, pos, fh, fht, systolic, diastolic, cr, temp, comments, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.admittanceDate, NEW.startLaborDate, NEW.dischargeDate, NEW.pos, NEW.fh, NEW.fht, NEW.systolic, NEW.diastolic, NEW.cr, NEW.temp, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -400,8 +778,8 @@ CREATE TRIGGER labor_after_update AFTER UPDATE ON labor
 FOR EACH ROW
 BEGIN
   INSERT INTO laborLog
-  (id, admittanceDate, startLaborDate, dischargeDate, falseLabor, pos, fh, fht, systolic, diastolic, cr, temp, comments, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (NEW.id, NEW.admittanceDate, NEW.startLaborDate, NEW.dischargeDate, NEW.falseLabor, NEW.pos, NEW.fh, NEW.fht, NEW.systolic, NEW.diastolic, NEW.cr, NEW.temp, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
+  (id, admittanceDate, startLaborDate, dischargeDate, pos, fh, fht, systolic, diastolic, cr, temp, comments, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (NEW.id, NEW.admittanceDate, NEW.startLaborDate, NEW.dischargeDate, NEW.pos, NEW.fh, NEW.fht, NEW.systolic, NEW.diastolic, NEW.cr, NEW.temp, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.pregnancy_id, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -414,8 +792,8 @@ CREATE TRIGGER labor_after_delete AFTER DELETE ON labor
 FOR EACH ROW
 BEGIN
   INSERT INTO laborLog
-  (id, admittanceDate, startLaborDate, dischargeDate, falseLabor, pos, fh, fht, systolic, diastolic, cr, temp, comments, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
-  VALUES (OLD.id, OLD.admittanceDate, OLD.startLaborDate, OLD.dischargeDate, OLD.falseLabor, OLD.pos, OLD.fh, OLD.fht, OLD.systolic, OLD.diastolic, OLD.cr, OLD.temp, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
+  (id, admittanceDate, startLaborDate, dischargeDate, pos, fh, fht, systolic, diastolic, cr, temp, comments, updatedBy, updatedAt, supervisor, pregnancy_id, op, replacedAt)
+  VALUES (OLD.id, OLD.admittanceDate, OLD.startLaborDate, OLD.dischargeDate, OLD.pos, OLD.fh, OLD.fht, OLD.systolic, OLD.diastolic, OLD.cr, OLD.temp, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.pregnancy_id, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -470,8 +848,8 @@ CREATE TRIGGER laborStage2_after_insert AFTER INSERT ON laborStage2
 FOR EACH ROW
 BEGIN
   INSERT INTO laborStage2Log
-  (id, birthDatetime, birthType, birthPosition, durationPushing, birthPresentation, cordWrap, cordWrapType, deliveryType, shoulderDystocia, shoulderDystociaMinutes, laceration, episiotomy, repair, degree, lacerationRepairedBy, birthEBL, meconium, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (NEW.id, NEW.birthDatetime, NEW.birthType, NEW.birthPosition, NEW.durationPushing, NEW.birthPresentation, NEW.cordWrap, NEW.cordWrapType, NEW.deliveryType, NEW.shoulderDystocia, NEW.shoulderDystociaMinutes, NEW.laceration, NEW.episiotomy, NEW.repair, NEW.degree, NEW.lacerationRepairedBy, NEW.birthEBL, NEW.meconium, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+  (id, birthDatetime, birthType, birthPosition, durationPushing, birthPresentation, terminalMec, cordWrapType, deliveryType, shoulderDystocia, shoulderDystociaMinutes, laceration, episiotomy, repair, degree, lacerationRepairedBy, birthEBL, meconium, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthDatetime, NEW.birthType, NEW.birthPosition, NEW.durationPushing, NEW.birthPresentation, NEW.terminalMec, NEW.cordWrapType, NEW.deliveryType, NEW.shoulderDystocia, NEW.shoulderDystociaMinutes, NEW.laceration, NEW.episiotomy, NEW.repair, NEW.degree, NEW.lacerationRepairedBy, NEW.birthEBL, NEW.meconium, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -484,8 +862,8 @@ CREATE TRIGGER laborStage2_after_update AFTER UPDATE ON laborStage2
 FOR EACH ROW
 BEGIN
   INSERT INTO laborStage2Log
-  (id, birthDatetime, birthType, birthPosition, durationPushing, birthPresentation, cordWrap, cordWrapType, deliveryType, shoulderDystocia, shoulderDystociaMinutes, laceration, episiotomy, repair, degree, lacerationRepairedBy, birthEBL, meconium, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (NEW.id, NEW.birthDatetime, NEW.birthType, NEW.birthPosition, NEW.durationPushing, NEW.birthPresentation, NEW.cordWrap, NEW.cordWrapType, NEW.deliveryType, NEW.shoulderDystocia, NEW.shoulderDystociaMinutes, NEW.laceration, NEW.episiotomy, NEW.repair, NEW.degree, NEW.lacerationRepairedBy, NEW.birthEBL, NEW.meconium, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+  (id, birthDatetime, birthType, birthPosition, durationPushing, birthPresentation, terminalMec, cordWrapType, deliveryType, shoulderDystocia, shoulderDystociaMinutes, laceration, episiotomy, repair, degree, lacerationRepairedBy, birthEBL, meconium, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.birthDatetime, NEW.birthType, NEW.birthPosition, NEW.durationPushing, NEW.birthPresentation, NEW.terminalMec, NEW.cordWrapType, NEW.deliveryType, NEW.shoulderDystocia, NEW.shoulderDystociaMinutes, NEW.laceration, NEW.episiotomy, NEW.repair, NEW.degree, NEW.lacerationRepairedBy, NEW.birthEBL, NEW.meconium, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -498,8 +876,8 @@ CREATE TRIGGER laborStage2_after_delete AFTER DELETE ON laborStage2
 FOR EACH ROW
 BEGIN
   INSERT INTO laborStage2Log
-  (id, birthDatetime, birthType, birthPosition, durationPushing, birthPresentation, cordWrap, cordWrapType, deliveryType, shoulderDystocia, shoulderDystociaMinutes, laceration, episiotomy, repair, degree, lacerationRepairedBy, birthEBL, meconium, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (OLD.id, OLD.birthDatetime, OLD.birthType, OLD.birthPosition, OLD.durationPushing, OLD.birthPresentation, OLD.cordWrap, OLD.cordWrapType, OLD.deliveryType, OLD.shoulderDystocia, OLD.shoulderDystociaMinutes, OLD.laceration, OLD.episiotomy, OLD.repair, OLD.degree, OLD.lacerationRepairedBy, OLD.birthEBL, OLD.meconium, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+  (id, birthDatetime, birthType, birthPosition, durationPushing, birthPresentation, terminalMec, cordWrapType, deliveryType, shoulderDystocia, shoulderDystociaMinutes, laceration, episiotomy, repair, degree, lacerationRepairedBy, birthEBL, meconium, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.birthDatetime, OLD.birthType, OLD.birthPosition, OLD.durationPushing, OLD.birthPresentation, OLD.terminalMec, OLD.cordWrapType, OLD.deliveryType, OLD.shoulderDystocia, OLD.shoulderDystociaMinutes, OLD.laceration, OLD.episiotomy, OLD.repair, OLD.degree, OLD.lacerationRepairedBy, OLD.birthEBL, OLD.meconium, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -512,8 +890,8 @@ CREATE TRIGGER laborStage3_after_insert AFTER INSERT ON laborStage3
 FOR EACH ROW
 BEGIN
   INSERT INTO laborStage3Log
-  (id, placentaDatetime, placentaDeliverySpontaneous, placentaDeliveryAMTSL, placentaDeliveryCCT, placentaDeliveryManual, maternalPosition, txBloodLoss1, txBloodLoss2, txBloodLoss3, txBloodLoss4, txBloodLoss5, placentaShape, placentaInsertion, placentaNumVessels, schultzDuncan, placentaMembranesComplete, placentaOther, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (NEW.id, NEW.placentaDatetime, NEW.placentaDeliverySpontaneous, NEW.placentaDeliveryAMTSL, NEW.placentaDeliveryCCT, NEW.placentaDeliveryManual, NEW.maternalPosition, NEW.txBloodLoss1, NEW.txBloodLoss2, NEW.txBloodLoss3, NEW.txBloodLoss4, NEW.txBloodLoss5, NEW.placentaShape, NEW.placentaInsertion, NEW.placentaNumVessels, NEW.schultzDuncan, NEW.placentaMembranesComplete, NEW.placentaOther, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+  (id, placentaDatetime, placentaDeliverySpontaneous, placentaDeliveryAMTSL, placentaDeliveryCCT, placentaDeliveryManual, maternalPosition, txBloodLoss1, txBloodLoss2, txBloodLoss3, txBloodLoss4, txBloodLoss5, placentaShape, placentaInsertion, placentaNumVessels, schultzDuncan, cotyledons, membranes, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.placentaDatetime, NEW.placentaDeliverySpontaneous, NEW.placentaDeliveryAMTSL, NEW.placentaDeliveryCCT, NEW.placentaDeliveryManual, NEW.maternalPosition, NEW.txBloodLoss1, NEW.txBloodLoss2, NEW.txBloodLoss3, NEW.txBloodLoss4, NEW.txBloodLoss5, NEW.placentaShape, NEW.placentaInsertion, NEW.placentaNumVessels, NEW.schultzDuncan, NEW.cotyledons, NEW.membranes, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
 END;$$
 DELIMITER ;
  
@@ -526,8 +904,8 @@ CREATE TRIGGER laborStage3_after_update AFTER UPDATE ON laborStage3
 FOR EACH ROW
 BEGIN
   INSERT INTO laborStage3Log
-  (id, placentaDatetime, placentaDeliverySpontaneous, placentaDeliveryAMTSL, placentaDeliveryCCT, placentaDeliveryManual, maternalPosition, txBloodLoss1, txBloodLoss2, txBloodLoss3, txBloodLoss4, txBloodLoss5, placentaShape, placentaInsertion, placentaNumVessels, schultzDuncan, placentaMembranesComplete, placentaOther, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (NEW.id, NEW.placentaDatetime, NEW.placentaDeliverySpontaneous, NEW.placentaDeliveryAMTSL, NEW.placentaDeliveryCCT, NEW.placentaDeliveryManual, NEW.maternalPosition, NEW.txBloodLoss1, NEW.txBloodLoss2, NEW.txBloodLoss3, NEW.txBloodLoss4, NEW.txBloodLoss5, NEW.placentaShape, NEW.placentaInsertion, NEW.placentaNumVessels, NEW.schultzDuncan, NEW.placentaMembranesComplete, NEW.placentaOther, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+  (id, placentaDatetime, placentaDeliverySpontaneous, placentaDeliveryAMTSL, placentaDeliveryCCT, placentaDeliveryManual, maternalPosition, txBloodLoss1, txBloodLoss2, txBloodLoss3, txBloodLoss4, txBloodLoss5, placentaShape, placentaInsertion, placentaNumVessels, schultzDuncan, cotyledons, membranes, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.placentaDatetime, NEW.placentaDeliverySpontaneous, NEW.placentaDeliveryAMTSL, NEW.placentaDeliveryCCT, NEW.placentaDeliveryManual, NEW.maternalPosition, NEW.txBloodLoss1, NEW.txBloodLoss2, NEW.txBloodLoss3, NEW.txBloodLoss4, NEW.txBloodLoss5, NEW.placentaShape, NEW.placentaInsertion, NEW.placentaNumVessels, NEW.schultzDuncan, NEW.cotyledons, NEW.membranes, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
 END;$$
 DELIMITER ;
  
@@ -540,8 +918,8 @@ CREATE TRIGGER laborStage3_after_delete AFTER DELETE ON laborStage3
 FOR EACH ROW
 BEGIN
   INSERT INTO laborStage3Log
-  (id, placentaDatetime, placentaDeliverySpontaneous, placentaDeliveryAMTSL, placentaDeliveryCCT, placentaDeliveryManual, maternalPosition, txBloodLoss1, txBloodLoss2, txBloodLoss3, txBloodLoss4, txBloodLoss5, placentaShape, placentaInsertion, placentaNumVessels, schultzDuncan, placentaMembranesComplete, placentaOther, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
-  VALUES (OLD.id, OLD.placentaDatetime, OLD.placentaDeliverySpontaneous, OLD.placentaDeliveryAMTSL, OLD.placentaDeliveryCCT, OLD.placentaDeliveryManual, OLD.maternalPosition, OLD.txBloodLoss1, OLD.txBloodLoss2, OLD.txBloodLoss3, OLD.txBloodLoss4, OLD.txBloodLoss5, OLD.placentaShape, OLD.placentaInsertion, OLD.placentaNumVessels, OLD.schultzDuncan, OLD.placentaMembranesComplete, OLD.placentaOther, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+  (id, placentaDatetime, placentaDeliverySpontaneous, placentaDeliveryAMTSL, placentaDeliveryCCT, placentaDeliveryManual, maternalPosition, txBloodLoss1, txBloodLoss2, txBloodLoss3, txBloodLoss4, txBloodLoss5, placentaShape, placentaInsertion, placentaNumVessels, schultzDuncan, cotyledons, membranes, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.placentaDatetime, OLD.placentaDeliverySpontaneous, OLD.placentaDeliveryAMTSL, OLD.placentaDeliveryCCT, OLD.placentaDeliveryManual, OLD.maternalPosition, OLD.txBloodLoss1, OLD.txBloodLoss2, OLD.txBloodLoss3, OLD.txBloodLoss4, OLD.txBloodLoss5, OLD.placentaShape, OLD.placentaInsertion, OLD.placentaNumVessels, OLD.schultzDuncan, OLD.cotyledons, OLD.membranes, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -630,44 +1008,170 @@ END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
--- Trigger: membranesResus_after_insert
+-- Trigger: membrane_after_insert
 -- ---------------------------------------------------------------
 DELIMITER $$
-DROP TRIGGER IF EXISTS membranesResus_after_insert;
-CREATE TRIGGER membranesResus_after_insert AFTER INSERT ON membranesResus
+DROP TRIGGER IF EXISTS membrane_after_insert;
+CREATE TRIGGER membrane_after_insert AFTER INSERT ON membrane
 FOR EACH ROW
 BEGIN
-  INSERT INTO membranesResusLog
-  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
-  VALUES (NEW.id, NEW.ruptureDatetime, NEW.rupture, NEW.ruptureComment, NEW.amniotic, NEW.amnioticComment, NEW.bulb, NEW.machine, NEW.freeFlowO2, NEW.chestCompressions, NEW.ppv, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+  INSERT INTO membraneLog
+  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.ruptureDatetime, NEW.rupture, NEW.ruptureComment, NEW.amniotic, NEW.amnioticComment, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
 END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
--- Trigger: membranesResus_after_update
+-- Trigger: membrane_after_update
 -- ---------------------------------------------------------------
 DELIMITER $$
-DROP TRIGGER IF EXISTS membranesResus_after_update;
-CREATE TRIGGER membranesResus_after_update AFTER UPDATE ON membranesResus
+DROP TRIGGER IF EXISTS membrane_after_update;
+CREATE TRIGGER membrane_after_update AFTER UPDATE ON membrane
 FOR EACH ROW
 BEGIN
-  INSERT INTO membranesResusLog
-  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
-  VALUES (NEW.id, NEW.ruptureDatetime, NEW.rupture, NEW.ruptureComment, NEW.amniotic, NEW.amnioticComment, NEW.bulb, NEW.machine, NEW.freeFlowO2, NEW.chestCompressions, NEW.ppv, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+  INSERT INTO membraneLog
+  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.ruptureDatetime, NEW.rupture, NEW.ruptureComment, NEW.amniotic, NEW.amnioticComment, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
 END;$$
 DELIMITER ;
  
 -- ---------------------------------------------------------------
--- Trigger: membranesResus_after_delete
+-- Trigger: membrane_after_delete
 -- ---------------------------------------------------------------
 DELIMITER $$
-DROP TRIGGER IF EXISTS membranesResus_after_delete;
-CREATE TRIGGER membranesResus_after_delete AFTER DELETE ON membranesResus
+DROP TRIGGER IF EXISTS membrane_after_delete;
+CREATE TRIGGER membrane_after_delete AFTER DELETE ON membrane
 FOR EACH ROW
 BEGIN
-  INSERT INTO membranesResusLog
-  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, bulb, machine, freeFlowO2, chestCompressions, ppv, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
-  VALUES (OLD.id, OLD.ruptureDatetime, OLD.rupture, OLD.ruptureComment, OLD.amniotic, OLD.amnioticComment, OLD.bulb, OLD.machine, OLD.freeFlowO2, OLD.chestCompressions, OLD.ppv, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
+  INSERT INTO membraneLog
+  (id, ruptureDatetime, rupture, ruptureComment, amniotic, amnioticComment, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.ruptureDatetime, OLD.rupture, OLD.ruptureComment, OLD.amniotic, OLD.amnioticComment, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedication_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedication_after_insert;
+CREATE TRIGGER motherMedication_after_insert AFTER INSERT ON motherMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationLog
+  (id, motherMedicationType, medicationDate, initials, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.motherMedicationType, NEW.medicationDate, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedication_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedication_after_update;
+CREATE TRIGGER motherMedication_after_update AFTER UPDATE ON motherMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationLog
+  (id, motherMedicationType, medicationDate, initials, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.motherMedicationType, NEW.medicationDate, NEW.initials, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedication_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedication_after_delete;
+CREATE TRIGGER motherMedication_after_delete AFTER DELETE ON motherMedication
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationLog
+  (id, motherMedicationType, medicationDate, initials, comments, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.motherMedicationType, OLD.medicationDate, OLD.initials, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedicationType_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedicationType_after_insert;
+CREATE TRIGGER motherMedicationType_after_insert AFTER INSERT ON motherMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationTypeLog
+  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedicationType_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedicationType_after_update;
+CREATE TRIGGER motherMedicationType_after_update AFTER UPDATE ON motherMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationTypeLog
+  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (NEW.id, NEW.name, NEW.description, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: motherMedicationType_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS motherMedicationType_after_delete;
+CREATE TRIGGER motherMedicationType_after_delete AFTER DELETE ON motherMedicationType
+FOR EACH ROW
+BEGIN
+  INSERT INTO motherMedicationTypeLog
+  (id, name, description, updatedBy, updatedAt, supervisor, op, replacedAt)
+  VALUES (OLD.id, OLD.name, OLD.description, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: newbornExam_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS newbornExam_after_insert;
+CREATE TRIGGER newbornExam_after_insert AFTER INSERT ON newbornExam
+FOR EACH ROW
+BEGIN
+  INSERT INTO newbornExamLog
+  (id, examDatetime, examiners, rr, hr, temperature, length, headCir, chestCir, appearance, appearanceComment, color, colorComment, skin, skinComment, head, headComment, eyes, eyesComment, ears, earsComment, nose, noseComment, mouth, mouthComment, neck, neckComment, chest, chestComment, lungs, lungsComment, heart, heartComment, abdomen, abdomenComment, hips, hipsComment, cord, cordComment, femoralPulses, femoralPulsesComment, genitalia, genitaliaComment, anus, anusComment, back, backComment, extremities, extremitiesComment, estGA, moroReflex, moroReflexComment, palmarReflex, palmarReflexComment, steppingReflex, steppingReflexComment, plantarReflex, plantarReflexComment, babinskiReflex, babinskiReflexComment, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.examDatetime, NEW.examiners, NEW.rr, NEW.hr, NEW.temperature, NEW.length, NEW.headCir, NEW.chestCir, NEW.appearance, NEW.appearanceComment, NEW.color, NEW.colorComment, NEW.skin, NEW.skinComment, NEW.head, NEW.headComment, NEW.eyes, NEW.eyesComment, NEW.ears, NEW.earsComment, NEW.nose, NEW.noseComment, NEW.mouth, NEW.mouthComment, NEW.neck, NEW.neckComment, NEW.chest, NEW.chestComment, NEW.lungs, NEW.lungsComment, NEW.heart, NEW.heartComment, NEW.abdomen, NEW.abdomenComment, NEW.hips, NEW.hipsComment, NEW.cord, NEW.cordComment, NEW.femoralPulses, NEW.femoralPulsesComment, NEW.genitalia, NEW.genitaliaComment, NEW.anus, NEW.anusComment, NEW.back, NEW.backComment, NEW.extremities, NEW.extremitiesComment, NEW.estGA, NEW.moroReflex, NEW.moroReflexComment, NEW.palmarReflex, NEW.palmarReflexComment, NEW.steppingReflex, NEW.steppingReflexComment, NEW.plantarReflex, NEW.plantarReflexComment, NEW.babinskiReflex, NEW.babinskiReflexComment, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: newbornExam_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS newbornExam_after_update;
+CREATE TRIGGER newbornExam_after_update AFTER UPDATE ON newbornExam
+FOR EACH ROW
+BEGIN
+  INSERT INTO newbornExamLog
+  (id, examDatetime, examiners, rr, hr, temperature, length, headCir, chestCir, appearance, appearanceComment, color, colorComment, skin, skinComment, head, headComment, eyes, eyesComment, ears, earsComment, nose, noseComment, mouth, mouthComment, neck, neckComment, chest, chestComment, lungs, lungsComment, heart, heartComment, abdomen, abdomenComment, hips, hipsComment, cord, cordComment, femoralPulses, femoralPulsesComment, genitalia, genitaliaComment, anus, anusComment, back, backComment, extremities, extremitiesComment, estGA, moroReflex, moroReflexComment, palmarReflex, palmarReflexComment, steppingReflex, steppingReflexComment, plantarReflex, plantarReflexComment, babinskiReflex, babinskiReflexComment, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (NEW.id, NEW.examDatetime, NEW.examiners, NEW.rr, NEW.hr, NEW.temperature, NEW.length, NEW.headCir, NEW.chestCir, NEW.appearance, NEW.appearanceComment, NEW.color, NEW.colorComment, NEW.skin, NEW.skinComment, NEW.head, NEW.headComment, NEW.eyes, NEW.eyesComment, NEW.ears, NEW.earsComment, NEW.nose, NEW.noseComment, NEW.mouth, NEW.mouthComment, NEW.neck, NEW.neckComment, NEW.chest, NEW.chestComment, NEW.lungs, NEW.lungsComment, NEW.heart, NEW.heartComment, NEW.abdomen, NEW.abdomenComment, NEW.hips, NEW.hipsComment, NEW.cord, NEW.cordComment, NEW.femoralPulses, NEW.femoralPulsesComment, NEW.genitalia, NEW.genitaliaComment, NEW.anus, NEW.anusComment, NEW.back, NEW.backComment, NEW.extremities, NEW.extremitiesComment, NEW.estGA, NEW.moroReflex, NEW.moroReflexComment, NEW.palmarReflex, NEW.palmarReflexComment, NEW.steppingReflex, NEW.steppingReflexComment, NEW.plantarReflex, NEW.plantarReflexComment, NEW.babinskiReflex, NEW.babinskiReflexComment, NEW.comments, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.baby_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: newbornExam_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS newbornExam_after_delete;
+CREATE TRIGGER newbornExam_after_delete AFTER DELETE ON newbornExam
+FOR EACH ROW
+BEGIN
+  INSERT INTO newbornExamLog
+  (id, examDatetime, examiners, rr, hr, temperature, length, headCir, chestCir, appearance, appearanceComment, color, colorComment, skin, skinComment, head, headComment, eyes, eyesComment, ears, earsComment, nose, noseComment, mouth, mouthComment, neck, neckComment, chest, chestComment, lungs, lungsComment, heart, heartComment, abdomen, abdomenComment, hips, hipsComment, cord, cordComment, femoralPulses, femoralPulsesComment, genitalia, genitaliaComment, anus, anusComment, back, backComment, extremities, extremitiesComment, estGA, moroReflex, moroReflexComment, palmarReflex, palmarReflexComment, steppingReflex, steppingReflexComment, plantarReflex, plantarReflexComment, babinskiReflex, babinskiReflexComment, comments, updatedBy, updatedAt, supervisor, baby_id, op, replacedAt)
+  VALUES (OLD.id, OLD.examDatetime, OLD.examiners, OLD.rr, OLD.hr, OLD.temperature, OLD.length, OLD.headCir, OLD.chestCir, OLD.appearance, OLD.appearanceComment, OLD.color, OLD.colorComment, OLD.skin, OLD.skinComment, OLD.head, OLD.headComment, OLD.eyes, OLD.eyesComment, OLD.ears, OLD.earsComment, OLD.nose, OLD.noseComment, OLD.mouth, OLD.mouthComment, OLD.neck, OLD.neckComment, OLD.chest, OLD.chestComment, OLD.lungs, OLD.lungsComment, OLD.heart, OLD.heartComment, OLD.abdomen, OLD.abdomenComment, OLD.hips, OLD.hipsComment, OLD.cord, OLD.cordComment, OLD.femoralPulses, OLD.femoralPulsesComment, OLD.genitalia, OLD.genitaliaComment, OLD.anus, OLD.anusComment, OLD.back, OLD.backComment, OLD.extremities, OLD.extremitiesComment, OLD.estGA, OLD.moroReflex, OLD.moroReflexComment, OLD.palmarReflex, OLD.palmarReflexComment, OLD.steppingReflex, OLD.steppingReflexComment, OLD.plantarReflex, OLD.plantarReflexComment, OLD.babinskiReflex, OLD.babinskiReflexComment, OLD.comments, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.baby_id, "D", NOW());
 END;$$
 DELIMITER ;
  
@@ -710,6 +1214,48 @@ BEGIN
   INSERT INTO patientLog
   (id, dohID, dob, generalInfo, ageOfMenarche, updatedBy, updatedAt, supervisor, op, replacedAt)
   VALUES (OLD.id, OLD.dohID, OLD.dob, OLD.generalInfo, OLD.ageOfMenarche, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, "D", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: postpartumCheck_after_insert
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS postpartumCheck_after_insert;
+CREATE TRIGGER postpartumCheck_after_insert AFTER INSERT ON postpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO postpartumCheckLog
+  (id, checkDatetime, babyWeight, babyTemp, babyCR, babyRR, babyLungs, babyColor, babySkin, babyCord, babyUrine, babyStool, babySSInfection, babyFeeding, babyFeedingDaily, motherTemp, motherSystolic, motherDiastolic, motherCR, motherBreasts, motherFundus, motherPerineum, motherLochia, motherUrine, motherStool, motherSSInfection, motherFamilyPlanning, birthCertReq, hgbRequested, hgbTestDate, hgbTestResult, ironGiven, comments, nextScheduledCheck, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.checkDatetime, NEW.babyWeight, NEW.babyTemp, NEW.babyCR, NEW.babyRR, NEW.babyLungs, NEW.babyColor, NEW.babySkin, NEW.babyCord, NEW.babyUrine, NEW.babyStool, NEW.babySSInfection, NEW.babyFeeding, NEW.babyFeedingDaily, NEW.motherTemp, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherCR, NEW.motherBreasts, NEW.motherFundus, NEW.motherPerineum, NEW.motherLochia, NEW.motherUrine, NEW.motherStool, NEW.motherSSInfection, NEW.motherFamilyPlanning, NEW.birthCertReq, NEW.hgbRequested, NEW.hgbTestDate, NEW.hgbTestResult, NEW.ironGiven, NEW.comments, NEW.nextScheduledCheck, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "I", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: postpartumCheck_after_update
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS postpartumCheck_after_update;
+CREATE TRIGGER postpartumCheck_after_update AFTER UPDATE ON postpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO postpartumCheckLog
+  (id, checkDatetime, babyWeight, babyTemp, babyCR, babyRR, babyLungs, babyColor, babySkin, babyCord, babyUrine, babyStool, babySSInfection, babyFeeding, babyFeedingDaily, motherTemp, motherSystolic, motherDiastolic, motherCR, motherBreasts, motherFundus, motherPerineum, motherLochia, motherUrine, motherStool, motherSSInfection, motherFamilyPlanning, birthCertReq, hgbRequested, hgbTestDate, hgbTestResult, ironGiven, comments, nextScheduledCheck, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (NEW.id, NEW.checkDatetime, NEW.babyWeight, NEW.babyTemp, NEW.babyCR, NEW.babyRR, NEW.babyLungs, NEW.babyColor, NEW.babySkin, NEW.babyCord, NEW.babyUrine, NEW.babyStool, NEW.babySSInfection, NEW.babyFeeding, NEW.babyFeedingDaily, NEW.motherTemp, NEW.motherSystolic, NEW.motherDiastolic, NEW.motherCR, NEW.motherBreasts, NEW.motherFundus, NEW.motherPerineum, NEW.motherLochia, NEW.motherUrine, NEW.motherStool, NEW.motherSSInfection, NEW.motherFamilyPlanning, NEW.birthCertReq, NEW.hgbRequested, NEW.hgbTestDate, NEW.hgbTestResult, NEW.ironGiven, NEW.comments, NEW.nextScheduledCheck, NEW.updatedBy, NEW.updatedAt, NEW.supervisor, NEW.labor_id, "U", NOW());
+END;$$
+DELIMITER ;
+ 
+-- ---------------------------------------------------------------
+-- Trigger: postpartumCheck_after_delete
+-- ---------------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS postpartumCheck_after_delete;
+CREATE TRIGGER postpartumCheck_after_delete AFTER DELETE ON postpartumCheck
+FOR EACH ROW
+BEGIN
+  INSERT INTO postpartumCheckLog
+  (id, checkDatetime, babyWeight, babyTemp, babyCR, babyRR, babyLungs, babyColor, babySkin, babyCord, babyUrine, babyStool, babySSInfection, babyFeeding, babyFeedingDaily, motherTemp, motherSystolic, motherDiastolic, motherCR, motherBreasts, motherFundus, motherPerineum, motherLochia, motherUrine, motherStool, motherSSInfection, motherFamilyPlanning, birthCertReq, hgbRequested, hgbTestDate, hgbTestResult, ironGiven, comments, nextScheduledCheck, updatedBy, updatedAt, supervisor, labor_id, op, replacedAt)
+  VALUES (OLD.id, OLD.checkDatetime, OLD.babyWeight, OLD.babyTemp, OLD.babyCR, OLD.babyRR, OLD.babyLungs, OLD.babyColor, OLD.babySkin, OLD.babyCord, OLD.babyUrine, OLD.babyStool, OLD.babySSInfection, OLD.babyFeeding, OLD.babyFeedingDaily, OLD.motherTemp, OLD.motherSystolic, OLD.motherDiastolic, OLD.motherCR, OLD.motherBreasts, OLD.motherFundus, OLD.motherPerineum, OLD.motherLochia, OLD.motherUrine, OLD.motherStool, OLD.motherSSInfection, OLD.motherFamilyPlanning, OLD.birthCertReq, OLD.hgbRequested, OLD.hgbTestDate, OLD.hgbTestResult, OLD.ironGiven, OLD.comments, OLD.nextScheduledCheck, OLD.updatedBy, OLD.updatedAt, OLD.supervisor, OLD.labor_id, "D", NOW());
 END;$$
 DELIMITER ;
  

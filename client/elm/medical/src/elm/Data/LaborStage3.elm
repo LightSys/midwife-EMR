@@ -87,6 +87,8 @@ isLaborStage3RecordComplete rec =
             || (U.validatePopulatedString rec.placentaInsertion)
             || (rec.placentaNumVessels == Nothing)
             || (rec.schultzDuncan == Nothing)
+            || (U.validatePopulatedString rec.cotyledons)
+            || (U.validatePopulatedString rec.membranes)
         )
 
 
@@ -107,8 +109,8 @@ type alias LaborStage3Record =
     , placentaInsertion : Maybe String
     , placentaNumVessels : Maybe Int
     , schultzDuncan : Maybe SchultzDuncan
-    , placentaMembranesComplete : Maybe Bool
-    , placentaOther : Maybe String
+    , cotyledons : Maybe String
+    , membranes : Maybe String
     , comments : Maybe String
     , labor_id : Int
     }
@@ -130,8 +132,8 @@ type alias LaborStage3RecordNew =
     , placentaInsertion : Maybe String
     , placentaNumVessels : Maybe Int
     , schultzDuncan : Maybe SchultzDuncan
-    , placentaMembranesComplete : Maybe Bool
-    , placentaOther : Maybe String
+    , cotyledons : Maybe String
+    , membranes : Maybe String
     , comments : Maybe String
     , labor_id : Int
     }
@@ -156,8 +158,8 @@ laborStage3Record =
         |> JDP.required "placentaInsertion" (JD.maybe JD.string)
         |> JDP.required "placentaNumVessels" (JD.maybe JD.int)
         |> JDP.required "schultzDuncan" (JD.maybe JD.string |> JD.map maybeString2SchultzDuncan)
-        |> JDP.required "placentaMembranesComplete" U.maybeIntToMaybeBool
-        |> JDP.required "placentaOther" (JD.maybe JD.string)
+        |> JDP.required "cotyledons" (JD.maybe JD.string)
+        |> JDP.required "membranes" (JD.maybe JD.string)
         |> JDP.required "comments" (JD.maybe JD.string)
         |> JDP.required "labor_id" JD.int
 
@@ -184,8 +186,8 @@ laborStage3RecordToValue rec =
                 , ( "placentaInsertion", (JEE.maybe JE.string rec.placentaInsertion) )
                 , ( "placentaNumVessels", (JEE.maybe JE.int rec.placentaNumVessels) )
                 , ( "schultzDuncan", (JEE.maybe (schultzDuncan2String >> JE.string) rec.schultzDuncan) )
-                , ( "placentaMembranesComplete", (U.maybeBoolToMaybeInt rec.placentaMembranesComplete) )
-                , ( "placentaOther", (JEE.maybe JE.string rec.placentaOther) )
+                , ( "cotyledons", (JEE.maybe JE.string rec.cotyledons) )
+                , ( "membranes", (JEE.maybe JE.string rec.membranes) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 ]
@@ -214,8 +216,8 @@ laborStage3RecordNewToValue rec =
                 , ( "placentaInsertion", (JEE.maybe JE.string rec.placentaInsertion) )
                 , ( "placentaNumVessels", (JEE.maybe JE.int rec.placentaNumVessels) )
                 , ( "schultzDuncan", (JEE.maybe (schultzDuncan2String >> JE.string) rec.schultzDuncan) )
-                , ( "placentaMembranesComplete", (U.maybeBoolToMaybeInt rec.placentaMembranesComplete) )
-                , ( "placentaOther", (JEE.maybe JE.string rec.placentaOther) )
+                , ( "cotyledons", (JEE.maybe JE.string rec.cotyledons) )
+                , ( "membranes", (JEE.maybe JE.string rec.membranes) )
                 , ( "comments", (JEE.maybe JE.string rec.comments) )
                 , ( "labor_id", (JE.int rec.labor_id) )
                 ]
@@ -241,8 +243,8 @@ laborStage3RecordNewToLaborStage3Record (LaborStage3Id id) ls3new =
         ls3new.placentaInsertion
         ls3new.placentaNumVessels
         ls3new.schultzDuncan
-        ls3new.placentaMembranesComplete
-        ls3new.placentaOther
+        ls3new.cotyledons
+        ls3new.membranes
         ls3new.comments
         ls3new.labor_id
 

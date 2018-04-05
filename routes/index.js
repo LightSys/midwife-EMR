@@ -30,4 +30,8 @@ module.exports = {
   , inactiveRpt: require('./inactiveRpt')
   , invWork: require('./invWork')
   , generateBarcodes: require('./barcodes').generateBarcodes
+  , vitaminARpt: require('./vitaminARpt')
+  , birthCertificateRpt: require('./birthCertificateRpt')
+  , bcgRpt: require('./bcgRpt')
+  , hepbRpt: require('./hepbRpt')
 };

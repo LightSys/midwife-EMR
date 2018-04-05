@@ -196,6 +196,41 @@ type EditableSelectDataName
     | ReferralsSDN
     | ReligionSDN
     | TeachingTopicsSDN
+    | NewbornExamAbdomenSDN
+    | NewbornExamAnusSDN
+    | NewbornExamAppearanceSDN
+    | NewbornExamBackSDN
+    | NewbornExamChestSDN
+    | NewbornExamColorSDN
+    | NewbornExamCordSDN
+    | NewbornExamEarsSDN
+    | NewbornExamExtremitiesSDN
+    | NewbornExamEyesSDN
+    | NewbornExamFemoralPulsesSDN
+    | NewbornExamGenitaliaFemaleSDN
+    | NewbornExamGenitaliaMaleSDN
+    | NewbornExamHeadSDN
+    | NewbornExamHeartSDN
+    | NewbornExamHipsSDN
+    | NewbornExamLungsSDN
+    | NewbornExamMouthSDN
+    | NewbornExamNeckSDN
+    | NewbornExamNoseSDN
+    | NewbornExamSkinSDN
+    | PostpartumCheckBabyColorSDN
+    | PostpartumCheckBabyCordSDN
+    | PostpartumCheckBabyFeedingSDN
+    | PostpartumCheckBabyLungsSDN
+    | PostpartumCheckBabySkinSDN
+    | PostpartumCheckBabySSInfectionSDN
+    | PostpartumCheckMotherBreastsSDN
+    | PostpartumCheckMotherFundusSDN
+    | PostpartumCheckMotherLochiaSDN
+    | PostpartumCheckMotherPerineumSDN
+    | PostpartumCheckMotherSSInfectionSDN
+    | PostpartumCheckMotherStoolSDN
+    | PostpartumCheckMotherUrineSDN
+    | PostpartumCheckMotherFamilyPlanningSDN
 
 
 type TableResponse

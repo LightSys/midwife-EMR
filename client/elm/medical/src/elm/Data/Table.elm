@@ -1,7 +1,7 @@
 module Data.Table
     exposing
-        ( decodeTable
-        , Table(..)
+        ( Table(..)
+        , decodeTable
         , stringToTable
         , tableToString
         , tableToValue
@@ -14,13 +14,31 @@ import Json.Encode as JE
 type Table
     = Unknown
     | Baby
+    | BabyLab
+    | BabyLabType
+    | BabyMedication
+    | BabyMedicationType
+    | BabyVaccination
+    | BabyVaccinationType
+    | BirthCertificate
+    | ContPostpartumCheck
+    | Discharge
+    | KeyValue
     | Labor
     | LaborStage1
     | LaborStage2
     | LaborStage3
-    | MembranesResus
+    | Membrane
+    | MotherMedication
+    | MotherMedicationType
+    | NewbornExam
     | Patient
+    | PostpartumCheck
     | Pregnancy
+    | Role
+    | SelectData
+    | User
+
 
 
 -- HELPERS --
@@ -40,6 +58,36 @@ tableToString tbl =
         Baby ->
             "baby"
 
+        BabyLab ->
+            "babyLab"
+
+        BabyLabType ->
+            "babyLabType"
+
+        BabyMedication ->
+            "babyMedication"
+
+        BabyMedicationType ->
+            "babyMedicationType"
+
+        BabyVaccination ->
+            "babyVaccination"
+
+        BabyVaccinationType ->
+            "babyVaccinationType"
+
+        BirthCertificate ->
+            "birthCertificate"
+
+        ContPostpartumCheck ->
+            "contPostpartumCheck"
+
+        Discharge ->
+            "discharge"
+
+        KeyValue ->
+            "keyValue"
+
         Labor ->
             "labor"
 
@@ -52,14 +100,35 @@ tableToString tbl =
         LaborStage3 ->
             "laborStage3"
 
-        MembranesResus ->
-            "membranesResus"
+        Membrane ->
+            "membrane"
+
+        MotherMedication ->
+            "motherMedication"
+
+        MotherMedicationType ->
+            "motherMedicationType"
+
+        NewbornExam ->
+            "newbornExam"
 
         Patient ->
             "patient"
 
+        PostpartumCheck ->
+            "postpartumCheck"
+
         Pregnancy ->
             "pregnancy"
+
+        Role ->
+            "role"
+
+        SelectData ->
+            "selectData"
+
+        User ->
+            "user"
 
 
 stringToTable : String -> Table
@@ -67,6 +136,36 @@ stringToTable tbl =
     case tbl of
         "baby" ->
             Baby
+
+        "babyLab" ->
+            BabyLab
+
+        "babyLabType" ->
+            BabyLabType
+
+        "babyMedication" ->
+            BabyMedication
+
+        "babyMedicationType" ->
+            BabyMedicationType
+
+        "babyVaccination" ->
+            BabyVaccination
+
+        "babyVaccinationType" ->
+            BabyVaccinationType
+
+        "birthCertificate" ->
+            BirthCertificate
+
+        "contPostpartumCheck" ->
+            ContPostpartumCheck
+
+        "discharge" ->
+            Discharge
+
+        "keyValue" ->
+            KeyValue
 
         "labor" ->
             Labor
@@ -80,14 +179,35 @@ stringToTable tbl =
         "laborStage3" ->
             LaborStage3
 
-        "membranesResus" ->
-            MembranesResus
+        "membrane" ->
+            Membrane
+
+        "motherMedication" ->
+            MotherMedication
+
+        "motherMedicationType" ->
+            MotherMedicationType
+
+        "newbornExam" ->
+            NewbornExam
 
         "patient" ->
             Patient
 
+        "postpartumCheck" ->
+            PostpartumCheck
+
         "pregnancy" ->
             Pregnancy
+
+        "role" ->
+            Role
+
+        "selectData" ->
+            SelectData
+
+        "user" ->
+            User
 
         _ ->
             Unknown
@@ -96,4 +216,3 @@ stringToTable tbl =
 decodeTable : JD.Decoder Table
 decodeTable =
     JD.string |> JD.map stringToTable
-

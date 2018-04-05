@@ -228,6 +228,7 @@ ALTER TABLE laborLog ADD COLUMN replacedAt DATETIME NOT NULL;
 ALTER TABLE laborLog MODIFY COLUMN id INT DEFAULT 0;
 ALTER TABLE laborLog DROP PRIMARY KEY;
 ALTER TABLE laborLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE laborLog DROP KEY pregnancy_id;
 --
 -- Creating laborStage1Log
 SELECT 'laborStage1Log' AS Creating FROM DUAL;
@@ -279,13 +280,136 @@ ALTER TABLE apgarLog DROP PRIMARY KEY;
 ALTER TABLE apgarLog ADD PRIMARY KEY (id, replacedAt);
 ALTER TABLE apgarLog DROP KEY baby_id;
 --
--- Creating membranesResusLog
-SELECT 'membranesResusLog' AS Creating FROM DUAL;
-CREATE TABLE membranesResusLog LIKE membranesResus;
-ALTER TABLE membranesResusLog ADD COLUMN op CHAR(1) DEFAULT '';
-ALTER TABLE membranesResusLog ADD COLUMN replacedAt DATETIME NOT NULL;
-ALTER TABLE membranesResusLog MODIFY COLUMN id INT DEFAULT 0;
-ALTER TABLE membranesResusLog DROP PRIMARY KEY;
-ALTER TABLE membranesResusLog ADD PRIMARY KEY (id, replacedAt);
-ALTER TABLE membranesResusLog DROP KEY baby_id;
+-- Creating newbornExamLog
+SELECT 'newbornExamLog' AS Creating FROM DUAL;
+CREATE TABLE newbornExamLog LIKE newbornExam;
+ALTER TABLE newbornExamLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE newbornExamLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE newbornExamLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE newbornExamLog DROP PRIMARY KEY;
+ALTER TABLE newbornExamLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE newbornExamLog DROP KEY baby_id;
+--
+-- Creating membraneLog
+SELECT 'membraneLog' AS Creating FROM DUAL;
+CREATE TABLE membraneLog LIKE membrane;
+ALTER TABLE membraneLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE membraneLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE membraneLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE membraneLog DROP PRIMARY KEY;
+ALTER TABLE membraneLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE membraneLog DROP KEY labor_id;
+--
+-- Creating contPostpartumCheckLog
+SELECT 'contPostpartumCheckLog' AS Creating FROM DUAL;
+CREATE TABLE contPostpartumCheckLog LIKE contPostpartumCheck;
+ALTER TABLE contPostpartumCheckLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE contPostpartumCheckLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE contPostpartumCheckLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE contPostpartumCheckLog DROP PRIMARY KEY;
+ALTER TABLE contPostpartumCheckLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating babyMedicationTypeLog
+SELECT 'babyMedicationTypeLog' AS Creating FROM DUAL;
+CREATE TABLE babyMedicationTypeLog LIKE babyMedicationType;
+ALTER TABLE babyMedicationTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyMedicationTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyMedicationTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyMedicationTypeLog DROP PRIMARY KEY;
+ALTER TABLE babyMedicationTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating babyMedicationLog
+SELECT 'babyMedicationLog' AS Creating FROM DUAL;
+CREATE TABLE babyMedicationLog LIKE babyMedication;
+ALTER TABLE babyMedicationLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyMedicationLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyMedicationLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyMedicationLog DROP PRIMARY KEY;
+ALTER TABLE babyMedicationLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE babyMedicationLog DROP KEY baby_id;
+--
+-- Creating babyVaccinationTypeLog
+SELECT 'babyVaccinationTypeLog' AS Creating FROM DUAL;
+CREATE TABLE babyVaccinationTypeLog LIKE babyVaccinationType;
+ALTER TABLE babyVaccinationTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyVaccinationTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyVaccinationTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyVaccinationTypeLog DROP PRIMARY KEY;
+ALTER TABLE babyVaccinationTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating babyVaccinationLog
+SELECT 'babyVaccinationLog' AS Creating FROM DUAL;
+CREATE TABLE babyVaccinationLog LIKE babyVaccination;
+ALTER TABLE babyVaccinationLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyVaccinationLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyVaccinationLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyVaccinationLog DROP PRIMARY KEY;
+ALTER TABLE babyVaccinationLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE babyVaccinationLog DROP KEY baby_id;
+--
+-- Creating babyLabTypeLog
+SELECT 'babyLabTypeLog' AS Creating FROM DUAL;
+CREATE TABLE babyLabTypeLog LIKE babyLabType;
+ALTER TABLE babyLabTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyLabTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyLabTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyLabTypeLog DROP PRIMARY KEY;
+ALTER TABLE babyLabTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating babyLabLog
+SELECT 'babyLabLog' AS Creating FROM DUAL;
+CREATE TABLE babyLabLog LIKE babyLab;
+ALTER TABLE babyLabLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE babyLabLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE babyLabLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE babyLabLog DROP PRIMARY KEY;
+ALTER TABLE babyLabLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating motherMedicationTypeLog
+SELECT 'motherMedicationTypeLog' AS Creating FROM DUAL;
+CREATE TABLE motherMedicationTypeLog LIKE motherMedicationType;
+ALTER TABLE motherMedicationTypeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE motherMedicationTypeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE motherMedicationTypeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE motherMedicationTypeLog DROP PRIMARY KEY;
+ALTER TABLE motherMedicationTypeLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating motherMedicationLog
+SELECT 'motherMedicationLog' AS Creating FROM DUAL;
+CREATE TABLE motherMedicationLog LIKE motherMedication;
+ALTER TABLE motherMedicationLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE motherMedicationLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE motherMedicationLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE motherMedicationLog DROP PRIMARY KEY;
+ALTER TABLE motherMedicationLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE motherMedicationLog DROP KEY labor_id;
+--
+-- Creating dischargeLog
+SELECT 'dischargeLog' AS Creating FROM DUAL;
+CREATE TABLE dischargeLog LIKE discharge;
+ALTER TABLE dischargeLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE dischargeLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE dischargeLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE dischargeLog DROP PRIMARY KEY;
+ALTER TABLE dischargeLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE dischargeLog DROP KEY labor_id;
+--
+-- Creating postpartumCheckLog
+SELECT 'postpartumCheckLog' AS Creating FROM DUAL;
+CREATE TABLE postpartumCheckLog LIKE postpartumCheck;
+ALTER TABLE postpartumCheckLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE postpartumCheckLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE postpartumCheckLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE postpartumCheckLog DROP PRIMARY KEY;
+ALTER TABLE postpartumCheckLog ADD PRIMARY KEY (id, replacedAt);
+--
+-- Creating birthCertificateLog
+SELECT 'birthCertificateLog' AS Creating FROM DUAL;
+CREATE TABLE birthCertificateLog LIKE birthCertificate;
+ALTER TABLE birthCertificateLog ADD COLUMN op CHAR(1) DEFAULT '';
+ALTER TABLE birthCertificateLog ADD COLUMN replacedAt DATETIME NOT NULL;
+ALTER TABLE birthCertificateLog MODIFY COLUMN id INT DEFAULT 0;
+ALTER TABLE birthCertificateLog DROP PRIMARY KEY;
+ALTER TABLE birthCertificateLog ADD PRIMARY KEY (id, replacedAt);
+ALTER TABLE birthCertificateLog DROP KEY baby_id;
 --

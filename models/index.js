@@ -77,7 +77,33 @@ module.exports = {
   , Babys: require('./Baby').Babys
   , Apgar: require('./Apgar').Apgar
   , Apgars: require('./Apgar').Apgars
-  , MembranesResus: require('./MembranesResus').MembranesResus
-  , MembranesResuses: require('./MembranesResus').MembranesResuses
+  , NewbornExam: require('./NewbornExam').NewbornExam
+  , NewbornExams: require('./NewbornExam').NewbornExams
+  , Membrane: require('./Membrane').Membrane
+  , Membranes: require('./Membrane').Membranes
+  , ContPostpartumCheck: require('./ContPostpartumCheck').ContPostpartumCheck
+  , ContPostpartumChecks: require('./ContPostpartumCheck').ContPostpartumChecks
+  , BabyMedicationType: require('./BabyMedicationType').BabyMedicationType
+  , BabyMedicationTypes: require('./BabyMedicationType').BabyMedicationTypes
+  , BabyMedication: require('./BabyMedication').BabyMedication
+  , BabyMedications: require('./BabyMedication').BabyMedications
+  , BabyVaccinationType: require('./BabyVaccinationType').BabyVaccinationType
+  , BabyVaccinationTypes: require('./BabyVaccinationType').BabyVaccinationTypes
+  , BabyVaccination: require('./BabyVaccination').BabyVaccination
+  , BabyVaccinations: require('./BabyVaccination').BabyVaccinations
+  , BabyLabType: require('./BabyLabType').BabyLabType
+  , BabyLabTypes: require('./BabyLabType').BabyLabTypes
+  , BabyLab: require('./BabyLab').BabyLab
+  , BabyLabs: require('./BabyLab').BabyLabs
+  , MotherMedicationType: require('./MotherMedicationType').MotherMedicationType
+  , MotherMedicationTypes: require('./MotherMedicationType').MotherMedicationTypes
+  , MotherMedication: require('./MotherMedication').MotherMedication
+  , MotherMedications: require('./MotherMedication').MotherMedications
+  , Discharge: require('./Discharge').Discharge
+  , Discharges: require('./Discharge').Discharges
+  , PostpartumCheck: require('./PostpartumCheck').PostpartumCheck
+  , PostpartumChecks: require('./PostpartumCheck').PostpartumChecks
+  , BirthCertificate: require('./BirthCertificate').BirthCertificate
+  , BirthCertificates: require('./BirthCertificate').BirthCertificates
 };
 

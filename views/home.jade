@@ -13,3 +13,16 @@ block home
       div(id='prenatalHistoryByMonth', data-data=prenatalHistoryByMonthData, data-options=prenatalHistoryByMonthOptions)
 
   hr
+
+  //- Display the link to the source code in order to comply with APGL license.
+
+  //- Note that if this project is forked and modified, this link must point
+  //- to the forked and modified source code in order to comply with the AGPL license.
+  //- Adjust the sourceCodeHref variable below accordingly.
+
+  - var sourceCodeHref = 'https://github.com/LightSys/Midwife-EMR';
+
+  div(class='source-code')
+    a(href=sourceCodeHref, target='_blank') <i class="fa fa-fw fa-github"></i>
+      = "Source code"
+

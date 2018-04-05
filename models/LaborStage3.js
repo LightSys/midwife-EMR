@@ -33,8 +33,8 @@ CREATE TABLE `laborStage3` (
   `placentaInsertion` varchar(50) DEFAULT NULL,
   `placentaNumVessels` int(11) DEFAULT NULL,
   `schultzDuncan` enum('Schultz','Duncan') DEFAULT NULL,
-  `placentaMembranesComplete` tinyint(1) DEFAULT NULL,
-  `placentaOther` varchar(100) DEFAULT NULL,
+  `cotyledons` varchar(200) DEFAULT NULL,
+  `membranes` varchar(200) DEFAULT NULL,
   `comments` varchar(500) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE `laborStage3` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `laborStage3_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `laborStage3_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=latin1
 */
 
 LaborStage3 = Bookshelf.Model.extend({
@@ -55,9 +55,8 @@ LaborStage3 = Bookshelf.Model.extend({
       'placentaDeliveryAMTSL', 'placentaDeliveryCCT', 'placentaDeliveryManual',
       'maternalPosition', 'txBloodLoss1', 'txBloodLoss2', 'txBloodLoss3',
       'txBloodLoss4', 'txBloodLoss5', 'placentaShape', 'placentaInsertion',
-      'placentaNumVessels', 'schultzDuncan', 'placentaMembranesComplete',
-      'placentaOther', 'comments', 'updatedBy', 'updatedAt', 'supervisor',
-      'labor_id' ]
+      'placentaNumVessels', 'schultzDuncan', 'cotyledons', 'membranes',
+      'comments', 'updatedBy', 'updatedAt', 'supervisor', 'labor_id' ]
 
   , initialize: function() {
     this.on('saving', this.saving, this);

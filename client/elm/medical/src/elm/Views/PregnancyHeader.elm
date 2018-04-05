@@ -3,6 +3,23 @@ module Views.PregnancyHeader
         ( view
         )
 
+-- LOCAL IMPORTS --
+
+import Const
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord)
+import Data.Labor exposing (LaborRecord)
+import Data.LaborDelIpp exposing (SubMsg(..))
+import Data.LaborStage1 exposing (LaborStage1Record)
+import Data.LaborStage2 exposing (LaborStage2Record)
+import Data.LaborStage3 exposing (LaborStage3Record)
+import Data.Patient exposing (PatientRecord)
+import Data.Pregnancy exposing (PregnancyRecord)
+import Data.PregnancyHeader
+    exposing
+        ( LaborInfo
+        , PregHeaderContent(..)
+        , PregHeaderContentMsg(..)
+        )
 import Date exposing (Date)
 import Date.Extra.Duration as DED
 import Dict exposing (Dict)
@@ -12,26 +29,8 @@ import Html.Events as HE
 import Json.Encode as JE
 import List.Extra as LE
 import Time exposing (Time)
-import Window
-
-
--- LOCAL IMPORTS --
-
-import Const
-import Data.Labor exposing (LaborRecord)
-import Data.LaborStage1 exposing (LaborStage1Record)
-import Data.LaborStage2 exposing (LaborStage2Record)
-import Data.LaborStage3 exposing (LaborStage3Record)
-import Data.LaborDelIpp exposing (SubMsg(..))
-import Data.Patient exposing (PatientRecord)
-import Data.Pregnancy exposing (PregnancyRecord)
-import Data.PregnancyHeader
-    exposing
-        ( LaborInfo
-        , PregHeaderContent(..)
-        , PregHeaderContentMsg(..)
-        )
 import Util as U
+import Window
 
 
 {-| Delegate to the appropriate view.
@@ -44,40 +43,59 @@ view :
     -> Time
     -> Maybe Window.Size
     -> Html PregHeaderContentMsg
-view patRec pregRec ({ laborRecord, laborStage1Record, laborStage2Record, laborStage3Record } as laborInfo) pregHeaderCnt currTime winSize =
+view patRec pregRec ({ laborRecord, laborStage1Record, laborStage2Record, laborStage3Record, contPostpartumCheckRecords } as laborInfo) pregHeaderCnt currTime winSize =
+    let
+        -- Para goes up after the baby is born and we show the
+        -- increased para, if applicable, in the Labor and IPP
+        -- patient header views. The Prenatal view always shows
+        -- the para during prenatal.
+        raisePara =
+            case laborStage2Record of
+                Just ls2Rec ->
+                    case ls2Rec.birthDatetime of
+                        Just bday ->
+                            True
+
+                        Nothing ->
+                            False
+
+                Nothing ->
+                    False
+    in
     case pregHeaderCnt of
         PrenatalContent ->
             viewPrenatal patRec pregRec laborRecord pregHeaderCnt currTime winSize
 
         LaborContent ->
-            viewLabor patRec pregRec laborRecord pregHeaderCnt currTime winSize
+            viewLabor patRec pregRec laborRecord pregHeaderCnt currTime winSize raisePara
 
         IPPContent ->
-            viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize
+            viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize raisePara
+
+
+useLargerFont : Maybe Window.Size -> Bool
+useLargerFont winSize =
+    case winSize of
+        Just size ->
+            size.width >= Const.breakpointLarge
+
+        Nothing ->
+            False
 
 
 viewLabor :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (Dict Int LaborRecord)
+    -> Maybe LaborRecord
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
+    -> Bool
     -> Html PregHeaderContentMsg
-viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+viewLabor patRec pregRec laborRec pregHeaderCnt currTime winSize raisePara =
     let
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
-
-        -- TODO: figure out better way to determine record in use.
-        laborRec =
-            case laborRecs of
-                Just recs ->
-                    List.reverse (Dict.values recs)
-                        |> List.head
-
-                Nothing ->
-                    Nothing
 
         partnerName =
             case ( pregRec.partnerFirstname, pregRec.partnerLastname ) of
@@ -87,25 +105,29 @@ viewLabor patRec pregRec laborRecs pregHeaderCnt currTime winSize =
                 ( _, _ ) ->
                     Nothing
     in
-        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
-            [ H.input
-                [ HA.type_ "checkbox"
-                , HA.checked True
-                  -- Default accordion to open at start.
-                , HA.id "pregnancy_header_accordion"
-                ]
-                []
-            , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
-                [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
-                , (getGaSpan edd currTime)
-                , prenatalLaborIppButton pregHeaderCnt
-                ]
-            , H.div [ HA.class "c-card__item pregnancy-header" ]
-                [ headerColumnOne patRec pregRec currTime partnerName
-                , laborColumnTwo laborRec
-                , laborColumnThree laborRec
-                ]
+    H.div
+        [ HA.class "c-card c-card--accordion pregnancy-header-wrapper"
+        , HA.classList [ ( "u-large", useLargerFont winSize ) ]
+        ]
+        [ H.input
+            [ HA.type_ "checkbox"
+            , HA.checked True
+
+            -- Default accordion to open at start.
+            , HA.id "pregnancy_header_accordion"
             ]
+            []
+        , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
+            [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
+            , getGaSpan edd currTime
+            , prenatalLaborIppButton pregHeaderCnt
+            ]
+        , H.div [ HA.class "c-card__item pregnancy-header" ]
+            [ headerColumnOne patRec pregRec currTime partnerName raisePara
+            , laborColumnTwo laborRec
+            , laborColumnThree laborRec
+            ]
+        ]
 
 
 viewIPP :
@@ -115,8 +137,9 @@ viewIPP :
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
+    -> Bool
     -> Html PregHeaderContentMsg
-viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
+viewIPP patRec pregRec ({ laborStage2Record, contPostpartumCheckRecords } as laborInfo) pregHeaderCnt currTime winSize raisePara =
     let
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
@@ -128,61 +151,104 @@ viewIPP patRec pregRec laborInfo pregHeaderCnt currTime winSize =
 
                 ( _, _ ) ->
                     Nothing
+
+        contPPEBL =
+            if List.length contPostpartumCheckRecords == 0 then
+                Nothing
+            else
+                List.foldl
+                    (\rec sum ->
+                        case rec.motherEBL of
+                            Just ebl ->
+                                sum + ebl
+
+                            Nothing ->
+                                sum
+                    )
+                    0
+                    contPostpartumCheckRecords
+                    |> Just
+
+        birthEBL =
+            case laborStage2Record of
+                Just ls2Rec ->
+                    Maybe.withDefault 0 ls2Rec.birthEBL
+
+                Nothing ->
+                    0
+
+        -- If we do not have ContPostpartumCheckRecords then we signifiy
+        -- with Nothing.
+        totalEBL =
+            case contPPEBL of
+                Just pp ->
+                    Just <| birthEBL + pp
+
+                Nothing ->
+                    Nothing
     in
-        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
-            [ H.input
-                [ HA.type_ "checkbox"
-                , HA.checked True
-                  -- Default accordion to open at start.
-                , HA.id "pregnancy_header_accordion"
-                ]
-                []
-            , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
-                [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
-                , (getGaSpan edd currTime)
-                , prenatalLaborIppButton pregHeaderCnt
-                ]
-            , H.div [ HA.class "c-card__item pregnancy-header" ]
-                [ headerColumnOne patRec pregRec currTime partnerName
-                , ippColumnTwo laborInfo
-                , ippColumnThree laborInfo
-                , ippColumnFour laborInfo
-                ]
+    H.div
+        [ HA.class "c-card c-card--accordion pregnancy-header-wrapper"
+        , HA.classList [ ( "u-large", useLargerFont winSize ) ]
+        ]
+        [ H.input
+            [ HA.type_ "checkbox"
+            , HA.checked True
+
+            -- Default accordion to open at start.
+            , HA.id "pregnancy_header_accordion"
             ]
+            []
+        , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
+            [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
+            , getGaSpan edd currTime
+            , prenatalLaborIppButton pregHeaderCnt
+            ]
+        , H.div [ HA.class "c-card__item pregnancy-header" ]
+            [ headerColumnOne patRec pregRec currTime partnerName raisePara
+            , ippColumnTwo laborInfo
+            , ippColumnThree laborInfo
+            , ippColumnFour laborInfo totalEBL
+            ]
+        ]
 
 
 viewPrenatal :
     PatientRecord
     -> PregnancyRecord
-    -> Maybe (Dict Int LaborRecord)
+    -> Maybe LaborRecord
     -> PregHeaderContent
     -> Time
     -> Maybe Window.Size
     -> Html PregHeaderContentMsg
-viewPrenatal patRec pregRec laborRecs pregHeaderCnt currTime winSize =
+viewPrenatal patRec pregRec laborRec pregHeaderCnt currTime winSize =
     let
         ( nickname, edd ) =
             ( getNickname pregRec, getEdd pregRec )
     in
-        H.div [ HA.class "c-card c-card--accordion pregnancy-header-wrapper" ]
-            [ H.input
-                [ HA.type_ "checkbox"
-                , HA.checked True
-                  -- Default accordion to open at start.
-                , HA.id "pregnancy_header_accordion"
-                ]
-                []
-            , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
-                [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
-                , (getGaSpan edd currTime)
-                , prenatalLaborIppButton pregHeaderCnt
-                ]
-            , H.div [ HA.class "c-card__item pregnancy-header" ]
-                [ headerColumnOne patRec pregRec currTime Nothing
-                , prenatalColumnTwo patRec pregRec currTime
-                , prenatalColumnThree patRec pregRec currTime
-                ]
+    H.div
+        [ HA.class "c-card c-card--accordion pregnancy-header-wrapper"
+        , HA.classList [ ( "u-large", useLargerFont winSize ) ]
+        ]
+        [ H.input
+            [ HA.type_ "checkbox"
+            , HA.checked True
+
+            -- Default accordion to open at start.
+            , HA.id "pregnancy_header_accordion"
             ]
+            []
+        , H.label [ HA.class "c-text--loud c-card__item", HA.for "pregnancy_header_accordion" ]
+            [ H.span [] [ H.text <| pregRec.lastname ++ ", " ++ pregRec.firstname ++ nickname ++ " " ]
+            , getGaSpan edd currTime
+            , prenatalLaborIppButton pregHeaderCnt
+            ]
+        , H.div [ HA.class "c-card__item pregnancy-header" ]
+            [ headerColumnOne patRec pregRec currTime Nothing False
+            , prenatalColumnTwo patRec pregRec currTime
+            , prenatalColumnThree patRec pregRec currTime
+            ]
+        ]
 
 
 getNickname : PregnancyRecord -> String
@@ -225,7 +291,7 @@ getGaSpan edd currTime =
                 ( wks, days ) =
                     U.getGA ed (Date.fromTime currTime)
             in
-                U.nbsp wks days
+            U.nbsp wks days
 
         Nothing ->
             H.span [] []
@@ -256,8 +322,8 @@ prenatalLaborIppButton phc =
         ]
 
 
-headerColumnOne : PatientRecord -> PregnancyRecord -> Time -> Maybe String -> Html msg
-headerColumnOne patRec pregRec currTime partnerName =
+headerColumnOne : PatientRecord -> PregnancyRecord -> Time -> Maybe String -> Bool -> Html msg
+headerColumnOne patRec pregRec currTime partnerName raisePara =
     let
         age =
             case patRec.dob of
@@ -279,36 +345,47 @@ headerColumnOne patRec pregRec currTime partnerName =
 
                 Nothing ->
                     Just ""
+
+        para =
+            case pregRec.para of
+                Just para ->
+                    if raisePara then
+                        Just <| toString <| para + 1
+                    else
+                        Maybe.map toString pregRec.para
+
+                Nothing ->
+                    Nothing
     in
-        H.div [ HA.class "pregnancy-header-col" ]
-            [ H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "G" "3em"
-                , fieldValue <| Maybe.map toString pregRec.gravida
-                , H.span [] [ H.text " " ]
-                , fieldLabel "P" "1.5em"
-                , fieldValue <| Maybe.map toString pregRec.para
-                , H.span [] [ H.text " " ]
-                , fieldLabel "A" "1.5em"
-                , fieldValue <| Maybe.map toString pregRec.abortions
-                , H.span [] [ H.text " " ]
-                , fieldLabel "S" "1.5em"
-                , fieldValue <| Maybe.map toString pregRec.stillBirths
-                , H.span [] [ H.text " " ]
-                , fieldLabel "L" "1.5em"
-                , fieldValue <| Maybe.map toString pregRec.living
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Age" "3em"
-                , fieldValue age
-                ]
-            , if partnerName /= Nothing then
-                H.div [ HA.class "pregnancy-header-fldval" ]
-                    [ fieldLabel "Ptnr" "3em"
-                    , fieldValue partnerName
-                    ]
-              else
-                H.span [] []
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "G" "3em"
+            , fieldValue <| Maybe.map toString pregRec.gravida
+            , H.span [] [ H.text " " ]
+            , fieldLabel "P" "1.5em"
+            , fieldValue para
+            , H.span [] [ H.text " " ]
+            , fieldLabel "A" "1.5em"
+            , fieldValue <| Maybe.map toString pregRec.abortions
+            , H.span [] [ H.text " " ]
+            , fieldLabel "S" "1.5em"
+            , fieldValue <| Maybe.map toString pregRec.stillBirths
+            , H.span [] [ H.text " " ]
+            , fieldLabel "L" "1.5em"
+            , fieldValue <| Maybe.map toString pregRec.living
             ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Age" "3em"
+            , fieldValue age
+            ]
+        , if partnerName /= Nothing then
+            H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Ptnr" "3em"
+                , fieldValue partnerName
+                ]
+          else
+            H.span [] []
+        ]
 
 
 ippColumnTwo : LaborInfo -> Html msg
@@ -353,24 +430,24 @@ ippColumnTwo laborInfo =
                 Nothing ->
                     ""
     in
-        H.div [ HA.class "pregnancy-header-col" ]
-            [ H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Dltn" "3em"
-                , fieldValue <| Just stg1
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Birth" "3em"
-                , fieldValue <| Just stg2
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Plcnt" "3em"
-                , fieldValue <| Just stg3
-                ]
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Dltn" "3em"
+            , fieldValue <| Just stg1
             ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Birth" "3em"
+            , fieldValue <| Just stg2
+            ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Plcnt" "3em"
+            , fieldValue <| Just stg3
+            ]
+        ]
 
 
-ippColumnFour : LaborInfo -> Html msg
-ippColumnFour laborInfo =
+ippColumnFour : LaborInfo -> Maybe Int -> Html msg
+ippColumnFour laborInfo totalEBL =
     let
         ( ebl, mec ) =
             case laborInfo.laborStage2Record of
@@ -383,36 +460,34 @@ ippColumnFour laborInfo =
                 Nothing ->
                     ( "", "" )
     in
-        H.div [ HA.class "pregnancy-header-col" ]
-            [ H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "EBL" "3em"
-                , fieldValue <| Just ebl
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "" "3em"
-                , fieldValue <| Just ""
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Mec" "3em"
-                , fieldValue <| Just mec
-                ]
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "EBL" "3em"
+            , fieldValue <| Just ebl
             ]
+        , if totalEBL /= Nothing then
+            H.div [ HA.class "pregnancy-header-fldval" ]
+                [ fieldLabel "Tot EBL" "3em"
+                , fieldValue <| Maybe.map toString totalEBL
+                ]
+          else
+            H.text ""
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Mec" "3em"
+            , fieldValue <| Just mec
+            ]
+        ]
 
 
 ippColumnThree : LaborInfo -> Html msg
 ippColumnThree laborInfo =
     let
         laborStart =
-            case ( laborInfo.laborRecord, laborInfo.laborStage1Record ) of
-                ( Just recs, Just s1Rec ) ->
-                    case Dict.get s1Rec.labor_id recs of
-                        Just laborRec ->
-                            Just laborRec.startLaborDate
+            case laborInfo.laborRecord of
+                Just rec ->
+                    Just rec.startLaborDate
 
-                        Nothing ->
-                            Nothing
-
-                ( _, _ ) ->
+                Nothing ->
                     Nothing
 
         ( stg1, stg2, stg3 ) =
@@ -443,20 +518,20 @@ ippColumnThree laborInfo =
                 ( _, _, _ ) ->
                     ( "", "", "" )
     in
-        H.div [ HA.class "pregnancy-header-col" ]
-            [ H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Stg 1" "3em"
-                , fieldValue <| Just stg1
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Stg 2" "3em"
-                , fieldValue <| Just stg2
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Stg 3" "3em"
-                , fieldValue <| Just stg3
-                ]
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Stg 1" "3em"
+            , fieldValue <| Just stg1
             ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Stg 2" "3em"
+            , fieldValue <| Just stg2
+            ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Stg 3" "3em"
+            , fieldValue <| Just stg3
+            ]
+        ]
 
 
 laborColumnTwo : Maybe LaborRecord -> Html msg
@@ -469,32 +544,32 @@ laborColumnTwo laborRec =
                     , U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep lr.startLaborDate
                     , lr.pos
                     , toString lr.fh
-                    , toString lr.fht
+                    , lr.fht
                     )
 
                 Nothing ->
                     ( "", "", "", "", "" )
     in
-        H.div [ HA.class "pregnancy-header-col" ]
-            [ H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Lbr" "3em"
-                , fieldValue <| Just laborVal
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Admt" "3em"
-                , fieldValue <| Just admitVal
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "POS" "3em"
-                , fieldValue <| Just pos
-                , H.span [] [ H.text " " ]
-                , fieldLabel "FH" "2.0em"
-                , fieldValue <| Just fh
-                , H.span [] [ H.text " " ]
-                , fieldLabel "FHT" "2.5em"
-                , fieldValue <| Just fht
-                ]
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Lbr" "3em"
+            , fieldValue <| Just laborVal
             ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Admt" "3em"
+            , fieldValue <| Just admitVal
+            ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "POS" "3em"
+            , fieldValue <| Just pos
+            , H.span [] [ H.text " " ]
+            , fieldLabel "FH" "2.0em"
+            , fieldValue <| Just fh
+            , H.span [] [ H.text " " ]
+            , fieldLabel "FHT" "2.5em"
+            , fieldValue <| Just fht
+            ]
+        ]
 
 
 laborColumnThree : Maybe LaborRecord -> Html msg
@@ -503,7 +578,7 @@ laborColumnThree laborRec =
         ( bp, cr, temp ) =
             case laborRec of
                 Just lr ->
-                    ( (toString lr.systolic) ++ "/" ++ (toString lr.diastolic)
+                    ( toString lr.systolic ++ "/" ++ toString lr.diastolic
                     , toString lr.cr
                     , toString lr.temp
                     )
@@ -511,20 +586,20 @@ laborColumnThree laborRec =
                 Nothing ->
                     ( "", "", "" )
     in
-        H.div [ HA.class "pregnancy-header-col" ]
-            [ H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "BP" "3em"
-                , fieldValue <| Just bp
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "CR" "3em"
-                , fieldValue <| Just cr
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "Temp" "3em"
-                , fieldValue <| Just temp
-                ]
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "BP" "3em"
+            , fieldValue <| Just bp
             ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "CR" "3em"
+            , fieldValue <| Just cr
+            ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "Temp" "3em"
+            , fieldValue <| Just temp
+            ]
+        ]
 
 
 prenatalColumnTwo : PatientRecord -> PregnancyRecord -> Time -> Html msg
@@ -549,16 +624,16 @@ prenatalColumnTwo patRec pregRec currTime =
                 Nothing ->
                     ""
     in
-        H.div [ HA.class "pregnancy-header-col" ]
-            [ H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "LMP" "3em"
-                , fieldValue <| Just lmp
-                ]
-            , H.div [ HA.class "pregnancy-header-fldval" ]
-                [ fieldLabel "EDD" "3em"
-                , fieldValue <| Just eddString
-                ]
+    H.div [ HA.class "pregnancy-header-col" ]
+        [ H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "LMP" "3em"
+            , fieldValue <| Just lmp
             ]
+        , H.div [ HA.class "pregnancy-header-fldval" ]
+            [ fieldLabel "EDD" "3em"
+            , fieldValue <| Just eddString
+            ]
+        ]
 
 
 prenatalColumnThree : PatientRecord -> PregnancyRecord -> Time -> Html msg
@@ -570,7 +645,8 @@ prenatalColumnThree patRec pregRec currTime =
             ]
         , H.div [ HA.class "pregnancy-header-fldval" ]
             [ fieldLabel "Appt" "3em"
-              -- TODO: replace hard code with actual from schedule table.
+
+            -- TODO: replace hard code with actual from schedule table.
             , fieldValue <| Just "Tue @ MMC"
             ]
         ]

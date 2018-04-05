@@ -1,8 +1,11 @@
 /*
  * -------------------------------------------------------------------------------
- * MembranesResus.js
+ * Membrane.js
  *
- * The model for the membranesResus table.
+ * The model for the membrane table.
+ *
+ * Note that the membrane and baby tables are incorporating what was in the
+ * membraneResus table, so that table will be retired.
  * -------------------------------------------------------------------------------
  */
 
@@ -11,43 +14,37 @@ var moment = require('moment')
     // Default settings used unless Bookshelf already initialized.
   , dbSettings = require('../config').database
   , Bookshelf = (require('bookshelf').DB || require('./DB').init(dbSettings))
-  , MembranesResus = {}
-  , MembranesResuses
+  , Membrane = {}
+  , Membranes
   ;
 
 /*
-CREATE TABLE `membranesResus` (
+CREATE TABLE `membrane` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ruptureDatetime` datetime DEFAULT NULL,
   `rupture` enum('AROM','SROM','Other') DEFAULT NULL,
   `ruptureComment` varchar(300) DEFAULT NULL,
   `amniotic` enum('Clear','Lt Stain','Mod Stain','Thick Stain','Other') DEFAULT NULL,
   `amnioticComment` varchar(300) DEFAULT NULL,
-  `bulb` tinyint(4) NOT NULL DEFAULT '0',
-  `machine` tinyint(4) NOT NULL DEFAULT '0',
-  `freeFlowO2` tinyint(4) NOT NULL DEFAULT '0',
-  `chestCompressions` tinyint(4) NOT NULL DEFAULT '0',
-  `ppv` tinyint(4) NOT NULL DEFAULT '0',
   `comments` varchar(300) DEFAULT NULL,
   `updatedBy` int(11) NOT NULL,
   `updatedAt` datetime NOT NULL,
   `supervisor` int(11) DEFAULT NULL,
-  `baby_id` int(11) NOT NULL,
+  `labor_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `baby_id` (`baby_id`),
+  UNIQUE KEY `labor_id` (`labor_id`),
   KEY `updatedBy` (`updatedBy`),
-  CONSTRAINT `membranesResus_ibfk_1` FOREIGN KEY (`baby_id`) REFERENCES `baby` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `membranesResus_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `membrane_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `membrane_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
-*/
+ */
 
-MembranesResus = Bookshelf.Model.extend({
-  tableName: 'membranesResus'
+Membrane = Bookshelf.Model.extend({
+  tableName: 'membrane'
 
   , permittedAttributes: ['id', 'ruptureDatetime', 'rupture', 'ruptureComment',
-    'amniotic', 'amnioticComment', 'bulb', 'machine', 'freeFlowO2',
-    'chestCompressions', 'ppv', 'comments', 'updatedBy', 'updatedAt',
-    'supervisor', 'baby_id']
+     'amniotic', 'amnioticComment', 'comments', 'updatedBy', 'updatedAt',
+     'supervisor', 'labor_id']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
@@ -65,8 +62,8 @@ MembranesResus = Bookshelf.Model.extend({
   // https://github.com/tgriesser/bookshelf/issues/105
   // --------------------------------------------------------
 
-  , baby: function() {
-      return this.belongsTo(require('./Baby').Labor, 'baby_id');
+  , labor: function() {
+      return this.belongsTo(require('./Labor').Labor, 'labor_id');
     }
 
 }, {
@@ -76,12 +73,12 @@ MembranesResus = Bookshelf.Model.extend({
 
 });
 
-MembranesResuses = Bookshelf.Collection.extend({
-  model: MembranesResus
+Membranes = Bookshelf.Collection.extend({
+  model: Membrane
 });
 
 module.exports = {
-  MembranesResus: MembranesResus
-  , MembranesResuses: MembranesResuses
+  Membrane: Membrane
+  , Membranes: Membranes
 };
 

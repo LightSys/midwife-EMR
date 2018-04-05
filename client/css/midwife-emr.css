@@ -98,6 +98,17 @@ td.table-cell-subrow {
   color: #3276B1;
 }
 
+/* Displays a link to the project
+ * source code on all pages. */
+.source-code {
+  min-height: 2em;
+}
+.source-code a {
+  color: black;
+  padding: 1em 0;
+  font-size: 1.1em;
+}
+
 /* Displays the priority
  * number, if applicable,
  * in the lower left corner

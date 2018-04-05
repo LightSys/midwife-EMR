@@ -12,6 +12,7 @@ import Time exposing (Time)
 
 import Const exposing (FldChgValue)
 import Data.DataCache exposing (DataCache)
+import Data.DatePicker exposing (DateFieldMessage)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 import Data.Table exposing (Table)
@@ -20,7 +21,7 @@ import Data.Table exposing (Table)
 type AdmittingSubMsg
     = AdmittingPageNoop
       -- Date/time from the top-level so we can prefill date/time fields.
-    | AdmittingTickSubMsg Time
+    | AdmittingTick Time
       -- Current view of pregnancy header.
     | RotatePregHeaderContent PregHeaderContentMsg
       -- Our data cache.
@@ -37,8 +38,10 @@ type AdmittingSubMsg
     | EditAdmittance LaborId
       -- All changes to fields in the user add/edit form.
     | FldChgSubMsg Field FldChgValue
-      -- Date picker for add/edit labor form.
+      -- These two are used for browsers that do not support the
+      -- input date type and require the use of jQueryUI datepicker.
     | OpenDatePickerSubMsg String
+    | DateFieldSubMsg DateFieldMessage
       -- View an existing labor record.
     | ViewLaborRecord LaborId
 

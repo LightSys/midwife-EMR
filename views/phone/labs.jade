@@ -318,9 +318,19 @@ block labs
             div(class='col-xs-12')
               - var tetMsg;
               - var tetGood = false;
+              - var tetLmpEddIssue = false;
               - if (! rec.lmp || libs._.isNull(rec.lmp) || rec.lmp.length === 0 || rec.lmp === '0000-00-00') {
-              -   tetMsg = 'Set LMP';
-              - } else {
+              -   if (rec.useAlternateEdd) {
+              -     if (! rec.alternateEdd || libs._.isNull(rec.alternateEdd) || rec.alternateEdd.length === 0 || rec.alternateEdd === '0000-00-00') {
+              -       tetMsg = 'Set EDD';
+              -       tetLmpEddIssue = true;
+              -     }
+              -   } else {
+              -     tetMsg = 'Set LMP';
+              -     tetLmpEddIssue = true;
+              -   }
+              - }
+              - if (! tetLmpEddIssue) {
               -   if (tetanusComplete === 1) {
               -     tetMsg = 'Tetanus Complete';
               -     tetGood = true;

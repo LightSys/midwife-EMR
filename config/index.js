@@ -168,8 +168,11 @@ if (usingDefaultSettings && cfg.application.configurationFile) {
 
 // --------------------------------------------------------
 // Add the routes onto the config object for convenience.
+// Add the Jump To settings.
 // --------------------------------------------------------
-cfg.path = require('./config.global').path
+var cfgGlobal = require('./config.global');
+cfg.path = cfgGlobal.path;
+cfg.jumpTo = cfgGlobal.jumpTo;
 
 // --------------------------------------------------------
 // Set the data in the keyValue table into a cache for this

@@ -10,6 +10,7 @@ import Dict exposing (Dict)
 
 -- LOCAL IMPORTS --
 
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord)
 import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
@@ -27,8 +28,9 @@ type PregHeaderContent
 
 
 type alias LaborInfo =
-    { laborRecord : Maybe (Dict Int LaborRecord)
+    { laborRecord : Maybe LaborRecord
     , laborStage1Record : Maybe LaborStage1Record
     , laborStage2Record : Maybe LaborStage2Record
     , laborStage3Record : Maybe LaborStage3Record
+    , contPostpartumCheckRecords: List ContPostpartumCheckRecord
     }

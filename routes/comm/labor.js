@@ -15,11 +15,20 @@ var _ = require('underscore')
   , cfg = require('../../config')
   , Apgar = require('../../models').Apgar
   , Baby = require('../../models').Baby
+  , BabyMedication = require('../../models').BabyMedication
+  , BabyLab = require('../../models').BabyLab
+  , BabyVaccination = require('../../models').BabyVaccination
+  , BirthCertificate = require('../../models').BirthCertificate
+  , ContPostpartumCheck = require('../../models').ContPostpartumCheck
+  , Discharge = require('../../models').Discharge
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
   , LaborStage2 = require('../../models').LaborStage2
   , LaborStage3 = require('../../models').LaborStage3
-  , MembranesResus = require('../../models').MembranesResus
+  , Membrane = require('../../models').Membrane
+  , MotherMedication = require('../../models').MotherMedication
+  , NewbornExam = require('../../models').NewbornExam
+  , PostpartumCheck = require('../../models').PostpartumCheck
   , hasRole = require('../../auth').hasRole
   , logInfo = require('../../util').logInfo
   , logWarn = require('../../util').logWarn
@@ -40,14 +49,26 @@ var _ = require('underscore')
 //
 // Note that every table needs to be listed even if there
 // are no date fields present in the table.
+//
+// Note that fields using DATE rather than DATETIME do not
+// need to be present here.
 // --------------------------------------------------------
 moduleTables.apgar = [];
-moduleTables.baby = ['bFedEstablished', 'nbsDate', 'bcgDate'];
+moduleTables.baby = ['bFedEstablished' ];
+moduleTables.babyMedication = ['medicationDate'];
+moduleTables.babyLab = ['dateTime'];
+moduleTables.babyVaccination = ['vaccinationDate'];
+moduleTables.birthCertificate = [];
+moduleTables.contPostpartumCheck = ['checkDatetime'];
+moduleTables.discharge = ['dateTime' ];
 moduleTables.labor = ['admittanceDate', 'startLaborDate', 'dischargeDate'];
 moduleTables.laborStage1 = ['fullDialation'];
 moduleTables.laborStage2 = ['birthDatetime'];
 moduleTables.laborStage3 = ['placentaDatetime'];
-moduleTables.membranesResus = ['ruptureDatetime'];
+moduleTables.membrane = ['ruptureDatetime'];
+moduleTables.motherMedication = ['medicationDate'];
+moduleTables.newbornExam = ['examDatetime'];
+moduleTables.postpartumCheck = ['checkDatetime'];
 
 /* --------------------------------------------------------
  * adjustDatesToLocal()
@@ -198,9 +219,11 @@ var addBaby = function(data, userInfo, cb) {
         sex: data.sex,
         birthWeight: data.birthWeight,
         bFedEstablished: data.bFedEstablished,
-        nbsDate: data.nbsDate,
-        nbsResult: data.nbsResult,
-        bcgDate: data.bcgDate,
+        bulb: data.bulb,
+        machine: data.machine,
+        freeFlowO2: data.freeFlowO2,
+        chestCompressions: data.chestCompressions,
+        ppv: data.ppv,
         comments: data.comments,
         updatedBy: userInfo.user.id,
         updatedAt: knex.fn.now(),
@@ -276,9 +299,11 @@ var updateBaby = function(data, userInfo, cb) {
         sex: data.sex,
         birthWeight: data.birthWeight,
         bFedEstablished: data.bFedEstablished,
-        nbsDate: data.nbsDate,
-        nbsResult: data.nbsResult,
-        bcgDate: data.bcgDate,
+        bulb: data.bulb,
+        machine: data.machine,
+        freeFlowO2: data.freeFlowO2,
+        chestCompressions: data.chestCompressions,
+        ppv: data.ppv,
         comments: data.comments,
         updatedBy: userInfo.user.id,
         updatedAt: knex.fn.now(),
@@ -404,6 +429,66 @@ var updateBaby = function(data, userInfo, cb) {
   });
 };
 
+var addBabyLab = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBabyLab(data, cb);
+  addTable(data, userInfo, cb, BabyLab, 'babyLab');
+};
+
+var updateBabyLab = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBabyLab(data, cb);
+  updateTable(data, userInfo, cb, BabyLab, 'babyLab');
+};
+
+var addBabyMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBabyMedication(data, cb);
+  addTable(data, userInfo, cb, BabyMedication, 'babyMedication');
+};
+
+var updateBabyMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBabyMedication(data, cb);
+  updateTable(data, userInfo, cb, BabyMedication, 'babyMedication');
+};
+
+var addBabyVaccination = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBabyVaccination(data, cb);
+  addTable(data, userInfo, cb, BabyVaccination, 'babyVaccination');
+};
+
+var updateBabyVaccination = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBabyVaccination(data, cb);
+  updateTable(data, userInfo, cb, BabyVaccination, 'babyVaccination');
+};
+
+var addBirthCertificate = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addBirthCertificate(data, cb);
+  addTable(data, userInfo, cb, BirthCertificate, 'birthCertificate');
+};
+
+var updateBirthCertificate = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateBirthCertificate(data, cb);
+  updateTable(data, userInfo, cb, BirthCertificate, 'birthCertificate');
+};
+
+var addContPostpartumCheck = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addContPostpartumCheck(data, cb);
+  addTable(data, userInfo, cb, ContPostpartumCheck, 'contPostpartumCheck');
+};
+
+var updateContPostpartumCheck = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateContPostpartumCheck(data, cb);
+  updateTable(data, userInfo, cb, ContPostpartumCheck, 'contPostpartumCheck');
+};
+
+var addDischarge = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addDischarge(data, cb);
+  addTable(data, userInfo, cb, Discharge, 'discharge');
+};
+
+var updateDischarge = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateDischarge(data, cb);
+  updateTable(data, userInfo, cb, Discharge, 'discharge');
+};
+
 var addLabor = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addLabor(data, cb);
   addTable(data, userInfo, cb, Labor, 'labor');
@@ -444,14 +529,44 @@ var updateLaborStage3 = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, LaborStage3, 'laborStage3');
 };
 
-var addMembranesResus = function(data, userInfo, cb) {
-  if (DO_ASSERT) assertModule.addMembranesResus(data, cb);
-  addTable(data, userInfo, cb, MembranesResus, 'membranesResus');
+var addMembrane = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addMembrane(data, cb);
+  addTable(data, userInfo, cb, Membrane, 'membrane');
 };
 
-var updateMembranesResus = function(data, userInfo, cb) {
-  if (DO_ASSERT) assertModule.updateMembranesResus(data, cb);
-  updateTable(data, userInfo, cb, MembranesResus, 'membranesResus');
+var updateMembrane = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateMembrane(data, cb);
+  updateTable(data, userInfo, cb, Membrane, 'membrane');
+};
+
+var addMotherMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addMotherMedication(data, cb);
+  addTable(data, userInfo, cb, MotherMedication, 'motherMedication');
+};
+
+var updateMotherMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateMotherMedication(data, cb);
+  updateTable(data, userInfo, cb, MotherMedication, 'motherMedication');
+};
+
+var addNewbornExam = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addNewbornExam(data, cb);
+  addTable(data, userInfo, cb, NewbornExam, 'newbornExam');
+};
+
+var updateNewbornExam = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updateNewbornExam(data, cb);
+  updateTable(data, userInfo, cb, NewbornExam, 'newbornExam');
+};
+
+var addPostpartumCheck = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.addPostpartumCheck(data, cb);
+  addTable(data, userInfo, cb, PostpartumCheck, 'postpartumCheck');
+};
+
+var updatePostpartumCheck = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.updatePostpartumCheck(data, cb);
+  updateTable(data, userInfo, cb, PostpartumCheck, 'postpartumCheck');
 };
 
 var notDefinedYet = function(data, userInfo, cb) {
@@ -467,6 +582,24 @@ module.exports = {
   addBaby,
   updateBaby,
   delBaby: notDefinedYet,
+  addBabyLab,
+  updateBabyLab,
+  delBabyLab: notDefinedYet,
+  addBabyMedication,
+  updateBabyMedication,
+  delBabyMedication: notDefinedYet,
+  addBabyVaccination,
+  updateBabyVaccination,
+  delBabyVaccination: notDefinedYet,
+  addBirthCertificate,
+  updateBirthCertificate,
+  delBirthCertificate: notDefinedYet,
+  addContPostpartumCheck,
+  updateContPostpartumCheck,
+  delContPostpartumCheck: notDefinedYet,
+  addDischarge,
+  updateDischarge,
+  delDischarge: notDefinedYet,
   addLabor,
   delLabor: notDefinedYet,
   updateLabor,
@@ -479,7 +612,16 @@ module.exports = {
   addLaborStage3,
   delLaborStage3: notDefinedYet,
   updateLaborStage3,
-  addMembranesResus,
-  updateMembranesResus,
-  delMembranesResus: notDefinedYet
+  addMembrane,
+  updateMembrane,
+  delMembrane: notDefinedYet,
+  addMotherMedication,
+  updateMotherMedication,
+  delMotherMedication: notDefinedYet,
+  addNewbornExam,
+  updateNewbornExam,
+  delNewbornExam : notDefinedYet,
+  addPostpartumCheck,
+  updatePostpartumCheck,
+  delPostpartumCheck: notDefinedYet
 };

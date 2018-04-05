@@ -28,6 +28,11 @@ type LaborStage2Id
     = LaborStage2Id Int
 
 
+{-| Note that the database table laborStage2 also
+has a cordWrap boolean field which is no longer
+being used. Intead we are putting "None" in the
+cordWrapType field.
+-}
 type alias LaborStage2Record =
     { id : Int
     , birthDatetime : Maybe Date
@@ -35,7 +40,7 @@ type alias LaborStage2Record =
     , birthPosition : Maybe String
     , durationPushing : Maybe Int
     , birthPresentation : Maybe String
-    , cordWrap : Maybe Bool
+    , terminalMec : Maybe Bool
     , cordWrapType : Maybe String
     , deliveryType : Maybe String
     , shoulderDystocia : Maybe Bool
@@ -60,7 +65,6 @@ isLaborStage2RecordComplete rec =
             || (rec.birthPosition == Nothing)
             || (rec.durationPushing == Nothing)
             || (rec.birthPresentation == Nothing)
-            || (rec.cordWrap == Just True && rec.cordWrapType == Nothing)
             || (rec.deliveryType == Nothing)
             || (rec.shoulderDystocia == Just True && rec.shoulderDystociaMinutes == Nothing)
             || (rec.laceration == Just True && rec.degree == Nothing)
@@ -76,7 +80,7 @@ type alias LaborStage2RecordNew =
     , birthPosition : Maybe String
     , durationPushing : Maybe Int
     , birthPresentation : Maybe String
-    , cordWrap : Maybe Bool
+    , terminalMec : Maybe Bool
     , cordWrapType : Maybe String
     , deliveryType : Maybe String
     , shoulderDystocia : Maybe Bool
@@ -102,7 +106,7 @@ laborStage2Record =
         |> JDP.required "birthPosition" (JD.maybe JD.string)
         |> JDP.required "durationPushing" (JD.maybe JD.int)
         |> JDP.required "birthPresentation" (JD.maybe JD.string)
-        |> JDP.required "cordWrap" U.maybeIntToMaybeBool
+        |> JDP.required "terminalMec" U.maybeIntToMaybeBool
         |> JDP.required "cordWrapType" (JD.maybe JD.string)
         |> JDP.required "deliveryType" (JD.maybe JD.string)
         |> JDP.required "shoulderDystocia" U.maybeIntToMaybeBool
@@ -130,7 +134,7 @@ laborStage2RecordToValue rec =
                 , ( "birthPosition", (JEE.maybe JE.string rec.birthPosition) )
                 , ( "durationPushing", (JEE.maybe JE.int rec.durationPushing) )
                 , ( "birthPresentation", (JEE.maybe JE.string rec.birthPresentation) )
-                , ( "cordWrap", (U.maybeBoolToMaybeInt rec.cordWrap) )
+                , ( "terminalMec", (U.maybeBoolToMaybeInt rec.terminalMec) )
                 , ( "cordWrapType", (JEE.maybe JE.string rec.cordWrapType) )
                 , ( "deliveryType", (JEE.maybe JE.string rec.deliveryType) )
                 , ( "shoulderDystocia", (U.maybeBoolToMaybeInt rec.shoulderDystocia) )
@@ -160,7 +164,7 @@ laborStage2RecordNewToValue rec =
                 , ( "birthPosition", (JEE.maybe JE.string rec.birthPosition) )
                 , ( "durationPushing", (JEE.maybe JE.int rec.durationPushing) )
                 , ( "birthPresentation", (JEE.maybe JE.string rec.birthPresentation) )
-                , ( "cordWrap", (U.maybeBoolToMaybeInt rec.cordWrap) )
+                , ( "terminalMec", (U.maybeBoolToMaybeInt rec.terminalMec) )
                 , ( "cordWrapType", (JEE.maybe JE.string rec.cordWrapType) )
                 , ( "deliveryType", (JEE.maybe JE.string rec.deliveryType) )
                 , ( "shoulderDystocia", (U.maybeBoolToMaybeInt rec.shoulderDystocia) )
@@ -187,7 +191,7 @@ laborStage2RecordNewToLaborStage2Record (LaborStage2Id id) ls2new =
         ls2new.birthPosition
         ls2new.durationPushing
         ls2new.birthPresentation
-        ls2new.cordWrap
+        ls2new.terminalMec
         ls2new.cordWrapType
         ls2new.deliveryType
         ls2new.shoulderDystocia

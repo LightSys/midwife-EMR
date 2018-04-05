@@ -13,6 +13,15 @@ var _ = require('underscore')
   , cfg = require('../../config')
   , KeyValue = require('../../models').KeyValue
   , Apgar = require('../../models').Apgar
+  , BabyMedication = require('../../models').BabyMedication
+  , BabyMedicationType = require('../../models').BabyMedicationType
+  , BabyLab = require('../../models').BabyLab
+  , BabyLabType = require('../../models').BabyLabType
+  , BabyVaccination = require('../../models').BabyVaccination
+  , BabyVaccinationType = require('../../models').BabyVaccinationType
+  , BirthCertificate = require('../../models').BirthCertificate
+  , ContPostpartumCheck = require('../../models').ContPostpartumCheck
+  , Discharge = require('../../models').Discharge
   , Labor = require('../../models').Labor
   , LaborStage1 = require('../../models').LaborStage1
   , LaborStage2 = require('../../models').LaborStage2
@@ -20,7 +29,11 @@ var _ = require('underscore')
   , LabTest = require('../../models').LabTest
   , LabTestValue = require('../../models').LabTestValue
   , MedicationType = require('../../models').MedicationType
-  , MembranesResus = require('../../models').MembranesResus
+  , Membrane = require('../../models').Membrane
+  , MotherMedication = require('../../models').MotherMedication
+  , MotherMedicationType = require('../../models').MotherMedicationType
+  , NewbornExam = require('../../models').NewbornExam
+  , PostpartumCheck = require('../../models').PostpartumCheck
   , SelectData = require('../../models').SelectData
   , VaccinationType = require('../../models').VaccinationType
   , User = require('../../models').User
@@ -44,6 +57,15 @@ var _ = require('underscore')
 var LOOKUP_TABLES = [
   'apgar',
   'baby',
+  'babyMedication',
+  'babyMedicationType',
+  'babyLab',
+  'babyLabType',
+  'babyVaccination',
+  'babyVaccinationType',
+  'birthCertificate',
+  'contPostpartumCheck',
+  'discharge',
   'eventType',
   'labor',
   'laborStage1',
@@ -53,8 +75,12 @@ var LOOKUP_TABLES = [
   'labTest',
   'labTestValue',
   'medicationType',
-  'membranesResus',
+  'membrane',
+  'motherMedication',
+  'motherMedicationType',
+  'newbornExam',
   'patient',
+  'postpartumCheck',
   'pregnancy',
   'pregnoteType',
   'riskCode',
@@ -547,8 +573,14 @@ var updateVaccinationType = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, VaccinationType, 'vaccinationType');
 };
 
-
-
+// --------------------------------------------------------
+// Note: the add, update, and delete functions below are for
+// tables managed by the administrator role and not directly
+// regarding patient data.
+//
+// The lookup tables functions are used by the admin and
+// patient management roles.
+// --------------------------------------------------------
 module.exports = {
   getLookupTable,
   getTable2,

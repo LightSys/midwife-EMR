@@ -575,6 +575,56 @@ var dbType = function() {
   }
 }
 
+/* --------------------------------------------------------
+ * splitStringOnWordAtPerc()
+ *
+ * Split the specified string at a word boundary at or less
+ * that the percentage of the length of the string passed.
+ * Return an array containing the parts of the string with
+ * the leading and trailing whitespace trimmed of each part.
+ *
+ * We assume that each character is of equal width such as
+ * in the case of a mono font.
+ *
+ * param        str
+ * param        perc
+ * return       array of string
+ * -------------------------------------------------------- */
+var splitStringOnWordAtPerc = function(str, perc) {
+  var splitAt = Math.floor((str.length * perc)/100)
+    , words = str.split(' ')
+    , result = [ '', '' ]
+    , hasSplit = false
+    ;
+
+  _.each(words, function(word) {
+
+    if (! hasSplit) {
+      // Use < instead of <= to account for the space between the
+      // word that will be needed.
+      if (result[0].length + word.length < splitAt) {
+        if (result[0].length === 0) {
+          // First word added.
+          result[0] = word;
+        } else {
+          result[0] += " " + word;
+        }
+      } else {
+        // Flag transition to use result[1] exclusively.
+        hasSplit = true;
+        result[1] = word;
+      }
+    } else {
+      // Using result[1] exclusively since we have split.
+      result[1] += " " + word;
+    }
+  });
+
+  return result;
+};
+
+
+
 module.exports = {
   addBlankSelectData: addBlankSelectData
   , adjustSelectData: adjustSelectData
@@ -605,6 +655,7 @@ module.exports = {
   , returnUserProfile
   , returnUserProfileUpdate
   , SessionExpiredErrorCode
+  , splitStringOnWordAtPerc
   , SqlErrorCode
   , UnknownErrorCode
   , UnknownTableErrorCode

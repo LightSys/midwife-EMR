@@ -17,6 +17,10 @@ var _ = require('underscore')
   , dohMasterList = require('./dohMasterListRpt')
   , philHealthDailyRpt = require('./philHealthDailyRpt')
   , inactiveRpt = require('./inactiveRpt')
+  , vitaminARpt = require('./vitaminARpt')
+  , bcgRpt = require('./bcgRpt')
+  , hepbRpt = require('./hepbRpt')
+  , birthCertificateRpt = require('./birthCertificateRpt')
   ;
 
 
@@ -119,6 +123,21 @@ var form = function(req, res) {
     , selected: false
     , label: 'Inactive Report'
   }
+  , {
+    selectKey: 'vitaminA'
+    , selected: false
+    , label: 'Vitamin A'
+  }
+  , {
+    selectKey: 'bcg'
+    , selected: false
+    , label: 'BCG Report'
+  }
+  , {
+    selectKey: 'hepb'
+    , selected: false
+    , label: 'Hep B Report'
+  }
   ];
 
   new Users()
@@ -166,12 +185,26 @@ var run = function(req, res) {
   if (report === 'dohmasterlist') dohMasterList.run(req, res);
   if (report === 'philHealthDaily') philHealthDailyRpt.run(req, res);
   if (report === 'inactive') inactiveRpt.run(req, res);
+  if (report === 'vitaminA') vitaminARpt.run(req, res);
+  if (report === 'bcg') bcgRpt.run(req, res);
+  if (report === 'hepb') hepbRpt.run(req, res);
+};
+
+
+/* --------------------------------------------------------
+ * birthCertificate()
+ *
+ * Runs the birth certificate report.
+ * -------------------------------------------------------- */
+var birthCertificate = function(req, res) {
+  birthCertificateRpt.run(req, res);
 };
 
 module.exports = {
   form: form
   , run: run
   , summary: summary
+  , birthCertificate
 };
 
 

@@ -72,6 +72,22 @@ var doSiteTitle = function(doc, y) {
 };
 
 /* --------------------------------------------------------
+ * doSiteTitleLong()
+ *
+ * Writes the site title at the y coordinate specified using
+ * siteLongName instead of siteShortName.
+ *
+ * param       doc
+ * param       y
+ * return      undefined
+ * -------------------------------------------------------- */
+var doSiteTitleLong = function(doc, y) {
+  var siteTitle = cfg.getKeyValue('siteLongName');
+  centerText(doc, siteTitle, FONTS.Helvetica, 18, y);
+};
+
+
+/* --------------------------------------------------------
  * doReportName()
  *
  * Writes the report name at the specified y coordinate.
@@ -136,6 +152,7 @@ module.exports = {
   , centerText: centerText
   , centerInCol: centerInCol
   , doSiteTitle: doSiteTitle
+  , doSiteTitleLong: doSiteTitleLong
   , doReportName: doReportName
   , doCellBorders: doCellBorders
 };

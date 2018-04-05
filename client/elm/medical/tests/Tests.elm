@@ -27,6 +27,7 @@ all =
         [ dateHandling
         , dataCache
         , validations
+        , utils
         ]
 
 
@@ -446,4 +447,30 @@ validations =
         , test "Return a time tuple from a String in a hh:nn pattern, v4" <|
             \() ->
                 Expect.equal (U.stringToTimeTuple "2") <| Nothing
+        ]
+
+
+utils : Test
+utils =
+    describe "Test util functions"
+        [ test "filterStringLikeIntOrNegInt with positive number" <|
+            \() ->
+                Expect.equal
+                    (U.filterStringLikeIntOrNegInt "12") "12"
+        , test "filterStringLikeIntOrNegInt with negative number" <|
+            \() ->
+                Expect.equal
+                    (U.filterStringLikeIntOrNegInt "-12") "-12"
+        , test "filterStringLikeIntOrNegInt with positive single digit number" <|
+            \() ->
+                Expect.equal
+                    (U.filterStringLikeIntOrNegInt "2") "2"
+        , test "filterStringLikeIntOrNegInt with negative single digit number" <|
+            \() ->
+                Expect.equal
+                    (U.filterStringLikeIntOrNegInt "-2") "-2"
+        , test "filterStringLikeIntOrNegInt with only the negative sign" <|
+            \() ->
+                Expect.equal
+                    (U.filterStringLikeIntOrNegInt "-") "-"
         ]

@@ -12,6 +12,7 @@ import Json.Decode as JD
 import Json.Decode.Extra as JDE
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
+import Regex exposing (Regex)
 
 
 {-| For browsers that do not natively handle dates, we use the
@@ -24,15 +25,38 @@ proper page's update function as a SubMsg.
 type DateField
     = UnknownDateField String
     | AdmittingAdmittanceDateField
+    | AdmittingStartLaborDateField
     | LaborDelIppLaborDateField
     | LaborDelIppStage1DateField
     | LaborDelIppStage2DateField
     | LaborDelIppStage3DateField
-    | FalseLaborDateField
-    | MembranesResusRuptureDateField
+    | EarlyLaborDateField
+    | MembraneRuptureDateField
     | BabyBFedEstablishedDateField
     | BabyNbsDateField
     | BabyBcgDateField
+    | NewBornExamDateField
+    | ContPostpartumCheckDateField
+    | BabyMed1DateField
+      -- When we need a certain number of form fields
+      -- that are dependent upon data. The first Int
+      -- is for the field type or category or whatever
+      -- course grained definition is required, and
+      -- the second Int is the find grained identifier
+      -- which can be correlated to an id of some sort.
+    | DynamicDateField Int Int
+    | DischargeDateField
+    | PostpartumCheckDateField
+    | PostpartumCheckHgbField
+    | PostpartumCheckScheduledField
+    | BirthCertDateOfCommTaxField
+    | BirthCertDateOfMarriageField
+    | BirthCertDateOfAffiateCommTaxField
+
+
+dynamicRegex : Regex
+dynamicRegex =
+    Regex.regex "dynamicDateId-(\\d+)-(\\d+)"
 
 
 stringToDateField : String -> DateField
@@ -40,6 +64,9 @@ stringToDateField str =
     case str of
         "admitDateId" ->
             AdmittingAdmittanceDateField
+
+        "admitStartLaborDateId" ->
+            AdmittingStartLaborDateField
 
         "babyBFedEstablisedId" ->
             BabyBFedEstablishedDateField
@@ -50,8 +77,26 @@ stringToDateField str =
         "babyNbsId" ->
             BabyNbsDateField
 
-        "falseLaborDateId" ->
-            FalseLaborDateField
+        "babyMed1Id" ->
+            BabyMed1DateField
+
+        "birthCertificateDateOfCommTaxId" ->
+            BirthCertDateOfCommTaxField
+
+        "birthCertificateDateOfMarriageId" ->
+            BirthCertDateOfMarriageField
+
+        "birthCertificateDateOfAffiateCommTaxId" ->
+            BirthCertDateOfAffiateCommTaxField
+
+        "contPostpartumCheckId" ->
+            ContPostpartumCheckDateField
+
+        "dischargeDateId" ->
+            DischargeDateField
+
+        "earlyLaborDateId" ->
+            EarlyLaborDateField
 
         "laborDateId" ->
             LaborDelIppLaborDateField
@@ -65,15 +110,74 @@ stringToDateField str =
         "laborStage3Id" ->
             LaborDelIppStage3DateField
 
-        _ ->
-            UnknownDateField str
+        "membraneRuptureId" ->
+            MembraneRuptureDateField
+
+        "newbornExamId" ->
+            NewBornExamDateField
+
+        "postpartumCheckId" ->
+            PostpartumCheckDateField
+
+        "postpartumCheckHgbId" ->
+            PostpartumCheckHgbField
+
+        "postpartumCheckScheduledId" ->
+            PostpartumCheckScheduledField
+
+        str ->
+            case Regex.find Regex.All dynamicRegex str
+                |> List.head
+            of
+                Just match ->
+                    let
+                        category =
+                            case List.take 1 match.submatches
+                                |> List.head
+                            of
+                                Just (Just cat) ->
+                                    cat
+
+                                _ ->
+                                    ""
+
+                        field =
+                            case List.take 2 match.submatches
+                                |> List.reverse
+                                |> List.head
+                            of
+                                Just (Just fld) ->
+                                    fld
+
+                                _ ->
+                                    ""
+
+                        dateFld =
+                            case ( String.toInt category, String.toInt field ) of
+                                ( Ok cat, Ok fld ) ->
+                                    DynamicDateField cat fld
+
+                                ( _, _ ) ->
+                                    UnknownDateField str
+                    in
+                    dateFld
+
+                Nothing ->
+                    UnknownDateField str
+
 
 
 dateFieldToString : DateField -> String
 dateFieldToString df =
     case df of
+        DynamicDateField num1 num2 ->
+            "dynamicDateId-" ++ (toString num1) ++ "-" ++ (toString num2)
+
         AdmittingAdmittanceDateField ->
             "admitDateId"
+
+        AdmittingStartLaborDateField ->
+            "admitStartLaborDateId"
 
         BabyBFedEstablishedDateField ->
             "babyBFedEstablisedId"
@@ -84,8 +188,26 @@ dateFieldToString df =
         BabyNbsDateField ->
             "babyNbsId"
 
-        FalseLaborDateField ->
-            "falseLaborDateId"
+        BabyMed1DateField ->
+            "babyMed1Id"
+
+        BirthCertDateOfCommTaxField ->
+            "birthCertificateDateOfCommTaxId"
+
+        BirthCertDateOfMarriageField ->
+            "birthCertificateDateOfMarriageId"
+
+        BirthCertDateOfAffiateCommTaxField ->
+            "birthCertificateDateOfAffiateCommTaxId"
+
+        ContPostpartumCheckDateField ->
+            "contPostpartumCheckId"
+
+        DischargeDateField ->
+            "dischargeDateId"
+
+        EarlyLaborDateField ->
+            "earlyLaborDateId"
 
         LaborDelIppLaborDateField ->
             "laborDateId"
@@ -99,8 +221,20 @@ dateFieldToString df =
         LaborDelIppStage3DateField ->
             "laborStage3Id"
 
-        MembranesResusRuptureDateField ->
-            "membranesResusRuptureId"
+        MembraneRuptureDateField ->
+            "membraneRuptureId"
+
+        NewBornExamDateField ->
+            "newbornExamId"
+
+        PostpartumCheckDateField ->
+            "postpartumCheckId"
+
+        PostpartumCheckHgbField ->
+            "postpartumCheckHgbId"
+
+        PostpartumCheckScheduledField ->
+            "postpartumCheckScheduledId"
 
         UnknownDateField str ->
             "Warning: Unknown DateField: " ++ str

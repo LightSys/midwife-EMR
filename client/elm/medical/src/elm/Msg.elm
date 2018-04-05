@@ -18,16 +18,30 @@ import Window
 
 import Data.Admitting as Admitting
 import Data.Baby exposing (BabyRecord, BabyRecordNew)
+import Data.BabyLab exposing (BabyLabRecord, BabyLabRecordNew)
+import Data.BabyMedication exposing (BabyMedicationRecord, BabyMedicationRecordNew)
+import Data.BabyVaccination exposing (BabyVaccinationRecord, BabyVaccinationRecordNew)
+import Data.BirthCert
+import Data.BirthCertificate exposing (BirthCertificateRecord, BirthCertificateRecordNew)
 import Data.ContPP as ContPP
+import Data.ContPostpartumCheck
+    exposing
+        ( ContPostpartumCheckRecord
+        , ContPostpartumCheckRecordNew
+        )
 import Data.DatePicker exposing (DateField, DateFieldMessage)
+import Data.Discharge exposing (DischargeRecord, DischargeRecordNew)
 import Data.Labor exposing (LaborId, LaborRecord, LaborRecordNew)
 import Data.LaborDelIpp as LaborDelIpp
 import Data.LaborStage1 exposing (LaborStage1Record, LaborStage1RecordNew)
 import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
 import Data.LaborStage3 exposing (LaborStage3Record, LaborStage3RecordNew)
-import Data.MembranesResus exposing (MembranesResusRecordNew, MembranesResusRecord)
+import Data.Membrane exposing (MembraneRecordNew, MembraneRecord)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
+import Data.MotherMedication exposing (MotherMedicationRecord, MotherMedicationRecordNew)
+import Data.NewbornExam exposing (NewbornExamRecord, NewbornExamRecordNew)
 import Data.Postpartum as Postpartum
+import Data.PostpartumCheck exposing (PostpartumCheckRecord, PostpartumCheckRecordNew)
 import Data.Pregnancy exposing (PregnancyId)
 import Data.Processing exposing (ProcessId)
 import Data.SelectQuery exposing (SelectQuery)
@@ -39,26 +53,31 @@ import Route exposing (Route)
 
 type Msg
     = Noop
-    | Tick Time
-    | LogConsole String
-    | Toast (List String) Int ToastType
-    | WindowResize (Maybe Window.Size)
-    | SetDialogActive Bool
-    | SetRoute (Maybe Route)
     | AdmittingLoaded PregnancyId
     | AdmittingMsg Admitting.AdmittingSubMsg
+    | AdmittingSelectQuery Table (Maybe Int) (List Table)
+    | BirthCertLoaded PregnancyId LaborRecord
+    | BirthCertMsg Data.BirthCert.SubMsg
+    | BirthCertSelectQuery Table (Maybe Int) (List Table)
     | ContPPLoaded PregnancyId LaborRecord
     | ContPPMsg ContPP.SubMsg
+    | ContPPSelectQuery Table (Maybe Int) (List Table)
+    | IncomingDatePicker DateFieldMessage
     | LaborDelIppLoaded PregnancyId
     | LaborDelIppMsg LaborDelIpp.SubMsg
     | LaborDelIppSelectQuery Table (Maybe Int) (List Table)
+    | LogConsole String
+    | Message IncomingMessage
+    | OpenDatePicker String
     | PostpartumLoaded PregnancyId LaborRecord
     | PostpartumMsg Postpartum.SubMsg
-    | Message IncomingMessage
+    | PostpartumSelectQuery Table (Maybe Int) (List Table)
     | ProcessTypeMsg ProcessType MsgType JE.Value
-    | OpenDatePicker String
-    | IncomingDatePicker DateFieldMessage
-    | AddLabor
+    | SetDialogActive Bool
+    | SetRoute (Maybe Route)
+    | Tick Time
+    | Toast (List String) Int ToastType
+    | WindowResize (Maybe Window.Size)
 
 
 {-| Initiate a Cmd to send a message to the console. This function
@@ -105,15 +124,33 @@ to "remember" what we should do when the server responds positively.
 -}
 type ProcessType
     = AddBabyType Msg BabyRecordNew
+    | AddBabyLabType Msg BabyLabRecordNew
+    | AddBabyMedicationType Msg BabyMedicationRecordNew
+    | AddBabyVaccinationType Msg BabyVaccinationRecordNew
+    | AddBirthCertificateType Msg BirthCertificateRecordNew
+    | AddContPostpartumCheckType Msg ContPostpartumCheckRecordNew
+    | AddDischargeType Msg DischargeRecordNew
     | AddLaborType Msg LaborRecordNew
     | AddLaborStage1Type Msg LaborStage1RecordNew
     | AddLaborStage2Type Msg LaborStage2RecordNew
     | AddLaborStage3Type Msg LaborStage3RecordNew
-    | AddMembranesResusType Msg MembranesResusRecordNew
+    | AddMembraneType Msg MembraneRecordNew
+    | AddMotherMedicationType Msg MotherMedicationRecordNew
+    | AddNewbornExamType Msg NewbornExamRecordNew
+    | AddPostpartumCheckType Msg PostpartumCheckRecordNew
     | UpdateBabyType Msg BabyRecord
+    | UpdateBabyLabType Msg BabyLabRecord
+    | UpdateBabyMedicationType Msg BabyMedicationRecord
+    | UpdateBabyVaccinationType Msg BabyVaccinationRecord
+    | UpdateBirthCertificateType Msg BirthCertificateRecord
+    | UpdateContPostpartumCheckType Msg ContPostpartumCheckRecord
+    | UpdateDischargeType Msg DischargeRecord
     | UpdateLaborType Msg LaborRecord
     | UpdateLaborStage1Type Msg LaborStage1Record
     | UpdateLaborStage2Type Msg LaborStage2Record
     | UpdateLaborStage3Type Msg LaborStage3Record
-    | UpdateMembranesResusType Msg MembranesResusRecord
+    | UpdateMembraneType Msg MembraneRecord
+    | UpdateMotherMedicationType Msg MotherMedicationRecord
+    | UpdateNewbornExamType Msg NewbornExamRecord
+    | UpdatePostpartumCheckType Msg PostpartumCheckRecord
     | SelectQueryType Msg SelectQuery

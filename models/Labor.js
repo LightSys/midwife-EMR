@@ -21,10 +21,9 @@ CREATE TABLE `labor` (
   `admittanceDate` datetime NOT NULL,
   `startLaborDate` datetime NOT NULL,
   `dischargeDate` datetime DEFAULT NULL,
-  `falseLabor` tinyint(4) NOT NULL DEFAULT '0',
   `pos` varchar(10) DEFAULT NULL,
   `fh` int(11) DEFAULT NULL,
-  `fht` int(11) DEFAULT NULL,
+  `fht` varchar(50) DEFAULT NULL,
   `systolic` int(11) DEFAULT NULL,
   `diastolic` int(11) DEFAULT NULL,
   `cr` int(11) DEFAULT NULL,
@@ -35,11 +34,11 @@ CREATE TABLE `labor` (
   `supervisor` int(11) DEFAULT NULL,
   `pregnancy_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `pregnancy_id` (`pregnancy_id`),
+  UNIQUE KEY `pregnancy_id` (`pregnancy_id`),
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `labor_ibfk_1` FOREIGN KEY (`pregnancy_id`) REFERENCES `pregnancy` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `labor_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=latin1
 */
 
 
@@ -47,7 +46,7 @@ Labor = Bookshelf.Model.extend({
   tableName: 'labor'
 
   , permittedAttributes: ['id', 'admittanceDate', 'startLaborDate', 'dischargeDate',
-      'falseLabor', 'pos', 'fh', 'fht', 'systolic', 'diastolic', 'cr', 'temp',
+      'pos', 'fh', 'fht', 'systolic', 'diastolic', 'cr', 'temp',
       'comments', 'updatedBy', 'updatedAt', 'supervisor', 'pregnancy_id']
 
   , initialize: function() {

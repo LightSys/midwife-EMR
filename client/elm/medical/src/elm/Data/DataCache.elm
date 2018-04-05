@@ -12,13 +12,28 @@ import Dict exposing (Dict)
 -- LOCAL IMPORTS --
 
 import Data.Baby exposing (BabyRecord)
+import Data.BabyLab exposing (BabyLabRecord)
+import Data.BabyLabType exposing (BabyLabTypeRecord)
+import Data.BabyMedication exposing (BabyMedicationRecord)
+import Data.BabyMedicationType exposing (BabyMedicationTypeRecord)
+import Data.BabyVaccination exposing (BabyVaccinationRecord)
+import Data.BabyVaccinationType exposing (BabyVaccinationTypeRecord)
+import Data.BirthCertificate exposing (BirthCertificateRecord)
+import Data.ContPostpartumCheck exposing (ContPostpartumCheckRecord)
+import Data.Discharge exposing (DischargeRecord)
+import Data.KeyValue exposing (KeyValueRecord)
 import Data.Labor exposing (LaborRecord)
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record)
-import Data.MembranesResus exposing (MembranesResusRecord)
+import Data.Membrane exposing (MembraneRecord)
+import Data.MotherMedication exposing (MotherMedicationRecord)
+import Data.MotherMedicationType exposing (MotherMedicationTypeRecord)
+import Data.NewbornExam exposing (NewbornExamRecord)
 import Data.Patient exposing (PatientRecord)
+import Data.PostpartumCheck exposing (PostpartumCheckRecord)
 import Data.Pregnancy exposing (PregnancyRecord)
+import Data.SelectData exposing (SelectDataRecord)
 import Data.Table exposing (stringToTable, tableToString, Table(..))
 
 
@@ -26,13 +41,28 @@ import Data.Table exposing (stringToTable, tableToString, Table(..))
 -}
 type DataCache
     = BabyDataCache BabyRecord
-    | LaborDataCache (Dict Int LaborRecord)
+    | BabyLabDataCache (List BabyLabRecord)
+    | BabyLabTypeDataCache (List BabyLabTypeRecord)
+    | BabyMedicationDataCache (List BabyMedicationRecord)
+    | BabyMedicationTypeDataCache (List BabyMedicationTypeRecord)
+    | BabyVaccinationDataCache (List BabyVaccinationRecord)
+    | BabyVaccinationTypeDataCache (List BabyVaccinationTypeRecord)
+    | BirthCertificateDataCache BirthCertificateRecord
+    | ContPostpartumCheckDataCache (List ContPostpartumCheckRecord)
+    | DischargeDataCache DischargeRecord
+    | KeyValueDataCache (Dict String KeyValueRecord)
+    | LaborDataCache LaborRecord
     | LaborStage1DataCache LaborStage1Record
     | LaborStage2DataCache LaborStage2Record
     | LaborStage3DataCache LaborStage3Record
-    | MembranesResusDataCache MembranesResusRecord
+    | MembraneDataCache MembraneRecord
+    | MotherMedicationDataCache (List MotherMedicationRecord)
+    | MotherMedicationTypeDataCache (List MotherMedicationTypeRecord)
+    | NewbornExamDataCache NewbornExamRecord
     | PatientDataCache PatientRecord
+    | PostpartumCheckDataCache (List PostpartumCheckRecord)
     | PregnancyDataCache PregnancyRecord
+    | SelectDataDataCache (List SelectDataRecord)
 
 
 {-| Return the Table name as a String that cooresponds to
@@ -44,6 +74,36 @@ getTableString dc =
     case dc of
         BabyDataCache _ ->
             tableToString Baby
+
+        BabyLabDataCache _ ->
+            tableToString BabyLab
+
+        BabyLabTypeDataCache _ ->
+            tableToString BabyLabType
+
+        BabyMedicationDataCache _ ->
+            tableToString BabyMedication
+
+        BabyMedicationTypeDataCache _ ->
+            tableToString BabyMedicationType
+
+        BabyVaccinationDataCache _ ->
+            tableToString BabyVaccination
+
+        BabyVaccinationTypeDataCache _ ->
+            tableToString BabyVaccinationType
+
+        BirthCertificateDataCache _ ->
+            tableToString BirthCertificate
+
+        ContPostpartumCheckDataCache _ ->
+            tableToString ContPostpartumCheck
+
+        DischargeDataCache _ ->
+            tableToString Discharge
+
+        KeyValueDataCache _ ->
+            tableToString KeyValue
 
         LaborDataCache _ ->
             tableToString Labor
@@ -57,14 +117,29 @@ getTableString dc =
         LaborStage3DataCache _ ->
             tableToString LaborStage3
 
-        MembranesResusDataCache _ ->
-            tableToString MembranesResus
+        MembraneDataCache _ ->
+            tableToString Membrane
+
+        MotherMedicationDataCache _ ->
+            tableToString MotherMedication
+
+        MotherMedicationTypeDataCache _ ->
+            tableToString MotherMedicationType
+
+        NewbornExamDataCache _ ->
+            tableToString NewbornExam
 
         PatientDataCache _ ->
             tableToString Patient
 
+        PostpartumCheckDataCache _ ->
+            tableToString PostpartumCheck
+
         PregnancyDataCache _ ->
             tableToString Pregnancy
+
+        SelectDataDataCache _ ->
+            tableToString SelectData
 
 
 put : DataCache -> Dict String DataCache -> Dict String DataCache
