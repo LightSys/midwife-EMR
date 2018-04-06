@@ -12,45 +12,61 @@ var _ = require('underscore')
   , Bookshelf = require('bookshelf')
   , cfg = require('../config')
   , hasRole = require('../auth').hasRole
-  , Patient = require('../models').Patient
-  , Patients = require('../models').Patients
-  , Pregnancy = require('../models').Pregnancy
-  , Pregnancies = require('../models').Pregnancies
-  , PregnancyHistory = require('../models').PregnancyHistory
-  , PregnancyHistories = require('../models').PregnancyHistories
-  , PrenatalExam = require('../models').PrenatalExam
-  , PrenatalExams = require('../models').PrenatalExams
-  , User = require('../models').User
-  , Users = require('../models').Users
-  , SelectData = require('../models').SelectData
+  , Apgar = require('../models').Apgar
+  , Baby = require('../models').Baby
+  , BabyLab = require('../models').BabyLab
+  , BabyMedication = require('../models').BabyMedication
+  , BabyVaccination = require('../models').BabyVaccination
+  , BirthCertificate = require('../models').BirthCertificate
+  , ContPostpartumCheck = require('../models').ContPostpartumCheck
+  , Discharge = require('../models').Discharge
+  , CustomField = require('../models').CustomField
+  , CustomFields = require('../models').CustomFields
+  , CustomFieldType = require('../models').CustomFieldType
+  , CustomFieldTypes = require('../models').CustomFieldTypes
+  , Event = require('../models').Event
+  , Labor = require('../models').Labor
+  , LaborStage1 = require('../models').LaborStage1
+  , LaborStage2 = require('../models').LaborStage2
+  , LaborStage3 = require('../models').LaborStage3
   , LabSuite = require('../models').LabSuite
   , LabSuites = require('../models').LabSuites
   , LabTest = require('../models').LabTest
   , LabTests = require('../models').LabTests
   , LabTestResult = require('../models').LabTestResult
   , LabTestResults = require('../models').LabTestResults
-  , Referral = require('../models').Referral
-  , Referrals = require('../models').Referrals
-  , Vaccination = require('../models').Vaccination
-  , Vaccinations = require('../models').Vaccinations
   , Medication = require('../models').Medication
   , Medications = require('../models').Medications
-  , Event = require('../models').Event
-  , Schedule = require('../models').Schedule
-  , Schedules = require('../models').Schedules
-  , Priority = require('../models').Priority
-  , Priorities = require('../models').Priorities
-  , CustomField = require('../models').CustomField
-  , CustomFields = require('../models').CustomFields
-  , CustomFieldType = require('../models').CustomFieldType
-  , CustomFieldTypes = require('../models').CustomFieldTypes
-  , RoFieldsByRole = require('../models').RoFieldsByRole
-  , Teaching = require('../models').Teaching
-  , Teachings = require('../models').Teachings
+  , Membrane = require('../models').Membrane
+  , MotherMedication = require('../models').MotherMedication
+  , NewbornExam = require('../models').NewbornExam
+  , Patient = require('../models').Patient
+  , Patients = require('../models').Patients
+  , Pregnancy = require('../models').Pregnancy
+  , Pregnancies = require('../models').Pregnancies
+  , PregnancyHistory = require('../models').PregnancyHistory
+  , PregnancyHistories = require('../models').PregnancyHistories
   , Pregnote = require('../models').Pregnote
   , Pregnotes = require('../models').Pregnotes
   , PregnoteType = require('../models').PregnoteType
   , PregnoteTypes = require('../models').PregnoteTypes
+  , PrenatalExam = require('../models').PrenatalExam
+  , PrenatalExams = require('../models').PrenatalExams
+  , Priority = require('../models').Priority
+  , Priorities = require('../models').Priorities
+  , PostpartumCheck = require('../models').PostpartumCheck
+  , Referral = require('../models').Referral
+  , Referrals = require('../models').Referrals
+  , RoFieldsByRole = require('../models').RoFieldsByRole
+  , Schedule = require('../models').Schedule
+  , Schedules = require('../models').Schedules
+  , SelectData = require('../models').SelectData
+  , Teaching = require('../models').Teaching
+  , Teachings = require('../models').Teachings
+  , User = require('../models').User
+  , Users = require('../models').Users
+  , Vaccination = require('../models').Vaccination
+  , Vaccinations = require('../models').Vaccinations
   , logInfo = require('../util').logInfo
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
@@ -1932,7 +1948,8 @@ var prenatalSave = function(req, res) {
  * each table. Finally deletes the patient record itself
  * which is master to the pregnancy record.
  *
- * Records in these tables are deleted, if available:
+ * Records in these tables, which have pregnancy id as a foreign key,
+ * are deleted, if available:
  *    customField
  *    healthTeaching
  *    labTestResult
@@ -1944,6 +1961,29 @@ var prenatalSave = function(req, res) {
  *    schedule
  *    vaccination
  *    patient
+ *    pregnote
+ *    labor
+ *
+ * Records in these tables, which have labor id as a foreign key,
+ * are deleted, if available:
+ *    laborStage1
+ *    laborStage2
+ *    laborStage3
+ *    baby
+ *    membrane
+ *    contPostpartumCheck
+ *    motherMedication
+ *    discharge
+ *    postpartumCheck
+ *
+ * Records in these tables, which have baby id as a foreign key,
+ * are deleted, if available:
+ *    apgar
+ *    newbornExam
+ *    babyMedication
+ *    babyVaccination
+ *    babyLab
+ *    birthCertificate
  *
  * NOTE: The patient record is deleted for the time being until
  * the database schema is refactored. Right now the patient to
@@ -1955,6 +1995,8 @@ var prenatalSave = function(req, res) {
 var pregnancyDelete = function(req, res) {
   var pregId
     , patId = -1
+    , laborId = -1
+    , babyId = -1
     , knex = Bookshelf.DB.knex
     ;
 
@@ -1969,18 +2011,101 @@ var pregnancyDelete = function(req, res) {
     logInfo('Deleting master and all child tables for pregnancy id ' + pregId);
 
     // --------------------------------------------------------
-    // Get the patient id in order to delete the patient record
-    // at the end.
+    // All deletions are done atomically.
     // --------------------------------------------------------
-    Pregnancy.forge({id: pregId})
-      .fetch()
-      .then(function(preg) {
-        patId = preg.get('patient_id');
-      })
-      .then(function() {
-        if (patId !== -1) {
-          Bookshelf.DB.knex.transaction(function(t) {
-            var tblNames = [
+    Bookshelf.DB.knex.transaction(function(t) {
+      // --------------------------------------------------------
+      // Get the patient id in order to delete the patient record
+      // at the end. Get the labor id and baby id as well in order
+      // to delete the respective dependent records.
+      // --------------------------------------------------------
+      return Pregnancy.forge({id: pregId})
+        .fetch()
+        .then(function(preg) {
+          patId = preg.get('patient_id');
+        })
+        .then(function() {
+          return Labor.forge({pregnancy_id: pregId})
+            .fetch()
+            .then(function(labor) {
+              laborId = labor? labor.get('id'): -1;
+            });
+        })
+        .then(function() {
+          return Baby.forge({labor_id: laborId})
+            .fetch()
+            .then(function(baby) {
+              babyId = baby? baby.get('id'): -1;
+            });
+        })
+        .then(function() {
+          // --------------------------------------------------------
+          // If we don't have a patient record, we don't do anything
+          // because something is wrong in the first place. Otherwise,
+          // we only do these deletions if we have a baby id.
+          // --------------------------------------------------------
+          if (patId !== -1 && babyId !== -1) {
+            var babyTables = [
+                'apgar'
+              , 'newbornExam'
+              , 'babyMedication'
+              , 'babyVaccination'
+              , 'babyLab'
+              , 'birthCertificate'
+              ]
+              ;
+
+            return Promise.all(_.map(babyTables, function(tblName) {
+              var fldName = 'baby_id';
+              return knex(tblName)
+                .transacting(t)
+                .where(fldName, babyId)
+                .del()
+                .then(function(numRows) {
+                  logInfo(numRows + ' rows deleted from ' + tblName + '.');
+                });
+            }));
+          }
+        })
+        .then(function() {
+          // --------------------------------------------------------
+          // If we don't have a patient record, we don't do anything
+          // because something is wrong in the first place. Otherwise,
+          // we only do these deletions if we have a labor id.
+          // --------------------------------------------------------
+          if (patId !== -1 && laborId !== -1){
+            var laborTables = [
+                'laborStage1'
+              , 'laborStage2'
+              , 'laborStage3'
+              , 'baby'
+              , 'membrane'
+              , 'contPostpartumCheck'
+              , 'motherMedication'
+              , 'discharge'
+              , 'postpartumCheck'
+              ]
+              ;
+
+            return Promise.all(_.map(laborTables, function(tblName) {
+              var fldName = 'labor_id';
+              return knex(tblName)
+                .transacting(t)
+                .where(fldName, laborId)
+                .del()
+                .then(function(numRows) {
+                  logInfo(numRows + ' rows deleted from ' + tblName + '.');
+                });
+            }));
+          }
+        })
+        .then(function() {
+          // --------------------------------------------------------
+          // If we don't have a patient record, we don't do anything
+          // because the database is not as expected.
+          // --------------------------------------------------------
+          if (patId !== -1) {
+            var pregnancyTables = [
                 'customField'
                 , 'healthTeaching'
                 , 'labTestResult'
@@ -1991,56 +2116,60 @@ var pregnancyDelete = function(req, res) {
                 , 'risk'
                 , 'schedule'
                 , 'vaccination'
+                , 'labor'
+                , 'pregnote'
                 , 'pregnancy'
               ]
               ;
 
-            return Promise.all(_.map(tblNames, function(tblName) {
+            return Promise.all(_.map(pregnancyTables, function(tblName) {
               var fldName = 'pregnancy_id';
               if (tblName === 'pregnancy') {
                 fldName = 'id';
               }
-              return knex(tblName)
+              knex(tblName)
                 .transacting(t)
                 .where(fldName, pregId)
                 .del()
                 .then(function(numRows) {
                   logInfo(numRows + ' rows deleted from ' + tblName + '.');
                 });
-            }));
-
-          })   // end transaction
-          .then(function() {
+            }))
+          } else {
             // --------------------------------------------------------
-            // Clean up the orphaned patient record.
+            // Patient id was not found, so do nothing.
             // --------------------------------------------------------
-            return Patient.forge({id: patId})
-              .destroy()
-              .then(function(result) {
-                return true;
-              });
-          })
-          .then(function() {
-            logInfo('Pregnancy ' + pregId + ' was deleted.');
-            req.flash('info', req.gettext('Pregnancy was deleted.'));
-            res.redirect(cfg.path.search);
-          })
-          .caught(function(err) {
-            logError(err);
-            logError('The pregnancy and related records were not deleted.');
+            logError('There was a problem so we did not do anything. No records were changed.');
             req.flash('error', req.gettext('Sorry, an error was encountered and the pregnancy was not deleted.'));
             res.redirect(cfg.path.search);
-          });
-        } else {
+          }
+        })   // end then
+        .then(function() {
           // --------------------------------------------------------
-          // Patient id was not found, so do nothing.
+          // Finally, clean up the patient record last.
           // --------------------------------------------------------
-          logError('There was a problem so we did not do anything. The pregnancy record is unchanged.');
-          req.flash('error', req.gettext('Sorry, an error was encountered and the pregnancy was not deleted.'));
-          res.redirect(cfg.path.search);
-        }
-      });   // end then
-
+          return knex('patient')
+            .transacting(t)
+            .where('id', patId)
+            .del()
+            .then(function(numRows) {
+              logInfo(numRows + ' rows deleted from patient.');
+            })
+        })
+        .then(t.commit)     // Commit
+        .caught(t.rollback); // Rollback
+    }) // end transaction
+    .then(function() {
+      logInfo('Pregnancy ' + pregId + ' was deleted.');
+      req.flash('info', req.gettext('Pregnancy was deleted.'));
+      res.redirect(cfg.path.search);
+    })
+    .caught(function(err) {
+      logError(err);
+      logError('The pregnancy and related records were not deleted.');
+      req.flash('error', req.gettext('Sorry, an error was encountered and the pregnancy was not deleted.'));
+      res.redirect(cfg.path.search);
+    });
   }   // end if
 };
 
