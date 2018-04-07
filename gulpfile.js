@@ -21,7 +21,6 @@ var jshint = require('gulp-jshint');
 var webpack = require('webpack');
 var gutil = require('gulp-util');
 var webpackConfig = require('./webpack.config.js');
-var webpackElmConfig = require('./webpack.config-elm.js');
 
 // --------------------------------------------------------
 // Global configuration options for various gulp packages.
@@ -55,13 +54,9 @@ var cfg = {
 // Webpack for development.
 // --------------------------------------------------------
 var devConfig = Object.create(webpackConfig);
-var devElmConfig = Object.create(webpackElmConfig);
 devConfig.devtool = 'sourcemap';
 devConfig.debug = true;
-devElmConfig.devtool = 'sourcemap';
-devElmConfig.debug = true;
 var devCompiler = webpack(devConfig);
-var devElmCompiler = webpack(devElmConfig);
 var devWatchOptions = {
   poll: 1000,             // true for default, false for off, otherwise ms to poll.
   aggregateTimeout: 200   // time to wait for other changes, default 300.
@@ -78,22 +73,6 @@ gulp.task('webpack:build-dev', function(cb) {
     devCompiler.run(function(err, stats) {
       if (err) throw new gutil.PluginError('webpack:build-dev', err);
       gutil.log('[webpack:build-dev]', stats.toString({colors: true}));
-      cb();
-    });
-  }
-});
-
-gulp.task('webpack:build-elm', function(cb) {
-  if (process.env['WEBPACK_WATCH']) {
-    // E.g.:  WEBPACK_WATCH=1 gulp webpack:build-dev
-    devElmCompiler.watch(devWatchOptions, function(err, stats) {
-      if (err) throw new gutil.PluginError('webpack:build-elm', err);
-      gutil.log('[webpack:build-elm]', stats.toString({colors: true}));
-    });
-  } else {
-    devElmCompiler.run(function(err, stats) {
-      if (err) throw new gutil.PluginError('webpack:build-elm', err);
-      gutil.log('[webpack:build-elm]', stats.toString({colors: true}));
       cb();
     });
   }
