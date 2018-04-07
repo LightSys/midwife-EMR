@@ -1,6 +1,5 @@
-/* Webpack 2 */
 const webpack = require('webpack');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
 
 const ELM_ADMIN = path.resolve(__dirname, 'src', 'administrator.js');
@@ -8,13 +7,13 @@ const BUILD_PATH = path.resolve('/opt', 'dist');
 
 module.exports = {
   entry: {
-    'elm-vendor': 'socket.io-client/lib/index.js',
-    administrator: ELM_ADMIN
+    'vendor': 'socket.io-client/lib/index.js',
+    'app': ELM_ADMIN
   },
   output: {
     path: BUILD_PATH,
-    filename: '[name].mwemr-bundle.js',
-    chunkFilename: '[id].mwemr-bundle.js'
+    filename: '[name].mwemr-admin-client-bundle.js',
+    chunkFilename: '[id].mwemr-admin-client-bundle.js'
   },
   module: {
     rules: [
@@ -26,10 +25,10 @@ module.exports = {
         }
       },
       { test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: 'css-loader'
-        })
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader"
+        ]
       },
       { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: "url-loader?limit=10000&minetype=application/font-woff"
@@ -46,6 +45,10 @@ module.exports = {
     ]
   },
   plugins: [
-    new ExtractTextPlugin('[name].styles.css')
+    new MiniCssExtractPlugin({
+      filename: "[name].styles.css",
+      chunkFilename: "[id].css"
+    })
   ],
+  mode: "development"
 };

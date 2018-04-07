@@ -7,13 +7,13 @@ const BUILD_PATH = path.resolve('/opt', 'dist');
 
 module.exports = {
   entry: {
-    'elm-vendor': 'socket.io-client/lib/index.js',
-    medical: ELM_MEDICAL
+    'vendor': 'socket.io-client/lib/index.js',
+    'app': ELM_MEDICAL
   },
   output: {
     path: BUILD_PATH,
-    filename: '[name].mwemr-bundle.js',
-    chunkFilename: '[id].mwemr-bundle.js'
+    filename: '[name].mwemr-medical-client-bundle.js',
+    chunkFilename: '[id].mwemr-medical-client-bundle.js'
   },
   module: {
     rules: [
