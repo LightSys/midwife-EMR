@@ -110,9 +110,11 @@
     "clean": "rm -f static/js/*",
     "build_admin_client_watch": "(cd client/elm/admin;docker build -f Dockerfile -t midwife-emr-watch-admin-client --no-cache .)",
     "admin_client_watch": "docker run --init --name=midwife-emr-watch-admin-client --rm -v $(pwd)/client/elm/admin:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-admin-client:latest",
-    "build_medical_client_watch": "(cd client/elm/medical;docker build -f Dockerfile -t midwife-emr-watch-medical-client --no-cache .)",
-    "medical_client_watch": "docker run --init --name=midwife-emr-watch-medical-client --rm -v $(pwd)/client/elm/medical:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-watch-medical-client:latest",
-    "medical_client_tests": "echo '===== NOTE: medical_client_watch needs to be running. =====';docker container exec -it midwife-emr-watch-medical-client elm-test"
+    "build_medical_client_compiler": "(cd client/elm/medical;docker build -f Dockerfile -t midwife-emr-compile-medical-client --no-cache .)",
+    "medical_client_dev": "docker run --init --name=midwife-emr-compile-medical-client --rm -v $(pwd)/client/elm/medical:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-compile-medical-client:latest",
+    "medical_client_prod": "docker run --init --name=midwife-emr-compile-medical-client --rm -v $(pwd)/client/elm/medical:/opt/src -v $(pwd)/static/js:/opt/dist midwife-emr-compile-medical-client:latest webpack --config webpack.prod.js",
+    "medical_client_bash": "echo '===== NOTE: NPM script medical_client_dev needs to be running. =====';docker container exec -it midwife-emr-compile-medical-client bash",
+    "medical_client_tests": "echo '===== NOTE: NPM script medical_client_dev needs to be running. =====';docker container exec -it midwife-emr-compile-medical-client elm-test"
   },
   "jshintConfig": {
     "laxcomma": true
