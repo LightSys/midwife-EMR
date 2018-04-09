@@ -126,6 +126,14 @@ The SD card is solely used for automated backups.
 - Nginx - reverse proxy for the application (optional)
 - Socket.io
 - Elm
+- Docker (required for build environment for Elm code)
+   - See npm scripts:
+      - build_admin_client_compiler
+      - admin_client_dev
+      - admin_client_prod
+      - build_medical_client_compiler
+      - medical_client_dev
+      - medical_client_prod
 
 Web based and compatible with tablet browsers.
 
