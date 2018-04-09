@@ -1,7 +1,0 @@
-div.Notification {
-  opacity: 1.0;
-  position: absolute;
-  right: 10px;
-  width: 100%;
-  z-index: 1000;
-}

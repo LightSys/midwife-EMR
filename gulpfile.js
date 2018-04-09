@@ -3,9 +3,6 @@
  * gulpfile.js
  *
  * Automated tasks for Midwife-EMR.
- *
- * Borrowed ideas from:
- * - https://github.com/webpack/webpack-with-common-libs/blob/master/gulpfile.js
  * -------------------------------------------------------------------------------
  */
 var gulp = require('gulp');
@@ -18,9 +15,7 @@ var templateCache = require('gulp-angular-templatecache');
 var Promise = require('bluebird');
 var del = require('del');
 var jshint = require('gulp-jshint');
-var webpack = require('webpack');
 var gutil = require('gulp-util');
-var webpackConfig = require('./webpack.config.js');
 
 // --------------------------------------------------------
 // Global configuration options for various gulp packages.
@@ -49,34 +44,6 @@ var cfg = {
     moduleSystem: 'IIFE'
   }
 };
-
-// --------------------------------------------------------
-// Webpack for development.
-// --------------------------------------------------------
-var devConfig = Object.create(webpackConfig);
-devConfig.devtool = 'sourcemap';
-devConfig.debug = true;
-var devCompiler = webpack(devConfig);
-var devWatchOptions = {
-  poll: 1000,             // true for default, false for off, otherwise ms to poll.
-  aggregateTimeout: 200   // time to wait for other changes, default 300.
-};
-
-gulp.task('webpack:build-dev', function(cb) {
-  if (process.env['WEBPACK_WATCH']) {
-    // E.g.:  WEBPACK_WATCH=1 gulp webpack:build-dev
-    devCompiler.watch(devWatchOptions, function(err, stats) {
-      if (err) throw new gutil.PluginError('webpack:build-dev', err);
-      gutil.log('[webpack:build-dev]', stats.toString({colors: true}));
-    });
-  } else {
-    devCompiler.run(function(err, stats) {
-      if (err) throw new gutil.PluginError('webpack:build-dev', err);
-      gutil.log('[webpack:build-dev]', stats.toString({colors: true}));
-      cb();
-    });
-  }
-});
 
 // --------------------------------------------------------
 // test - run Mocha tests.
@@ -304,7 +271,6 @@ gulp.task('default', [
   'favicon',
   'font-awesome',
   'cleanupTemplateCache',
-  'webpack:build-dev'
 ]);
 
 
