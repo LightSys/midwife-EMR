@@ -23,8 +23,6 @@ var moment = require('moment')
     ]
   , SYSTEM_LOG = 'SYSTEM_LOG' // Initialized here due to comm module initializing later.
   , sendSystem                // This is initialized later.
-  , KnexSQLite3 = 'sqlite3' // These two are used by Knex.
-  , KnexMySQL = 'mysql'
   ;
 
 
@@ -565,16 +563,6 @@ var validOrVoidDate = function(val) {
   return result;
 };
 
-var dbType = function() {
-  if (cfg.database.file &&
-      cfg.database.file.length > 0 &&
-      ! cfg.database.db) {
-    return KnexSQLite3
-  } else {
-    return KnexMySQL
-  }
-}
-
 /* --------------------------------------------------------
  * splitStringOnWordAtPerc()
  *
@@ -629,14 +617,11 @@ module.exports = {
   addBlankSelectData: addBlankSelectData
   , adjustSelectData: adjustSelectData
   , calcEdd: calcEdd
-  , dbType
   , formatDohID: formatDohID
   , getAbbr: getAbbr
   , getGA: getGA
   , getProcessId
   , isValidDate: isValidDate
-  , KnexMySQL
-  , KnexSQLite3
   , logError: logError
   , logInfo: logInfo
   , logWarn: logWarn

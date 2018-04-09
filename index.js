@@ -33,9 +33,8 @@ var express = require('express')
   , spaAuth = require('./auth').spaAuth
   , cfg = require('./config')
   , KeyValue = require('./models').KeyValue
-  , SessionStore = cfg.database.file && cfg.database.file.length > 0?
-      require('connect-sqlite3')(session): require('express-mysql-session')(session)
-  , MySQL = require('mysql')                            // for conn pool for sessions
+  , SessionStore = require('express-mysql-session')(session) // for conn pool for sessions
+  , MySQL = require('mysql')
   , i18n = require('i18n-abide')
   , _ = require('underscore')
   , moment = require('moment')
@@ -140,48 +139,29 @@ KeyValue.getKeyValues().then(function(data) {
   app.use(methodOverride());
   app.use(cookieParser(cfg.cookie.secret));
 
-  // --------------------------------------------------------
-  // If using MySQL, create a session pool and setup session
-  // config. Otherwise for SQLite3 just setup session config.
-  // --------------------------------------------------------
-  if (cfg.database.file && cfg.database.file.length !== 0) {
-    // If the main SQLite3 database is in a certain directory, use that.
-    if (cfg.database.directory && cfg.database.directory.length > 0) {
-      sqliteSessionsDirectory = cfg.database.directory;
-    } else {
-      sqliteSessionsDirectory = cfg.application.directory;
-    }
-    logInfo('Creating SQLite3 sessions table in ' + sqliteSessionsDirectory);
-    sessionCfg = {
-      table: 'sessions',
-      db: 'midwife-emr-sessions',    // connect-sqlite3 adds an extension of ".db"
-      dir: sqliteSessionsDirectory
-    };
-  } else {
-    console.log('Creating MySQL session pool and session configuration.')
-    cfg.session.pool = MySQL.createPool({
-      user: cfg.database.dbUser
-      , password: cfg.database.dbPass
-      , host: cfg.database.host
-      , port: cfg.database.port
-      , database: cfg.database.db
-      , schema: {
-          tablename: 'session'
-          , columnNames: {
-              session_id: 'sid'
-              , expires: 'expires'
-              , data: 'session'
-          }
+  console.log('Creating MySQL session pool and session configuration.')
+  cfg.session.pool = MySQL.createPool({
+    user: cfg.database.dbUser
+    , password: cfg.database.dbPass
+    , host: cfg.database.host
+    , port: cfg.database.port
+    , database: cfg.database.db
+    , schema: {
+        tablename: 'session'
+        , columnNames: {
+            session_id: 'sid'
+            , expires: 'expires'
+            , data: 'session'
         }
-    });
-    sessionCfg = {
-      host: cfg.database.host
-      , port: cfg.database.port
-      , user: cfg.database.dbUser
-      , password: cfg.database.dbPass
-      , database: cfg.database.db
-    };
-  }
+      }
+  });
+  sessionCfg = {
+    host: cfg.database.host
+    , port: cfg.database.port
+    , user: cfg.database.dbUser
+    , password: cfg.database.dbPass
+    , database: cfg.database.db
+  };
 
   var sessionStore = new SessionStore(sessionCfg);
   // --------------------------------------------------------

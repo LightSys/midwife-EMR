@@ -40,32 +40,18 @@ var path = require('path')
  * -------------------------------------------------------- */
 Bookshelf.DB = {};
 var init = function(dbSettings) {
-  var knex;
-
-  // --------------------------------------------------------
-  // Set the Knex client according to the database type.
-  // --------------------------------------------------------
-  if (util.dbType() === util.KnexSQLite3) {
-    knex = Knex({
-      client: util.KnexSQLite3
-      , connection: {
-          filename: path.join(appDir, dbSettings.file)
-        }
-    })
-  } else {
-    knex = Knex({
-      client: util.KnexMySQL
-      , connection: {
-        host: dbSettings.host
-        , port: dbSettings.port
-        , user: dbSettings.dbUser
-        , password: dbSettings.dbPass
-        , database: dbSettings.db
-        , charset: dbSettings.charset
-      }
-      , debug: dbSettings.debug
-    });
-  }
+  var knex = Knex({
+    client: 'mysql'
+    , connection: {
+      host: dbSettings.host
+      , port: dbSettings.port
+      , user: dbSettings.dbUser
+      , password: dbSettings.dbPass
+      , database: dbSettings.db
+      , charset: dbSettings.charset
+    }
+    , debug: dbSettings.debug
+  });
   Bookshelf.DB = Bookshelf(knex);
 
   // --------------------------------------------------------

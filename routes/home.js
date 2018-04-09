@@ -76,21 +76,12 @@ var getScheduledPrenatalExams = function(days, cb) {
       var knex = Bookshelf.DB.knex
         , sql
         ;
-      if (util.dbType() === util.KnexMySQL) {
-        sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(e.returnDate, "%m-%d") AS scheduled ' +
-              'FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id ' +
-              'WHERE e.returnDate > CURDATE() ' +
-              'AND e.returnDate < DATE_ADD(CURDATE(), INTERVAL ' + days + ' day) ' +
-              'AND p.transferOfCare IS NULL ' +
-              'GROUP BY e.returnDate ORDER BY e.returnDate';
-      } else {
-        sql = "SELECT COUNT(*) AS cnt, strftime('%m-%d', e.returnDate) AS scheduled " +
-              "FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id " +
-              "WHERE e.returnDate > date() " +
-              "AND e.returnDate < date('now', '" + days + " days') " +
-              "AND p.transferOfCare IS NULL " +
-              "GROUP BY e.returnDate ORDER BY e.returnDate";
-      }
+      sql = 'SELECT COUNT(*) AS cnt, DATE_FORMAT(e.returnDate, "%m-%d") AS scheduled ' +
+            'FROM prenatalExam e INNER JOIN pregnancy p ON e.pregnancy_id = p.id ' +
+            'WHERE e.returnDate > CURDATE() ' +
+            'AND e.returnDate < DATE_ADD(CURDATE(), INTERVAL ' + days + ' day) ' +
+            'AND p.transferOfCare IS NULL ' +
+            'GROUP BY e.returnDate ORDER BY e.returnDate';
       knex
         .raw(sql)
         .then(function(data) {
@@ -222,19 +213,11 @@ var getPrenatalHistoryByMonth = function(numMonths, cb) {
     if (!recs || _.isEmpty(recs)) {
       var nMonths = numMonths * -1;   // Better for SQLite3.
       knex = Bookshelf.DB.knex;
-      if (util.dbType() === util.KnexMySQL) {
-        sql = 'SELECT COUNT(*) AS cnt, SUBSTR(MONTHNAME(date), 1, 3) AS month ' +
-              'FROM prenatalExam ' +
-              'WHERE date > DATE_ADD(CURDATE(), INTERVAL ? MONTH) ' +
-              'GROUP BY MONTHNAME(date) ' +
-              'ORDER BY date';
-      } else {
-        sql = "SELECT COUNT(*) AS cnt, substr(strftime('%m', date), 1, 3) AS month " +
-              "FROM prenatalExam " +
-              "WHERE date > date('now', '? months') " +
-              "GROUP BY strftime('%m', date) " +
-              "ORDER BY date";
-      }
+      sql = 'SELECT COUNT(*) AS cnt, SUBSTR(MONTHNAME(date), 1, 3) AS month ' +
+            'FROM prenatalExam ' +
+            'WHERE date > DATE_ADD(CURDATE(), INTERVAL ? MONTH) ' +
+            'GROUP BY MONTHNAME(date) ' +
+            'ORDER BY date';
       sql = sql.replace('?', nMonths);
       knex
         .raw(sql)
