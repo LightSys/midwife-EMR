@@ -4,47 +4,91 @@
 
 BEGIN;
 
-ALTER TABLE newbornExam ADD COLUMN appearanceComment VARCHAR(500) NULL AFTER appearance;
-ALTER TABLE newbornExam ADD COLUMN colorComment VARCHAR(500) NULL AFTER color;
-ALTER TABLE newbornExam ADD COLUMN skinComment VARCHAR(500) NULL AFTER skin;
-ALTER TABLE newbornExam ADD COLUMN headComment VARCHAR(500) NULL AFTER head;
-ALTER TABLE newbornExam ADD COLUMN eyesComment VARCHAR(500) NULL AFTER eyes;
-ALTER TABLE newbornExam ADD COLUMN earsComment VARCHAR(500) NULL AFTER ears;
-ALTER TABLE newbornExam ADD COLUMN noseComment VARCHAR(500) NULL AFTER nose;
-ALTER TABLE newbornExam ADD COLUMN mouthComment VARCHAR(500) NULL AFTER mouth;
-ALTER TABLE newbornExam ADD COLUMN neckComment VARCHAR(500) NULL AFTER neck;
-ALTER TABLE newbornExam ADD COLUMN chestComment VARCHAR(500) NULL AFTER chest;
-ALTER TABLE newbornExam ADD COLUMN lungsComment VARCHAR(500) NULL AFTER lungs;
-ALTER TABLE newbornExam ADD COLUMN heartComment VARCHAR(500) NULL AFTER heart;
-ALTER TABLE newbornExam ADD COLUMN abdomenComment VARCHAR(500) NULL AFTER abdomen;
-ALTER TABLE newbornExam ADD COLUMN hipsComment VARCHAR(500) NULL AFTER hips;
-ALTER TABLE newbornExam ADD COLUMN cordComment VARCHAR(500) NULL AFTER cord;
-ALTER TABLE newbornExam ADD COLUMN femoralPulsesComment VARCHAR(500) NULL AFTER femoralPulses;
-ALTER TABLE newbornExam ADD COLUMN genitaliaComment VARCHAR(500) NULL AFTER genitalia;
-ALTER TABLE newbornExam ADD COLUMN anusComment VARCHAR(500) NULL AFTER anus;
-ALTER TABLE newbornExam ADD COLUMN backComment VARCHAR(500) NULL AFTER back;
-ALTER TABLE newbornExam ADD COLUMN extremitiesComment VARCHAR(500) NULL AFTER extremities;
+ALTER TABLE newbornExam
+  MODIFY COLUMN appearance VARCHAR(250),
+  MODIFY COLUMN color VARCHAR(250),
+  MODIFY COLUMN skin VARCHAR(250),
+  MODIFY COLUMN head VARCHAR(250),
+  MODIFY COLUMN eyes VARCHAR(250),
+  MODIFY COLUMN ears VARCHAR(250),
+  MODIFY COLUMN nose VARCHAR(250),
+  MODIFY COLUMN mouth VARCHAR(250),
+  MODIFY COLUMN neck VARCHAR(250),
+  MODIFY COLUMN chest VARCHAR(250),
+  MODIFY COLUMN lungs VARCHAR(250),
+  MODIFY COLUMN heart VARCHAR(250),
+  MODIFY COLUMN abdomen VARCHAR(250),
+  MODIFY COLUMN hips VARCHAR(250),
+  MODIFY COLUMN cord VARCHAR(250),
+  MODIFY COLUMN femoralPulses VARCHAR(250),
+  MODIFY COLUMN genitalia VARCHAR(250),
+  MODIFY COLUMN anus VARCHAR(250),
+  MODIFY COLUMN back VARCHAR(250),
+  MODIFY COLUMN extremities VARCHAR(250);
 
-ALTER TABLE newbornExamLog ADD COLUMN appearanceComment VARCHAR(500) NULL AFTER appearance;
-ALTER TABLE newbornExamLog ADD COLUMN colorComment VARCHAR(500) NULL AFTER color;
-ALTER TABLE newbornExamLog ADD COLUMN skinComment VARCHAR(500) NULL AFTER skin;
-ALTER TABLE newbornExamLog ADD COLUMN headComment VARCHAR(500) NULL AFTER head;
-ALTER TABLE newbornExamLog ADD COLUMN eyesComment VARCHAR(500) NULL AFTER eyes;
-ALTER TABLE newbornExamLog ADD COLUMN earsComment VARCHAR(500) NULL AFTER ears;
-ALTER TABLE newbornExamLog ADD COLUMN noseComment VARCHAR(500) NULL AFTER nose;
-ALTER TABLE newbornExamLog ADD COLUMN mouthComment VARCHAR(500) NULL AFTER mouth;
-ALTER TABLE newbornExamLog ADD COLUMN neckComment VARCHAR(500) NULL AFTER neck;
-ALTER TABLE newbornExamLog ADD COLUMN chestComment VARCHAR(500) NULL AFTER chest;
-ALTER TABLE newbornExamLog ADD COLUMN lungsComment VARCHAR(500) NULL AFTER lungs;
-ALTER TABLE newbornExamLog ADD COLUMN heartComment VARCHAR(500) NULL AFTER heart;
-ALTER TABLE newbornExamLog ADD COLUMN abdomenComment VARCHAR(500) NULL AFTER abdomen;
-ALTER TABLE newbornExamLog ADD COLUMN hipsComment VARCHAR(500) NULL AFTER hips;
-ALTER TABLE newbornExamLog ADD COLUMN cordComment VARCHAR(500) NULL AFTER cord;
-ALTER TABLE newbornExamLog ADD COLUMN femoralPulsesComment VARCHAR(500) NULL AFTER femoralPulses;
-ALTER TABLE newbornExamLog ADD COLUMN genitaliaComment VARCHAR(500) NULL AFTER genitalia;
-ALTER TABLE newbornExamLog ADD COLUMN anusComment VARCHAR(500) NULL AFTER anus;
-ALTER TABLE newbornExamLog ADD COLUMN backComment VARCHAR(500) NULL AFTER back;
-ALTER TABLE newbornExamLog ADD COLUMN extremitiesComment VARCHAR(500) NULL AFTER extremities;
+ALTER TABLE newbornExamLog
+  MODIFY COLUMN appearance VARCHAR(250),
+  MODIFY COLUMN color VARCHAR(250),
+  MODIFY COLUMN skin VARCHAR(250),
+  MODIFY COLUMN head VARCHAR(250),
+  MODIFY COLUMN eyes VARCHAR(250),
+  MODIFY COLUMN ears VARCHAR(250),
+  MODIFY COLUMN nose VARCHAR(250),
+  MODIFY COLUMN mouth VARCHAR(250),
+  MODIFY COLUMN neck VARCHAR(250),
+  MODIFY COLUMN chest VARCHAR(250),
+  MODIFY COLUMN lungs VARCHAR(250),
+  MODIFY COLUMN heart VARCHAR(250),
+  MODIFY COLUMN abdomen VARCHAR(250),
+  MODIFY COLUMN hips VARCHAR(250),
+  MODIFY COLUMN cord VARCHAR(250),
+  MODIFY COLUMN femoralPulses VARCHAR(250),
+  MODIFY COLUMN genitalia VARCHAR(250),
+  MODIFY COLUMN anus VARCHAR(250),
+  MODIFY COLUMN back VARCHAR(250),
+  MODIFY COLUMN extremities VARCHAR(250);
+
+ALTER TABLE newbornExam ADD COLUMN appearanceComment VARCHAR(250) NULL AFTER appearance;
+ALTER TABLE newbornExam ADD COLUMN colorComment VARCHAR(250) NULL AFTER color;
+ALTER TABLE newbornExam ADD COLUMN skinComment VARCHAR(250) NULL AFTER skin;
+ALTER TABLE newbornExam ADD COLUMN headComment VARCHAR(250) NULL AFTER head;
+ALTER TABLE newbornExam ADD COLUMN eyesComment VARCHAR(250) NULL AFTER eyes;
+ALTER TABLE newbornExam ADD COLUMN earsComment VARCHAR(250) NULL AFTER ears;
+ALTER TABLE newbornExam ADD COLUMN noseComment VARCHAR(250) NULL AFTER nose;
+ALTER TABLE newbornExam ADD COLUMN mouthComment VARCHAR(250) NULL AFTER mouth;
+ALTER TABLE newbornExam ADD COLUMN neckComment VARCHAR(250) NULL AFTER neck;
+ALTER TABLE newbornExam ADD COLUMN chestComment VARCHAR(250) NULL AFTER chest;
+ALTER TABLE newbornExam ADD COLUMN lungsComment VARCHAR(250) NULL AFTER lungs;
+ALTER TABLE newbornExam ADD COLUMN heartComment VARCHAR(250) NULL AFTER heart;
+ALTER TABLE newbornExam ADD COLUMN abdomenComment VARCHAR(250) NULL AFTER abdomen;
+ALTER TABLE newbornExam ADD COLUMN hipsComment VARCHAR(250) NULL AFTER hips;
+ALTER TABLE newbornExam ADD COLUMN cordComment VARCHAR(250) NULL AFTER cord;
+ALTER TABLE newbornExam ADD COLUMN femoralPulsesComment VARCHAR(250) NULL AFTER femoralPulses;
+ALTER TABLE newbornExam ADD COLUMN genitaliaComment VARCHAR(250) NULL AFTER genitalia;
+ALTER TABLE newbornExam ADD COLUMN anusComment VARCHAR(250) NULL AFTER anus;
+ALTER TABLE newbornExam ADD COLUMN backComment VARCHAR(250) NULL AFTER back;
+ALTER TABLE newbornExam ADD COLUMN extremitiesComment VARCHAR(250) NULL AFTER extremities;
+
+ALTER TABLE newbornExamLog ADD COLUMN appearanceComment VARCHAR(250) NULL AFTER appearance;
+ALTER TABLE newbornExamLog ADD COLUMN colorComment VARCHAR(250) NULL AFTER color;
+ALTER TABLE newbornExamLog ADD COLUMN skinComment VARCHAR(250) NULL AFTER skin;
+ALTER TABLE newbornExamLog ADD COLUMN headComment VARCHAR(250) NULL AFTER head;
+ALTER TABLE newbornExamLog ADD COLUMN eyesComment VARCHAR(250) NULL AFTER eyes;
+ALTER TABLE newbornExamLog ADD COLUMN earsComment VARCHAR(250) NULL AFTER ears;
+ALTER TABLE newbornExamLog ADD COLUMN noseComment VARCHAR(250) NULL AFTER nose;
+ALTER TABLE newbornExamLog ADD COLUMN mouthComment VARCHAR(250) NULL AFTER mouth;
+ALTER TABLE newbornExamLog ADD COLUMN neckComment VARCHAR(250) NULL AFTER neck;
+ALTER TABLE newbornExamLog ADD COLUMN chestComment VARCHAR(250) NULL AFTER chest;
+ALTER TABLE newbornExamLog ADD COLUMN lungsComment VARCHAR(250) NULL AFTER lungs;
+ALTER TABLE newbornExamLog ADD COLUMN heartComment VARCHAR(250) NULL AFTER heart;
+ALTER TABLE newbornExamLog ADD COLUMN abdomenComment VARCHAR(250) NULL AFTER abdomen;
+ALTER TABLE newbornExamLog ADD COLUMN hipsComment VARCHAR(250) NULL AFTER hips;
+ALTER TABLE newbornExamLog ADD COLUMN cordComment VARCHAR(250) NULL AFTER cord;
+ALTER TABLE newbornExamLog ADD COLUMN femoralPulsesComment VARCHAR(250) NULL AFTER femoralPulses;
+ALTER TABLE newbornExamLog ADD COLUMN genitaliaComment VARCHAR(250) NULL AFTER genitalia;
+ALTER TABLE newbornExamLog ADD COLUMN anusComment VARCHAR(250) NULL AFTER anus;
+ALTER TABLE newbornExamLog ADD COLUMN backComment VARCHAR(250) NULL AFTER back;
+ALTER TABLE newbornExamLog ADD COLUMN extremitiesComment VARCHAR(250) NULL AFTER extremities;
 
 -- ---------------------------------------------------------------
 -- Trigger: newbornExam_after_insert
