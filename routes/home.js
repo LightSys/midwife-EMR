@@ -211,7 +211,7 @@ var getPrenatalHistoryByMonth = function(numMonths, cb) {
       ;
     if (err) logError(err);
     if (!recs || _.isEmpty(recs)) {
-      var nMonths = numMonths * -1;   // Better for SQLite3.
+      var nMonths = numMonths * -1;
       knex = Bookshelf.DB.knex;
       sql = 'SELECT COUNT(*) AS cnt, SUBSTR(MONTHNAME(date), 1, 3) AS month ' +
             'FROM prenatalExam ' +

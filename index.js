@@ -76,7 +76,6 @@ var express = require('express')
   , server      // https server
   , workerPort = cfg.host.tlsPort
   , sessionCfg
-  , sqliteSessionsDirectory
   ;
 
 
