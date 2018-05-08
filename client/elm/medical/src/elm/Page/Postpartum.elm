@@ -1415,8 +1415,8 @@ viewPostpartumCheck cfg rec =
                 [ H.div [ HA.class "c-card contPP-content" ]
                     [ H.div [ HA.class "c-card__item u-small u-color-white accent-bg" ]
                         [ H.text "Baby" ]
-                    , field "Weight" <| toStringDefault rec.babyWeight
-                    , field "Temp" <| toStringDefault rec.babyTemp
+                    , field "Weight (grams)" <| toStringDefault rec.babyWeight
+                    , field "Temp (C)" <| toStringDefault rec.babyTemp
                     , field "HR" <| toStringDefault rec.babyCR
                     , field "RR" <| toStringDefault rec.babyRR
                     , field "Lungs" <| pipeToComma rec.babyLungs
@@ -1434,7 +1434,7 @@ viewPostpartumCheck cfg rec =
                 , H.div [ HA.class "c-card contPP-content" ]
                     [ H.div [ HA.class "c-card__item u-small u-color-white accent-bg" ]
                         [ H.text "Mother" ]
-                    , field "Temp" <| toStringDefault rec.motherTemp
+                    , field "Temp (C)" <| toStringDefault rec.motherTemp
                     , field "BP" bp
                     , field "Pulse" <| toStringDefault rec.motherCR
                     , field "Breasts" <| pipeToComma rec.motherBreasts
@@ -1543,7 +1543,7 @@ viewPostpartumCheckEdit cfg =
                         ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg PCBabyWeightFld)
-                        "Baby weight"
+                        "Baby weight (grams)"
                         ""
                         True
                         cfg.model.pcBabyWeight
@@ -1551,7 +1551,7 @@ viewPostpartumCheckEdit cfg =
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg PCBabyTempFld)
-                        "Baby temp"
+                        "Baby temp (C)"
                         ""
                         True
                         cfg.model.pcBabyTemp
@@ -1657,7 +1657,7 @@ viewPostpartumCheckEdit cfg =
             , H.div [ HA.class "o-fieldset form-wrapper" ]
                 [ H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg PCMotherTempFld)
-                        "Mother temp"
+                        "Mother temp (C)"
                         ""
                         True
                         cfg.model.pcMotherTemp
