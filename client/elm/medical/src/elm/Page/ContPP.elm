@@ -5913,7 +5913,7 @@ dialogNewbornExamSummaryEdit cfg =
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg NBSTemperatureFld)
-                        "Temperature"
+                        "Temperature (C)"
                         ""
                         True
                         cfg.model.nbsTemperature
@@ -5921,7 +5921,7 @@ dialogNewbornExamSummaryEdit cfg =
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg NBSLengthFld)
-                        "Length"
+                        "Length (cm)"
                         ""
                         True
                         cfg.model.nbsLength
@@ -5929,7 +5929,7 @@ dialogNewbornExamSummaryEdit cfg =
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg NBSHeadCirFld)
-                        "Head circumference"
+                        "Head cir (cm)"
                         ""
                         True
                         cfg.model.nbsHeadCir
@@ -5937,7 +5937,7 @@ dialogNewbornExamSummaryEdit cfg =
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg NBSChestCirFld)
-                        "Chest circumference"
+                        "Chest cir (cm)"
                         ""
                         True
                         cfg.model.nbsChestCir
@@ -6065,7 +6065,7 @@ dialogNewbornExamSummaryEdit cfg =
                     "Note"
                 , H.fieldset [ HA.class "o-fieldset mw-form-field" ]
                     [ Form.formField (FldChgString >> FldChgSubMsg NBSEstGAFld)
-                        "Estimated GA"
+                        "Est GA by Ballard"
                         ""
                         True
                         cfg.model.nbsEstGA
@@ -6223,10 +6223,10 @@ dialogNewbornExamSummaryView cfg =
                         , viewField "Examiners" rec.examiners Nothing
                         , viewField "RR" (maybeWithDefault toString rec.rr) Nothing
                         , viewField "HR" (maybeWithDefault toString rec.hr) Nothing
-                        , viewField "Temperature" (maybeWithDefault toString rec.temperature) Nothing
-                        , viewField "Length" (maybeWithDefault toString rec.length) Nothing
-                        , viewField "Head cir" (maybeWithDefault toString rec.headCir) Nothing
-                        , viewField "Chest cir" (maybeWithDefault toString rec.chestCir) Nothing
+                        , viewField "Temp (C)" (maybeWithDefault toString rec.temperature) Nothing
+                        , viewField "Length (cm)" (maybeWithDefault toString rec.length) Nothing
+                        , viewField "Head cir (cm)" (maybeWithDefault toString rec.headCir) Nothing
+                        , viewField "Chest cir (cm)" (maybeWithDefault toString rec.chestCir) Nothing
                         , viewField "Appearance" (maybeWithDefault U.pipeToComma rec.appearance) rec.appearanceComment
                         , viewField "Color" (maybeWithDefault U.pipeToComma rec.color) rec.colorComment
                         , viewField "Skin" (maybeWithDefault U.pipeToComma rec.skin) rec.skinComment
@@ -6247,7 +6247,7 @@ dialogNewbornExamSummaryView cfg =
                         , viewField "Anus" (maybeWithDefault U.pipeToComma rec.anus) rec.anusComment
                         , viewField "Back" (maybeWithDefault U.pipeToComma rec.back) rec.backComment
                         , viewField "Extremities" (maybeWithDefault U.pipeToComma rec.extremities) rec.extremitiesComment
-                        , viewField "Est GA" (Maybe.withDefault "" rec.estGA) Nothing
+                        , viewField "Est GA by Ballard" (Maybe.withDefault "" rec.estGA) Nothing
                         , viewField "Moro reflex" (yesNoBool rec.moroReflex) Nothing
                         , viewField "Moro comment" (Maybe.withDefault "" rec.moroReflexComment) Nothing
                         , viewField "Palmar reflex" (yesNoBool rec.palmarReflex) Nothing
