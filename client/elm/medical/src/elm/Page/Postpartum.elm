@@ -167,7 +167,9 @@ type alias Model =
     , pcMotherCR : Maybe String
     , pcMotherBreasts : List SelectDataRecord
     , pcMotherFundus : List SelectDataRecord
+    , pcMotherFundusNote : Maybe String
     , pcMotherPerineum : List SelectDataRecord
+    , pcMotherPerineumNote : Maybe String
     , pcMotherLochia : List SelectDataRecord
     , pcMotherUrine : List SelectDataRecord
     , pcMotherStool : List SelectDataRecord
@@ -218,7 +220,9 @@ clearPostpartumCheckModelFields model =
         , pcMotherCR = Nothing
         , pcMotherBreasts = []
         , pcMotherFundus = []
+        , pcMotherFundusNote = Nothing
         , pcMotherPerineum = []
+        , pcMotherPerineumNote = Nothing
         , pcMotherLochia = []
         , pcMotherUrine = []
         , pcMotherStool = []
@@ -345,7 +349,9 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord pos
       , pcMotherCR = Nothing
       , pcMotherBreasts = []
       , pcMotherFundus = []
+      , pcMotherFundusNote = Nothing
       , pcMotherPerineum = []
+      , pcMotherPerineumNote = Nothing
       , pcMotherLochia = []
       , pcMotherUrine = []
       , pcMotherStool = []
@@ -689,6 +695,12 @@ update session msg model =
                         PCMotherCRFld ->
                             { model | pcMotherCR = Just <| U.filterStringLikeInt value }
 
+                        PCMotherFundusNoteFld ->
+                            { model | pcMotherFundusNote = Just value }
+
+                        PCMotherPerineumNoteFld ->
+                            { model | pcMotherPerineumNote = Just value }
+
                         PCHgbTestResultFld ->
                             { model | pcHgbTestResult = Just value }
 
@@ -883,10 +895,12 @@ update session msg model =
                                                     filterSetByString Const.postpartumCheckMotherFundus
                                                         rec.motherFundus
                                                         model.selectDataRecords
+                                                , pcMotherFundusNote = rec.motherFundusNote
                                                 , pcMotherPerineum =
                                                     filterSetByString Const.postpartumCheckMotherPerineum
                                                         rec.motherPerineum
                                                         model.selectDataRecords
+                                                , pcMotherPerineumNote = rec.motherPerineumNote
                                                 , pcMotherLochia =
                                                     filterSetByString Const.postpartumCheckMotherLochia
                                                         rec.motherLochia
@@ -1026,9 +1040,11 @@ update session msg model =
                                                                         , motherFundus =
                                                                             U.maybeOr (getSelectDataAsMaybeString model.pcMotherFundus)
                                                                                 check.motherFundus
+                                                                        , motherFundusNote = model.pcMotherFundusNote
                                                                         , motherPerineum =
                                                                             U.maybeOr (getSelectDataAsMaybeString model.pcMotherPerineum)
                                                                                 check.motherPerineum
+                                                                        , motherPerineumNote = model.pcMotherPerineumNote
                                                                         , motherLochia =
                                                                             U.maybeOr (getSelectDataAsMaybeString model.pcMotherLochia)
                                                                                 check.motherLochia
@@ -1148,7 +1164,9 @@ derivePostpartumCheckRecordNew model =
                             (U.maybeStringToMaybeInt model.pcMotherCR)
                             (getSelectDataAsMaybeString model.pcMotherBreasts)
                             (getSelectDataAsMaybeString model.pcMotherFundus)
+                            model.pcMotherFundusNote
                             (getSelectDataAsMaybeString model.pcMotherPerineum)
+                            model.pcMotherPerineumNote
                             (getSelectDataAsMaybeString model.pcMotherLochia)
                             (getSelectDataAsMaybeString model.pcMotherUrine)
                             (getSelectDataAsMaybeString model.pcMotherStool)
@@ -1439,7 +1457,9 @@ viewPostpartumCheck cfg rec =
                     , field "Pulse" <| toStringDefault rec.motherCR
                     , field "Breasts" <| pipeToComma rec.motherBreasts
                     , field "Fundus" <| pipeToComma rec.motherFundus
+                    , field "Fundus note" <| pipeToComma rec.motherFundusNote
                     , field "Perineum" <| pipeToComma rec.motherPerineum
+                    , field "Perineum note" <| pipeToComma rec.motherPerineumNote
                     , field "Lochia" <| pipeToComma rec.motherLochia
                     , field "Urine" <| pipeToComma rec.motherUrine
                     , field "Stool" <| pipeToComma rec.motherStool
@@ -1696,11 +1716,23 @@ viewPostpartumCheckEdit cfg =
                     [ Form.checkboxSelectData (getMsgSD PCMotherFundusFld cfg.model.pcMotherFundus)
                         "Mother fundus"
                         (getErr PCMotherFundusFld errors)
+                    , Form.formField (FldChgString >> FldChgSubMsg PCMotherFundusNoteFld)
+                        "Fundus note"
+                        ""
+                        True
+                        cfg.model.pcMotherFundusNote
+                        (getErr PCMotherFundusNoteFld errors)
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
                     [ Form.checkboxSelectData (getMsgSD PCMotherPerineumFld cfg.model.pcMotherPerineum)
                         "Mother perineum"
                         (getErr PCMotherPerineumFld errors)
+                    , Form.formField (FldChgString >> FldChgSubMsg PCMotherPerineumNoteFld)
+                        "Perineum note"
+                        ""
+                        True
+                        cfg.model.pcMotherPerineumNote
+                        (getErr PCMotherPerineumNoteFld errors)
                     ]
                 , H.fieldset [ HA.class "o-fieldset mw-form-field mw-form-field-vertical" ]
                     [ Form.checkboxSelectData (getMsgSD PCMotherLochiaFld cfg.model.pcMotherLochia)

@@ -53,7 +53,9 @@ type alias PostpartumCheckRecord =
     , motherCR : Maybe Int
     , motherBreasts : Maybe String
     , motherFundus : Maybe String
+    , motherFundusNote : Maybe String
     , motherPerineum : Maybe String
+    , motherPerineumNote : Maybe String
     , motherLochia : Maybe String
     , motherUrine : Maybe String
     , motherStool : Maybe String
@@ -91,7 +93,9 @@ type alias PostpartumCheckRecordNew =
     , motherCR : Maybe Int
     , motherBreasts : Maybe String
     , motherFundus : Maybe String
+    , motherFundusNote : Maybe String
     , motherPerineum : Maybe String
+    , motherPerineumNote : Maybe String
     , motherLochia : Maybe String
     , motherUrine : Maybe String
     , motherStool : Maybe String
@@ -132,7 +136,9 @@ postpartumCheckRecord =
         |> JDP.required "motherCR" (JD.maybe JD.int)
         |> JDP.required "motherBreasts" (JD.maybe JD.string)
         |> JDP.required "motherFundus" (JD.maybe JD.string)
+        |> JDP.required "motherFundusNote" (JD.maybe JD.string)
         |> JDP.required "motherPerineum" (JD.maybe JD.string)
+        |> JDP.required "motherPerineumNote" (JD.maybe JD.string)
         |> JDP.required "motherLochia" (JD.maybe JD.string)
         |> JDP.required "motherUrine" (JD.maybe JD.string)
         |> JDP.required "motherStool" (JD.maybe JD.string)
@@ -175,7 +181,9 @@ postpartumCheckRecordToValue rec =
                 , ( "motherCR", JEE.maybe JE.int rec.motherCR )
                 , ( "motherBreasts", JEE.maybe JE.string rec.motherBreasts )
                 , ( "motherFundus", JEE.maybe JE.string rec.motherFundus )
+                , ( "motherFundusNote", JEE.maybe JE.string rec.motherFundusNote )
                 , ( "motherPerineum", JEE.maybe JE.string rec.motherPerineum )
+                , ( "motherPerineumNote", JEE.maybe JE.string rec.motherPerineumNote )
                 , ( "motherLochia", JEE.maybe JE.string rec.motherLochia )
                 , ( "motherUrine", JEE.maybe JE.string rec.motherUrine )
                 , ( "motherStool", JEE.maybe JE.string rec.motherStool )
@@ -220,7 +228,9 @@ postpartumCheckRecordNewToValue rec =
                 , ( "motherCR", JEE.maybe JE.int rec.motherCR )
                 , ( "motherBreasts", JEE.maybe JE.string rec.motherBreasts )
                 , ( "motherFundus", JEE.maybe JE.string rec.motherFundus )
+                , ( "motherFundusNote", JEE.maybe JE.string rec.motherFundusNote )
                 , ( "motherPerineum", JEE.maybe JE.string rec.motherPerineum )
+                , ( "motherPerineumNote", JEE.maybe JE.string rec.motherPerineumNote )
                 , ( "motherLochia", JEE.maybe JE.string rec.motherLochia )
                 , ( "motherUrine", JEE.maybe JE.string rec.motherUrine )
                 , ( "motherStool", JEE.maybe JE.string rec.motherStool )
@@ -262,7 +272,9 @@ postpartumCheckRecordNewToPostpartumCheckRecord (PostpartumCheckId id) newRec =
         newRec.motherCR
         newRec.motherBreasts
         newRec.motherFundus
+        newRec.motherFundusNote
         newRec.motherPerineum
+        newRec.motherPerineumNote
         newRec.motherLochia
         newRec.motherUrine
         newRec.motherStool

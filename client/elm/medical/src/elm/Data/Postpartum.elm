@@ -59,7 +59,9 @@ type Field
     | PCMotherCRFld
     | PCMotherBreastsFld
     | PCMotherFundusFld
+    | PCMotherFundusNoteFld
     | PCMotherPerineumFld
+    | PCMotherPerineumNoteFld
     | PCMotherLochiaFld
     | PCMotherUrineFld
     | PCMotherStoolFld
