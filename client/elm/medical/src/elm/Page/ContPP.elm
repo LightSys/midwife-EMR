@@ -1199,13 +1199,13 @@ update session msg model =
                             { model | nbsTemperature = Just <| U.filterStringLikeFloat value }
 
                         NBSLengthFld ->
-                            { model | nbsLength = Just <| U.filterStringLikeInt value }
+                            { model | nbsLength = Just <| U.filterStringLikeFloat value }
 
                         NBSHeadCirFld ->
-                            { model | nbsHeadCir = Just <| U.filterStringLikeInt value }
+                            { model | nbsHeadCir = Just <| U.filterStringLikeFloat value }
 
                         NBSChestCirFld ->
-                            { model | nbsChestCir = Just <| U.filterStringLikeInt value }
+                            { model | nbsChestCir = Just <| U.filterStringLikeFloat value }
 
                         NBSAppearanceCommentFld ->
                             { model | nbsAppearanceComment = Just value }
@@ -2175,9 +2175,9 @@ update session msg model =
                                                             U.maybeOr
                                                                 (U.maybeStringToMaybeFloat model.nbsTemperature)
                                                                 exam.temperature
-                                                        , length = U.maybeOr (U.maybeStringToMaybeInt model.nbsLength) exam.length
-                                                        , headCir = U.maybeOr (U.maybeStringToMaybeInt model.nbsHeadCir) exam.headCir
-                                                        , chestCir = U.maybeOr (U.maybeStringToMaybeInt model.nbsChestCir) exam.chestCir
+                                                        , length = U.maybeOr (U.maybeStringToMaybeFloat model.nbsLength) exam.length
+                                                        , headCir = U.maybeOr (U.maybeStringToMaybeFloat model.nbsHeadCir) exam.headCir
+                                                        , chestCir = U.maybeOr (U.maybeStringToMaybeFloat model.nbsChestCir) exam.chestCir
                                                         , appearance =
                                                             U.maybeOr (getSelectDataAsMaybeString model.nbsAppearance)
                                                                 exam.appearance
@@ -3670,9 +3670,9 @@ deriveNewbornExamRecordNew model =
                             (U.maybeStringToMaybeInt model.nbsRR)
                             (U.maybeStringToMaybeInt model.nbsHR)
                             (U.maybeStringToMaybeFloat model.nbsTemperature)
-                            (U.maybeStringToMaybeInt model.nbsLength)
-                            (U.maybeStringToMaybeInt model.nbsHeadCir)
-                            (U.maybeStringToMaybeInt model.nbsChestCir)
+                            (U.maybeStringToMaybeFloat model.nbsLength)
+                            (U.maybeStringToMaybeFloat model.nbsHeadCir)
+                            (U.maybeStringToMaybeFloat model.nbsChestCir)
                             (getSelectDataAsMaybeString model.nbsAppearance)
                             model.nbsAppearanceComment
                             (getSelectDataAsMaybeString model.nbsColor)

@@ -32,9 +32,9 @@ type alias NewbornExamRecord =
     , rr : Maybe Int
     , hr : Maybe Int
     , temperature : Maybe Float
-    , length : Maybe Int
-    , headCir : Maybe Int
-    , chestCir : Maybe Int
+    , length : Maybe Float
+    , headCir : Maybe Float
+    , chestCir : Maybe Float
     , appearance : Maybe String
     , appearanceComment : Maybe String
     , color : Maybe String
@@ -97,9 +97,9 @@ type alias NewbornExamRecordNew =
     , rr : Maybe Int
     , hr : Maybe Int
     , temperature : Maybe Float
-    , length : Maybe Int
-    , headCir : Maybe Int
-    , chestCir : Maybe Int
+    , length : Maybe Float
+    , headCir : Maybe Float
+    , chestCir : Maybe Float
     , appearance : Maybe String
     , appearanceComment : Maybe String
     , color : Maybe String
@@ -165,9 +165,9 @@ newbornExamRecord =
         |> JDP.required "rr" (JD.maybe JD.int)
         |> JDP.required "hr" (JD.maybe JD.int)
         |> JDP.required "temperature" (JD.maybe JD.float)
-        |> JDP.required "length" (JD.maybe JD.int)
-        |> JDP.required "headCir" (JD.maybe JD.int)
-        |> JDP.required "chestCir" (JD.maybe JD.int)
+        |> JDP.required "length" (JD.maybe JD.float)
+        |> JDP.required "headCir" (JD.maybe JD.float)
+        |> JDP.required "chestCir" (JD.maybe JD.float)
         |> JDP.required "appearance" (JD.maybe JD.string)
         |> JDP.required "appearanceComment" (JD.maybe JD.string)
         |> JDP.required "color" (JD.maybe JD.string)
@@ -235,9 +235,9 @@ newbornExamRecordToValue rec =
                 , ( "rr", JEE.maybe JE.int rec.rr )
                 , ( "hr", JEE.maybe JE.int rec.hr )
                 , ( "temperature", JEE.maybe JE.float rec.temperature )
-                , ( "length", JEE.maybe JE.int rec.length )
-                , ( "headCir", JEE.maybe JE.int rec.headCir )
-                , ( "chestCir", JEE.maybe JE.int rec.chestCir )
+                , ( "length", JEE.maybe JE.float rec.length )
+                , ( "headCir", JEE.maybe JE.float rec.headCir )
+                , ( "chestCir", JEE.maybe JE.float rec.chestCir )
                 , ( "appearance", JEE.maybe JE.string rec.appearance )
                 , ( "appearanceComment", JEE.maybe JE.string rec.appearanceComment )
                 , ( "color", JEE.maybe JE.string rec.color )
@@ -307,9 +307,9 @@ newbornExamRecordNewToValue rec =
                 , ( "rr", JEE.maybe JE.int rec.rr )
                 , ( "hr", JEE.maybe JE.int rec.hr )
                 , ( "temperature", JEE.maybe JE.float rec.temperature )
-                , ( "length", JEE.maybe JE.int rec.length )
-                , ( "headCir", JEE.maybe JE.int rec.headCir )
-                , ( "chestCir", JEE.maybe JE.int rec.chestCir )
+                , ( "length", JEE.maybe JE.float rec.length )
+                , ( "headCir", JEE.maybe JE.float rec.headCir )
+                , ( "chestCir", JEE.maybe JE.float rec.chestCir )
                 , ( "appearance", JEE.maybe JE.string rec.appearance )
                 , ( "appearanceComment", JEE.maybe JE.string rec.appearanceComment )
                 , ( "color", JEE.maybe JE.string rec.color )
