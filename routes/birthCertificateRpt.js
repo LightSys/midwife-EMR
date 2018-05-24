@@ -458,10 +458,10 @@ var doSecondPage = function(doc, data, opts) {
     // NOTE: the date fields are left blank.
 
     // by
-    writeField(fldPos.paternity.fatherName2[0], fldPos.paternity.fatherName2[1],
+    writeFIELD(fldPos.paternity.fatherName2[0], fldPos.paternity.fatherName2[1],
         data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
     // and
-    writeField(fldPos.paternity.motherName2[0], fldPos.paternity.motherName2[1],
+    writeFIELD(fldPos.paternity.motherName2[0], fldPos.paternity.motherName2[1],
         data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
     // who exhinited to me (his/her) Community Tax Cert No.
     writeField(fldPos.paternity.commTaxNumber[0], fldPos.paternity.commTaxNumber[1], data.bc.commTaxNumber);
