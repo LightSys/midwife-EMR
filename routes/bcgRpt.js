@@ -425,8 +425,8 @@ var getData = function(dateFrom, dateTo) {
   sql += 'INNER JOIN labor l ON b.labor_id = l.id ';
   sql += 'INNER JOIN laborStage2 ls2 ON ls2.labor_id = l.id ';
   sql += 'INNER JOIN pregnancy p ON l.pregnancy_id = p.id ';
-  sql += 'INNER JOIN customField cf ON p.id = cf.pregnancy_id ';
-  sql += 'INNER JOIN customFieldType cft ON cf.customFieldType_id = cft.id ';
+  sql += 'LEFT JOIN customField cf ON p.id = cf.pregnancy_id ';
+  sql += 'LEFT JOIN customFieldType cft ON cf.customFieldType_id = cft.id ';
   sql += 'WHERE bv.vaccinationDate >= "' + dateFrom + '" ';
   sql += 'AND bv.vaccinationDate <= "' + dateTo + '" ';
   sql += 'AND bvt.name LIKE "%BCG%"';
