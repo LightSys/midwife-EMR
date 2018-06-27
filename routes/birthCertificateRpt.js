@@ -495,7 +495,7 @@ var doSecondPage = function(doc, data, opts) {
     doc
       .font(FONTS.Helvetica)
       .fontSize(mediumFont);
-    writeField(fldPos.delayedRegistration.babyBDay[0], fldPos.delayedRegistration.babyBDay[1], moment(data.ls2.birthDatetime).format('DD-MMM-YYYY'));
+    writeField(fldPos.delayedRegistration.babyBDay[0], fldPos.delayedRegistration.babyBDay[1], moment(data.ls2.birthDatetime).format('MMM D YYYY'));
     // 2. That I/he/she was attended at birth by
     writeFIELD(fldPos.delayedRegistration.attendantName[0], fldPos.delayedRegistration.attendantName[1], data.bc.attendantFullname);
     // who resides at
