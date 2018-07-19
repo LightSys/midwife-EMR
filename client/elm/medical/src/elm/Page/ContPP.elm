@@ -748,6 +748,7 @@ getTables table key relatedTables =
 fully loaded, but get the data from the data cache instead of the server, if available.
 
 This is called by the top-level module which passes it's data cache for our use.
+
 -}
 getTablesByCacheOrServer : ProcessStore -> Table -> Maybe Int -> List Table -> Dict String DataCache -> ( ProcessStore, Cmd Msg )
 getTablesByCacheOrServer store table key relatedTbls dataCache =
@@ -1921,6 +1922,8 @@ update session msg model =
                                     b.sex
 
                                 Nothing ->
+                                    -- Note: we do not show the newbornExam button if there is no baby record
+                                    -- so this should not be encountered.
                                     let
                                         _ =
                                             Debug.log "Page/ContPP newbornExam" "Found no baby record; defaulting to Male."
@@ -3872,8 +3875,23 @@ view size session model =
         ]
 
 
+smallMsgDiv : String -> Html SubMsg
+smallMsgDiv msg =
+    H.div
+        [ HA.class "primary-fg"
+        , HA.style [ ( "font-size", "x-small" ) ]
+        ]
+        [ H.text msg ]
+
+
 viewButtons : Model -> Html SubMsg
 viewButtons model =
+    let
+        -- We use this to not show buttons that require
+        -- a baby record to exist.
+        isBabyRecord =
+            model.babyRecord == Nothing |> not
+    in
     H.div [ HA.class "stage-wrapper" ]
         [ H.div
             [ HA.class "stage-content"
@@ -3882,17 +3900,20 @@ viewButtons model =
             [ H.div [ HA.class "c-text--brand c-text--loud" ]
                 [ H.text "Newborn Exam" ]
             , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    , HE.onClick <| HandleNewbornExamModal OpenDialog
-                    ]
-                    [ if isNewbornExamDone model then
-                        H.i [ HA.class "fa fa-check" ]
-                            [ H.text "" ]
-                      else
-                        H.span [] [ H.text "" ]
-                    , H.text " Summary"
-                    ]
+                [ if isBabyRecord then
+                    H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleNewbornExamModal OpenDialog
+                        ]
+                        [ if isNewbornExamDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
+                  else
+                    smallMsgDiv "Baby record required"
                 ]
             ]
         , H.div
@@ -3902,17 +3923,20 @@ viewButtons model =
             [ H.div [ HA.class "c-text--brand c-text--loud" ]
                 [ H.text "BB Med-Vac-Lab" ]
             , H.div []
-                [ H.button
-                    [ HA.class "c-button c-button--ghost-brand u-small"
-                    , HE.onClick <| HandleBabyMedVacLabModal OpenDialog Nothing
-                    ]
-                    [ if isBabyMedVacLabDone model then
-                        H.i [ HA.class "fa fa-check" ]
-                            [ H.text "" ]
-                      else
-                        H.span [] [ H.text "" ]
-                    , H.text " Summary"
-                    ]
+                [ if isBabyRecord then
+                    H.button
+                        [ HA.class "c-button c-button--ghost-brand u-small"
+                        , HE.onClick <| HandleBabyMedVacLabModal OpenDialog Nothing
+                        ]
+                        [ if isBabyMedVacLabDone model then
+                            H.i [ HA.class "fa fa-check" ]
+                                [ H.text "" ]
+                          else
+                            H.span [] [ H.text "" ]
+                        , H.text " Summary"
+                        ]
+                  else
+                    smallMsgDiv "Baby record required"
                 ]
             ]
         , H.div
