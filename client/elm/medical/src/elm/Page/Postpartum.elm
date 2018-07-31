@@ -1900,6 +1900,6 @@ type alias FieldError =
 validatePostpartumCheck : Model -> List FieldError
 validatePostpartumCheck =
     Validate.all
-        [ .pcCheckDate >> ifInvalid U.validateDate (PCCheckDateFld => "Date of check must be provided.")
+        [ .pcCheckDate >> ifInvalid U.validateReasonableDate (PCCheckDateFld => "Valid date of check must be provided.")
         , .pcCheckTime >> ifInvalid U.validateTime (PCCheckTimeFld => "Time of check must be provided.")
         ]

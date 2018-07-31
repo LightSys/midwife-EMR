@@ -262,7 +262,7 @@ membraneRecordNewToMembraneRecord (MembraneId id) newRec =
 isMembraneRecordComplete : MembraneRecord -> Bool
 isMembraneRecordComplete rec =
     not <|
-        ((U.validateDate rec.ruptureDatetime)
+        ((U.validateReasonableDate rec.ruptureDatetime)
             || (rec.rupture == Nothing)
             || (rec.amniotic == Nothing)
         )

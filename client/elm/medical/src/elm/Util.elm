@@ -54,6 +54,7 @@ module Util
         , timeToTimeString
         , validateBool
         , validateDate
+        , validateReasonableDate
         , validateFloat
         , validateInt
         , validateJustTime
@@ -550,6 +551,25 @@ validateDate date =
         Nothing ->
             True
 
+
+{- Returns True if the Date is Nothing or
+if the date is in the first century (which
+means that the user entered a two or three
+digit year).
+-}
+validateReasonableDate : Maybe Date -> Bool
+validateReasonableDate date =
+    case date of
+        Just d ->
+            if Date.year d < 1000 then
+                -- User entered a two or three digit year,
+                -- which evaluated to a long time ago.
+                True
+            else
+                False
+
+        Nothing ->
+            True
 
 stringToTimeTuple : String -> Maybe ( Int, Int )
 stringToTimeTuple t =

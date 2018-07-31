@@ -302,7 +302,7 @@ isBabyRecordFullyComplete rec =
             || (U.validatePopulatedString rec.lastname)
             || (U.validatePopulatedString rec.firstname)
             || ((Maybe.withDefault 0 rec.birthWeight) <= 0)
-            || (U.validateDate rec.bFedEstablished)
+            || (U.validateReasonableDate rec.bFedEstablished)
         )
 
 

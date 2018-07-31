@@ -154,7 +154,7 @@ contPostpartumCheckRecordNewToContPostpartumCheckRecord (ContPostpartumCheckId i
 isContPostpartumCheckRecordComplete : ContPostpartumCheckRecord -> Bool
 isContPostpartumCheckRecordComplete rec =
     not <|
-        (U.validateDate (Just rec.checkDatetime)
+        (U.validateReasonableDate (Just rec.checkDatetime)
             || ((rec.motherSystolic == Nothing)
                     && (rec.motherDiastolic == Nothing)
                     && (rec.motherCR == Nothing)
