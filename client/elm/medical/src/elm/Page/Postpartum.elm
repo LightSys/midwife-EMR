@@ -1,10 +1,10 @@
 module Page.Postpartum
     exposing
-        ( buildModel
+        ( Model
+        , buildModel
         , closeAllDialogs
         , getTablesByCacheOrServer
         , init
-        , Model
         , update
         , view
         )
@@ -194,6 +194,7 @@ closeAllDialogs model =
         | postpartumCheckViewEditState = NoViewEditState
     }
 
+
 {-| Clear the continued postpartum check fields in the model.
 -}
 clearPostpartumCheckModelFields : Model -> Model
@@ -373,6 +374,7 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord pos
         ]
     )
 
+
 {-| Generate an top-level module command to retrieve additional data which checks
 first in the data cache, and secondarily from the server.
 -}
@@ -387,6 +389,7 @@ getTables table key relatedTables =
 fully loaded, but get the data from the data cache instead of the server, if available.
 
 This is called by the top-level module which passes it's data cache for our use.
+
 -}
 getTablesByCacheOrServer : ProcessStore -> Table -> Maybe Int -> List Table -> Dict String DataCache -> ( ProcessStore, Cmd Msg )
 getTablesByCacheOrServer store table key relatedTbls dataCache =
@@ -433,6 +436,7 @@ getTablesByCacheOrServer store table key relatedTbls dataCache =
                 processStore => Ports.outgoing jeVal
     in
     newStore => newCmd
+
 
 
 -- UPDATE --
@@ -1357,6 +1361,27 @@ viewPostpartumCheck cfg rec =
         checkDate =
             U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep rec.checkDatetime
 
+        -- Calculate age of the baby at the postpartum check in terms of days
+        -- and hours, enclose in parenthesis as a String.
+        babyAge =
+            case cfg.model.laborStage2Record of
+                Just ls2 ->
+                    case ls2.birthDatetime of
+                        Just birth ->
+                            "("
+                                ++ (U.diff2DatesString birth rec.checkDatetime
+                                        |> String.split ","
+                                        |> List.take 2
+                                        |> String.join ", "
+                                   )
+                                ++ ")"
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    ""
+
         field lbl val =
             H.table [ HA.class "u-small" ]
                 [ H.tr []
@@ -1417,7 +1442,7 @@ viewPostpartumCheck cfg rec =
             , HA.style [ ( "overflow", "hidden" ) ]
             ]
             [ H.span []
-                [ H.text checkDate ]
+                [ H.text <| checkDate ++ " " ++ babyAge ]
             , H.button
                 [ HA.type_ "button"
                 , HA.class "c-button c-button--ghost u-color-white u-xsmall"
@@ -1495,6 +1520,28 @@ viewPostpartumCheckEdit cfg =
         bcg =
             bcgReportString cfg.model.babyVaccinationTypeRecords
                 cfg.model.babyVaccinationRecords
+
+        -- Calculate the current age of the baby in terms of days
+        -- and hours, enclose in parenthesis as a String.
+        babyAge =
+            case cfg.model.laborStage2Record of
+                Just ls2 ->
+                    case ls2.birthDatetime of
+                        Just birth ->
+                            "("
+                                ++ (U.diff2DatesString birth (Date.fromTime cfg.model.currTime)
+                                        --|> String.split ","
+                                        --|> List.take 2
+                                        --|> String.join ", "
+                                   )
+                                ++ ")"
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    ""
+
     in
     H.div
         [ HA.classList [ ( "isHidden", not cfg.isEditing ) ]
@@ -1511,7 +1558,7 @@ viewPostpartumCheckEdit cfg =
                 [ HA.class "c-heading u-large accent-bg"
                 , HA.style [ ( "padding", "0.2em 2em" ) ]
                 ]
-                [ H.text "Baby" ]
+                [ H.text <| "Baby" ++ " " ++ babyAge ]
             , H.div [ HA.class "o-fieldset form-wrapper" ]
                 [ if cfg.model.browserSupportsDate then
                     H.div [ HA.class "c-card mw-form-field-2x" ]

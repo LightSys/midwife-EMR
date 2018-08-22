@@ -696,11 +696,11 @@ diff2MaybeDatesString date1 date2 =
 {-| Return the difference between two dates in a
 human readable format as a String with the difference
 expressed as a positive. Only displays days, hours, and
-minutes.
+minutes. Months and years are rolled into the days field,
+seconds and smaller are ignored.
 
 Note: the order of the dates passed does not matter since
 the difference is expressed as a positive no matter what.
-
 -}
 diff2DatesString : Date -> Date -> String
 diff2DatesString d1 d2 =
@@ -735,8 +735,11 @@ diff2DatesString d1 d2 =
                     -- d1 is after (or same as) d2
                     DED.diff d1 d2
 
+        calcDays date1 date2 =
+            DED.diffDays date1 date2 |> abs
+
         days =
-            doSingular dateDelta.day "day"
+            doSingular (calcDays d1 d2) "day"
 
         hours =
             doSingular dateDelta.hour "hour"
