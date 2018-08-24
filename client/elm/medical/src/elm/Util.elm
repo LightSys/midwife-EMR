@@ -8,6 +8,8 @@ module Util
         , addToMaybeList
         , boolToInt
         , calcEdd
+        , dateAddMinutes
+        , dateAddSubOffset
         , dateFormatter
         , datePlusTimeTuple
         , dateTimeHMFormatter
@@ -28,6 +30,7 @@ module Util
         , getGA
         , isJust
         , maybeBoolToMaybeInt
+        , maybeDateAddSubOffset
         , maybeDateMaybeTimeToMaybeDateTime
         , maybeDatePlusTime
         , maybeDateTimeErrors
@@ -49,17 +52,18 @@ module Util
         , pipeToComma
         , removeTimeFromDate
         , sortDate
+        , stringToDateAddSubOffset
         , stringToIntBetween
         , stringToTimeTuple
         , timeToTimeString
         , validateBool
         , validateDate
-        , validateReasonableDate
         , validateFloat
         , validateInt
         , validateJustTime
         , validatePopulatedString
         , validatePopulatedStringInList
+        , validateReasonableDate
         , validateTime
         )
 
@@ -552,11 +556,14 @@ validateDate date =
             True
 
 
+
 {- Returns True if the Date is Nothing or
-if the date is in the first century (which
-means that the user entered a two or three
-digit year).
+   if the date is in the first century (which
+   means that the user entered a two or three
+   digit year).
 -}
+
+
 validateReasonableDate : Maybe Date -> Bool
 validateReasonableDate date =
     case date of
@@ -570,6 +577,7 @@ validateReasonableDate date =
 
         Nothing ->
             True
+
 
 stringToTimeTuple : String -> Maybe ( Int, Int )
 stringToTimeTuple t =
@@ -701,6 +709,7 @@ seconds and smaller are ignored.
 
 Note: the order of the dates passed does not matter since
 the difference is expressed as a positive no matter what.
+
 -}
 diff2DatesString : Date -> Date -> String
 diff2DatesString d1 d2 =
@@ -805,6 +814,54 @@ maybeHoursMaybeMinutesToMaybeMinutes hours minutes =
 
         ( Nothing, Nothing ) ->
             Nothing
+
+
+{-| Add the specified minutes to a Date and
+return the result.
+-}
+dateAddMinutes : Int -> Date -> Date
+dateAddMinutes min date =
+    DED.add DED.Minute min date
+
+
+{-| Add or subtract the offset minutes from a
+date and return the result.
+-}
+dateAddSubOffset : Date -> Date
+dateAddSubOffset date =
+    dateAddMinutes (DEC.getTimezoneOffset date) date
+
+
+{-| Add or subtract the offset minutes from a
+maybe date and return the result.
+-}
+maybeDateAddSubOffset : Maybe Date -> Maybe Date
+maybeDateAddSubOffset date =
+    case date of
+        Just d ->
+            dateAddSubOffset d
+                |> Just
+
+        Nothing ->
+            Nothing
+
+
+{-| Attempt to create a date from a string and upon
+success, add or subtract the offset in minutes and
+return the result.
+
+This is useful when collecting user input from a date
+field that returns a string. Just using Date.fromString
+will yield a UTC date even when the user almost always
+is thinking in terms of the local date. Therefore we
+convert the string to a date then adjust the offset to
+get back to the local equivalent.
+-}
+stringToDateAddSubOffset : String -> Maybe Date
+stringToDateAddSubOffset val =
+    Date.fromString val
+        |> Result.toMaybe
+        |> maybeDateAddSubOffset
 
 
 {-| Calculate the estimated due date based upon the

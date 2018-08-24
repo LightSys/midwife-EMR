@@ -857,13 +857,13 @@ update session msg model =
                 FldChgString value ->
                     ( case fld of
                         AdmittanceDateFld ->
-                            { model | admittanceDate = Date.fromString value |> Result.toMaybe }
+                            { model | admittanceDate = U.stringToDateAddSubOffset value }
 
                         AdmittanceTimeFld ->
                             { model | admittanceTime = Just <| U.filterStringLikeTime value }
 
                         LaborDateFld ->
-                            { model | laborDate = Date.fromString value |> Result.toMaybe }
+                            { model | laborDate = U.stringToDateAddSubOffset value }
 
                         LaborTimeFld ->
                             { model | laborTime = Just <| U.filterStringLikeTime value }

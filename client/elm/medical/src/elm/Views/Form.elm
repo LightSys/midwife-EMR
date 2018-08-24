@@ -1,13 +1,13 @@
 module Views.Form
     exposing
         ( cancelSaveButtons
+        , checkOrNot
         , checkbox
-        , checkboxWide
         , checkboxPlain
         , checkboxPlainWide
         , checkboxSelectData
         , checkboxString
-        , checkOrNot
+        , checkboxWide
         , dateTimeModal
         , dateTimePickerModal
         , formErrors
@@ -361,6 +361,7 @@ checkboxPlain : String -> (Bool -> msg) -> Maybe Bool -> Html msg
 checkboxPlain lbl msg val =
     checkboxCore lbl False False msg val
 
+
 {-| Bold checkbox.
 -}
 checkboxWide : String -> (Bool -> msg) -> Maybe Bool -> Html msg
@@ -375,7 +376,6 @@ checkboxPlainWide lbl msg val =
     checkboxCore lbl False True msg val
 
 
-
 {-| Unexposed function to allow using a checkbox with the label bolded
 or not.
 -}
@@ -383,7 +383,7 @@ checkboxCore : String -> Bool -> Bool -> (Bool -> msg) -> Maybe Bool -> Html msg
 checkboxCore lbl isBoldLabel isWide msg val =
     H.fieldset
         [ HA.class "o-fieldset"
-        , HA.classList [ ("mw-form-field", not isWide), ("mw-form-field-2x", isWide) ]
+        , HA.classList [ ( "mw-form-field", not isWide ), ( "mw-form-field-2x", isWide ) ]
         ]
         [ H.label []
             [ H.input
@@ -397,14 +397,15 @@ checkboxCore lbl isBoldLabel isWide msg val =
             ]
         ]
 
+
 {-| Displays a graphical check or X depending upon whether the val passed
 is True. No user input.
 -}
-checkOrNot : String -> Bool -> Bool ->  Bool -> Html msg
+checkOrNot : String -> Bool -> Bool -> Bool -> Html msg
 checkOrNot lbl isBoldLabel isWide val =
     H.fieldset
         [ HA.class "o-fieldset"
-        , HA.classList [ ("mw-form-field", not isWide), ("mw-form-field-2x", isWide) ]
+        , HA.classList [ ( "mw-form-field", not isWide ), ( "mw-form-field-2x", isWide ) ]
         ]
         [ H.label []
             [ H.i
@@ -413,12 +414,11 @@ checkOrNot lbl isBoldLabel isWide val =
                     , ( "fa fa-exclamation-circle", not val )
                     ]
                 ]
-                [ ]
+                []
             , H.span [ HA.classList [ ( "c-text--loud", isBoldLabel ) ] ]
                 [ H.text <| " " ++ lbl ]
             ]
         ]
-
 
 
 {-| Creates a UI fieldset of checkboxes corresponding to one of the multi select

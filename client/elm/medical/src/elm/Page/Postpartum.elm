@@ -661,7 +661,7 @@ update session msg model =
                 FldChgString value ->
                     ( case fld of
                         PCCheckDateFld ->
-                            { model | pcCheckDate = Date.fromString value |> Result.toMaybe }
+                            { model | pcCheckDate = U.stringToDateAddSubOffset value }
 
                         PCCheckTimeFld ->
                             { model | pcCheckTime = Just <| U.filterStringLikeTime value }
@@ -715,10 +715,10 @@ update session msg model =
                             { model | pcComments = Just value }
 
                         PCHgbTestDateFld ->
-                            { model | pcHgbTestDate = Date.fromString value |> Result.toMaybe }
+                            { model | pcHgbTestDate = U.stringToDateAddSubOffset value }
 
                         PCNextScheduledCheckFld ->
-                            { model | pcNextScheduledCheck = Date.fromString value |> Result.toMaybe }
+                            { model | pcNextScheduledCheck = U.stringToDateAddSubOffset value }
 
                         _ ->
                             model
@@ -796,7 +796,7 @@ update session msg model =
         HandlePostpartumCheckModal dialogState pcId ->
             case dialogState of
                 OpenDialog ->
-                    -- This is used only for new records. EditDialog if used to edit
+                    -- This is used only for new records. EditDialog is used to edit
                     -- existing records using the id passed.
                     let
                         -- Default to the current time and date.
@@ -1529,11 +1529,10 @@ viewPostpartumCheckEdit cfg =
                     case ls2.birthDatetime of
                         Just birth ->
                             "("
-                                ++ (U.diff2DatesString birth (Date.fromTime cfg.model.currTime)
-                                        --|> String.split ","
-                                        --|> List.take 2
-                                        --|> String.join ", "
-                                   )
+                                ++ U.diff2DatesString birth (Date.fromTime cfg.model.currTime)
+                                   --|> String.split ","
+                                   --|> List.take 2
+                                   --|> String.join ", "
                                 ++ ")"
 
                         Nothing ->
@@ -1541,7 +1540,6 @@ viewPostpartumCheckEdit cfg =
 
                 Nothing ->
                     ""
-
     in
     H.div
         [ HA.classList [ ( "isHidden", not cfg.isEditing ) ]

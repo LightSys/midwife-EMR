@@ -222,9 +222,6 @@ type alias Model =
     , s3Cotyledons : Maybe String
     , s3Membranes : Maybe String
     , s3Comments : Maybe String
-    , earlyLaborDateTimeModal : DateTimeModal
-    , earlyLaborDate : Maybe Date
-    , earlyLaborTime : Maybe String
     , membraneSummaryModal : ViewEditState
     , membraneRuptureDate : Maybe Date
     , membraneRuptureTime : Maybe String
@@ -390,9 +387,6 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRec =
       , s3Cotyledons = Nothing
       , s3Membranes = Nothing
       , s3Comments = Nothing
-      , earlyLaborDateTimeModal = NoDateTimeModal
-      , earlyLaborDate = Nothing
-      , earlyLaborTime = Nothing
       , membraneSummaryModal = NoViewEditState
       , membraneRuptureDate = Nothing
       , membraneRuptureTime = Nothing
@@ -823,7 +817,7 @@ isBabySummaryDone model =
             False
 
 
-{-| View the buttons used to set early labor, stage 1, 2, and 3 date/time
+{-| View the buttons used to set stage 1, 2, and 3 date/time
 and related fields, the membranes fields, and the initial baby record.
 Do not show all options, but only what makes sense for this progression
 of the labor.
@@ -3000,10 +2994,6 @@ update session msg model =
             ( { model | currTime = time }, Cmd.none, Cmd.none )
 
         OpenDatePickerSubMsg id ->
-            let
-                _ =
-                    Debug.log "LaborDelIPP OpenDatePickerSubMsg" <| toString id
-            in
             ( model, Cmd.none, Task.perform OpenDatePicker (Task.succeed id) )
 
         DateFieldSubMsg dateFldMsg ->
@@ -3013,9 +3003,6 @@ update session msg model =
                     case dateField of
                         BabyBFedEstablishedDateField ->
                             ( { model | bbBFedEstablishedDate = Just date }, Cmd.none, Cmd.none )
-
-                        EarlyLaborDateField ->
-                            ( { model | earlyLaborDate = Just date }, Cmd.none, Cmd.none )
 
                         LaborDelIppLaborDateField ->
                             ( { model | laborDate = Just date }, Cmd.none, Cmd.none )
@@ -3051,13 +3038,13 @@ update session msg model =
                 FldChgString value ->
                     ( case fld of
                         AdmittanceDateFld ->
-                            { model | admittanceDate = Date.fromString value |> Result.toMaybe }
+                            { model | admittanceDate = U.stringToDateAddSubOffset value }
 
                         AdmittanceTimeFld ->
                             { model | admittanceTime = Just <| U.filterStringLikeTime value }
 
                         LaborDateFld ->
-                            { model | laborDate = Date.fromString value |> Result.toMaybe }
+                            { model | laborDate = U.stringToDateAddSubOffset value }
 
                         LaborTimeFld ->
                             { model | laborTime = Just <| U.filterStringLikeTime value }
@@ -3087,7 +3074,7 @@ update session msg model =
                             { model | comments = Just value }
 
                         Stage1DateFld ->
-                            { model | stage1Date = Date.fromString value |> Result.toMaybe }
+                            { model | stage1Date = U.stringToDateAddSubOffset value }
 
                         Stage1TimeFld ->
                             { model | stage1Time = Just <| U.filterStringLikeTime value }
@@ -3111,7 +3098,7 @@ update session msg model =
                             { model | s1Comments = Just value }
 
                         Stage2DateFld ->
-                            { model | stage2Date = Date.fromString value |> Result.toMaybe }
+                            { model | stage2Date = U.stringToDateAddSubOffset value }
 
                         Stage2TimeFld ->
                             { model | stage2Time = Just <| U.filterStringLikeTime value }
@@ -3157,7 +3144,7 @@ update session msg model =
                             { model | s2Comments = Just value }
 
                         Stage3DateFld ->
-                            { model | stage3Date = Date.fromString value |> Result.toMaybe }
+                            { model | stage3Date = U.stringToDateAddSubOffset value }
 
                         Stage3TimeFld ->
                             { model | stage3Time = Just <| U.filterStringLikeTime value }
@@ -3207,7 +3194,7 @@ update session msg model =
                             { model | s3Comments = Just value }
 
                         MembraneRuptureDateFld ->
-                            { model | membraneRuptureDate = Date.fromString value |> Result.toMaybe }
+                            { model | membraneRuptureDate = U.stringToDateAddSubOffset value }
 
                         MembraneRuptureTimeFld ->
                             { model | membraneRuptureTime = Just <| U.filterStringLikeTime value }
@@ -3243,7 +3230,7 @@ update session msg model =
                             { model | bbBirthWeight = Just <| U.filterStringLikeInt value }
 
                         BabyBFedEstablishedDateFld ->
-                            { model | bbBFedEstablishedDate = Date.fromString value |> Result.toMaybe }
+                            { model | bbBFedEstablishedDate = U.stringToDateAddSubOffset value }
 
                         BabyBFedEstablishedTimeFld ->
                             { model | bbBFedEstablishedTime = Just <| U.filterStringLikeTime value }
@@ -4453,9 +4440,6 @@ update session msg model =
                     case validateMembrane model of
                         [] ->
                             let
-                                _ =
-                                    Debug.log "membraneRuptureTime" model.membraneRuptureTime
-
                                 ruptureDatetime =
                                     U.maybeDateMaybeTimeToMaybeDateTime model.membraneRuptureDate
                                         model.membraneRuptureTime
@@ -4789,15 +4773,6 @@ update session msg model =
             ( { model
                 | stage3Date = Nothing
                 , stage3Time = Nothing
-              }
-            , Cmd.none
-            , Cmd.none
-            )
-
-        ClearEarlyLaborDateTime ->
-            ( { model
-                | earlyLaborDate = Nothing
-                , earlyLaborTime = Nothing
               }
             , Cmd.none
             , Cmd.none

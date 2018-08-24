@@ -1182,7 +1182,7 @@ update session msg model =
                 FldChgString value ->
                     ( case fld of
                         NBSDateFld ->
-                            { model | nbsDate = Date.fromString value |> Result.toMaybe }
+                            { model | nbsDate = U.stringToDateAddSubOffset value }
 
                         NBSTimeFld ->
                             { model | nbsTime = Just <| U.filterStringLikeTime value }
@@ -1290,7 +1290,7 @@ update session msg model =
                             { model | nbsComments = Just value }
 
                         CPCCheckDateFld ->
-                            { model | cpcCheckDate = Date.fromString value |> Result.toMaybe }
+                            { model | cpcCheckDate = U.stringToDateAddSubOffset value }
 
                         CPCCheckTimeFld ->
                             { model | cpcCheckTime = Just <| U.filterStringLikeTime value }
@@ -1329,7 +1329,7 @@ update session msg model =
                             { model | cpcComments = Just value }
 
                         DischargeDateFld ->
-                            { model | dischargeDate = Date.fromString value |> Result.toMaybe }
+                            { model | dischargeDate = U.stringToDateAddSubOffset value }
 
                         DischargeTimeFld ->
                             { model | dischargeTime = Just <| U.filterStringLikeTime value }
@@ -1553,7 +1553,7 @@ update session msg model =
                                             { model
                                                 | babyMedFlds =
                                                     Dict.insert intVal
-                                                        { medFlds | date = Date.fromString strVal |> Result.toMaybe }
+                                                        { medFlds | date = U.stringToDateAddSubOffset strVal }
                                                         model.babyMedFlds
                                             }
 
@@ -1638,7 +1638,7 @@ update session msg model =
                                             { model
                                                 | babyVacFlds =
                                                     Dict.insert intVal
-                                                        { vacFlds | date = Date.fromString strVal |> Result.toMaybe }
+                                                        { vacFlds | date = U.stringToDateAddSubOffset strVal }
                                                         model.babyVacFlds
                                             }
 
@@ -1723,7 +1723,7 @@ update session msg model =
                                             { model
                                                 | babyLabFlds =
                                                     Dict.insert intVal
-                                                        { labFlds | date = Date.fromString strVal |> Result.toMaybe }
+                                                        { labFlds | date = U.stringToDateAddSubOffset strVal }
                                                         model.babyLabFlds
                                             }
 
@@ -1842,7 +1842,7 @@ update session msg model =
                                             { model
                                                 | motherMedFlds =
                                                     Dict.insert intVal
-                                                        { medFlds | date = Date.fromString strVal |> Result.toMaybe }
+                                                        { medFlds | date = U.stringToDateAddSubOffset strVal }
                                                         model.motherMedFlds
                                             }
 

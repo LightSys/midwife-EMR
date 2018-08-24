@@ -620,7 +620,7 @@ update session msg model =
                             { model | bcFatherCountry = Just value }
 
                         BCDateOfMarriageFld ->
-                            { model | bcDateOfMarriage = Date.fromString value |> Result.toMaybe }
+                            { model | bcDateOfMarriage = U.stringToDateAddSubOffset value }
 
                         BCCityOfMarriageFld ->
                             { model | bcCityOfMarriage = Just value }
@@ -668,7 +668,7 @@ update session msg model =
                             { model | bcCommTaxNumber = Just value }
 
                         BCCommTaxDateFld ->
-                            { model | bcCommTaxDate = Date.fromString value |> Result.toMaybe }
+                            { model | bcCommTaxDate = U.stringToDateAddSubOffset value }
 
                         BCCommTaxPlaceFld ->
                             { model | bcCommTaxPlace = Just value }
@@ -698,7 +698,7 @@ update session msg model =
                             { model | bcAffiateCommTaxNumber = Just value }
 
                         BCAffiateCommTaxDateFld ->
-                            { model | bcAffiateCommTaxDate = Date.fromString value |> Result.toMaybe }
+                            { model | bcAffiateCommTaxDate = U.stringToDateAddSubOffset value }
 
                         BCAffiateCommTaxPlace ->
                             { model | bcAffiateCommTaxPlace = Just value }
