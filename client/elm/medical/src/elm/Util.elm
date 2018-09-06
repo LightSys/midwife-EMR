@@ -55,6 +55,7 @@ module Util
         , stringToDateAddSubOffset
         , stringToIntBetween
         , stringToTimeTuple
+        , tableIdToValue
         , timeToTimeString
         , validateBool
         , validateDate
@@ -68,6 +69,7 @@ module Util
         )
 
 import Char
+import Data.Table exposing (Table(..), tableToString)
 import Date exposing (Date, Month(..), day, hour, minute, month, second, year)
 import Date.Extra.Compare as DEComp
 import Date.Extra.Config.Config_en_us as DECC
@@ -856,6 +858,7 @@ will yield a UTC date even when the user almost always
 is thinking in terms of the local date. Therefore we
 convert the string to a date then adjust the offset to
 get back to the local equivalent.
+
 -}
 stringToDateAddSubOffset : String -> Maybe Date
 stringToDateAddSubOffset val =
@@ -1008,3 +1011,15 @@ addToMaybeList a aList =
 
         Nothing ->
             Just [ a ]
+
+
+tableIdToValue : Int -> Table -> JE.Value
+tableIdToValue id table =
+    JE.object
+        [ ( "table", JE.string (tableToString table) )
+        , ( "data"
+          , JE.object
+                [ ( "id", JE.int id )
+                ]
+          )
+        ]

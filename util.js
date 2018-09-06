@@ -473,6 +473,37 @@ var returnStatusADD = function(table, originalId, newId, success, errCode, msg) 
   return retVal;
 };
 
+/* --------------------------------------------------------
+ * returnStatusDEL2()
+ *
+ * Return status format for DATA messages, version 2, of
+ * msgType DEL.
+ *
+ * Note: for version 2, msgType is either ADD, CHG, or DEL
+ * for both directions.
+ * -------------------------------------------------------- */
+var returnStatusDEL2 = function(msgType, messageId, table, id, success, errCode, msg) {
+  var msgStr = msg? msg: '';
+  if (msg && typeof msg === 'object') {
+    msgStr = JSON.stringify(msg);
+  }
+
+  var retVal = {
+    messageId: messageId,
+    namespace: 'DATA',
+    msgType: msgType,
+    version: 2,
+    response: {
+      table: table,
+      id: id,
+      success: success,
+      errorCode: errCode? errCode: NoErrorCode,
+      msg: msgStr
+    }
+  };
+  return retVal;
+};
+
 var returnStatusDEL = function(table, id, stateId, success, errCode, msg) {
   var msgStr = msg? msg: '';
   if (msg && typeof msg === 'object') {
@@ -636,6 +667,7 @@ module.exports = {
   , returnStatusCHG
   , returnStatusCHG2
   , returnStatusDEL
+  , returnStatusDEL2
   , returnStatusSELECT
   , returnUserProfile
   , returnUserProfileUpdate

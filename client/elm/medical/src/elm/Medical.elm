@@ -1482,6 +1482,69 @@ updateMessage incoming model =
             in
             { newModel | processStore = processStore } => newCmd
 
+        DataDelMessage dataDelMsg ->
+            -- Results of attempting to delete a record on the server.
+            -- If server responded positively, delete the record from
+            -- the processStore in the top-level model.
+            -- Then pass the new record to the page per the Msg
+            -- retrieved from the processStore.
+            let
+                -- Use the messageId returned from the server to acquire the
+                -- Msg reserved in our store by the originating "event".
+                ( processType, processStore ) =
+                    Processing.remove (ProcessId dataDelMsg.messageId) model.processStore
+
+                ( newModel, newCmd ) =
+                    case dataDelMsg.response.success of
+                        True ->
+                            case processType of
+                                Just (DelBabyMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyMedicationId) ->
+                                    -- Note: this is BabyMedicationRecord, not BabyMedicationTypeRecord.
+                                    let
+                                        dc =
+                                            case DCache.get BabyMedication model.dataCache of
+                                                Just (BabyMedicationDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            List.filter (\r -> r.id /= babyMedicationId) recs
+                                                    in
+                                                    DCache.put (BabyMedicationDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just dc) (Just [ BabyMedication ])
+                                    in
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
+
+                                _ ->
+                                    let
+                                        _ =
+                                            Debug.log
+                                                "Medical: update function, missing DataDelMessage dataDelMsg case"
+                                            <|
+                                                toString processType
+                                    in
+                                    ( model, Cmd.none )
+
+                        False ->
+                            -- This could be due to a session timeout, among other issues.
+                            case dataDelMsg.response.errorCode of
+                                "SessionExpiredErrorCode" ->
+                                    ( model
+                                    , Msg.toastWarn
+                                        [ "Sorry: " ++ dataDelMsg.response.msg ++ " Please go back to Prenatal, login, and then try again." ]
+                                        10
+                                    )
+
+                                _ ->
+                                    ( model, logConsole <| toString dataDelMsg.response )
+            in
+            { newModel | processStore = processStore } => newCmd
+
         DataNotificationMessage dataNotificationMsg ->
             -- The payload field has what we want.
             model => handleDataNotification dataNotificationMsg model
@@ -1773,6 +1836,9 @@ updateMessage incoming model =
 
                 Just (UpdateBabyLabType msg _) ->
                     newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                Just (DelBabyMedicationType msg id) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed id)
 
                 Just (UpdateBabyMedicationType msg _) ->
                     newModel2 => Task.perform (always msg) (Task.succeed True)

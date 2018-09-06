@@ -196,6 +196,31 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
 };
 
 
+var delTable = function(data, userInfo, cb, modelObj, tableStr) {
+  var rec = data;
+
+  modelObj.forge(rec)
+    .destroy()
+    .then(function() {
+      cb(null, true, {id: rec.id});
+
+      // --------------------------------------------------------
+      // Notify all clients of the change.
+      // --------------------------------------------------------
+      var notify = {
+        table: tableStr,
+        id: rec.id,
+        updatedBy: userInfo.user.id,
+        sessionID: userInfo.sessionID
+      };
+      return sendData(DATA_DELETE, JSON.stringify(notify));
+    })
+    .caught(function(err) {
+      return cb(err);
+    });
+};
+
+
 // --------------------------------------------------------
 // For baby records, the client will include a field named
 // apgarScores in the baby record. This will be used to
@@ -392,7 +417,6 @@ var updateBaby = function(data, userInfo, cb) {
 
             if (recsToUpdate.length > 0) {
               _.each(recsToUpdate, function(rec) {
-                console.log(rec);
                 var updPromise = knex('apgar')
                   .transacting(t)
                   .where('id', rec.id)
@@ -447,6 +471,11 @@ var addBabyMedication = function(data, userInfo, cb) {
 var updateBabyMedication = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.updateBabyMedication(data, cb);
   updateTable(data, userInfo, cb, BabyMedication, 'babyMedication');
+};
+
+var delBabyMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.delBabyMedication(data, cb);
+  delTable(data, userInfo, cb, BabyMedication, 'babyMedication');
 };
 
 var addBabyVaccination = function(data, userInfo, cb) {
@@ -587,7 +616,7 @@ module.exports = {
   delBabyLab: notDefinedYet,
   addBabyMedication,
   updateBabyMedication,
-  delBabyMedication: notDefinedYet,
+  delBabyMedication: delBabyMedication,
   addBabyVaccination,
   updateBabyVaccination,
   delBabyVaccination: notDefinedYet,

@@ -229,6 +229,33 @@ dataChgMsg =
         |> JDP.required "response" dataChgMsgResponse
 
 
+-- Incoming Deletion Data Messages --
+
+type alias DataDelMsg =
+    { messageId : Int
+    , namespace : String
+    , msgType : String
+    , version : Int
+    , response : DataDelMsgResponse
+    }
+
+type alias DataDelMsgResponse =
+    { table : Table
+    , id : Int
+    , success : Bool
+    , errorCode : String
+    , msg : String
+    }
+
+dataDelMsg : JD.Decoder DataDelMsg
+dataDelMsg =
+    JDP.decode DataDelMsg
+        |> JDP.required "messageId" JD.int
+        |> JDP.required "namespace" JD.string
+        |> JDP.required "msgType" JD.string
+        |> JDP.required "version" JD.int
+        |> JDP.required "response" dataDelMsgResponse
+
 
 -- Data Notification Messages --
 
@@ -319,6 +346,20 @@ dataChgMsgResponse =
         |> JDP.required "msg" JD.string
 
 
+{-| The optional id allows an errorCode returned
+from the server to propogate to be properly handled
+downstream in the update.
+-}
+dataDelMsgResponse : JD.Decoder DataDelMsgResponse
+dataDelMsgResponse =
+    JDP.decode DataDelMsgResponse
+        |> JDP.required "table" decodeTable
+        |> JDP.optional "id" JD.int -1
+        |> JDP.required "success" JD.bool
+        |> JDP.required "errorCode" JD.string
+        |> JDP.required "msg" JD.string
+
+
 
 -- All Incoming Messages --
 
@@ -329,6 +370,7 @@ type IncomingMessage
     | DataSelectMessage DataSelectMsg
     | DataAddMessage DataAddMsg
     | DataChgMessage DataChgMsg
+    | DataDelMessage DataDelMsg
     | DataNotificationMessage DataNotificationMsg
 
 
@@ -383,6 +425,9 @@ msgTypeHelper msgType =
 
         "CHG" ->
             JD.map DataChgMessage dataChgMsg
+
+        "DEL" ->
+            JD.map DataDelMessage dataDelMsg
 
         "ADD_CHG_DELETE" ->
             JD.map DataNotificationMessage dataNotificationMsg

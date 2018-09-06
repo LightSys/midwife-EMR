@@ -234,6 +234,7 @@ var rx = require('rx')
   , returnStatusCHG2 = require('./util').returnStatusCHG2
   , returnStatusCHG = require('./util').returnStatusCHG
   , returnStatusDEL = require('./util').returnStatusDEL
+  , returnStatusDEL2 = require('./util').returnStatusDEL2
   , returnStatusSELECT = require('./util').returnStatusSELECT
   , LoginFailErrorCode = require('./util').LoginFailErrorCode
   , LoginSuccessErrorCode = require('./util').LoginSuccessErrorCode
@@ -1067,6 +1068,14 @@ var handleData2 = function(evtName, json, socket) {
       returnStatusFunc = returnStatusCHG2;
       break;
 
+    case DEL:
+      if (! table || ! data || ! _.has(data, 'id') || data.id === -1) {
+        console.log('Data DEL request: Improper data sent from client!');
+        return;
+      }
+      returnStatusFunc = returnStatusDEL2;
+      break;
+
     default:
       console.log('UNKNOWN event of ' + evtName + ' in handeData2().');
       retAction = returnStatusFunc(evtName, messageId, table, void 0, false,
@@ -1520,6 +1529,12 @@ var init = function(io, sessionMiddle) {
           case CHG:
             if (DO_ASSERT) assertModule.ioData_socket_on_CHG(json.payload);
             handleData2(CHG, json, socket);
+            break;
+
+          case DEL:
+            if (DO_ASSERT) assertModule.ioData_socket_on_DEL(json.payload);
+            console.log(json);
+            handleData2(DEL, json, socket);
             break;
 
           case ADHOC_TOUCH_SESSION:

@@ -27,6 +27,7 @@ type SubMsg
     | DataCache (Maybe (Dict String DataCache)) (Maybe (List Table))
     | HandleNewbornExamModal Dialog
     | HandleBabyMedVacLabModal Dialog (Maybe MedVacLab)
+    | HandleBabyMedicationDelete Int
     | HandleMotherMedicationModal Dialog (Maybe Int)
     | HandleDischargeModal Dialog
     | HandleContPostpartumCheckModal Dialog (Maybe ContPostpartumCheckId)
