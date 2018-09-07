@@ -1520,6 +1520,28 @@ updateMessage incoming model =
                                     , Task.perform ContPPMsg (Task.succeed subMsg)
                                     )
 
+                                Just (DelBabyVaccinationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyVaccinationId) ->
+                                    -- Note: this is BabyVaccinationRecord, not BabyVaccinationTypeRecord.
+                                    let
+                                        dc =
+                                            case DCache.get BabyVaccination model.dataCache of
+                                                Just (BabyVaccinationDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            List.filter (\r -> r.id /= babyVaccinationId) recs
+                                                    in
+                                                    DCache.put (BabyVaccinationDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just dc) (Just [ BabyVaccination ])
+                                    in
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
+
                                 _ ->
                                     let
                                         _ =
@@ -1842,6 +1864,9 @@ updateMessage incoming model =
 
                 Just (UpdateBabyMedicationType msg _) ->
                     newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                Just (DelBabyVaccinationType msg id) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed id)
 
                 Just (UpdateBabyVaccinationType msg _) ->
                     newModel2 => Task.perform (always msg) (Task.succeed True)

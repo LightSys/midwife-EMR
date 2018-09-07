@@ -1251,8 +1251,6 @@ var getTable = function(socket, json) {
         if (err) {
           logCommError(err);
           retVal.response = returnStatusSELECT({}, void 0, false, SqlErrorCode, err && err.msg? err.msg: '');
-          // TEMP
-          console.log(JSON.stringify(retVal));
           return socket.send(JSON.stringify(retVal));
         }
         retVal.response = returnStatusSELECT({}, data, true);
@@ -1533,7 +1531,6 @@ var init = function(io, sessionMiddle) {
 
           case DEL:
             if (DO_ASSERT) assertModule.ioData_socket_on_DEL(json.payload);
-            console.log(json);
             handleData2(DEL, json, socket);
             break;
 

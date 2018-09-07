@@ -28,6 +28,8 @@ type SubMsg
     | HandleNewbornExamModal Dialog
     | HandleBabyMedVacLabModal Dialog (Maybe MedVacLab)
     | HandleBabyMedicationDelete Int
+    | HandleBabyVaccinationDelete Int
+    | HandleBabyLabDelete Int
     | HandleMotherMedicationModal Dialog (Maybe Int)
     | HandleDischargeModal Dialog
     | HandleContPostpartumCheckModal Dialog (Maybe ContPostpartumCheckId)

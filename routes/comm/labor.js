@@ -488,6 +488,11 @@ var updateBabyVaccination = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, BabyVaccination, 'babyVaccination');
 };
 
+var delBabyVaccination = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.delBabyVaccination(data, cb);
+  delTable(data, userInfo, cb, BabyVaccination, 'babyVaccination');
+};
+
 var addBirthCertificate = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addBirthCertificate(data, cb);
   addTable(data, userInfo, cb, BirthCertificate, 'birthCertificate');
@@ -619,7 +624,7 @@ module.exports = {
   delBabyMedication: delBabyMedication,
   addBabyVaccination,
   updateBabyVaccination,
-  delBabyVaccination: notDefinedYet,
+  delBabyVaccination: delBabyVaccination,
   addBirthCertificate,
   updateBirthCertificate,
   delBirthCertificate: notDefinedYet,
