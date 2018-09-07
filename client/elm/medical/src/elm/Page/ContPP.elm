@@ -2727,24 +2727,26 @@ update session msg model =
             )
 
         HandleBabyLabDelete id ->
-            --let
-                --outerMsg =
-                    --ProcessTypeMsg
-                        --(DelBabyVaccinationType
-                            --(ContPPMsg
-                                --(DataCache Nothing (Just [ BabyVaccination ]))
-                            --)
-                            --id
-                        --)
-                        --DelMsgType
-                        --(U.tableIdToValue id BabyVaccination)
-            --in
+            let
+                outerMsg =
+                    ProcessTypeMsg
+                        (DelBabyLabType
+                            (ContPPMsg
+                                (DataCache Nothing (Just [ BabyLab ]))
+                            )
+                            id
+                        )
+                        DelMsgType
+                        (U.tableIdToValue id BabyLab)
+
+                _ =
+                    Debug.log "HandleBabyLabDelete" <| toString outerMsg
+            in
             ( model
             , Cmd.none
-            , Cmd.none
-            --, Cmd.batch
-                --[ Task.perform (always outerMsg) (Task.succeed True)
-                --]
+            , Cmd.batch
+                [ Task.perform (always outerMsg) (Task.succeed True)
+                ]
             )
 
         HandleMotherMedicationModal dialogState refId ->
@@ -3256,13 +3258,27 @@ populateBabyLabFields model =
                                     }
 
                                 Nothing ->
-                                    -- There is no BabyLabRecord so
-                                    -- populate the form fields with defaults,
-                                    -- but only if it is not already there cuz
-                                    -- maybe the user has already partially
-                                    -- completed the form but not pressed save.
-                                    case Dict.member labTypeRec.id mdl.babyLabFlds of
-                                        False ->
+                                    -- There is no BabyLabRecord which means
+                                    -- one of three things:
+                                    -- 1. If the corresponding babyLabFlds record is
+                                    --    not there, we need to populate it with defaults
+                                    --    so that the user can enter new data if desired.
+                                    -- 2. If the corresponding babyLabFlds record is
+                                    --    there and has no id, we need to leave it alone
+                                    --    because it is already set up and maybe partially
+                                    --    filled in by the user but not yet saved.
+                                    -- 3. If the corresponding babyLabFlds record is
+                                    --    there and has an id, we need to clear the record
+                                    --    back to defaults because that means that the user
+                                    --    just deleted the record and we need to sync the
+                                    --    user form to the same state.
+                                    let
+                                        labFldsRec =
+                                            Dict.get labTypeRec.id mdl.babyLabFlds
+                                    in
+                                    case labFldsRec of
+                                        -- Case 1 above.
+                                        Nothing ->
                                             { mdl
                                                 | babyLabFlds =
                                                     Dict.insert labTypeRec.id
@@ -3270,8 +3286,18 @@ populateBabyLabFields model =
                                                         mdl.babyLabFlds
                                             }
 
-                                        True ->
-                                            mdl
+                                        Just r ->
+                                            if r.id /= Nothing then
+                                                -- Case 3 above.
+                                                { mdl
+                                                    | babyLabFlds =
+                                                        Dict.insert labTypeRec.id
+                                                            (defaultLabBabyLabFlds baby.id)
+                                                            mdl.babyLabFlds
+                                                }
+                                            else
+                                                -- Case 2 above.
+                                                mdl
                     in
                     newModel
                 )
@@ -5146,6 +5172,14 @@ babyLabEdit mvl name labRec browserSupportsDate babyLabTypeRecords =
         errors =
             validateBabyLab labRec
 
+        recordId =
+            case labRec.id of
+                Just id ->
+                    id
+
+                Nothing ->
+                    -1
+
         ( refId, type_ ) =
             case mvl of
                 MedMVL id ->
@@ -5291,6 +5325,16 @@ babyLabEdit mvl name labRec browserSupportsDate babyLabTypeRecords =
                 , HE.onClick <| HandleBabyMedVacLabModal CloseSaveDialog (Just mvl)
                 ]
                 [ H.text "Save" ]
+            , if labRec.id /= Nothing then
+                -- Only show the delete button for existing records.
+                H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--ghost u-color-black u-xsmall"
+                    , HE.onClick <| HandleBabyLabDelete recordId
+                    ]
+                    [ H.text "Delete" ]
+                else
+                H.span [] []
             ]
         ]
 

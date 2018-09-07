@@ -81,6 +81,15 @@ var addBabyLab = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
+var delBabyLab = function(data, cb) {
+  var m = msg('labor_assert/delBabyLab()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var updateBabyLab = function(data, cb) {
   var m = msg('labor_assert/updateBabyLab()');
   if (verbose) console.log(m());
@@ -375,6 +384,7 @@ module.exports = {
   updateApgar,
   addBabyLab,
   updateBabyLab,
+  delBabyLab,
   addBabyMedication,
   updateBabyMedication,
   delBabyMedication,

@@ -1542,6 +1542,28 @@ updateMessage incoming model =
                                     , Task.perform ContPPMsg (Task.succeed subMsg)
                                     )
 
+                                Just (DelBabyLabType (ContPPMsg (Data.ContPP.DataCache _ _)) babyLabId) ->
+                                    -- Note: this is BabyLabRecord, not BabyLabTypeRecord.
+                                    let
+                                        dc =
+                                            case DCache.get BabyLab model.dataCache of
+                                                Just (BabyLabDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            List.filter (\r -> r.id /= babyLabId) recs
+                                                    in
+                                                    DCache.put (BabyLabDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just dc) (Just [ BabyLab ])
+                                    in
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
+
                                 _ ->
                                     let
                                         _ =
@@ -1855,6 +1877,9 @@ updateMessage incoming model =
 
                 Just (UpdateBabyType msg _) ->
                     newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                Just (DelBabyLabType msg id) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed id)
 
                 Just (UpdateBabyLabType msg _) ->
                     newModel2 => Task.perform (always msg) (Task.succeed True)

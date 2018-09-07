@@ -140,6 +140,7 @@ type ProcessType
     | AddPostpartumCheckType Msg PostpartumCheckRecordNew
     | DelBabyMedicationType Msg Int
     | DelBabyVaccinationType Msg Int
+    | DelBabyLabType Msg Int
     | UpdateBabyType Msg BabyRecord
     | UpdateBabyLabType Msg BabyLabRecord
     | UpdateBabyMedicationType Msg BabyMedicationRecord

@@ -463,6 +463,11 @@ var updateBabyLab = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, BabyLab, 'babyLab');
 };
 
+var delBabyLab = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.delBabyLab(data, cb);
+  delTable(data, userInfo, cb, BabyLab, 'babyLab');
+};
+
 var addBabyMedication = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addBabyMedication(data, cb);
   addTable(data, userInfo, cb, BabyMedication, 'babyMedication');
@@ -618,7 +623,7 @@ module.exports = {
   delBaby: notDefinedYet,
   addBabyLab,
   updateBabyLab,
-  delBabyLab: notDefinedYet,
+  delBabyLab: delBabyLab,
   addBabyMedication,
   updateBabyMedication,
   delBabyMedication: delBabyMedication,
