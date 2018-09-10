@@ -588,6 +588,11 @@ var updateMotherMedication = function(data, userInfo, cb) {
   updateTable(data, userInfo, cb, MotherMedication, 'motherMedication');
 };
 
+var delMotherMedication = function(data, userInfo, cb) {
+  if (DO_ASSERT) assertModule.delMotherMedication(data, cb);
+  delTable(data, userInfo, cb, MotherMedication, 'motherMedication');
+};
+
 var addNewbornExam = function(data, userInfo, cb) {
   if (DO_ASSERT) assertModule.addNewbornExam(data, cb);
   addTable(data, userInfo, cb, NewbornExam, 'newbornExam');
@@ -656,7 +661,7 @@ module.exports = {
   delMembrane: notDefinedYet,
   addMotherMedication,
   updateMotherMedication,
-  delMotherMedication: notDefinedYet,
+  delMotherMedication: delMotherMedication,
   addNewbornExam,
   updateNewbornExam,
   delNewbornExam : notDefinedYet,

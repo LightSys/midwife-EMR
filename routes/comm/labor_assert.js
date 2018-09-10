@@ -247,6 +247,15 @@ var updateMotherMedication = function(data, cb) {
   assert.ok(_.isFunction(cb), m('cb'));
 };
 
+var delMotherMedication = function(data, cb) {
+  var m = msg('labor_assert/delMotherMedication()');
+  if (verbose) console.log(m());
+
+  assert.ok(_.isObject(data), m('data'));
+  assert.ok(_.has(data, 'id'), m('data.id'));
+  assert.ok(_.isFunction(cb), m('cb'));
+};
+
 var addApgar = function(data, cb) {
   var m = msg('labor_assert/addApgar()');
   if (verbose) console.log(m());
@@ -411,6 +420,7 @@ module.exports = {
   updateMembrane,
   addMotherMedication,
   updateMotherMedication,
+  delMotherMedication,
   addNewbornExam,
   updateNewbornExam,
   addPostpartumCheck,

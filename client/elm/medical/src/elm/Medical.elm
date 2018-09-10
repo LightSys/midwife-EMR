@@ -1564,6 +1564,28 @@ updateMessage incoming model =
                                     , Task.perform ContPPMsg (Task.succeed subMsg)
                                     )
 
+                                Just (DelMotherMedicationType (ContPPMsg (Data.ContPP.DataCache _ _)) babyMedicationId) ->
+                                    -- Note: this is MotherMedicationRecord, not MotherMedicationTypeRecord.
+                                    let
+                                        dc =
+                                            case DCache.get MotherMedication model.dataCache of
+                                                Just (MotherMedicationDataCache recs) ->
+                                                    let
+                                                        newRecs =
+                                                            List.filter (\r -> r.id /= babyMedicationId) recs
+                                                    in
+                                                    DCache.put (MotherMedicationDataCache newRecs) model.dataCache
+
+                                                _ ->
+                                                    model.dataCache
+
+                                        subMsg =
+                                            Data.ContPP.DataCache (Just dc) (Just [ MotherMedication ])
+                                    in
+                                    ( { model | dataCache = dc }
+                                    , Task.perform ContPPMsg (Task.succeed subMsg)
+                                    )
+
                                 _ ->
                                     let
                                         _ =
@@ -1930,6 +1952,9 @@ updateMessage incoming model =
                     newModel2 => Task.perform (always msg) (Task.succeed True)
 
                 Just (UpdateMembraneType msg _) ->
+                    newModel2 => Task.perform (always msg) (Task.succeed True)
+
+                Just (DelMotherMedicationType msg _) ->
                     newModel2 => Task.perform (always msg) (Task.succeed True)
 
                 Just (UpdateMotherMedicationType msg _) ->

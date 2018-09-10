@@ -2749,6 +2749,25 @@ update session msg model =
                 ]
             )
 
+        HandleMotherMedicationDelete id ->
+            let
+                outerMsg =
+                    ProcessTypeMsg
+                        (DelMotherMedicationType
+                            (ContPPMsg
+                                (DataCache Nothing (Just [ MotherMedication ]))
+                            )
+                            id
+                        )
+                        DelMsgType
+                        (U.tableIdToValue id MotherMedication)
+            in
+            ( model
+            , Cmd.none
+            , Cmd.batch
+                [ Task.perform (always outerMsg) (Task.succeed True)
+                ]
+            )
         HandleMotherMedicationModal dialogState refId ->
             case dialogState of
                 OpenDialog ->
@@ -3333,8 +3352,27 @@ populateMotherMedFields model =
                                     }
 
                                 Nothing ->
-                                    case Dict.member medTypeRec.id mdl.motherMedFlds of
-                                        False ->
+                                    -- There is no MotherMedicationRecord which means
+                                    -- one of three things:
+                                    -- 1. If the corresponding motherMedsFlds record is
+                                    --    not there, we need to populate it with defaults
+                                    --    so that the user can enter new data if desired.
+                                    -- 2. If the corresponding motherMedsFlds record is
+                                    --    there and has no id, we need to leave it alone
+                                    --    because it is already set up and maybe partially
+                                    --    filled in by the user but not yet saved.
+                                    -- 3. If the corresponding motherMedsFlds record is
+                                    --    there and has an id, we need to clear the record
+                                    --    back to defaults because that means that the user
+                                    --    just deleted the record and we need to sync the
+                                    --    user form to the same state.
+                                    let
+                                        medFldsRec =
+                                            Dict.get medTypeRec.id mdl.motherMedFlds
+                                    in
+                                    case medFldsRec of
+                                        -- Case 1 above.
+                                        Nothing ->
                                             { mdl
                                                 | motherMedFlds =
                                                     Dict.insert medTypeRec.id
@@ -3342,8 +3380,18 @@ populateMotherMedFields model =
                                                         mdl.motherMedFlds
                                             }
 
-                                        True ->
-                                            mdl
+                                        Just r ->
+                                            if r.id /= Nothing then
+                                                -- Case 3 above.
+                                                { mdl
+                                                    | motherMedFlds =
+                                                        Dict.insert medTypeRec.id
+                                                            (defaultMotherMedicationFlds labor_id)
+                                                            mdl.motherMedFlds
+                                                }
+                                            else
+                                                -- Case 2 above.
+                                                mdl
                     in
                     newModel
                 )
@@ -4838,6 +4886,14 @@ motherMedicationEdit refId name medCfg browserSupportsDate =
     let
         errors =
             validateMotherMedication medCfg
+
+        recordId =
+            case medCfg.id of
+                Just id ->
+                    id
+
+                Nothing ->
+                    -1
     in
     H.div
         [ HA.class "form-border u-high"
@@ -4928,6 +4984,16 @@ motherMedicationEdit refId name medCfg browserSupportsDate =
                 , HE.onClick <| HandleMotherMedicationModal CloseSaveDialog (Just refId)
                 ]
                 [ H.text "Save" ]
+            , if medCfg.id /= Nothing then
+                -- Only show the delete button for existing records.
+                H.button
+                    [ HA.type_ "button"
+                    , HA.class "c-button c-button--ghost u-color-black u-xsmall"
+                    , HE.onClick <| HandleMotherMedicationDelete recordId
+                    ]
+                    [ H.text "Delete" ]
+                else
+                H.span [] []
             ]
         ]
 

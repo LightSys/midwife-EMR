@@ -30,6 +30,7 @@ type SubMsg
     | HandleBabyMedicationDelete Int
     | HandleBabyVaccinationDelete Int
     | HandleBabyLabDelete Int
+    | HandleMotherMedicationDelete Int
     | HandleMotherMedicationModal Dialog (Maybe Int)
     | HandleDischargeModal Dialog
     | HandleContPostpartumCheckModal Dialog (Maybe ContPostpartumCheckId)
