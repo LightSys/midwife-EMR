@@ -10,6 +10,26 @@ var cfg = require('../config')
   , fontAwesomeFile = 'static/font-awesome/fonts/fontawesome-webfont.ttf'
   ;
 
+
+/* --------------------------------------------------------
+ * clipToFit()
+ *
+ * Clip the specified text until it fits into the width
+ * specified, return the text that fits.
+ *
+ * param       doc
+ * param       text
+ * param       width - in points
+ * return      undefined
+ * -------------------------------------------------------- */
+var clipToFit = function(doc, text, width) {
+  var str = text;
+  while (doc.widthOfString(str) > width) {
+    str = str.substring(0, str.length -1);
+  }
+  return str;
+};
+
 /* --------------------------------------------------------
  * centerInCol()
  *
@@ -32,6 +52,26 @@ var centerInCol = function(doc, str, colLeft, colRight, y) {
   doc.text(tmpStr, center - (strWidth/2), y);
 };
 
+/* --------------------------------------------------------
+ * colClipped()
+ *
+ * Writes the specified text within the column boundaries
+ * passed while clipping it if it is too long to fit. Assumes
+ * that font and fontSize have already been set.
+ *
+ * param      doc
+ * param      str
+ * param      colLeft
+ * param      colRight
+ * param      y
+ * return     undefined
+ * -------------------------------------------------------- */
+var colClipped = function(doc, str, colLeft, colRight, y) {
+  var width = colRight - colLeft
+    , tmpStr = clipToFit(doc, '' + str, width)
+    ;
+  doc.text(tmpStr, colLeft, y);
+};
 
 /* --------------------------------------------------------
  * centerText()
@@ -151,6 +191,7 @@ module.exports = {
   FONTS: FONTS
   , centerText: centerText
   , centerInCol: centerInCol
+  , colClipped: colClipped
   , doSiteTitle: doSiteTitle
   , doSiteTitleLong: doSiteTitleLong
   , doReportName: doReportName

@@ -2801,9 +2801,6 @@ update session msg model =
 
                 EditDialog ->
                     let
-                        _ =
-                            Debug.log "HandleMotherMedicationModal EditDialog" <| toString refId
-
                         newMotherMedFlds =
                             case refId of
                                 Just id ->
