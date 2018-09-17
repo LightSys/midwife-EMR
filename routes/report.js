@@ -22,6 +22,7 @@ var _ = require('underscore')
   , hepbRpt = require('./hepbRpt')
   , birthCertificateRpt = require('./birthCertificateRpt')
   , scheduledRpt = require('./scheduledRpt')
+  , dueRpt = require('./dueRpt')
   ;
 
 
@@ -144,6 +145,11 @@ var form = function(req, res) {
     , selected: false
     , label: 'Scheduled Report'
   }
+  , {
+    selectKey: 'due'
+    , selected: false
+    , label: 'Due Report'
+  }
   ];
 
   new Users()
@@ -195,6 +201,7 @@ var run = function(req, res) {
   if (report === 'bcg') bcgRpt.run(req, res);
   if (report === 'hepb') hepbRpt.run(req, res);
   if (report === 'scheduled') scheduledRpt.run(req, res);
+  if (report === 'due') dueRpt.run(req, res);
 };
 
 

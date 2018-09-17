@@ -1,9 +1,9 @@
-/*
+/* 
  * -------------------------------------------------------------------------------
- * scheduledRpt.js
+ * dueRpt.js
  *
- * Generates a report of all scheduled patients in a certain date range.
- * -------------------------------------------------------------------------------
+ * Generates a report of pregnancies due.
+ * ------------------------------------------------------------------------------- 
  */
 
 var _ = require('underscore')
@@ -35,39 +35,6 @@ var _ = require('underscore')
   , Pregnancies = require('../models').Pregnancies
   ;
 
-/* --------------------------------------------------------
- * doFooter()
- *
- * Write the page numbering at the bottom of the report.
- *
- * param      doc
- * param      pageNum
- * param      totalPages
- * param      opts
- * return     undefined
- * -------------------------------------------------------- */
-var doFooter = function(doc, pageNum, totalPages, opts) {
-  var largeFontSize = 15
-    , smallFontSize = 12
-    , leftX = doc.page.margins.left
-    , centerX = doc.page.width / 2
-    , y = doc.page.height - opts.margins.bottom -
-        ((largeFontSize + smallFontSize)*1.5)
-    , str
-    , str2
-    , x
-    , len
-    , len2
-    ;
-
-  // Lower center
-  doc
-    .font(FONTS.Helvetica)
-    .fontSize(smallFontSize);
-  str = 'Page ' + pageNum + ' of ' + totalPages;
-  x = centerX - (doc.widthOfString(str)/2);
-  doc.text(str, x, y);
-};
 
 /* --------------------------------------------------------
  * getColXpos()
@@ -83,14 +50,11 @@ var getColXpos = function(opts) {
     , x = opts.margins.left
     ;
   xPos.push(x);                         // left margin
-  x += 62; xPos.push(x);                // Date
-  x += 60; xPos.push(x);                // Treatment
-  x += 130; xPos.push(x);               // Full name
-  x += 70; xPos.push(x);                // Barangay
-  x += 68; xPos.push(x);                // Phone
-  x += 34; xPos.push(x);                // Current GA
-  x += 62; xPos.push(x);                // EDD
-  x += 62; xPos.push(x);                // Delivered
+  x += 200; xPos.push(x);               // Full name
+  x += 119; xPos.push(x);               // Barangay
+  x += 85; xPos.push(x);                // Phone
+  x += 72; xPos.push(x);                // EDD
+  x += 72; xPos.push(x);                // Last prenatal exam
 
   // --------------------------------------------------------
   // 72 points per inch, assuming 1/2 inch margins, largest
@@ -100,7 +64,6 @@ var getColXpos = function(opts) {
 
   return xPos;
 };
-
 
 /* --------------------------------------------------------
  * doColumnHeader()
@@ -124,61 +87,40 @@ var doColumnHeader = function(doc, opts) {
   // --------------------------------------------------------
   // Headings
   // --------------------------------------------------------
-  // Date
-  tmpStr = 'Date';
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[0], colPos[1], y);
-
-  // Treatment
-  tmpStr = 'Treatment';
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[1], colPos[2], y);
-
   // Full name
   tmpStr = 'Name';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[2], colPos[3], y);
+  centerInCol(doc, tmpStr, colPos[0], colPos[1], y);
 
   // Barangay
   tmpStr = 'Barangay';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[3], colPos[4], y);
+  centerInCol(doc, tmpStr, colPos[1], colPos[2], y);
 
   // Phone
   tmpStr = 'Phone';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[4], colPos[5], y);
-
-  // Curr GA
-  tmpStr = 'GA';
-  doc
-    .font(FONTS.HelveticaBold)
-    .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[5], colPos[6], y);
+  centerInCol(doc, tmpStr, colPos[2], colPos[3], y);
 
   // EDD
   tmpStr = 'EDD';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[6], colPos[7], y);
+  centerInCol(doc, tmpStr, colPos[3], colPos[4], y);
 
-  // Delivered
-  tmpStr = 'Delivered';
+  // Last prenatal exam
+  tmpStr = 'Last Prenatal';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[7], colPos[8], y);
+  centerInCol(doc, tmpStr, colPos[4], colPos[5], y);
 };
 
 
@@ -206,6 +148,50 @@ var doFromTo = function(doc, opts) {
 };
 
 /* --------------------------------------------------------
+ * doFooter()
+ *
+ * Write the page numbering at the bottom of the report.
+ *
+ * param      doc
+ * param      pageNum
+ * param      totalPages
+ * param      numRecs
+ * param      opts
+ * return     undefined
+ * -------------------------------------------------------- */
+var doFooter = function(doc, pageNum, totalPages, numRecs, opts) {
+  var largeFontSize = 15
+    , smallFontSize = 12
+    , leftX = doc.page.margins.left
+    , centerX = doc.page.width / 2
+    , y = doc.page.height - opts.margins.bottom -
+        ((largeFontSize + smallFontSize)*1.5)
+    , str
+    , str2
+    , x
+    , len
+    , len2
+    ;
+
+  // Lower left, but only on the last page.
+  if (pageNum === totalPages) {
+    doc
+      .font(FONTS.HelveticaBold)
+      .fontSize(smallFontSize)
+      .text('Total number due: ' + numRecs, leftX, y)
+  }
+
+  // Lower center
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(smallFontSize);
+  str = 'Page ' + pageNum + ' of ' + totalPages;
+  x = centerX - (doc.widthOfString(str)/2);
+  doc.text(str, x, y);
+};
+
+
+/* --------------------------------------------------------
  * doPages()
  *
  * Builds out the report.
@@ -220,6 +206,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   var currentRow = 0
     , pageNum = 1
     , totalPages = Math.ceil(data.length / rowsPerPage)
+    , numRecs = data.length
     ;
 
   // --------------------------------------------------------
@@ -230,7 +217,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   doReportName(doc, opts.title, 48);
   doFromTo(doc, opts);
   doColumnHeader(doc, opts);
-  doFooter(doc, pageNum, totalPages, opts);
+  doFooter(doc, pageNum, totalPages, numRecs, opts);
   _.each(data, function(rec) {
     doRow(doc, rec, opts, currentRow, 20);
     currentRow++;
@@ -242,7 +229,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
       doReportName(doc, opts.title, 48);
       doFromTo(doc, opts);
       doColumnHeader(doc, opts);
-      doFooter(doc, pageNum, totalPages, opts);
+      doFooter(doc, pageNum, totalPages, numRecs, opts);
     }
   });
 };
@@ -270,10 +257,6 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
     , colPad = 2
     , colPos = getColXpos(opts)
     , tmpStr
-    , tmpWidth
-    , tmpWidth2
-    , pe          // prenatalExam
-    , ltr         // labTestResult
     ;
 
   // --------------------------------------------------------
@@ -301,57 +284,28 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   doc
     .font(FONTS.Helvetica)
     .fontSize(fontSize);
-  // Date
-  tmpStr = moment(data.date).format('MM/DD/YYYY');
-  centerInCol(doc, tmpStr, colPos[0], colPos[1], textY);
-
-  // Treatment (prenatal or postpartum)
-  if (data.recType === 'pre') {
-    tmpStr = 'Prenatal';
-  } else {
-    tmpStr = 'Postpartum';
-  }
-  doc.text(tmpStr, colPos[1] + colPad, textY);
-
   // Full name
   tmpStr = (data.lastname + ', ' + data.firstname).toUpperCase();
-  colClipped(doc, tmpStr, colPos[2] + colPad, colPos[3] - colPad, textY);
+  colClipped(doc, tmpStr, colPos[0] + colPad, colPos[1] - colPad, textY);
 
   // Barangay
-  colClipped(doc, data.address3.toUpperCase(), colPos[3] + colPad, colPos[4] - colPad, textY);
+  colClipped(doc, data.address3.toUpperCase(), colPos[1] + colPad, colPos[2] - colPad, textY);
 
   // Phone
   // Remove anything that is not a digit.
   tmpStr = data.telephone.replace(/\D/g, '');
-  colClipped(doc, tmpStr, colPos[4] + colPad, colPos[5] - colPad, textY);
-
-  // Current GA
-  if (data.useAlternateEdd === 1 && moment.isDate(data.alternateEdd)) {
-    tmpStr = getGA(data.alternateEdd);
-  } else if (moment.isDate(data.lmp)) {
-    tmpStr = getGA(moment(calcEdd(data.lmp), 'YYYY-MM-DD'));
-  } else {
-    tmpStr = '';
-  }
-  centerInCol(doc, tmpStr, colPos[5], colPos[6], textY);
+  //colClipped(doc, tmpStr, colPos[2] + colPad, colPos[3] - colPad, textY);
+  centerInCol(doc, tmpStr, colPos[2], colPos[3], textY);
 
   // Estimated Due Date
-  if (data.useAlternateEdd === 1 && moment.isDate(data.alternateEdd)) {
-    tmpStr = moment(data.alternateEdd).format('MM-DD-YYYY');
-  } else if (moment.isDate(data.lmp)) {
-    tmpStr = calcEdd(data.lmp, 'MM-DD-YYYY');
-  } else {
-    tmpStr = '';
-  }
-  centerInCol(doc, tmpStr, colPos[6], colPos[7], textY);
+  tmpStr = moment(data.EDD).format('MM-DD-YYYY');
+  centerInCol(doc, tmpStr, colPos[3], colPos[4], textY);
 
-  // Date of delivery (postpartum only)
-  tmpStr = '';
-  if (data.birthDatetime && moment.isDate(data.birthDatetime)) {
-    tmpStr = moment(data.birthDatetime).format('MM-DD-YYYY');
-  }
-  centerInCol(doc, tmpStr, colPos[7], colPos[8], textY);
+  // Last prenatal exam
+  tmpStr = moment(data.LastPrenatal).format('MM-DD-YYYY');
+  centerInCol(doc, tmpStr, colPos[4], colPos[5], textY);
 };
+
 
 /* --------------------------------------------------------
  * getData()
@@ -365,49 +319,34 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
  * return     Promise
  * -------------------------------------------------------- */
 var getData = function(dateFrom, dateTo) {
-  var data = []
-    , knex = Bookshelf.DB.knex
+  var knex = Bookshelf.DB.knex
+    , data
     ;
 
   return new Promise(function(resolve, reject) {
-    var pnSQL;
+    var dueSQL;
 
-    // --------------------------------------------------------
-    // Get the prenatal exams that are scheduled that do not
-    // have a labor record.
-    // --------------------------------------------------------
-    pnSQL  = 'SELECT DISTINCT p.id, "pre" AS recType, pe.returnDate AS date, p.lastname, p.firstname, p.address3, p.telephone, ';
-    pnSQL += 'p.lmp, p.sureLMP, p.alternateEdd, p.useAlternateEdd ';
-    pnSQL += 'FROM pregnancy p INNER JOIN prenatalExam pe ON p.id = pe.pregnancy_id ';
-    pnSQL += 'WHERE pe.returnDate >= "' + dateFrom + '" AND pe.returnDate <= "' + dateTo + '" ';
-    pnSQL += 'AND NOT EXISTS(SELECT * FROM labor WHERE pregnancy_id = p.id)';
+    dueSQL  = 'SELECT p.id AS ID, p.lastname, p.firstname, p.address3, p.telephone, p.alternateEdd AS EDD, ';
+    dueSQL += '(SELECT MAX(pe.date) FROM prenatalExam pe WHERE pe.pregnancy_id = p.id) AS LastPrenatal '
+    dueSQL += 'FROM pregnancy p WHERE p.useAlternateEdd = 1 AND p.alternateEdd IS NOT NULL ';
+    dueSQL += 'AND NOT EXISTS (SELECT * FROM labor l WHERE l.pregnancy_id = p.id) ';
+    dueSQL += 'AND p.alternateEdd >= "' + dateFrom + '" AND alternateEdd <= "' + dateTo + '" ';
+    dueSQL += 'UNION SELECT p.id AS ID, p.lastname, p.firstname, p.address3, p.telephone, DATE_ADD(p.lmp, INTERVAL 280 DAY) AS EDD, ';
+    dueSQL += '(SELECT MAX(pe.date) FROM prenatalExam pe WHERE pe.pregnancy_id = p.id) AS LastPrenatal '
+    dueSQL += 'FROM pregnancy p WHERE p.useAlternateEdd = 0 AND p.lmp IS NOT NULL ';
+    dueSQL += 'AND NOT EXISTS (SELECT * FROM labor l WHERE l.pregnancy_id = p.id) ';
+    dueSQL += 'AND DATE_ADD(p.lmp, INTERVAL 280 DAY) >= "' + dateFrom + '" ';
+    dueSQL += 'AND DATE_ADD(p.lmp, INTERVAL 280 DAY) <= "' + dateTo + '" ORDER BY EDD';
+
+    //console.log(dueSQL);
 
     knex
-      .raw(pnSQL)
+      .raw(dueSQL)
       .then(function(resp) {
-        data.push(resp[0]);
+        data = resp[0];
       })
       .then(function() {
-        var ppSQL;
-        // --------------------------------------------------------
-        // Get the postpartum checks that are scheduled.
-        // --------------------------------------------------------
-        ppSQL  = 'SELECT DISTINCT p.id, "post" AS recType, pp.nextScheduledCheck AS date, p.lastname, p.firstname, p.address3, p.telephone, ';
-        ppSQL += 'p.lmp, p.sureLMP, p.alternateEdd, p.useAlternateEdd, ls2.birthDatetime ';
-        ppSQL += 'FROM pregnancy p INNER JOIN labor l ON l.pregnancy_id = p.id ';
-        ppSQL += 'INNER JOIN postpartumCheck pp ON pp.labor_id = l.id ';
-        ppSQL += 'INNER JOIN laborStage2 ls2 ON l.id = ls2.labor_id ';
-        ppSQL += 'WHERE pp.nextScheduledCheck >= "' + dateFrom + '" ';
-        ppSQL += 'AND pp.nextScheduledCheck <= "' + dateTo + '" ';
-
-        return knex.raw(ppSQL);
-      })
-      .then(function(resp) {
-        data.push(resp[0]);
-      })
-      .then(function() {
-        // Flatten the two arrays into one.
-        resolve(_.flatten(data));
+        resolve(data);
       })
       .caught(function(err) {
         logError(err);
@@ -436,13 +375,13 @@ var doReport = function(flds, writable) {
         , layout: 'portrait'
         , size: 'letter'
         , info: {
-            Title: 'Scheduled Report'
+            Title: 'Due Report'
             , Author: 'Midwife-EMR Application'
-            , Subject: 'Scheduled Report'
+            , Subject: 'Due Report'
         }
       }
     , doc = new PDFDocument(options)
-    , rowsPerPage = 50    // Number of rows per page of this report.
+    , rowsPerPage = 30    // Number of rows per page of this report.
     , opts = {}
     ;
 
@@ -458,20 +397,7 @@ var doReport = function(flds, writable) {
 
   // Build the parts of the document.
   getData(opts.fromDate, opts.toDate)
-    .then(function(rawData) {
-      var data = []
-        ;
-
-      // --------------------------------------------------------
-      // Sort records by date (ignoring time) then by recType,
-      // prenatal before postpartum.
-      // --------------------------------------------------------
-      data = _.sortBy(rawData, function(rec) {
-        var d = new Date(rec.date.getFullYear(), rec.date.getMonth(), rec.date.getDate());
-        if (rec.recType === 'pre') return d.getTime();
-        return d.getTime() + 100;
-      });
-
+    .then(function(data) {
       doPages(doc, data, rowsPerPage, opts);
     })
     .then(function() {
@@ -480,10 +406,11 @@ var doReport = function(flds, writable) {
 };
 
 
+
 /* --------------------------------------------------------
  * run()
  *
- * Run the scheduled report.
+ * Run the due report.
  * -------------------------------------------------------- */
 var run = function(req, res) {
   var flds = _.omit(req.body, ['_csrf'])
@@ -505,7 +432,7 @@ var run = function(req, res) {
     req.flash('error', req.gettext('You must supply a TO date for the report.'));
   }
   if (! fieldsReady) {
-    logWarn('Scheduled report: not all fields supplied.');
+    logWarn('Due report: not all fields supplied.');
     return res.redirect(cfg.path.reportForm);
   }
 
@@ -518,7 +445,7 @@ var run = function(req, res) {
       var size = stats.size;
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'inline; ScheduledRpt.pdf');
+      res.setHeader('Content-Disposition', 'inline; DueRpt.pdf');
       res.setHeader('Content-Transfer-Encoding', 'binary');
       res.setHeader('Content-Length', ('' + size));
       fs.createReadStream(filePath).pipe(res);
@@ -528,6 +455,7 @@ var run = function(req, res) {
 
   doReport(flds, writable);
 };
+
 
 
 
