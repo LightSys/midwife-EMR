@@ -25,6 +25,9 @@ type LaborId
     = LaborId Int
 
 
+{-| Note that the dischargeDate field is not actually used in practice.
+See the discharge table's dateTime field instead.
+-}
 type alias LaborRecord =
     { id : Int
     , admittanceDate : Date
