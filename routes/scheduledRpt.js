@@ -217,9 +217,11 @@ var doFromTo = function(doc, opts) {
  * return      undefined
  * -------------------------------------------------------- */
 var doPages = function(doc, data, rowsPerPage, opts) {
-  var currentRow = 0
+  var currRowOnPage = 0
+    , currentRow = 0
     , pageNum = 1
     , totalPages = Math.ceil(data.length / rowsPerPage)
+    , totalRows = data.length
     ;
 
   // --------------------------------------------------------
@@ -232,11 +234,12 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   doColumnHeader(doc, opts);
   doFooter(doc, pageNum, totalPages, opts);
   _.each(data, function(rec) {
-    doRow(doc, rec, opts, currentRow, 20);
+    doRow(doc, rec, opts, currRowOnPage, 20);
+    currRowOnPage++;
     currentRow++;
-    if (currentRow >= rowsPerPage) {
+    if (currRowOnPage >= rowsPerPage && currentRow % rowsPerPage === 0 && currentRow !== totalRows) {
       doc.addPage();
-      currentRow = 0;
+      currRowOnPage = 0;
       pageNum++;
       doSiteTitle(doc, 24);
       doReportName(doc, opts.title, 48);
@@ -442,7 +445,7 @@ var doReport = function(flds, writable) {
         }
       }
     , doc = new PDFDocument(options)
-    , rowsPerPage = 50    // Number of rows per page of this report.
+    , rowsPerPage = 30    // Number of rows per page of this report.
     , opts = {}
     ;
 
