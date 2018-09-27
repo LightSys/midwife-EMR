@@ -88,6 +88,11 @@ var getData = function(dateFrom, dateTo) {
         var laborSQL;
         // --------------------------------------------------------
         // Those in labor within the date range.
+        // - First clause is for any admittance date between (inclusive) the
+        //   report dates specified.
+        // - Second clause is for any admittance date before the
+        //   beginning report date and the discharge date anytime
+        //   equal to or after the starting report date.
         // --------------------------------------------------------
         laborSQL  = 'SELECT DISTINCT p.id, "labor" as recType, l.admittanceDate as date, p.lastname, ';
         laborSQL += 'p.firstname, p.address3, p.telephone ';
@@ -96,13 +101,8 @@ var getData = function(dateFrom, dateTo) {
         laborSQL += 'UNION SELECT DISTINCT p.id, "labor" as recType, l.admittanceDate as date, p.lastname, ';
         laborSQL += 'p.firstname, p.address3, p.telephone ';
         laborSQL += 'FROM pregnancy p INNER JOIN labor l ON l.pregnancy_id = p.id ';
-        laborSQL += 'WHERE l.admittanceDate < "' + dateFrom + '" AND l.dischargeDate <= "' + dateFrom + '" ';
-        laborSQL += 'AND l.dischargeDate <= "' + dateTo + '" ';
-        laborSQL += 'UNION SELECT DISTINCT p.id, "labor" as recType, l.admittanceDate as date, p.lastname, ';
-        laborSQL += 'p.firstname, p.address3, p.telephone ';
-        laborSQL += 'FROM pregnancy p INNER JOIN labor l ON l.pregnancy_id = p.id ';
-        laborSQL += 'INNER JOIN discharge d ON d.labor_id = l.id ';
-        laborSQL += 'WHERE l.admittanceDate < "' + dateFrom + '" AND d.dateTime > "' + dateTo + '"';
+        laborSQL += 'INNER JOIN discharge d ON l.id = d.labor_id ';
+        laborSQL += 'WHERE l.admittanceDate < "' + dateFrom + '" AND d.datetime >= "' + dateFrom + '" ';
 
         return knex.raw(laborSQL);
       })
