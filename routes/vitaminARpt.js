@@ -68,7 +68,9 @@ var doColumnHeader = function(doc) {
     .text('First', x + 123, y + 25)
     .text('Age', x + 183, y + middleLineHeaderY)
     .text('GP', x + 215, y + middleLineHeaderY)
-    .text('Address', x + 301, y + middleLineHeaderY)
+    .text('Address', x + 301, y + 7)
+    .text('District', x + 260, y + 25)
+    .text('Barangay', x + 350, y + 25)
     .text('DOD', x + 480, y + middleLineHeaderY)
     ;
 
@@ -96,6 +98,8 @@ var doColumnHeader = function(doc) {
     .lineTo(x + 520, y + height)
     .moveTo(x, y + (height/2))
     .lineTo(x + 182, y + (height/2))
+    .moveTo(x + 242, y + (height/2))
+    .lineTo(x + 420, y + (height/2))
     .stroke();
 
 };
@@ -235,7 +239,8 @@ var getData = function(dateFrom, dateTo) {
           .where('motherMedication.medicationDate', '>=', dateFrom)
           .where('motherMedication.medicationDate', '<', fixedDateTo)
           .whereIn('motherMedication.motherMedicationType', medTypeIds)
-          .orderBy('laborStage2.birthDatetime', 'ASC')
+          .orderByRaw('pregnancy.address4 ASC, pregnancy.address3 ASC')
+          //.orderBy('laborStage2.birthDatetime', 'ASC')
           .select()
           .then(function(list) {
             data = list;
@@ -278,6 +283,8 @@ var doRow = function(doc, data, rowNum, rowHeight) {
     , tmpStr
     , addr1 = data.address1? data.address1.slice(0, 28): ''
     , addr2 = data.address3? data.address3 + ' ' + (data.address4? data.address4: ''): ''
+    , district = data.address4? data.address4: ''
+    , barangay = data.address3? data.address3: ''
     ;
 
   // Create the cell borders
@@ -331,7 +338,8 @@ var doRow = function(doc, data, rowNum, rowHeight) {
   doc
     .fontSize(10)
     .text(addr1, startX + 245, startY + 3)
-    .text(addr2, startX + 245, startY + 15);
+    .text(district, startX + 245, startY + 15)
+    .text(barangay, startX + 350, startY + 15);
 
   // Given Date and time
   doc
@@ -420,7 +428,7 @@ var doReport = function(flds, writable, logisticsName) {
 
   opts.fromDate = flds.dateFrom;
   opts.toDate = flds.dateTo;
-  opts.logisticsName = logisticsName;
+  opts.logisticsName = logisticsName? logisticsName: '';
 
   // --------------------------------------------------------
   // Write the report to the writable stream passed.

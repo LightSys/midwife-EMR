@@ -36,6 +36,7 @@ var _ = require('underscore')
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
   , centerInCol = require('./reportGeneral').centerInCol
+  , colClipped = require('./reportGeneral').colClipped
   , NO_RECORDS_FOUND_TYPE = 1000
   ;
 
@@ -182,7 +183,21 @@ var doColumnHeader = function(doc, opts) {
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[4], colPos[5], y);
+  centerInCol(doc, tmpStr, colPos[4], colPos[5], y - 15);
+
+  // District
+  tmpStr = 'District';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont)
+    .text(tmpStr, colPos[4] + 3, y);
+
+  // Barangay
+  tmpStr = 'Barangay';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont)
+    .text(tmpStr, colPos[4] + ((colPos[5] - colPos[4])/2), y);
 
   // Time of birth
   tmpStr = 'Time of birth';
@@ -262,6 +277,7 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
     , smallFontSize = 8
     , textY = startY + (rowHeight/2) - (fontSize/2) + 2
     , textAddressY = startY + (rowHeight/2) - (smallFontSize/2) - 3
+    , textAddressY2 = startY + rowHeight - (smallFontSize/2) - 4
     , colPadLeft = 2
     , colPos = getColXpos(opts)
     , tmpStr
@@ -309,27 +325,25 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   // Middlename
   doc.text(data.middlename.toUpperCase(), colPos[3] + colPadLeft, textY);
 
-  // Address
-  // --------------------------------------------------------
-  // "Highlight" the address cell if the client resides in Agdao
-  // per the custom fields. This really is not a PDFKit
-  // hightlight - we draw a yellow filled rectangle in the cell
-  // but it has the effect that we want.
-  // --------------------------------------------------------
-  if (data.booleanVal) {
-    doc
-      .rect(colPos[4] + 2, textAddressY - 1, colPos[5] - colPos[4] - 5, rowHeight - 4)
-      .fill('yellow');
-    doc.fillColor('black');     // Set back to black.
-  }
-
   // --------------------------------------------------------
   // We wrap the address on two lines using a smaller font.
   // --------------------------------------------------------
   doc
     .fontSize(smallFontSize);
-  tmpStr = combine(', ', data.address1, data.address4, data.city, data.state);
-  doc.text(tmpStr, colPos[4] + colPadLeft, textAddressY, {width: colPos[5] - colPos[4], height: rowHeight});
+  tmpStr = combine(', ', data.address1, data.city, data.state);
+  colClipped(doc, tmpStr, colPos[4] + colPadLeft, colPos[5] - colPadLeft, textAddressY);
+
+  // District
+  tmpStr = data.address4? data.address4: '';
+  doc
+    .fontSize(smallFontSize)
+    .text(tmpStr, colPos[4] + colPadLeft, textAddressY2)
+
+  // Barangay
+  tmpStr = data.address3? data.address3: '';
+  doc
+    .fontSize(smallFontSize)
+    .text(tmpStr, colPos[4] + ((colPos[5] - colPos[4])/2), textAddressY2)
 
   // Time of birth
   doc
@@ -419,17 +433,16 @@ var getData = function(dateFrom, dateTo) {
 
   sql =  'SELECT ls2.birthDatetime, b.lastname, b.firstname, b.middlename, p.address1, ';
   sql += 'p.address2, p.address3, p.address4, p.city, p.state, b.birthWeight, ' ;
-  sql += 'bv.vaccinationDate, cf.booleanVal ';
+  sql += 'bv.vaccinationDate ';
   sql += 'FROM babyVaccinationType bvt INNER JOIN babyVaccination bv ON bv.babyVaccinationType = bvt.id '
   sql += 'INNER JOIN baby b ON bv.baby_id = b.id ';
   sql += 'INNER JOIN labor l ON b.labor_id = l.id ';
   sql += 'INNER JOIN laborStage2 ls2 ON ls2.labor_id = l.id ';
   sql += 'INNER JOIN pregnancy p ON l.pregnancy_id = p.id ';
-  sql += 'LEFT JOIN customField cf ON p.id = cf.pregnancy_id ';
-  sql += 'LEFT JOIN customFieldType cft ON cf.customFieldType_id = cft.id ';
   sql += 'WHERE bv.vaccinationDate >= "' + dateFrom + '" ';
   sql += 'AND bv.vaccinationDate <= "' + dateTo + '" ';
-  sql += 'AND bvt.name LIKE "%BCG%"';
+  sql += 'AND bvt.name LIKE "%BCG%" '
+  sql += 'ORDER BY p.address4 ASC, p.address3 ASC';
 
   return new Promise(function(resolve, reject) {
     knex

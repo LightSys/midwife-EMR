@@ -35,6 +35,7 @@ var _ = require('underscore')
   , doSiteTitle = require('./reportGeneral').doSiteTitle
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
+  , colClipped = require('./reportGeneral').colClipped
   , NO_RECORDS_FOUND_TYPE = 1000
   ;
 
@@ -83,6 +84,8 @@ var doColumnHeader = function(doc) {
     .text('LMP', x + 220, y + 10)
     .text('GP', x + 268, y + 10)
     .text('Address', x + 326, y + 10)
+    .text('District', x + 295, y + 25)
+    .text('Barangay', x + 352, y + 25)
     .text('Deworming', x + 461, y + 10)
     .text('Date/Type', x + 416, y + 25)
     .text('Remarks', x + 515, y + 25)
@@ -204,50 +207,25 @@ var getData = function(dateFrom, dateTo) {
           .join('medicationType', 'medication.medicationType', '=', 'medicationType.id')
           .column('medicationType.name', 'medicationType.description')
           .join('pregnancy', 'medication.pregnancy_id', '=', 'pregnancy.id')
-          .column('pregnancy.lastname', 'pregnancy.firstname', 'pregnancy.lmp', 'pregnancy.gravida', 'pregnancy.para', 'pregnancy.address1', 'pregnancy.city')
+          .column('pregnancy.lastname'
+            , 'pregnancy.firstname'
+            , 'pregnancy.lmp'
+            , 'pregnancy.gravida'
+            , 'pregnancy.para'
+            , 'pregnancy.address1'
+            , 'pregnancy.city'
+            , 'pregnancy.address3'
+            , 'pregnancy.address4'
+            )
           .join('patient', 'pregnancy.patient_id', '=', 'patient.id')
           .column('patient.dob')
           .where('medication.date', '>=', dateFrom)
           .andWhere('medication.date', '<=', dateTo)
           .whereIn('medication.medicationType', medTypeIds)
+          .orderByRaw('pregnancy.address4 ASC, pregnancy.address3 ASC')
           .select()
           .then(function(list) {
             data = list;
-            // --------------------------------------------------------
-            // Add all of the placeholders for the data obtained below.
-            // --------------------------------------------------------
-            _.each(data, function(rec) {
-              rec.customFields = [];
-            });
-          })
-          .then(function() {
-            // --------------------------------------------------------
-            // Get the custom field data. This report is customized for
-            // a customization field named 'Agdao' in the customFieldType
-            // table. If the custom field is not there, there will be
-            // no adverse affect on the report. If it is there, the
-            // Agdao addresses will be highlighted.
-            // --------------------------------------------------------
-            return new CustomFields().query()
-              .column('customField.pregnancy_id', 'customField.booleanVal',
-                'customFieldType.name')
-              .innerJoin('customFieldType', 'customField.customFieldType_id',
-                'customFieldType.id')
-              .whereIn('customField.pregnancy_id', pregIds)
-              .andWhere('customFieldType.name', '=', 'Agdao')
-              .andWhere('customField.booleanVal', '=', 1)
-              .select();
-          })
-          .then(function(list) {
-            // --------------------------------------------------------
-            // Add the custom fields to the records to be returned.
-            // --------------------------------------------------------
-            _.each(list, function(rec) {
-              var meds = _.where(data, {pregnancy_id: rec.pregnancy_id});
-              _.each(meds, function(med) {
-                med.customFields.push(_.omit(rec, ['pregnancy_id']));
-              });
-            });
           })
           .then(function() {
             resolve(data);
@@ -328,25 +306,21 @@ var doRow = function(doc, data, rowNum, rowHeight) {
     .fontSize(12)
     .text(gravida + '-' + para, startX + 265, startY + 9);
 
-  // --------------------------------------------------------
-  // "Highlight" the address cell if the client resides in Agdao
-  // per the custom fields. This really is not a PDFKit
-  // hightlight - we draw a yellow filled rectangle in the cell
-  // but it has the effect that we want.
-  // --------------------------------------------------------
-  if (data.customFields && data.customFields.length > 0 &&
-      _.findWhere(data.customFields, {name: 'Agdao'})) {
-    doc
-      .rect(startX + 295, startY + 2, 112, rowHeight - 4)
-      .fill('yellow');
-    doc.fillColor('black');     // Set back to black.
-  }
-
   // Address
   doc
-    .fontSize(8)
-    .text(data.address1.slice(0, 28), startX + 295, startY + 3)
-    .text(data.city, startX + 295, startY + 15);
+    .fontSize(8);
+  colClipped(doc, data.address1 + ' ' + data.city, startX + 295, startX + 410, startY + 3);
+
+  // District
+  doc
+    .fontSize(8);
+  colClipped(doc, data.address4, startX + 295, startX + 350, startY + 15);
+
+  // Barangay
+  doc
+    .fontSize(8);
+  colClipped(doc, data.address3, startX + 353, startX + 412, startY + 15);
+
   // Date/Type
   doc
     .fontSize(8)

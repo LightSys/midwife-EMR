@@ -41,6 +41,7 @@ var _ = require('underscore')
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
   , centerInCol = require('./reportGeneral').centerInCol
+  , colClipped = require('./reportGeneral').colClipped
   ;
 
 
@@ -59,6 +60,7 @@ var doColumnHeader = function(doc, opts) {
     , width = doc.page.width - doc.page.margins.right - doc.page.margins.left
     , height = 40
     , colPos = getColXpos(opts)
+    , colPadLeft = 5
     , largeFont = 11
     , smallFont = 8
     ;
@@ -113,7 +115,21 @@ var doColumnHeader = function(doc, opts) {
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[6], colPos[7], y);
+  centerInCol(doc, tmpStr, colPos[6], colPos[7], y - 11);
+
+  // District
+  tmpStr = 'District';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(smallFont)
+    .text(tmpStr, colPos[6] + colPadLeft, y);
+
+  // Barangay
+  tmpStr = 'Barangay';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(smallFont)
+    .text(tmpStr, colPos[6] + ((colPos[7] - colPos[6])/2), y);
 
   // AOG
   tmpStr = 'AOG';
@@ -410,7 +426,16 @@ var getData = function(dateFrom, dateTo) {
           .join('vaccinationType', 'vaccination.vaccinationType', '=', 'vaccinationType.id')
           .column('vaccinationType.name', 'vaccinationType.description')
           .join('pregnancy', 'vaccination.pregnancy_id', '=', 'pregnancy.id')
-          .column('pregnancy.lastname', 'pregnancy.firstname', 'pregnancy.lmp', 'pregnancy.gravida', 'pregnancy.para', 'pregnancy.address1', 'pregnancy.city')
+          .column('pregnancy.lastname'
+            , 'pregnancy.firstname'
+            , 'pregnancy.lmp'
+            , 'pregnancy.gravida'
+            , 'pregnancy.para'
+            , 'pregnancy.address1'
+            , 'pregnancy.address3'
+            , 'pregnancy.address4'
+            , 'pregnancy.city'
+            )
           .join('patient', 'pregnancy.patient_id', '=', 'patient.id')
           .column('patient.dob')
           .whereIn('vaccination.vaccinationType', vacTypeIds)
@@ -482,35 +507,6 @@ var getData = function(dateFrom, dateTo) {
           var labResults = _.where(data, {pregnancy_id: rec.pregnancy_id});
           _.each(labResults, function(lr) {
             lr.labTestResults.push(_.omit(rec, ['pregnancy_id']));
-          });
-        });
-      })
-      .then(function() {
-        // --------------------------------------------------------
-        // Get the custom field data. This report is customized for
-        // a customization field named 'Agdao' in the customFieldType
-        // table. If the custom field is not there, there will be
-        // no adverse affect on the report. If it is there, the
-        // Agdao addresses will be highlighted.
-        // --------------------------------------------------------
-        return new CustomFields().query()
-          .column('customField.pregnancy_id', 'customField.booleanVal',
-            'customFieldType.name')
-          .innerJoin('customFieldType', 'customField.customFieldType_id',
-            'customFieldType.id')
-          .whereIn('customField.pregnancy_id', pregIds)
-          .andWhere('customFieldType.name', '=', 'Agdao')
-          .andWhere('customField.booleanVal', '=', 1)
-          .select();
-      })
-      .then(function(list) {
-        // --------------------------------------------------------
-        // Add the custom fields to the records to be returned.
-        // --------------------------------------------------------
-        _.each(list, function(rec) {
-          var agdaos = _.where(data, {pregnancy_id: rec.pregnancy_id});
-          _.each(agdaos, function(rec2) {
-            rec2.customFields.push(_.omit(rec, ['pregnancy_id']));
           });
         });
       })
@@ -603,20 +599,6 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   tmpStr += _.isNull(data.para)? '0': data.para;
   centerInCol(doc, tmpStr, colPos[5], colPos[6], textY);
 
-  // --------------------------------------------------------
-  // "Highlight" the address cell if the client resides in Agdao
-  // per the custom fields. This really is not a PDFKit
-  // hightlight - we draw a yellow filled rectangle in the cell
-  // but it has the effect that we want.
-  // --------------------------------------------------------
-  if (data.customFields && data.customFields.length > 0 &&
-      _.findWhere(data.customFields, {name: 'Agdao'})) {
-    doc
-      .rect(colPos[6] + 2, textY - 3, colPos[7] - colPos[6] - 5, rowHeight - 4)
-      .fill('yellow');
-    doc.fillColor('black');     // Set back to black.
-  }
-
   // Address
   tmpStr = data.address1 + ', ' + data.city;
   tmpWidth = doc.widthOfString(tmpStr);   // address1 length
@@ -624,7 +606,15 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
   if (tmpWidth > tmpWidth2) {
     tmpStr = tmpStr.slice(0, ((tmpStr.length * tmpWidth2)/tmpWidth) - 1);
   }
-  doc.text(tmpStr, colPos[6] + colPadLeft, textY);
+  doc.text(tmpStr, colPos[6] + colPadLeft, textY - 5);
+
+  // District
+  tmpStr = data.address4? data.address4: '';
+  colClipped(doc, tmpStr, colPos[6] + colPadLeft, colPos[6] + ((colPos[7] - colPos[6])/2), textY + 6);
+
+  // Barangay
+  tmpStr = data.address3? data.address3: '';
+  colClipped(doc, tmpStr, colPos[6] + ((colPos[7] - colPos[6])/2), colPos[7] - colPadLeft, textY + 6);
 
   // AOG calculated as of the from date of the report
   // TODO: does this need to be PUFT if 37 weeks or more like on the Phil Health
@@ -778,7 +768,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   doColumnHeader(doc, opts);
   doFooter(doc, pageNum, totalPages, totalVaccinations, opts);
   _.each(data, function(rec) {
-    doRow(doc, rec, opts, currentRow, 14);
+    doRow(doc, rec, opts, currentRow, 28);
     currentRow++;
     if (currentRow >= rowsPerPage) {
       doc.addPage();
@@ -821,7 +811,7 @@ var doReport = function(flds, writable, logisticsName) {
         }
       }
     , doc = new PDFDocument(options)
-    , rowsPerPage = 31    // Number of rows per page of this report.
+    , rowsPerPage = 15    // Number of rows per page of this report.
     , opts = {}
     ;
 
@@ -882,7 +872,9 @@ var doReport = function(flds, writable, logisticsName) {
       // --------------------------------------------------------
       // Sort the final data set by date of the vaccination.
       // --------------------------------------------------------
-      data = _.sortBy(data, 'vacDate');
+      data = _.sortBy(data, function(row) {
+        return row.address4 + ' ' + row.address3;
+      });
 
       doPages(doc, data, rowsPerPage, opts);
 

@@ -151,13 +151,11 @@ var init = function() {
     refresh(dataName).then(function(list) {
       fn(list);
     });
-    // Turned off interval refresh for now because there are not yet any
-    // administrative screeens to update these lists in real-time.
-    //setInterval(function() {
-      //refresh(dataName).then(function(list) {
-        //fn(list);
-      //});
-    //}, interval);
+    setInterval(function() {
+      refresh(dataName).then(function(list) {
+        fn(list);
+      });
+    }, interval);
   };
 
   // --------------------------------------------------------
