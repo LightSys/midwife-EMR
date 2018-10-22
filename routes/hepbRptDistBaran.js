@@ -1,8 +1,8 @@
 /*
  * -------------------------------------------------------------------------------
- * bcgRpt.js
+ * hepbRpt.js
  *
- * Produces the baby BCG report.
+ * Produces the baby Hep B report.
  * -------------------------------------------------------------------------------
  */
 
@@ -13,6 +13,7 @@ var _ = require('underscore')
   , PDFDocument = require('pdfkit')
   , fs = require('fs')
   , os = require('os')
+  , util = require('util')
   , path = require('path')
   , Baby = require('../models').Baby
   , Labor = require('../models').Labor
@@ -36,6 +37,7 @@ var _ = require('underscore')
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
   , centerInCol = require('./reportGeneral').centerInCol
+  , colClipped = require('./reportGeneral').colClipped
   , NO_RECORDS_FOUND_TYPE = 1000
   ;
 
@@ -114,14 +116,16 @@ var getColXpos = function(opts) {
     , x = opts.margins.left
     ;
   xPos.push(x);                         // left margin
-  x += 78; xPos.push(x);                // Date of birth
-  x += 115; xPos.push(x);               // Baby Lastname
-  x += 130; xPos.push(x);               // Baby Firstname
-  x += 115; xPos.push(x);                // Baby Middlename
-  x += 153; xPos.push(x);                // Address
-  x += 78; xPos.push(x);                // Time of birth
-  x += 58; xPos.push(x);                // Weight
-  x += 78; xPos.push(x);                // Date of BCG
+  x += 62; xPos.push(x);                // Date of birth
+  x += 110; xPos.push(x);               // Baby Lastname
+  x += 127; xPos.push(x);               // Baby Firstname
+  x += 110; xPos.push(x);                // Baby Middlename
+  x += 120; xPos.push(x);                // Address
+  x += 58; xPos.push(x);                // Time of birth
+  x += 48; xPos.push(x);                // Weight
+  x += 62; xPos.push(x);                // Date of Hep B
+  x += 58; xPos.push(x);                // Time of Hep B
+  x += 50; xPos.push(x);                // within 24 hours
 
   return xPos;
 };
@@ -138,80 +142,104 @@ var getColXpos = function(opts) {
  * -------------------------------------------------------- */
 var doColumnHeader = function(doc, opts) {
   var x = doc.page.margins.left
-    , y = 110
     , width = doc.page.width - doc.page.margins.right - doc.page.margins.left
     , height = 40
     , colPos = getColXpos(opts)
     , largeFont = 11
     , smallFont = 8
+    , y = 100
+    , y2 = y + (height/2) - (largeFont/2)
     ;
 
   // --------------------------------------------------------
   // Headings
   // --------------------------------------------------------
   // Date of birth
-  tmpStr = 'Date of birth';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[0], colPos[1], y);
+  centerInCol(doc, 'Date', colPos[0], colPos[1], y);
+  centerInCol(doc, 'of Birth', colPos[0], colPos[1], y2);
 
   // Baby Lastname
-  tmpStr = 'Last';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[1], colPos[2], y);
+  centerInCol(doc, 'Last', colPos[1], colPos[2], y2);
 
   // Baby Firstname
-  tmpStr = 'First';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[2], colPos[3], y);
+  centerInCol(doc, 'First', colPos[2], colPos[3], y2);
 
   // Baby Middlename
-  tmpStr = 'Middle';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[3], colPos[4], y);
+  centerInCol(doc, 'Middle', colPos[3], colPos[4], y2);
 
   // Address
-  tmpStr = 'Address';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[4], colPos[5], y);
+  centerInCol(doc, 'Address', colPos[4], colPos[5], y);
+
+  // District
+  tmpStr = 'District';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont)
+    .text(tmpStr, colPos[4] + 3, y2);
+
+  // Barangay
+  tmpStr = 'Barangay';
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont)
+    .text(tmpStr, colPos[4] + ((colPos[5] - colPos[4])/2), y2);
 
   // Time of birth
-  tmpStr = 'Time of birth';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[5], colPos[6], y);
+  centerInCol(doc, 'Time', colPos[5], colPos[6], y);
+  centerInCol(doc, 'of Birth', colPos[5], colPos[6], y2);
 
   // Weight
-  tmpStr = 'Weight';
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[6], colPos[7], y);
+  centerInCol(doc, 'Weight', colPos[6], colPos[7], y2);
 
-  // Date of BCG
-  tmpStr = 'Date of BCG';
+  // Date of Hep B
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(largeFont);
-  centerInCol(doc, tmpStr, colPos[7], colPos[8], y);
+  centerInCol(doc, 'Date of', colPos[7], colPos[8], y);
+  centerInCol(doc, 'Hep B', colPos[7], colPos[8], y2);
+
+  // Time of Hep B
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, 'Time of', colPos[8], colPos[9], y);
+  centerInCol(doc, 'Hep B', colPos[8], colPos[9], y2);
+
+  // Hep B within 24 hours
+  doc
+    .font(FONTS.HelveticaBold)
+    .fontSize(largeFont);
+  centerInCol(doc, 'HepB in', colPos[9], colPos[10], y);
+  centerInCol(doc, '24 hrs', colPos[9], colPos[10], y2);
 };
 
 
-var doPages = function(doc, data, rowsPerPage, opts) {
+var doPages = function(doc, data, rowsPerPage, totalBirths, opts) {
   var currentRow = 0
     , pageNum = 1
-    , totalVaccinations = data.length
-    , totalPages = Math.ceil(data.length / rowsPerPage)
+    , totalVaccinations = data.rows.length
+    , totalPages = Math.ceil(data.rows.length / rowsPerPage)
     ;
 
   // --------------------------------------------------------
@@ -223,8 +251,8 @@ var doPages = function(doc, data, rowsPerPage, opts) {
   doFromTo(doc, opts);
   doBabyNameHeader(doc, opts);
   doColumnHeader(doc, opts);
-  doFooter(doc, pageNum, totalPages, totalVaccinations, opts);
-  _.each(data, function(rec) {
+  doFooter(doc, pageNum, totalPages, totalVaccinations, totalBirths, opts);
+  _.each(data.rows, function(rec) {
     doRow(doc, rec, opts, currentRow, 20);
     currentRow++;
     if (currentRow >= rowsPerPage) {
@@ -236,7 +264,7 @@ var doPages = function(doc, data, rowsPerPage, opts) {
       doFromTo(doc, opts);
       doBabyNameHeader(doc, opts);
       doColumnHeader(doc, opts);
-      doFooter(doc, pageNum, totalPages, totalVaccinations, opts);
+      doFooter(doc, pageNum, totalPages, totalVaccinations, totalBirths, opts);
     }
   });
 };
@@ -248,27 +276,28 @@ var doPages = function(doc, data, rowsPerPage, opts) {
  * Writes a row on the report including borders and text.
  *
  * param      doc
- * param      data
+ * param      row
  * param      opts
  * param      rowNum
  * param      rowHeight
  * return     undefined
  * -------------------------------------------------------- */
-var doRow = function(doc, data, opts, rowNum, rowHeight) {
+var doRow = function(doc, row, opts, rowNum, rowHeight) {
   var cells = []
     , startX = doc.page.margins.left
-    , startY = 120 + (rowNum * rowHeight)
+    , startY = 130 + (rowNum * rowHeight)
     , fontSize = 11
     , smallFontSize = 8
     , textY = startY + (rowHeight/2) - (fontSize/2) + 2
     , textAddressY = startY + (rowHeight/2) - (smallFontSize/2) - 3
+    , textAddressY2 = startY + rowHeight - (smallFontSize/2) - 4
     , colPadLeft = 2
     , colPos = getColXpos(opts)
     , tmpStr
-    , tmpWidth
-    , tmpWidth2
-    , pe          // prenatalExam
-    , ltr         // labTestResult
+    , birthDatetime
+    , vacDatetime
+    , duration
+
     ;
 
   // --------------------------------------------------------
@@ -297,53 +326,66 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
     .font(FONTS.Helvetica)
     .fontSize(fontSize);
   // Date
-  tmpStr = moment(data.birthDatetime).format('MM/DD/YYYY');
+  tmpStr = moment(row.birthDatetime).format('MM/DD/YYYY');
   centerInCol(doc, tmpStr, colPos[0], colPos[1], textY);
 
   // Lastname
-  doc.text(data.lastname.toUpperCase(), colPos[1] + colPadLeft, textY);
+  doc.text(row.lastname.toUpperCase(), colPos[1] + colPadLeft, textY);
 
   // Firstname
-  doc.text(data.firstname.toUpperCase(), colPos[2] + colPadLeft, textY);
+  doc.text(row.firstname.toUpperCase(), colPos[2] + colPadLeft, textY);
 
   // Middlename
-  doc.text(data.middlename.toUpperCase(), colPos[3] + colPadLeft, textY);
-
-  // Address
-  // --------------------------------------------------------
-  // "Highlight" the address cell if the client resides in Agdao
-  // per the custom fields. This really is not a PDFKit
-  // hightlight - we draw a yellow filled rectangle in the cell
-  // but it has the effect that we want.
-  // --------------------------------------------------------
-  if (data.booleanVal) {
-    doc
-      .rect(colPos[4] + 2, textAddressY - 1, colPos[5] - colPos[4] - 5, rowHeight - 4)
-      .fill('yellow');
-    doc.fillColor('black');     // Set back to black.
-  }
+  doc.text(row.middlename.toUpperCase(), colPos[3] + colPadLeft, textY);
 
   // --------------------------------------------------------
   // We wrap the address on two lines using a smaller font.
   // --------------------------------------------------------
   doc
     .fontSize(smallFontSize);
-  tmpStr = combine(', ', data.address1, data.address4, data.city, data.state);
-  doc.text(tmpStr, colPos[4] + colPadLeft, textAddressY, {width: colPos[5] - colPos[4], height: rowHeight});
+  tmpStr = combine(', ', row.address1, row.address4, row.city, row.state);
+  colClipped(doc, tmpStr, colPos[4] + colPadLeft, colPos[5] - colPadLeft, textAddressY);
+
+  // District
+  tmpStr = row.address4? row.address4: '';
+  doc
+    .fontSize(smallFontSize)
+    .text(tmpStr, colPos[4] + colPadLeft, textAddressY2)
+
+  // Barangay
+  tmpStr = row.address3? row.address3: '';
+  doc
+    .fontSize(smallFontSize)
+    .text(tmpStr, colPos[4] + ((colPos[5] - colPos[4])/2), textAddressY2)
 
   // Time of birth
   doc
     .fontSize(fontSize);
-  tmpStr = moment(data.birthDatetime).format('hh:mm A');
+  tmpStr = moment(row.birthDatetime).format('hh:mm A');
   centerInCol(doc, tmpStr, colPos[5], colPos[6], textY);
 
   // Time of birth
-  tmpStr = data.birthWeight;
+  tmpStr = row.birthWeight;
   centerInCol(doc, tmpStr, colPos[6], colPos[7], textY);
 
-  // Date of BCG
-  tmpStr = moment(data.vaccinationDate).format('MM/DD/YYYY');
+  // Date of Hep B
+  tmpStr = moment(row.vaccinationDate).format('MM/DD/YYYY');
   centerInCol(doc, tmpStr, colPos[7], colPos[8], textY);
+
+  // Time of Hep B
+  tmpStr = moment(row.vaccinationDate).format('hh:mm A');
+  centerInCol(doc, tmpStr, colPos[8], colPos[9], textY);
+
+  // Hep B with in 24 hours
+  birthDatetime = moment(row.birthDatetime);
+  vacDatetime = moment(row.vaccinationDate);
+  duration = vacDatetime.diff(birthDatetime);
+  if (moment.duration(duration).asMinutes() < 1440) {
+    tmpStr = 'Yes';
+  } else {
+    tmpStr = 'No';
+  }
+  centerInCol(doc, tmpStr, colPos[9], colPos[10], textY);
 };
 
 /* --------------------------------------------------------
@@ -356,16 +398,18 @@ var doRow = function(doc, data, opts, rowNum, rowHeight) {
  * param      pageNum
  * param      totalPages
  * param      totalPcs
+ * param      totalBirths
  * param      opts
  * return     undefined
  * -------------------------------------------------------- */
-var doFooter = function(doc, pageNum, totalPages, totalPcs, opts) {
+var doFooter = function(doc, pageNum, totalPages, totalPcs, totalBirths, opts) {
   var largeFontSize = 15
     , smallFontSize = 12
     , leftX = doc.page.margins.left
     , centerX = doc.page.width / 2
     , y = doc.page.height - opts.margins.bottom -
         ((largeFontSize + smallFontSize)*1.5)
+    , y2 = y + largeFontSize
     , str
     , str2
     , x
@@ -377,7 +421,8 @@ var doFooter = function(doc, pageNum, totalPages, totalPcs, opts) {
   doc
     .font(FONTS.HelveticaBold)
     .fontSize(smallFontSize)
-    .text('Total number of BCG given: ' + totalPcs, leftX, y);
+    .text('Total number of births: ' + totalBirths, leftX, y)
+    .text('Total number of Hep B given: ' + totalPcs, leftX, y2);
 
   // Lower center
   doc
@@ -403,33 +448,39 @@ var doFooter = function(doc, pageNum, totalPages, totalPcs, opts) {
     .font(FONTS.HelveticaBold)
     .fontSize(largeFontSize)
     .text(str, x, y);
-  y += largeFontSize;
   doc
     .font(FONTS.Helvetica)
     .fontSize(smallFontSize)
-    .text(str2, x, y);
+    .text(str2, x, y2);
 };
 
 
 var getData = function(dateFrom, dateTo) {
   var knex = Bookshelf.DB.knex
     , sql
+    , sql2
     , data = {}
+    , fixedDateTo = moment(dateTo).add(1, 'days').format('YYYY-MM-DD')
     ;
 
   sql =  'SELECT ls2.birthDatetime, b.lastname, b.firstname, b.middlename, p.address1, ';
-  sql += 'p.address2, p.address3, p.address4, p.city, p.state, b.birthWeight, ' ;
-  sql += 'bv.vaccinationDate, cf.booleanVal ';
+  sql += 'p.address2, p.address3, p.address4, p.city, p.state, p.id, b.birthWeight, ' ;
+  sql += 'bv.vaccinationDate ';
   sql += 'FROM babyVaccinationType bvt INNER JOIN babyVaccination bv ON bv.babyVaccinationType = bvt.id '
   sql += 'INNER JOIN baby b ON bv.baby_id = b.id ';
   sql += 'INNER JOIN labor l ON b.labor_id = l.id ';
   sql += 'INNER JOIN laborStage2 ls2 ON ls2.labor_id = l.id ';
   sql += 'INNER JOIN pregnancy p ON l.pregnancy_id = p.id ';
-  sql += 'LEFT JOIN customField cf ON p.id = cf.pregnancy_id ';
-  sql += 'LEFT JOIN customFieldType cft ON cf.customFieldType_id = cft.id ';
-  sql += 'WHERE bv.vaccinationDate >= "' + dateFrom + '" ';
-  sql += 'AND bv.vaccinationDate <= "' + dateTo + '" ';
-  sql += 'AND bvt.name LIKE "%BCG%"';
+  sql += 'WHERE ls2.birthDatetime >= "' + dateFrom + '" ';
+  sql += 'AND ls2.birthDatetime <= "' + fixedDateTo + '" ';
+  sql += 'AND bvt.name LIKE "%Hep B%" '
+  sql += 'ORDER BY p.address4 ASC, p.address3 ASC';
+
+  sql2 =  'SELECT COUNT(*) AS count FROM baby b ';
+  sql2 += 'INNER JOIN labor l ON l.id = b.labor_id ';
+  sql2 += 'INNER JOIN laborStage2 ls2 ON ls2.labor_id = l.id ';
+  sql2 += 'WHERE ls2.birthDatetime >= "' + dateFrom + '" ';
+  sql2 += 'AND ls2.birthDatetime <= "' + fixedDateTo + '" ';
 
   return new Promise(function(resolve, reject) {
     knex
@@ -439,12 +490,12 @@ var getData = function(dateFrom, dateTo) {
         return resp[0];
       })
       .then(function(rows) {
-        data = rows;
+        data.rows = rows;
 
         // --------------------------------------------------------
         // Convert nulls into empty strings for string fields.
         // --------------------------------------------------------
-        _.each(data, function(row) {
+        _.each(data.rows, function(row) {
           if (! row.middlename) row.middlename = '';
           if (! row.lastname) row.lastname = '';
           if (! row.firstname) row.firstname = '';
@@ -453,6 +504,20 @@ var getData = function(dateFrom, dateTo) {
           if (! row.address3) row.address3 = '';
           if (! row.address4) row.address4 = '';
         });
+      })
+      .then(function() {
+        // --------------------------------------------------------
+        // Get the total number of babies born during this period.
+        // --------------------------------------------------------
+        return knex
+          .raw(sql2)
+          .then(function(resp) {
+            var count = _.flatten(resp)[0].count;
+            return count;
+          });
+      })
+      .then(function(count) {
+        data.count = count;
       })
       .then(function() {
         resolve(data);
@@ -485,9 +550,9 @@ var doReport = function(flds, writable, logisticsName) {
         , layout: 'landscape'
         , size: 'A4'
         , info: {
-            Title: 'Birth Dose BCG Report'
+            Title: 'Birth Dose HEP B Report'
             , Author: 'Midwife-EMR Application'
-            , Subject: 'BCG Report'
+            , Subject: 'Hep B Report'
         }
       }
     , doc = new PDFDocument(options)
@@ -512,9 +577,9 @@ var doReport = function(flds, writable, logisticsName) {
   // or an Error.
   getData(opts.fromDate, opts.toDate)
     .then(function(result) {
-      if (_.isArray(result)) {
-        opts.totalRows = result.length;
-        doPages(doc, result, rowsPerPage, opts);
+      if (_.isArray(result.rows)) {
+        opts.totalRows = result.rows.length;
+        doPages(doc, result, rowsPerPage, result.count, opts);
       } else {
         // --------------------------------------------------------
         // An "error" occurred of some sort. It may be just that
@@ -588,7 +653,7 @@ var run = function(req, res) {
       var size = stats.size;
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'inline; BCG-Report.pdf');
+      res.setHeader('Content-Disposition', 'inline; HepB-Report.pdf');
       res.setHeader('Content-Transfer-Encoding', 'binary');
       res.setHeader('Content-Length', ('' + size));
       fs.createReadStream(filePath).pipe(res);

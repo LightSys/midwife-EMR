@@ -10,16 +10,21 @@ var _ = require('underscore')
   , cfg = require('../config')
   , User = require('../models').User
   , Users = require('../models').Users
-  , deworming = require('./dewormingRpt')
+  , dewormingRpt = require('./dewormingRpt')
+  , dewormingRptDistBaran = require('./dewormingRptDistBaran')
   , iron = require('./ironRpt')
-  , vaccine = require('./vaccinationRpt')
+  , vaccinationRpt = require('./vaccinationRpt')
+  , vaccinationRptDistBaran = require('./vaccinationRptDistBaran')
   , summaryRpt = require('./summaryRpt')
   , dohMasterList = require('./dohMasterListRpt')
   , philHealthDailyRpt = require('./philHealthDailyRpt')
   , inactiveRpt = require('./inactiveRpt')
   , vitaminARpt = require('./vitaminARpt')
+  , vitaminARptDistBaran = require('./vitaminARptDistBaran')
   , bcgRpt = require('./bcgRpt')
+  , bcgRptDistBaran = require('./bcgRptDistBaran')
   , hepbRpt = require('./hepbRpt')
+  , hepbRptDistBaran = require('./hepbRptDistBaran')
   , birthCertificateRpt = require('./birthCertificateRpt')
   , scheduledRpt = require('./scheduledRpt')
   , dueRpt = require('./dueRpt')
@@ -60,6 +65,11 @@ var form = function(req, res) {
     selectKey: 'deworming'
     , selected: false
     , label: 'Deworming Report'
+  }
+  , {
+    selectKey: 'dewormingDistBaran'
+    , selected: false
+    , label: 'Deworming by Dist/Barangay'
   }
   , {
     selectKey: 'iron1'
@@ -121,6 +131,26 @@ var form = function(req, res) {
     , selected: false
     , label: 'TT/Td Given Date 5'
   }
+  , { selectKey: 'vaccineDistBaran1'
+    , selected: false
+    , label: 'TT/Td Given 1 by Dist/Barangay'
+  }
+  , { selectKey: 'vaccineDistBaran2'
+    , selected: false
+    , label: 'TT/Td Given 2 by Dist/Barangay'
+  }
+  , { selectKey: 'vaccineDistBaran3'
+    , selected: false
+    , label: 'TT/Td Given 3 by Dist/Barangay'
+  }
+  , { selectKey: 'vaccineDistBaran4'
+    , selected: false
+    , label: 'TT/Td Given 4 by Dist/Barangay'
+  }
+  , { selectKey: 'vaccineDistBaran5'
+    , selected: false
+    , label: 'TT/Td Given 5 by Dist/Barangay'
+  }
   , {
     selectKey: 'inactive'
     , selected: false
@@ -132,14 +162,29 @@ var form = function(req, res) {
     , label: 'Vitamin A'
   }
   , {
+    selectKey: 'vitaminADistBaran'
+    , selected: false
+    , label: 'Vitamin A by Dist/Barangay'
+  }
+  , {
     selectKey: 'bcg'
     , selected: false
     , label: 'BCG Report'
   }
   , {
+    selectKey: 'bcgDistBaran'
+    , selected: false
+    , label: 'BCG Report by Dist/Barangay'
+  }
+  , {
     selectKey: 'hepb'
     , selected: false
     , label: 'Hep B Report'
+  }
+  , {
+    selectKey: 'hepbDistBaran'
+    , selected: false
+    , label: 'Hep B by Dist/Barangay'
   }
   , {
     selectKey: 'scheduled'
@@ -189,23 +234,32 @@ var run = function(req, res) {
   var report = req.body && req.body.report || void 0
     ;
 
-  if (report === 'deworming') deworming.run(req, res);
+  if (report === 'deworming') dewormingRpt.run(req, res);
+  if (report === 'dewormingDistBaran') dewormingRptDistBaran.run(req, res);
   if (report === 'iron1') iron.run(req, res);
   if (report === 'iron2') iron.run(req, res);
   if (report === 'iron3') iron.run(req, res);
   if (report === 'iron4') iron.run(req, res);
   if (report === 'iron5') iron.run(req, res);
-  if (report === 'vaccine1') vaccine.run(req, res);
-  if (report === 'vaccine2') vaccine.run(req, res);
-  if (report === 'vaccine3') vaccine.run(req, res);
-  if (report === 'vaccine4') vaccine.run(req, res);
-  if (report === 'vaccine5') vaccine.run(req, res);
+  if (report === 'vaccine1') vaccinationRpt.run(req, res);
+  if (report === 'vaccine2') vaccinationRpt.run(req, res);
+  if (report === 'vaccine3') vaccinationRpt.run(req, res);
+  if (report === 'vaccine4') vaccinationRpt.run(req, res);
+  if (report === 'vaccine5') vaccinationRpt.run(req, res);
+  if (report === 'vaccineDistBaran1') vaccinationRptDistBaran.run(req, res);
+  if (report === 'vaccineDistBaran2') vaccinationRptDistBaran.run(req, res);
+  if (report === 'vaccineDistBaran3') vaccinationRptDistBaran.run(req, res);
+  if (report === 'vaccineDistBaran4') vaccinationRptDistBaran.run(req, res);
+  if (report === 'vaccineDistBaran5') vaccinationRptDistBaran.run(req, res);
   if (report === 'dohmasterlist') dohMasterList.run(req, res);
   if (report === 'philHealthDaily') philHealthDailyRpt.run(req, res);
   if (report === 'inactive') inactiveRpt.run(req, res);
   if (report === 'vitaminA') vitaminARpt.run(req, res);
+  if (report === 'vitaminADistBaran') vitaminARptDistBaran.run(req, res);
   if (report === 'bcg') bcgRpt.run(req, res);
+  if (report === 'bcgDistBaran') bcgRptDistBaran.run(req, res);
   if (report === 'hepb') hepbRpt.run(req, res);
+  if (report === 'hepbDistBaran') hepbRptDistBaran.run(req, res);
   if (report === 'scheduled') scheduledRpt.run(req, res);
   if (report === 'due') dueRpt.run(req, res);
   if (report === 'treated') treatedRpt.run(req, res);
