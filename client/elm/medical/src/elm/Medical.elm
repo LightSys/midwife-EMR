@@ -34,6 +34,7 @@ import Data.Pregnancy as Pregnancy exposing (PregnancyId(..), PregnancyRecord, g
 import Data.Processing exposing (ProcessId(..))
 import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
+import Data.SystemMessage exposing (SystemMessageType(..))
 import Data.Table exposing (Table(..))
 import Data.TableRecord exposing (TableRecord(..))
 import Data.Toast exposing (ToastRecord, ToastType(..))
@@ -897,6 +898,20 @@ updateMessage incoming model =
         SiteMessage siteMsg ->
             -- Note: we are discarding siteMsg.payload.updatedAt until we need it.
             { model | siteMessages = siteMsg.payload.data } => Cmd.none
+
+        SystemMessage sysMsgType ->
+            -- We only have one type of system message so far and that is designed
+            -- to immediately get everyone out of the system.
+            let
+                newCmd =
+                    case sysMsgType of
+                        SystemMode 2 ->
+                            Navigation.load "/logout"
+
+                        _ ->
+                            Cmd.none
+            in
+            model => newCmd
 
         DataAddMessage dataAddMsg ->
             -- Results of attempting to add a record on the server.

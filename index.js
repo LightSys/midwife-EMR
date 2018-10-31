@@ -76,8 +76,62 @@ var express = require('express')
   , server      // https server
   , workerPort = cfg.host.tlsPort
   , sessionCfg
+  , SYSTEM_MODE_FILE = 'SystemMode.dat'
+  , checkSystemModeMS = 1000 * 30
+  , systemMode = 0
+  , SYSTEM_MODE_CHANGE = require('./constants').SYSTEM_MODE_CHANGE
   ;
 
+/* --------------------------------------------------------
+ * getNewSystemMode()
+ *
+ * Returns the new system mode to the caller.
+ *
+ * param       sysModeFile
+ * return      the new system mode
+ * -------------------------------------------------------- */
+var getNewSystemMode = function(sysModeFile) {
+  var tmpSystemMode
+    , newSystemMode
+    ;
+
+  if (fs.existsSync(sysModeFile)) {
+    tmpSystemMode = fs.readFileSync(sysModeFile, {encoding: 'utf8'}).trim();
+    if (tmpSystemMode === '0') {
+      newSystemMode = 0;
+    } else if (tmpSystemMode === '1') {
+      newSystemMode = 1;
+    } else if (tmpSystemMode === '2') {
+      newSystemMode = 2;
+    } else {
+      newSystemMode = 0;
+    }
+  } else {
+    newSystemMode = 0;
+  }
+
+  return newSystemMode;
+};
+
+
+/* --------------------------------------------------------
+ * setSystemMode()
+ *
+ * Set the systemMode field in the request object. Derives
+ * the value to set from the systemMode module variable.
+ *
+ * param        req
+ * param        res
+ * param        next
+ * return       undefined
+ * -------------------------------------------------------- */
+var setSystemMode = function(req, res, next) {
+  if (req && req.session) {
+    req.session.systemMode = systemMode;
+    req.session.save();
+    return next();
+  }
+};
 
 // --------------------------------------------------------
 // We insure that the data in the keyValue table is
@@ -386,6 +440,24 @@ KeyValue.getKeyValues().then(function(data) {
   }
 
   // --------------------------------------------------------
+  // Check for the system mode that we are in per the
+  // SystemMode.dat file in the top-level directory. We do this
+  // when we start as well as periodically thereafter.
+  // --------------------------------------------------------
+  systemMode = getNewSystemMode(SYSTEM_MODE_FILE);
+  process.send({cmd: SYSTEM_MODE_CHANGE, systemMode: systemMode});
+  if (systemMode !== 0) logInfo('Starting in SystemMode: ' + systemMode);
+
+  setInterval(function() {
+    var tmpSystemMode = getNewSystemMode(SYSTEM_MODE_FILE);
+    if (tmpSystemMode !== systemMode) {
+      systemMode = tmpSystemMode;
+      process.send({cmd: SYSTEM_MODE_CHANGE, systemMode: systemMode});
+      logInfo('New SystemMode: ' + systemMode);
+    }
+  }, checkSystemModeMS);
+
+  // --------------------------------------------------------
   // express-device functionality: render different views
   // according to device type.
   // --------------------------------------------------------
@@ -420,17 +492,16 @@ KeyValue.getKeyValues().then(function(data) {
   // Group of methods that are commonly needed for
   // many requests.
   // common: populates the request with info for protected routes.
-  // attending: routes a attending can use without a supervisor set.
+  // spaCommon: same but for API calls.
   // --------------------------------------------------------
-  common.push(logRoute, logDevice, auth, setRoleInfo, i18nLocals);
-
-  spaCommon.push(logRoute, logDevice, spaAuth, setRoleInfo, i18nLocals);
+  common.push(logRoute, logDevice, setSystemMode, auth, setRoleInfo, i18nLocals);
+  spaCommon.push(logRoute, logDevice, setSystemMode, spaAuth, setRoleInfo, i18nLocals);
 
   // --------------------------------------------------------
   // Login and logout
   // --------------------------------------------------------
-  app.get(cfg.path.login, logRoute, setRoleInfo, home.login);
-  app.post(cfg.path.login, logRoute, setRoleInfo, home.loginPost);
+  app.get(cfg.path.login, logRoute, setRoleInfo, setSystemMode, home.login);
+  app.post(cfg.path.login, logRoute, setRoleInfo, setSystemMode, home.loginPost);
   app.get(cfg.path.logout, logRoute, clearRoleInfo, home.logout);
 
   // --------------------------------------------------------

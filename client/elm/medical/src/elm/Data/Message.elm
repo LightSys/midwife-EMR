@@ -12,6 +12,7 @@ module Data.Message
 
 import Data.Processing exposing (ProcessId(..))
 import Data.SiteMessage exposing (SiteKeyValue(..), SiteMsg, siteMsg)
+import Data.SystemMessage exposing (SystemMessageType, systemMessageType)
 import Data.Table exposing (Table(..), decodeTable)
 import Data.TableRecord as DTR exposing (TableRecord(..), tableRecord)
 import Json.Decode as JD
@@ -367,6 +368,7 @@ dataDelMsgResponse =
 type IncomingMessage
     = UnknownMessage String
     | SiteMessage SiteMsg
+    | SystemMessage SystemMessageType
     | DataSelectMessage DataSelectMsg
     | DataAddMessage DataAddMsg
     | DataChgMessage DataChgMsg
@@ -403,6 +405,9 @@ namespaceHelper namespace =
     case namespace of
         "SITE" ->
             JD.map SiteMessage siteMsg
+
+        "SYSTEM" ->
+            JD.map SystemMessage systemMessageType
 
         "DATA" ->
             JD.field "msgType" JD.string

@@ -7,10 +7,11 @@
  * ------------------------------------------------------------------------------- 
  */
 
-const
-  KEY_VALUE_UPDATE = 'key_value_update'
+const KEY_VALUE_UPDATE = 'key_value_update'
+  , SYSTEM_MODE_CHANGE = 'system_mode_change'
   ;
 
 module.exports = {
   KEY_VALUE_UPDATE
+  , SYSTEM_MODE_CHANGE
 };

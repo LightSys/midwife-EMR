@@ -252,6 +252,8 @@ var rx = require('rx')
   , assertModule = require('./comm_assert')
   , DO_ASSERT = process.env.NODE_ENV? process.env.NODE_ENV === 'development': false
   , KEY_VALUE_UPDATE = require('./constants').KEY_VALUE_UPDATE
+  , SYSTEM_MODE_CHANGE = require('./constants').SYSTEM_MODE_CHANGE
+  , systemMode = 0    // default until changed
   ;
 
 /* --------------------------------------------------------
@@ -1379,6 +1381,20 @@ var init = function(io, sessionMiddle) {
           } else {
             logCommInfo('Client: Received UNHANDLED msg: ' + JSON.stringify(wrapper));
           }
+        } else {
+          // --------------------------------------------------------
+          // We need systemMode, so record it at the module level.
+          // --------------------------------------------------------
+          if (wrapper.cmd === SYSTEM_MODE_CHANGE) {
+            if (systemMode !== wrapper.systemMode) {
+              systemMode = wrapper.systemMode;
+
+              // --------------------------------------------------------
+              // Send this message on the system RxJS stream.
+              // --------------------------------------------------------
+              sendSystem('SystemMode', systemMode);
+            }
+          }
         }
     }
   });
@@ -1500,6 +1516,15 @@ var init = function(io, sessionMiddle) {
       if (json.namespace !== CONST.TYPE.DATA) {
           console.log('##### ERROR: invalid namespace received from client: ' + json.namespace);
           return;
+      }
+
+      // --------------------------------------------------------
+      // We only process data messages from the non-administrator
+      // clients when we are in systemMode 0 or 1, not 2.
+      // --------------------------------------------------------
+      if (systemMode === 2 && socket.request.session.roleInfo.roleName !== 'administrator') {
+        logCommInfo('SPA: SystemMode 2, ignoring message.');
+        return;
       }
 
       // --------------------------------------------------------
@@ -1635,7 +1660,7 @@ var init = function(io, sessionMiddle) {
           // and rxJS messages. This needs to be done when we actually get
           // more types of system messages other than SYSTEM_LOG.
           console.log('=== Socket id: ' + socket.id + ' ===');
-          socket.send(wrapSystem(data.msgType, data));
+          socket.send(wrapSystem(data.msgType? data.msgType: 'SYSTEM', data));
         }
       },
       function(err) {

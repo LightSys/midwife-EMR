@@ -97,7 +97,17 @@ var clearRoleInfo = function(app) {
  * return      boolean
  * -------------------------------------------------------- */
 var hasRole = function(req, role) {
-  if (! req.session || ! req.session.roleInfo) return false;
+  if (! req.session || ! req.session.roleInfo) {
+    // --------------------------------------------------------
+    // Alternatively, check another way if setRoleInfo()
+    // has not yet been called, which would be the case if
+    // the user has just logged in.
+    // --------------------------------------------------------
+    if (req.user && _.isFunction(req.user.related)) {
+      return req.user.related('role').toJSON().name === role;
+    }
+    return false;
+  }
   return req.session.roleInfo.roleName === role
 };
 
@@ -134,27 +144,47 @@ var inRoles = function(roles) {
  * auth()
  *
  * Is the user already authenticated?
+ *
+ * Note that when the system is in mode 2, only administrators
+ * are allowed to use the system, so we send non-administrators
+ * back to the login screen even if they are authenticated.
  * -------------------------------------------------------- */
 function auth(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  if (req.session) {
-    req.session.pendingUrl = req.url;
-    req.session.save();
+  if (req.session && req.session.systemMode === 2 && ! hasRole(req, 'administrator')) {
+    res.redirect(cfg.path.login);
+    req.session.regenerate(function() {
+      logInfo('Unauthorized access during systemMode 2.');
+    });
+  } else {
+    if (req.isAuthenticated()) { return next(); }
+    if (req.session) {
+      req.session.pendingUrl = req.url;
+      req.session.save();
+    }
+    res.redirect(cfg.path.login);
   }
-  res.redirect(cfg.path.login);
 }
 
 /* --------------------------------------------------------
  * spaAuth()
  *
  * Like auth(), but returns a 401 if the user is not
- * authenticated.
+ * authenticated, or returns a 403 if the system is in mode
+ * 2 which does not allow non-administrators to use the system.
  * -------------------------------------------------------- */
 function spaAuth(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.statusCode = 401;
-  res.end();
-  logInfo('Unauthorized: [' + req.method + '] ' + req.url);
+  if (req.session && req.session.systemMode === 2 && ! hasRole(req, 'administrator')) {
+    req.session.regenerate(function() {
+      logInfo('Unauthorized SPA access during systemMode 2.');
+      res.status(403);
+      res.end();
+    });
+  } else {
+    if (req.isAuthenticated()) { return next(); }
+    logInfo('Unauthorized: [' + req.method + '] ' + req.url);
+    res.status(401);
+    res.end();
+  }
 }
 
 module.exports = {

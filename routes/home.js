@@ -20,6 +20,7 @@ var passport = require('passport')
   , logWarn = require('../util').logWarn
   , logError = require('../util').logError
   , util = require('../util')
+  , hasRole = require('../auth').hasRole
   , _ = require('underscore')
   , Event = require('../models').Event
   , prenatalHistory = 'stats:prenatalHistory'
@@ -443,7 +444,23 @@ var login = function(req, res) {
     title: req.gettext('Please log in')
     , message: req.session.messages
     , messages: req.flash()
-  };
+    }
+    , sysModeMsg = 'Only administrators can login right now.'
+    ;
+
+  // --------------------------------------------------------
+  // Put a message on the screen about not accepting non-administrator
+  // logins if we are system mode 1 or 2 right now.
+  // --------------------------------------------------------
+  if (req && req.session) {
+    if (req.session.systemMode === 1 || req.session.systemMode === 2) {
+      if (data.messages.info && _.isArray(data.messages.info)) {
+        data.messages.info.push(sysModeMsg);
+      } else {
+        data.messages.info = [sysModeMsg];
+      }
+    }
+  }
   res.render('login', data);
 };
 
@@ -454,6 +471,12 @@ var login = function(req, res) {
  * page.
  * -------------------------------------------------------- */
 var loginPost = function(req, res, next) {
+  var sysMode = 0
+    ;
+
+  // Take note of the systemMode if available.
+  if (req && req.session) sysMode = req.session.systemMode;
+
   passport.authenticate('local', function(err, user, info) {
     if (err) {
       logError('err: %s', err);
@@ -467,6 +490,7 @@ var loginPost = function(req, res, next) {
     }
     req.logIn(user, function(err) {
       var options = {}
+        , roleName
         ;
       if (err) { return next(err); }
       // --------------------------------------------------------
@@ -475,21 +499,40 @@ var loginPost = function(req, res, next) {
       req.session.user = _.omit(user.toJSON(), 'password');
 
       // --------------------------------------------------------
-      // Record the event and redirect to the home page.
+      // Handle systemMode 1 or 2, which only allows administrators to
+      // login to the system.
       // --------------------------------------------------------
-      options.sid = req.sessionID;
-      options.user_id = user.get('id');
-      Event.loginEvent(options).then(function() {
-        var pendingUrl = req.session.pendingUrl
-          ;
-        if (pendingUrl) {
-          delete req.session.pendingUrl;
-          req.session.save();
-          res.redirect(pendingUrl);
-        } else {
-          return res.redirect('/');
-        }
-      });
+      roleName = req.user.related('role').toJSON().name;
+      if ((sysMode === 1 || sysMode === 2) && roleName !== 'administrator') {
+        // --------------------------------------------------------
+        // Only administrators are allowed to login while in system
+        // mode 1 or 2.
+        // --------------------------------------------------------
+        logInfo('Login abandoned due to System Mode ' + sysMode + '.');
+        req.session.regenerate(function() {
+          // We don't need a flash message because the login screen
+          // should already have a message posted about access being
+          // restricted to administrators.
+          return res.redirect(cfg.path.login);
+        });
+      } else {
+        // --------------------------------------------------------
+        // Record the event and redirect to the home page.
+        // --------------------------------------------------------
+        options.sid = req.sessionID;
+        options.user_id = user.get('id');
+        Event.loginEvent(options).then(function() {
+          var pendingUrl = req.session.pendingUrl
+            ;
+          if (pendingUrl) {
+            delete req.session.pendingUrl;
+            req.session.save();
+            res.redirect(pendingUrl);
+          } else {
+            res.redirect('/');
+          }
+        });
+      }
     });
   })(req, res, next);
 };
