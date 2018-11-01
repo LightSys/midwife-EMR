@@ -8,6 +8,7 @@ module Utils
         , getPageDef
         , handleSessionExpired
         , humanReadableError
+        , intToSystemMode
         , locationToPage
         , maybeStringToFloat
         , maybeStringToInt
@@ -18,6 +19,7 @@ module Utils
         , stringToErrorCode
         , stringToNotificationType
         , stringToTable
+        , systemModeToInt
         , tabIndexToPage
         , tableToString
         )
@@ -807,3 +809,31 @@ stringToErrorCode str =
 
         _ ->
             UnknownErrorCode
+
+
+intToSystemMode : Int -> SystemMode
+intToSystemMode mode =
+    case mode of
+        0 ->
+            SystemMode_0
+
+        1 ->
+            SystemMode_1
+
+        2 ->
+            SystemMode_2
+
+        _ ->
+            SystemMode_0
+
+systemModeToInt : SystemMode -> Int
+systemModeToInt mode =
+    case mode of
+        SystemMode_0 ->
+            0
+
+        SystemMode_1 ->
+            1
+
+        SystemMode_2 ->
+            2

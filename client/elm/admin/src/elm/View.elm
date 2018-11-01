@@ -1,5 +1,7 @@
 module View exposing (..)
 
+-- LOCAL IMPORTS
+
 import Color as Color
 import Html as Html exposing (Html, div, p, text)
 import Html.Attributes as HA
@@ -7,20 +9,17 @@ import List.Extra as LE
 import Material
 import Material.Button as Button
 import Material.Color as MColor
+import Material.Elevation as Elevation
 import Material.Grid as Grid
 import Material.Icons.Action as Icon exposing (exit_to_app)
 import Material.Layout as Layout
 import Material.Options as Options
-import Material.Table as Table
 import Material.Snackbar as Snackbar
+import Material.Table as Table
 import Material.Typography as Typo
-import String
-
-
--- LOCAL IMPORTS
-
 import Model exposing (..)
 import Msg exposing (Msg(..))
+import String
 import Types exposing (..)
 import Utils exposing (getPageDef, tabIndexToPage)
 import Views.Barcodes
@@ -28,8 +27,8 @@ import Views.KeyValue
 import Views.Login
 import Views.Profile
 import Views.Tables
-import Views.Utils as VU
 import Views.Users
+import Views.Utils as VU
 
 
 type alias Mdl =
@@ -109,25 +108,25 @@ view model =
                         PageNotFoundPage ->
                             viewPageNotFound
     in
-        Layout.render Mdl
-            model.mdl
-            [ Layout.fixedHeader
-            , Layout.fixedTabs
-            , Layout.selectedTab selectedTab
-            , Layout.onSelectTab (\idx -> tabIndexToPage idx pageDef model |> SelectPage)
+    Layout.render Mdl
+        model.mdl
+        [ Layout.fixedHeader
+        , Layout.fixedTabs
+        , Layout.selectedTab selectedTab
+        , Layout.onSelectTab (\idx -> tabIndexToPage idx pageDef model |> SelectPage)
+        ]
+        { header = headerSmall "Midwife-EMR" model
+        , drawer = []
+        , tabs =
+            if hasLoadedUserProfile then
+                tabs tabsList
+            else
+                tabs []
+        , main =
+            [ theView model
+            , Html.map (\m -> Snackbar m) <| Snackbar.view model.snackbar
             ]
-            { header = headerSmall "Midwife-EMR" model
-            , drawer = []
-            , tabs =
-                if hasLoadedUserProfile then
-                    tabs tabsList
-                else
-                    tabs []
-            , main =
-                [ theView model
-                , Html.map (\m -> Snackbar m) <| Snackbar.view model.snackbar
-                ]
-            }
+        }
 
 
 tabSpan : String -> Html a
@@ -193,7 +192,7 @@ headerSmall title model =
                 ]
             ]
     in
-        contents
+    contents
 
 
 systemLog : Model -> Html msg
@@ -217,17 +216,17 @@ systemLog model =
                 ]
 
         rows =
-            List.take 300 model.systemMessages
+            List.take 300 model.systemMsgLog
                 |> List.indexedMap makeRow
     in
-        Html.div []
-            [ Html.h4 []
-                [ text "Midwife-EMR Activity "
-                , Html.small []
-                    [ text "Most recent 300, newest at the top" ]
-                ]
-            , Html.ul [ HA.class "system-log" ] rows
+    Html.div []
+        [ Html.h4 []
+            [ text "Midwife-EMR Activity "
+            , Html.small []
+                [ text "Most recent 300, newest at the top" ]
             ]
+        , Html.ul [ HA.class "system-log" ] rows
+        ]
 
 
 viewHome : Model -> Html Msg
@@ -239,17 +238,131 @@ viewHome model =
             , Grid.size Grid.Phone 4
             ]
     in
-        Grid.grid []
-            [ Grid.cell VU.fullSizeCellOpts
-                [ Html.h3 []
-                    [ text "Home" ]
-                ]
-            , Grid.cell cellOpts
-                [ Options.styled p
-                    []
-                    [ systemLog model ]
-                ]
+    Grid.grid []
+        ([ Grid.cell VU.fullSizeCellOpts
+            [ Html.h3 []
+                [ text "Home" ]
             ]
+         , Grid.cell cellOpts
+            [ Options.styled p
+                []
+                [ systemLog model ]
+            ]
+         ]
+            ++ systemMode model
+        )
+
+
+systemMode : Model -> List (Grid.Cell Msg)
+systemMode model =
+    let
+        ( normalMode, noLoginMode, adminOnlyMode ) =
+            ( model.systemMode == SystemMode_0
+            , model.systemMode == SystemMode_1
+            , model.systemMode == SystemMode_2
+            )
+
+        pendingMsg =
+            case model.pendingSystemMode of
+                Just _ ->
+                    "Applying change to server ... please wait."
+
+                Nothing ->
+                    ""
+    in
+    [ Grid.cell VU.fullSizeCellOpts
+        [ Html.h4 [] [ text <| "System Mode" ]
+        , Options.styled p
+            []
+            [ text systemModeExplanation1 ]
+        , Options.styled Html.h5
+            [ Elevation.e6
+            , MColor.background MColor.primaryDark
+            , MColor.text MColor.accent
+            , Options.css "padding-top" "0.5em"
+            , Options.css "padding-bottom" "0.5em"
+            , Options.css "text-align" "center"
+            , if model.pendingSystemMode == Nothing then
+                Options.css "display" "None"
+              else
+                Options.nop
+            ]
+            [ text pendingMsg ]
+        , Grid.grid []
+            [ Grid.cell
+                [ Grid.size Grid.All 2 ]
+                [ VU.radio "Normal mode" [ 1 ] (NewSystemMode SystemMode_0) normalMode "systemMode" model.mdl ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 10
+                , Grid.size Grid.Tablet 6
+                , Grid.size Grid.Phone 2
+                ]
+                [ text systemModeExplanation2 ]
+            ]
+        , Grid.grid []
+            [ Grid.cell
+                [ Grid.size Grid.All 2 ]
+                [ VU.radio "No New Logins" [ 1 ] (NewSystemMode SystemMode_1) noLoginMode "systemMode" model.mdl ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 10
+                , Grid.size Grid.Tablet 6
+                , Grid.size Grid.Phone 2
+                ]
+                [ text systemModeExplanation3 ]
+            ]
+        , Grid.grid []
+            [ Grid.cell
+                [ Grid.size Grid.All 2 ]
+                [ VU.radio "Admin Only" [ 1 ] (NewSystemMode SystemMode_2) adminOnlyMode "systemMode" model.mdl ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 10
+                , Grid.size Grid.Tablet 6
+                , Grid.size Grid.Phone 2
+                ]
+                [ text systemModeExplanation4 ]
+            ]
+        ]
+    ]
+
+
+systemModeExplanation1 : String
+systemModeExplanation1 =
+    """
+    System Mode allows the administrator to restrict access to the Midwife-EMR system
+    whenever necessary for maintenance purposes, etc. In all cases, users who are administrators
+    are not affected by these modes. In other words, administrators always have full access
+    to the Midwife-EMR system no matter what system mode it is in while the various medical
+    roles are affected by the system mode.
+    """
+
+
+systemModeExplanation2 : String
+systemModeExplanation2 =
+    """
+    When the System Mode is NORMAL, everyone can access it after logging in. This is the system mode
+    that the Midwife-EMR system usually is in for everyday use.
+    """
+
+
+systemModeExplanation3 : String
+systemModeExplanation3 =
+    """
+    When the System Mode is NO NEW LOGINS, only the currently logged in users can
+    continue to use the Midwife-EMR system. No new users can login, except for administrators.
+    This is useful should the Midwife-EMR system need to be taken offline for a while. The
+    administrator can put the system in NO NEW LOGINS mode to allow the currently logged in
+    users to finish their work but at the same time not allowing anyone who is not already
+    logged in to login to the system.
+    """
+
+
+systemModeExplanation4 : String
+systemModeExplanation4 =
+    """
+    When the System Mode is ADMIN ONLY, no one can login except for administrators. Also,
+    everyone who is currently in the Midwife-EMR system will be logged out either immediately
+    or when they try to use the system.
+    """
 
 
 {-| Show a splash screen while the user's profile information is
@@ -261,33 +374,33 @@ viewSplash model =
         _ =
             Debug.log "viewSplash" <| model.pageDefs
     in
-        Grid.grid []
-            [ Grid.cell
-                [ Grid.size Grid.Desktop 4
-                , Grid.size Grid.Tablet 2
-                , Grid.size Grid.Phone 1
-                ]
-                []
-            , Grid.cell
-                [ Grid.size Grid.Desktop 4
-                , Grid.size Grid.Tablet 4
-                , Grid.size Grid.Phone 2
-                , Grid.align Grid.Middle
-                , Grid.stretch
-                , Grid.maxWidth "400px"
-                ]
-                [ Html.h3
-                    [ HA.style [ ( "color", "#999999" ) ]
-                    ]
-                    [ text "One moment as we load your user information ..." ]
-                ]
-            , Grid.cell
-                [ Grid.size Grid.Desktop 4
-                , Grid.size Grid.Tablet 2
-                , Grid.size Grid.Phone 1
-                ]
-                []
+    Grid.grid []
+        [ Grid.cell
+            [ Grid.size Grid.Desktop 4
+            , Grid.size Grid.Tablet 2
+            , Grid.size Grid.Phone 1
             ]
+            []
+        , Grid.cell
+            [ Grid.size Grid.Desktop 4
+            , Grid.size Grid.Tablet 4
+            , Grid.size Grid.Phone 2
+            , Grid.align Grid.Middle
+            , Grid.stretch
+            , Grid.maxWidth "400px"
+            ]
+            [ Html.h3
+                [ HA.style [ ( "color", "#999999" ) ]
+                ]
+                [ text "One moment as we load your user information ..." ]
+            ]
+        , Grid.cell
+            [ Grid.size Grid.Desktop 4
+            , Grid.size Grid.Tablet 2
+            , Grid.size Grid.Phone 1
+            ]
+            []
+        ]
 
 
 {-| This means that the PageDef was not put into the proper list of

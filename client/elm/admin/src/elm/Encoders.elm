@@ -1,11 +1,9 @@
 module Encoders exposing (..)
 
-import Json.Encode as JE
-import Json.Decode.Pipeline exposing (decode, required, requiredAt)
-
-
 -- LOCAL IMPORTS
 
+import Json.Decode.Pipeline exposing (decode, required, requiredAt)
+import Json.Encode as JE
 import Types exposing (..)
 import Utils as U
 
@@ -93,10 +91,10 @@ labTestToValue rec =
         , ( "abbrev", JE.string rec.abbrev )
         , ( "normal", JE.string rec.normal )
         , ( "unit", JE.string rec.unit )
-        , ( "minRangeDecimal", (maybeFloatToNull rec.minRangeDecimal) )
-        , ( "maxRangeDecimal", (maybeFloatToNull rec.maxRangeDecimal) )
-        , ( "minRangeInteger", (maybeIntToNull rec.minRangeInteger) )
-        , ( "maxRangeInteger", (maybeIntToNull rec.maxRangeInteger) )
+        , ( "minRangeDecimal", maybeFloatToNull rec.minRangeDecimal )
+        , ( "maxRangeDecimal", maybeFloatToNull rec.maxRangeDecimal )
+        , ( "minRangeInteger", maybeIntToNull rec.minRangeInteger )
+        , ( "maxRangeInteger", maybeIntToNull rec.maxRangeInteger )
         , if rec.isRange then
             ( "isRange", JE.int 1 )
           else
@@ -231,6 +229,13 @@ loginFormToValue login =
     JE.object
         [ ( "username", JE.string login.username )
         , ( "password", JE.string login.password )
+        ]
+
+
+systemModeToValue : SystemMode -> JE.Value
+systemModeToValue sysMode =
+    JE.object
+        [ ( "SystemMode", JE.int (U.systemModeToInt sysMode) )
         ]
 
 

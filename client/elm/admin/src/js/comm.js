@@ -57,6 +57,7 @@ var ADHOC_RESPONSE = 'ADHOC_RESPONSE';  // Server to client response in data nam
 var ADHOC_LOGIN = 'ADHOC_LOGIN';        // Client to server for login request, the adhocType of the ADHOC message.
 var ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE';    // Client to server for user profile request.
 var ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE';  // User updates their own user profile.
+var ADHOC_SYSTEM_MODE = 'ADHOC_SYSTEM_MODE';  // Client changes system mode.
 var ADD_CHG_DELETE = 'ADD_CHG_DELETE';
 
 
@@ -384,6 +385,10 @@ var setApp = function(theApp) {
 
   app.ports.selectQuery.subscribe(function(query) {
     sendMsg(SELECT, query);
+  });
+
+  app.ports.systemMode.subscribe(function(data) {
+    sendMsg(ADHOC_SYSTEM_MODE, data);
   });
 
   app.ports.userCreate.subscribe(function(data) {

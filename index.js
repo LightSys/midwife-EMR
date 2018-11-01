@@ -77,7 +77,7 @@ var express = require('express')
   , workerPort = cfg.host.tlsPort
   , sessionCfg
   , SYSTEM_MODE_FILE = 'SystemMode.dat'
-  , checkSystemModeMS = 1000 * 30
+  , checkSystemModeMS = 1000 * 10
   , systemMode = 0
   , SYSTEM_MODE_CHANGE = require('./constants').SYSTEM_MODE_CHANGE
   ;

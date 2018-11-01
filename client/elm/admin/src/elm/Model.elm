@@ -76,7 +76,9 @@ type alias Model =
     , selectedTable : Maybe Table
     , selectedTableRecord : Int
     , snackbar : Snackbar.Model String
-    , systemMessages : List SystemMessage
+    , systemMsgLog : List SystemMsgLog
+    , systemMode : SystemMode
+    , pendingSystemMode : Maybe SystemMode
     , transactions : States
     , user : RemoteData String UserRecord
     , userChoice : Dict.Dict String String
@@ -227,7 +229,9 @@ initialModel =
     , selectedTable = Nothing
     , selectedTableRecord = 0
     , snackbar = Snackbar.model
-    , systemMessages = []
+    , systemMsgLog = []
+    , systemMode = SystemMode_0
+    , pendingSystemMode = Nothing
     , transactions = statesInit
     , user = NotAsked
     , userChoice = Dict.empty

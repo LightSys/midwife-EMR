@@ -1,7 +1,9 @@
 module Decoders exposing (..)
 
+-- LOCAL IMPORTS
+
+import Http
 import Json.Decode as JD
-import Json.Encode as JE
 import Json.Decode.Pipeline
     exposing
         ( decode
@@ -11,31 +13,46 @@ import Json.Decode.Pipeline
         , required
         , requiredAt
         )
-import Http
-import RemoteData as RD exposing (RemoteData(..))
-
-
--- LOCAL IMPORTS
-
-import Msg exposing (..)
-import Types exposing (..)
+import Json.Encode as JE
 import Models.Utils as MU
+import Msg exposing (..)
+import RemoteData as RD exposing (RemoteData(..))
+import Types exposing (..)
 import Utils as U
 
 
 -- System Messages.
 
 
-systemMessage : JD.Decoder SystemMessage
-systemMessage =
-    decode SystemMessage
-        |> required "updatedAt" JD.int
-        |> required "systemLog" JD.string
+systemMessageTypeLog : JD.Decoder SystemMessageType
+systemMessageTypeLog =
+    JD.map SystemMessageTypeLog
+        (decode SystemMsgLog
+            |> required "updatedAt" JD.int
+            |> required "systemLog" JD.string
+        )
 
 
-decodeSystemMessage : JE.Value -> SystemMessage
+systemMessageTypeMode : JD.Decoder SystemMessageType
+systemMessageTypeMode =
+    JD.at
+        [ "data"
+        , "SystemMode"
+        ]
+        (JD.map SystemMessageTypeMode (JD.map U.intToSystemMode JD.int))
+
+
+systemMsgType : JD.Decoder SystemMessageType
+systemMsgType =
+    JD.oneOf
+        [ systemMessageTypeLog
+        , systemMessageTypeMode
+        ]
+
+
+decodeSystemMessage : JE.Value -> SystemMessageType
 decodeSystemMessage payload =
-    case JD.decodeValue systemMessage payload of
+    case JD.decodeValue systemMsgType payload of
         Ok val ->
             val
 
@@ -44,7 +61,7 @@ decodeSystemMessage payload =
                 _ =
                     Debug.log "Decoders.decodeSystemMessage decoding error" message
             in
-                emptySystemMessage
+            SystemMessageTypeLog emptySystemMsgLog
 
 
 
@@ -76,16 +93,16 @@ keyValueTable =
                     else
                         False
             in
-                KeyValueRecord id key val desc vt av sysOnly Nothing
+            KeyValueRecord id key val desc vt av sysOnly Nothing
     in
-        decode decodeRec
-            |> required "id" JD.int
-            |> required "kvKey" JD.string
-            |> required "kvValue" JD.string
-            |> required "description" JD.string
-            |> required "valueType" decodeValueType
-            |> required "acceptableValues" JD.string
-            |> required "systemOnly" JD.int
+    decode decodeRec
+        |> required "id" JD.int
+        |> required "kvKey" JD.string
+        |> required "kvValue" JD.string
+        |> required "description" JD.string
+        |> required "valueType" decodeValueType
+        |> required "acceptableValues" JD.string
+        |> required "systemOnly" JD.int
 
 
 labSuiteTable : JD.Decoder LabSuiteRecord
@@ -108,21 +125,21 @@ labTestTable =
                 ( isR, isT ) =
                     ( isRange == 1, isText == 1 )
             in
-                LabTestRecord id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isR isT labSuite_id Nothing
+            LabTestRecord id name abbrev normal unit minRangeDecimal maxRangeDecimal minRangeInteger maxRangeInteger isR isT labSuite_id Nothing
     in
-        decode handleBools
-            |> required "id" JD.int
-            |> optional "name" JD.string ""
-            |> optional "abbrev" JD.string ""
-            |> optional "normal" JD.string ""
-            |> optional "unit" JD.string ""
-            |> optional "minRangeDecimal" (JD.oneOf [ JD.maybe JD.float, JD.null Nothing ]) Nothing
-            |> optional "maxRangeDecimal" (JD.oneOf [ JD.maybe JD.float, JD.null Nothing ]) Nothing
-            |> optional "minRangeInteger" (JD.oneOf [ JD.maybe JD.int, JD.null Nothing ]) Nothing
-            |> optional "maxRangeInteger" (JD.oneOf [ JD.maybe JD.int, JD.null Nothing ]) Nothing
-            |> optional "isRange" JD.int 0
-            |> optional "isText" JD.int 0
-            |> required "labSuite_id" JD.int
+    decode handleBools
+        |> required "id" JD.int
+        |> optional "name" JD.string ""
+        |> optional "abbrev" JD.string ""
+        |> optional "normal" JD.string ""
+        |> optional "unit" JD.string ""
+        |> optional "minRangeDecimal" (JD.oneOf [ JD.maybe JD.float, JD.null Nothing ]) Nothing
+        |> optional "maxRangeDecimal" (JD.oneOf [ JD.maybe JD.float, JD.null Nothing ]) Nothing
+        |> optional "minRangeInteger" (JD.oneOf [ JD.maybe JD.int, JD.null Nothing ]) Nothing
+        |> optional "maxRangeInteger" (JD.oneOf [ JD.maybe JD.int, JD.null Nothing ]) Nothing
+        |> optional "isRange" JD.int 0
+        |> optional "isText" JD.int 0
+        |> required "labSuite_id" JD.int
 
 
 labTestValueTable : JD.Decoder LabTestValueRecord
@@ -177,36 +194,36 @@ userRecord =
                 ( statusBool, ictBool ) =
                     ( status == 1, isCurrentTeacher == 1 )
             in
-                UserRecord id
-                    username
-                    firstname
-                    lastname
-                    password
-                    email
-                    (Maybe.withDefault "" lang)
-                    shortName
-                    (Maybe.withDefault "" displayName)
-                    statusBool
-                    note
-                    ictBool
-                    role_id
-                    Nothing
+            UserRecord id
+                username
+                firstname
+                lastname
+                password
+                email
+                (Maybe.withDefault "" lang)
+                shortName
+                (Maybe.withDefault "" displayName)
+                statusBool
+                note
+                ictBool
+                role_id
+                Nothing
     in
-        decode handleBools
-            |> required "id" JD.int
-            |> required "username" JD.string
-            |> required "firstname" JD.string
-            |> required "lastname" JD.string
-            |> required "password" JD.string
-            |> required "email" JD.string
-            |> optional "lang" (JD.maybe JD.string) Nothing
-            |> required "shortName" JD.string
-            |> optional "displayName" (JD.maybe JD.string) Nothing
-            |> required "status" JD.int
-            |> required "note" JD.string
-            |> required "isCurrentTeacher" JD.int
-            |> required "role_id" JD.int
-            |> hardcoded Nothing
+    decode handleBools
+        |> required "id" JD.int
+        |> required "username" JD.string
+        |> required "firstname" JD.string
+        |> required "lastname" JD.string
+        |> required "password" JD.string
+        |> required "email" JD.string
+        |> optional "lang" (JD.maybe JD.string) Nothing
+        |> required "shortName" JD.string
+        |> optional "displayName" (JD.maybe JD.string) Nothing
+        |> required "status" JD.int
+        |> required "note" JD.string
+        |> required "isCurrentTeacher" JD.int
+        |> required "role_id" JD.int
+        |> hardcoded Nothing
 
 
 partialSelectQueryResponse : JD.Decoder (TableResponse -> SelectQueryResponse)
@@ -266,8 +283,8 @@ selectQueryResponse =
                 _ ->
                     JD.fail <| "selectQueryResponse: Unknown table named " ++ table ++ " returned from server."
     in
-        JD.field "table" JD.string
-            |> JD.andThen decodeData
+    JD.field "table" JD.string
+        |> JD.andThen decodeData
 
 
 decodeSelectQueryResponse : JE.Value -> RemoteData String SelectQueryResponse
@@ -304,7 +321,7 @@ decodeLabSuiteRecord payload =
                         _ =
                             Debug.log "decodeLabSuiterecord" <| toString msg
                     in
-                        Nothing
+                    Nothing
 
         Nothing ->
             Nothing
@@ -323,7 +340,7 @@ decodeLabTestRecord payload =
                         _ =
                             Debug.log "decodeLabTestRecord" <| toString msg
                     in
-                        Nothing
+                    Nothing
 
         Nothing ->
             Nothing
@@ -342,7 +359,7 @@ decodeLabTestValueRecord payload =
                         _ =
                             Debug.log "decodeLabTestValuerecord" <| toString msg
                     in
-                        Nothing
+                    Nothing
 
         Nothing ->
             Nothing
@@ -361,7 +378,7 @@ decodeUserRecord payload =
                         _ =
                             Debug.log "decodeUserRecord" <| toString msg
                     in
-                        Nothing
+                    Nothing
 
         Nothing ->
             Nothing
@@ -409,15 +426,15 @@ selectDataTable =
                 isSelected =
                     selected == 1
             in
-                SelectDataRecord id name selectKey label isSelected stateId
+            SelectDataRecord id name selectKey label isSelected stateId
     in
-        decode handleBools
-            |> required "id" JD.int
-            |> required "name" JD.string
-            |> required "selectKey" JD.string
-            |> required "label" JD.string
-            |> required "selected" JD.int
-            |> hardcoded Nothing
+    decode handleBools
+        |> required "id" JD.int
+        |> required "name" JD.string
+        |> required "selectKey" JD.string
+        |> required "label" JD.string
+        |> required "selected" JD.int
+        |> hardcoded Nothing
 
 
 decodeSelectDataRecord : Maybe String -> Maybe SelectDataRecord
@@ -497,7 +514,7 @@ decodeUpdateResponse payload =
                 _ =
                     Debug.log "Decoders.decodeUpdateResponse decoding error" message
             in
-                Nothing
+            Nothing
 
 
 createResponse : JD.Decoder CreateResponse
@@ -522,7 +539,7 @@ decodeCreateResponse payload =
                 _ =
                     Debug.log "Decoders.decodeCreateResponse decoding error" message
             in
-                Nothing
+            Nothing
 
 
 deleteResponse : JD.Decoder DeleteResponse
@@ -547,7 +564,7 @@ decodeDeleteResponse payload =
                 _ =
                     Debug.log "Decoders.decodeDeleteResponse decoding error" message
             in
-                Nothing
+            Nothing
 
 
 getDecoderAdhocResponse : String -> JD.Decoder AdhocResponseMessage
@@ -668,4 +685,4 @@ decodeAddChgDelNotification payload =
                 _ =
                     Debug.log "decodeAddChgDelNotification Error" msg
             in
-                Nothing
+            Nothing

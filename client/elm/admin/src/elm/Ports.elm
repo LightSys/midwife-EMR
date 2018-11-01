@@ -25,25 +25,24 @@ port module Ports
         , selectQuery
         , selectQueryResponse
         , systemMessages
+        , systemMode
         , updateResponse
         , userCreate
         , userDelete
-        , userUpdate
         , userProfileUpdate
+        , userUpdate
         , vaccinationTypeCreate
         , vaccinationTypeDelete
         , vaccinationTypeUpdate
         )
 
-import Json.Decode as JD
-import Json.Encode as JE
-
-
 -- LOCAL IMPORTS
 
 import Encoders exposing (..)
-import Types exposing (..)
+import Json.Decode as JD
+import Json.Encode as JE
 import Msg exposing (Msg)
+import Types exposing (..)
 
 
 -- INCOMING PORTS
@@ -75,6 +74,7 @@ port userProfile : (JD.Value -> msg) -> Sub msg
 
 
 -- OUTGOING PORTS
+
 
 port keyValueUpdate : JE.Value -> Cmd msg
 
@@ -131,6 +131,9 @@ port selectDataUpdate : JE.Value -> Cmd msg
 
 
 port selectQuery : JE.Value -> Cmd msg
+
+
+port systemMode : JE.Value -> Cmd msg
 
 
 port userCreate : JE.Value -> Cmd msg

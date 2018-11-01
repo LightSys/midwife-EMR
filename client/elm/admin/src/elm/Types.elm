@@ -8,7 +8,7 @@ module Types
         , CreateResponse
         , DeleteResponse
         , EditMode(..)
-        , emptySystemMessage
+        , emptySystemMsgLog
         , ErrorCode(..)
         , EventTypeRecord
         , KeyValueForm
@@ -38,7 +38,9 @@ module Types
         , SelectDataRecord
         , SelectQuery
         , SelectQueryResponse
-        , SystemMessage
+        , SystemMsgLog
+        , SystemMessageType(..)
+        , SystemMode(..)
         , Table(..)
         , TableMetaInfo
         , TableModel
@@ -287,16 +289,24 @@ type alias SelectQueryResponse =
     }
 
 
-type alias SystemMessage =
+type SystemMessageType
+    = SystemMessageTypeLog SystemMsgLog
+    | SystemMessageTypeMode SystemMode
+
+type alias SystemMsgLog =
     { updatedAt : Int
     , systemLog : String
     }
 
+type SystemMode
+    = SystemMode_0
+    | SystemMode_1
+    | SystemMode_2
 
 {-| Used when there is an error decoding from JS.
 -}
-emptySystemMessage : SystemMessage
-emptySystemMessage =
+emptySystemMsgLog : SystemMsgLog
+emptySystemMsgLog =
     { updatedAt = 0
     , systemLog = ""
     }

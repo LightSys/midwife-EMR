@@ -3,7 +3,11 @@ module Update
         ( update
         )
 
+-- LOCAL IMPORTS
+
+import Decoders exposing (..)
 import Dict
+import Encoders as E
 import Form exposing (Form)
 import Form.Field as Fld
 import Form.Validate as V
@@ -12,21 +16,15 @@ import Json.Encode as JE
 import List.Extra as LE
 import Material
 import Material.Snackbar as Snackbar
-import RemoteData as RD exposing (RemoteData(..))
-import Task
-
-
--- LOCAL IMPORTS
-
-import Decoders exposing (..)
-import Encoders as E
 import Model exposing (..)
 import Models.MedicationType as MedType
-import Models.VaccinationType as VacType
 import Models.Utils as MU
+import Models.VaccinationType as VacType
 import Msg exposing (..)
 import Navigation as Nav
 import Ports
+import RemoteData as RD exposing (RemoteData(..))
+import Task
 import Transactions as Trans
 import Types exposing (..)
 import Updates.Adhoc as Updates exposing (adhocUpdate)
@@ -35,11 +33,11 @@ import Updates.LabSuite as Updates exposing (labSuiteUpdate)
 import Updates.LabTest as Updates exposing (labTestUpdate)
 import Updates.LabTestValue as Updates exposing (labTestValueUpdate)
 import Updates.MedicationType as Updates exposing (medicationTypeUpdate)
-import Updates.VaccinationType as Updates exposing (vaccinationTypeUpdate)
 import Updates.Profile as Updates exposing (userProfileUpdate)
-import Updates.SelectData as Updates exposing (selectDataUpdate)
 import Updates.Role as Updates exposing (roleUpdate)
+import Updates.SelectData as Updates exposing (selectDataUpdate)
 import Updates.User as Updates exposing (userUpdate)
+import Updates.VaccinationType as Updates exposing (vaccinationTypeUpdate)
 import Utils as U
 
 
@@ -52,7 +50,7 @@ update msg model =
     case msg of
         AddChgDelNotificationMessages acdNotification ->
             -- Determine if we are subscribed to the table affected by the change.
-            model ! (processDataNotification acdNotification model)
+            model ! processDataNotification acdNotification model
 
         AdhocResponseMessages adhocResponse ->
             Updates.adhocUpdate adhocResponse model
@@ -63,7 +61,7 @@ update msg model =
                     { model | selectedTableEditMode = EditModeAdd }
                         |> populateSelectedTableForm
             in
-                newModel ! []
+            newModel ! []
 
         CancelSelectedTable ->
             let
@@ -71,7 +69,7 @@ update msg model =
                 newModel =
                     populateSelectedTableForm model
             in
-                { newModel | selectedTableEditMode = EditModeView } ! []
+            { newModel | selectedTableEditMode = EditModeView } ! []
 
         CreateResponseMsg add ->
             case add of
@@ -103,7 +101,7 @@ update msg model =
                                 _ =
                                     Debug.log "Unhandled CreateResponseMsg" <| toString add
                             in
-                                model ! []
+                            model ! []
 
                 Nothing ->
                     model ! []
@@ -116,21 +114,21 @@ update msg model =
                         MedicationType ->
                             MU.deleteById id model.medicationTypeModel.records
                                 |> flip MU.setRecords model.medicationTypeModel
-                                |> (\tblModel -> { model | medicationTypeModel = tblModel})
+                                |> (\tblModel -> { model | medicationTypeModel = tblModel })
 
                         User ->
                             MU.deleteById id model.userModel.records
                                 |> flip MU.setRecords model.userModel
-                                |> (\tblModel -> { model | userModel = tblModel})
+                                |> (\tblModel -> { model | userModel = tblModel })
 
                         _ ->
                             let
                                 _ =
-                                    Debug.log "DeleteRecord Warning" <| "Unhandled table: " ++ (U.tableToString table)
+                                    Debug.log "DeleteRecord Warning" <| "Unhandled table: " ++ U.tableToString table
                             in
-                                model
+                            model
             in
-                newModel ! []
+            newModel ! []
 
         DeleteResponseMsg del ->
             case del of
@@ -159,7 +157,7 @@ update msg model =
                                 _ =
                                     Debug.log "Unhandled DeleteResponseMsg" <| toString del
                             in
-                                model ! []
+                            model ! []
 
                 Nothing ->
                     model ! []
@@ -176,7 +174,7 @@ update msg model =
                     { model | selectedTableRecord = 0 }
                         |> populateSelectedTableForm
             in
-                newModel ! []
+            newModel ! []
 
         KeyValueMessages keyValueMsg ->
             Updates.keyValueUpdate keyValueMsg model
@@ -194,11 +192,11 @@ update msg model =
             let
                 newModel =
                     { model
-                        | selectedTableRecord = ((numRecsSelectedTable model) - 1)
+                        | selectedTableRecord = numRecsSelectedTable model - 1
                     }
                         |> populateSelectedTableForm
             in
-                newModel ! []
+            newModel ! []
 
         Login ->
             let
@@ -210,7 +208,7 @@ update msg model =
                         Nothing ->
                             Cmd.none
             in
-                model ! [ newCmd ]
+            model ! [ newCmd ]
 
         LoginFormMsg formMsg ->
             case ( formMsg, Form.getOutput model.loginForm ) of
@@ -231,35 +229,57 @@ update msg model =
         MedicationTypeMessages mtMsg ->
             Updates.medicationTypeUpdate mtMsg model
 
-        NewSystemMessage sysMsg ->
-            -- We only keep the most recent 1000 messages.
+        NewSystemMessage sysMsgType ->
             let
-                newSysMessages =
-                    if sysMsg.updatedAt /= 0 then
-                        sysMsg
-                            :: model.systemMessages
-                            |> List.take 1000
-                    else
-                        model.systemMessages
+                newModel =
+                    case sysMsgType of
+                        SystemMessageTypeLog sysMsgLog ->
+                            -- We only keep the most recent 1000 messages
+                            -- and only append non-empty messages.
+                            if sysMsgLog.updatedAt /= 0 then
+                                { model
+                                    | systemMsgLog =
+                                        sysMsgLog
+                                            :: model.systemMsgLog
+                                            |> List.take 1000
+                                }
+                            else
+                                model
+
+                        SystemMessageTypeMode mode ->
+                            { model
+                                | pendingSystemMode = Nothing
+                                , systemMode = mode
+                            }
             in
-                { model | systemMessages = newSysMessages } ! []
+            newModel ! []
+
+        NewSystemMode newMode ->
+            -- By setting systemMode, we allow the radio button to reflect the user's
+            -- choice. By setting pendingSystemMode, we allow the view to convey to
+            -- the user that the choice is still waiting on a response from the server.
+            { model
+                | pendingSystemMode = Just newMode
+                , systemMode = newMode
+            }
+                ! [ Ports.systemMode (E.systemModeToValue newMode)]
 
         NextRecord ->
             let
                 newModel =
                     { model
-                        | selectedTableRecord = min ((numRecsSelectedTable model) - 1) (model.selectedTableRecord + 1)
+                        | selectedTableRecord = min (numRecsSelectedTable model - 1) (model.selectedTableRecord + 1)
                     }
                         |> populateSelectedTableForm
             in
-                newModel ! []
+            newModel ! []
 
         NoOp ->
             let
                 _ =
                     Debug.log "NoOp" "was called"
             in
-                model ! []
+            model ! []
 
         PregnoteTypeResponse pregnoteTypeTbl ->
             { model | pregnoteType = pregnoteTypeTbl } ! []
@@ -270,7 +290,7 @@ update msg model =
                     { model | selectedTableRecord = max 0 (model.selectedTableRecord - 1) }
                         |> populateSelectedTableForm
             in
-                newModel ! []
+            newModel ! []
 
         RequestUserProfile ->
             model ! [ Ports.requestUserProfile E.requestUserProfile ]
@@ -304,14 +324,14 @@ update msg model =
                     else
                         newModel
             in
-                newModel2 ! []
+            newModel2 ! []
 
         SelectQueryMsg queries ->
             let
                 newCmds =
                     List.map (\q -> Ports.selectQuery (E.selectQueryToValue q)) queries
             in
-                model ! newCmds
+            model ! newCmds
 
         SelectQueryResponseMsg sqr ->
             let
@@ -323,107 +343,106 @@ update msg model =
                                 selQry =
                                     MU.selectQueryResponseToSelectQuery selQryResp
                             in
-                                case ( selQryResp.success, selQryResp.errorCode ) of
-                                    ( _, NoErrorCode ) ->
-                                        case selQryResp.data of
-                                            KeyValueResp list ->
-                                                Updates.keyValueUpdate
-                                                    (ReadResponseKeyValue
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                            case ( selQryResp.success, selQryResp.errorCode ) of
+                                ( _, NoErrorCode ) ->
+                                    case selQryResp.data of
+                                        KeyValueResp list ->
+                                            Updates.keyValueUpdate
+                                                (ReadResponseKeyValue
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            LabSuiteResp list ->
-                                                Updates.labSuiteUpdate
-                                                    (ReadResponseLabSuite
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        LabSuiteResp list ->
+                                            Updates.labSuiteUpdate
+                                                (ReadResponseLabSuite
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            LabTestResp list ->
-                                                Updates.labTestUpdate
-                                                    (ReadResponseLabTest
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        LabTestResp list ->
+                                            Updates.labTestUpdate
+                                                (ReadResponseLabTest
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            LabTestValueResp list ->
-                                                Updates.labTestValueUpdate
-                                                    (ReadResponseLabTestValue
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        LabTestValueResp list ->
+                                            Updates.labTestValueUpdate
+                                                (ReadResponseLabTestValue
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            MedicationTypeResp list ->
-                                                Updates.medicationTypeUpdate
-                                                    (ReadResponseMedicationType
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        MedicationTypeResp list ->
+                                            Updates.medicationTypeUpdate
+                                                (ReadResponseMedicationType
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            RoleResp list ->
-                                                Updates.roleUpdate
-                                                    (ReadResponseRole
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        RoleResp list ->
+                                            Updates.roleUpdate
+                                                (ReadResponseRole
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            SelectDataResp list ->
-                                                Updates.selectDataUpdate
-                                                    (ReadResponseSelectData
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        SelectDataResp list ->
+                                            Updates.selectDataUpdate
+                                                (ReadResponseSelectData
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            UserResp list ->
-                                                Updates.userUpdate
-                                                    (ReadResponseUser
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        UserResp list ->
+                                            Updates.userUpdate
+                                                (ReadResponseUser
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
-                                            VaccinationTypeResp list ->
-                                                Updates.vaccinationTypeUpdate
-                                                    (ReadResponseVaccinationType
-                                                        (RD.succeed list)
-                                                        (Just selQry)
-                                                    )
-                                                    model
+                                        VaccinationTypeResp list ->
+                                            Updates.vaccinationTypeUpdate
+                                                (ReadResponseVaccinationType
+                                                    (RD.succeed list)
+                                                    (Just selQry)
+                                                )
+                                                model
 
+                                ( _, SessionExpiredErrorCode ) ->
+                                    update SessionExpired model
 
-                                    ( _, SessionExpiredErrorCode ) ->
-                                        update SessionExpired model
+                                ( _, SqlErrorCode ) ->
+                                    -- TODO: handle SQL error.
+                                    model ! []
 
-                                    ( _, SqlErrorCode ) ->
-                                        -- TODO: handle SQL error.
-                                        model ! []
+                                ( _, UnknownErrorCode ) ->
+                                    -- TODO: handle this too.
+                                    model ! []
 
-                                    ( _, UnknownErrorCode ) ->
-                                        -- TODO: handle this too.
-                                        model ! []
-
-                                    ( _, _ ) ->
-                                        model ! []
+                                ( _, _ ) ->
+                                    model ! []
 
                         Failure err ->
                             let
                                 _ =
                                     Debug.log "SelectQueryResponseMsg" <| toString err
                             in
-                                model ! []
+                            model ! []
 
                         _ ->
                             model ! []
             in
-                ( newModel, newCmd )
+            ( newModel, newCmd )
 
         SelectQuerySelectTable table queries ->
             -- Perform a SelectQuery and set the selectTable field for the sake of
@@ -446,7 +465,7 @@ update msg model =
                         Nothing ->
                             Cmd.none
             in
-                { model | selectedPage = page } ! [ newCmd ]
+            { model | selectedPage = page } ! [ newCmd ]
 
         SelectTableRecord rec ->
             let
@@ -454,7 +473,7 @@ update msg model =
                     { model | selectedTableRecord = rec }
                         |> populateSelectedTableForm
             in
-                newModel ! []
+            newModel ! []
 
         SessionExpired ->
             -- Set the isLoggedIn field in the user profile to False.
@@ -469,14 +488,14 @@ update msg model =
                         Nothing ->
                             Nothing
             in
-                { model | userProfile = userProfile } ! []
+            { model | userProfile = userProfile } ! []
 
         Snackbar msg ->
             let
                 ( snackbar, newCmd ) =
                     Snackbar.update msg model.snackbar
             in
-                { model | snackbar = snackbar } ! [ Cmd.map Snackbar newCmd ]
+            { model | snackbar = snackbar } ! [ Cmd.map Snackbar newCmd ]
 
         UpdateResponseMsg change ->
             case change of
@@ -501,14 +520,14 @@ update msg model =
                             Updates.userUpdate (UpdateResponseUser c) model
 
                         SelectData ->
-                            Updates.selectDataUpdate (UpdateResponseSelectData  c) model
+                            Updates.selectDataUpdate (UpdateResponseSelectData c) model
 
                         _ ->
                             let
                                 _ =
                                     Debug.log "Unhandled UpdateResponseMsg" <| toString change
                             in
-                                model ! []
+                            model ! []
 
                 Nothing ->
                     model ! []
@@ -556,10 +575,10 @@ populateSelectedTableForm model =
                                                 nextSortOrder =
                                                     MU.getRecNextMax (\r -> r.sortOrder) data
                                             in
-                                                ( MedicationTypeRecord model.nextPendingId "" "" nextSortOrder Nothing
-                                                    |> MedType.medicationTypeInitialForm
-                                                , { model | nextPendingId = model.nextPendingId - 1 }
-                                                )
+                                            ( MedicationTypeRecord model.nextPendingId "" "" nextSortOrder Nothing
+                                                |> MedType.medicationTypeInitialForm
+                                            , { model | nextPendingId = model.nextPendingId - 1 }
+                                            )
 
                                         _ ->
                                             case LE.getAt (Maybe.withDefault 0 model.medicationTypeModel.selectedRecordId) data of
@@ -569,9 +588,9 @@ populateSelectedTableForm model =
                                                 Nothing ->
                                                     ( model.medicationTypeModel.form, model )
                             in
-                                newModel.medicationTypeModel
-                                    |> MU.setForm form
-                                    |> asMedicationTypeModelIn newModel
+                            newModel.medicationTypeModel
+                                |> MU.setForm form
+                                |> asMedicationTypeModelIn newModel
 
                         _ ->
                             model
@@ -594,7 +613,7 @@ numRecsSelectedTable model =
                 MedicationType ->
                     case model.medicationTypeModel.records of
                         Success val ->
-                            (List.length val)
+                            List.length val
 
                         _ ->
                             0
@@ -602,7 +621,7 @@ numRecsSelectedTable model =
                 VaccinationType ->
                     case model.vaccinationType of
                         Success val ->
-                            (List.length val)
+                            List.length val
 
                         _ ->
                             0
@@ -636,6 +655,7 @@ a data change and our subscriptions to the same.
 Upon a match, ADD and CHG events result in requesting the affected record from
 the server while DEL events result in the affected record being deleted in the
 model.
+
 -}
 deriveDataNotificationCmd : AddChgDelNotification -> NotificationSubscription -> Cmd Msg
 deriveDataNotificationCmd notification sub =
@@ -643,9 +663,24 @@ deriveDataNotificationCmd notification sub =
         qry =
             SelectQuery notification.table (Just notification.id) Nothing Nothing
     in
-        case sub.qualifier of
-            NotifySubQualifierNone ->
-                -- Subscribe to all changes to the table irrespective of key field.
+    case sub.qualifier of
+        NotifySubQualifierNone ->
+            -- Subscribe to all changes to the table irrespective of key field.
+            case notification.notificationType of
+                UnknownNotificationType ->
+                    Cmd.none
+
+                DelNotificationType ->
+                    Task.perform (DeleteRecord notification.table)
+                        (Task.succeed notification.id)
+
+                _ ->
+                    -- ADD and CHG
+                    Task.perform SelectQueryMsg (Task.succeed [ qry ])
+
+        NotifySubQualifierId id ->
+            -- Only interested in this particular key field.
+            if id == notification.id then
                 case notification.notificationType of
                     UnknownNotificationType ->
                         Cmd.none
@@ -656,11 +691,15 @@ deriveDataNotificationCmd notification sub =
 
                     _ ->
                         -- ADD and CHG
-                        Task.perform SelectQueryMsg (Task.succeed [qry])
+                        Task.perform SelectQueryMsg (Task.succeed [ qry ])
+            else
+                Cmd.none
 
-            NotifySubQualifierId id ->
-                -- Only interested in this particular key field.
-                if id == notification.id then
+        NotifySubQualifierFK ( tbl, id ) ->
+            -- Interested in all rows affected by this foreign key.
+            -- Note: notification is a list of ( Table, Int ).
+            case LE.find (\( notTbl, notId ) -> notTbl == tbl && notId == id) notification.foreignKeys of
+                Just ( _, _ ) ->
                     case notification.notificationType of
                         UnknownNotificationType ->
                             Cmd.none
@@ -671,26 +710,7 @@ deriveDataNotificationCmd notification sub =
 
                         _ ->
                             -- ADD and CHG
-                            Task.perform SelectQueryMsg (Task.succeed [qry])
-                else
+                            Task.perform SelectQueryMsg (Task.succeed [ qry ])
+
+                Nothing ->
                     Cmd.none
-
-            NotifySubQualifierFK ( tbl, id ) ->
-                -- Interested in all rows affected by this foreign key.
-                -- Note: notification is a list of ( Table, Int ).
-                case LE.find (\( notTbl, notId ) -> notTbl == tbl && notId == id) notification.foreignKeys of
-                    Just ( _, _ ) ->
-                        case notification.notificationType of
-                            UnknownNotificationType ->
-                                Cmd.none
-
-                            DelNotificationType ->
-                                Task.perform (DeleteRecord notification.table)
-                                    (Task.succeed notification.id)
-
-                            _ ->
-                                -- ADD and CHG
-                                Task.perform SelectQueryMsg (Task.succeed [qry])
-
-                    Nothing ->
-                        Cmd.none

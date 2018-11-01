@@ -83,6 +83,7 @@
 var rx = require('rx')
   , uuid = require('uuid')
   , _ = require('underscore')
+  , fs = require('fs')
   , assert = require('assert')
   , moment = require('moment')
   , cfg = require('./config')
@@ -133,6 +134,7 @@ var rx = require('rx')
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , ADHOC_TOUCH_SESSION = 'ADHOC_TOUCH_SESSION'   // Used by the Elm medical client
+  , ADHOC_SYSTEM_MODE = 'ADHOC_SYSTEM_MODE'   // Elm admin client to change system mode
   , TABLE_babyMedication = 'babyMedication'
   , TABLE_babyVaccination = 'babyVaccination'
   , TABLE_motherMedication = 'motherMedication'
@@ -254,6 +256,8 @@ var rx = require('rx')
   , KEY_VALUE_UPDATE = require('./constants').KEY_VALUE_UPDATE
   , SYSTEM_MODE_CHANGE = require('./constants').SYSTEM_MODE_CHANGE
   , systemMode = 0    // default until changed
+  , SYSTEM_MODE_KEY = 'SystemMode'
+  , SYSTEM_MODE_FILE = 'SystemMode.dat'
   ;
 
 /* --------------------------------------------------------
@@ -639,6 +643,29 @@ var touchSocketSession = function(socket) {
 var getSocketSessionId = function(socket) {
   if (! isValidSocketSession(socket)) return '';
   return socket.request.sessionID? socket.request.sessionID: '';
+};
+
+/* --------------------------------------------------------
+ * setSystemMode()
+ *
+ * Simply sets a new value in SystemMode.dat. Does not reply
+ * to the caller. Does not inform the module or any other
+ * module about the change. Allows normal processes to detect
+ * change in due time.
+ *
+ * param       payload
+ * param       socker
+ * return      undefined
+ * -------------------------------------------------------- */
+var setSystemMode = function(payload, socket) {
+  var newSysMode;
+
+  if (_.has(payload, 'SystemMode') && _.isNumber(payload.SystemMode)) {
+    newSysMode = payload.SystemMode;
+    if (newSysMode !== systemMode) {
+      fs.writeFileSync(SYSTEM_MODE_FILE, "" + newSysMode, {encoding: 'utf8'});
+    }
+  }
 };
 
 /* --------------------------------------------------------
@@ -1278,6 +1305,19 @@ var getTable = function(socket, json) {
   }
 };
 
+/* --------------------------------------------------------
+ * socketSendSystemMode()
+ *
+ * Send the system mode passed on the socket passed.
+ *
+ * param       socket
+ * param       sysMode
+ * return      undefined
+ * -------------------------------------------------------- */
+var socketSendSystemMode = function(socket, sysMode) {
+  socket.send(wrapSystem(SYSTEM_MODE_KEY, {data: {SystemMode: sysMode}}));
+};
+
 // ========================================================
 // ========================================================
 // Initialization of our three communication interfaces.
@@ -1392,7 +1432,7 @@ var init = function(io, sessionMiddle) {
               // --------------------------------------------------------
               // Send this message on the system RxJS stream.
               // --------------------------------------------------------
-              sendSystem('SystemMode', systemMode);
+              sendSystem(SYSTEM_MODE_KEY, systemMode);
             }
           }
         }
@@ -1503,6 +1543,13 @@ var init = function(io, sessionMiddle) {
       console.log('===== SOCKET ERROR =====');
     });
 
+    // --------------------------------------------------------
+    // We send the current system mode to the new connection
+    // to make sure that clients are in sync in case it changed
+    // during a disconnection.
+    // --------------------------------------------------------
+    socketSendSystemMode(socket, systemMode);
+
     socket.on('message', function(data) {
       assert(_.isString(data));
       var json = JSON.parse(data);
@@ -1572,6 +1619,10 @@ var init = function(io, sessionMiddle) {
         switch (json.msgType) {
           case ADHOC_LOGIN:
             handleLogin(json.payload, socket);
+            break;
+
+          case ADHOC_SYSTEM_MODE:
+            setSystemMode(json.payload, socket);
             break;
 
           case ADHOC_USER_PROFILE:

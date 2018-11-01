@@ -47,8 +47,9 @@ type Msg
     | LoginFormMsg Form.Msg
     | Mdl (Material.Msg Msg)
     | MedicationTypeMessages MedicationTypeMsg
-    | NewSystemMessage SystemMessage
+    | NewSystemMessage SystemMessageType
     | NextRecord
+    | NewSystemMode SystemMode
     | NoOp
     | PregnoteTypeResponse (RemoteData String (List PregnoteTypeRecord))
     | PreviousRecord
