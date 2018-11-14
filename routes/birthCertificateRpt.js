@@ -32,6 +32,7 @@ var _ = require('underscore')
   , blackColor = '#000'
   , greyDarkColor = '#999'
   , greyLightColor = '#AAA'
+  , xSmallFont = 7
   , smallFont = 9
   , mediumFont = 11
   , currentPage = 0;    // Tracking the current page that is printing.
@@ -48,7 +49,7 @@ var fldPos =
       , city: [3.3, 3.4]
       }
   , name:
-      { first: [1.0, 4.4]
+      { first: [3.0, 4.4]
       , middle: [8.7, 4.4]
       , last: [14, 4.4]
       }
@@ -80,13 +81,13 @@ var fldPos =
   , motherOccupation: [10.3, 11.1]
   , motherAge: [17.0, 11.1]
   , motherResidence:
-      { house: [1.0, 12.2]
+      { house: [3.0, 12.2]
       , city: [8.0, 12.2]
       , province: [12.0, 12.2]
       , country: [15.0, 12.2]
       }
   , fatherName:
-      { first:[1.0, 13.3]
+      { first:[3.5, 13.3]
       , middle: [8.5, 13.3]
       , last: [14.0, 13.3]
       }
@@ -95,7 +96,7 @@ var fldPos =
   , fatherOccupation: [11.5, 14.5]
   , fatherAge: [17.0, 14.5]
   , fatherResidence:
-      { house: [1.0, 15.5]
+      { house: [3.0, 15.5]
       , city: [8.5, 15.5]
       , province: [12.0, 15.5]
       , country: [15.0, 15.5]
@@ -129,8 +130,8 @@ var fldPos =
   , informant:
       { fullname: [2.5, 23.6]
       , relationToChild: [3.5, 24.2]
-      , address: [2.0, 24.75]
-      , date: [2.0, 25.3]
+      , address: [1.5, 24.75]
+      , date: [1.5, 25.3]
       }
   , preparedBy:
       { fullname: [12.0, 23.7]
@@ -188,6 +189,13 @@ var cmToPt = function(cm) {
   return Math.ceil(cm * 28.54);
 };
 
+// --------------------------------------------------------
+// Converts points to centimeters.
+// --------------------------------------------------------
+var ptToCm = function(pt) {
+  return parseFloat((pt / 28.54).toFixed(1));
+};
+
 /* --------------------------------------------------------
  * makeWriteFieldFunc()
  *
@@ -214,6 +222,25 @@ var makeWriteFieldFunc = function(doc, top, left, isUpperCase) {
 
 
 /* --------------------------------------------------------
+ * calcLeftFromCenter()
+ *
+ * Calculates the left in cm to use assuming the center
+ * in cm and the text to write passed. Assumes that font
+ * size and type are already set.
+ *
+ * param       doc
+ * param       center
+ * param       text
+ * return      left in cm
+ * -------------------------------------------------------- */
+var calcLeftFromCenter = function(doc, center, text) {
+  var width = doc.widthOfString(text)
+    , ans = ptToCm((cmToPt(center) - (ptToCm(width)/2)))
+    ;
+  return ans;
+};
+
+/* --------------------------------------------------------
  * doFirstPage()
  *
  * Prints the first page of the Philippines Birth Certificate.
@@ -234,6 +261,7 @@ var doFirstPage = function(doc, data, opts) {
     , writeField = makeWriteFieldFunc(doc, top, left)
     , writeFIELD = makeWriteFieldFunc(doc, top, left, true)
     , tmp
+    , left
     ;
 
   // Top of the form.
@@ -243,7 +271,8 @@ var doFirstPage = function(doc, data, opts) {
   writeField(fldPos.topOfForm.city[0], fldPos.topOfForm.city[1], tmp);
 
   // 1. Name
-  writeFIELD(fldPos.name.first[0], fldPos.name.first[1], data.baby.firstname);
+  left = calcLeftFromCenter(doc, fldPos.name.first[0], data.baby.firstname);
+  writeFIELD(left, fldPos.name.first[1], data.baby.firstname);
   writeFIELD(fldPos.name.middle[0], fldPos.name.middle[1], data.baby.middlename);
   writeFIELD(fldPos.name.last[0], fldPos.name.last[1], data.baby.lastname);
 
@@ -318,7 +347,8 @@ var doFirstPage = function(doc, data, opts) {
   writeField(fldPos.motherResidence.country[0], fldPos.motherResidence.country[1], data.bc.motherCountry);
 
   // 14. Father name
-  writeFIELD(fldPos.fatherName.first[0], fldPos.fatherName.first[1], data.bc.fatherFirstname);
+  left = calcLeftFromCenter(doc, fldPos.fatherName.first[0], data.bc.fatherFirstname);
+  writeFIELD(left, fldPos.fatherName.first[1], data.bc.fatherFirstname);
   writeFIELD(fldPos.fatherName.middle[0], fldPos.fatherName.middle[1], data.bc.fatherMiddlename);
   writeFIELD(fldPos.fatherName.last[0], fldPos.fatherName.last[1], data.bc.fatherLastname);
 
@@ -342,15 +372,15 @@ var doFirstPage = function(doc, data, opts) {
 
   // 20. Marriage
   if (data.bc.dateOfMarriage) {
-    writeField(fldPos.marriage.date.month[0], fldPos.marriage.date.month[1], moment(data.bc.dateOfMarriage).format('MM'));
+    writeField(fldPos.marriage.date.month[0], fldPos.marriage.date.month[1], moment(data.bc.dateOfMarriage).format('MMM'));
     writeField(fldPos.marriage.date.day[0], fldPos.marriage.date.day[1], moment(data.bc.dateOfMarriage).format('D'));
     writeField(fldPos.marriage.date.year[0], fldPos.marriage.date.year[1], moment(data.bc.dateOfMarriage).format('YYYY'));
     writeField(fldPos.marriage.place.city[0], fldPos.marriage.place.city[1], data.bc.cityOfMarriage);
     writeField(fldPos.marriage.place.province[0], fldPos.marriage.place.province[1], data.bc.provinceOfMarriage);
     writeField(fldPos.marriage.place.country[0], fldPos.marriage.place.country[1], data.bc.countryOfMarriage);
   } else {
-    writeFIELD(fldPos.marriage.date.month[0], fldPos.marriage.date.month[1], 'Not Married');
-    writeFIELD(fldPos.marriage.place.city[0], fldPos.marriage.place.city[1], 'Not Married');
+    writeFIELD(fldPos.marriage.date.month[0], fldPos.marriage.date.month[1], 'N/A');
+    writeFIELD(fldPos.marriage.place.city[0], fldPos.marriage.place.city[1], 'N/A');
   }
 
   // 21.a Attendant
@@ -384,7 +414,9 @@ var doFirstPage = function(doc, data, opts) {
   // 22. Informant certification
   writeFIELD(fldPos.informant.fullname[0], fldPos.informant.fullname[1], data.bc.informantFullname);
   writeField(fldPos.informant.relationToChild[0], fldPos.informant.relationToChild[1], data.bc.informantRelationToChild);
+  doc.fontSize(xSmallFont);
   writeField(fldPos.informant.address[0], fldPos.informant.address[1], data.bc.informantAddress);
+  doc.fontSize(mediumFont);
   writeField(fldPos.informant.date[0], fldPos.informant.date[1], moment().format('DD-MMM-YYYY'));
 
   // 23. Prepared by
