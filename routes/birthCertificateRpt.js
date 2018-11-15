@@ -539,7 +539,7 @@ var doSecondPage = function(doc, data, opts) {
     if (data.bc.dateOfMarriage && _.isDate(data.bc.dateOfMarriage)) {
       writeFIELD(fldPos.delayedRegistration.marriedCheckbox[0], fldPos.delayedRegistration.marriedCheckbox[1], 'X');
       // married on
-      writeField(fldPos.delayedRegistration.marriedDate[0], fldPos.delayedRegistration.marriageDate[1],
+      writeField(fldPos.delayedRegistration.marriedDate[0], fldPos.delayedRegistration.marriedDate[1],
           moment(data.bc.dateOfMarriage).format('MMMM D, YYYY'));
       // at
       writeField(fldPos.delayedRegistration.marriedPlace[0], fldPos.delayedRegistration.marriedPlace[1],
