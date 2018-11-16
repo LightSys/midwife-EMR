@@ -16,8 +16,10 @@ var buildChangeObject = require('./changes').buildChangeObject
  * socketToUserInfo()
  *
  * Returns a userInfo object with the user and roleInfo
- * objects derived from socket. If unable to derive the
- * objects, returns void.
+ * objects derived from socket. Also, if user is in attending
+ * role, sets the supervisorId field on the userInfo object.
+ *
+ * If unable to derive the objects, returns void.
  *
  * param       socket
  * return      userInfo or void
@@ -26,6 +28,11 @@ var socketToUserInfo = function(socket) {
   var userInfo = {};
   if (socket && socket.request && socket.request.session) {
     userInfo.sessionID = socket.request.sessionID;
+    userInfo.supervisorId = null;
+    if (socket.request.session.supervisor &&
+        _.isNumber(socket.request.session.supervisor.id)) {
+      userInfo.supervisorId = socket.request.session.supervisor.id;
+    }
     if (socket.request.session.user) {
       userInfo.user = socket.request.session.user;
       if (socket.request.session.roleInfo) {

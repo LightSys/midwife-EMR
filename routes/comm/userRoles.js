@@ -58,7 +58,7 @@ var addUser = function(data, userInfo, cb) {
       } else {
         user
           .setUpdatedBy(userInfo.user.id)
-          .setSupervisor(userInfo.user.supervisor)
+          .setSupervisor(userInfo.supervisorId)
           .save({}, {method: 'insert'})
           .then(function(user2) {
             cb(null, true, user2);
@@ -126,7 +126,7 @@ var updateUser = function(data, userInfo, cb) {
           } else {
             user
               .setUpdatedBy(userInfo.user.id)
-              .setSupervisor(userInfo.user.supervisor)
+              .setSupervisor(userInfo.supervisorId)
               .save(_.omit(rec, omitFlds))
               .then(function(rec2) {
                 cb(null, true, rec2.id);
@@ -153,7 +153,7 @@ var updateUser = function(data, userInfo, cb) {
       if (user) {
         user
           .setUpdatedBy(userInfo.user.id)
-          .setSupervisor(userInfo.user.supervisor)
+          .setSupervisor(userInfo.supervisorId)
           .save(_.omit(rec, omitFlds))
           .then(function(rec2) {
             cb(null, true, rec2.id);
@@ -241,7 +241,7 @@ var updateUserProfile = function(data, userInfo, cb) {
             } else {
               user
                 .setUpdatedBy(userInfo.user.id)
-                .setSupervisor(userInfo.user.supervisor)
+                .setSupervisor(userInfo.supervisorId)
                 .save(_.omit(rec, omitFlds), "", {}, {method:"update", patch:true})
                 .then(function(rec2) {
                   cb(null, true, rec2.id);
@@ -271,7 +271,7 @@ var updateUserProfile = function(data, userInfo, cb) {
       if (user) {
         user
           .setUpdatedBy(userInfo.user.id)
-          .setSupervisor(userInfo.user.supervisor)
+          .setSupervisor(userInfo.supervisorId)
           .save(_.omit(rec, omitFlds), "", {}, {method:"update", patch:true})
           .then(function(rec2) {
             cb(null, true, rec2.id);
@@ -367,7 +367,7 @@ var saveUser = function(payload, userInfo, cb) {
       userRec = new User(editObj);
       return userRec
         .setUpdatedBy(userInfo.user.id)
-        .setSupervisor(userInfo.user.supervisor)
+        .setSupervisor(userInfo.supervisorId)
         .save(null, {method: isNewUser? 'insert': 'update'})
         .then(function(model) {
           cb(null, model.toJSON());

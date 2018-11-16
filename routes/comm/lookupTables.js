@@ -386,7 +386,7 @@ var addTable = function(data, userInfo, cb, modelObj, tableStr) {
 
   modelObj.forge(rec)
     .setUpdatedBy(userInfo.user.id)
-    .setSupervisor(userInfo.user.supervisor)
+    .setSupervisor(userInfo.supervisorId)
     .save({}, {method: 'insert'})
     .then(function(rec2) {
       cb(null, true, rec2);
@@ -439,7 +439,7 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
     .fetch().then(function(table) {
       table
         .setUpdatedBy(userInfo.user.id)
-        .setSupervisor(userInfo.user.supervisor)
+        .setSupervisor(userInfo.supervisorId)
         .save(_.omit(rec, omitFlds))
         .then(function(rec2) {
           cb(null, true, rec2.id);

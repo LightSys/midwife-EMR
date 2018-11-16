@@ -143,7 +143,7 @@ var addTable = function(data, userInfo, cb, modelObj, tableStr) {
 
   modelObj.forge(rec)
     .setUpdatedBy(userInfo.user.id)
-    .setSupervisor(userInfo.user.supervisor)
+    .setSupervisor(userInfo.supervisorId)
     .save({}, {method: 'insert'})
     .then(function(rec2) {
       cb(null, true, rec2);
@@ -174,7 +174,7 @@ var updateTable = function(data, userInfo, cb, modelObj, tableStr) {
 
   modelObj.forge(rec)
     .setUpdatedBy(userInfo.user.id)
-    .setSupervisor(userInfo.user.supervisor)
+    .setSupervisor(userInfo.supervisorId)
     .save({}, {method: 'update'})
     .then(function(rec2) {
       cb(null, true, rec2);
@@ -252,7 +252,7 @@ var addBaby = function(data, userInfo, cb) {
         comments: data.comments,
         updatedBy: userInfo.user.id,
         updatedAt: knex.fn.now(),
-        supervisor: userInfo.user.supervisor,
+        supervisor: userInfo.supervisorId,
         labor_id: data.labor_id
       })
       .then(function(bbId) {
@@ -268,7 +268,7 @@ var addBaby = function(data, userInfo, cb) {
               rec.baby_id = babyId;
               rec.updatedBy = userInfo.user.id;
               rec.updatedAt = new Date();
-              rec.supervisor = userInfo.user.supervisor;
+              rec.supervisor = userInfo.supervisorId;
               recsToInsert.push(rec);
             });
 
@@ -332,7 +332,7 @@ var updateBaby = function(data, userInfo, cb) {
         comments: data.comments,
         updatedBy: userInfo.user.id,
         updatedAt: knex.fn.now(),
-        supervisor: userInfo.user.supervisor,
+        supervisor: userInfo.supervisorId,
         labor_id: data.labor_id
       })
       .then(function(numRows) {
@@ -372,7 +372,7 @@ var updateBaby = function(data, userInfo, cb) {
                 newApgar.baby_id = data.id;
                 newApgar.updatedBy = userInfo.user.id;
                 newApgar.updatedAt = new Date();
-                newApgar.supervisor = userInfo.user.supervisor;
+                newApgar.supervisor = userInfo.supervisorId;
                 recsToInsert.push(newApgar);
               }
 
@@ -388,7 +388,7 @@ var updateBaby = function(data, userInfo, cb) {
                 match.score = newApgar.score;
                 match.updatedBy = userInfo.user.id;
                 match.updatedAt = new Date();
-                match.supervisor = userInfo.user.supervisor;
+                match.supervisor = userInfo.supervisorId;
                 recsToUpdate.push(match);
               }
             });

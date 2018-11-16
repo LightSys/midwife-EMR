@@ -22,6 +22,10 @@ var _ = require('underscore')
   ;
 
 
+// --------------------------------------------------------
+// TODO: remove this module if it is not being used.
+// --------------------------------------------------------
+
 var savePrenatal = function(payload, userInfo, cb) {
   var preg = payload.preg
     ;
@@ -36,7 +40,7 @@ var savePrenatal = function(payload, userInfo, cb) {
     .fetch().then(function(pregnancy) {
       pregnancy
         .setUpdatedBy(userInfo.user.id)
-        .setSupervisor(userInfo.user.supervisor)
+        .setSupervisor(userInfo.supervisorId)
         .save(preg)
         .then(function(pregnancy) {
           logInfo('savePrenatal id: ' + pregnancy.get('id'));

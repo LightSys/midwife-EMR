@@ -92,7 +92,6 @@ var rx = require('rx')
   , getTable2 = require('./routes/comm/lookupTables').getTable2
   , saveUser = require('./routes/comm/userRoles').saveUser
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
-  , savePrenatal = require('./routes/comm/pregnancy').savePrenatal
   , buildChangeObject = require('./changes').buildChangeObject
   , socketToUserInfo = require('./commUtils').socketToUserInfo
   , sendData = require('./commUtils').sendData
