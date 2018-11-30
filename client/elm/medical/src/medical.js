@@ -20,32 +20,22 @@ var app = elm.Medical.embed( node,
 comm.setApp(app);
 datepicker.setApp(app);
 
-// Websocket testing.
-var WS_TEST = 0;  // Set to 1 to use.
-if (1 === WS_TEST) {
-  var socket = new WebSocket("wss://" + window.location.host + "/wstest");
+// --------------------------------------------------------
+// Send all uncaught errors to the server for storage.
+// --------------------------------------------------------
+window.onerror = function(msg, url, lineNum, colNum, error) {
 
-  socket.onclose = function(evt) {
-    console.log('--- Close ---');
-    if (evt.reason && evt.reason.length > 0) {
-      console.log(evt.reason);
-    }
-    console.log(evt);
-  };
+  // --------------------------------------------------------
+  // Construct the message as a string.
+  // --------------------------------------------------------
+  var msg = msg? msg: '';
+  msg += ' | ' + (url? url: '');
+  msg += ' | ' + (typeof lineNum === 'number'? lineNum: '');
+  msg += ' | ' + (typeof colNum === 'number'? colNum: '');
+  msg += ' | ' + (error? JSON.stringify(error): '');
 
-  socket.onopen = function(evt) {
-    console.log('--- Open ---');
-    console.log(evt);
-    socket.send("This is a test.");
-  };
+  comm.errorToServer(msg);
 
-  socket.onerror = function(evt) {
-    console.log('--- Error ---');
-    console.log(evt);
-  };
-
-  socket.onmessage = function(evt) {
-    console.log('--- Message ---');
-    console.log(evt);
-  };
-}
+  // Allow the default error handler to fire as well.
+  return false;
+};

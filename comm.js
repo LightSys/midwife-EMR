@@ -91,6 +91,7 @@ var rx = require('rx')
   , getLookupTable = require('./routes/comm/lookupTables').getLookupTable
   , getTable2 = require('./routes/comm/lookupTables').getTable2
   , saveUser = require('./routes/comm/userRoles').saveUser
+  , saveClientConsole = require('./routes/comm/clientConsole').saveClientConsole
   , checkInOut = require('./routes/comm/checkInOut').checkInOut
   , buildChangeObject = require('./changes').buildChangeObject
   , socketToUserInfo = require('./commUtils').socketToUserInfo
@@ -133,6 +134,7 @@ var rx = require('rx')
   , ADHOC_USER_PROFILE = 'ADHOC_USER_PROFILE' // AdhocType from the client.
   , ADHOC_USER_PROFILE_UPDATE = 'ADHOC_USER_PROFILE_UPDATE'
   , ADHOC_TOUCH_SESSION = 'ADHOC_TOUCH_SESSION'   // Used by the Elm medical client
+  , ADHOC_CLIENT_CONSOLE = 'ADHOC_CLIENT_CONSOLE' // Used by the Elm medical client
   , ADHOC_SYSTEM_MODE = 'ADHOC_SYSTEM_MODE'   // Elm admin client to change system mode
   , TABLE_babyMedication = 'babyMedication'
   , TABLE_babyVaccination = 'babyVaccination'
@@ -1607,6 +1609,12 @@ var init = function(io, sessionMiddle) {
 
           case ADHOC_TOUCH_SESSION:
             touchSocketSession(socket);
+            break;
+
+          case ADHOC_CLIENT_CONSOLE:
+            saveClientConsole(json.payload, userInfo, (err) => {
+              if (err) logCommInfo(err);
+            });
             break;
 
           default:

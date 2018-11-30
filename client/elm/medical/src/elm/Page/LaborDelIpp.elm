@@ -1,8 +1,8 @@
 module Page.LaborDelIpp
     exposing
-        ( closeAllDialogs
-        , Model
+        ( Model
         , buildModel
+        , closeAllDialogs
         , getTablesByCacheOrServer
         , init
         , update
@@ -77,6 +77,7 @@ import Data.LaborStage3
         , schultzDuncan2String
         , string2SchultzDuncan
         )
+import Data.Log exposing (Severity(..))
 import Data.Membrane
     exposing
         ( MembraneRecord
@@ -102,7 +103,17 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
 import List.Extra as LE
-import Msg exposing (Msg(..), ProcessType(..), logConsole, toastError, toastInfo, toastWarn)
+import Msg
+    exposing
+        ( Msg(..)
+        , ProcessType(..)
+        , logError
+        , logInfo
+        , logWarning
+        , toastError
+        , toastInfo
+        , toastWarn
+        )
 import Page.Errored as Errored exposing (PageLoadError)
 import Ports
 import Processing exposing (ProcessStore)
@@ -419,6 +430,7 @@ buildModel browserSupportsDate currTime store pregId patrec pregRec laborRec =
     , newOuterMsg
     )
 
+
 {-| Generate an top-level module command to retrieve additional data which checks
 first in the data cache, and secondarily from the server.
 -}
@@ -433,6 +445,7 @@ getTables table key relatedTables =
 fully loaded, but get the data from the data cache instead of the server, if available.
 
 This is called by the top-level module which passes it's data cache for our use.
+
 -}
 getTablesByCacheOrServer : ProcessStore -> Table -> Maybe Int -> List Table -> Dict String DataCache -> ( ProcessStore, Cmd Msg )
 getTablesByCacheOrServer store table key relatedTbls dataCache =
@@ -2883,72 +2896,68 @@ list of keys (List Table) passed, which has to be initiated elsewhere
 in this module. This is so that fields are not willy nilly overwritten
 unexpectedly.
 -}
-refreshModelFromCache : Dict String DataCache -> List Table -> Model -> Model
+refreshModelFromCache : Dict String DataCache -> List Table -> Model -> ( Model, Cmd Msg )
 refreshModelFromCache dc tables model =
     let
-        newModel =
+        ( newModel, cmds ) =
             List.foldl
-                (\t m ->
+                (\t ( m, cmds ) ->
                     case t of
                         Baby ->
                             case DataCache.get t dc of
                                 Just (BabyDataCache rec) ->
-                                    { m | babyRecord = Just rec }
+                                    { m | babyRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         Labor ->
                             case DataCache.get t dc of
                                 Just (LaborDataCache rec) ->
-                                    { m | laborRecord = Just rec }
+                                    { m | laborRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage1 ->
                             case DataCache.get t dc of
                                 Just (LaborStage1DataCache rec) ->
-                                    { m | laborStage1Record = Just rec }
+                                    { m | laborStage1Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage2 ->
                             case DataCache.get t dc of
                                 Just (LaborStage2DataCache rec) ->
-                                    { m | laborStage2Record = Just rec }
+                                    { m | laborStage2Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage3 ->
                             case DataCache.get t dc of
                                 Just (LaborStage3DataCache rec) ->
-                                    { m | laborStage3Record = Just rec }
+                                    { m | laborStage3Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         Membrane ->
                             case DataCache.get t dc of
                                 Just (MembraneDataCache rec) ->
-                                    { m | membraneRecord = Just rec }
+                                    { m | membraneRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         _ ->
-                            let
-                                _ =
-                                    Debug.log "LaborDelIpp.refreshModelFromCache: Unhandled Table" <| toString t
-                            in
-                            m
+                            ( m, ("LaborDelIpp.refreshModelFromCache: Unhandled Table" ++ toString t) :: cmds )
                 )
-                model
+                ( model, [] )
                 tables
     in
-    newModel
+    newModel => (Cmd.batch <| List.map logWarning cmds)
 
 
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
@@ -2972,21 +2981,17 @@ update session msg model =
             -- on the latest data that it has. The specific records that need
             -- to be updated are in the tables list.
             let
-                newModel =
+                ( newModel, newCmd ) =
                     case ( dc, tbls ) of
                         ( Just dataCache, Just tables ) ->
-                            let
-                                newModel =
-                                    refreshModelFromCache dataCache tables model
-                            in
-                            { newModel | dataCache = dataCache }
+                            refreshModelFromCache dataCache tables { model | dataCache = dataCache }
 
                         ( _, _ ) ->
-                            model
+                            ( model, Cmd.none )
             in
             ( newModel
             , Cmd.none
-            , Cmd.none
+            , newCmd
             )
 
         LaborDelIppTick time ->
@@ -3020,7 +3025,7 @@ update session msg model =
                             ( { model | membraneRuptureDate = Just date }, Cmd.none, Cmd.none )
 
                         UnknownDateField str ->
-                            ( model, Cmd.none, logConsole <| "Unknown date field: " ++ str )
+                            ( model, Cmd.none, logWarning <| "Unknown date field: " ++ str )
 
                         _ ->
                             -- This page is not the only one with date fields, we only
@@ -3034,348 +3039,341 @@ update session msg model =
             -- All fields are handled here except for the date fields for browsers that
             -- do not support the input date type (see DateFieldSubMsg for those) and
             -- the boolean fields handled by FldChgBoolSubMsg above.
-            case val of
-                FldChgString value ->
-                    ( case fld of
-                        AdmittanceDateFld ->
-                            { model | admittanceDate = U.stringToDateAddSubOffset value }
+            let
+                ( newModel, newCmd ) =
+                    case val of
+                        FldChgString value ->
+                            case fld of
+                                AdmittanceDateFld ->
+                                    { model | admittanceDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        AdmittanceTimeFld ->
-                            { model | admittanceTime = Just <| U.filterStringLikeTime value }
+                                AdmittanceTimeFld ->
+                                    { model | admittanceTime = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        LaborDateFld ->
-                            { model | laborDate = U.stringToDateAddSubOffset value }
+                                LaborDateFld ->
+                                    { model | laborDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        LaborTimeFld ->
-                            { model | laborTime = Just <| U.filterStringLikeTime value }
+                                LaborTimeFld ->
+                                    { model | laborTime = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        PosFld ->
-                            { model | pos = Just value }
+                                PosFld ->
+                                    { model | pos = Just value } => Cmd.none
 
-                        FhFld ->
-                            { model | fh = Just <| U.filterStringLikeInt value }
+                                FhFld ->
+                                    { model | fh = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        FhtFld ->
-                            { model | fht = Just value }
+                                FhtFld ->
+                                    { model | fht = Just value } => Cmd.none
 
-                        SystolicFld ->
-                            { model | systolic = Just <| U.filterStringLikeInt value }
+                                SystolicFld ->
+                                    { model | systolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        DiastolicFld ->
-                            { model | diastolic = Just <| U.filterStringLikeInt value }
+                                DiastolicFld ->
+                                    { model | diastolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        CrFld ->
-                            { model | cr = Just <| U.filterStringLikeInt value }
+                                CrFld ->
+                                    { model | cr = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        TempFld ->
-                            { model | temp = Just <| U.filterStringLikeFloat value }
+                                TempFld ->
+                                    { model | temp = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        CommentsFld ->
-                            { model | comments = Just value }
+                                CommentsFld ->
+                                    { model | comments = Just value } => Cmd.none
 
-                        Stage1DateFld ->
-                            { model | stage1Date = U.stringToDateAddSubOffset value }
+                                Stage1DateFld ->
+                                    { model | stage1Date = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        Stage1TimeFld ->
-                            { model | stage1Time = Just <| U.filterStringLikeTime value }
+                                Stage1TimeFld ->
+                                    { model | stage1Time = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        Stage1MobilityFld ->
-                            { model | s1Mobility = Just value }
+                                Stage1MobilityFld ->
+                                    { model | s1Mobility = Just value } => Cmd.none
 
-                        Stage1DurationLatentHoursFld ->
-                            { model | s1DurationLatentHours = Just <| U.filterStringLikeInt value }
+                                Stage1DurationLatentHoursFld ->
+                                    { model | s1DurationLatentHours = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        Stage1DurationLatentMinutesFld ->
-                            { model | s1DurationLatentMinutes = Just <| U.filterStringLikeInt value }
+                                Stage1DurationLatentMinutesFld ->
+                                    { model | s1DurationLatentMinutes = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        Stage1DurationActiveHoursFld ->
-                            { model | s1DurationActiveHours = Just <| U.filterStringLikeInt value }
+                                Stage1DurationActiveHoursFld ->
+                                    { model | s1DurationActiveHours = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        Stage1DurationActiveMinutesFld ->
-                            { model | s1DurationActiveMinutes = Just <| U.filterStringLikeInt value }
+                                Stage1DurationActiveMinutesFld ->
+                                    { model | s1DurationActiveMinutes = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        Stage1CommentsFld ->
-                            { model | s1Comments = Just value }
+                                Stage1CommentsFld ->
+                                    { model | s1Comments = Just value } => Cmd.none
 
-                        Stage2DateFld ->
-                            { model | stage2Date = U.stringToDateAddSubOffset value }
+                                Stage2DateFld ->
+                                    { model | stage2Date = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        Stage2TimeFld ->
-                            { model | stage2Time = Just <| U.filterStringLikeTime value }
+                                Stage2TimeFld ->
+                                    { model | stage2Time = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        Stage2BirthDatetimeFld ->
-                            -- TODO: What is this field for if we have Stage2DateFld and Stage2TimeFld?
-                            model
+                                Stage2BirthDatetimeFld ->
+                                    -- TODO: What is this field for if we have Stage2DateFld and Stage2TimeFld?
+                                    model => Cmd.none
 
-                        Stage2BirthTypeFld ->
-                            { model | s2BirthType = Just value }
+                                Stage2BirthTypeFld ->
+                                    { model | s2BirthType = Just value } => Cmd.none
 
-                        Stage2BirthPositionFld ->
-                            { model | s2BirthPosition = Just value }
+                                Stage2BirthPositionFld ->
+                                    { model | s2BirthPosition = Just value } => Cmd.none
 
-                        Stage2DurationPushingFld ->
-                            { model | s2DurationPushing = Just <| U.filterStringLikeInt value }
+                                Stage2DurationPushingFld ->
+                                    { model | s2DurationPushing = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        Stage2BirthPresentationFld ->
-                            { model | s2BirthPresentation = Just value }
+                                Stage2BirthPresentationFld ->
+                                    { model | s2BirthPresentation = Just value } => Cmd.none
 
-                        Stage2CordWrapTypeFld ->
-                            { model | s2CordWrapType = Just value }
+                                Stage2CordWrapTypeFld ->
+                                    { model | s2CordWrapType = Just value } => Cmd.none
 
-                        Stage2DeliveryTypeFld ->
-                            { model | s2DeliveryType = Just value }
+                                Stage2DeliveryTypeFld ->
+                                    { model | s2DeliveryType = Just value } => Cmd.none
 
-                        Stage2ShoulderDystociaMinutesFld ->
-                            { model | s2ShoulderDystociaMinutes = Just <| U.filterStringLikeInt value }
+                                Stage2ShoulderDystociaMinutesFld ->
+                                    { model | s2ShoulderDystociaMinutes = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        Stage2DegreeFld ->
-                            { model | s2Degree = Just value }
+                                Stage2DegreeFld ->
+                                    { model | s2Degree = Just value } => Cmd.none
 
-                        Stage2LacerationRepairedByFld ->
-                            { model | s2LacerationRepairedBy = Just value }
+                                Stage2LacerationRepairedByFld ->
+                                    { model | s2LacerationRepairedBy = Just value } => Cmd.none
 
-                        Stage2BirthEBLFld ->
-                            { model | s2BirthEBL = Just value }
+                                Stage2BirthEBLFld ->
+                                    { model | s2BirthEBL = Just value } => Cmd.none
 
-                        Stage2MeconiumFld ->
-                            { model | s2Meconium = Just value }
+                                Stage2MeconiumFld ->
+                                    { model | s2Meconium = Just value } => Cmd.none
 
-                        Stage2CommentsFld ->
-                            { model | s2Comments = Just value }
+                                Stage2CommentsFld ->
+                                    { model | s2Comments = Just value } => Cmd.none
 
-                        Stage3DateFld ->
-                            { model | stage3Date = U.stringToDateAddSubOffset value }
+                                Stage3DateFld ->
+                                    { model | stage3Date = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        Stage3TimeFld ->
-                            { model | stage3Time = Just <| U.filterStringLikeTime value }
+                                Stage3TimeFld ->
+                                    { model | stage3Time = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        Stage3MaternalPositionFld ->
-                            { model | s3MaternalPosition = Just value }
+                                Stage3MaternalPositionFld ->
+                                    { model | s3MaternalPosition = Just value } => Cmd.none
 
-                        Stage3TxBloodLoss1Fld ->
-                            let
-                                _ =
-                                    Debug.log "s3TxBloodLoss1" <| toString value
-                            in
-                            { model | s3TxBloodLoss1 = Just value }
+                                Stage3TxBloodLoss1Fld ->
+                                    { model | s3TxBloodLoss1 = Just value } => Cmd.none
 
-                        Stage3TxBloodLoss2Fld ->
-                            { model | s3TxBloodLoss2 = Just value }
+                                Stage3TxBloodLoss2Fld ->
+                                    { model | s3TxBloodLoss2 = Just value } => Cmd.none
 
-                        Stage3TxBloodLoss3Fld ->
-                            { model | s3TxBloodLoss3 = Just value }
+                                Stage3TxBloodLoss3Fld ->
+                                    { model | s3TxBloodLoss3 = Just value } => Cmd.none
 
-                        Stage3TxBloodLoss4Fld ->
-                            { model | s3TxBloodLoss4 = Just value }
+                                Stage3TxBloodLoss4Fld ->
+                                    { model | s3TxBloodLoss4 = Just value } => Cmd.none
 
-                        Stage3TxBloodLoss5Fld ->
-                            { model | s3TxBloodLoss5 = Just value }
+                                Stage3TxBloodLoss5Fld ->
+                                    { model | s3TxBloodLoss5 = Just value } => Cmd.none
 
-                        Stage3PlacentaShapeFld ->
-                            { model | s3PlacentaShape = Just value }
+                                Stage3PlacentaShapeFld ->
+                                    { model | s3PlacentaShape = Just value } => Cmd.none
 
-                        Stage3PlacentaInsertionFld ->
-                            { model | s3PlacentaInsertion = Just value }
+                                Stage3PlacentaInsertionFld ->
+                                    { model | s3PlacentaInsertion = Just value } => Cmd.none
 
-                        Stage3PlacentaNumVesselsFld ->
-                            { model | s3PlacentaNumVessels = Just <| U.filterStringLikeInt value }
+                                Stage3PlacentaNumVesselsFld ->
+                                    { model | s3PlacentaNumVessels = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        Stage3SchultzDuncanFld ->
-                            -- TODO: need validity check here?
-                            { model | s3SchultzDuncan = Just value }
+                                Stage3SchultzDuncanFld ->
+                                    -- TODO: need validity check here?
+                                    { model | s3SchultzDuncan = Just value } => Cmd.none
 
-                        Stage3CotyledonsFld ->
-                            { model | s3Cotyledons = Just value }
+                                Stage3CotyledonsFld ->
+                                    { model | s3Cotyledons = Just value } => Cmd.none
 
-                        Stage3MembranesFld ->
-                            { model | s3Membranes = Just value }
+                                Stage3MembranesFld ->
+                                    { model | s3Membranes = Just value } => Cmd.none
 
-                        Stage3CommentsFld ->
-                            { model | s3Comments = Just value }
+                                Stage3CommentsFld ->
+                                    { model | s3Comments = Just value } => Cmd.none
 
-                        MembraneRuptureDateFld ->
-                            { model | membraneRuptureDate = U.stringToDateAddSubOffset value }
+                                MembraneRuptureDateFld ->
+                                    { model | membraneRuptureDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        MembraneRuptureTimeFld ->
-                            { model | membraneRuptureTime = Just <| U.filterStringLikeTime value }
+                                MembraneRuptureTimeFld ->
+                                    { model | membraneRuptureTime = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        MembraneRuptureFld ->
-                            { model | membraneRupture = Just value }
-
-                        MembraneRuptureCommentFld ->
-                            { model | membraneRuptureComment = Just value }
-
-                        MembraneAmnioticFld ->
-                            { model | membraneAmniotic = Just value }
-
-                        MembraneAmnioticCommentFld ->
-                            { model | membraneAmnioticComment = Just value }
-
-                        MembraneCommentsFld ->
-                            { model | membraneComments = Just value }
-
-                        BabyLastnameFld ->
-                            { model | bbLastname = Just value }
-
-                        BabyFirstnameFld ->
-                            { model | bbFirstname = Just value }
-
-                        BabyMiddlenameFld ->
-                            { model | bbMiddlename = Just value }
+                                MembraneRuptureFld ->
+                                    { model | membraneRupture = Just value } => Cmd.none
 
-                        BabySexFld ->
-                            { model | bbSex = Just <| U.filterStringInList [ "Male", "Female", "Ambiguous" ] value }
+                                MembraneRuptureCommentFld ->
+                                    { model | membraneRuptureComment = Just value } => Cmd.none
 
-                        BabyBirthWeightFld ->
-                            { model | bbBirthWeight = Just <| U.filterStringLikeInt value }
+                                MembraneAmnioticFld ->
+                                    { model | membraneAmniotic = Just value } => Cmd.none
 
-                        BabyBFedEstablishedDateFld ->
-                            { model | bbBFedEstablishedDate = U.stringToDateAddSubOffset value }
+                                MembraneAmnioticCommentFld ->
+                                    { model | membraneAmnioticComment = Just value } => Cmd.none
 
-                        BabyBFedEstablishedTimeFld ->
-                            { model | bbBFedEstablishedTime = Just <| U.filterStringLikeTime value }
+                                MembraneCommentsFld ->
+                                    { model | membraneComments = Just value } => Cmd.none
 
-                        BabyCommentsFld ->
-                            { model | bbComments = Just value }
+                                BabyLastnameFld ->
+                                    { model | bbLastname = Just value } => Cmd.none
 
-                        ApgarOtherMinuteFld ->
-                            { model | pendingApgarMinute = Just value }
-
-                        ApgarOtherScoreFld ->
-                            { model | pendingApgarScore = Just <| U.filterStringLikeInt value }
-
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "LaborDelIpp.update FldChgSubMsg"
-                                        "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
-                            in
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
-
-                FldChgStringList _ _ ->
-                    ( model
-                    , Cmd.none
-                    , Cmd.none
-                    )
-
-                FldChgBool value ->
-                    ( case fld of
-                        Stage2ShoulderDystociaFld ->
-                            { model | s2ShoulderDystocia = Just value }
-
-                        Stage2TerminalMecFld ->
-                            { model | s2TerminalMec = Just value }
-
-                        Stage2LacerationFld ->
-                            -- Clear the degree field if this and laceration are unchecked.
-                            if value == False then
-                                if model.s2Episiotomy == Nothing || model.s2Episiotomy == Just False then
-                                    { model
-                                        | s2Laceration = Just value
-                                        , s2Degree = Nothing
-                                    }
-                                else
-                                    { model | s2Laceration = Just value }
-                            else
-                                { model | s2Laceration = Just value }
-
-                        Stage2EpisiotomyFld ->
-                            -- Clear the degree field if this and laceration are unchecked.
-                            if value == False then
-                                if model.s2Laceration == Nothing || model.s2Laceration == Just False then
-                                    { model
-                                        | s2Episiotomy = Just value
-                                        , s2Degree = Nothing
-                                    }
-                                else
-                                    { model | s2Episiotomy = Just value }
-                            else
-                                { model | s2Episiotomy = Just value }
-
-                        Stage2RepairFld ->
-                            -- Clear the degree and repaired by fields if this is unchecked.
-                            if value == False then
-                                { model
-                                    | s2Repair = Just value
-                                    , s2Degree = Nothing
-                                    , s2LacerationRepairedBy = Nothing
-                                }
-                            else
-                                { model | s2Repair = Just value }
-
-                        Stage3PlacentaDeliverySpontaneousFld ->
-                            { model | s3PlacentaDeliverySpontaneous = Just value }
-
-                        Stage3PlacentaDeliveryAMTSLFld ->
-                            { model | s3PlacentaDeliveryAMTSL = Just value }
-
-                        Stage3PlacentaDeliveryCCTFld ->
-                            { model | s3PlacentaDeliveryCCT = Just value }
-
-                        Stage3PlacentaDeliveryManualFld ->
-                            { model | s3PlacentaDeliveryManual = Just value }
-
-                        BabyBulbFld ->
-                            { model | bbBulb = Just value }
-
-                        BabyMachineFld ->
-                            { model | bbMachine = Just value }
-
-                        BabyFreeFlowO2Fld ->
-                            { model | bbFreeFlowO2 = Just value }
-
-                        BabyChestCompressionsFld ->
-                            { model | bbChestCompressions = Just value }
-
-                        BabyPpvFld ->
-                            { model | bbPpv = Just value }
-
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "LaborDelIpp.update FldChgSubMsg"
-                                        "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
-                            in
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
-
-                FldChgIntString intVal strVal ->
-                    ( case fld of
-                        ApgarStandardFld ->
-                            -- Handling one of the standard apgar 1, 5, or 10 fields. Stores data
-                            -- in the apgarScores field, which is a Dict with minute as key.
-                            case String.toInt strVal of
-                                Ok score ->
-                                    -- Allowable scores are 0 - 10 inclusive.
-                                    if score >= 0 && score <= 10 then
-                                        { model
-                                            | apgarScores = Dict.insert intVal (ApgarScore (Just intVal) (Just score)) model.apgarScores
-                                        }
+                                BabyFirstnameFld ->
+                                    { model | bbFirstname = Just value } => Cmd.none
+
+                                BabyMiddlenameFld ->
+                                    { model | bbMiddlename = Just value } => Cmd.none
+
+                                BabySexFld ->
+                                    { model | bbSex = Just <| U.filterStringInList [ "Male", "Female", "Ambiguous" ] value } => Cmd.none
+
+                                BabyBirthWeightFld ->
+                                    { model | bbBirthWeight = Just <| U.filterStringLikeInt value } => Cmd.none
+
+                                BabyBFedEstablishedDateFld ->
+                                    { model | bbBFedEstablishedDate = U.stringToDateAddSubOffset value } => Cmd.none
+
+                                BabyBFedEstablishedTimeFld ->
+                                    { model | bbBFedEstablishedTime = Just <| U.filterStringLikeTime value } => Cmd.none
+
+                                BabyCommentsFld ->
+                                    { model | bbComments = Just value } => Cmd.none
+
+                                ApgarOtherMinuteFld ->
+                                    { model | pendingApgarMinute = Just value } => Cmd.none
+
+                                ApgarOtherScoreFld ->
+                                    { model | pendingApgarScore = Just <| U.filterStringLikeInt value } => Cmd.none
+
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("LaborDelIpp.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
+                                            )
+
+                        FldChgStringList _ _ ->
+                            model => Cmd.none
+
+                        FldChgBool value ->
+                            case fld of
+                                Stage2ShoulderDystociaFld ->
+                                    { model | s2ShoulderDystocia = Just value } => Cmd.none
+
+                                Stage2TerminalMecFld ->
+                                    { model | s2TerminalMec = Just value } => Cmd.none
+
+                                Stage2LacerationFld ->
+                                    -- Clear the degree field if this and laceration are unchecked.
+                                    if value == False then
+                                        if model.s2Episiotomy == Nothing || model.s2Episiotomy == Just False then
+                                            { model
+                                                | s2Laceration = Just value
+                                                , s2Degree = Nothing
+                                            }
+                                                => Cmd.none
+                                        else
+                                            { model | s2Laceration = Just value } => Cmd.none
                                     else
-                                        model
+                                        { model | s2Laceration = Just value } => Cmd.none
 
-                                Err _ ->
-                                    -- That means that the user removed the score or entered
-                                    -- something out of range, either way, remove it.
-                                    { model
-                                        | apgarScores = Dict.remove intVal model.apgarScores
-                                    }
+                                Stage2EpisiotomyFld ->
+                                    -- Clear the degree field if this and laceration are unchecked.
+                                    if value == False then
+                                        if model.s2Laceration == Nothing || model.s2Laceration == Just False then
+                                            { model
+                                                | s2Episiotomy = Just value
+                                                , s2Degree = Nothing
+                                            }
+                                                => Cmd.none
+                                        else
+                                            { model | s2Episiotomy = Just value } => Cmd.none
+                                    else
+                                        { model | s2Episiotomy = Just value } => Cmd.none
 
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "LaborDelIpp.update FldChgSubMsg"
-                                        "Unknown field encountered in FldChgTwoMaybeString. Possible mismatch between Field and FldChgValue."
-                            in
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                Stage2RepairFld ->
+                                    -- Clear the degree and repaired by fields if this is unchecked.
+                                    if value == False then
+                                        { model
+                                            | s2Repair = Just value
+                                            , s2Degree = Nothing
+                                            , s2LacerationRepairedBy = Nothing
+                                        }
+                                            => Cmd.none
+                                    else
+                                        { model | s2Repair = Just value } => Cmd.none
+
+                                Stage3PlacentaDeliverySpontaneousFld ->
+                                    { model | s3PlacentaDeliverySpontaneous = Just value } => Cmd.none
+
+                                Stage3PlacentaDeliveryAMTSLFld ->
+                                    { model | s3PlacentaDeliveryAMTSL = Just value } => Cmd.none
+
+                                Stage3PlacentaDeliveryCCTFld ->
+                                    { model | s3PlacentaDeliveryCCT = Just value } => Cmd.none
+
+                                Stage3PlacentaDeliveryManualFld ->
+                                    { model | s3PlacentaDeliveryManual = Just value } => Cmd.none
+
+                                BabyBulbFld ->
+                                    { model | bbBulb = Just value } => Cmd.none
+
+                                BabyMachineFld ->
+                                    { model | bbMachine = Just value } => Cmd.none
+
+                                BabyFreeFlowO2Fld ->
+                                    { model | bbFreeFlowO2 = Just value } => Cmd.none
+
+                                BabyChestCompressionsFld ->
+                                    { model | bbChestCompressions = Just value } => Cmd.none
+
+                                BabyPpvFld ->
+                                    { model | bbPpv = Just value } => Cmd.none
+
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("LaborDelIpp.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
+                                            )
+
+                        FldChgIntString intVal strVal ->
+                            case fld of
+                                ApgarStandardFld ->
+                                    -- Handling one of the standard apgar 1, 5, or 10 fields. Stores data
+                                    -- in the apgarScores field, which is a Dict with minute as key.
+                                    case String.toInt strVal of
+                                        Ok score ->
+                                            -- Allowable scores are 0 - 10 inclusive.
+                                            if score >= 0 && score <= 10 then
+                                                { model
+                                                    | apgarScores = Dict.insert intVal (ApgarScore (Just intVal) (Just score)) model.apgarScores
+                                                }
+                                                    => Cmd.none
+                                            else
+                                                model => Cmd.none
+
+                                        Err _ ->
+                                            -- That means that the user removed the score or entered
+                                            -- something out of range, either way, remove it.
+                                            { model
+                                                | apgarScores = Dict.remove intVal model.apgarScores
+                                            }
+                                                => Cmd.none
+
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("LaborDelIpp.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgTwoMaybeString. Possible mismatch between Field and FldChgValue."
+                                            )
+            in
+            ( newModel
+            , Cmd.none
+            , newCmd
+            )
 
         RotatePregHeaderContent pregHeaderMsg ->
             case pregHeaderMsg of
@@ -3686,7 +3684,7 @@ update session msg model =
                                                         (laborStage1RecordNewToValue laborStage1RecNew)
 
                                                 Nothing ->
-                                                    LogConsole "deriveLaborStage1RecordNew returned a Nothing"
+                                                    Log ErrorSeverity "deriveLaborStage1RecordNew returned a Nothing"
                             in
                             ( { model | stage1SummaryModal = NoViewEditState }
                             , Cmd.none
@@ -4032,7 +4030,7 @@ update session msg model =
                                                         (laborStage2RecordNewToValue laborStage2RecNew)
 
                                                 Nothing ->
-                                                    LogConsole "deriveLaborStage2RecordNew returned a Nothing"
+                                                    Log ErrorSeverity "deriveLaborStage2RecordNew returned a Nothing"
                             in
                             ( { model | stage2SummaryModal = NoViewEditState }
                             , Cmd.none
@@ -4357,7 +4355,7 @@ update session msg model =
                                                         (laborStage3RecordNewToValue laborStage3RecNew)
 
                                                 Nothing ->
-                                                    LogConsole "deriveLaborStage3RecordNew returned a Nothing"
+                                                    Log ErrorSeverity "deriveLaborStage3RecordNew returned a Nothing"
                             in
                             ( { model | stage3SummaryModal = NoViewEditState }
                             , Cmd.none
@@ -4495,7 +4493,7 @@ update session msg model =
                                                         (membraneRecordNewToValue membraneRecordNew)
 
                                                 Nothing ->
-                                                    LogConsole "deriveMembraneRecordNew returned a Nothing"
+                                                    Log ErrorSeverity "deriveMembraneRecordNew returned a Nothing"
                             in
                             ( { model | membraneSummaryModal = NoViewEditState }
                             , Cmd.none
@@ -4599,7 +4597,7 @@ update session msg model =
                                     case ( List.length errors > 0, model.babyRecord, model.bbSex ) of
                                         ( _, Just rec, Nothing ) ->
                                             -- We should never get here.
-                                            LogConsole <|
+                                            Log ErrorSeverity <|
                                                 "LaborDelIpp.update in HandleBabySummaryModal,CloseSaveDialog "
                                                     ++ " branch with model.bbSex set to Nothing."
 
@@ -4655,7 +4653,7 @@ update session msg model =
                                                         (babyRecordNewToValue babyRecordNew)
 
                                                 Nothing ->
-                                                    LogConsole "deriveBabyRecordNew returned a Nothing"
+                                                    Log ErrorSeverity "deriveBabyRecordNew returned a Nothing"
                             in
                             ( { model | babySummaryModal = NoViewEditState }
                             , Cmd.none
@@ -4779,7 +4777,7 @@ update session msg model =
             )
 
         LaborDetailsLoaded ->
-            ( model, Cmd.none, logConsole "LaborDelIpp.update LaborDetailsLoaded" )
+            ( model, Cmd.none, logInfo "LaborDelIpp.update LaborDetailsLoaded" )
 
         ViewLaborRecord laborId ->
             ( { model

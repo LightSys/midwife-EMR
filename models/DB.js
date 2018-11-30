@@ -104,7 +104,7 @@ var init = function(dbSettings) {
         }
 
         // Tables known to not set updatedAt so don't log when they don't.
-        var noLoggingTables = ['event', 'customField', 'keyValue'];
+        var noLoggingTables = ['event', 'customField', 'keyValue', 'clientConsole'];
 
         // Set the updatedAt field to the current time whether creating
         // or updating unless noLogging is set.

@@ -27,6 +27,7 @@ type MsgType
     | ChgMsgType
     | AddChgDelType
     | AdhocTouchType
+    | AdhocClientConsole
 
 
 type Namespace
@@ -64,6 +65,9 @@ msgTypeToString mt =
         AdhocTouchType ->
             "ADHOC_TOUCH_SESSION"
 
+        AdhocClientConsole ->
+            "ADHOC_CLIENT_CONSOLE"
+
 
 stringToMsgType : String -> Maybe MsgType
 stringToMsgType str =
@@ -85,6 +89,9 @@ stringToMsgType str =
 
         "ADHOC_TOUCH_SESSION" ->
             Just AdhocTouchType
+
+        "ADHOC_CLIENT_CONSOLE" ->
+            Just AdhocClientConsole
 
         _ ->
             Nothing

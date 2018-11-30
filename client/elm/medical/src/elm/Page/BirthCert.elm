@@ -36,6 +36,7 @@ import Data.Labor
         , getLaborId
         )
 import Data.LaborStage2 exposing (LaborStage2Record)
+import Data.Log exposing (Severity(..))
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
 import Data.Pregnancy
@@ -68,7 +69,8 @@ import Msg
     exposing
         ( Msg(..)
         , ProcessType(..)
-        , logConsole
+        , logWarning
+        , logError
         , toastError
         , toastInfo
         , toastWarn
@@ -223,7 +225,7 @@ buildModel laborRec stage2Rec babyRecord browserSupportsDate currTime store preg
                     getTables Baby (Just baby.id) [ BirthCertificate ]
 
                 Nothing ->
-                    logConsole "Baby record not available in BirthCert.buildModel."
+                    logError "Baby record not available in BirthCert.buildModel."
 
         -- Get the keyValue lookup table that this page will need.
         getKeyValueCmd =
@@ -384,72 +386,68 @@ list of keys (List Table) passed, which has to be initiated elsewhere
 in this module. This is so that fields are not willy nilly overwritten
 unexpectedly.
 -}
-refreshModelFromCache : Dict String DataCache -> List Table -> Model -> Model
+refreshModelFromCache : Dict String DataCache -> List Table -> Model -> ( Model, Cmd Msg )
 refreshModelFromCache dc tables model =
     let
-        newModel =
+        ( newModel, cmds ) =
             List.foldl
-                (\t m ->
+                (\t ( m, cmds ) ->
                     case t of
                         Baby ->
                             case DataCache.get t dc of
                                 Just (BabyDataCache rec) ->
-                                    { m | babyRecord = Just rec }
+                                    { m | babyRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BirthCertificate ->
                             case DataCache.get t dc of
                                 Just (BirthCertificateDataCache rec) ->
-                                    { m | birthCertificateRecord = Just rec }
+                                    { m | birthCertificateRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         KeyValue ->
                             case DataCache.get t dc of
                                 Just (KeyValueDataCache recs) ->
-                                    { m | keyValueRecords = recs }
+                                    { m | keyValueRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         Labor ->
                             case DataCache.get t dc of
                                 Just (LaborDataCache rec) ->
-                                    { m | laborRecord = rec }
+                                    { m | laborRecord = rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage2 ->
                             case DataCache.get t dc of
                                 Just (LaborStage2DataCache rec) ->
-                                    { m | laborStage2Record = Just rec }
+                                    { m | laborStage2Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         SelectData ->
                             case DataCache.get t dc of
                                 Just (SelectDataDataCache recs) ->
-                                    { m | selectDataRecords = recs }
+                                    { m | selectDataRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         _ ->
-                            let
-                                _ =
-                                    Debug.log "BirthCertificate.refreshModelFromCache: Unhandled Table" <| toString t
-                            in
-                            m
+                            ( m, ("BirthCert.refreshModelFromCache: Unhandled Table" ++ toString t) :: cmds )
                 )
-                model
+                ( model, [] )
                 tables
     in
-    newModel
+    newModel => (Cmd.batch <| List.map logWarning cmds)
 
 
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
@@ -466,12 +464,12 @@ update session msg model =
 
         DataCache dc tbls ->
             let
-                newModel =
+                ( newModel, newCmd ) =
                     case ( dc, tbls ) of
                         ( Just dataCache, tables ) ->
                             let
-                                newModel =
-                                    refreshModelFromCache dataCache (Maybe.withDefault [] tables) model
+                                ( newModel1, newCmd1 ) =
+                                    refreshModelFromCache dataCache (Maybe.withDefault [] tables) { model | dataCache = dataCache }
 
                                 -- If data has come in then update the form fields and set
                                 -- the viewstate to view assuming that if a record was saved
@@ -501,264 +499,255 @@ update session msg model =
                                                     else
                                                         mdl
                                                 )
-                                                newModel
+                                                newModel1
                                                 tbls
 
                                         Nothing ->
-                                            newModel
+                                            newModel1
                             in
-                            { newModel2 | dataCache = dataCache }
+                            ( newModel2, newCmd1 )
 
                         ( _, _ ) ->
-                            model
+                            model => Cmd.none
             in
-            ( newModel, Cmd.none, Cmd.none )
+            ( newModel, Cmd.none, newCmd )
 
         DateFieldSubMsg dateFldMsg ->
             -- For browsers that do not support a native date field.
-            case dateFldMsg of
-                DateFieldMessage { dateField, date } ->
-                    case dateField of
-                        BirthCertDateOfMarriageField ->
-                            ( { model | bcDateOfMarriage = Just date }, Cmd.none, Cmd.none )
+            let
+                ( newModel, newCmd ) =
+                    case dateFldMsg of
+                        DateFieldMessage { dateField, date } ->
+                            case dateField of
+                                BirthCertDateOfMarriageField ->
+                                    { model | bcDateOfMarriage = Just date } => Cmd.none
 
-                        BirthCertDateOfCommTaxField ->
-                            ( { model | bcCommTaxDate = Just date }, Cmd.none, Cmd.none )
+                                BirthCertDateOfCommTaxField ->
+                                    { model | bcCommTaxDate = Just date } => Cmd.none
 
-                        BirthCertDateOfAffiateCommTaxField ->
-                            ( { model | bcAffiateCommTaxDate = Just date }, Cmd.none, Cmd.none )
+                                BirthCertDateOfAffiateCommTaxField ->
+                                    { model | bcAffiateCommTaxDate = Just date } => Cmd.none
 
-                        UnknownDateField str ->
-                            ( model, Cmd.none, logConsole str )
+                                UnknownDateField str ->
+                                    model => logWarning ( "Unknown date field: " ++ str )
 
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "BirthCert DateFieldSubMsg" <| toString dateFldMsg
-                            in
-                            -- This page is not the only one with date fields, we only
-                            -- handle what we know about.
-                            ( model, Cmd.none, Cmd.none )
+                                _ ->
+                                    -- This page is not the only one with date fields, we only
+                                    -- handle what we know about.
+                                    model => Cmd.none
 
-                UnknownDateFieldMessage str ->
-                    ( model, Cmd.none, Cmd.none )
+                        UnknownDateFieldMessage str ->
+                            model => logWarning
+                                ( "BirthCert.update DateFieldSubMsg: UnknownDateFieldMessage: " ++ str )
+            in
+                ( newModel, Cmd.none, newCmd )
 
         FldChgSubMsg fld val ->
             -- All fields are handled here except for the date fields for browsers that
             -- do not support the input date type (see DateFieldSubMsg for those) and
             -- the boolean fields handled by FldChgBoolSubMsg above.
-            case val of
-                FldChgString value ->
-                    ( case fld of
-                        BCBirthOrderFld ->
-                            { model | bcBirthOrder = Just value }
+            let
+                ( newModel, newCmd ) =
+                    case val of
+                        FldChgString value ->
+                            case fld of
+                                BCBirthOrderFld ->
+                                    { model | bcBirthOrder = Just value } => Cmd.none
 
-                        BCMotherMaidenLastnameFld ->
-                            { model | bcMotherMaidenLastname = Just value }
+                                BCMotherMaidenLastnameFld ->
+                                    { model | bcMotherMaidenLastname = Just value } => Cmd.none
 
-                        BCMotherMiddlenameFld ->
-                            { model | bcMotherMiddlename = Just value }
+                                BCMotherMiddlenameFld ->
+                                    { model | bcMotherMiddlename = Just value } => Cmd.none
 
-                        BCMotherFirstnameFld ->
-                            { model | bcMotherFirstname = Just value }
+                                BCMotherFirstnameFld ->
+                                    { model | bcMotherFirstname = Just value } => Cmd.none
 
-                        BCMotherCitizenshipFld ->
-                            { model | bcMotherCitizenship = Just value }
+                                BCMotherCitizenshipFld ->
+                                    { model | bcMotherCitizenship = Just value } => Cmd.none
 
-                        BCMotherNumChildrenBornAliveFld ->
-                            { model | bcMotherNumChildrenBornAlive = Just <| U.filterStringLikeInt value }
+                                BCMotherNumChildrenBornAliveFld ->
+                                    { model | bcMotherNumChildrenBornAlive = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        BCMotherNumChildrenLivingFld ->
-                            { model | bcMotherNumChildrenLiving = Just <| U.filterStringLikeInt value }
+                                BCMotherNumChildrenLivingFld ->
+                                    { model | bcMotherNumChildrenLiving = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        BCMotherNumChildrenBornAliveNowDeadFld ->
-                            { model | bcMotherNumChildrenBornAliveNowDead = Just <| U.filterStringLikeInt value }
+                                BCMotherNumChildrenBornAliveNowDeadFld ->
+                                    { model | bcMotherNumChildrenBornAliveNowDead = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        BCMotherAddressFld ->
-                            { model | bcMotherAddress = Just value }
+                                BCMotherAddressFld ->
+                                    { model | bcMotherAddress = Just value } => Cmd.none
 
-                        BCMotherCityFld ->
-                            { model | bcMotherCity = Just value }
+                                BCMotherCityFld ->
+                                    { model | bcMotherCity = Just value } => Cmd.none
 
-                        BCMotherProvinceFld ->
-                            { model | bcMotherProvince = Just value }
+                                BCMotherProvinceFld ->
+                                    { model | bcMotherProvince = Just value } => Cmd.none
 
-                        BCMotherCountryFld ->
-                            { model | bcMotherCountry = Just value }
+                                BCMotherCountryFld ->
+                                    { model | bcMotherCountry = Just value } => Cmd.none
 
-                        BCFatherLastnameFld ->
-                            { model | bcFatherLastname = Just value }
+                                BCFatherLastnameFld ->
+                                    { model | bcFatherLastname = Just value } => Cmd.none
 
-                        BCFatherMiddlenameFld ->
-                            { model | bcFatherMiddlename = Just value }
+                                BCFatherMiddlenameFld ->
+                                    { model | bcFatherMiddlename = Just value } => Cmd.none
 
-                        BCFatherFirstnameFld ->
-                            { model | bcFatherFirstname = Just value }
+                                BCFatherFirstnameFld ->
+                                    { model | bcFatherFirstname = Just value } => Cmd.none
 
-                        BCFatherCitizenshipFld ->
-                            { model | bcFatherCitizenship = Just value }
+                                BCFatherCitizenshipFld ->
+                                    { model | bcFatherCitizenship = Just value } => Cmd.none
 
-                        BCFatherReligionFld ->
-                            { model | bcFatherReligion = Just value }
+                                BCFatherReligionFld ->
+                                    { model | bcFatherReligion = Just value } => Cmd.none
 
-                        BCFatherOccupationFld ->
-                            { model | bcFatherOccupation = Just value }
+                                BCFatherOccupationFld ->
+                                    { model | bcFatherOccupation = Just value } => Cmd.none
 
-                        BCFatherAgeAtBirthFld ->
-                            { model | bcFatherAgeAtBirth = Just <| U.filterStringLikeInt value }
+                                BCFatherAgeAtBirthFld ->
+                                    { model | bcFatherAgeAtBirth = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        BCFatherAddressFld ->
-                            { model | bcFatherAddress = Just value }
+                                BCFatherAddressFld ->
+                                    { model | bcFatherAddress = Just value } => Cmd.none
 
-                        BCFatherCityFld ->
-                            { model | bcFatherCity = Just value }
+                                BCFatherCityFld ->
+                                    { model | bcFatherCity = Just value } => Cmd.none
 
-                        BCFatherProvinceFld ->
-                            { model | bcFatherProvince = Just value }
+                                BCFatherProvinceFld ->
+                                    { model | bcFatherProvince = Just value } => Cmd.none
 
-                        BCFatherCountryFld ->
-                            { model | bcFatherCountry = Just value }
+                                BCFatherCountryFld ->
+                                    { model | bcFatherCountry = Just value } => Cmd.none
 
-                        BCDateOfMarriageFld ->
-                            { model | bcDateOfMarriage = U.stringToDateAddSubOffset value }
+                                BCDateOfMarriageFld ->
+                                    { model | bcDateOfMarriage = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        BCCityOfMarriageFld ->
-                            { model | bcCityOfMarriage = Just value }
+                                BCCityOfMarriageFld ->
+                                    { model | bcCityOfMarriage = Just value } => Cmd.none
 
-                        BCProvinceOfMarriageFld ->
-                            { model | bcProvinceOfMarriage = Just value }
+                                BCProvinceOfMarriageFld ->
+                                    { model | bcProvinceOfMarriage = Just value } => Cmd.none
 
-                        BCCountryOfMarriageFld ->
-                            { model | bcCountryOfMarriage = Just value }
+                                BCCountryOfMarriageFld ->
+                                    { model | bcCountryOfMarriage = Just value } => Cmd.none
 
-                        BCAttendantTypeFld ->
-                            { model | bcAttendantType = Just value }
+                                BCAttendantTypeFld ->
+                                    { model | bcAttendantType = Just value } => Cmd.none
 
-                        BCAttendantOtherFld ->
-                            { model | bcAttendantOther = Just value }
+                                BCAttendantOtherFld ->
+                                    { model | bcAttendantOther = Just value } => Cmd.none
 
-                        BCAttendantFullnameFld ->
-                            { model | bcAttendantFullname = Just value }
+                                BCAttendantFullnameFld ->
+                                    { model | bcAttendantFullname = Just value } => Cmd.none
 
-                        BCAttendantTitleFld ->
-                            { model | bcAttendantTitle = Just value }
+                                BCAttendantTitleFld ->
+                                    { model | bcAttendantTitle = Just value } => Cmd.none
 
-                        BCAttendantAddr1Fld ->
-                            { model | bcAttendantAddr1 = Just value }
+                                BCAttendantAddr1Fld ->
+                                    { model | bcAttendantAddr1 = Just value } => Cmd.none
 
-                        BCAttendantAddr2Fld ->
-                            { model | bcAttendantAddr2 = Just value }
+                                BCAttendantAddr2Fld ->
+                                    { model | bcAttendantAddr2 = Just value } => Cmd.none
 
-                        BCInformantFullnameFld ->
-                            { model | bcInformantFullname = Just value }
+                                BCInformantFullnameFld ->
+                                    { model | bcInformantFullname = Just value } => Cmd.none
 
-                        BCInformantRelationToChildFld ->
-                            { model | bcInformantRelationToChild = Just value }
+                                BCInformantRelationToChildFld ->
+                                    { model | bcInformantRelationToChild = Just value } => Cmd.none
 
-                        BCInformantAddressFld ->
-                            { model | bcInformantAddress = Just value }
+                                BCInformantAddressFld ->
+                                    { model | bcInformantAddress = Just value } => Cmd.none
 
-                        BCPreparedByFullnameFld ->
-                            { model | bcPreparedByFullname = Just value }
+                                BCPreparedByFullnameFld ->
+                                    { model | bcPreparedByFullname = Just value } => Cmd.none
 
-                        BCPreparedByTitleFld ->
-                            { model | bcPreparedByTitle = Just value }
+                                BCPreparedByTitleFld ->
+                                    { model | bcPreparedByTitle = Just value } => Cmd.none
 
-                        BCCommTaxNumberFld ->
-                            { model | bcCommTaxNumber = Just value }
+                                BCCommTaxNumberFld ->
+                                    { model | bcCommTaxNumber = Just value } => Cmd.none
 
-                        BCCommTaxDateFld ->
-                            { model | bcCommTaxDate = U.stringToDateAddSubOffset value }
+                                BCCommTaxDateFld ->
+                                    { model | bcCommTaxDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        BCCommTaxPlaceFld ->
-                            { model | bcCommTaxPlace = Just value }
+                                BCCommTaxPlaceFld ->
+                                    { model | bcCommTaxPlace = Just value } => Cmd.none
 
-                        BCReceivedByNameFld ->
-                            { model | bcReceivedByName = Just value }
+                                BCReceivedByNameFld ->
+                                    { model | bcReceivedByName = Just value } => Cmd.none
 
-                        BCReceivedByTitleFld ->
-                            { model | bcReceivedByTitle = Just value }
+                                BCReceivedByTitleFld ->
+                                    { model | bcReceivedByTitle = Just value } => Cmd.none
 
-                        BCAffiateNameFld ->
-                            { model | bcAffiateName = Just value }
+                                BCAffiateNameFld ->
+                                    { model | bcAffiateName = Just value } => Cmd.none
 
-                        BCAffiateAddressFld ->
-                            { model | bcAffiateAddress = Just value }
+                                BCAffiateAddressFld ->
+                                    { model | bcAffiateAddress = Just value } => Cmd.none
 
-                        BCAffiateCitizenshipCountryFld ->
-                            { model | bcAffiateCitizenshipCountry = Just value }
+                                BCAffiateCitizenshipCountryFld ->
+                                    { model | bcAffiateCitizenshipCountry = Just value } => Cmd.none
 
-                        BCAffiateReasonFld ->
-                            { model | bcAffiateReason = Just value }
+                                BCAffiateReasonFld ->
+                                    { model | bcAffiateReason = Just value } => Cmd.none
 
-                        BCAffiateIAmFld ->
-                            { model | bcAffiateIAm = Just value }
+                                BCAffiateIAmFld ->
+                                    { model | bcAffiateIAm = Just value } => Cmd.none
 
-                        BCAffiateCommTaxNumberFld ->
-                            { model | bcAffiateCommTaxNumber = Just value }
+                                BCAffiateCommTaxNumberFld ->
+                                    { model | bcAffiateCommTaxNumber = Just value } => Cmd.none
 
-                        BCAffiateCommTaxDateFld ->
-                            { model | bcAffiateCommTaxDate = U.stringToDateAddSubOffset value }
+                                BCAffiateCommTaxDateFld ->
+                                    { model | bcAffiateCommTaxDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        BCAffiateCommTaxPlace ->
-                            { model | bcAffiateCommTaxPlace = Just value }
+                                BCAffiateCommTaxPlace ->
+                                    { model | bcAffiateCommTaxPlace = Just value } => Cmd.none
 
-                        BCCommentsFld ->
-                            { model | bcComments = Just value }
+                                BCCommentsFld ->
+                                    { model | bcComments = Just value } => Cmd.none
 
-                        PrintingPage1TopFld ->
-                            { model | printingPage1Top = Just <| U.filterStringLikeIntOrNegInt value }
+                                PrintingPage1TopFld ->
+                                    { model | printingPage1Top = Just <| U.filterStringLikeIntOrNegInt value } => Cmd.none
 
-                        PrintingPage1LeftFld ->
-                            { model | printingPage1Left = Just <| U.filterStringLikeIntOrNegInt value }
+                                PrintingPage1LeftFld ->
+                                    { model | printingPage1Left = Just <| U.filterStringLikeIntOrNegInt value } => Cmd.none
 
-                        PrintingPage2TopFld ->
-                            { model | printingPage2Top = Just <| U.filterStringLikeIntOrNegInt value }
+                                PrintingPage2TopFld ->
+                                    { model | printingPage2Top = Just <| U.filterStringLikeIntOrNegInt value } => Cmd.none
 
-                        PrintingPage2LeftFld ->
-                            { model | printingPage2Left = Just <| U.filterStringLikeIntOrNegInt value }
+                                PrintingPage2LeftFld ->
+                                    { model | printingPage2Left = Just <| U.filterStringLikeIntOrNegInt value } => Cmd.none
 
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "BirthCert.update FldChgSubMsg"
-                                        "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
-                            in
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("BirthCert.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
+                                            )
 
-                FldChgStringList selectKey isChecked ->
-                    ( model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                        FldChgStringList selectKey isChecked ->
+                            model => Cmd.none
 
-                FldChgBool value ->
-                    ( case fld of
-                        PrintingPaternityFld ->
-                            { model | printingPaternity = Just value }
+                        FldChgBool value ->
+                            case fld of
+                                PrintingPaternityFld ->
+                                    { model | printingPaternity = Just value } => Cmd.none
 
-                        PrintingDelayedRegistrationFld ->
-                            { model | printingDelayedRegistration = Just value }
+                                PrintingDelayedRegistrationFld ->
+                                    { model | printingDelayedRegistration = Just value } => Cmd.none
 
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "BirthCert.update FldChgSubMsg"
-                                        "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
-                            in
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("BirthCert.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
+                                            )
 
-                FldChgIntString intVal strVal ->
-                    ( model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                        FldChgIntString intVal strVal ->
+                            model => Cmd.none
+            in
+            ( newModel, Cmd.none, newCmd )
 
         HandleBirthCertificateModal dialogState ->
             case dialogState of
@@ -978,11 +967,11 @@ update session msg model =
                                                         (birthCertificateRecordNewToValue bc)
 
                                                 Nothing ->
-                                                    LogConsole "deriveBirthCertificateRecordNew returned a Nothing"
+                                                    Log ErrorSeverity "deriveBirthCertificateRecordNew returned a Nothing"
 
                                         ( Nothing, _ ) ->
                                             -- Something is very wrong.
-                                            LogConsole "No baby record found. Unable to save birth certificate."
+                                            Log ErrorSeverity "No baby record found. Unable to save birth certificate."
                             in
                             ( { model | birthCertificateViewEditState = BirthCertificateViewState }
                             , Cmd.none

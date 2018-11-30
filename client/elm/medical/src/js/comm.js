@@ -108,6 +108,31 @@ var setApp = function(theApp) {
   });
 };
 
+/* --------------------------------------------------------
+ * errorToServer()
+ *
+ * Send an error message to the server over the SocketIO
+ * connection on the data channel.
+ *
+ * param        msg - a string
+ * return       undefined
+ * -------------------------------------------------------- */
+const errorToServer = (msg) => {
+  const data = {
+    msgType: 'ADHOC_CLIENT_CONSOLE'
+    , namespace: 'DATA'
+    , version: 2
+    , payload: {
+        timestamp: Date.now()
+        , severity: 'error'
+        , message: msg
+    }
+  };
+
+  ioSocket.send(JSON.stringify(data));
+};
+
 module.exports = {
-  setApp: setApp
+  setApp
+  , errorToServer
 };

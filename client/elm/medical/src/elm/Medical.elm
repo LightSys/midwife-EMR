@@ -23,6 +23,7 @@ import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
+import Data.Log exposing (logToValue, severityToString, Severity(..))
 import Data.Membrane exposing (MembraneId(..), membraneRecordNewToMembraneRecord)
 import Data.Message exposing (DataNotificationMsg, IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.MotherMedication exposing (MotherMedicationId(..), motherMedicationRecordNewToMotherMedicationRecord)
@@ -46,7 +47,7 @@ import Json.Decode.Pipeline as Pipeline exposing (decode, optional, required)
 import Json.Encode as JE
 import List.Extra as LE
 import Model exposing (Model, Page(..), PageState(..))
-import Msg exposing (Msg(..), ProcessType(..), logConsole)
+import Msg exposing (Msg(..), ProcessType(..), logInfo)
 import Navigation exposing (Location)
 import Page.Admitting as PageAdmitting
 import Page.BirthCert as PageBirthCert
@@ -316,13 +317,17 @@ update msg noAutoTouchModel =
             in
             newModel2 => Cmd.batch [ newCmd, newCmd2 ]
 
-        ( LogConsole msg, _ ) ->
-            -- Write a message out to the console.
-            let
-                _ =
-                    Debug.log "LogConsole" msg
-            in
-            model => Cmd.none
+        ( Log severity msg, _ ) ->
+            -- Write a message to the console in development and to the server always.
+            model
+                => (wrapPayload (ProcessId -1)
+                        AdhocClientConsole
+                        (logToValue severity
+                            (Debug.log (severityToString severity) msg)
+                            model.currTime
+                        )
+                        |> Ports.outgoing
+                   )
 
         ( Toast msgs seconds toastType, _ ) ->
             -- Publish a toast for the user to see.
@@ -884,7 +889,7 @@ update msg noAutoTouchModel =
                         ++ toString thePage
                         ++ " in Medical.update."
             in
-            model => logConsole message
+            model => logInfo message
 
 
 {-| Handle all Msg.Message variations.
@@ -893,7 +898,7 @@ updateMessage : IncomingMessage -> Model -> ( Model, Cmd Msg )
 updateMessage incoming model =
     case incoming of
         UnknownMessage str ->
-            model => (logConsole <| "UnknownMessage: " ++ str)
+            model => (logInfo <| "UnknownMessage: " ++ str)
 
         SiteMessage siteMsg ->
             -- Note: we are discarding siteMsg.payload.updatedAt until we need it.
@@ -1205,7 +1210,7 @@ updateMessage incoming model =
                                         msgText =
                                             "OOPS, unhandled processType in Medical.updateMessage in the DataAddMessage branch."
                                     in
-                                    ( model, logConsole msgText )
+                                    ( model, logInfo msgText )
 
                         False ->
                             -- This could be due to a session timeout, among other issues.
@@ -1218,7 +1223,7 @@ updateMessage incoming model =
                                     )
 
                                 _ ->
-                                    ( model, logConsole <| toString dataAddMsg.response )
+                                    ( model, logInfo <| toString dataAddMsg.response )
             in
             { newModel | processStore = processStore } => newCmd
 
@@ -1480,7 +1485,7 @@ updateMessage incoming model =
                                             "OOPS, unhandled processType in Medical.updateMessage in the DataChgMessage branch: "
                                                 ++ toString processType
                                     in
-                                    ( model, logConsole msgText )
+                                    ( model, logInfo msgText )
 
                         False ->
                             -- This could be due to a session timeout, among other issues.
@@ -1493,7 +1498,7 @@ updateMessage incoming model =
                                     )
 
                                 _ ->
-                                    ( model, logConsole <| toString dataChgMsg.response )
+                                    ( model, logInfo <| toString dataChgMsg.response )
             in
             { newModel | processStore = processStore } => newCmd
 
@@ -1622,7 +1627,7 @@ updateMessage incoming model =
                                     )
 
                                 _ ->
-                                    ( model, logConsole <| toString dataDelMsg.response )
+                                    ( model, logInfo <| toString dataDelMsg.response )
             in
             { newModel | processStore = processStore } => newCmd
 

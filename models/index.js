@@ -105,5 +105,7 @@ module.exports = {
   , PostpartumChecks: require('./PostpartumCheck').PostpartumChecks
   , BirthCertificate: require('./BirthCertificate').BirthCertificate
   , BirthCertificates: require('./BirthCertificate').BirthCertificates
+  , ClientConsole: require('./ClientConsole').ClientConsole
+  , ClientConsoles: require('./ClientConsole').ClientConsoles
 };
 

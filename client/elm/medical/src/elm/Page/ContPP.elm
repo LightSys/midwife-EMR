@@ -82,6 +82,7 @@ import Data.Labor
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record)
+import Data.Log exposing (Severity(..))
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.MotherMedication
     exposing
@@ -135,7 +136,7 @@ import Msg
     exposing
         ( Msg(..)
         , ProcessType(..)
-        , logConsole
+        , logWarning
         , toastError
         , toastInfo
         , toastWarn
@@ -807,171 +808,163 @@ list of keys (List Table) passed, which has to be initiated elsewhere
 in this module. This is so that fields are not willy nilly overwritten
 unexpectedly.
 -}
-refreshModelFromCache : Dict String DataCache -> List Table -> Model -> Model
+refreshModelFromCache : Dict String DataCache -> List Table -> Model -> ( Model, Cmd Msg )
 refreshModelFromCache dc tables model =
     let
-        newModel =
+        ( newModel, cmds ) =
             List.foldl
-                (\t m ->
+                (\t ( m, cmds ) ->
                     case t of
                         Baby ->
                             case DataCache.get t dc of
                                 Just (BabyDataCache rec) ->
-                                    { m | babyRecord = Just rec }
+                                    { m | babyRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyLab ->
                             case DataCache.get t dc of
                                 Just (BabyLabDataCache recs) ->
-                                    { m | babyLabRecords = recs }
+                                    { m | babyLabRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyLabType ->
                             case DataCache.get t dc of
                                 Just (BabyLabTypeDataCache recs) ->
-                                    { m | babyLabTypeRecords = recs }
+                                    { m | babyLabTypeRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyMedication ->
                             case DataCache.get t dc of
                                 Just (BabyMedicationDataCache recs) ->
-                                    { m | babyMedicationRecords = recs }
+                                    { m | babyMedicationRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyMedicationType ->
                             case DataCache.get t dc of
                                 Just (BabyMedicationTypeDataCache recs) ->
-                                    { m | babyMedicationTypeRecords = recs }
+                                    { m | babyMedicationTypeRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyVaccination ->
                             case DataCache.get t dc of
                                 Just (BabyVaccinationDataCache recs) ->
-                                    { m | babyVaccinationRecords = recs }
+                                    { m | babyVaccinationRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyVaccinationType ->
                             case DataCache.get t dc of
                                 Just (BabyVaccinationTypeDataCache recs) ->
-                                    { m | babyVaccinationTypeRecords = recs }
+                                    { m | babyVaccinationTypeRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         ContPostpartumCheck ->
                             case DataCache.get t dc of
                                 Just (ContPostpartumCheckDataCache recs) ->
-                                    { m | contPostpartumCheckRecords = recs }
+                                    { m | contPostpartumCheckRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         Discharge ->
                             case DataCache.get t dc of
                                 Just (DischargeDataCache rec) ->
-                                    { m | dischargeRecord = Just rec }
+                                    { m | dischargeRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         Labor ->
                             case DataCache.get t dc of
                                 Just (LaborDataCache rec) ->
-                                    { m | laborRecord = rec }
+                                    { m | laborRecord = rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage1 ->
                             case DataCache.get t dc of
                                 Just (LaborStage1DataCache rec) ->
-                                    { m | laborStage1Record = Just rec }
+                                    { m | laborStage1Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage2 ->
                             case DataCache.get t dc of
                                 Just (LaborStage2DataCache rec) ->
-                                    { m | laborStage2Record = Just rec }
+                                    { m | laborStage2Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage3 ->
                             case DataCache.get t dc of
                                 Just (LaborStage3DataCache rec) ->
-                                    { m | laborStage3Record = Just rec }
+                                    { m | laborStage3Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         MotherMedication ->
                             case DataCache.get t dc of
                                 Just (MotherMedicationDataCache recs) ->
-                                    { m | motherMedicationRecords = recs }
+                                    { m | motherMedicationRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         MotherMedicationType ->
                             case DataCache.get t dc of
                                 Just (MotherMedicationTypeDataCache recs) ->
-                                    { m | motherMedicationTypeRecords = recs }
+                                    { m | motherMedicationTypeRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         NewbornExam ->
                             case DataCache.get t dc of
                                 Just (NewbornExamDataCache rec) ->
-                                    { m | newbornExamRecord = Just rec }
+                                    { m | newbornExamRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         SelectData ->
                             case DataCache.get t dc of
                                 Just (SelectDataDataCache recs) ->
-                                    { m | selectDataRecords = recs }
+                                    { m | selectDataRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         _ ->
-                            let
-                                _ =
-                                    Debug.log "ContPP.refreshModelFromCache: Unhandled Table" <| toString t
-                            in
-                            m
+                            ( m, ("ContPP.refreshModelFromCache: Unhandled Table" ++ toString t) :: cmds )
                 )
-                model
+                ( model, [] )
                 tables
     in
-    newModel
+    newModel => (Cmd.batch <| List.map logWarning cmds)
 
 
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
 update session msg model =
     case msg of
         PageNoop ->
-            let
-                _ =
-                    Debug.log "PageNoop" "was called."
-            in
-            ( model, Cmd.none, Cmd.none )
+            ( model, Cmd.none, logWarning "ContPP.update: PageNoop was called." )
 
         CloseAllDialogs ->
             -- Close all of the open dialogs that we have. This may be called
@@ -988,12 +981,12 @@ update session msg model =
             -- on the latest data that it has. The specific records that need
             -- to be updated are in the tables list.
             let
-                newModel =
+                ( newModel, newCmd ) =
                     case ( dc, tbls ) of
                         ( Just dataCache, tables ) ->
                             let
-                                newModel =
-                                    refreshModelFromCache dataCache (Maybe.withDefault [] tables) model
+                                ( newModel1, newCmd ) =
+                                    refreshModelFromCache dataCache (Maybe.withDefault [] tables) { model | dataCache = dataCache }
 
                                 -- If data has come in and we have a dialog open,
                                 -- then update the form fields.
@@ -1019,19 +1012,19 @@ update session msg model =
                                                     else
                                                         mdl
                                                 )
-                                                newModel
+                                                newModel1
                                                 tbls
 
                                         Nothing ->
-                                            newModel
+                                            newModel1
                             in
-                            { newModel2 | dataCache = dataCache }
+                            ( newModel2, newCmd )
 
                         ( _, _ ) ->
-                            model
+                            model => Cmd.none
 
                 -- Get all sub tables of baby that are pending retrieval from the server.
-                ( newCmd, newPendingSQ ) =
+                ( newCmd2, newPendingSQ ) =
                     case newModel.babyRecord of
                         Just baby ->
                             if
@@ -1054,881 +1047,857 @@ update session msg model =
             in
             ( { newModel | pendingSelectQuery = newPendingSQ }
             , Cmd.none
-            , newCmd
+            , Cmd.batch [ newCmd, newCmd2 ]
             )
 
         DateFieldSubMsg dateFldMsg ->
             -- For browsers that do not support a native date field.
-            case dateFldMsg of
-                DateFieldMessage { dateField, date } ->
-                    case dateField of
-                        ContPostpartumCheckDateField ->
-                            ( { model | cpcCheckDate = Just date }, Cmd.none, Cmd.none )
+            let
+                ( newModel, newCmd ) =
+                    case dateFldMsg of
+                        DateFieldMessage { dateField, date } ->
+                            case dateField of
+                                ContPostpartumCheckDateField ->
+                                    { model | cpcCheckDate = Just date } => Cmd.none
 
-                        NewBornExamDateField ->
-                            ( { model | nbsDate = Just date }, Cmd.none, Cmd.none )
+                                NewBornExamDateField ->
+                                    { model | nbsDate = Just date } => Cmd.none
 
-                        DynamicDateField type_ typeId ->
-                            -- The type_ identifies whether this is a babyMedication or
-                            -- babyVaccination, etc. The typeId identifies the specifc
-                            -- medication or vaccination and is the same as the
-                            -- babyMedicationType or babyVaccinationType fields in
-                            -- the respective records.
-                            --
-                            -- NOTE: this is used for browsers that do not support
-                            -- the date field.
-                            if type_ == babyMedicalDynamicDateCategory then
-                                let
-                                    _ =
-                                        Debug.log "DynamicDateField" <| toString type_ ++ ", " ++ toString typeId
+                                DynamicDateField type_ typeId ->
+                                    -- The type_ identifies whether this is a babyMedication or
+                                    -- babyVaccination, etc. The typeId identifies the specifc
+                                    -- medication or vaccination and is the same as the
+                                    -- babyMedicationType or babyVaccinationType fields in
+                                    -- the respective records.
+                                    --
+                                    -- NOTE: this is used for browsers that do not support
+                                    -- the date field.
+                                    if type_ == babyMedicalDynamicDateCategory then
+                                        let
+                                            newModel =
+                                                case Dict.get typeId model.babyMedFlds of
+                                                    Just medFlds ->
+                                                        { model
+                                                            | babyMedFlds =
+                                                                Dict.insert typeId
+                                                                    { medFlds | date = Just date }
+                                                                    model.babyMedFlds
+                                                        }
 
-                                    newModel =
-                                        case Dict.get typeId model.babyMedFlds of
-                                            Just medFlds ->
-                                                { model
-                                                    | babyMedFlds =
-                                                        Dict.insert typeId
-                                                            { medFlds | date = Just date }
-                                                            model.babyMedFlds
-                                                }
+                                                    Nothing ->
+                                                        model
+                                        in
+                                        newModel => Cmd.none
+                                    else if type_ == babyVaccinationDynamicDateCategory then
+                                        let
+                                            newModel =
+                                                case Dict.get typeId model.babyVacFlds of
+                                                    Just vacFlds ->
+                                                        { model
+                                                            | babyVacFlds =
+                                                                Dict.insert typeId
+                                                                    { vacFlds | date = Just date }
+                                                                    model.babyVacFlds
+                                                        }
 
-                                            Nothing ->
-                                                model
-                                in
-                                ( newModel, Cmd.none, Cmd.none )
-                            else if type_ == babyVaccinationDynamicDateCategory then
-                                let
-                                    _ =
-                                        Debug.log "DynamicDateField" <| toString type_ ++ ", " ++ toString typeId
+                                                    Nothing ->
+                                                        model
+                                        in
+                                        newModel => Cmd.none
+                                    else if type_ == babyLabDynamicDateCategory then
+                                        let
+                                            newModel =
+                                                case Dict.get typeId model.babyLabFlds of
+                                                    Just labFlds ->
+                                                        { model
+                                                            | babyLabFlds =
+                                                                Dict.insert typeId
+                                                                    { labFlds | date = Just date }
+                                                                    model.babyLabFlds
+                                                        }
 
-                                    newModel =
-                                        case Dict.get typeId model.babyVacFlds of
-                                            Just vacFlds ->
-                                                { model
-                                                    | babyVacFlds =
-                                                        Dict.insert typeId
-                                                            { vacFlds | date = Just date }
-                                                            model.babyVacFlds
-                                                }
+                                                    Nothing ->
+                                                        model
+                                        in
+                                        newModel => Cmd.none
+                                    else if type_ == motherMedicationDynamicDateCategory then
+                                        let
+                                            newModel =
+                                                case Dict.get typeId model.motherMedFlds of
+                                                    Just medFlds ->
+                                                        { model
+                                                            | motherMedFlds =
+                                                                Dict.insert typeId
+                                                                    { medFlds | date = Just date }
+                                                                    model.motherMedFlds
+                                                        }
 
-                                            Nothing ->
-                                                model
-                                in
-                                ( newModel, Cmd.none, Cmd.none )
-                            else if type_ == babyLabDynamicDateCategory then
-                                let
-                                    _ =
-                                        Debug.log "DynamicDateField" <| toString type_ ++ ", " ++ toString typeId
+                                                    Nothing ->
+                                                        model
+                                        in
+                                        newModel => Cmd.none
+                                    else
+                                        model
+                                            => logWarning
+                                                ("Unknown DynamicDateField category of: " ++ toString type_)
 
-                                    newModel =
-                                        case Dict.get typeId model.babyLabFlds of
-                                            Just labFlds ->
-                                                { model
-                                                    | babyLabFlds =
-                                                        Dict.insert typeId
-                                                            { labFlds | date = Just date }
-                                                            model.babyLabFlds
-                                                }
+                                DischargeDateField ->
+                                    { model | dischargeDate = Just date } => Cmd.none
 
-                                            Nothing ->
-                                                model
-                                in
-                                ( newModel, Cmd.none, Cmd.none )
-                            else if type_ == motherMedicationDynamicDateCategory then
-                                let
-                                    _ =
-                                        Debug.log "DynamicDateField" <| toString type_ ++ ", " ++ toString typeId
+                                UnknownDateField str ->
+                                    model => logWarning str
 
-                                    newModel =
-                                        case Dict.get typeId model.motherMedFlds of
-                                            Just medFlds ->
-                                                { model
-                                                    | motherMedFlds =
-                                                        Dict.insert typeId
-                                                            { medFlds | date = Just date }
-                                                            model.motherMedFlds
-                                                }
+                                _ ->
+                                    -- This page is not the only one with date fields, we only
+                                    -- handle what we know about.
+                                    model => Cmd.none
 
-                                            Nothing ->
-                                                model
-                                in
-                                ( newModel, Cmd.none, Cmd.none )
-                            else
-                                ( model, Cmd.none, logConsole <| "Unknown DynamicDateField category of: " ++ toString type_ )
-
-                        DischargeDateField ->
-                            ( { model | dischargeDate = Just date }, Cmd.none, Cmd.none )
-
-                        UnknownDateField str ->
-                            ( model, Cmd.none, logConsole str )
-
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "ContPP DateFieldSubMsg" <| toString dateFldMsg
-                            in
-                            -- This page is not the only one with date fields, we only
-                            -- handle what we know about.
-                            ( model, Cmd.none, Cmd.none )
-
-                UnknownDateFieldMessage str ->
-                    ( model, Cmd.none, Cmd.none )
+                        UnknownDateFieldMessage str ->
+                            model => Cmd.none
+            in
+            ( newModel, Cmd.none, newCmd )
 
         FldChgSubMsg fld val ->
             -- All fields are handled here except for the date fields for browsers that
             -- do not support the input date type (see DateFieldSubMsg for those) and
             -- the boolean fields handled by FldChgBoolSubMsg above.
-            case val of
-                FldChgString value ->
-                    ( case fld of
-                        NBSDateFld ->
-                            { model | nbsDate = U.stringToDateAddSubOffset value }
+            let
+                ( newModel, newCmd ) =
+                    case val of
+                        FldChgString value ->
+                            case fld of
+                                NBSDateFld ->
+                                    { model | nbsDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        NBSTimeFld ->
-                            { model | nbsTime = Just <| U.filterStringLikeTime value }
+                                NBSTimeFld ->
+                                    { model | nbsTime = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        NBSExaminersFld ->
-                            { model | nbsExaminers = Just value }
+                                NBSExaminersFld ->
+                                    { model | nbsExaminers = Just value } => Cmd.none
 
-                        NBSRRFld ->
-                            { model | nbsRR = Just <| U.filterStringLikeInt value }
+                                NBSRRFld ->
+                                    { model | nbsRR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        NBSHRFld ->
-                            { model | nbsHR = Just <| U.filterStringLikeInt value }
+                                NBSHRFld ->
+                                    { model | nbsHR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        NBSTemperatureFld ->
-                            { model | nbsTemperature = Just <| U.filterStringLikeFloat value }
+                                NBSTemperatureFld ->
+                                    { model | nbsTemperature = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        NBSLengthFld ->
-                            { model | nbsLength = Just <| U.filterStringLikeFloat value }
+                                NBSLengthFld ->
+                                    { model | nbsLength = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        NBSHeadCirFld ->
-                            { model | nbsHeadCir = Just <| U.filterStringLikeFloat value }
+                                NBSHeadCirFld ->
+                                    { model | nbsHeadCir = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        NBSChestCirFld ->
-                            { model | nbsChestCir = Just <| U.filterStringLikeFloat value }
+                                NBSChestCirFld ->
+                                    { model | nbsChestCir = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        NBSAppearanceCommentFld ->
-                            { model | nbsAppearanceComment = Just value }
+                                NBSAppearanceCommentFld ->
+                                    { model | nbsAppearanceComment = Just value } => Cmd.none
 
-                        NBSColorCommentFld ->
-                            { model | nbsColorComment = Just value }
+                                NBSColorCommentFld ->
+                                    { model | nbsColorComment = Just value } => Cmd.none
 
-                        NBSSkinCommentFld ->
-                            { model | nbsSkinComment = Just value }
+                                NBSSkinCommentFld ->
+                                    { model | nbsSkinComment = Just value } => Cmd.none
 
-                        NBSHeadCommentFld ->
-                            { model | nbsHeadComment = Just value }
+                                NBSHeadCommentFld ->
+                                    { model | nbsHeadComment = Just value } => Cmd.none
 
-                        NBSEyesCommentFld ->
-                            { model | nbsEyesComment = Just value }
+                                NBSEyesCommentFld ->
+                                    { model | nbsEyesComment = Just value } => Cmd.none
 
-                        NBSEarsCommentFld ->
-                            { model | nbsEarsComment = Just value }
+                                NBSEarsCommentFld ->
+                                    { model | nbsEarsComment = Just value } => Cmd.none
 
-                        NBSNoseCommentFld ->
-                            { model | nbsNoseComment = Just value }
+                                NBSNoseCommentFld ->
+                                    { model | nbsNoseComment = Just value } => Cmd.none
 
-                        NBSMouthCommentFld ->
-                            { model | nbsMouthComment = Just value }
+                                NBSMouthCommentFld ->
+                                    { model | nbsMouthComment = Just value } => Cmd.none
 
-                        NBSNeckCommentFld ->
-                            { model | nbsNeckComment = Just value }
+                                NBSNeckCommentFld ->
+                                    { model | nbsNeckComment = Just value } => Cmd.none
 
-                        NBSChestCommentFld ->
-                            { model | nbsChestComment = Just value }
+                                NBSChestCommentFld ->
+                                    { model | nbsChestComment = Just value } => Cmd.none
 
-                        NBSLungsCommentFld ->
-                            { model | nbsLungsComment = Just value }
+                                NBSLungsCommentFld ->
+                                    { model | nbsLungsComment = Just value } => Cmd.none
 
-                        NBSHeartCommentFld ->
-                            { model | nbsHeartComment = Just value }
+                                NBSHeartCommentFld ->
+                                    { model | nbsHeartComment = Just value } => Cmd.none
 
-                        NBSAbdomenCommentFld ->
-                            { model | nbsAbdomenComment = Just value }
+                                NBSAbdomenCommentFld ->
+                                    { model | nbsAbdomenComment = Just value } => Cmd.none
 
-                        NBSHipsCommentFld ->
-                            { model | nbsHipsComment = Just value }
+                                NBSHipsCommentFld ->
+                                    { model | nbsHipsComment = Just value } => Cmd.none
 
-                        NBSCordCommentFld ->
-                            { model | nbsCordComment = Just value }
+                                NBSCordCommentFld ->
+                                    { model | nbsCordComment = Just value } => Cmd.none
 
-                        NBSFemoralPulsesCommentFld ->
-                            { model | nbsFemoralPulsesComment = Just value }
+                                NBSFemoralPulsesCommentFld ->
+                                    { model | nbsFemoralPulsesComment = Just value } => Cmd.none
 
-                        NBSGenitaliaCommentFld ->
-                            { model | nbsGenitaliaComment = Just value }
+                                NBSGenitaliaCommentFld ->
+                                    { model | nbsGenitaliaComment = Just value } => Cmd.none
 
-                        NBSAnusCommentFld ->
-                            { model | nbsAnusComment = Just value }
+                                NBSAnusCommentFld ->
+                                    { model | nbsAnusComment = Just value } => Cmd.none
 
-                        NBSBackCommentFld ->
-                            { model | nbsBackComment = Just value }
+                                NBSBackCommentFld ->
+                                    { model | nbsBackComment = Just value } => Cmd.none
 
-                        NBSExtremitiesCommentFld ->
-                            { model | nbsExtremitiesComment = Just value }
+                                NBSExtremitiesCommentFld ->
+                                    { model | nbsExtremitiesComment = Just value } => Cmd.none
 
-                        NBSEstGAFld ->
-                            { model | nbsEstGA = Just value }
+                                NBSEstGAFld ->
+                                    { model | nbsEstGA = Just value } => Cmd.none
 
-                        NBSMoroReflexCommentFld ->
-                            { model | nbsMoroReflexComment = Just value }
+                                NBSMoroReflexCommentFld ->
+                                    { model | nbsMoroReflexComment = Just value } => Cmd.none
 
-                        NBSPalmarReflexCommentFld ->
-                            { model | nbsPalmarReflexComment = Just value }
+                                NBSPalmarReflexCommentFld ->
+                                    { model | nbsPalmarReflexComment = Just value } => Cmd.none
 
-                        NBSSteppingReflexCommentFld ->
-                            { model | nbsSteppingReflexComment = Just value }
+                                NBSSteppingReflexCommentFld ->
+                                    { model | nbsSteppingReflexComment = Just value } => Cmd.none
 
-                        NBSPlantarReflexCommentFld ->
-                            { model | nbsPlantarReflexComment = Just value }
+                                NBSPlantarReflexCommentFld ->
+                                    { model | nbsPlantarReflexComment = Just value } => Cmd.none
 
-                        NBSBabinskiReflexCommentFld ->
-                            { model | nbsBabinskiReflexComment = Just value }
+                                NBSBabinskiReflexCommentFld ->
+                                    { model | nbsBabinskiReflexComment = Just value } => Cmd.none
 
-                        NBSCommentsFld ->
-                            { model | nbsComments = Just value }
+                                NBSCommentsFld ->
+                                    { model | nbsComments = Just value } => Cmd.none
 
-                        CPCCheckDateFld ->
-                            { model | cpcCheckDate = U.stringToDateAddSubOffset value }
+                                CPCCheckDateFld ->
+                                    { model | cpcCheckDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        CPCCheckTimeFld ->
-                            { model | cpcCheckTime = Just <| U.filterStringLikeTime value }
+                                CPCCheckTimeFld ->
+                                    { model | cpcCheckTime = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        CPCMotherSystolicFld ->
-                            { model | cpcMotherSystolic = Just <| U.filterStringLikeInt value }
+                                CPCMotherSystolicFld ->
+                                    { model | cpcMotherSystolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        CPCMotherDiastolicFld ->
-                            { model | cpcMotherDiastolic = Just <| U.filterStringLikeInt value }
+                                CPCMotherDiastolicFld ->
+                                    { model | cpcMotherDiastolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        CPCMotherCRFld ->
-                            { model | cpcMotherCR = Just <| U.filterStringLikeInt value }
+                                CPCMotherCRFld ->
+                                    { model | cpcMotherCR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        CPCMotherTempFld ->
-                            { model | cpcMotherTemp = Just <| U.filterStringLikeFloat value }
+                                CPCMotherTempFld ->
+                                    { model | cpcMotherTemp = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        CPCMotherFundusFld ->
-                            { model | cpcMotherFundus = Just value }
+                                CPCMotherFundusFld ->
+                                    { model | cpcMotherFundus = Just value } => Cmd.none
 
-                        CPCMotherEBLFld ->
-                            { model | cpcMotherEBL = Just <| U.filterStringLikeInt value }
+                                CPCMotherEBLFld ->
+                                    { model | cpcMotherEBL = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        CPCBabyTempFld ->
-                            { model | cpcBabyTemp = Just <| U.filterStringLikeFloat value }
+                                CPCBabyTempFld ->
+                                    { model | cpcBabyTemp = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        CPCBabyBFedFld ->
-                            { model | cpcBabyBFed = Just value }
+                                CPCBabyBFedFld ->
+                                    { model | cpcBabyBFed = Just value } => Cmd.none
 
-                        CPCBabyRRFld ->
-                            { model | cpcBabyRR = Just <| U.filterStringLikeInt value }
+                                CPCBabyRRFld ->
+                                    { model | cpcBabyRR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        CPCBabyCRFld ->
-                            { model | cpcBabyCR = Just <| U.filterStringLikeInt value }
+                                CPCBabyCRFld ->
+                                    { model | cpcBabyCR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        CPCCommentsFld ->
-                            { model | cpcComments = Just value }
+                                CPCCommentsFld ->
+                                    { model | cpcComments = Just value } => Cmd.none
 
-                        DischargeDateFld ->
-                            { model | dischargeDate = U.stringToDateAddSubOffset value }
+                                DischargeDateFld ->
+                                    { model | dischargeDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        DischargeTimeFld ->
-                            { model | dischargeTime = Just <| U.filterStringLikeTime value }
+                                DischargeTimeFld ->
+                                    { model | dischargeTime = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        DischargeMotherSystolicFld ->
-                            { model | dischargeMotherSystolic = Just <| U.filterStringLikeInt value }
+                                DischargeMotherSystolicFld ->
+                                    { model | dischargeMotherSystolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        DischargeMotherDiastolicFld ->
-                            { model | dischargeMotherDiastolic = Just <| U.filterStringLikeInt value }
+                                DischargeMotherDiastolicFld ->
+                                    { model | dischargeMotherDiastolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        DischargeMotherTempFld ->
-                            { model | dischargeMotherTemp = Just <| U.filterStringLikeFloat value }
+                                DischargeMotherTempFld ->
+                                    { model | dischargeMotherTemp = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        DischargeMotherCRFld ->
-                            { model | dischargeMotherCR = Just <| U.filterStringLikeInt value }
+                                DischargeMotherCRFld ->
+                                    { model | dischargeMotherCR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        DischargeBabyRRFld ->
-                            { model | dischargeBabyRR = Just <| U.filterStringLikeInt value }
+                                DischargeBabyRRFld ->
+                                    { model | dischargeBabyRR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        DischargeBabyTempFld ->
-                            { model | dischargeBabyTemp = Just <| U.filterStringLikeFloat value }
+                                DischargeBabyTempFld ->
+                                    { model | dischargeBabyTemp = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        DischargeBabyCRFld ->
-                            { model | dischargeBabyCR = Just <| U.filterStringLikeInt value }
+                                DischargeBabyCRFld ->
+                                    { model | dischargeBabyCR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        DischargeNbsFld ->
-                            { model | dischargeNbs = Just value }
+                                DischargeNbsFld ->
+                                    { model | dischargeNbs = Just value } => Cmd.none
 
-                        DischargeTransferCommentFld ->
-                            { model | dischargeTransferComment = Just value }
+                                DischargeTransferCommentFld ->
+                                    { model | dischargeTransferComment = Just value } => Cmd.none
 
-                        DischargeInitialsFld ->
-                            { model | dischargeInitials = Just value }
+                                DischargeInitialsFld ->
+                                    { model | dischargeInitials = Just value } => Cmd.none
 
-                        _ ->
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model => Cmd.none
 
-                FldChgStringList selectKey isChecked ->
-                    ( case fld of
-                        NBSAppearanceFld ->
-                            { model | nbsAppearance = setSelectedBySelectKey selectKey isChecked model.nbsAppearance }
+                        FldChgStringList selectKey isChecked ->
+                            case fld of
+                                NBSAppearanceFld ->
+                                    { model | nbsAppearance = setSelectedBySelectKey selectKey isChecked model.nbsAppearance } => Cmd.none
 
-                        NBSColorFld ->
-                            { model | nbsColor = setSelectedBySelectKey selectKey isChecked model.nbsColor }
+                                NBSColorFld ->
+                                    { model | nbsColor = setSelectedBySelectKey selectKey isChecked model.nbsColor } => Cmd.none
 
-                        NBSSkinFld ->
-                            { model | nbsSkin = setSelectedBySelectKey selectKey isChecked model.nbsSkin }
+                                NBSSkinFld ->
+                                    { model | nbsSkin = setSelectedBySelectKey selectKey isChecked model.nbsSkin } => Cmd.none
 
-                        NBSHeadFld ->
-                            { model | nbsHead = setSelectedBySelectKey selectKey isChecked model.nbsHead }
+                                NBSHeadFld ->
+                                    { model | nbsHead = setSelectedBySelectKey selectKey isChecked model.nbsHead } => Cmd.none
 
-                        NBSEyesFld ->
-                            { model | nbsEyes = setSelectedBySelectKey selectKey isChecked model.nbsEyes }
+                                NBSEyesFld ->
+                                    { model | nbsEyes = setSelectedBySelectKey selectKey isChecked model.nbsEyes } => Cmd.none
 
-                        NBSEarsFld ->
-                            { model | nbsEars = setSelectedBySelectKey selectKey isChecked model.nbsEars }
+                                NBSEarsFld ->
+                                    { model | nbsEars = setSelectedBySelectKey selectKey isChecked model.nbsEars } => Cmd.none
 
-                        NBSNoseFld ->
-                            { model | nbsNose = setSelectedBySelectKey selectKey isChecked model.nbsNose }
+                                NBSNoseFld ->
+                                    { model | nbsNose = setSelectedBySelectKey selectKey isChecked model.nbsNose } => Cmd.none
 
-                        NBSMouthFld ->
-                            { model | nbsMouth = setSelectedBySelectKey selectKey isChecked model.nbsMouth }
+                                NBSMouthFld ->
+                                    { model | nbsMouth = setSelectedBySelectKey selectKey isChecked model.nbsMouth } => Cmd.none
 
-                        NBSNeckFld ->
-                            { model | nbsNeck = setSelectedBySelectKey selectKey isChecked model.nbsNeck }
+                                NBSNeckFld ->
+                                    { model | nbsNeck = setSelectedBySelectKey selectKey isChecked model.nbsNeck } => Cmd.none
 
-                        NBSChestFld ->
-                            { model | nbsChest = setSelectedBySelectKey selectKey isChecked model.nbsChest }
+                                NBSChestFld ->
+                                    { model | nbsChest = setSelectedBySelectKey selectKey isChecked model.nbsChest } => Cmd.none
 
-                        NBSLungsFld ->
-                            { model | nbsLungs = setSelectedBySelectKey selectKey isChecked model.nbsLungs }
+                                NBSLungsFld ->
+                                    { model | nbsLungs = setSelectedBySelectKey selectKey isChecked model.nbsLungs } => Cmd.none
 
-                        NBSHeartFld ->
-                            { model | nbsHeart = setSelectedBySelectKey selectKey isChecked model.nbsHeart }
+                                NBSHeartFld ->
+                                    { model | nbsHeart = setSelectedBySelectKey selectKey isChecked model.nbsHeart } => Cmd.none
 
-                        NBSAbdomenFld ->
-                            { model | nbsAbdomen = setSelectedBySelectKey selectKey isChecked model.nbsAbdomen }
+                                NBSAbdomenFld ->
+                                    { model | nbsAbdomen = setSelectedBySelectKey selectKey isChecked model.nbsAbdomen } => Cmd.none
 
-                        NBSHipsFld ->
-                            { model | nbsHips = setSelectedBySelectKey selectKey isChecked model.nbsHips }
+                                NBSHipsFld ->
+                                    { model | nbsHips = setSelectedBySelectKey selectKey isChecked model.nbsHips } => Cmd.none
 
-                        NBSCordFld ->
-                            { model | nbsCord = setSelectedBySelectKey selectKey isChecked model.nbsCord }
+                                NBSCordFld ->
+                                    { model | nbsCord = setSelectedBySelectKey selectKey isChecked model.nbsCord } => Cmd.none
 
-                        NBSFemoralPulsesFld ->
-                            { model | nbsFemoralPulses = setSelectedBySelectKey selectKey isChecked model.nbsFemoralPulses }
+                                NBSFemoralPulsesFld ->
+                                    { model | nbsFemoralPulses = setSelectedBySelectKey selectKey isChecked model.nbsFemoralPulses } => Cmd.none
 
-                        NBSGenitaliaFld ->
-                            { model | nbsGenitalia = setSelectedBySelectKey selectKey isChecked model.nbsGenitalia }
+                                NBSGenitaliaFld ->
+                                    { model | nbsGenitalia = setSelectedBySelectKey selectKey isChecked model.nbsGenitalia } => Cmd.none
 
-                        NBSAnusFld ->
-                            { model | nbsAnus = setSelectedBySelectKey selectKey isChecked model.nbsAnus }
+                                NBSAnusFld ->
+                                    { model | nbsAnus = setSelectedBySelectKey selectKey isChecked model.nbsAnus } => Cmd.none
 
-                        NBSBackFld ->
-                            { model | nbsBack = setSelectedBySelectKey selectKey isChecked model.nbsBack }
+                                NBSBackFld ->
+                                    { model | nbsBack = setSelectedBySelectKey selectKey isChecked model.nbsBack } => Cmd.none
 
-                        NBSExtremitiesFld ->
-                            { model | nbsExtremities = setSelectedBySelectKey selectKey isChecked model.nbsExtremities }
+                                NBSExtremitiesFld ->
+                                    { model | nbsExtremities = setSelectedBySelectKey selectKey isChecked model.nbsExtremities } => Cmd.none
 
-                        _ ->
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model => Cmd.none
 
-                FldChgBool value ->
-                    ( case fld of
-                        NBSMoroReflexFld ->
-                            { model | nbsMoroReflex = Just value }
+                        FldChgBool value ->
+                            case fld of
+                                NBSMoroReflexFld ->
+                                    { model | nbsMoroReflex = Just value } => Cmd.none
 
-                        NBSPalmarReflexFld ->
-                            { model | nbsPalmarReflex = Just value }
+                                NBSPalmarReflexFld ->
+                                    { model | nbsPalmarReflex = Just value } => Cmd.none
 
-                        NBSSteppingReflexFld ->
-                            { model | nbsSteppingReflex = Just value }
+                                NBSSteppingReflexFld ->
+                                    { model | nbsSteppingReflex = Just value } => Cmd.none
 
-                        NBSPlantarReflexFld ->
-                            { model | nbsPlantarReflex = Just value }
+                                NBSPlantarReflexFld ->
+                                    { model | nbsPlantarReflex = Just value } => Cmd.none
 
-                        NBSBabinskiReflexFld ->
-                            { model | nbsBabinskiReflex = Just value }
+                                NBSBabinskiReflexFld ->
+                                    { model | nbsBabinskiReflex = Just value } => Cmd.none
 
-                        DischargePpInstructionsScheduleFld ->
-                            { model | dischargePPInstructionsSchedule = Just value }
+                                DischargePpInstructionsScheduleFld ->
+                                    { model | dischargePPInstructionsSchedule = Just value } => Cmd.none
 
-                        DischargeBirthCertWorksheetFld ->
-                            { model | dischargeBirthCertWorksheet = Just value }
+                                DischargeBirthCertWorksheetFld ->
+                                    { model | dischargeBirthCertWorksheet = Just value } => Cmd.none
 
-                        DischargeBirthRecordedFld ->
-                            { model | dischargeBirthRecorded = Just value }
+                                DischargeBirthRecordedFld ->
+                                    { model | dischargeBirthRecorded = Just value } => Cmd.none
 
-                        DischargeChartsCompleteFld ->
-                            { model | dischargeChartsComplete = Just value }
+                                DischargeChartsCompleteFld ->
+                                    { model | dischargeChartsComplete = Just value } => Cmd.none
 
-                        DischargeLogsCompleteFld ->
-                            { model | dischargeLogsComplete = Just value }
+                                DischargeLogsCompleteFld ->
+                                    { model | dischargeLogsComplete = Just value } => Cmd.none
 
-                        DischargeBillPaidFld ->
-                            { model | dischargeBillPaid = Just value }
+                                DischargeBillPaidFld ->
+                                    { model | dischargeBillPaid = Just value } => Cmd.none
 
-                        DischargeImmunizationReferralFld ->
-                            { model | dischargeImmunizationReferral = Just value }
+                                DischargeImmunizationReferralFld ->
+                                    { model | dischargeImmunizationReferral = Just value } => Cmd.none
 
-                        DischargeBreastFeedingEstablishedFld ->
-                            { model | dischargeBreastFeedingEstablished = Just value }
+                                DischargeBreastFeedingEstablishedFld ->
+                                    { model | dischargeBreastFeedingEstablished = Just value } => Cmd.none
 
-                        DischargeNewbornBathFld ->
-                            { model | dischargeNewbornBath = Just value }
+                                DischargeNewbornBathFld ->
+                                    { model | dischargeNewbornBath = Just value } => Cmd.none
 
-                        DischargeFundusFirmBleedingCtldFld ->
-                            { model | dischargeFundusFirmBleedingCtld = Just value }
+                                DischargeFundusFirmBleedingCtldFld ->
+                                    { model | dischargeFundusFirmBleedingCtld = Just value } => Cmd.none
 
-                        DischargeMotherAteDrankFld ->
-                            { model | dischargeMotherAteDrank = Just value }
+                                DischargeMotherAteDrankFld ->
+                                    { model | dischargeMotherAteDrank = Just value } => Cmd.none
 
-                        DischargeMotherUrinatedFld ->
-                            { model | dischargeMotherUrinated = Just value }
+                                DischargeMotherUrinatedFld ->
+                                    { model | dischargeMotherUrinated = Just value } => Cmd.none
 
-                        DischargePlacentaGoneFld ->
-                            { model | dischargePlacentaGone = Just value }
+                                DischargePlacentaGoneFld ->
+                                    { model | dischargePlacentaGone = Just value } => Cmd.none
 
-                        DischargePrayerFld ->
-                            { model | dischargePrayer = Just value }
+                                DischargePrayerFld ->
+                                    { model | dischargePrayer = Just value } => Cmd.none
 
-                        DischargeBibleFld ->
-                            { model | dischargeBible = Just value }
+                                DischargeBibleFld ->
+                                    { model | dischargeBible = Just value } => Cmd.none
 
-                        DischargeTransferBabyFld ->
-                            { model | dischargeTransferBaby = Just value }
+                                DischargeTransferBabyFld ->
+                                    { model | dischargeTransferBaby = Just value } => Cmd.none
 
-                        DischargeTransferMotherFld ->
-                            { model | dischargeTransferMother = Just value }
+                                DischargeTransferMotherFld ->
+                                    { model | dischargeTransferMother = Just value } => Cmd.none
 
-                        _ ->
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model => Cmd.none
 
-                FldChgIntString intVal strVal ->
-                    -- For the BabyMed and BabyVac fields, the intVal is the medicationType
-                    -- or vaccinationType id, respectively. For BabyLab, the intVal
-                    -- is the babyLabType id. For MotherMed fields, the intVal is the
-                    -- medicationType id.
-                    let
-                        babyLabField fldNum value =
-                            case
-                                Data.BabyLabType.getType intVal
-                                    fldNum
-                                    model.babyLabTypeRecords
-                            of
-                                Just babyLabFieldType ->
-                                    case babyLabFieldType of
-                                        StringBabyLabFT ->
+                        FldChgIntString intVal strVal ->
+                            -- For the BabyMed and BabyVac fields, the intVal is the medicationType
+                            -- or vaccinationType id, respectively. For BabyLab, the intVal
+                            -- is the babyLabType id. For MotherMed fields, the intVal is the
+                            -- medicationType id.
+                            let
+                                babyLabField fldNum value =
+                                    case
+                                        Data.BabyLabType.getType intVal
+                                            fldNum
+                                            model.babyLabTypeRecords
+                                    of
+                                        Just babyLabFieldType ->
+                                            case babyLabFieldType of
+                                                StringBabyLabFT ->
+                                                    Just value
+
+                                                IntegerBabyLabFT ->
+                                                    Just <| U.filterStringLikeInt value
+
+                                                FloatBabyLabFT ->
+                                                    Just <| U.filterStringLikeFloat value
+
+                                                BoolBabyLabFT ->
+                                                    Just value
+
+                                                InvalidBabyLabFT ->
+                                                    Just value
+
+                                        Nothing ->
                                             Just value
-
-                                        IntegerBabyLabFT ->
-                                            Just <| U.filterStringLikeInt value
-
-                                        FloatBabyLabFT ->
-                                            Just <| U.filterStringLikeFloat value
-
-                                        BoolBabyLabFT ->
-                                            Just value
-
-                                        InvalidBabyLabFT ->
-                                            Just value
-
-                                Nothing ->
-                                    Just value
-                    in
-                    ( case fld of
-                        BabyMedDateFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | babyMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | date = U.stringToDateAddSubOffset strVal }
-                                                        model.babyMedFlds
-                                            }
-
-                                        Nothing ->
-                                            model
                             in
-                            newModel
+                            case fld of
+                                BabyMedDateFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | babyMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | date = U.stringToDateAddSubOffset strVal }
+                                                                model.babyMedFlds
+                                                    }
 
-                        BabyMedTimeFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | babyMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | time = Just <| U.filterStringLikeTime strVal }
-                                                        model.babyMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyMedTimeFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | babyMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | time = Just <| U.filterStringLikeTime strVal }
+                                                                model.babyMedFlds
+                                                    }
 
-                        BabyMedLocationFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | babyMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | location = Just strVal }
-                                                        model.babyMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyMedLocationFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | babyMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | location = Just strVal }
+                                                                model.babyMedFlds
+                                                    }
 
-                        BabyMedInitialsFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | babyMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | initials = Just strVal }
-                                                        model.babyMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyMedInitialsFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | babyMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | initials = Just strVal }
+                                                                model.babyMedFlds
+                                                    }
 
-                        BabyMedCommentsFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | babyMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | comments = Just strVal }
-                                                        model.babyMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyMedCommentsFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | babyMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | comments = Just strVal }
+                                                                model.babyMedFlds
+                                                    }
 
-                        BabyVacDateFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyVacFlds of
-                                        Just vacFlds ->
-                                            { model
-                                                | babyVacFlds =
-                                                    Dict.insert intVal
-                                                        { vacFlds | date = U.stringToDateAddSubOffset strVal }
-                                                        model.babyVacFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyVacDateFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyVacFlds of
+                                                Just vacFlds ->
+                                                    { model
+                                                        | babyVacFlds =
+                                                            Dict.insert intVal
+                                                                { vacFlds | date = U.stringToDateAddSubOffset strVal }
+                                                                model.babyVacFlds
+                                                    }
 
-                        BabyVacTimeFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyVacFlds of
-                                        Just vacFlds ->
-                                            { model
-                                                | babyVacFlds =
-                                                    Dict.insert intVal
-                                                        { vacFlds | time = Just <| U.filterStringLikeTime strVal }
-                                                        model.babyVacFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyVacTimeFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyVacFlds of
+                                                Just vacFlds ->
+                                                    { model
+                                                        | babyVacFlds =
+                                                            Dict.insert intVal
+                                                                { vacFlds | time = Just <| U.filterStringLikeTime strVal }
+                                                                model.babyVacFlds
+                                                    }
 
-                        BabyVacLocationFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyVacFlds of
-                                        Just vacFlds ->
-                                            { model
-                                                | babyVacFlds =
-                                                    Dict.insert intVal
-                                                        { vacFlds | location = Just strVal }
-                                                        model.babyVacFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyVacLocationFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyVacFlds of
+                                                Just vacFlds ->
+                                                    { model
+                                                        | babyVacFlds =
+                                                            Dict.insert intVal
+                                                                { vacFlds | location = Just strVal }
+                                                                model.babyVacFlds
+                                                    }
 
-                        BabyVacInitialsFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyVacFlds of
-                                        Just vacFlds ->
-                                            { model
-                                                | babyVacFlds =
-                                                    Dict.insert intVal
-                                                        { vacFlds | initials = Just strVal }
-                                                        model.babyVacFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyVacInitialsFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyVacFlds of
+                                                Just vacFlds ->
+                                                    { model
+                                                        | babyVacFlds =
+                                                            Dict.insert intVal
+                                                                { vacFlds | initials = Just strVal }
+                                                                model.babyVacFlds
+                                                    }
 
-                        BabyVacCommentsFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyVacFlds of
-                                        Just vacFlds ->
-                                            { model
-                                                | babyVacFlds =
-                                                    Dict.insert intVal
-                                                        { vacFlds | comments = Just strVal }
-                                                        model.babyVacFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyVacCommentsFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyVacFlds of
+                                                Just vacFlds ->
+                                                    { model
+                                                        | babyVacFlds =
+                                                            Dict.insert intVal
+                                                                { vacFlds | comments = Just strVal }
+                                                                model.babyVacFlds
+                                                    }
 
-                        BabyLabDateFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyLabFlds of
-                                        Just labFlds ->
-                                            { model
-                                                | babyLabFlds =
-                                                    Dict.insert intVal
-                                                        { labFlds | date = U.stringToDateAddSubOffset strVal }
-                                                        model.babyLabFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyLabDateFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyLabFlds of
+                                                Just labFlds ->
+                                                    { model
+                                                        | babyLabFlds =
+                                                            Dict.insert intVal
+                                                                { labFlds | date = U.stringToDateAddSubOffset strVal }
+                                                                model.babyLabFlds
+                                                    }
 
-                        BabyLabTimeFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyLabFlds of
-                                        Just labFlds ->
-                                            { model
-                                                | babyLabFlds =
-                                                    Dict.insert intVal
-                                                        { labFlds | time = Just <| U.filterStringLikeTime strVal }
-                                                        model.babyLabFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyLabTimeFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyLabFlds of
+                                                Just labFlds ->
+                                                    { model
+                                                        | babyLabFlds =
+                                                            Dict.insert intVal
+                                                                { labFlds | time = Just <| U.filterStringLikeTime strVal }
+                                                                model.babyLabFlds
+                                                    }
 
-                        BabyLabInitialsFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyLabFlds of
-                                        Just labFlds ->
-                                            { model
-                                                | babyLabFlds =
-                                                    Dict.insert intVal
-                                                        { labFlds | initials = Just strVal }
-                                                        model.babyLabFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyLabInitialsFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyLabFlds of
+                                                Just labFlds ->
+                                                    { model
+                                                        | babyLabFlds =
+                                                            Dict.insert intVal
+                                                                { labFlds | initials = Just strVal }
+                                                                model.babyLabFlds
+                                                    }
 
-                        BabyLabFld1ValueFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyLabFlds of
-                                        Just labFlds ->
-                                            { model
-                                                | babyLabFlds =
-                                                    Dict.insert intVal
-                                                        { labFlds | fld1Value = babyLabField 1 strVal }
-                                                        model.babyLabFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyLabFld1ValueFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyLabFlds of
+                                                Just labFlds ->
+                                                    { model
+                                                        | babyLabFlds =
+                                                            Dict.insert intVal
+                                                                { labFlds | fld1Value = babyLabField 1 strVal }
+                                                                model.babyLabFlds
+                                                    }
 
-                        BabyLabFld2ValueFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyLabFlds of
-                                        Just labFlds ->
-                                            { model
-                                                | babyLabFlds =
-                                                    Dict.insert intVal
-                                                        { labFlds | fld2Value = babyLabField 2 strVal }
-                                                        model.babyLabFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyLabFld2ValueFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyLabFlds of
+                                                Just labFlds ->
+                                                    { model
+                                                        | babyLabFlds =
+                                                            Dict.insert intVal
+                                                                { labFlds | fld2Value = babyLabField 2 strVal }
+                                                                model.babyLabFlds
+                                                    }
 
-                        BabyLabFld3ValueFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyLabFlds of
-                                        Just labFlds ->
-                                            { model
-                                                | babyLabFlds =
-                                                    Dict.insert intVal
-                                                        { labFlds | fld3Value = babyLabField 3 strVal }
-                                                        model.babyLabFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyLabFld3ValueFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyLabFlds of
+                                                Just labFlds ->
+                                                    { model
+                                                        | babyLabFlds =
+                                                            Dict.insert intVal
+                                                                { labFlds | fld3Value = babyLabField 3 strVal }
+                                                                model.babyLabFlds
+                                                    }
 
-                        BabyLabFld4ValueFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.babyLabFlds of
-                                        Just labFlds ->
-                                            { model
-                                                | babyLabFlds =
-                                                    Dict.insert intVal
-                                                        { labFlds | fld4Value = babyLabField 4 strVal }
-                                                        model.babyLabFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                BabyLabFld4ValueFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.babyLabFlds of
+                                                Just labFlds ->
+                                                    { model
+                                                        | babyLabFlds =
+                                                            Dict.insert intVal
+                                                                { labFlds | fld4Value = babyLabField 4 strVal }
+                                                                model.babyLabFlds
+                                                    }
 
-                        MotherMedDateFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.motherMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | motherMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | date = U.stringToDateAddSubOffset strVal }
-                                                        model.motherMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                MotherMedDateFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.motherMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | motherMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | date = U.stringToDateAddSubOffset strVal }
+                                                                model.motherMedFlds
+                                                    }
 
-                        MotherMedTimeFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.motherMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | motherMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | time = Just <| U.filterStringLikeTime strVal }
-                                                        model.motherMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                MotherMedTimeFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.motherMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | motherMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | time = Just <| U.filterStringLikeTime strVal }
+                                                                model.motherMedFlds
+                                                    }
 
-                        MotherMedInitialsFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.motherMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | motherMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | initials = Just strVal }
-                                                        model.motherMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                MotherMedInitialsFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.motherMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | motherMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | initials = Just strVal }
+                                                                model.motherMedFlds
+                                                    }
 
-                        MotherMedCommentsFld ->
-                            let
-                                newModel =
-                                    case Dict.get intVal model.motherMedFlds of
-                                        Just medFlds ->
-                                            { model
-                                                | motherMedFlds =
-                                                    Dict.insert intVal
-                                                        { medFlds | comments = Just strVal }
-                                                        model.motherMedFlds
-                                            }
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
 
-                                        Nothing ->
-                                            model
-                            in
-                            newModel
+                                MotherMedCommentsFld ->
+                                    let
+                                        newModel =
+                                            case Dict.get intVal model.motherMedFlds of
+                                                Just medFlds ->
+                                                    { model
+                                                        | motherMedFlds =
+                                                            Dict.insert intVal
+                                                                { medFlds | comments = Just strVal }
+                                                                model.motherMedFlds
+                                                    }
 
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "ContPP" "Unhandled FldChgIntString"
-                            in
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                                Nothing ->
+                                                    model
+                                    in
+                                    newModel => Cmd.none
+
+                                _ ->
+                                    model => logWarning "ContPP.update: Unhandled FldChgIntString"
+            in
+            ( newModel, Cmd.none, newCmd )
 
         HandleNewbornExamModal dialogState ->
             case dialogState of
                 OpenDialog ->
                     let
-                        sex =
+                        ( sex, newCmd ) =
                             case model.babyRecord of
                                 Just b ->
-                                    b.sex
+                                    b.sex => Cmd.none
 
                                 Nothing ->
                                     -- Note: we do not show the newbornExam button if there is no baby record
                                     -- so this should not be encountered.
-                                    let
-                                        _ =
-                                            Debug.log "Page/ContPP newbornExam" "Found no baby record; defaulting to Male."
-                                    in
                                     Data.Baby.Male
+                                        => logWarning
+                                            "ContPP.update HandleNewbornExamModal: Found no baby record; defaulting to Male."
 
                         newModel =
                             case model.newbornExamRecord of
@@ -2112,7 +2081,8 @@ update session msg model =
                       }
                     , Cmd.none
                     , Cmd.batch
-                        [ if model.newbornExamViewEditState == NoViewEditState then
+                        [ newCmd
+                        , if model.newbornExamViewEditState == NoViewEditState then
                             Route.addDialogUrl Route.ContPPRoute
                           else
                             Route.back
@@ -2156,7 +2126,7 @@ update session msg model =
                                     case ( List.length errors > 0, model.babyRecord, model.newbornExamRecord ) of
                                         ( _, Nothing, _ ) ->
                                             -- No baby record, so we cannot make a newborn exam record.
-                                            LogConsole "Error: no baby record found."
+                                            Log ErrorSeverity "ContPP.update HandleNewbornExamModal, CloseSaveDialog: Error: no baby record found."
 
                                         ( True, _, _ ) ->
                                             -- Errors found in the date and time field, so notifiy user
@@ -2302,7 +2272,7 @@ update session msg model =
                                                         (newbornExamRecordNewToValue exam)
 
                                                 Nothing ->
-                                                    LogConsole "deriveNewbornExamRecordNew returned a Nothing"
+                                                    Log ErrorSeverity "deriveNewbornExamRecordNew returned a Nothing"
                             in
                             ( { model | newbornExamViewEditState = NoViewEditState }
                             , Cmd.none
@@ -2424,7 +2394,10 @@ update session msg model =
                                             Toast (errors ++ [ "Record was not saved." ]) 10 ErrorToast
 
                                         ( _, Nothing, _ ) ->
-                                            LogConsole "Error: Current labor id is not known."
+                                            Log ErrorSeverity
+                                                ("ContPP.update HandleContPostpartumCheckModal, CloseSaveDialog: "
+                                                    ++ "Error: Current labor id is not known."
+                                                )
 
                                         ( False, Just (LaborId lid), Nothing ) ->
                                             -- New check being created.
@@ -2443,7 +2416,10 @@ update session msg model =
                                                         (contPostpartumCheckRecordNewToValue check)
 
                                                 Nothing ->
-                                                    LogConsole "deriveContPostpartumCheckRecordNew returned a Nothing"
+                                                    Log ErrorSeverity
+                                                        ("ContPP.update HandleContPostpartumCheckModal, CloseSaveDialog: "
+                                                            ++ "deriveContPostpartumCheckRecordNew returned a Nothing"
+                                                        )
 
                                         ( False, Just (LaborId lid), Just (ContPostpartumCheckId checkId) ) ->
                                             -- Existing check being updated.
@@ -2481,7 +2457,10 @@ update session msg model =
                                                                 (contPostpartumCheckRecordToValue newCheck)
 
                                                         Nothing ->
-                                                            LogConsole "HandleContPostpartumCheckModal: did not find PPCheck in data cache."
+                                                            Log ErrorSeverity
+                                                                ("ContPP.update HandleContPostpartumCheckModal, CloseSaveDialog: "
+                                                                    ++ "HandleContPostpartumCheckModal: did not find PPCheck in data cache."
+                                                                )
 
                                                 _ ->
                                                     Noop
@@ -2676,7 +2655,10 @@ update session msg model =
 
                                 Nothing ->
                                     ( model
-                                    , LogConsole "Error: medVacLab is Nothing in CloseSaveDialog."
+                                    , Log ErrorSeverity
+                                        ("ContPP.update HandleBabyMedVacLabModal, CloseSaveDialog: "
+                                            ++ "Error: medVacLab is Nothing in CloseSaveDialog."
+                                        )
                                     )
                     in
                     ( newModel
@@ -2738,9 +2720,6 @@ update session msg model =
                         )
                         DelMsgType
                         (U.tableIdToValue id BabyLab)
-
-                _ =
-                    Debug.log "HandleBabyLabDelete" <| toString outerMsg
             in
             ( model
             , Cmd.none
@@ -2768,6 +2747,7 @@ update session msg model =
                 [ Task.perform (always outerMsg) (Task.succeed True)
                 ]
             )
+
         HandleMotherMedicationModal dialogState refId ->
             case dialogState of
                 OpenDialog ->
@@ -2845,7 +2825,10 @@ update session msg model =
 
                                 Nothing ->
                                     ( model
-                                    , LogConsole "Error: refId is Nothing in CloseSaveDialog."
+                                    , Log ErrorSeverity
+                                        ("ContPP.update HandleMotherMedicationModal, CloseSaveDialog: "
+                                            ++ "Error: refId is Nothing in CloseSaveDialog."
+                                        )
                                     )
                     in
                     ( newModel
@@ -3028,7 +3011,10 @@ update session msg model =
                                                         (dischargeRecordNewToValue discharge)
 
                                                 Nothing ->
-                                                    LogConsole "deriveDischargeRecordNew returned a Nothing"
+                                                    Log ErrorSeverity
+                                                        ("ContPP.update HandleDischargeModal, CloseSaveDialog: "
+                                                            ++ "deriveDischargeRecordNew returned a Nothing"
+                                                        )
                             in
                             ( { model | dischargeViewEditState = NoViewEditState }
                             , Cmd.none
@@ -3470,7 +3456,10 @@ deriveBabyMedicationMsg medicationTypeId useLocation dict =
                                     )
 
                         Nothing ->
-                            ( LogConsole "deriveBabyMedicationMsg: date and time values are not right."
+                            ( Log ErrorSeverity
+                                ("ContPP.deriveBabyMedicationMsg: "
+                                    ++ "deriveBabyMedicationMsg: date and time values are not right."
+                                )
                             , False
                             )
 
@@ -3485,7 +3474,10 @@ deriveBabyMedicationMsg medicationTypeId useLocation dict =
                     )
 
         Nothing ->
-            ( LogConsole "deriveBabyMedicationMsg: Error: unable to find record in babyMedFlds."
+            ( Log ErrorSeverity
+                ("ContPP.deriveBabyMedicationMsg: "
+                    ++ "deriveBabyMedicationMsg: Error: unable to find record in babyMedFlds."
+                )
             , False
             )
 
@@ -3560,7 +3552,10 @@ deriveBabyVaccinationMsg vaccinationTypeId useLocation dict =
                                     )
 
                         Nothing ->
-                            ( LogConsole "deriveBabyVaccinationMsg: date and time values are not right."
+                            ( Log ErrorSeverity
+                                ("ContPP.deriveBabyVaccinationMsg: "
+                                    ++ "deriveBabyVaccinationMsg: date and time values are not right."
+                                )
                             , False
                             )
 
@@ -3575,7 +3570,10 @@ deriveBabyVaccinationMsg vaccinationTypeId useLocation dict =
                     )
 
         Nothing ->
-            ( LogConsole "deriveBabyVaccinationMsg: Error: unable to find record in babyVacFlds."
+            ( Log ErrorSeverity
+                ("ContPP.deriveBabyVaccinationMsg: "
+                    ++ "deriveBabyVaccinationMsg: Error: unable to find record in babyVacFlds."
+                )
             , False
             )
 
@@ -3651,7 +3649,10 @@ deriveBabyLabMsg labTypeId dict =
                                     )
 
                         Nothing ->
-                            ( LogConsole "deriveBabyLabMsg: date and time values are not right."
+                            ( Log ErrorSeverity
+                                ("ContPP.deriveBabyLabMsg: "
+                                    ++ "deriveBabyLabMsg: date and time values are not right."
+                                )
                             , False
                             )
 
@@ -3666,7 +3667,10 @@ deriveBabyLabMsg labTypeId dict =
                     )
 
         Nothing ->
-            ( LogConsole "deriveBabyLabMsg: Error: unable to find record in labFlds."
+            ( Log ErrorSeverity
+                ("ContPP.deriveBabyLabMsg: "
+                    ++ "deriveBabyLabMsg: Error: unable to find record in labFlds."
+                )
             , False
             )
 
@@ -3739,7 +3743,10 @@ deriveMotherMedicationMsg medicationTypeId dict =
                                     )
 
                         Nothing ->
-                            ( LogConsole "deriveMotherMedicationMsg: date and time values are not right."
+                            ( Log ErrorSeverity
+                                ("ContPP.deriveMotherMedicationMsg: "
+                                    ++ "deriveMotherMedicationMsg: date and time values are not right."
+                                )
                             , False
                             )
 
@@ -3754,7 +3761,10 @@ deriveMotherMedicationMsg medicationTypeId dict =
                     )
 
         Nothing ->
-            ( LogConsole "deriveMotherMedicationMsg: Error: unable to find record in motherMedFlds."
+            ( Log ErrorSeverity
+                ("ContPP.deriveMotherMedicationMsg: "
+                    ++ "deriveMotherMedicationMsg: Error: unable to find record in motherMedFlds."
+                )
             , False
             )
 
@@ -4989,7 +4999,7 @@ motherMedicationEdit refId name medCfg browserSupportsDate =
                     , HE.onClick <| HandleMotherMedicationDelete recordId
                     ]
                     [ H.text "Delete" ]
-                else
+              else
                 H.span [] []
             ]
         ]
@@ -5084,10 +5094,6 @@ dialogBabyMedVacLab cfg =
                                 cfg.model.browserSupportsDate
 
                         Nothing ->
-                            let
-                                _ =
-                                    Debug.log "dialogBabyMedVacLab" "Error: Data.BabyMedicationType.getNameUseLocation returned Nothing."
-                            in
                             H.text ""
                 )
                 (Dict.toList cfg.model.babyMedFlds)
@@ -5108,10 +5114,6 @@ dialogBabyMedVacLab cfg =
                                 cfg.model.browserSupportsDate
 
                         Nothing ->
-                            let
-                                _ =
-                                    Debug.log "dialogBabyMedVacLab" "Error: Data.BabyVaccinationType.getNameUseLocation returned Nothing."
-                            in
                             H.text ""
                 )
                 (Dict.toList cfg.model.babyVacFlds)
@@ -5132,10 +5134,6 @@ dialogBabyMedVacLab cfg =
                                 cfg.model.babyLabTypeRecords
 
                         Nothing ->
-                            let
-                                _ =
-                                    Debug.log "dialogBabyMedVacLab" "Error: Data.BabyLabType.getName returned Nothing."
-                            in
                             H.text ""
                 )
                 (Dict.toList cfg.model.babyLabFlds)
@@ -5396,7 +5394,7 @@ babyLabEdit mvl name labRec browserSupportsDate babyLabTypeRecords =
                     , HE.onClick <| HandleBabyLabDelete recordId
                     ]
                     [ H.text "Delete" ]
-                else
+              else
                 H.span [] []
             ]
         ]

@@ -1,18 +1,14 @@
 module Msg
     exposing
-        ( logConsole
-        , Msg(..)
+        ( Msg(..)
         , ProcessType(..)
+        , logError
+        , logInfo
+        , logWarning
         , toastError
         , toastInfo
         , toastWarn
         )
-
-import Json.Encode as JE
-import Task
-import Time exposing (Time)
-import Window
-
 
 -- LOCAL IMPORTS --
 
@@ -36,7 +32,8 @@ import Data.LaborDelIpp as LaborDelIpp
 import Data.LaborStage1 exposing (LaborStage1Record, LaborStage1RecordNew)
 import Data.LaborStage2 exposing (LaborStage2Record, LaborStage2RecordNew)
 import Data.LaborStage3 exposing (LaborStage3Record, LaborStage3RecordNew)
-import Data.Membrane exposing (MembraneRecordNew, MembraneRecord)
+import Data.Log exposing (Severity(..))
+import Data.Membrane exposing (MembraneRecord, MembraneRecordNew)
 import Data.Message as Message exposing (IncomingMessage(..), MsgType)
 import Data.MotherMedication exposing (MotherMedicationRecord, MotherMedicationRecordNew)
 import Data.NewbornExam exposing (NewbornExamRecord, NewbornExamRecordNew)
@@ -48,7 +45,11 @@ import Data.SelectQuery exposing (SelectQuery)
 import Data.Table exposing (Table)
 import Data.TableRecord exposing (..)
 import Data.Toast exposing (ToastType(..))
+import Json.Encode as JE
 import Route exposing (Route)
+import Task
+import Time exposing (Time)
+import Window
 
 
 type Msg
@@ -66,7 +67,7 @@ type Msg
     | LaborDelIppLoaded PregnancyId
     | LaborDelIppMsg LaborDelIpp.SubMsg
     | LaborDelIppSelectQuery Table (Maybe Int) (List Table)
-    | LogConsole String
+    | Log Severity String
     | Message IncomingMessage
     | OpenDatePicker String
     | PostpartumLoaded PregnancyId LaborRecord
@@ -83,9 +84,19 @@ type Msg
 {-| Initiate a Cmd to send a message to the console. This function
 is located here to address circular dependencies.
 -}
-logConsole : String -> Cmd Msg
-logConsole msg =
-    Task.perform LogConsole (Task.succeed msg)
+logInfo : String -> Cmd Msg
+logInfo msg =
+    Task.perform (Log InfoSeverity) (Task.succeed msg)
+
+
+logWarning : String -> Cmd Msg
+logWarning msg =
+    Task.perform (Log WarningSeverity) (Task.succeed msg)
+
+
+logError : String -> Cmd Msg
+logError msg =
+    Task.perform (Log ErrorSeverity) (Task.succeed msg)
 
 
 {-| Initiate a Cmd to send an informational message to the user

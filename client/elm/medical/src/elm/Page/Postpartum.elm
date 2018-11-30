@@ -49,6 +49,7 @@ import Data.Labor
 import Data.LaborStage1 exposing (LaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Record)
+import Data.Log exposing (Severity(..))
 import Data.Message exposing (MsgType(..), wrapPayload)
 import Data.Patient exposing (PatientRecord)
 import Data.Postpartum
@@ -94,7 +95,7 @@ import Msg
     exposing
         ( Msg(..)
         , ProcessType(..)
-        , logConsole
+        , logWarning
         , toastError
         , toastInfo
         , toastWarn
@@ -448,120 +449,116 @@ list of keys (List Table) passed, which has to be initiated elsewhere
 in this module. This is so that fields are not willy nilly overwritten
 unexpectedly.
 -}
-refreshModelFromCache : Dict String DataCache -> List Table -> Model -> Model
+refreshModelFromCache : Dict String DataCache -> List Table -> Model -> ( Model, Cmd Msg )
 refreshModelFromCache dc tables model =
     let
-        newModel =
+        ( newModel, cmds ) =
             List.foldl
-                (\t m ->
+                (\t ( m, cmds ) ->
                     case t of
                         Baby ->
                             case DataCache.get t dc of
                                 Just (BabyDataCache rec) ->
-                                    { m | babyRecord = Just rec }
+                                    { m | babyRecord = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyLab ->
                             case DataCache.get t dc of
                                 Just (BabyLabDataCache recs) ->
-                                    { m | babyLabRecords = recs }
+                                    { m | babyLabRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyLabType ->
                             case DataCache.get t dc of
                                 Just (BabyLabTypeDataCache recs) ->
-                                    { m | babyLabTypeRecords = recs }
+                                    { m | babyLabTypeRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyVaccination ->
                             case DataCache.get t dc of
                                 Just (BabyVaccinationDataCache recs) ->
-                                    { m | babyVaccinationRecords = recs }
+                                    { m | babyVaccinationRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         BabyVaccinationType ->
                             case DataCache.get t dc of
                                 Just (BabyVaccinationTypeDataCache recs) ->
-                                    { m | babyVaccinationTypeRecords = recs }
+                                    { m | babyVaccinationTypeRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         ContPostpartumCheck ->
                             case DataCache.get t dc of
                                 Just (ContPostpartumCheckDataCache recs) ->
-                                    { m | contPostpartumCheckRecords = recs }
+                                    { m | contPostpartumCheckRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         Labor ->
                             case DataCache.get t dc of
                                 Just (LaborDataCache rec) ->
-                                    { m | laborRecord = rec }
+                                    { m | laborRecord = rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage1 ->
                             case DataCache.get t dc of
                                 Just (LaborStage1DataCache rec) ->
-                                    { m | laborStage1Record = Just rec }
+                                    { m | laborStage1Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage2 ->
                             case DataCache.get t dc of
                                 Just (LaborStage2DataCache rec) ->
-                                    { m | laborStage2Record = Just rec }
+                                    { m | laborStage2Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         LaborStage3 ->
                             case DataCache.get t dc of
                                 Just (LaborStage3DataCache rec) ->
-                                    { m | laborStage3Record = Just rec }
+                                    { m | laborStage3Record = Just rec } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         PostpartumCheck ->
                             case DataCache.get t dc of
                                 Just (PostpartumCheckDataCache recs) ->
-                                    { m | postpartumCheckRecords = recs }
+                                    { m | postpartumCheckRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         SelectData ->
                             case DataCache.get t dc of
                                 Just (SelectDataDataCache recs) ->
-                                    { m | selectDataRecords = recs }
+                                    { m | selectDataRecords = recs } => cmds
 
                                 _ ->
-                                    m
+                                    m => cmds
 
                         _ ->
-                            let
-                                _ =
-                                    Debug.log "Postpartum.refreshModelFromCache: Unhandled Table" <| toString t
-                            in
-                            m
+                            ( m, ("Postpartum.refreshModelFromCache: Unhandled Table" ++ toString t) :: cmds )
                 )
-                model
+                ( model, [] )
                 tables
     in
-    newModel
+    newModel => ( Cmd.batch <| List.map logWarning cmds )
 
 
 update : Session -> SubMsg -> Model -> ( Model, Cmd SubMsg, Cmd Msg )
@@ -585,20 +582,16 @@ update session msg model =
             -- on the latest data that it has. The specific records that need
             -- to be updated are in the tables list.
             let
-                newModel =
+                ( newModel, newCmd ) =
                     case ( dc, tbls ) of
                         ( Just dataCache, Just tables ) ->
-                            let
-                                newModel =
-                                    refreshModelFromCache dataCache tables model
-                            in
-                            { newModel | dataCache = dataCache }
+                            refreshModelFromCache dataCache tables { model | dataCache = dataCache }
 
                         ( _, _ ) ->
-                            model
+                            ( model, Cmd.none )
 
                 -- Get all sub tables of baby that are pending retrieval from the server.
-                ( newCmd, newPendingSQ ) =
+                ( newCmd2, newPendingSQ ) =
                     case newModel.babyRecord of
                         Just baby ->
                             if
@@ -624,174 +617,182 @@ update session msg model =
             in
             ( { newModel | pendingSelectQuery = newPendingSQ }
             , Cmd.none
-            , newCmd
+            , Cmd.batch [ newCmd, newCmd2 ]
             )
 
         DateFieldSubMsg dateFldMsg ->
             -- For browsers that do not support a native date field.
-            case dateFldMsg of
-                DateFieldMessage { dateField, date } ->
-                    case dateField of
-                        PostpartumCheckDateField ->
-                            ( { model | pcCheckDate = Just date }, Cmd.none, Cmd.none )
+            let
+                ( newModel, newCmd ) =
+                    case dateFldMsg of
+                        DateFieldMessage { dateField, date } ->
+                            case dateField of
+                                PostpartumCheckDateField ->
+                                    { model | pcCheckDate = Just date } => Cmd.none
 
-                        PostpartumCheckHgbField ->
-                            ( { model | pcHgbTestDate = Just date }, Cmd.none, Cmd.none )
+                                PostpartumCheckHgbField ->
+                                    { model | pcHgbTestDate = Just date } => Cmd.none
 
-                        PostpartumCheckScheduledField ->
-                            ( { model | pcNextScheduledCheck = Just date }, Cmd.none, Cmd.none )
+                                PostpartumCheckScheduledField ->
+                                    { model | pcNextScheduledCheck = Just date } => Cmd.none
 
-                        UnknownDateField str ->
-                            ( model, Cmd.none, logConsole str )
+                                UnknownDateField str ->
+                                    model => logWarning ( "Postpartum.update DateFieldSubMsg: UnknownDateField: " ++ str )
 
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "Postpartum DateFieldSubMsg" <| toString dateFldMsg
-                            in
-                            -- This page is not the only one with date fields, we only
-                            -- handle what we know about.
-                            ( model, Cmd.none, Cmd.none )
+                                _ ->
+                                    -- This page is not the only one with date fields, we only
+                                    -- handle what we know about.
+                                    model => Cmd.none
 
-                UnknownDateFieldMessage str ->
-                    ( model, Cmd.none, Cmd.none )
+                        UnknownDateFieldMessage str ->
+                            model => logWarning ( "Postpartum.update DateFieldSubMsg: UnknownDateFieldMessage: " ++ str )
+            in
+                ( newModel, Cmd.none, newCmd )
 
         FldChgSubMsg fld val ->
-            case val of
-                FldChgString value ->
-                    ( case fld of
-                        PCCheckDateFld ->
-                            { model | pcCheckDate = U.stringToDateAddSubOffset value }
+            let
+                ( newModel, newCmd ) =
+                    case val of
+                        FldChgString value ->
+                            case fld of
+                                PCCheckDateFld ->
+                                    { model | pcCheckDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        PCCheckTimeFld ->
-                            { model | pcCheckTime = Just <| U.filterStringLikeTime value }
+                                PCCheckTimeFld ->
+                                    { model | pcCheckTime = Just <| U.filterStringLikeTime value } => Cmd.none
 
-                        PCBabyWeightFld ->
-                            { model | pcBabyWeight = Just <| U.filterStringLikeInt value }
+                                PCBabyWeightFld ->
+                                    { model | pcBabyWeight = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        PCBabyTempFld ->
-                            { model | pcBabyTemp = Just <| U.filterStringLikeFloat value }
+                                PCBabyTempFld ->
+                                    { model | pcBabyTemp = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        PCBabyCRFld ->
-                            { model | pcBabyCR = Just <| U.filterStringLikeInt value }
+                                PCBabyCRFld ->
+                                    { model | pcBabyCR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        PCBabyRRFld ->
-                            { model | pcBabyRR = Just <| U.filterStringLikeInt value }
+                                PCBabyRRFld ->
+                                    { model | pcBabyRR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        PCBabyUrineFld ->
-                            { model | pcBabyUrine = Just value }
+                                PCBabyUrineFld ->
+                                    { model | pcBabyUrine = Just value } => Cmd.none
 
-                        PCBabyStoolFld ->
-                            { model | pcBabyStool = Just value }
+                                PCBabyStoolFld ->
+                                    { model | pcBabyStool = Just value } => Cmd.none
 
-                        PCBabyFeedingDailyFld ->
-                            { model | pcBabyFeedingDaily = Just value }
+                                PCBabyFeedingDailyFld ->
+                                    { model | pcBabyFeedingDaily = Just value } => Cmd.none
 
-                        PCMotherTempFld ->
-                            { model | pcMotherTemp = Just <| U.filterStringLikeFloat value }
+                                PCMotherTempFld ->
+                                    { model | pcMotherTemp = Just <| U.filterStringLikeFloat value } => Cmd.none
 
-                        PCMotherSystolicFld ->
-                            { model | pcMotherSystolic = Just <| U.filterStringLikeInt value }
+                                PCMotherSystolicFld ->
+                                    { model | pcMotherSystolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        PCMotherDiastolicFld ->
-                            { model | pcMotherDiastolic = Just <| U.filterStringLikeInt value }
+                                PCMotherDiastolicFld ->
+                                    { model | pcMotherDiastolic = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        PCMotherCRFld ->
-                            { model | pcMotherCR = Just <| U.filterStringLikeInt value }
+                                PCMotherCRFld ->
+                                    { model | pcMotherCR = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        PCMotherFundusNoteFld ->
-                            { model | pcMotherFundusNote = Just value }
+                                PCMotherFundusNoteFld ->
+                                    { model | pcMotherFundusNote = Just value } => Cmd.none
 
-                        PCMotherPerineumNoteFld ->
-                            { model | pcMotherPerineumNote = Just value }
+                                PCMotherPerineumNoteFld ->
+                                    { model | pcMotherPerineumNote = Just value } => Cmd.none
 
-                        PCHgbTestResultFld ->
-                            { model | pcHgbTestResult = Just value }
+                                PCHgbTestResultFld ->
+                                    { model | pcHgbTestResult = Just value } => Cmd.none
 
-                        PCIronGivenFld ->
-                            { model | pcIronGiven = Just <| U.filterStringLikeInt value }
+                                PCIronGivenFld ->
+                                    { model | pcIronGiven = Just <| U.filterStringLikeInt value } => Cmd.none
 
-                        PCCommentsFld ->
-                            { model | pcComments = Just value }
+                                PCCommentsFld ->
+                                    { model | pcComments = Just value } => Cmd.none
 
-                        PCHgbTestDateFld ->
-                            { model | pcHgbTestDate = U.stringToDateAddSubOffset value }
+                                PCHgbTestDateFld ->
+                                    { model | pcHgbTestDate = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        PCNextScheduledCheckFld ->
-                            { model | pcNextScheduledCheck = U.stringToDateAddSubOffset value }
+                                PCNextScheduledCheckFld ->
+                                    { model | pcNextScheduledCheck = U.stringToDateAddSubOffset value } => Cmd.none
 
-                        _ ->
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("Postpartum.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgString. Possible mismatch between Field and FldChgValue."
+                                            )
 
-                FldChgStringList selectKey isChecked ->
-                    ( case fld of
-                        PCBabyLungsFld ->
-                            { model | pcBabyLungs = setSelectedBySelectKey selectKey isChecked model.pcBabyLungs }
+                        FldChgStringList selectKey isChecked ->
+                            case fld of
+                                PCBabyLungsFld ->
+                                    { model | pcBabyLungs = setSelectedBySelectKey selectKey isChecked model.pcBabyLungs } => Cmd.none
 
-                        PCBabyColorFld ->
-                            { model | pcBabyColor = setSelectedBySelectKey selectKey isChecked model.pcBabyColor }
+                                PCBabyColorFld ->
+                                    { model | pcBabyColor = setSelectedBySelectKey selectKey isChecked model.pcBabyColor } => Cmd.none
 
-                        PCBabySkinFld ->
-                            { model | pcBabySkin = setSelectedBySelectKey selectKey isChecked model.pcBabySkin }
+                                PCBabySkinFld ->
+                                    { model | pcBabySkin = setSelectedBySelectKey selectKey isChecked model.pcBabySkin } => Cmd.none
 
-                        PCBabyCordFld ->
-                            { model | pcBabyCord = setSelectedBySelectKey selectKey isChecked model.pcBabyCord }
+                                PCBabyCordFld ->
+                                    { model | pcBabyCord = setSelectedBySelectKey selectKey isChecked model.pcBabyCord } => Cmd.none
 
-                        PCBabySSInfectionFld ->
-                            { model | pcBabySSInfection = setSelectedBySelectKey selectKey isChecked model.pcBabySSInfection }
+                                PCBabySSInfectionFld ->
+                                    { model | pcBabySSInfection = setSelectedBySelectKey selectKey isChecked model.pcBabySSInfection } => Cmd.none
 
-                        PCBabyFeedingFld ->
-                            { model | pcBabyFeeding = setSelectedBySelectKey selectKey isChecked model.pcBabyFeeding }
+                                PCBabyFeedingFld ->
+                                    { model | pcBabyFeeding = setSelectedBySelectKey selectKey isChecked model.pcBabyFeeding } => Cmd.none
 
-                        PCMotherBreastsFld ->
-                            { model | pcMotherBreasts = setSelectedBySelectKey selectKey isChecked model.pcMotherBreasts }
+                                PCMotherBreastsFld ->
+                                    { model | pcMotherBreasts = setSelectedBySelectKey selectKey isChecked model.pcMotherBreasts } => Cmd.none
 
-                        PCMotherFundusFld ->
-                            { model | pcMotherFundus = setSelectedBySelectKey selectKey isChecked model.pcMotherFundus }
+                                PCMotherFundusFld ->
+                                    { model | pcMotherFundus = setSelectedBySelectKey selectKey isChecked model.pcMotherFundus } => Cmd.none
 
-                        PCMotherPerineumFld ->
-                            { model | pcMotherPerineum = setSelectedBySelectKey selectKey isChecked model.pcMotherPerineum }
+                                PCMotherPerineumFld ->
+                                    { model | pcMotherPerineum = setSelectedBySelectKey selectKey isChecked model.pcMotherPerineum } => Cmd.none
 
-                        PCMotherLochiaFld ->
-                            { model | pcMotherLochia = setSelectedBySelectKey selectKey isChecked model.pcMotherLochia }
+                                PCMotherLochiaFld ->
+                                    { model | pcMotherLochia = setSelectedBySelectKey selectKey isChecked model.pcMotherLochia } => Cmd.none
 
-                        PCMotherUrineFld ->
-                            { model | pcMotherUrine = setSelectedBySelectKey selectKey isChecked model.pcMotherUrine }
+                                PCMotherUrineFld ->
+                                    { model | pcMotherUrine = setSelectedBySelectKey selectKey isChecked model.pcMotherUrine } => Cmd.none
 
-                        PCMotherStoolFld ->
-                            { model | pcMotherStool = setSelectedBySelectKey selectKey isChecked model.pcMotherStool }
+                                PCMotherStoolFld ->
+                                    { model | pcMotherStool = setSelectedBySelectKey selectKey isChecked model.pcMotherStool } => Cmd.none
 
-                        PCMotherSSInfectionFld ->
-                            { model | pcMotherSSInfection = setSelectedBySelectKey selectKey isChecked model.pcMotherSSInfection }
+                                PCMotherSSInfectionFld ->
+                                    { model | pcMotherSSInfection = setSelectedBySelectKey selectKey isChecked model.pcMotherSSInfection } => Cmd.none
 
-                        PCMotherFamilyPlanningFld ->
-                            { model | pcMotherFamilyPlanning = setSelectedBySelectKey selectKey isChecked model.pcMotherFamilyPlanning }
+                                PCMotherFamilyPlanningFld ->
+                                    { model | pcMotherFamilyPlanning = setSelectedBySelectKey selectKey isChecked model.pcMotherFamilyPlanning } => Cmd.none
 
-                        _ ->
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("Postpartum.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgStringList. Possible mismatch between Field and FldChgValue."
+                                            )
 
-                FldChgBool value ->
-                    ( case fld of
-                        PCBirthCertReqFld ->
-                            { model | pcBirthCertReq = Just value }
+                        FldChgBool value ->
+                            case fld of
+                                PCBirthCertReqFld ->
+                                    { model | pcBirthCertReq = Just value } => Cmd.none
 
-                        PCHgbRequestedFld ->
-                            { model | pcHgbRequested = Just value }
+                                PCHgbRequestedFld ->
+                                    { model | pcHgbRequested = Just value } => Cmd.none
 
-                        _ ->
-                            model
-                    , Cmd.none
-                    , Cmd.none
-                    )
+                                _ ->
+                                    model
+                                        => logWarning
+                                            ("Postpartum.update FldChgSubMsg: "
+                                                ++ "Unknown field encountered in FldChgBool. Possible mismatch between Field and FldChgValue."
+                                            )
 
-                FldChgIntString intVal strVal ->
-                    ( model, Cmd.none, Cmd.none )
+                        FldChgIntString intVal strVal ->
+                            model => Cmd.none
+
+            in
+                ( newModel, Cmd.none, newCmd )
 
         HandlePostpartumCheckModal dialogState pcId ->
             case dialogState of
@@ -976,7 +977,7 @@ update session msg model =
                                             Toast (errors ++ [ "Record was not saved." ]) 10 ErrorToast
 
                                         ( _, Nothing, _ ) ->
-                                            LogConsole "Error: Current labor id is not known."
+                                            Log ErrorSeverity "Error: Current labor id is not known."
 
                                         ( False, Just (LaborId lid), Nothing ) ->
                                             -- New check being created.
@@ -995,7 +996,7 @@ update session msg model =
                                                         (postpartumCheckRecordNewToValue check)
 
                                                 Nothing ->
-                                                    LogConsole "derivePostpartumCheckRecordNew returned a Nothing"
+                                                    Log ErrorSeverity "derivePostpartumCheckRecordNew returned a Nothing"
 
                                         ( False, Just (LaborId lid), Just (PostpartumCheckId checkId) ) ->
                                             -- Existing check being updated.
@@ -1084,7 +1085,7 @@ update session msg model =
                                                                 (postpartumCheckRecordToValue newCheck)
 
                                                         Nothing ->
-                                                            LogConsole "HandlePostpartumCheckModal: did not find PPCheck in data cache."
+                                                            Log ErrorSeverity "HandlePostpartumCheckModal: did not find PPCheck in data cache."
 
                                                 _ ->
                                                     Noop
