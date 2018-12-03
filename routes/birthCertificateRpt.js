@@ -41,7 +41,9 @@ var _ = require('underscore')
 // --------------------------------------------------------
 // These are the positions of all of the fields in the form.
 // The numbers in the arrays are centimeters from the left
-// edge of the form and the top edge of the form respectively.
+// edge of the form and the top edge of the form respectively,
+// unless the comment is at the end of the line "centered x".
+// This means that the x number is the center of the field.
 // --------------------------------------------------------
 var fldPos =
   { topOfForm:
@@ -121,44 +123,44 @@ var fldPos =
       , isOther: [13.3, 18.3]
       , other: [16.4, 18.3]
       , time: [11.5, 19.2]
-      , fullname: [2.5, 20.6]
+      , fullname: [6.4, 20.6]     // centered x
       , title: [2.5, 21.2]
       , addr1: [11.0, 20.0]
       , addr2: [11.0, 20.6]
       , date: [11.0, 21.2]
       }
   , informant:
-      { fullname: [2.5, 23.6]
+      { fullname: [6.4, 23.6]     // centered x
       , relationToChild: [3.5, 24.2]
       , address: [1.5, 24.75]
       , date: [1.5, 25.3]
       }
   , preparedBy:
-      { fullname: [12.0, 23.7]
+      { fullname: [15.8, 23.7]    // centered x
       , title: [12.0, 24.3]
       , date: [12.0, 24.9]
       }
   , paternity:
-      { firstParent: [3.0, 1.4]
-      , secondParent: [11.0, 1.4]
+      { firstParent: [6.0, 1.4]     // centered x
+      , secondParent: [14.1, 1.4]   // centered x
       , child: [9.0, 1.9]
       , date: [2.0, 2.3]
       , place: [7.5, 2.3]
-      , fatherName: [2.0, 4.6]
-      , motherName: [11.5, 4.6]
-      , fatherName2: [2.0, 6.6]
-      , motherName2: [8.0, 6.6]
+      , fatherName: [4.5, 4.6]      // centered x
+      , motherName: [14.0, 4.6]     // centered x
+      , fatherName2: [3.4, 6.6]     // centered x
+      , motherName2: [10.4, 6.6]    // centered x
       , commTaxNumber: [5.5, 7.2]
       , commTaxDate: [12.5, 7.2]
       , commTaxPlace: [1.0, 7.7]
       }
   , receivedBy:
-    { name: [2.5, 26.9]
+    { name: [6.6, 26.9]             // centered x
     , title: [2.5, 27.5]
     }
   , delayedRegistration:
-    { name: [2.0, 12.7]
-    , address: [5.5, 13.3]
+    { name: [5.7, 12.7]               // centered x
+    , address: [11.7, 13.3]           // centered x
     , birthCheckbox: [2.35, 15.9]
     , babyName: [5.2, 16.0]
     , clinicName: [14.0, 16.0]
@@ -174,7 +176,7 @@ var fldPos =
     , reason1: [11.7, 21.7]
     , reason2: [2.3, 22.2]
     , iam: [12.0, 23.7]
-    , affiateSignature: [11.0, 27.6]
+    , affiateSignature: [14.3, 27.6]  // centered x
     , notaryPlace: [1.0, 29.8]
     , affiateCommTaxNumber: [0.5, 30.3]
     , affiateCommTaxDate: [5.5, 30.3]
@@ -202,7 +204,15 @@ var ptToCm = function(pt) {
  * Returns a function which writes out a field with the
  * specified parameters preset. The top and left fields
  * are in points. The returned function expects the x and
- * y fields to be in centimeters.
+ * y fields to be in centimeters. The returned function takes
+ * four parameters:
+ *  - x : x position
+ *  - y : y position
+ *  - value : the text to print
+ *  - maxCm : (optional) the maximum length in cm for the field
+ *            before reducing the font size to fit.
+ *  - center : (optional) the x value is the center point
+ *               horizontally in the field. Text is centered.
  *
  * param       doc
  * param       top
@@ -213,10 +223,26 @@ var ptToCm = function(pt) {
 var makeWriteFieldFunc = function(doc, top, left, isUpperCase) {
   var lineHeight = Math.floor(doc.currentLineHeight());
 
-  return function(x, y, value) {
+  return function(x, y, value, maxCm, center) {
     var val = _.isNull(value) || _.isUndefined(value)? '': '' + value;
     if (isUpperCase) val = val.toUpperCase();
-    doc.text(val, cmToPt(x) + left, cmToPt(y) - lineHeight + top);
+    var widthPt = doc.widthOfString(val);
+    const spacePt = cmToPt(maxCm? maxCm: 0)
+      , origFontSize = doc._fontSize
+      ;
+    if (_.isNumber(maxCm) && ! _.isNaN(maxCm)) {
+      while (widthPt > spacePt && doc._fontSize > 5) {
+        doc.fontSize(doc._fontSize - 1);
+        widthPt = doc.widthOfString(val);
+      }
+    }
+    if (center) {
+      // We center the text in the field and assume that x is the center.
+      doc.text(val, cmToPt(x) + left - (widthPt/2), cmToPt(y) - lineHeight + top);
+    } else {
+      doc.text(val, cmToPt(x) + left, cmToPt(y) - lineHeight + top);
+    }
+    if (_.isNumber(maxCm) && ! _.isNaN(maxCm)) doc.fontSize(origFontSize);
   };
 };
 
@@ -405,14 +431,14 @@ var doFirstPage = function(doc, data, opts) {
   doc
     .fontSize(smallFont);
   writeField(fldPos.attendant.time[0], fldPos.attendant.time[1], moment(data.ls2.birthDatetime).format('h:mm A'));
-  writeFIELD(fldPos.attendant.fullname[0], fldPos.attendant.fullname[1], data.bc.attendantFullname);
+  writeFIELD(fldPos.attendant.fullname[0], fldPos.attendant.fullname[1], data.bc.attendantFullname, 6.8, true);
   writeField(fldPos.attendant.title[0], fldPos.attendant.title[1], data.bc.attendantTitle);
   writeField(fldPos.attendant.addr1[0], fldPos.attendant.addr1[1], data.bc.attendantAddr1);
   writeField(fldPos.attendant.addr2[0], fldPos.attendant.addr2[1], data.bc.attendantAddr2);
   writeField(fldPos.attendant.date[0], fldPos.attendant.date[1], moment().format('DD-MMM-YYYY'));
 
   // 22. Informant certification
-  writeFIELD(fldPos.informant.fullname[0], fldPos.informant.fullname[1], data.bc.informantFullname);
+  writeFIELD(fldPos.informant.fullname[0], fldPos.informant.fullname[1], data.bc.informantFullname, 6.8, true );
   writeField(fldPos.informant.relationToChild[0], fldPos.informant.relationToChild[1], data.bc.informantRelationToChild);
   doc.fontSize(xSmallFont);
   writeField(fldPos.informant.address[0], fldPos.informant.address[1], data.bc.informantAddress);
@@ -420,12 +446,12 @@ var doFirstPage = function(doc, data, opts) {
   writeField(fldPos.informant.date[0], fldPos.informant.date[1], moment().format('DD-MMM-YYYY'));
 
   // 23. Prepared by
-  writeFIELD(fldPos.preparedBy.fullname[0], fldPos.preparedBy.fullname[1], data.bc.preparedByFullname);
+  writeFIELD(fldPos.preparedBy.fullname[0], fldPos.preparedBy.fullname[1], data.bc.preparedByFullname, 6.8, true);
   writeField(fldPos.preparedBy.title[0], fldPos.preparedBy.title[1], data.bc.preparedByTitle);
   writeField(fldPos.preparedBy.date[0], fldPos.preparedBy.date[1], moment().format('DD-MMM-YYYY'));
 
   // 24. Received by
-  writeFIELD(fldPos.receivedBy.name[0], fldPos.receivedBy.name[1], data.bc.receivedByName);
+  writeFIELD(fldPos.receivedBy.name[0], fldPos.receivedBy.name[1], data.bc.receivedByName, 6.8, true);
   writeField(fldPos.receivedBy.title[0], fldPos.receivedBy.title[1], data.bc.receivedByTitle);
 };
 
@@ -461,11 +487,11 @@ var doSecondPage = function(doc, data, opts) {
   if (opts.printPaternity) {
 
     // I/We,
-    writeFIELD(fldPos.paternity.firstParent[0], fldPos.paternity.firstParent[1],
-        data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
+    tmp = data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname;
+    writeFIELD(fldPos.paternity.firstParent[0], fldPos.paternity.firstParent[1], tmp, 6.5, true);
     // and
-    writeFIELD(fldPos.paternity.secondParent[0], fldPos.paternity.secondParent[1],
-        data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
+    tmp = data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname;
+    writeFIELD(fldPos.paternity.secondParent[0], fldPos.paternity.secondParent[1], tmp, 7.0, true);
     // of legal age, am/are the natural mother and/or father of
     writeFIELD(fldPos.paternity.child[0], fldPos.paternity.child[1],
         data.baby.firstname + ' ' + data.baby.middlename + ' ' + data.baby.lastname);
@@ -481,20 +507,20 @@ var doSecondPage = function(doc, data, opts) {
     // I am/We are executing the affidavit to attest to the ...
     doc
       .fontSize(mediumFont);
-    writeFIELD(fldPos.paternity.fatherName[0], fldPos.paternity.fatherName[1],
-        data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
-    writeFIELD(fldPos.paternity.motherName[0], fldPos.paternity.motherName[1],
-        data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
+    tmp = data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname;
+    writeFIELD(fldPos.paternity.fatherName[0], fldPos.paternity.fatherName[1], tmp, 8.5, true);
+    tmp = data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname;
+    writeFIELD(fldPos.paternity.motherName[0], fldPos.paternity.motherName[1], tmp, 8.5, true);
 
     // SUBSCRIBED AND SWORN
     // NOTE: the date fields are left blank.
 
     // by
-    writeFIELD(fldPos.paternity.fatherName2[0], fldPos.paternity.fatherName2[1],
-        data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname);
+    tmp = data.bc.fatherFirstname + ' ' + data.bc.fatherMiddlename + ' ' + data.bc.fatherLastname;
+    writeFIELD(fldPos.paternity.fatherName2[0], fldPos.paternity.fatherName2[1], tmp, 6.0, true);
     // and
-    writeFIELD(fldPos.paternity.motherName2[0], fldPos.paternity.motherName2[1],
-        data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname);
+    tmp = data.preg.firstname + ' ' + data.bc.motherMiddlename + ' ' + data.preg.lastname;
+    writeFIELD(fldPos.paternity.motherName2[0], fldPos.paternity.motherName2[1], tmp, 6.0, true);
     // who exhinited to me (his/her) Community Tax Cert No.
     writeField(fldPos.paternity.commTaxNumber[0], fldPos.paternity.commTaxNumber[1], data.bc.commTaxNumber);
     // issued on
@@ -509,9 +535,9 @@ var doSecondPage = function(doc, data, opts) {
   // --------------------------------------------------------
   if (opts.printRegistration) {
     // I
-    writeFIELD(fldPos.delayedRegistration.name[0], fldPos.delayedRegistration.name[1], data.bc.affiateName);
+    writeFIELD(fldPos.delayedRegistration.name[0], fldPos.delayedRegistration.name[1], data.bc.affiateName, 8.0, true);
     // of legal age, with residence and postal address at
-    writeField(fldPos.delayedRegistration.address[0], fldPos.delayedRegistration.address[1], data.bc.affiateAddress);
+    writeField(fldPos.delayedRegistration.address[0], fldPos.delayedRegistration.address[1], data.bc.affiateAddress, 13.0, true);
 
     // 1. That I am the applicator for the delayed registration of:
     writeFIELD(fldPos.delayedRegistration.birthCheckbox[0], fldPos.delayedRegistration.birthCheckbox[1], "X");
@@ -561,7 +587,7 @@ var doSecondPage = function(doc, data, opts) {
     writeField(fldPos.delayedRegistration.iam[0], fldPos.delayedRegistration.iam[1], data.bc.affiateIAm);
 
     // Signature over printed name of Affiant
-    writeFIELD(fldPos.delayedRegistration.affiateSignature[0], fldPos.delayedRegistration.affiateSignature[1], data.bc.affiateName);
+    writeFIELD(fldPos.delayedRegistration.affiateSignature[0], fldPos.delayedRegistration.affiateSignature[1], data.bc.affiateName, 8.0, true);
 
     // Notary stuff
     // at

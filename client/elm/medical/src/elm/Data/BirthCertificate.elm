@@ -312,6 +312,7 @@ birthCertificateRecordToValue rec =
                 , ( "commTaxPlace", JEE.maybe JE.string rec.commTaxPlace )
                 , ( "receivedByName", JEE.maybe JE.string rec.receivedByName )
                 , ( "receivedByTitle", JEE.maybe JE.string rec.receivedByTitle )
+                , ( "affiateName", JEE.maybe JE.string rec.affiateName )
                 , ( "affiateAddress", JEE.maybe JE.string rec.affiateAddress )
                 , ( "affiateCitizenshipCountry", JEE.maybe JE.string rec.affiateCitizenshipCountry )
                 , ( "affiateReason", JEE.maybe JE.string rec.affiateReason )
