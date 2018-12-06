@@ -181,8 +181,8 @@ closeAllDialogs model =
     }
 
 
-{-| Get records from the server that we don't already have like baby and
-postpartum checks.
+{-| Get records from the server that we don't already have like Baby and
+LaborStage2.
 -}
 init : PregnancyId -> LaborRecord -> Session -> ProcessStore -> ( ProcessStore, Cmd Msg )
 init pregId laborRec session store =
@@ -441,8 +441,12 @@ refreshModelFromCache dc tables model =
                                 _ ->
                                     m => cmds
 
+                        PostpartumCheck ->
+                            -- We don't need it, but no reason to report as an error.
+                            m => cmds
+
                         _ ->
-                            ( m, ("BirthCert.refreshModelFromCache: Unhandled Table" ++ toString t) :: cmds )
+                            ( m, ("BirthCert.refreshModelFromCache: Unhandled Table " ++ toString t) :: cmds )
                 )
                 ( model, [] )
                 tables
