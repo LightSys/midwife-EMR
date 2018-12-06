@@ -60,7 +60,7 @@ type alias LaborStage2Record =
 isLaborStage2RecordComplete : LaborStage2Record -> Bool
 isLaborStage2RecordComplete rec =
     not <|
-        ((rec.birthDatetime == Nothing)
+        (((U.validateReasonableDate True) rec.birthDatetime)
             || (rec.birthType == Nothing)
             || (rec.birthPosition == Nothing)
             || (rec.durationPushing == Nothing)

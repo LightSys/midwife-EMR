@@ -6545,7 +6545,7 @@ type alias FieldError =
 validateNewbornExam : Model -> List FieldError
 validateNewbornExam =
     Validate.all
-        [ .nbsDate >> ifInvalid U.validateReasonableDate (NBSDateFld => "Valid date of exam must be provided.")
+        [ .nbsDate >> ifInvalid (U.validateReasonableDate True) (NBSDateFld => "Valid date of exam must be provided.")
         , .nbsTime >> ifInvalid U.validateTime (NBSTimeFld => "Exam time must be provided, ex: hhmm.")
         , .nbsExaminers >> ifInvalid U.validatePopulatedString (NBSExaminersFld => "Examiners must be provided.")
         ]
@@ -6554,7 +6554,7 @@ validateNewbornExam =
 validateContPostpartumCheck : Model -> List FieldError
 validateContPostpartumCheck =
     Validate.all
-        [ .cpcCheckDate >> ifInvalid U.validateReasonableDate (CPCCheckDateFld => "Valid date of check must be provided.")
+        [ .cpcCheckDate >> ifInvalid (U.validateReasonableDate True) (CPCCheckDateFld => "Valid date of check must be provided.")
         , .cpcCheckTime >> ifInvalid U.validateTime (CPCCheckTimeFld => "Time of check must be provided.")
         ]
 
@@ -6562,7 +6562,7 @@ validateContPostpartumCheck =
 validateBabyMedication : Bool -> MedVacFlds -> List FieldError
 validateBabyMedication useLocation =
     Validate.all
-        [ .date >> ifInvalid U.validateReasonableDate (BabyMedDateFld => "Valid date of medication must be provided.")
+        [ .date >> ifInvalid (U.validateReasonableDate True) (BabyMedDateFld => "Valid date of medication must be provided.")
         , .time >> ifInvalid U.validateTime (BabyMedTimeFld => "Time of medication must be provided.")
         , if useLocation then
             .location >> ifInvalid U.validatePopulatedString (BabyMedLocationFld => "Location must be provided.")
@@ -6574,7 +6574,7 @@ validateBabyMedication useLocation =
 validateBabyVaccination : Bool -> MedVacFlds -> List FieldError
 validateBabyVaccination useLocation =
     Validate.all
-        [ .date >> ifInvalid U.validateReasonableDate (BabyVacDateFld => "Valid date of medication must be provided.")
+        [ .date >> ifInvalid (U.validateReasonableDate True) (BabyVacDateFld => "Valid date of medication must be provided.")
         , .time >> ifInvalid U.validateTime (BabyVacTimeFld => "Time of medication must be provided.")
         , if useLocation then
             .location >> ifInvalid U.validatePopulatedString (BabyVacLocationFld => "Location must be provided.")
@@ -6586,7 +6586,7 @@ validateBabyVaccination useLocation =
 validateBabyLab : LabFlds -> List FieldError
 validateBabyLab =
     Validate.all
-        [ .date >> ifInvalid U.validateReasonableDate (BabyLabDateFld => "Valid date of lab must be provided.")
+        [ .date >> ifInvalid (U.validateReasonableDate True) (BabyLabDateFld => "Valid date of lab must be provided.")
         , .time >> ifInvalid U.validateTime (BabyLabTimeFld => "Time of lab must be provided.")
         ]
 
@@ -6594,7 +6594,7 @@ validateBabyLab =
 validateMotherMedication : MotherMedFlds -> List FieldError
 validateMotherMedication =
     Validate.all
-        [ .date >> ifInvalid U.validateReasonableDate (MotherMedDateFld => "Valid date of medication must be provided.")
+        [ .date >> ifInvalid (U.validateReasonableDate True) (MotherMedDateFld => "Valid date of medication must be provided.")
         , .time >> ifInvalid U.validateTime (MotherMedTimeFld => "Time of medication must be provided.")
         ]
 
@@ -6606,4 +6606,5 @@ order to be considered complete.
 validateDischarge : Model -> List FieldError
 validateDischarge =
     Validate.all
-        []
+        [ .dischargeDate >> ifInvalid (U.validateReasonableDate False) (DischargeDateFld => "Valid date of discharge must be provided.")
+        ]

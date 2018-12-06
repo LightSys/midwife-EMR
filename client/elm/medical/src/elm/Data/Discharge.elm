@@ -290,7 +290,8 @@ dischargeRecordNewToDischargeRecord (DischargeId id) newRec =
 
 {-| Took a guess that Bible and prayer can be refused
 by the patient and the discharge should still be
-considered complete.
+considered complete. Also allows that bfed never gets
+established for some reason but discharge is still allowed.
 -}
 isDischargeRecordComplete : DischargeRecord -> Bool
 isDischargeRecordComplete rec =
@@ -299,7 +300,7 @@ isDischargeRecordComplete rec =
             fld == Nothing || fld == Just False
     in
     not <|
-        ( (rec.dateTime == Nothing)
+        ( ((U.validateReasonableDate True) rec.dateTime)
             || (rec.motherSystolic == Nothing)
             || (rec.motherDiastolic == Nothing)
             || (rec.motherTemp == Nothing)

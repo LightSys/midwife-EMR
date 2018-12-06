@@ -76,7 +76,7 @@ remainder of the fields.
 isLaborStage3RecordComplete : LaborStage3Record -> Bool
 isLaborStage3RecordComplete rec =
     not <|
-        ((U.validateReasonableDate rec.placentaDatetime)
+        ((U.validateReasonableDate True rec.placentaDatetime)
             || ((not <| Maybe.withDefault False rec.placentaDeliverySpontaneous)
                     && (not <| Maybe.withDefault False rec.placentaDeliveryAMTSL)
                     && (not <| Maybe.withDefault False rec.placentaDeliveryCCT)

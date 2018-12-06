@@ -559,26 +559,27 @@ validateDate date =
 
 
 
-{- Returns True if the Date is Nothing or
-   if the date is in the first century (which
-   means that the user entered a two or three
-   digit year).
+{-| Returns True if the Date is Nothing or if the date
+is unreasonable. We consider anything older than 1960 as
+unreasonable.
+
+The first parameter is meant for currying whether a date
+that is Nothing is an error or not. This allows this function
+to be used in more situations.
 -}
-
-
-validateReasonableDate : Maybe Date -> Bool
-validateReasonableDate date =
+validateReasonableDate : Bool -> Maybe Date -> Bool
+validateReasonableDate isNothingAnError date =
     case date of
         Just d ->
-            if Date.year d < 1000 then
-                -- User entered a two or three digit year,
+            if Date.year d < 1960 then
+                -- User entered an unreasonable date
                 -- which evaluated to a long time ago.
                 True
             else
                 False
 
         Nothing ->
-            True
+            isNothingAnError
 
 
 stringToTimeTuple : String -> Maybe ( Int, Int )

@@ -5026,9 +5026,9 @@ type alias FieldError =
 validateAdmittance : Model -> List FieldError
 validateAdmittance =
     Validate.all
-        [ .admittanceDate >> ifInvalid U.validateReasonableDate (AdmittanceDateFld => "Valid date of admittance must be provided.")
+        [ .admittanceDate >> ifInvalid (U.validateReasonableDate True) (AdmittanceDateFld => "Valid date of admittance must be provided.")
         , .admittanceTime >> ifInvalid U.validateTime (AdmittanceTimeFld => "Admitting time must be provided, ex: hhmm.")
-        , .laborDate >> ifInvalid U.validateReasonableDate (LaborDateFld => "Valid date of the start of labor must be provided.")
+        , .laborDate >> ifInvalid (U.validateReasonableDate True) (LaborDateFld => "Valid date of the start of labor must be provided.")
         , .laborTime >> ifInvalid U.validateTime (LaborTimeFld => "Start of labor time must be provided, ex: hhmm.")
         , .pos >> ifInvalid U.validatePopulatedString (PosFld => "POS must be provided.")
         , .fh >> ifInvalid U.validateInt (FhFld => "FH must be provided.")
@@ -5153,6 +5153,7 @@ validateBaby : Model -> List FieldError
 validateBaby =
     Validate.all
         [ .bbSex >> ifInvalid (U.validatePopulatedStringInList [ "Male", "Female", "Ambiguous" ]) (BabySexFld => "Sex must be provided.")
+        , .bbBFedEstablishedDate >> ifInvalid (U.validateReasonableDate False) (BabyBFedEstablishedDateFld => "Valid baby bfed date must be provided.")
         ]
 
 
@@ -5161,4 +5162,5 @@ validateMembrane =
     Validate.all
         [ .membraneRupture >> ifInvalid U.validatePopulatedString (MembraneRuptureFld => "Rupture type must be provided.")
         , .membraneAmniotic >> ifInvalid U.validatePopulatedString (MembraneAmnioticFld => "Amniotic type must be provided.")
+        , .membraneRuptureDate >> ifInvalid (U.validateReasonableDate False) (MembraneRuptureDateFld => "Valid membrane rupture date must be provided.")
         ]

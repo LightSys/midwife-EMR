@@ -437,7 +437,7 @@ newbornExamRecordNewToNewbornExamRecord (NewbornExamId id) newRec =
 isNewbornExamRecordComplete : NewbornExamRecord -> Bool
 isNewbornExamRecordComplete rec =
     not <|
-        (U.validateReasonableDate (Just rec.examDatetime)
+        (U.validateReasonableDate True (Just rec.examDatetime)
             || U.validatePopulatedString (Just rec.examiners)
             || (rec.rr == Nothing)
             || (rec.hr == Nothing)

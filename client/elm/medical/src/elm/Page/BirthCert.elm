@@ -1865,6 +1865,7 @@ validateBirthCertificate =
         , .bcMotherAddress >> ifInvalid U.validatePopulatedString (BCMotherAddressFld => "* required")
         , .bcMotherCity >> ifInvalid U.validatePopulatedString (BCMotherCityFld => "* required")
         , .bcMotherCountry >> ifInvalid U.validatePopulatedString (BCMotherCountryFld => "* required")
+        , .bcDateOfMarriage >> ifInvalid (U.validateReasonableDate False) (BCDateOfMarriageFld => "Valid date of marriage is required.")
         , .bcAttendantType >> ifInvalid U.validatePopulatedString (BCAttendantTypeFld => "* required")
         , \mdl ->
             if mdl.bcAttendantType == Just "Other" && String.length (Maybe.withDefault "" mdl.bcAttendantOther) == 0 then
@@ -1880,4 +1881,6 @@ validateBirthCertificate =
         , .bcInformantAddress >> ifInvalid U.validatePopulatedString (BCInformantAddressFld => "* required")
         , .bcPreparedByFullname >> ifInvalid U.validatePopulatedString (BCPreparedByFullnameFld => "* required")
         , .bcPreparedByTitle >> ifInvalid U.validatePopulatedString (BCPreparedByTitleFld => "* required")
+        , .bcCommTaxDate >> ifInvalid (U.validateReasonableDate False) (BCCommTaxDateFld => "Valid comm tax date is required.")
+        , .bcAffiateCommTaxDate >> ifInvalid (U.validateReasonableDate False) (BCAffiateCommTaxDateFld => "Valid affiate comm tax date is required.")
         ]
