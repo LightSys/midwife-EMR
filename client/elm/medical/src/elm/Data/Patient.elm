@@ -8,6 +8,8 @@ import Date exposing (Date)
 import Json.Decode as JD
 import Json.Decode.Extra as JDE
 import Json.Decode.Pipeline as JDP
+import Data.Table exposing (Table(..), decodeTable)
+import Data.TableMeta exposing (TableMeta)
 
 
 {-| Patient record structure minus the updatedBy,
@@ -32,3 +34,5 @@ patientRecord =
         |> JDP.required "dob" (JD.maybe JDE.date)
         |> JDP.required "generalInfo" (JD.maybe JD.string)
         |> JDP.required "ageOfMenarche" (JD.maybe JD.int)
+
+

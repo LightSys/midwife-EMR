@@ -156,7 +156,7 @@ dataMsgResponse =
 tableRecord : JD.Decoder TableRecord
 tableRecord =
     JD.field "table" decodeTable
-        |> JD.andThen (\tableName -> JD.field "records" <| DTR.tableRecord tableName)
+        |> JD.andThen (\table -> JD.field "records" <| DTR.tableRecord table)
 
 
 

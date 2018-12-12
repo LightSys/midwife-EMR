@@ -11,6 +11,7 @@ import Data.DataCache exposing (DataCache)
 import Data.DatePicker exposing (DateFieldMessage)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 import Data.Table exposing (Table)
+import Data.TableMeta exposing (TableMetaCollection)
 import Dict exposing (Dict)
 import Time exposing (Time)
 
@@ -41,6 +42,7 @@ type SubMsg
     | FldChgSubMsg Field FldChgValue
     | CloseAllDialogs
     | ContPPTick Time
+    | TableMetaCollection (Maybe TableMetaCollection)
 
 
 {-| The Int parameter refers to the respective

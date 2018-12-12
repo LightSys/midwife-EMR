@@ -5,7 +5,9 @@
  * All routing modules are exported here.
  * -------------------------------------------------------------------------------
  */
-var cfg = require('../../config')
+var _ = require('underscore')
+  , cfg = require('../../config')
+  , User = require('../../models/User').User
   ;
 
 /* --------------------------------------------------------
@@ -102,6 +104,7 @@ var doSpa = function(req, res, next) {
   // --------------------------------------------------------
   res.req.headers.cookie.split(';').forEach(function(c) {
     var cookie = c.trim();
+    var currRole;
     if (/^connect\.sid/.test(cookie)) {
       connSid = cookie.split('=', 2)[1];
     }
@@ -140,6 +143,7 @@ var doSpa = function(req, res, next) {
       // cfg.path.toPrenatal. The SPA portion of that route is
       // actualized here.
       // --------------------------------------------------------
+      currRole = req.session.user.role.name;
       var data = {};
 
       // --------------------------------------------------------
@@ -158,20 +162,35 @@ var doSpa = function(req, res, next) {
       // necessary for the role.
       // --------------------------------------------------------
       switch (req.session.user.role.name) {
-        case 'administrator': pageName = 'start_administrator'; break;
-        case 'guard': pageName = 'start_guard'; break;
-        case 'supervisor': pageName = 'start_medical'; break;
-        case 'clerk': pageName = 'start_medical'; break;
-        case 'attending': pageName = 'start_medical'; break;
-        default: pageName = '';
-      }
-
-      return res.render(pageName, data);
-    }
+        case 'administrator': {
+          pageName = 'start_administrator';
+          return res.render(pageName, data);
+        }
+        case 'guard': {
+          pageName = 'start_guard';
+          return res.render(pageName, data);
+        }
+        default: {
+          // --------------------------------------------------------
+          // Roles one of attending, clerk, or supervisor, which all
+          // load the start_medical page.
+          //
+          // These roles need the list of users loaded into the page.
+          // --------------------------------------------------------
+          pageName = 'start_medical';
+          return User.getUserIdMap()
+            .then((map) => {
+              data.users = _.values(map);
+              data.userId = req.session.user.id;
+              data.supervisorId = null;
+              if (_.has(req.session, 'supervisor')) data.supervisorId = req.session.supervisor.id;
+              return res.render(pageName, data);
+            });
+        }
+      }   // end switch
+    }     // end else if
   }
 
-  // Apparently either do not have user and user.role in the session (weird)
-  // or not meeting the criteria for an SPA.
   return next();
 }
 

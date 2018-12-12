@@ -9,7 +9,7 @@ import Window
 
 import Const
 import Data.Pregnancy as Pregnancy exposing (getPregId, PregnancyId)
-import Data.User as User exposing (User, Username)
+import Data.User as User exposing (User)
 import Data.Toast exposing (ToastRecord, ToastType(..))
 import Route exposing (Route)
 

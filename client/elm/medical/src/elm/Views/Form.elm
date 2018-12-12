@@ -20,6 +20,7 @@ module Views.Form
         , radioFieldset
         , radioFieldsetOther
         , radioFieldsetWide
+        , tableMetaInfo
         )
 
 -- LOCAL IMPORTS --
@@ -33,6 +34,8 @@ import Html.Attributes as HA
 import Html.Events as HE
 import List.Extra as LE
 import Msg exposing (Msg(..))
+import Data.Table exposing (Table(..))
+import Data.TableMeta as TM exposing (getTableMeta, TableMetaCollection)
 import Util as U
 
 
@@ -649,3 +652,21 @@ radioBool ( text, name, msg, val ) =
             []
         , H.text text
         ]
+
+
+{-| Returns a String containing who last updated the record and when.
+-}
+tableMetaInfo : Table -> Int -> TableMetaCollection -> String
+tableMetaInfo tbl key tmColl =
+    case TM.getTableMeta tbl key tmColl of
+        Just tm ->
+            case tm.username of
+                Just u ->
+                    " by " ++ u ++ " @ " ++ (U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep tm.updatedAt)
+
+                Nothing ->
+                    " @ " ++ (U.dateTimeHMFormatter U.MDYDateFmt U.DashDateSep tm.updatedAt)
+
+        Nothing ->
+            ""
+

@@ -28,6 +28,7 @@ import Data.PostpartumCheck exposing (PostpartumCheckRecord, postpartumCheckReco
 import Data.Pregnancy exposing (PregnancyRecord, pregnancyRecord)
 import Data.SelectData exposing (SelectDataRecord, selectDataRecord)
 import Data.Table as DT exposing (Table(..))
+import Data.TableMeta exposing (TableMeta, tableMetaForTable)
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 
@@ -41,7 +42,7 @@ type TableRecord
     | TableRecordBabyVaccination (List BabyVaccinationRecord)
     | TableRecordBabyVaccinationType (List BabyVaccinationTypeRecord)
     | TableRecordBirthCertificate (List BirthCertificateRecord)
-    | TableRecordContPostpartumCheck (List ContPostpartumCheckRecord)
+    | TableRecordContPostpartumCheck (List ContPostpartumCheckRecord) (List TableMeta)
     | TableRecordDischarge (List DischargeRecord)
     | TableRecordKeyValue (List KeyValueRecord)
     | TableRecordLabor (List LaborRecord)
@@ -52,8 +53,8 @@ type TableRecord
     | TableRecordMotherMedication (List MotherMedicationRecord)
     | TableRecordMotherMedicationType (List MotherMedicationTypeRecord)
     | TableRecordNewbornExam (List NewbornExamRecord)
-    | TableRecordPatient (List PatientRecord)
-    | TableRecordPostpartumCheck (List PostpartumCheckRecord)
+    | TableRecordPatient (List PatientRecord) (List TableMeta)
+    | TableRecordPostpartumCheck (List PostpartumCheckRecord) (List TableMeta)
     | TableRecordPregnancy (List PregnancyRecord)
     | TableRecordSelectData (List SelectDataRecord)
 
@@ -86,7 +87,7 @@ tableRecord table =
             JD.map TableRecordBirthCertificate (JD.list birthCertificateRecord)
 
         ContPostpartumCheck ->
-            JD.map TableRecordContPostpartumCheck (JD.list contPostpartumCheckRecord)
+            JD.map2 TableRecordContPostpartumCheck (JD.list contPostpartumCheckRecord) (JD.list (tableMetaForTable ContPostpartumCheck))
 
         Discharge ->
             JD.map TableRecordDischarge (JD.list dischargeRecord)
@@ -119,10 +120,10 @@ tableRecord table =
             JD.map TableRecordNewbornExam (JD.list newbornExamRecord)
 
         Patient ->
-            JD.map TableRecordPatient (JD.list patientRecord)
+            JD.map2 TableRecordPatient (JD.list patientRecord) (JD.list (tableMetaForTable Patient))
 
         PostpartumCheck ->
-            JD.map TableRecordPostpartumCheck (JD.list postpartumCheckRecord)
+            JD.map2 TableRecordPostpartumCheck (JD.list postpartumCheckRecord) (JD.list (tableMetaForTable PostpartumCheck))
 
         Pregnancy ->
             JD.map TableRecordPregnancy (JD.list pregnancyRecord)

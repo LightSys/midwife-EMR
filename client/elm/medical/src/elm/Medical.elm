@@ -23,7 +23,7 @@ import Data.LaborDelIpp exposing (SubMsg(..))
 import Data.LaborStage1 exposing (LaborStage1Id(..), laborStage1RecordNewToLaborStage1Record)
 import Data.LaborStage2 exposing (LaborStage2Id(..), laborStage2RecordNewToLaborStage2Record)
 import Data.LaborStage3 exposing (LaborStage3Id(..), laborStage3RecordNewToLaborStage3Record)
-import Data.Log exposing (logToValue, severityToString, Severity(..))
+import Data.Log exposing (Severity(..), logToValue, severityToString)
 import Data.Membrane exposing (MembraneId(..), membraneRecordNewToMembraneRecord)
 import Data.Message exposing (DataNotificationMsg, IncomingMessage(..), MsgType(..), wrapPayload)
 import Data.MotherMedication exposing (MotherMedicationId(..), motherMedicationRecordNewToMotherMedicationRecord)
@@ -37,8 +37,10 @@ import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session, clientTouch, doTouch, serverTouch)
 import Data.SystemMessage exposing (SystemMessageType(..))
 import Data.Table exposing (Table(..))
+import Data.TableMeta exposing (TableMetaCollection, updateTableMetaByParts, updateTableMetaCollectionByList)
 import Data.TableRecord exposing (TableRecord(..))
 import Data.Toast exposing (ToastRecord, ToastType(..))
+import Data.User as DU
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Html as H exposing (Html)
@@ -70,6 +72,9 @@ type alias Flags =
     { pregId : Maybe String
     , currTime : Float
     , browserSupportsDate : Bool
+    , users : List DU.User
+    , userId : Int
+    , supervisorId : Maybe Int
     }
 
 
@@ -79,12 +84,15 @@ flagsDecoder =
         |> required "pregId" (JD.nullable JD.string)
         |> required "currTime" JD.float
         |> required "browserSupportsDate" JD.bool
+        |> required "users" (JD.list DU.userDecoder)
+        |> required "userId" JD.int
+        |> required "supervisorId" (JD.nullable JD.int)
 
 
 decodeFlagsFromJson : JD.Value -> Flags
 decodeFlagsFromJson json =
     JD.decodeValue flagsDecoder json
-        |> Result.withDefault (Flags Nothing 0 False)
+        |> Result.withDefault (Flags Nothing 0 False [] 0 Nothing)
 
 
 init : JD.Value -> Location -> ( Model, Cmd Msg )
@@ -103,11 +111,18 @@ init flags location =
                 Nothing ->
                     Nothing
 
+        users =
+            List.map (\u -> ( u.id, u )) flagsDecoded.users
+                |> Dict.fromList
+
         ( newModel, newCmd ) =
             setRoute (Route.fromLocation location) <|
                 Model.initialModel flagsDecoded.browserSupportsDate
                     pregId
                     flagsDecoded.currTime
+                    users
+                    flagsDecoded.userId
+                    flagsDecoded.supervisorId
     in
     ( newModel
     , Cmd.batch [ newCmd, Task.perform (\s -> WindowResize (Just s)) Window.size ]
@@ -549,6 +564,7 @@ update msg noAutoTouchModel =
                         motherMedication
                         discharge
                         babyRec
+                        model.tableMetaCollection
                         model.browserSupportsDate
                         model.currTime
                         model.processStore
@@ -571,6 +587,9 @@ update msg noAutoTouchModel =
                     case subMsg of
                         Data.ContPP.DataCache _ tbl ->
                             Data.ContPP.DataCache (Just model.dataCache) tbl
+
+                        Data.ContPP.TableMetaCollection _ ->
+                            Data.ContPP.TableMetaCollection (Just model.tableMetaCollection)
 
                         _ ->
                             subMsg
@@ -713,6 +732,7 @@ update msg noAutoTouchModel =
                         contPPChecks
                         babyRec
                         postpartumCheck
+                        model.tableMetaCollection
                         model.browserSupportsDate
                         model.currTime
                         model.processStore
@@ -730,11 +750,16 @@ update msg noAutoTouchModel =
             -- All Postpartum page sub messages are routed here.
             let
                 -- If the subMsg is DataCache, revise the subMsg by adding
-                -- the current dataCache to it.
+                -- the current dataCache to it. If the subMsg is PostpartumTableMeta,
+                -- revise the subMsg by adding the current tableMetaCollection
+                -- to it.
                 newSubMsg =
                     case subMsg of
                         Data.Postpartum.DataCache _ tbl ->
                             Data.Postpartum.DataCache (Just model.dataCache) tbl
+
+                        Data.Postpartum.TableMetaCollection _ ->
+                            Data.Postpartum.TableMetaCollection (Just model.tableMetaCollection)
 
                         _ ->
                             subMsg
@@ -930,6 +955,17 @@ updateMessage incoming model =
                 ( processType, processStore ) =
                     Processing.remove (ProcessId dataAddMsg.messageId) model.processStore
 
+                -- Update the tableMeta instance for this record.
+                freshenTM : Table -> Int -> TableMetaCollection
+                freshenTM tbl key =
+                    updateTableMetaByParts tbl
+                        key
+                        model.userId
+                        model.supervisorId
+                        (Date.fromTime model.currTime)
+                        model.users
+                        model.tableMetaCollection
+
                 ( newModel, newCmd ) =
                     case dataAddMsg.response.success of
                         True ->
@@ -1052,7 +1088,10 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ ContPostpartumCheck ])
                                     in
-                                    ( { model | dataCache = dc }
+                                    ( { model
+                                        | dataCache = dc
+                                        , tableMetaCollection = freshenTM ContPostpartumCheck contPostpartumCheckRec.id
+                                      }
                                     , Task.perform ContPPMsg (Task.succeed subMsg)
                                     )
 
@@ -1201,7 +1240,10 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.Postpartum.DataCache (Just model.dataCache) (Just [ PostpartumCheck ])
                                     in
-                                    ( { model | dataCache = dc }
+                                    ( { model
+                                        | dataCache = dc
+                                        , tableMetaCollection = freshenTM PostpartumCheck postpartumCheckRec.id
+                                      }
                                     , Task.perform PostpartumMsg (Task.succeed subMsg)
                                     )
 
@@ -1240,6 +1282,17 @@ updateMessage incoming model =
                 -- Msg reserved in our store by the originating "event".
                 ( processType, processStore ) =
                     Processing.remove (ProcessId dataChgMsg.messageId) model.processStore
+
+                -- Update the tableMeta instance for this record.
+                freshenTM : Table -> Int -> TableMetaCollection
+                freshenTM tbl key =
+                    updateTableMetaByParts tbl
+                        key
+                        model.userId
+                        model.supervisorId
+                        (Date.fromTime model.currTime)
+                        model.users
+                        model.tableMetaCollection
 
                 ( newModel, newCmd ) =
                     case dataChgMsg.response.success of
@@ -1355,7 +1408,10 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.ContPP.DataCache (Just model.dataCache) (Just [ ContPostpartumCheck ])
                                     in
-                                    ( { model | dataCache = dc }
+                                    ( { model
+                                        | dataCache = dc
+                                        , tableMetaCollection = freshenTM ContPostpartumCheck contPostpartumCheckRecord.id
+                                      }
                                     , Task.perform ContPPMsg (Task.succeed subMsg)
                                     )
 
@@ -1475,7 +1531,10 @@ updateMessage incoming model =
                                         subMsg =
                                             Data.Postpartum.DataCache (Just model.dataCache) (Just [ PostpartumCheck ])
                                     in
-                                    ( { model | dataCache = dc }
+                                    ( { model
+                                        | dataCache = dc
+                                        , tableMetaCollection = freshenTM PostpartumCheck postpartumCheckRecord.id
+                                      }
                                     , Task.perform PostpartumMsg (Task.succeed subMsg)
                                     )
 
@@ -1707,13 +1766,19 @@ updateMessage incoming model =
                                             in
                                             { mdl | dataCache = dc }
 
-                                        TableRecordContPostpartumCheck recs ->
+                                        TableRecordContPostpartumCheck recs tableMetaList ->
                                             let
                                                 dc =
                                                     DCache.put (ContPostpartumCheckDataCache recs) mdl.dataCache
                                             in
                                             -- Only adding contPostpartumCheck records into data cache.
-                                            { mdl | dataCache = dc }
+                                            { mdl
+                                                | dataCache = dc
+                                                , tableMetaCollection =
+                                                    updateTableMetaCollectionByList tableMetaList
+                                                        mdl.users
+                                                        mdl.tableMetaCollection
+                                            }
 
                                         TableRecordDischarge recs ->
                                             -- There should ever be only one discharge record
@@ -1827,7 +1892,7 @@ updateMessage incoming model =
                                             in
                                             { mdl | dataCache = dc }
 
-                                        TableRecordPatient recs ->
+                                        TableRecordPatient recs tableMetaList ->
                                             -- We only ever want one patient in our store at a time.
                                             let
                                                 rec =
@@ -1841,15 +1906,27 @@ updateMessage incoming model =
                                                         Nothing ->
                                                             mdl.dataCache
                                             in
-                                            { mdl | dataCache = dc }
+                                            { mdl
+                                                | dataCache = dc
+                                                , tableMetaCollection =
+                                                    updateTableMetaCollectionByList tableMetaList
+                                                        mdl.users
+                                                        mdl.tableMetaCollection
+                                            }
 
-                                        TableRecordPostpartumCheck recs ->
+                                        TableRecordPostpartumCheck recs tableMetaList ->
                                             let
                                                 dc =
                                                     DCache.put (PostpartumCheckDataCache recs) mdl.dataCache
                                             in
                                             -- Only adding contPostpartumCheck records into data cache.
-                                            { mdl | dataCache = dc }
+                                            { mdl
+                                                | dataCache = dc
+                                                , tableMetaCollection =
+                                                    updateTableMetaCollectionByList tableMetaList
+                                                        mdl.users
+                                                        mdl.tableMetaCollection
+                                            }
 
                                         TableRecordPregnancy recs ->
                                             -- We only ever want one pregnancy in our store at a time.

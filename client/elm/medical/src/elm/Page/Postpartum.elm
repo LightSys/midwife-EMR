@@ -84,6 +84,7 @@ import Data.SelectData
 import Data.SelectQuery exposing (SelectQuery, selectQueryToValue)
 import Data.Session as Session exposing (Session)
 import Data.Table exposing (Table(..), tableToString)
+import Data.TableMeta exposing (getTableMeta, TableMetaCollection)
 import Data.Toast exposing (ToastType(..))
 import Date exposing (Date)
 import Dict exposing (Dict)
@@ -105,7 +106,7 @@ import Processing exposing (ProcessStore)
 import Route
 import Task exposing (Task)
 import Time exposing (Time)
-import Util as U exposing ((=>))
+import Util as U exposing ( (=>) )
 import Validate exposing (ifBlank, ifInvalid, ifNotInt)
 import Views.Form as Form
 import Views.PregnancyHeader as PregHeaderView
@@ -131,6 +132,7 @@ type alias Model =
     , currPostpartumCheckId : Maybe PostpartumCheckId
     , currPregHeaderContent : PregHeaderData.PregHeaderContent
     , dataCache : Dict String DataCache
+    , tableMetaCollection : TableMetaCollection
     , pendingSelectQuery : Dict String Table
     , patientRecord : Maybe PatientRecord
     , pregnancyRecord : Maybe PregnancyRecord
@@ -281,6 +283,7 @@ buildModel :
     -> List ContPostpartumCheckRecord
     -> Maybe BabyRecord
     -> List PostpartumCheckRecord
+    -> TableMetaCollection
     -> Bool
     -> Time
     -> ProcessStore
@@ -288,7 +291,7 @@ buildModel :
     -> Maybe PatientRecord
     -> Maybe PregnancyRecord
     -> ( Model, ProcessStore, Cmd Msg )
-buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord postpartumCheckRecords browserSupportsDate currTime store pregId patRec pregRec =
+buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord postpartumCheckRecords tableMetaCollection browserSupportsDate currTime store pregId patRec pregRec =
     let
         -- Get the lookup tables that this page will need.
         getSelectDataCmd =
@@ -314,6 +317,7 @@ buildModel laborRec stage1Rec stage2Rec stage3Rec contPPCheckRecs babyRecord pos
       , currPostpartumCheckId = Nothing
       , currPregHeaderContent = PregHeaderData.IPPContent
       , dataCache = Dict.empty
+      , tableMetaCollection = tableMetaCollection
       , pendingSelectQuery = pendingSelectQuery
       , patientRecord = patRec
       , pregnancyRecord = pregRec
@@ -576,11 +580,22 @@ update session msg model =
             -- when the user uses the back button to back out of a dialog.
             ( closeAllDialogs model, Cmd.none, Cmd.none )
 
+        TableMetaCollection tmColl ->
+            case tmColl of
+                Just tmc ->
+                    ( { model | tableMetaCollection = tmc }, Cmd.none, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none, Cmd.none )
+
         DataCache dc tbls ->
             -- If the dataCache and tables are something, this is the top-level
             -- intentionally sending it's dataCache to us as a read-only update
             -- on the latest data that it has. The specific records that need
             -- to be updated are in the tables list.
+            --
+            -- Also, since the dataCache was likely updated, we want to refresh
+            -- our copy of the tableMetaCollection as well
             let
                 ( newModel, newCmd ) =
                     case ( dc, tbls ) of
@@ -617,7 +632,11 @@ update session msg model =
             in
             ( { newModel | pendingSelectQuery = newPendingSQ }
             , Cmd.none
-            , Cmd.batch [ newCmd, newCmd2 ]
+            , Cmd.batch
+                [ newCmd
+                , newCmd2
+                , Task.perform PostpartumMsg <| Task.succeed (TableMetaCollection Nothing)
+                ]
             )
 
         DateFieldSubMsg dateFldMsg ->
@@ -1383,6 +1402,10 @@ viewPostpartumCheck cfg rec =
                 Nothing ->
                     ""
 
+        -- Show who last modified the record and when.
+        tblMetaInfo =
+            Form.tableMetaInfo PostpartumCheck rec.id cfg.model.tableMetaCollection
+
         field lbl val =
             H.table [ HA.class "u-small" ]
                 [ H.tr []
@@ -1442,8 +1465,9 @@ viewPostpartumCheck cfg rec =
             -- In order to float the edit button below to the right.
             , HA.style [ ( "overflow", "hidden" ) ]
             ]
-            [ H.span []
-                [ H.text <| checkDate ++ " " ++ babyAge ]
+            [ H.span
+                [ HA.class "u-small" ]
+                [ H.text <| checkDate ++ " " ++ babyAge ++ tblMetaInfo ]
             , H.button
                 [ HA.type_ "button"
                 , HA.class "c-button c-button--ghost u-color-white u-xsmall"

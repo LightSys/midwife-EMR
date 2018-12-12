@@ -14,6 +14,7 @@ import Data.DatePicker exposing (DateFieldMessage)
 import Data.PostpartumCheck exposing (PostpartumCheckId)
 import Data.PregnancyHeader exposing (PregHeaderContentMsg)
 import Data.Table exposing (Table)
+import Data.TableMeta exposing (TableMetaCollection)
 import Time exposing (Time)
 
 
@@ -35,6 +36,7 @@ type SubMsg
     | DateFieldSubMsg DateFieldMessage
     | CloseAllDialogs
     | PostpartumTick Time
+    | TableMetaCollection (Maybe TableMetaCollection)
 
 
 type Field
