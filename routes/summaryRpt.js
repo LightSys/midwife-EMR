@@ -21,12 +21,16 @@ var _ = require('underscore')
   , Vaccinations = require('../models').Vaccinations
   , Medication = require('../models').Medication
   , Medications = require('../models').Medications
+  , NewbornExam = require('../models').NewbornExam
+  , NewbornExams = require('../models').NewbornExams
   , PrenatalExam = require('../models').PrenatalExam
   , PrenatalExams = require('../models').PrenatalExams
   , PregnancyHistory = require('../models').PregnancyHistory
   , PregnancyHistories = require('../models').PregnancyHistories
   , Referral = require('../models').Referral
   , Referrals = require('../models').Referrals
+  , User = require('../models').User
+  , Users = require('../models').Users
   , LabTestResult = require('../models').LabTestResult
   , LabTestResults = require('../models').LabTestResults
   , User = require('../models').User
@@ -521,6 +525,104 @@ var doPregnancyResult = function(doc, data, opts, ypos) {
     return {y: y, overflow: false};
   }
 };
+
+/* --------------------------------------------------------
+ * doNewbornExam()
+ *
+ * Creates the newborn exam section.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     simulated object from doTable() with increased y
+ * -------------------------------------------------------- */
+var doNewbornExam = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , nbe = data.newbornExamResults
+    , username
+    ;
+
+  doLabel(doc, 'Newborn Exam', x, y);
+  y += 15;
+  doSep(doc, opts, y, greyLightColor);
+  y += 5;
+  doVertFldVal(doc, 'Date/time', moment(nbe.examDatetime).format('MM-DD-YYYY HH:mm'), x, y, true);
+  x += 80;
+  doVertFldVal(doc, 'Examiner', nbe.examiners, x, y, true);
+  x += 50;
+  doVertFldVal(doc, 'Last Updated by', nbe.updatedByName.substring(0, 20), x, y, true);
+  x += 110;
+  doVertFldVal(doc, 'Last Updated', moment(nbe.updatedAt).format('MM-DD-YYYY HH:mm'), x, y, true);
+  x += 80;
+  doVertFldVal(doc, 'Supervisor', nbe.supervisorName.substring(0, 20), x, y, true);
+  x += 110;
+  doVertFldVal(doc, 'RR', nbe.rr, x, y, true);
+  x += 30;
+  doVertFldVal(doc, 'Temp', nbe.temperature, x, y, true);
+  x += 30;
+  doVertFldVal(doc, 'HR', nbe.hr, x, y, true);
+  x += 30;
+  doVertFldVal(doc, 'Length', nbe.length, x, y, true);
+
+  // 2nd line.
+  y += 30;
+  x = opts.margins.left;
+  doVertFldVal(doc, 'Head Cir', nbe.headCir, x, y, true);
+  x += 40;
+  doVertFldVal(doc, 'Chest Cir', nbe.chestCir, x, y, true);
+  x += 40;
+  doVertFldVal(doc, 'Est GA', nbe.estGA, x, y, true);
+
+  // Start of slightly longer answers.
+  y += 25;
+  x = opts.margins.left;
+  var flds = [['Appearance', 'appearance'], ['Color', 'color'], ['Skin', 'skin'],
+              ['Head', 'head'], ['Eyes', 'eyes'], ['Ears', 'ears'], ['Nose', 'nose'],
+              ['Mouth', 'mouth'], ['Neck', 'neck'], ['Chest', 'chest'], ['Lungs', 'lungs'],
+              ['Heart', 'heart'], ['Abdomen', 'abdomen'], ['Hips', 'hips'],
+              ['Cord', 'cord'], ['Femoral Pulses', 'femoralPulses'], ['Genitalia', 'genitalia'],
+              ['Anus', 'anus'], ['Back', 'back'], ['Extremities', 'extremities']];
+  flds.forEach(fld => {
+    doShortAnswer(doc, fld[0], nbe[fld[1]], x, y, true);
+    if (nbe[fld[1]+'Comment']) {
+      y += 12;
+      doShortAnswer(doc, '', nbe[fld[1]+'Comment'], x, y);
+    }
+    y += 15;
+  });
+
+  // These are like the above but the first field is a boolean.
+  var flds2 = [['Moro Reflex', 'moroReflex'], ['Palmar Reflex', 'palmarReflex'],
+               ['Stepping Reflex', 'steppingReflex'], ['Plantar Reflex', 'plantarReflex'],
+               ['Babinski Reflex', 'babinskiReflex']];
+  flds2.forEach(fld => {
+    doCheckbox(doc, fld[0], nbe[fld[1]], x, y);
+    if (nbe[fld[1]+'Comment']) {
+      y += 12;
+      doShortAnswer(doc, '', nbe[fld[1]+'Comment'], x, y);
+    }
+    y += 15;
+  });
+
+  return {y: y, overflow: false};
+};
+
+/* --------------------------------------------------------
+ * ccTwo()
+ *
+ * Returns the concatenation of two strings, either of which
+ * can be null, separated by a separator.
+ *
+ * param       string
+ * param       string
+ * return      string
+ * -------------------------------------------------------- */
+var ccTwo = function ccTwo(a, b, sep) {
+  return (a ? a : '') + (b ? sep + b : '');
+};
+
 
 /* --------------------------------------------------------
  * doPrenatal()
@@ -1798,6 +1900,31 @@ var doPage3 = function doPage2(doc, data, opts) {
 };
 
 /* --------------------------------------------------------
+ * doPage4()
+ *
+ * Write out the information for the fourth page.
+ *
+ * param      doc     - the document
+ * param      data    - the data
+ * param      opts    - options
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPage4 = function doPage4(doc, data, opts) {
+  var sections = []
+    ;
+
+  doStartPage(doc, opts);
+
+  // --------------------------------------------------------
+  // Define the sections for this page.
+  // --------------------------------------------------------
+  sections.push([doNewbornExam]);
+
+
+  doPrintPage(doc, data, opts, sections);
+};
+
+/* --------------------------------------------------------
  * doPrintPage()
  *
  * Manages the printing of a page, including handling overflows
@@ -1961,6 +2088,7 @@ var doPages = function(doc, data, opts) {
   doPage1(doc, data, opts);
   doPage2(doc, data, opts);
   doPage3(doc, data, opts);
+  doPage4(doc, data, opts);
 
   doAllFooters(doc, opts);
 };
@@ -2119,6 +2247,63 @@ var getData = function(id) {
       .then(function(labTestResults) {
         data.labTestResults = labTestResults.toJSON();
       })
+      // Newborn exams
+      .then(() => {
+        return new NewbornExams().query(qb => {
+          qb.innerJoin('baby', 'newbornExam.baby_id', 'baby.id');
+          qb.innerJoin('labor', 'baby.labor_id', 'labor.id');
+          qb.select(['newbornExam.examDatetime', 'newbornExam.examiners',
+                     'newbornExam.rr', 'newbornExam.hr', 'newbornExam.temperature',
+                     'newbornExam.length', 'newbornExam.headCir',
+                     'newbornExam.chestCir', 'newbornExam.appearance',
+                     'newbornExam.appearanceComment',
+                     'newbornExam.color','newbornExam.colorComment',
+                     'newbornExam.skin', 'newbornExam.skinComment',
+                     'newbornExam.head', 'newbornExam.headComment',
+                     'newbornExam.eyes', 'newbornExam.eyesComment',
+                     'newbornExam.ears', 'newbornExam.earsComment',
+                     'newbornExam.nose', 'newbornExam.noseComment',
+                     'newbornExam.mouth', 'newbornExam.mouthComment',
+                     'newbornExam.neck', 'newbornExam.neckComment',
+                     'newbornExam.chest', 'newbornExam.chestComment',
+                     'newbornExam.lungs', 'newbornExam.lungsComment',
+                     'newbornExam.heart', 'newbornExam.heartComment',
+                     'newbornExam.abdomen', 'newbornExam.abdomenComment',
+                     'newbornExam.hips', 'newbornExam.hipsComment',
+                     'newbornExam.cord', 'newbornExam.cordComment',
+                     'newbornExam.femoralPulses', 'newbornExam.femoralPulsesComment',
+                     'newbornExam.genitalia', 'newbornExam.genitaliaComment',
+                     'newbornExam.anus', 'newbornExam.anusComment',
+                     'newbornExam.back', 'newbornExam.backComment',
+                     'newbornExam.extremities', 'newbornExam.extremitiesComment',
+                     'newbornExam.estGA',
+                     'newbornExam.moroReflex', 'newbornExam.moroReflexComment',
+                     'newbornExam.palmarReflex', 'newbornExam.palmarReflexComment',
+                     'newbornExam.steppingReflex', 'newbornExam.steppingReflexComment',
+                     'newbornExam.plantarReflex', 'newbornExam.plantarReflexComment',
+                     'newbornExam.babinskiReflex', 'newbornExam.babinskiReflexComment',
+                     'newbornExam.comments', 'newbornExam.updatedBy',
+                     'newbornExam.updatedAt', 'newbornExam.supervisor']);
+          qb.where('labor.pregnancy_id', '=', data.pregnancy.id);
+        })
+        .fetch();
+      })
+      .then(nbExamResults => {
+        // There is only one newborn exam, so take the first.
+        data.newbornExamResults = nbExamResults.toJSON()[0];
+
+        // TEMP
+        console.log(data.newbornExamResults);
+      })
+      // Populate the updatedByName for the newborn exam.
+      .then(() => {
+        return populateNameById(data.newbornExamResults.updatedBy, data.newbornExamResults, 'updatedByName');
+      })
+      // Populate the supervisorName for the newborn exam.
+      // Note that not having a supervisor is normal.
+      .then(() => {
+        return populateNameById(data.newbornExamResults.supervisor, data.newbornExamResults, 'supervisorName', true);
+      })
       // Return all of the data to the caller.
       .then(function() {
         resolve(data);
@@ -2127,6 +2312,60 @@ var getData = function(id) {
         logError(err);
         reject(err);
       });
+  });
+};
+
+/* --------------------------------------------------------
+ * populateNameById()
+ *
+ * Populates the target object with the new fld passed with
+ * the name generated by getNameById(). If optional is true,
+ * sets an empty string if the lookup fails.
+ *
+ * param       id
+ * param       target object, which is passed by reference and modified
+ * param       fld - a string
+ * param       optiona - boolean, defaults to false
+ * return      a promise - data not passed, target is modified instead
+ * -------------------------------------------------------- */
+var populateNameById = function populateNameById(id, target, fld, optional=false) {
+  return new Promise((resolve, reject) => {
+    return getNameById(id)
+      .then(name => {
+        target[fld] = name;
+        resolve(true);
+      })
+      .catch(err => {
+        if (optional) {
+          target[fld] = '';
+          resolve(true);
+        } else {
+          reject(err);
+        }
+      });
+  });
+};
+
+/* --------------------------------------------------------
+ * getNameById()
+ *
+ * Returns the displayName, if available, or the concatenation
+ * of lastname and firstname. Rejects if lookup fails.
+ *
+ * param       id
+ * return      Promise that resolves to a name (string).
+ * -------------------------------------------------------- */
+var getNameById = function getNameById(id) {
+  return new Promise((resolve, reject) => {
+    User.findById(id, (err, user) => {
+      if (err || !user) {
+        return reject(err);
+      }
+      let u = user.toJSON();
+      let name = u.displayName ? u.displayName :
+        u.lastname + ', ' + u.firstname;
+      return resolve(name);
+    });
   });
 };
 
