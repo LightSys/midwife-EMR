@@ -13,6 +13,8 @@ var _ = require('underscore')
   , fs = require('fs')
   , os = require('os')
   , path = require('path')
+  , ContPostpartumCheck = require('../models').ContPostpartumCheck
+  , ContPostpartumChecks = require('../models').ContPostpartumChecks
   , Pregnancy = require('../models').Pregnancy
   , Pregnancies = require('../models').Pregnancies
   , Patient = require('../models').Patient
@@ -525,6 +527,93 @@ var doPregnancyResult = function(doc, data, opts, ypos) {
     return {y: y, overflow: false};
   }
 };
+
+/* --------------------------------------------------------
+ * doContPP()
+ *
+ * Creates the continued postpartum section.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     simulated object from doTable() with increased y
+ * -------------------------------------------------------- */
+var doContPP = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , cpp = data.contPostpartumCheck
+    , username
+    , minY = 90
+    , maxY = 700
+    ;
+
+  doLabel(doc, 'Continued Postpartum Checks', x, y);
+  y += 15;
+  doSep(doc, opts, y, greyLightColor);
+  y += 5;
+
+  cpp.forEach(check => {
+    let systolic = check.motherSystolic && ! _.isNull(check.motherSystolic)? check.motherSystolic: ''
+      , diastolic = check.motherDiastolic && ! _.isNull(check.motherDiastolic)? check.motherDiastolic: ''
+      ;
+
+    if (y > maxY) {
+      doStartPage(doc, opts);
+      y = minY;
+    }
+
+    x = opts.margins.left;
+    doVertFldVal(doc, 'Date/time', moment(check.checkDatetime).format('MM-DD-YYYY HH:mm'), x, y, true);
+    x += 80;
+    doVertFldVal(doc, 'Last Updated by', check.updatedByName.substring(0, 20), x, y, true);
+    x += 110;
+    doVertFldVal(doc, 'Last Updated', moment(check.updatedAt).format('MM-DD-YYYY HH:mm'), x, y, true);
+    x += 80;
+    doVertFldVal(doc, 'Supervisor', check.supervisorName.substring(0, 20), x, y, true);
+
+    // New line, do the Mother and Baby headings.
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Mother', '', x, y);
+    x = 300;
+    doVertFldVal(doc, 'Baby', '', x, y);
+
+    // Mother on the left.
+    x = opts.margins.left;
+    y += 12;
+    doVertFldVal(doc, 'BP', systolic + ' / ' + diastolic, x, y, true);
+    x += 50;
+    doVertFldVal(doc, 'CR', check.motherCR, x, y, true);
+    x += 50;
+    doVertFldVal(doc, 'Temp', check.motherTemp, x, y, true);
+    x += 50;
+    doVertFldVal(doc, 'Fundus', check.motherFundus, x, y, true);
+
+    // Baby on the right.
+    x = 300;
+    doVertFldVal(doc, 'BFed', check.babyBFed, x, y, true);
+    x += 70;
+    doVertFldVal(doc, 'Temp', check.babyTemp, x, y, true);
+    x += 50;
+    doVertFldVal(doc, 'RR', check.babyRR, x, y, true);
+    x += 40;
+    doVertFldVal(doc, 'CR', check.babyCR, x, y, true);
+
+    // Comments underneath.
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Comments', check.comments, x, y, true);
+
+    // New check
+    y += 25;
+    doSep(doc, opts, y, greyLightColor);
+    y += 5;
+  });
+
+  return {y: y, overflow: y > 750};
+};
+
 
 /* --------------------------------------------------------
  * doNewbornExam()
@@ -1925,6 +2014,31 @@ var doPage4 = function doPage4(doc, data, opts) {
 };
 
 /* --------------------------------------------------------
+ * doPage5()
+ *
+ * Write out the information for the fourth page.
+ *
+ * param      doc     - the document
+ * param      data    - the data
+ * param      opts    - options
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPage5 = function doPage5(doc, data, opts) {
+  var sections = []
+    ;
+
+  doStartPage(doc, opts);
+
+  // --------------------------------------------------------
+  // Define the sections for this page.
+  // --------------------------------------------------------
+  sections.push([doContPP]);
+
+
+  doPrintPage(doc, data, opts, sections);
+};
+
+/* --------------------------------------------------------
  * doPrintPage()
  *
  * Manages the printing of a page, including handling overflows
@@ -2089,6 +2203,7 @@ var doPages = function(doc, data, opts) {
   doPage2(doc, data, opts);
   doPage3(doc, data, opts);
   doPage4(doc, data, opts);
+  doPage5(doc, data, opts);
 
   doAllFooters(doc, opts);
 };
@@ -2291,9 +2406,6 @@ var getData = function(id) {
       .then(nbExamResults => {
         // There is only one newborn exam, so take the first.
         data.newbornExamResults = nbExamResults.toJSON()[0];
-
-        // TEMP
-        console.log(data.newbornExamResults);
       })
       // Populate the updatedByName for the newborn exam.
       .then(() => {
@@ -2303,6 +2415,46 @@ var getData = function(id) {
       // Note that not having a supervisor is normal.
       .then(() => {
         return populateNameById(data.newbornExamResults.supervisor, data.newbornExamResults, 'supervisorName', true);
+      })
+      // Continued Postpartum checks.
+      .then(() => {
+        return new ContPostpartumChecks().query(qb => {
+          qb.innerJoin('labor', 'labor.id', 'contPostpartumCheck.labor_id')
+          qb.select(['contPostpartumCheck.checkDatetime', 'contPostpartumCheck.motherSystolic',
+                     'contPostpartumCheck.motherDiastolic', 'contPostpartumCheck.motherCR',
+                     'contPostpartumCheck.motherTemp', 'contPostpartumCheck.motherFundus',
+                     'contPostpartumCheck.motherEBL', 'contPostpartumCheck.babyBFed',
+                     'contPostpartumCheck.babyTemp', 'contPostpartumCheck.babyRR',
+                     'contPostpartumCheck.babyCR', 'contPostpartumCheck.comments',
+                     'contPostpartumCheck.updatedBy', 'contPostpartumCheck.updatedAt',
+                     'contPostpartumCheck.supervisor'])
+          qb.where('labor.pregnancy_id', '=', data.pregnancy.id)
+          qb.orderBy('contPostpartumCheck.checkDatetime');
+        })
+        .fetch();
+      })
+      .then((ccPartum) => {
+        data.contPostpartumCheck = ccPartum.toJSON();
+      })
+      //Populate the updatedByName for each of the contPostpartums.
+      .then(() => {
+        if (data.contPostpartumCheck && data.contPostpartumCheck.length > 0) {
+          let checks = [];
+          for (var c = 0; c < data.contPostpartumCheck.length; c++) {
+            checks.push(populateNameById(data.contPostpartumCheck[c].updatedBy, data.contPostpartumCheck[c], 'updatedByName'));
+          }
+          return Promise.all(checks).then();
+        }
+      })
+      // Populate the supervisorName for each of the contPostpartums.
+      .then(() => {
+        if (data.contPostpartumCheck && data.contPostpartumCheck.length > 0) {
+          let checks = [];
+          for (var c = 0; c < data.contPostpartumCheck.length; c++) {
+            checks.push(populateNameById(data.contPostpartumCheck[c].supervisor, data.contPostpartumCheck[c], 'supervisorName', true));
+          }
+          return Promise.all(checks).then();
+        }
       })
       // Return all of the data to the caller.
       .then(function() {
@@ -2333,12 +2485,12 @@ var populateNameById = function populateNameById(id, target, fld, optional=false
     return getNameById(id)
       .then(name => {
         target[fld] = name;
-        resolve(true);
+        resolve(target);
       })
       .catch(err => {
         if (optional) {
           target[fld] = '';
-          resolve(true);
+          resolve(target);
         } else {
           reject(err);
         }
