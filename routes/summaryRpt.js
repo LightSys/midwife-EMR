@@ -945,8 +945,8 @@ var doPrenatal = function(doc, data, opts, ypos) {
   }
 
   // Sanity check on dates.
-  if (edd.startsWith('Invalid')) edd = '';
-  if (altEdd.startsWith('Invalid')) altEdd = '';
+  if (edd && edd.startsWith('Invalid')) edd = '';
+  if (altEdd && altEdd.startsWith('Invalid')) altEdd = '';
 
   doSep(doc, opts, ypos, greyLightColor);
   y += 5;
