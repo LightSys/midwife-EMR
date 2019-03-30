@@ -25,6 +25,8 @@ var _ = require('underscore')
   , Medications = require('../models').Medications
   , NewbornExam = require('../models').NewbornExam
   , NewbornExams = require('../models').NewbornExams
+  , PostpartumCheck = require('../models').PostpartumCheck
+  , PostpartumChecks = require('../models').PostpartumChecks
   , PrenatalExam = require('../models').PrenatalExam
   , PrenatalExams = require('../models').PrenatalExams
   , PregnancyHistory = require('../models').PregnancyHistory
@@ -167,6 +169,30 @@ var doVertFldVal = function(doc, label, value, x, y, faint) {
     .text(val, x, y2);
   return doc.y;
 };
+
+/* --------------------------------------------------------
+ * doNote()
+ *
+ * Write text such as for a note in the specified place.
+ *
+ * param      doc
+ * param      value
+ * param      x - position field should start horizontally
+ * param      y - position label should start
+ * return
+ * -------------------------------------------------------- */
+var doNote = function(doc, value, x, y) {
+  if (value) {
+    doc
+      .font(FONTS.Helvetica)
+      .fillColor(blackColor)
+      .fontSize(9)
+      .font(FONTS.HelveticaBold)
+      .text(value, x, y);
+  }
+  return doc.y;
+};
+
 
 /* --------------------------------------------------------
  * doLabel()
@@ -529,6 +555,167 @@ var doPregnancyResult = function(doc, data, opts, ypos) {
 };
 
 /* --------------------------------------------------------
+ * doPostpartum()
+ *
+ * Creates the postpartum section.
+ *
+ * param      doc
+ * param      data
+ * param      opts
+ * param      ypos
+ * return     simulated object from doTable() with increased y
+ * -------------------------------------------------------- */
+var doPostpartum = function(doc, data, opts, ypos) {
+  var x = opts.margins.left
+    , y = ypos
+    , pp = data.postpartumChecks
+    , username
+    , minY = 90
+    , maxY = 500
+    , pipeRegExp = /\|/g
+    , tmp
+    ;
+
+  if (! pp) return {y: y, overflow: false};
+
+  doLabel(doc, 'Postpartum Checks', x, y);
+  y += 15;
+  doSep(doc, opts, y, greyLightColor);
+  y += 5;
+
+  pp.forEach(check => {
+    let systolic = check.motherSystolic && ! _.isNull(check.motherSystolic)? check.motherSystolic: ''
+      , diastolic = check.motherDiastolic && ! _.isNull(check.motherDiastolic)? check.motherDiastolic: ''
+      ;
+
+    if (y > maxY) {
+      doStartPage(doc, opts);
+      y = minY;
+    }
+
+    // Overall information.
+    x = opts.margins.left;
+    doVertFldVal(doc, 'Date/time', moment(check.checkDatetime).format('MM-DD-YYYY HH:mm'), x, y, true);
+    x += 80;
+    doVertFldVal(doc, 'Last Updated by', check.updatedByName.substring(0, 20), x, y, true);
+    x += 110;
+    doVertFldVal(doc, 'Last Updated', moment(check.updatedAt).format('MM-DD-YYYY HH:mm'), x, y, true);
+    x += 80;
+    doVertFldVal(doc, 'Supervisor', check.supervisorName.substring(0, 20), x, y, true);
+
+    // Baby
+    x = opts.margins.left;
+    y += 25;
+    doNote(doc, '--- Baby ---', x, y);
+
+    x = opts.margins.left;
+    y += 12;
+    doVertFldVal(doc, 'Weight', check.babyWeight, x, y, true);
+    x += 30;
+    doVertFldVal(doc, 'Temp', check.babyTemp, x, y, true);
+    x += 30;
+    doVertFldVal(doc, 'CR', check.babyCR, x, y, true);
+    x += 30;
+    doVertFldVal(doc, 'RR', check.babyRR, x, y, true);
+    x += 30;
+    doVertFldVal(doc, 'Lungs', check.babyLungs.replace(pipeRegExp, ', '), x, y, true);
+    x += 120;
+    doVertFldVal(doc, 'Color', check.babyColor.replace(pipeRegExp, ', '), x, y, true);
+    x += 120;
+    doVertFldVal(doc, 'Skin', check.babySkin.replace(pipeRegExp, ', '), x, y, true);
+
+    // Cord field can be long.
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Cord', check.babyCord.replace(pipeRegExp, ', '), x, y, true);
+
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Feeding', check.babyFeeding.replace(pipeRegExp, ', '), x, y, true);
+    x += 120;
+    doVertFldVal(doc, 'Feeding Daily', check.babyFeedingDaily, x, y, true);
+    x += 120;
+    doVertFldVal(doc, 'Urine', check.babyUrine, x, y, true);
+    x += 50;
+    doVertFldVal(doc, 'Stool', check.babyStool, x, y, true);
+    x += 50;
+    doVertFldVal(doc, 'SS Infection', check.babySSInfection.replace(pipeRegExp, ', '), x, y, true);
+
+    // Mother
+    x = opts.margins.left;
+    y += 30;
+    doNote(doc, '--- Mother ---', x, y);
+
+    x = opts.margins.left;
+    y += 12;
+    doVertFldVal(doc, 'Temp', check.motherTemp, x, y, true);
+    x += 25;
+    doVertFldVal(doc, 'BP', systolic + ' / ' + diastolic, x, y, true);
+    x += 50;
+    doVertFldVal(doc, 'CR', check.motherCR, x, y, true);
+    x += 30;
+    tmp = check.ironGiven ? check.ironGiven : "0";
+    doVertFldVal(doc, 'Iron', tmp, x, y, true);
+    x += 25;
+    tmp = check.birthCertReq ? "Yes" : "";
+    doVertFldVal(doc, 'Birth Cert', tmp, x, y, true);
+    x += 45;
+    tmp = check.nextScheduledCheck ? moment(check.nextScheduledCheck).format('MM-DD-YYYY HH:mm') : "";
+    doVertFldVal(doc, 'Next Check', tmp, x, y, true);
+    x += 80;
+    tmp = check.hgbRequested ? "Yes" : "No";
+    doVertFldVal(doc, 'HGB Requested', tmp, x, y, true);
+    x += 70;
+    tmp = check.hgbTestDate ? moment(check.hgbTestDate).format('MM-DD-YYYY HH:mm') : "";
+    doVertFldVal(doc, 'HGB Test Date', tmp, x, y, true);
+    x += 80;
+    doVertFldVal(doc, 'HGB Result', check.hgbTestResult, x, y, true);
+
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Breasts', check.motherBreasts.replace(pipeRegExp, ', '), x, y, true);
+    x += 270;
+    doVertFldVal(doc, 'Fundus', check.motherFundus.replace(pipeRegExp, ', '), x, y, true);
+    if (check.motherFundusNote) {
+      y += 18;
+      doNote(doc, check.motherFundusNote, x, y);
+    }
+
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Perineum', check.motherPerineum.replace(pipeRegExp, ', '), x, y, true);
+    x += 270;
+    doVertFldVal(doc, 'Lochia', check.motherLochia.replace(pipeRegExp, ', '), x, y, true);
+    if (check.motherPerineumNote) {
+      x = opts.margins.left;
+      y += 18;
+      doNote(doc, check.motherPerineumNote, x, y);
+    }
+
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Urine', check.motherUrine.replace(pipeRegExp, ', '), x, y, true);
+    x += 120;
+    doVertFldVal(doc, 'Stool', check.motherStool.replace(pipeRegExp, ', '), x, y, true);
+    x += 120;
+    doVertFldVal(doc, 'SS Infection', check.motherSSInfection.replace(pipeRegExp, ', '), x, y, true);
+    x += 120;
+    doVertFldVal(doc, 'Family Planning', check.motherFamilyPlanning.replace(pipeRegExp, ', '), x, y, true);
+
+    x = opts.margins.left;
+    y += 25;
+    doVertFldVal(doc, 'Comments', check.comments, x, y, true);
+
+    y += 30;
+    doSep(doc, opts, y, greyLightColor);
+    y += 10;
+  });
+
+  return {y: y, overflow: y > 750};
+};
+
+
+/* --------------------------------------------------------
  * doContPP()
  *
  * Creates the continued postpartum section.
@@ -542,11 +729,13 @@ var doPregnancyResult = function(doc, data, opts, ypos) {
 var doContPP = function(doc, data, opts, ypos) {
   var x = opts.margins.left
     , y = ypos
-    , cpp = data.contPostpartumCheck
+    , cpp = data.contPostpartumChecks
     , username
     , minY = 90
     , maxY = 700
     ;
+
+  if (! cpp) return {y: y, overflow: false};
 
   doLabel(doc, 'Continued Postpartum Checks', x, y);
   y += 15;
@@ -632,6 +821,8 @@ var doNewbornExam = function(doc, data, opts, ypos) {
     , nbe = data.newbornExamResults
     , username
     ;
+
+  if (! nbe) return {y: y, overflow: false};
 
   doLabel(doc, 'Newborn Exam', x, y);
   y += 15;
@@ -2039,6 +2230,31 @@ var doPage5 = function doPage5(doc, data, opts) {
 };
 
 /* --------------------------------------------------------
+ * doPage6()
+ *
+ * Write out the information for the fourth page.
+ *
+ * param      doc     - the document
+ * param      data    - the data
+ * param      opts    - options
+ * return     undefined
+ * -------------------------------------------------------- */
+var doPage6 = function doPage6(doc, data, opts) {
+  var sections = []
+    ;
+
+  doStartPage(doc, opts);
+
+  // --------------------------------------------------------
+  // Define the sections for this page.
+  // --------------------------------------------------------
+  sections.push([doPostpartum]);
+
+
+  doPrintPage(doc, data, opts, sections);
+};
+
+/* --------------------------------------------------------
  * doPrintPage()
  *
  * Manages the printing of a page, including handling overflows
@@ -2202,8 +2418,9 @@ var doPages = function(doc, data, opts) {
   doPage1(doc, data, opts);
   doPage2(doc, data, opts);
   doPage3(doc, data, opts);
-  doPage4(doc, data, opts);
-  doPage5(doc, data, opts);
+  if (data.newbornExamResults) doPage4(doc, data, opts);
+  if (data.contPostpartumChecks && data.contPostpartumChecks.length > 0) doPage5(doc, data, opts);
+  if (data.postpartumChecks && data.postpartumChecks.length > 0) doPage6(doc, data, opts);
 
   doAllFooters(doc, opts);
 };
@@ -2409,17 +2626,23 @@ var getData = function(id) {
       })
       // Populate the updatedByName for the newborn exam.
       .then(() => {
-        return populateNameById(data.newbornExamResults.updatedBy, data.newbornExamResults, 'updatedByName');
+        if (data.newbornExamResults) {
+          return populateNameById(data.newbornExamResults.updatedBy, data.newbornExamResults, 'updatedByName');
+        }
+        return true;
       })
       // Populate the supervisorName for the newborn exam.
       // Note that not having a supervisor is normal.
       .then(() => {
-        return populateNameById(data.newbornExamResults.supervisor, data.newbornExamResults, 'supervisorName', true);
+        if (data.newbornExamResults) {
+          return populateNameById(data.newbornExamResults.supervisor, data.newbornExamResults, 'supervisorName', true);
+        }
+        return true;
       })
       // Continued Postpartum checks.
       .then(() => {
         return new ContPostpartumChecks().query(qb => {
-          qb.innerJoin('labor', 'labor.id', 'contPostpartumCheck.labor_id')
+          qb.innerJoin('labor', 'labor.id', 'contPostpartumCheck.labor_id');
           qb.select(['contPostpartumCheck.checkDatetime', 'contPostpartumCheck.motherSystolic',
                      'contPostpartumCheck.motherDiastolic', 'contPostpartumCheck.motherCR',
                      'contPostpartumCheck.motherTemp', 'contPostpartumCheck.motherFundus',
@@ -2427,31 +2650,80 @@ var getData = function(id) {
                      'contPostpartumCheck.babyTemp', 'contPostpartumCheck.babyRR',
                      'contPostpartumCheck.babyCR', 'contPostpartumCheck.comments',
                      'contPostpartumCheck.updatedBy', 'contPostpartumCheck.updatedAt',
-                     'contPostpartumCheck.supervisor'])
-          qb.where('labor.pregnancy_id', '=', data.pregnancy.id)
+                     'contPostpartumCheck.supervisor']);
+          qb.where('labor.pregnancy_id', '=', data.pregnancy.id);
           qb.orderBy('contPostpartumCheck.checkDatetime');
         })
         .fetch();
       })
       .then((ccPartum) => {
-        data.contPostpartumCheck = ccPartum.toJSON();
+        data.contPostpartumChecks = ccPartum.toJSON();
       })
       //Populate the updatedByName for each of the contPostpartums.
       .then(() => {
-        if (data.contPostpartumCheck && data.contPostpartumCheck.length > 0) {
+        if (data.contPostpartumChecks && data.contPostpartumChecks.length > 0) {
           let checks = [];
-          for (var c = 0; c < data.contPostpartumCheck.length; c++) {
-            checks.push(populateNameById(data.contPostpartumCheck[c].updatedBy, data.contPostpartumCheck[c], 'updatedByName'));
+          for (var c = 0; c < data.contPostpartumChecks.length; c++) {
+            checks.push(populateNameById(data.contPostpartumChecks[c].updatedBy, data.contPostpartumChecks[c], 'updatedByName'));
           }
           return Promise.all(checks).then();
         }
       })
       // Populate the supervisorName for each of the contPostpartums.
       .then(() => {
-        if (data.contPostpartumCheck && data.contPostpartumCheck.length > 0) {
+        if (data.contPostpartumChecks && data.contPostpartumChecks.length > 0) {
           let checks = [];
-          for (var c = 0; c < data.contPostpartumCheck.length; c++) {
-            checks.push(populateNameById(data.contPostpartumCheck[c].supervisor, data.contPostpartumCheck[c], 'supervisorName', true));
+          for (var c = 0; c < data.contPostpartumChecks.length; c++) {
+            checks.push(populateNameById(data.contPostpartumChecks[c].supervisor, data.contPostpartumChecks[c], 'supervisorName', true));
+          }
+          return Promise.all(checks).then();
+        }
+      })
+      .then(() => {
+        return new PostpartumChecks().query(qb => {
+          qb.innerJoin('labor', 'labor.id', 'postpartumCheck.labor_id');
+          qb.select(['postpartumCheck.checkDatetime','postpartumCheck.babyWeight',
+                     'postpartumCheck.babyTemp', 'postpartumCheck.babyCR',
+                     'postpartumCheck.babyRR', 'postpartumCheck.babyLungs',
+                     'postpartumCheck.babyColor', 'postpartumCheck.babySkin',
+                     'postpartumCheck.babyCord', 'postpartumCheck.babyUrine',
+                     'postpartumCheck.babyStool', 'postpartumCheck.babySSInfection',
+                     'postpartumCheck.babyFeeding', 'postpartumCheck.babyFeedingDaily',
+                     'postpartumCheck.motherTemp', 'postpartumCheck.motherSystolic',
+                     'postpartumCheck.motherDiastolic', 'postpartumCheck.motherCR',
+                     'postpartumCheck.motherBreasts', 'postpartumCheck.motherFundus',
+                     'postpartumCheck.motherFundusNote', 'postpartumCheck.motherPerineum',
+                     'postpartumCheck.motherPerineumNote', 'postpartumCheck.motherLochia',
+                     'postpartumCheck.motherUrine', 'postpartumCheck.motherStool',
+                     'postpartumCheck.motherSSInfection', 'postpartumCheck.motherFamilyPlanning',
+                     'postpartumCheck.birthCertReq', 'postpartumCheck.hgbRequested',
+                     'postpartumCheck.hgbTestDate', 'postpartumCheck.hgbTestResult',
+                     'postpartumCheck.ironGiven', 'postpartumCheck.comments',
+                     'postpartumCheck.nextScheduledCheck', 'postpartumCheck.updatedBy',
+                     'postpartumCheck.updatedAt', 'postpartumCheck.supervisor']);
+          qb.where('labor.pregnancy_id', '=', data.pregnancy.id);
+          qb.orderBy('postpartumCheck.checkDatetime');
+        }).fetch();
+      })
+      .then((pp) => {
+        data.postpartumChecks = pp.toJSON();
+      })
+      //Populate the updatedByName for each of the postpartumChecks.
+      .then(() => {
+        if (data.postpartumChecks && data.postpartumChecks.length > 0) {
+          let checks = [];
+          for (var c = 0; c < data.postpartumChecks.length; c++) {
+            checks.push(populateNameById(data.postpartumChecks[c].updatedBy, data.postpartumChecks[c], 'updatedByName'));
+          }
+          return Promise.all(checks).then();
+        }
+      })
+      // Populate the supervisorName for each of the postpartumChecks.
+      .then(() => {
+        if (data.postpartumChecks && data.postpartumChecks.length > 0) {
+          let checks = [];
+          for (var c = 0; c < data.postpartumChecks.length; c++) {
+            checks.push(populateNameById(data.postpartumChecks[c].supervisor, data.postpartumChecks[c], 'supervisorName', true));
           }
           return Promise.all(checks).then();
         }
