@@ -923,6 +923,7 @@ var doPrenatal = function(doc, data, opts, ypos) {
     , edd = data.pregnancy.edd
     , altEdd = data.pregnancy.alternateEdd
     , useAltEdd = data.pregnancy.useAlternateEdd
+    , endDate = data.pregnancy.pregnancyEndDate
     , ga = ''
     ;
 
@@ -933,15 +934,19 @@ var doPrenatal = function(doc, data, opts, ypos) {
   if (edd || altEdd) {
     // Favor the alternateEdd if the useAlternateEdd is specified.
     if (useAltEdd && altEdd && moment(altEdd).isAfter('1990-01-01', 'year')) {
-      ga = getGA(moment(altEdd));
+      ga = getGA(moment(altEdd), moment(endDate));
       edd = edd? moment(edd).format('MM-DD-YYYY'): '';
       altEdd = altEdd? moment(altEdd).format('MM-DD-YYYY'): '';
     } else {
-      ga = getGA(moment(edd));
+      ga = getGA(moment(edd), moment(endDate));
       edd = edd? moment(edd).format('MM-DD-YYYY'): '';
       altEdd = altEdd? moment(altEdd).format('MM-DD-YYYY'): '';
     }
   }
+
+  // Sanity check on dates.
+  if (edd.startsWith('Invalid')) edd = '';
+  if (altEdd.startsWith('Invalid')) altEdd = '';
 
   doSep(doc, opts, ypos, greyLightColor);
   y += 5;
