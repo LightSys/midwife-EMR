@@ -31,6 +31,46 @@ var clipToFit = function(doc, text, width) {
 };
 
 /* --------------------------------------------------------
+ * calcNumLines()
+ *
+ * Return the number of lines necessary to write the given
+ * text in full.
+ *
+ * param       doc
+ * param       text
+ * param       width - in points
+ * return      int
+ * -------------------------------------------------------- */
+var calcNumLines = function(doc, text, width) {
+  return Math.ceil(doc.widthOfString(text) / width);
+};
+
+/* --------------------------------------------------------
+ * splitLine()
+ *
+ * Return an array of strings which represents the lines to
+ * print within the given width.
+ *
+ * param       doc
+ * param       text
+ * param       width - in points
+ * return      array of string
+ * -------------------------------------------------------- */
+var splitLine = function(doc, text, width) {
+  var lines = []
+    , numLines = calcNumLines(doc, text, width)
+    , tmpStr = text
+    ;
+
+  for (let i = 0; i < numLines; i++) {
+    lines.push(clipToFit(doc, tmpStr, width));
+    tmpStr = text.slice(lines.join('').length);
+  }
+
+  return lines;
+};
+
+/* --------------------------------------------------------
  * centerInCol()
  *
  * Centers the specified text within the column boundaries
@@ -196,6 +236,8 @@ module.exports = {
   , doSiteTitleLong: doSiteTitleLong
   , doReportName: doReportName
   , doCellBorders: doCellBorders
+  , calcNumLines: calcNumLines
+  , splitLine: splitLine
 };
 
 

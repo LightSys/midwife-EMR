@@ -50,6 +50,7 @@ var _ = require('underscore')
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
   , loadFontAwesome = require('./reportGeneral').loadFontAwesome
+  , splitLine = require('./reportGeneral').splitLine
   , blackColor = '#000'
   , greyDarkColor = '#999'
   , greyLightColor = '#AAA'
@@ -733,6 +734,8 @@ var doContPP = function(doc, data, opts, ypos) {
     , username
     , minY = 90
     , maxY = 700
+    , lines = []
+    , pageWidth = doc.page.width - opts.margins.left - opts.margins.right
     ;
 
   if (! cpp) return {y: y, overflow: false};
@@ -747,7 +750,10 @@ var doContPP = function(doc, data, opts, ypos) {
       , diastolic = check.motherDiastolic && ! _.isNull(check.motherDiastolic)? check.motherDiastolic: ''
       ;
 
-    if (y > maxY) {
+    // Comments for check, needed here to calculate whether to page break.
+    lines = splitLine(doc, check.comments, pageWidth);
+
+    if (y > (maxY - (lines.length * 12))) {
       doStartPage(doc, opts);
       y = minY;
     }
@@ -789,13 +795,19 @@ var doContPP = function(doc, data, opts, ypos) {
     x += 40;
     doVertFldVal(doc, 'CR', check.babyCR, x, y, true);
 
-    // Comments underneath.
+    // Comments underneath, using as many lines as necessary.
+    // Note: lines calculated at top of loop.
     x = opts.margins.left;
     y += 25;
-    doVertFldVal(doc, 'Comments', check.comments, x, y, true);
+    if (lines.length > 0) {
+      y = doVertFldVal(doc, 'Comments', lines[0], x, y, true);
+      for (let i = 1; i < lines.length; i++) {
+        doc.text(lines[i], x, y);
+        y += 12;
+      }
+    }
 
     // New check
-    y += 25;
     doSep(doc, opts, y, greyLightColor);
     y += 5;
   });
