@@ -236,6 +236,12 @@ var getGA = function(edd, rDate) {
     weeks++;
     days = days - 7;
   }
+
+  // --------------------------------------------------------
+  // Sanity check for too large of a GA, i.e. > 45 weeks.
+  // --------------------------------------------------------
+  if (weeks > 45) return 'N/A';
+
   return weeks + ' ' + days + '/7';
 };
 

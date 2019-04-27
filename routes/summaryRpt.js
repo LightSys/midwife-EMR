@@ -923,7 +923,7 @@ var doPrenatal = function(doc, data, opts, ypos) {
     , edd = data.pregnancy.edd
     , altEdd = data.pregnancy.alternateEdd
     , useAltEdd = data.pregnancy.useAlternateEdd
-    , endDate = data.pregnancy.pregnancyEndDate
+    , endDate = data.pregnancy.pregnancyEndDate == '0000-00-00' ? void 0 : data.pregnancy.pregnancyEndDate
     , ga = ''
     ;
 
