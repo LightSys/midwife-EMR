@@ -574,6 +574,7 @@ var doPostpartum = function(doc, data, opts, ypos) {
     , minY = 90
     , maxY = 500
     , pipeRegExp = /\|/g
+    , pageWidth = doc.page.width - opts.margins.left - opts.margins.right
     , tmp
     ;
 
@@ -589,7 +590,10 @@ var doPostpartum = function(doc, data, opts, ypos) {
       , diastolic = check.motherDiastolic && ! _.isNull(check.motherDiastolic)? check.motherDiastolic: ''
       ;
 
-    if (y > maxY) {
+    // Comments for check, needed here to calculate whether to page break.
+    lines = splitLine(doc, check.comments, pageWidth);
+
+    if (y > (maxY - (lines.length * 12))) {
       doStartPage(doc, opts);
       y = minY;
     }
@@ -705,9 +709,14 @@ var doPostpartum = function(doc, data, opts, ypos) {
 
     x = opts.margins.left;
     y += 25;
-    doVertFldVal(doc, 'Comments', check.comments, x, y, true);
+    if (lines.length > 0) {
+      y = doVertFldVal(doc, 'Comments', lines[0], x, y, true);
+      for (let i = 1; i < lines.length; i++) {
+        doc.text(lines[i], x, y);
+        y += 12;
+      }
+    }
 
-    y += 30;
     doSep(doc, opts, y, greyLightColor);
     y += 10;
   });
