@@ -42,6 +42,7 @@ var clipToFit = function(doc, text, width) {
  * return      int
  * -------------------------------------------------------- */
 var calcNumLines = function(doc, text, width) {
+  if (_.isNull(text) || text.length === 0) return 0;
   return Math.ceil(doc.widthOfString(text) / width);
 };
 
