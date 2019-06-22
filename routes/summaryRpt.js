@@ -143,7 +143,7 @@ var doPageCommon = function doPageCommon(doc, opts) {
  *
  * Write a field label and it's corresponding field value
  * directly underneath it. faint parameter affects how the
- * field is displayed.
+ * label is displayed.
  *
  * param      doc
  * param      label
@@ -168,6 +168,50 @@ var doVertFldVal = function(doc, label, value, x, y, faint) {
     .fontSize(9)
     .font(FONTS.HelveticaBold)
     .text(val, x, y2);
+  return doc.y;
+};
+
+/* --------------------------------------------------------
+ * doVertFldValLines()
+ *
+ * Write a field label and it's corresponding field value
+ * directly underneath it. faint parameter affects how the
+ * label is displayed. The value parameter is expected to
+ * be an array of lines, which are printed one starting at
+ * x and decending lineHeight.
+ *
+ * param      doc
+ * param      label
+ * param      value - array of strings
+ * param      x - position field should start horizontally
+ * param      y - position label should start
+ * param      lineHeight
+ * param      faint - boolean whether label should be faint and smaller
+ * return
+ * -------------------------------------------------------- */
+var doVertFldValLines = function(doc, label, value, x, y, lineHeight, faint) {
+  var val = value? value: ''
+    , y2 = y + 10
+    , lblColor = faint? greyDarkColor: blackColor
+    , lblSize = faint? 8: 9
+    ;
+  doc
+    .font(FONTS.Helvetica)
+    .fontSize(lblSize)
+    .fillColor(lblColor)
+    .text(label, x, y);
+
+  doc
+    .fillColor(blackColor)
+    .fontSize(9)
+    .font(FONTS.HelveticaBold);
+
+  for (var i = 0; i < value.length; i++) {
+    let text = value[i];
+    doc.text(text, x, y2);
+    y2 += lineHeight;
+  }
+
   return doc.y;
 };
 
@@ -639,12 +683,12 @@ var doPostpartum = function(doc, data, opts, ypos) {
     doVertFldVal(doc, 'Feeding', check.babyFeeding.replace(pipeRegExp, ', '), x, y, true);
     x += 120;
     doVertFldVal(doc, 'Feeding Daily', check.babyFeedingDaily, x, y, true);
-    x += 120;
-    doVertFldVal(doc, 'Urine', check.babyUrine, x, y, true);
-    x += 50;
-    doVertFldVal(doc, 'Stool', check.babyStool, x, y, true);
-    x += 50;
-    doVertFldVal(doc, 'SS Infection', check.babySSInfection.replace(pipeRegExp, ', '), x, y, true);
+    x += 110;
+    doVertFldValLines(doc, 'Urine', splitLine(doc, check.babyUrine, 100), x, y, 8, true);
+    x += 110;
+    doVertFldValLines(doc, 'Stool', splitLine(doc, check.babyStool, 100), x, y, 8, true);
+    x += 110;
+    doVertFldValLines(doc, 'SS Infection', splitLine(doc, check.babySSInfection.replace(pipeRegExp, ', '), 100), x, y, 8, true);
 
     // Mother
     x = opts.margins.left;
