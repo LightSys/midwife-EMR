@@ -38,7 +38,9 @@ CREATE TABLE `postpartumCheck` (
   `motherCR` int(11) DEFAULT NULL,
   `motherBreasts` varchar(500) DEFAULT NULL,
   `motherFundus` varchar(500) DEFAULT NULL,
+  `motherFundusNote` varchar(200) DEFAULT NULL,
   `motherPerineum` varchar(500) DEFAULT NULL,
+  `motherPerineumNote` varchar(200) DEFAULT NULL,
   `motherLochia` varchar(500) DEFAULT NULL,
   `motherUrine` varchar(500) DEFAULT NULL,
   `motherStool` varchar(500) DEFAULT NULL,
@@ -60,7 +62,7 @@ CREATE TABLE `postpartumCheck` (
   KEY `updatedBy` (`updatedBy`),
   CONSTRAINT `postpartumCheck_ibfk_1` FOREIGN KEY (`labor_id`) REFERENCES `labor` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `postpartumCheck_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1
 */
 
 PostpartumCheck = Bookshelf.Model.extend({
@@ -70,10 +72,10 @@ PostpartumCheck = Bookshelf.Model.extend({
     'babyRR', 'babyLungs', 'babyColor', 'babySkin', 'babyCord', 'babyUrine',
     'babyStool', 'babySSInfection', 'babyFeeding', 'babyFeedingDaily', 'motherTemp',
     'motherSystolic', 'motherDiastolic', 'motherCR', 'motherBreasts', 'motherFundus',
-    'motherPerineum', 'motherLochia', 'motherUrine', 'motherStool',
-    'motherSSInfection', 'motherFamilyPlanning', 'birthCertReq', 'hgbRequested',
-    'hgbTestDate', 'hgbTestResult', 'ironGiven', 'comments', 'nextScheduledCheck',
-    'updatedBy', 'updatedAt', 'supervisor', 'labor_id']
+    'motherFundusNote', 'motherPerineum', 'motherPerineumNote', 'motherLochia',
+    'motherUrine', 'motherStool', 'motherSSInfection', 'motherFamilyPlanning',
+    'birthCertReq', 'hgbRequested', 'hgbTestDate', 'hgbTestResult', 'ironGiven',
+    'comments', 'nextScheduledCheck', 'updatedBy', 'updatedAt', 'supervisor', 'labor_id']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
