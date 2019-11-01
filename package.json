@@ -44,7 +44,7 @@
     "jade": "^1.11.0",
     "jquery": "^1.12.4",
     "jshint": "^2.9.2",
-    "knex": "^0.8.6",
+    "knex": "^0.20.1",
     "material-design-icons": "^3.0.1",
     "method-override": "^2.3.6",
     "moment": "^2.13.0",
