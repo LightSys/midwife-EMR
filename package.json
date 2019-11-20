@@ -7,7 +7,7 @@
     "node": ">=4.4"
   },
   "dependencies": {
-    "angular": "1.5.8",
+    "angular": "1.7.9",
     "angular-moment": "^0.10.3",
     "angular-ui-router": "^0.2.15",
     "bcrypt": "^0.8.6",
