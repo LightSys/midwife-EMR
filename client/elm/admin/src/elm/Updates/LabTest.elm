@@ -456,7 +456,7 @@ labTestFormToRecord form transId =
             ( Form.getFieldAsString "maxRangeDecimal" form
                 |> .value
                 |> U.maybeStringToMaybeFloat
-            , Form.getFieldAsString "minRangeDecimal" form
+            , Form.getFieldAsString "minRangeInteger" form
                 |> .value
                 |> U.maybeStringToMaybeInt
             , Form.getFieldAsString "maxRangeInteger" form
