@@ -37,13 +37,13 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
           - if (min || max)
             - if (isRange)
               div(class=qtrWidth)
-                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberLow, value=result)
+                input(class='form-control', type='number', step="any", min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberLow, value=result)
               div(class=toWidth) To
               div(class=qtrWidth)
-                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberHigh, value=result2)
+                input(class='form-control', type='number', step="any", min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumberHigh, value=result2)
             - else
               div(class=halfWidth)
-                input(class='form-control', type='number', min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber, value=result)
+                input(class='form-control', type='number', step="any", min=min, max=max, tabindex=tabIndex++, autocomplete="off", name=fldNameNumber, value=result)
           - if (values && (min || max))
             div(class=halfWidthSm)
               +select('form-control', fldNameSelect, tabIndex++, values)
