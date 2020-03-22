@@ -514,7 +514,9 @@ viewLabTestRecord ({ labSuiteModel, labTestModel, labTestValueModel } as model) 
                         , MColor.background MColor.accentContrast
                         , Elevation.e6
                         ]
-                        [ Html.text "If you use min/max range fields, use either the Decimal pair or the Whole Number pair, not both." ]
+                        [ Html.text "If you use min/max range fields, use either the Decimal pair or the Whole Number pair, not both. "
+                        , Html.text "If you select Free Form Text and Acceptable Test Values, staff will be able to choose to use one or the other on any particular test."
+                        ]
                     , Card.text
                         [ MColor.text MColor.black
                         ]
@@ -523,7 +525,7 @@ viewLabTestRecord ({ labSuiteModel, labTestModel, labTestValueModel } as model) 
                         , VU.textFld "Abbreviation" recAbbrev [ mdlContext, 402 ] (tagger recAbbrev) isEditing False model.mdl
                         , VU.textFld "Normal" recNormal [ mdlContext, 403 ] (tagger recNormal) isEditing False model.mdl
                         , VU.textFld "Unit" recUnit [ mdlContext, 404 ] (tagger recUnit) isEditing False model.mdl
-                        , VU.checkBox "Free form text"
+                        , VU.checkBox "Free Form Text (not compatible with Min/Max ranges below)"
                             [ mdlContext, 405 ]
                             (taggerBool recIsText (not (VU.isChecked recIsText)))
                             isEditing
