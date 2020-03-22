@@ -48,7 +48,7 @@ LabTest = Bookshelf.Model.extend({
 
   , permittedAttributes: ['id', 'name', 'abbrev', 'normal', 'unit',
         'minRangeDecimal', 'maxRangeDecimal', 'minRangeInteger', 'maxRangeInteger',
-        'isRange', 'labSuite_id', 'updatedBy', 'updatedAt', 'supervisor']
+        'isRange', 'isText', 'labSuite_id', 'updatedBy', 'updatedAt', 'supervisor']
 
   , initialize: function() {
     this.on('saving', this.saving, this);
