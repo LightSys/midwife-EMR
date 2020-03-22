@@ -39,7 +39,7 @@ block defaultLab
     div.row
       div(class='col-xs-12')
         hr
-        p(class='text-warning')= gettext('Some tests have a number and a select field. Choose one or the other, not both. If both filled, number will be used and select discarded.')
+        p(class='text-warning')= gettext('Some tests have a text box and a drop down select field. Choose one or the other, not both. If both are filled, the text box will be used and drop down select discarded.')
 
     div.row
       each test, idx in labTests
