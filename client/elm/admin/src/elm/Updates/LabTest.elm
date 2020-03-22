@@ -462,7 +462,7 @@ labTestFormToRecord form transId =
             , Form.getFieldAsString "maxRangeInteger" form
                 |> .value
                 |> U.maybeStringToMaybeInt
-            , Form.getFieldAsBool "istext" form
+            , Form.getFieldAsBool "isText" form
                 |> .value
                 |> Maybe.withDefault False
             , Form.getFieldAsString "labSuite_id" form

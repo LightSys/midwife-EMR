@@ -486,6 +486,15 @@ viewLabTestRecord ({ labSuiteModel, labTestModel, labTestValueModel } as model) 
                         >> (Form.Input fld.path Form.Text)
                         >> FormMsgLabTest
                         >> LabTestMessages
+
+                -- The helper function used to create the partially applied
+                -- (Bool -> Msg) function for each checkBox.
+                taggerBool : Form.FieldState e Bool -> Bool -> Msg
+                taggerBool fld =
+                    FF.Bool
+                        >> (Form.Input fld.path Form.Checkbox)
+                        >> FormMsgLabTest
+                        >> LabTestMessages
             in
                 Card.view
                     [ Options.css "width" "100%" ]
@@ -514,10 +523,16 @@ viewLabTestRecord ({ labSuiteModel, labTestModel, labTestValueModel } as model) 
                         , VU.textFld "Abbreviation" recAbbrev [ mdlContext, 402 ] (tagger recAbbrev) isEditing False model.mdl
                         , VU.textFld "Normal" recNormal [ mdlContext, 403 ] (tagger recNormal) isEditing False model.mdl
                         , VU.textFld "Unit" recUnit [ mdlContext, 404 ] (tagger recUnit) isEditing False model.mdl
-                        , VU.textFld "Min Range as Decimal" recMinRangeDecimal [ mdlContext, 405 ] (tagger recMinRangeDecimal) isEditing False model.mdl
-                        , VU.textFld "Max Range as Decimal" recMaxRangeDecimal [ mdlContext, 406 ] (tagger recMaxRangeDecimal) isEditing False model.mdl
-                        , VU.textFld "Min Range as Whole Number" recMinRangeInteger [ mdlContext, 407 ] (tagger recMinRangeInteger) isEditing False model.mdl
-                        , VU.textFld "Max Range as Whole Number" recMaxRangeInteger [ mdlContext, 408 ] (tagger recMaxRangeInteger) isEditing False model.mdl
+                        , VU.checkBox "Free form text"
+                            [ mdlContext, 405 ]
+                            (taggerBool recIsText (not (VU.isChecked recIsText)))
+                            isEditing
+                            (VU.isChecked recIsText)
+                            model.mdl
+                        , VU.textFld "Min Range as Decimal" recMinRangeDecimal [ mdlContext, 406 ] (tagger recMinRangeDecimal) isEditing False model.mdl
+                        , VU.textFld "Max Range as Decimal" recMaxRangeDecimal [ mdlContext, 407 ] (tagger recMaxRangeDecimal) isEditing False model.mdl
+                        , VU.textFld "Min Range as Whole Number" recMinRangeInteger [ mdlContext, 408 ] (tagger recMinRangeInteger) isEditing False model.mdl
+                        , VU.textFld "Max Range as Whole Number" recMaxRangeInteger [ mdlContext, 409 ] (tagger recMaxRangeInteger) isEditing False model.mdl
                         ]
                     ]
 
