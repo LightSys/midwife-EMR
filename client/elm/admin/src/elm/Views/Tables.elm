@@ -514,8 +514,9 @@ viewLabTestRecord ({ labSuiteModel, labTestModel, labTestValueModel } as model) 
                         , MColor.background MColor.accentContrast
                         , Elevation.e6
                         ]
-                        [ Html.text "If you use min/max range fields, use either the Decimal pair or the Whole Number pair, not both. "
-                        , Html.text "If you select Free Form Text and Acceptable Test Values, staff will be able to choose to use one or the other on any particular test."
+                        [ Html.text "1. If you use min/max range fields, use either the Decimal pair or the Whole Number pair, not both. "
+                        , Html.text "2. Do not use both Free Form Text and Decimal or Integer ranges in the same test. "
+                        , Html.text "3. If you select Free Form Text and Acceptable Test Values, staff will be able to choose to use one or the other on any particular test."
                         ]
                     , Card.text
                         [ MColor.text MColor.black
