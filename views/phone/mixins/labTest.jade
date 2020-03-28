@@ -17,6 +17,11 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
   - var fldNameWarn = 'warn-' + testId;
   - var minText = (''+min).length === 0? 'None': min
   - var maxText = (''+max).length === 0? 'None': max
+  - // Allow isText and lists of acceptable values to be used in the same test.
+  - // But they are exclusive of one another, so determine which way to go here.
+  - var resultInValues = values.findIndex(function(rec) {return rec.selectKey === result;}) !== -1;
+  - var isTextValuesResult = "";
+  - if (! resultInValues) {isTextValuesResult = result;}
   div(class=outerClass)
     div(class='panel panel-primary')
       div(class='panel-heading')
@@ -26,6 +31,8 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
           div(class=fullWidth)
             - if ((min || max) && values) {
               label= gettext('Enter a number on the left OR select a value on the right.')
+            - } else if (values && isText) {
+              label= gettext('Select a value from the list OR enter text below, not both.')
             - } else if (values) {
               label= gettext('Select a value from the list.')
             - } else if (isText) {
@@ -47,10 +54,14 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
           - if (values && (min || max))
             div(class=halfWidthSm)
               +select('form-control', fldNameSelect, tabIndex++, values)
+          - else if (values && isText)
+            div(class=halfWidth)
+              +select('form-control', fldNameSelect, tabIndex++, values)
+              textarea(class='form-control', rows='3', tabindex=tabIndex++, wrap='soft', name=fldNameText)= isTextValuesResult
           - else if (values)
             div(class=fullWidth)
               +select('form-control', fldNameSelect, tabIndex++, values)
-          - if (isText)
+          - if (isText && !values)
             div(class=fullWidth)
               textarea(class='form-control', rows='3', tabindex=tabIndex++, wrap='soft', name=fldNameText)= result
 
