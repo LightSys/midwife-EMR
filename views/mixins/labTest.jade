@@ -19,7 +19,7 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
   - var maxText = (''+max).length === 0? 'None': max
   - // Allow isText and lists of acceptable values to be used in the same test.
   - // But they are exclusive of one another, so determine which way to go here.
-  - var resultInValues = values.findIndex(function(rec) {return rec.selectKey === result;}) !== -1;
+  - var resultInValues = values && values.findIndex(function(rec) {return rec.selectKey === result;}) !== -1;
   - var isTextValuesResult = "";
   - if (! resultInValues) {isTextValuesResult = result;}
   div(class=outerClass)
@@ -30,7 +30,7 @@ mixin labTest(bsDevSize, numColumns, name, testId, min, max, isRange, isText, va
         div.row
           div(class=fullWidth)
             - if ((min || max) && values) {
-              label= gettext('Enter a number on the left OR select a value on the right.')
+              label= gettext('Enter a range of numbers on the left OR select a value on the right.')
             - } else if (values && isText) {
               label= gettext('Select a value from the list OR enter text below, not both.')
             - } else if (values) {
