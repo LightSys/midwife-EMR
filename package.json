@@ -42,7 +42,7 @@
     "install": "^0.8.1",
     "isomorphic-fetch": "^2.2.1",
     "jade": "^1.11.0",
-    "jquery": "^1.12.4",
+    "jquery": "^3.5.0",
     "jshint": "^2.9.2",
     "knex": "^0.8.6",
     "material-design-icons": "^3.0.1",
