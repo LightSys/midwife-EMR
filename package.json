@@ -10,7 +10,7 @@
     "angular": "1.5.8",
     "angular-moment": "^0.10.3",
     "angular-ui-router": "^0.2.15",
-    "bcrypt": "^0.8.6",
+    "bcrypt": "^5.0.0",
     "bluebird": "^2.10.1",
     "body-parser": "^1.15.1",
     "bookshelf": "^0.8.2",
