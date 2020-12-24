@@ -43,7 +43,7 @@ CREATE TABLE `pregnancy` (
   `lmp` date DEFAULT NULL,
   `sureLMP` tinyint(1) DEFAULT '0',
   `warning` tinyint(1) DEFAULT '0',
-  `riskNote` varchar(250) DEFAULT NULL,
+  `riskNote` varchar(2000) DEFAULT NULL,
   `alternateEdd` date DEFAULT NULL,
   `useAlternateEdd` tinyint(1) DEFAULT '0',
   `doctorConsultDate` date DEFAULT NULL,
@@ -109,10 +109,11 @@ CREATE TABLE `pregnancy` (
   `historySmoking` tinyint(1) DEFAULT NULL,
   `historyDrinking` tinyint(1) DEFAULT NULL,
   `historyNone` tinyint(1) DEFAULT NULL,
-  `questionnaireNote` varchar(300) DEFAULT NULL,
+  `questionnaireNote` varchar(2000) DEFAULT NULL,
   `partnerFirstname` varchar(70) DEFAULT NULL,
   `partnerLastname` varchar(70) DEFAULT NULL,
   `partnerAge` int(11) DEFAULT NULL,
+  `partnerDob` date DEFAULT NULL,
   `partnerWork` varchar(70) DEFAULT NULL,
   `partnerEducation` varchar(70) DEFAULT NULL,
   `partnerIncome` int(11) DEFAULT NULL,
@@ -128,7 +129,7 @@ CREATE TABLE `pregnancy` (
   CONSTRAINT `pregnancy_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_2` FOREIGN KEY (`updatedBy`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `pregnancy_ibfk_3` FOREIGN KEY (`supervisor`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=10116 DEFAULT CHARSET=latin1
+) ENGINE=InnoDB AUTO_INCREMENT=4856 DEFAULT CHARSET=latin1
 */
 
 Pregnancy = Bookshelf.Model.extend({
@@ -183,8 +184,8 @@ Pregnancy = Bookshelf.Model.extend({
       'historyHighBloodPressure', 'historyHospitalOperation',
       'historyBloodTransfusion', 'historySmoking', 'historyDrinking', 'historyNone',
       'questionnaireNote', 'partnerFirstname', 'partnerLastname', 'partnerAge',
-      'partnerWork', 'partnerEducation', 'partnerIncome', 'partnerIncomePeriod',
-      'updatedBy', 'updatedAt', 'supervisor', 'patient_id']
+      'partnerDob', 'partnerWork', 'partnerEducation', 'partnerIncome',
+      'partnerIncomePeriod', 'updatedBy', 'updatedAt', 'supervisor', 'patient_id']
 
   , initialize: function() {
       this.on('saving', this.saving, this);
