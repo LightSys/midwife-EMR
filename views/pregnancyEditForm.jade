@@ -14,6 +14,7 @@ block pregnancyEdit
   //- require 'YYYY-MM-DD' format, while inputs with type text require 'MM/DD/YYYY'.
   //- Date inputs:
   - var dob = rec.patient.dob? libs.mmt(rec.patient.dob).format('YYYY-MM-DD'): '';
+  - var partnerDob = rec.partnerDob? libs.mmt(rec.partnerDob).format('YYYY-MM-DD'): '';
 
   div(class='formBoxLarge')
     form(class='dirty-check disable-on-submit', role='form', name='pregnancyForm', action='/pregnancy/' + rec.id + '/update', method='post')
@@ -93,47 +94,51 @@ block pregnancyEdit
           span= gettext('Partner first name')
           input(class='form-control input-lg', type='text', tabindex="17", autocomplete="off", name='partnerFirstname', value=rec.partnerFirstname)
         div(class='form-group col-md-3')
+          span= gettext('Partner Date of Birth (mm/dd/yyyy)')
+          +datePicker('form-control input-lg', 18, 'partnerDob', partnerDob, undefined, undefined, false, 'Unknown')
+        div(class='form-group col-md-3')
           span= gettext('Partner age')
-          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='partnerAge', value=rec.partnerAge)
+          input(class='form-control input-lg', type='number', tabindex="19", autocomplete="off", name='partnerAge', value=rec.partnerAge)
+          span= gettext('Age is not saved if Dob is provided')
       div.row
         div(class='form-group col-md-3')
           span= gettext('Partner work')
-          input(class='form-control input-lg', type='text', tabindex="19", autocomplete="off", name='partnerWork', value=rec.partnerWork)
+          input(class='form-control input-lg', type='text', tabindex="20", autocomplete="off", name='partnerWork', value=rec.partnerWork)
         div(class='form-group col-md-3')
           span= gettext('Partner education')
-          +select('form-control input-lg', 'partnerEducation', 20, partnerEducation)
+          +select('form-control input-lg', 'partnerEducation', 21, partnerEducation)
       hr
       div.row
         div(class='form-group col-md-3')
           span= gettext('Client Income')
-          input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='clientIncome', value=rec.clientIncome)
+          input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='clientIncome', value=rec.clientIncome)
         div(class='form-group col-md-3')
           span= gettext('Income period')
-          +select('form-control input-lg', 'clientIncomePeriod', 22, clientIncomePeriod)
+          +select('form-control input-lg', 'clientIncomePeriod', 23, clientIncomePeriod)
         div(class='form-group col-md-3')
           span= gettext('Partner income')
-          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='partnerIncome', value=rec.partnerIncome)
+          input(class='form-control input-lg', type='number', tabindex="24", autocomplete="off", name='partnerIncome', value=rec.partnerIncome)
         div(class='form-group col-md-3')
           span= gettext('Income period')
-          +select('form-control input-lg', 'partnerIncomePeriod', 24, partnerIncomePeriod)
+          +select('form-control input-lg', 'partnerIncomePeriod', 25, partnerIncomePeriod)
       hr
       div.row
         div(class='form-group col-md-3')
           span= gettext('MMC #')
-          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='doh', value=rec.patient.dohID)
+          input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='doh', value=rec.patient.dohID)
         div(class='form-group col-md-3')
           span= gettext('Priority Barcode #')
-          input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='priorityBarcode', value=priorityBarcode)
+          input(class='form-control input-lg', type='number', tabindex="27", autocomplete="off", name='priorityBarcode', value=priorityBarcode)
         div(class='form-group col-md-3')
           span= gettext('Prenatal Day')
-          +select('form-control input-lg', 'prenatalDay', 26, value=prenatalDay)
+          +select('form-control input-lg', 'prenatalDay', 28, value=prenatalDay)
         div(class='form-group col-md-3')
           span= gettext('Prenatal Location')
-          +select('form-control input-lg', 'prenatalLocation', 27, value=prenatalLocation)
+          +select('form-control input-lg', 'prenatalLocation', 29, value=prenatalLocation)
       div.row
         div(class='form-group col-md-3')
           span= gettext('Mother/Baby Book?')
-          +select('form-control input-lg', 'mbBook', 28, mbBook)
+          +select('form-control input-lg', 'mbBook', 30, mbBook)
 
       div.row
         div(class='col-md-3')

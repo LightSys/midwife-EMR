@@ -12,6 +12,9 @@ block pregnancyAdd
   //- require 'YYYY-MM-DD' format, while inputs with type text require 'MM/DD/YYYY'.
   //- Date inputs:
   - var priorDob = priorRec && priorRec.dob? libs.mmt(priorRec.dob).format('YYYY-MM-DD'): '';
+  - var priorPartnerDob = priorRec && priorRec.partnerDob? libs.mmt(priorRec.partnerDob).format('YYYY-MM-DD'): '';
+
+  //- If this is a new pregnancy for an existing patient, this could be populated.
   - var patientDob = patientRec && patientRec.dob? libs.mmt(patientRec.dob).format('YYYY-MM-DD'): '';
 
   div.formBoxLarge
@@ -93,47 +96,51 @@ block pregnancyAdd
           span= gettext('Partner first name')
           input(class='form-control input-lg', type='text', tabindex="17", autocomplete="off", name='partnerFirstname', value=priorRec.partnerFirstname)
         div(class='form-group col-md-3')
+          span= gettext('Partner Date of Birth (mm/dd/yyyy)')
+          +datePicker('form-control input-lg', 18, 'partnerDob', priorPartnerDob || '', undefined, undefined, false, 'Unknown')
+        div(class='form-group col-md-3')
           span= gettext('Partner age')
-          input(class='form-control input-lg', type='number', tabindex="18", autocomplete="off", name='partnerAge', value=priorRec.partnerAge)
+          input(class='form-control input-lg', type='number', tabindex="19", autocomplete="off", name='partnerAge', value=priorRec.partnerAge)
+          span= gettext('Age is not saved if Dob is provided')
       div.row
         div(class='form-group col-md-3')
           span= gettext('Partner work')
-          input(class='form-control input-lg', type='text', tabindex="19", autocomplete="off", name='partnerWork', value=priorRec.partnerWork)
+          input(class='form-control input-lg', type='text', tabindex="20", autocomplete="off", name='partnerWork', value=priorRec.partnerWork)
         div(class='form-group col-md-3')
           span= gettext('Partner education')
-          +select('form-control input-lg', 'partnerEducation', 20, education)
+          +select('form-control input-lg', 'partnerEducation', 21, education)
       hr
       div.row
         div(class='form-group col-md-3')
           span= gettext('Client income')
-          input(class='form-control input-lg', type='number', tabindex="21", autocomplete="off", name='clientIncome', value=priorRec.clientIncome)
+          input(class='form-control input-lg', type='number', tabindex="22", autocomplete="off", name='clientIncome', value=priorRec.clientIncome)
         div(class='form-group col-md-3')
           span= gettext('Income period')
-          +select('form-control input-lg', 'clientIncomePeriod', 22, clientIncomePeriod)
+          +select('form-control input-lg', 'clientIncomePeriod', 23, clientIncomePeriod)
         div(class='form-group col-md-3')
           span= gettext('Partner income')
-          input(class='form-control input-lg', type='number', tabindex="23", autocomplete="off", name='partnerIncome', value=priorRec.partnerIncome)
+          input(class='form-control input-lg', type='number', tabindex="24", autocomplete="off", name='partnerIncome', value=priorRec.partnerIncome)
         div(class='form-group col-md-3')
           span= gettext('Income period')
-          +select('form-control input-lg', 'partnerIncomePeriod', 24, partnerIncomePeriod)
+          +select('form-control input-lg', 'partnerIncomePeriod', 25, partnerIncomePeriod)
       hr
       div.row
         div(class='form-group col-md-3')
           span= gettext('MMC #')
-          input(class='form-control input-lg', type='number', tabindex="25", autocomplete="off", name='doh', value=priorRec.doh || patientRec.dohID)
+          input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='doh', value=priorRec.doh || patientRec.dohID)
         div(class='form-group col-md-3')
           span= gettext('Priority Barcode #')
-          input(class='form-control input-lg', type='number', tabindex="26", autocomplete="off", name='priorityBarcode', value=priorRec.priorityBarcode)
+          input(class='form-control input-lg', type='number', tabindex="27", autocomplete="off", name='priorityBarcode', value=priorRec.priorityBarcode)
         div(class='form-group col-md-3')
           span= gettext('Prenatal Day')
-          +select('form-control input-lg', 'prenatalDay', 26, prenatalDay)
+          +select('form-control input-lg', 'prenatalDay', 28, prenatalDay)
         div(class='form-group col-md-3')
           span= gettext('Prenatal Location')
-          +select('form-control input-lg', 'prenatalLocation', 27, prenatalLocation)
+          +select('form-control input-lg', 'prenatalLocation', 29, prenatalLocation)
       div.row
         div(class='form-group col-md-3')
           span= gettext('Mother/Baby Book?')
-          +select('form-control input-lg', 'mbBook', 28, mbBook)
+          +select('form-control input-lg', 'mbBook', 30, mbBook)
 
       div.row
         input(class='btn btn-primary', type='submit', value=gettext('Create New Pregnancy Record'))
