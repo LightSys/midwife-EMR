@@ -376,6 +376,8 @@ var doClientGeneral = function(doc, data, opts, ypos) {
     , partnerIncome = ''
     , age
     , dob
+    , partnerAge = data.pregnancy.partnerAge
+    , partnerDob
     ;
   if (data.pregnancy.clientIncome && data.pregnancy.clientIncomePeriod) {
     clientIncome = data.pregnancy.clientIncome + ' / ' +
@@ -389,6 +391,11 @@ var doClientGeneral = function(doc, data, opts, ypos) {
   if (data.patient.dob && moment(data.patient.dob).isValid()) {
     age = moment().diff(moment(data.patient.dob), 'years');
     dob = moment(data.patient.dob).format('MM/DD/YYYY');
+  }
+
+  if (data.pregnancy.partnerDob && moment(data.pregnancy.partnerDob).isValid()) {
+    partnerAge = moment().diff(moment(data.pregnancy.partnerDob), 'years');
+    partnerDob = moment(data.pregnancy.partnerDob).format('MM/DD/YYYY');
   }
 
   doSep(doc, opts, y, greyLightColor);
@@ -441,7 +448,12 @@ var doClientGeneral = function(doc, data, opts, ypos) {
   x += 100;
   doVertFldVal(doc, 'Partner Lastname', data.pregnancy.partnerLastname, x, y, true);
   x += 100;
-  doVertFldVal(doc, 'Partner Age', data.pregnancy.partnerAge, x, y, true);
+  // partnerDob or partnerAge
+  if (partnerDob) {
+    doVertFldVal(doc, 'Partner DOB (Age)', partnerDob + ' (' + partnerAge + ')', x, y, true);
+  } else {
+    doVertFldVal(doc, 'Partner Age', partnerAge, x, y, true);
+  }
   x += 100;
   doVertFldVal(doc, 'Partner Education', data.pregnancy.partnerEducation, x, y, true);
   x += 100;
