@@ -192,6 +192,27 @@ Pregnancy = Bookshelf.Model.extend({
     }
 
   , saving: function(model) {
+      // We prioritize partnerDob over partnerAge.
+      var partnerDob = model.changed.partnerDob;
+      var partnerAge = model.changed.partnerAge;
+
+      // If there is a partner dob, we use that and set age to null.
+      if (moment(partnerDob).isValid()) {
+        this.set('partnerAge', null);
+      }
+
+      // If the partner dob is not valid, we make sure it is null
+      // so that we don't save invalid dates.
+      if (! moment(partnerDob).isValid()) {
+        this.set('partnerDob', null);
+      }
+
+      // If the partner age is zero, we set to null to counter
+      // defaults for the field.
+      if (partnerAge == 0) {
+        this.set('partnerAge', null);
+      }
+
       // Enforce permittedAttributes.
       Bookshelf.Model.prototype.saving.apply(this, model);
     }
