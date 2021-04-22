@@ -1,8 +1,9 @@
 /*
  * -------------------------------------------------------------------------------
- * scheduledRpt.js
+ * scheduledRptByName.js
  *
- * Generates a report of all scheduled patients in a certain date range.
+ * Generates a report of all scheduled patients in a certain date range
+ * and sorts by lastname, firstname.
  * -------------------------------------------------------------------------------
  */
 
