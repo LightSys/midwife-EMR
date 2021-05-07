@@ -1,3 +1,6 @@
+var _ = moment = require('moment')
+  ;
+
 /* 
  * -------------------------------------------------------------------------------
  * reportGeneral.js
@@ -9,6 +12,24 @@
 var cfg = require('../config')
   , fontAwesomeFile = 'static/font-awesome/fonts/fontawesome-webfont.ttf'
   ;
+
+
+/* --------------------------------------------------------
+ * generateReportFilename()
+ *
+ * Returns a filename to use that has the prefix plus the
+ * current date/time plus the extension.
+ *
+ * param       prefix
+ * param       ext - without the period
+ * return      string - the filename
+ * -------------------------------------------------------- */
+var generateReportFilename = function(prefix, ext) {
+  var current = moment().format('YYYY-MM-DD_HHmm');
+
+  return prefix + '_' + current + '.' + ext;
+};
+
 
 
 /* --------------------------------------------------------
@@ -239,6 +260,7 @@ module.exports = {
   , doCellBorders: doCellBorders
   , calcNumLines: calcNumLines
   , splitLine: splitLine
+  , generateReportFilename: generateReportFilename
 };
 
 

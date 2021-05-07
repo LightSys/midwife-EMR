@@ -36,6 +36,7 @@ var _ = require('underscore')
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
   , colClipped = require('./reportGeneral').colClipped
+  , generateReportFilename = require('./reportGeneral').generateReportFilename
   , NO_RECORDS_FOUND_TYPE = 1000
   ;
 
@@ -495,11 +496,11 @@ var run = function(req, res) {
     fs.stat(filePath, function(err, stats) {
       if (err) return logError(err);
       var size = stats.size;
+      var downloadFilename = generateReportFilename('DewormingRpt_By_DistBarangay', 'pdf');
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'inline; DewormingRpt.pdf');
       res.setHeader('Content-Transfer-Encoding', 'binary');
-      res.setHeader('Content-Length', ('' + size));
+      res.attachment(downloadFilename);
       fs.createReadStream(filePath).pipe(res);
       fs.unlink(filePath);
     });
