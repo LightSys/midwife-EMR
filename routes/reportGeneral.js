@@ -9,6 +9,12 @@ var _ = moment = require('moment')
  * ------------------------------------------------------------------------------- 
  */
 
+// The types of report formats supported.
+const FORMAT_SCREEN = 'format_screen'
+  , FORMAT_PDF = 'format_pdf'
+  , FORMAT_CSV = 'format_csv'
+  ;
+
 var cfg = require('../config')
   , fontAwesomeFile = 'static/font-awesome/fonts/fontawesome-webfont.ttf'
   ;
@@ -261,6 +267,9 @@ module.exports = {
   , calcNumLines: calcNumLines
   , splitLine: splitLine
   , generateReportFilename: generateReportFilename
+  , FORMAT_SCREEN
+  , FORMAT_PDF
+  , FORMAT_CSV
 };
 
 

@@ -4,8 +4,10 @@ block reportsForm
   +titleMsg(title)
 
   - var reportPath = '/report/run';
+  - var reportPathPdf = '/report/runPdf';
 
   form(id='reportsForm', class='disable-on-submit', role='form', name='reportsForm', action=reportPath, method='post')
+    input(type='hidden', name='_csrf', value=token)
     div.row
       div(class='col-md-6')
         label= gettext('Report from:')
@@ -26,4 +28,6 @@ block reportsForm
     div.row
       div(class='col-md-6')
         input(class='btn btn-primary', type='submit', value=gettext('Run Report'))
-        input(type='hidden', name='_csrf', value=token)
+      div(class='col-md-6')
+        input(class='btn btn-primary', type='submit', formaction=reportPathPdf, value=gettext('Download PDF'))
+

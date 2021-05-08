@@ -30,8 +30,10 @@ var _ = require('underscore')
   , scheduledRptByName = require('./scheduledRptByName')
   , dueRpt = require('./dueRpt')
   , treatedRpt = require('./treatedRpt')
+  , FORMAT_SCREEN = require('./reportGeneral.js').FORMAT_SCREEN
+  , FORMAT_PDF = require('./reportGeneral.js').FORMAT_PDF
+  , FORMAT_CSV = require('./reportGeneral.js').FORMAT_CSV
   ;
-
 
 /* --------------------------------------------------------
  * summary()
@@ -230,13 +232,32 @@ var form = function(req, res) {
     });
 };
 
+/* --------------------------------------------------------
+ * runPdf()
+ *
+ * Runs the user selected report with PDF format.
+ * -------------------------------------------------------- */
+var runPdf = function(req, res) {
+  req.body.reportFormat = FORMAT_PDF;
+  return runReport(req, res);
+};
 
 /* --------------------------------------------------------
  * run()
  *
- * Runs the user selected report.
+ * Runs the user selected report with screen format.
  * -------------------------------------------------------- */
 var run = function(req, res) {
+  req.body.reportFormat = FORMAT_SCREEN;
+  return runReport(req, res);
+};
+
+/* --------------------------------------------------------
+ * runReport()
+ *
+ * Runs the user selected report.
+ * -------------------------------------------------------- */
+var runReport = function(req, res) {
   var report = req.body && req.body.report || void 0
     ;
 
@@ -272,7 +293,6 @@ var run = function(req, res) {
   if (report === 'treated') treatedRpt.run(req, res);
 };
 
-
 /* --------------------------------------------------------
  * birthCertificate()
  *
@@ -285,8 +305,7 @@ var birthCertificate = function(req, res) {
 module.exports = {
   form: form
   , run: run
+  , runPdf: runPdf
   , summary: summary
   , birthCertificate
 };
-
-

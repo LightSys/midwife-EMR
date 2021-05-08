@@ -751,6 +751,8 @@ KeyValue.getKeyValues().then(function(data) {
       inRoles(['supervisor', 'clerk']), report.form);
   app.post(cfg.path.reportRun, common, hasSuper,
       inRoles(['supervisor', 'clerk']), report.run);
+  app.post(cfg.path.reportRunPdf, common, hasSuper,
+      inRoles(['supervisor', 'clerk']), report.runPdf);
   app.get(cfg.path.reportSummary, common, hasSuper,
       inRoles(['supervisor', 'clerk', 'attending']), report.summary);
 
