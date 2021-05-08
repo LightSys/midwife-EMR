@@ -47,6 +47,10 @@ var _ = require('underscore')
   , doReportName = require('./reportGeneral').doReportName
   , doCellBorders = require('./reportGeneral').doCellBorders
   , centerInCol = require('./reportGeneral').centerInCol
+  , generateReportFilename = require('./reportGeneral').generateReportFilename
+  , FORMAT_SCREEN = require('./reportGeneral.js').FORMAT_SCREEN
+  , FORMAT_PDF = require('./reportGeneral.js').FORMAT_PDF
+  , FORMAT_CSV = require('./reportGeneral.js').FORMAT_CSV
   ;
 
 
@@ -2504,6 +2508,7 @@ var run = function(req, res) {
     , writable = fs.createWriteStream(filePath)
     , success = false
     , fieldsReady = true
+    , reportFormat = req.body.reportFormat ? req.body.reportFormat : FORMAT_SCREEN
     ;
 
   // --------------------------------------------------------
@@ -2530,11 +2535,22 @@ var run = function(req, res) {
     fs.stat(filePath, function(err, stats) {
       if (err) return logError(err);
       var size = stats.size;
+      var downloadFilename = generateReportFilename('DOH-MasterList', 'pdf');
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'inline; DOH-MasterList.pdf');
       res.setHeader('Content-Transfer-Encoding', 'binary');
-      res.setHeader('Content-Length', ('' + size));
+
+      switch (reportFormat) {
+        case FORMAT_SCREEN:
+          res.setHeader('Content-Disposition', 'inline; DOH-MasterList.pdf');
+          res.setHeader('Content-Length', ('' + size));
+          break;
+
+        case FORMAT_PDF:
+          res.attachment(downloadFilename);
+          break;
+      }
+
       fs.createReadStream(filePath).pipe(res);
       fs.unlink(filePath);
     });
