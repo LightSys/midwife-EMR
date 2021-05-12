@@ -27,7 +27,6 @@ block reportsForm
         span &nbsp;
     div.row
       div(class='col-md-6')
-        input(class='btn btn-primary', type='submit', value=gettext('Run Report'))
+        input(class='btn btn-primary', type='submit', value=gettext('View Report'))
       div(class='col-md-6')
-        input(class='btn btn-primary', type='submit', formaction=reportPathPdf, value=gettext('Download PDF'))
-
+        input(id='reportFormDownloadPdf', class='btn btn-primary', type='submit', formaction=reportPathPdf, formtarget='_blank', value=gettext('Download PDF'))

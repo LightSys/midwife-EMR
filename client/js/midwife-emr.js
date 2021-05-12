@@ -25,7 +25,7 @@ $(function() {
     // --------------------------------------------------------
     // Auto expanding text areas. Adapted from "Expanding Text
     // Areas Made Elegant", http://alistapart.com/article/expanding-text-areas-made-elegant.
-    // 
+    //
     // This is the JS component of the "textarea" Jade component
     // in the mixins folder. There is also CSS.
     // --------------------------------------------------------
@@ -294,6 +294,19 @@ $(function() {
           alert('Did you forget to enter the date of birth?');
         }
       }
+    });
+
+    // --------------------------------------------------------
+    // Report opens in another tab but leaves the form unusable.
+    // Delay gives time for the report process to start and
+    // eventually provide a download prompt to the user. In the
+    // meantime, page reload on the form resets the original
+    // report form.
+    // --------------------------------------------------------
+    $('input[id="reportFormDownloadPdf"]').on('click', function(evt) {
+      setTimeout(function() {
+        window.location.reload();
+      }, 1000);
     });
 
     // --------------------------------------------------------
